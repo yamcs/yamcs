@@ -6,7 +6,7 @@
   <packaging>pom</packaging>
   <name>Yamcs</name>
   <description>Yet Another Mission Control System.</description>
-  <version>0.23.1</version>
+  <version>0.23.2-SNAPSHOT</version>
 
   <issueManagement>
     <system>Redmine</system>
