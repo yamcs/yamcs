@@ -7,17 +7,9 @@
 #    tcPort:
 #    minimumTcPacketLength (by default 48)
 
-# EPSS at Erasmus USOC
-epss:
+local:
     tmHost: localhost
     tmPort: 10015
     tcHost: localhost
-    tcPort: 10003
-
-# EDR Col-Emu at Erasmus USOC
-col-emu:
-    tmHost: col-emu
-    tmPort: 10015
-    tcHost: col-emu
     tcPort: 10003
 
