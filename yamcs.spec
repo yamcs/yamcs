@@ -1,5 +1,5 @@
 Name: 		yamcs
-Version: 	$VERSION$+SVNr$SVN_REVISION$
+Version: 	$VERSION$+r$REVISION$
 Release: 	9
 
 Group:		MCS
@@ -59,8 +59,6 @@ fi
 %defattr(644,root,root,755)
 %config %{prefix}/mdb
 %config %{prefix}/etc
-%exclude %{prefix}/etc/cmdhistory.yaml
-%exclude %{prefix}/etc/jacorb.yamcs-cis-server.properties
 %{prefix}/lib
 %exclude %{prefix}/lib/ext
 %exclude %{prefix}/lib/xtce
