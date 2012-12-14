@@ -1,0 +1,42 @@
+#all the supported channel types
+types: [Archive, Lounge, DaSS, Tcp, TmapTcap, Multicast, MulticastDass]
+
+#for each of the above, a corresponding TcTmService should be defined
+#Mind the case of the types!
+
+Archive:
+    tmtcpp: org.yamcs.tctm.ArchiveService
+
+#dummy channel for having something to connect to
+Lounge:
+    tm: org.yamcs.tctm.DummyTmProvider
+    pp: org.yamcs.tctm.DummyPpProvider
+
+#TM, TC and PP from DaSS in realtime
+DaSS:
+    tm: org.yamcs.tctm.DassPacketProvider realtime
+    pp: org.yamcs.tctm.DassPpProvider realtime
+    tc: org.yamcs.tctm.DassTcUplinker
+
+#TM and TC via raw packets over tcp (e.g. to be used with the Columbus Emulator)
+Tcp:
+    tm: org.yamcs.tctm.TcpTmProvider
+    pp: org.yamcs.tctm.DummyPpProvider
+    tc: org.yamcs.tctm.TcpTcUplinker
+
+#connection to PaCTS for TC and TM (no PP)
+TmapTcap:
+    tm: org.yamcs.tctm.TmapTmProvider
+    pp: org.yamcs.tctm.DummyPpProvider
+    tm: org.yamcs.tctm.TcapTcUplinker
+
+#TM and PP via multicast. No TC.
+Multicast:
+    tm: org.yamcs.tctm.MulticastTmProvider
+    pp: org.yamcs.tctm.MulticastPpProvider
+
+#same as above but with dass TC connection
+MulticastDass:
+    tm: org.yamcs.tctm.MulticastTmProvider
+    pp: org.yamcs.tctm.MulticastPpProvider
+    tc: org.yamcs.tctm.DassTcUplinker

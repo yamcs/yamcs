@@ -1,0 +1,7 @@
+# Path to [ACES-EXCEL-DB] spreadsheet
+aces:
+    spreadsheet: /home/nm/aces/mdb/aces.xls
+
+#Path to the directory containing the EDR monitoring tables montaux.txt, montnom.txt and montdsdb.txt
+edr:
+    montablesdir: /home/nm/workspace/yamcs-svn/yamcs-erasmus/src/config/

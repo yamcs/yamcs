@@ -1,0 +1,46 @@
+<html>
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <link type="text/css" href="/_static/css/uss.css" rel="stylesheet"/>
+  <link type="text/css" href="/_static/css/uss.dqi.css" rel="stylesheet"/>
+  <link type="text/css" href="/_static/css/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/css/jquery.ui.menu.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/css/jquery.ui.menubar.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/css/jquery.window.css" rel="stylesheet" />
+
+  <script src="/_static/js/jquery-1.7.2.min.js"></script>
+  <script src="/_static/js/jquery.svg.js"></script>
+  <script src="/_static/js/highcharts.src.js"></script>
+  <script src="/_static/js/sprintf-0.7-beta1.js"></script>
+  <script src="/_static/js/jquery.ui.core.js"></script>
+  <script src="/_static/js/jquery.ui.widget.js"></script>
+  <script src="/_static/js/jquery.ui.mouse.js"></script>
+  <script src="/_static/js/jquery.ui.draggable.js"></script>
+  <script src="/_static/js/jquery.ui.resizable.js"></script>
+  <script src="/_static/js/jquery.ui.position.js"></script>
+  <script src="/_static/js/jquery.ui.button.js"></script>
+  <script src="/_static/js/yamcs-ws.js"> </script>
+  <script src="/_static/js/uss.js"> </script>
+  <script src="/_static/js/uss.basic-widgets.js"> </script>
+  <script src="/_static/js/uss.graph.js"> </script>
+  <script src="/_static/js/uss.meters.js"> </script>
+</head>
+<body>
+   <script>
+     $(document).ready(function(){
+         var p=location.pathname.split("/");
+         var yamcsInstance = p[1];
+         var filename = p[3]
+         console.log(p);
+         var div=document.getElementById('display-div');
+         console.log("div: ", div);
+         var yamcsWebSocket = new YamcsWebSocket(p[1]);
+         USS.loadDisplay(div, filename, yamcsWebSocket, null);
+     });
+   </script>
+   <div id='display-div'>
+   </div>
+</body>
+</html>
+

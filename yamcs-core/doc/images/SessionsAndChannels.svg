@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="27cm" height="21cm" viewBox="-4 0 27 21">
+  <rect style="fill: #ffffff" x="4.05" y="0.225" width="9.625" height="19.975"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="4.05" y="0.225" width="9.625" height="19.975"/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="0.342545,13.0073 2.98024,13.0073 2.98024,13 5.6,13 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="-1.65767,14.5284 -1.65767,17.4703 6.66,17.4703 6.66,17.6125 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="-1.85,5.44799 -1.85,8.4 5.9,8.4 5.9,8.45 "/>
+  <rect style="fill: #ffffff" x="5.3" y="1.85" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="1.85" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="2.7375">DaSS TC</text>
+  <rect style="fill: #ffffff" x="5.3" y="3.225" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="3.225" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="4.1125">DaSS TM</text>
+  <rect style="fill: #ffffff" x="8.2" y="1.875" width="4.65" height="4.1"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="8.2" y="1.875" width="4.65" height="4.1"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="9.275" y="3.55">Realtime</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="9.275" y="4.35">Channel</text>
+  <rect style="fill: #ffffff" x="5.3" y="4.575" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="4.575" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="5.4625">DaSS PP</text>
+  <rect style="fill: #ffffff" x="5.275" y="11.05" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.275" y="11.05" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.775" y="11.9875">No TC</text>
+  <rect style="fill: #ffffff" x="5.275" y="12.425" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.275" y="12.425" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.375" y="13.3125">HRDP TM</text>
+  <rect style="fill: #ffffff" x="8.175" y="11.05" width="4.65" height="4.1"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="8.175" y="11.05" width="4.65" height="4.1"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.55" y="12.15">HRDP</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.55" y="12.95">Playback</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.55" y="13.75">Channel1</text>
+  <rect style="fill: #ffffff" x="5.275" y="13.775" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.275" y="13.775" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.375" y="14.6625">HRDP PP</text>
+  <rect style="fill: #ffffff" x="5.3" y="6.425" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="6.425" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="7.3125">No TC</text>
+  <rect style="fill: #ffffff" x="5.3" y="7.8" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="7.8" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="8.6875">HCOR TM</text>
+  <rect style="fill: #ffffff" x="8.2" y="6.325" width="4.65" height="4.25"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="8.2" y="6.325" width="4.65" height="4.25"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.375" y="7.625">DaSS </text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.375" y="8.425">Ext-PB</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.375" y="9.225">Channel</text>
+  <rect style="fill: #ffffff" x="5.3" y="9.15" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.3" y="9.15" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.4" y="10.0375">No PP</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: 700" x="4.9375" y="1.425">Yamcs Server</text>
+  <rect style="fill: #ffffff" x="-3.8" y="2.45" width="3.9" height="2.95"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="-3.8" y="2.45" width="3.9" height="2.95"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="-2.8" y="4.225">DaSS</text>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="0.149878,3.92209 5.25035,3.91468 "/>
+  <rect style="fill: #ffffff" x="-3.60767" y="11.5323" width="3.9" height="2.95"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="-3.60767" y="11.5323" width="3.9" height="2.95"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="-2.39" y="13.125">HRDP</text>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="18.0097,1.675 15.455,1.675 15.455,3.925 12.9003,3.925 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.7503,10.1 15.3905,10.1 15.3905,10.1073 18.0307,10.1073 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.9003,3.925 15.455,3.925 15.455,4.425 18.0097,4.425 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.8996,3.925 15.4349,3.925 15.4349,7.175 17.9118,7.175 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.8753,13.1 15.4425,13.1 15.4425,12.325 18.0097,12.325 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.8103,17.6 15.41,17.6 15.41,18.2073 18.0097,18.2073 "/>
+  <rect style="fill: #ffffff" x="5.21" y="15.55" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.21" y="15.55" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.71" y="16.4875">No TC</text>
+  <rect style="fill: #ffffff" x="5.21" y="16.925" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.21" y="16.925" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.31" y="17.8125">HRDP TM</text>
+  <rect style="fill: #ffffff" x="8.11" y="15.55" width="4.65" height="4.1"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="8.11" y="15.55" width="4.65" height="4.1"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.485" y="16.65">HRDP</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.485" y="17.45">Playback</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.485" y="18.25">Channel2</text>
+  <rect style="fill: #ffffff" x="5.21" y="18.275" width="2.9" height="1.375"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.21" y="18.275" width="2.9" height="1.375"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.31" y="19.1625">HRDP PP</text>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="12.8753,13.1 15.4425,13.1 15.4425,15.125 18.0097,15.125 "/>
+  <rect style="fill: #ffffff" x="18.06" y="0.75" width="4.69" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.06" y="0.75" width="4.69" height="1.85"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="19.16" y="1.725">USS OPS1</text>
+  <rect style="fill: #ffffff" x="18.06" y="3.5" width="4.69" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.06" y="3.5" width="4.69" height="1.85"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.7837" y="4.525">USS UHB1</text>
+  <rect style="fill: #ffffff" x="17.96" y="6.25" width="4.79" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="17.96" y="6.25" width="4.79" height="1.85"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="20.355" y="7.175"> Event Viewer</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="20.355" y="7.975"> realtime</text>
+  <rect style="fill: #ffffff" x="18.0307" y="9.18233" width="4.79" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.0307" y="9.18233" width="4.79" height="1.85"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="20.3777" y="9.83966"> Event Viewer</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="20.3777" y="10.6397">  HCOR</text>
+  <rect style="fill: #ffffff" x="18.06" y="11.4" width="4.69" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.06" y="11.4" width="4.69" height="1.85"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.4337" y="12.275">USS UHB2</text>
+  <rect style="fill: #ffffff" x="18.06" y="14.2" width="4.69" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.06" y="14.2" width="4.69" height="1.85"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.8347" y="15.225">USS OPS2</text>
+  <rect style="fill: #ffffff" x="18.06" y="17.2823" width="4.69" height="1.85"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="18.06" y="17.2823" width="4.69" height="1.85"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.7837" y="18.325">USS UHB3</text>
+</svg>

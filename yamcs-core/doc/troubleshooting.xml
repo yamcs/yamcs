@@ -1,0 +1,22 @@
+
+<appendix><title>Troubleshooting</title>
+	<formalpara><title>Yamcs doesn't start</title></formalpara>
+<para>If the <emphasis>cmdhistory.dbEnabled</emphasis> is set to <emphasis>true</emphasis> but the connection to the command history database is blocked by some firewall, there will be a long timeout till the oracle driver reports the connection as failing.</para>
+<para>Same is valid for the MDB (property <emphasis>mdbconfig.checkForUpdatedMdb</emphasis></para>
+<para>And yet the same if an unreachable IP address is sent by a CORBAS client.</para>
+<sect1>CORBA</sect1>
+CORBA communications checup list:
+<itemizedlist>
+	<listitem>Find the IP address or the hostname inserted by the server or client in the IORs. This is done based on a number of properties which are listed below in order of priorities (i.e. if the first one is set then it is used, otherwise next in the list is checked).
+		<itemizedlist>
+			<listitem>The variable jacorb.ior_proxy_address can be used to change the host and port encoded into IORs</listitem>
+			<listitem>On multihomed hosts, the property OAIAddr can be used to specify the IP.</listitem>
+			<listitem>If none of these properties are defined, then the IP address or the hostname will be inserted. The hostname can be found with the command hostname and the corresponding IP address can be found by pinging the hostname</listitem>
+			<listitem>In mcsTools.env the variable useDns in section XXX can be used in order to insert hostnames instead of IPs. </listitem>
+			<listitem>In jacorb.properties jacorb.dns.enable can be used for this purpose</listitem>
+		</itemizedlist>
+	</listitem>
+	<listitem>The IP address or the hostname of the server has to be
+	reachable by the client and viceversa.</listitem>
+</itemizedlist>
+</appendix>

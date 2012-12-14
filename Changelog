@@ -1,0 +1,130 @@
+Version 0.23.1 Released
+- Services and event decoders in yamcs.instance.yaml can now be specified with {class: classname, args:...} map (in addition to the old way of just specifiyng the classname)
+- The CompactFormatter log formatter prints always the full class name (it used to remove the com.spaceapplications prefix)
+- The DaSS PPs include the byte buffer as raw value for all the parameter types
+- added 64 bits signed and unsigned integer parameter types
+- Merged yamcs-era branch:
+  - fixed a bug in translating processed parameters from DaSS to Yamcs parameters
+  - changed the flatfile PP Map reader to allow spaces in the NameSpace. 
+    WARNING: all entries have to be separated by tab now (in the past both tab and space were allowed as separators)
+  - added a test generator for DaSS Processed Parameters to be used for ERA-SC
+  - cleanup the old shell scripts from the bin directory
+
+
+
+Version 0.23.0 Released 4-December-2012
+- FilePollingTmProvider and FilePollingPpProvider can work without a spec and use the standard incomingDir from yamcs.yaml
+- Fixed a bug that was causing incorrect display in the Archive Browser when two packets had the same suffix (e.g. SYSTEM_HK and ECM1_HK)
+- added histogram.sh - useful to print the content of the histogram files (e.g. when in doubt if the Archive Browser) shows correct data
+
+Version 0.22.2 Released 26-November-2012
+- tested a fixed a problem related to yamcs cascading via HornetQ bridging
+- fixed the commanding and command history 
+- the port on which the webserver listens, is configurable in yamcs.yaml
+- added parameter selection dialog
+- change the getRequestDatabase to be able to retrieve a XtceDb both by configname and instance name
+- implemented authentication via HornetQ 
+
+
+Version 0.22.1 Released 13-August-2012
+- added Mdb2Scoe conversion
+- replaced EngineeringValue and RawValue protobuf definitions with a generic Value (NOTE: this requires reimporting all the PP data) 
+- merged commanding into XTCE (but still reusing old CGS MDB structures)
+- added retrieval of command history to the Archive Brwoser
+- improved detection of CCSDS packets to work for packets with payload type=0
+- moved the configuration settings from yarch.yaml to yamcs.yaml
+- improvded the documentation
+
+
+Version 0.22.0 Released 7-June-2012
+- added FASTER event decoder (in the yamcs-erasmus sub-project)
+- added web based USS (alpha version)
+- added PET parameter formater
+- merged TC MDB into XTCE
+- fixed retrieval of archive index from old CORBA yamcs-monitor (Erasmus Bug 532)
+- renamed org.yamcs.gpb into org.yamcs.protobuf 
+  the name of the package appears in the pp.def and event.def table definitions and has to be changed, sorry for that). 
+  The messages themselves have not changed, so the archive data is ok
+
+Version 0.21.5 Released 18-Apr-2012
+- prevent crash in case duplicate PPs are received at once
+- added a config enabledAtStartup that can be used to start tm,pp/tc providers/uplinkers in a disabled state
+- fix closing the histogram streams (erasmus bug 517)
+- introduced a mergeTime=20secons for the PP histogram (archive index) records (to prevent Erasmus bug 517)
+- detect low memory conditions in the archive browser and stop receiving histogram (archive index) records (Erasmus bug 517)
+- fixed a bug caused by change of the mdb.yaml "pploaders" to "ppLoaders" (Erasmus bug 518) 
+- fixed the display of String parameters in the packet viewer
+
+
+Version 0.21.4 Released 12-Apr-2012
+- fixed the processing of the 24 bits parameters (Erasmus bug 513)
+- fixed a NullPointerExceptin when encountering a PUS Structure without an opsname
+- changed tmhost, tmport, tchost, tcport,pphost, ppport, tmgroup, ppgroup to tmHost, tmPort... in dass.yaml, tcp.yaml and tmaptcap.yaml and multicast.yaml
+- changed commandqueue.yaml to command-queue.yaml and queuenames to queueNames
+- updated UTC-TAI.history (new leap second in July 2012)
+
+Version 0.21.3 Released 05-Apr-2012
+- read the SpaceSystem aliases and header from the XTCE file and use them for providing MDB identification via CIS
+- added the possibility to specify names for TM,PP/ TC uplinkers/providers
+
+Version 0.21.2 Released 04-Apr-2012
+- bug fix in DaSSPpProvider 
+- bug fix in TableDefinition deserializer - compressed parameter was not deserialized
+
+Version 0.21.1 Released 03-Apr-2012
+- fixed the packet viewer to work with multiple XTCE databases versions
+- simplified the AcquisitionStatus in parameter-value.proto to remove the values which are never set by yamcs and to rename STATIC to EXPIRED
+- made it possible to have comments in the spreadsheets
+- changed the specifications of dass.yaml to allow to specify vehicle and type which were hardcoded earlier
+- dass connectors generate events
+- added detailed info for the tm/pp links
+- removed the obsolete ProcessedParameter tab from the yamcs monitor
+
+
+Version 0.21.0 Released 17-Mar-2012
+- added enum values for streams
+- changed the api to allow for passing the namespace when requesting tm index
+- created generic histograms for any table
+- separated the completeness index from the packet overview which is now implemented using the yarch histogram feature 
+- added a yarch PROTOBUF that allows to store google protocol buffer encoded objects
+- changed the processed parameter recording to use protobuf encoding and to use a dynamic table where each parameter is one column
+- added the concept of SpaceSystem and distinction between names and qualified names
+- added the posibility to specify both stop and start in the archive browser (NLP Issue 2.5.1)
+- added an ignorePackets configuration to the cdmcs-mdb.yaml to be able to ignore packets from MDB overwritten by spreadsheets
+
+
+Version 0.20.1 Released 31-Jan-2012
+- switch the configuration files from java properties to yaml
+- cleanup all the hrdp (the old code can be found in https://subversion.spaceapplications.com/svn/yamcs/tags/trunk-before-hrdp-cleanup)
+- added the possibility to have multiple loaded MDBs at the same time
+- changed the table definition format from java serialization to yaml (with custom tags)
+- change the AbstractStream to catch all the Exceptions such that one bad subscriber does not crash the entire stream (Erasmus bug 482)
+- fixed the EDR Event Viewer to not crash when a short pwd packet was received (Erasmus bug 482)
+- default filenames for parameter and packet dump are Windows compatible (NLP Issue 2.5.3)
+- include header line in the events output (NLP Issue 2.5.4)
+
+Version 0.20.0 Released 21-Nov-2011
+- change the package name in yamcs-core, yamcs-api and yamcs-xtce and yamcs-cdcs from com.spaceapplications.yamcs to org.yamcs
+
+
+Version 0.19.4 Released 3-Nov-2011
+- change the format of the value in the (key,value) recording. It records now the index of the column before each column value.
+   This allows to dynamicall add columns to an existing row (required by the command history). ALL THE DATA HAS TO BE REINSERTED.
+- fixed the privileges of the CIS clients
+- added recording of command history into yarch
+- added realtime parameter subscription via hornetq
+
+
+
+Version 0.19.3 Released 19-Aug-2012
+ - changed the relpos in spreadsheets to start from 0 instead of 1
+ - fixed the string parameter decoding
+ - keep some statistics XtceStaxReader
+
+Version 0.19.2  Released 18-Aug-2011
+ - added client-side ack support in the yamcs-api
+ - added support for temporary queues in yamcs-api
+ - fixed the starting parameters of the YamcsMonitor and ArchiveBrowser
+ - added options to the command line parameter extractor
+ - detect a dead client and close the queue containing index information
+ - fixed the handling of response packets

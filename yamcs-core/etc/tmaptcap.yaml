@@ -1,0 +1,22 @@
+#configuration for the PactsLikeTmProvider and PactsLikeTcUplinker 
+# they look for properties like 
+# spec:
+#     tmHost
+#     tmPort
+#     tcHost
+#     tcPort
+#     minimumTcPacketLength (by default 48)
+
+# Tmap/Tcap config for PaCTS at SpaceApps
+local:
+    tmHost: localhost
+    tmPort: 10021
+    tcHost: localhost
+    tcPort: 10023
+
+# Tmap/Tcap config for SOLAR EGSE
+solar:
+    tmHost: 192.168.14.1
+    tmPort: 10031
+    tcHost: 192.168.14.1
+    tcPort: 10033

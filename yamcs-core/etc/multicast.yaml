@@ -1,0 +1,7 @@
+#Properties for the MulticastPpProvider and MulticastTmProvider
+cdmcs-s:
+    ppGroup: 239.192.0.1
+    ppPort: 31001
+    tmGroup: 239.192.0.1
+    tmPort: 31002
+

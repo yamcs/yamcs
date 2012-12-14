@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="129" height="129" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+	<circle cx="64" cy="64" r="63" style="fill:rgb(255,255,0); stroke:black; stroke-width:2"/>
+	<g transform="matrix(-0.707107,0.707107,0.707107,0.707107,64,-26.00000)">
+		<ellipse cx="64" cy="32" rx="28" ry="16" style="fill:rgb(255,255,255);"/>
+	</g>
+</svg>

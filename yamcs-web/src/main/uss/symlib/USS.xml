@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="USS">
+  <comment />
+  <symbol>
+    <name>DynamicBox</name>
+    <comment />
+    <image default="false" state="green">U14_box_green.svg</image>
+    <image default="false" state="red">U16_box_red.svg</image>
+    <image default="false" state="yellow">U17_box_yellow.svg</image>
+    <image default="true" state="grey">U15_box_grey.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>DynamicLed</name>
+    <comment />
+    <image default="false" state="green">U22_led_green.svg</image>
+    <image default="false" state="red">U24_led_red.svg</image>
+    <image default="false" state="yellow">U25_led_yellow.svg</image>
+    <image default="true" state="grey">U23_led_grey.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>DynamicLed3D</name>
+    <comment />
+    <image default="false" state="green">U18_led_3D_green.svg</image>
+    <image default="false" state="red">U20_led_3D_red.svg</image>
+    <image default="false" state="yellow">U21_led_3D_yellow.svg</image>
+    <image default="true" state="grey">U19_led_3D_grey.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>DynamicLine</name>
+    <comment />
+    <image default="true" state="nok">U26_line_nok.svg</image>
+    <image default="false" state="ok">U28_line_ok.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>DynamicLineBig</name>
+    <comment />
+    <image default="true" state="nok">U27_line_nok_big.svg</image>
+    <image default="false" state="ok">U29_line_ok_big.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>DynamicLink</name>
+    <comment />
+    <image default="true" state="up">U30_link_up.svg</image>
+    <image default="false" state="undef">U32_link_undef.svg</image>
+    <image default="false" state="down">U31_link_down.svg</image>
+    <type>dynamic</type>
+  </symbol>
+  <symbol>
+    <name>U1 Valve Three Way Motor L</name>
+    <comment />
+    <image>U1_Valve_Three_Way_Motor_L.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U10 Fan R</name>
+    <comment />
+    <image>U10_Fan_R.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U11 Video Monitor</name>
+    <comment />
+    <image>U11_Video_Monitor.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U12 Software</name>
+    <comment />
+    <image>U12_Software.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U13 Thermal Plate</name>
+    <comment />
+    <image>U13_Thermal_Plate.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U14 box green</name>
+    <comment />
+    <image>U14_box_green.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U15 box grey</name>
+    <comment />
+    <image>U15_box_grey.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U16 box red</name>
+    <comment />
+    <image>U16_box_red.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U17 box yellow</name>
+    <comment />
+    <image>U17_box_yellow.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U18 led 3D green</name>
+    <comment />
+    <image>U18_led_3D_green.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U19 led 3D grey</name>
+    <comment />
+    <image>U19_led_3D_grey.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U2 Valve Three Way Motor R</name>
+    <comment />
+    <image>U2_Valve_Three_Way_Motor_R.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U20 led 3D red</name>
+    <comment />
+    <image>U20_led_3D_red.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U21 led 3D yellow</name>
+    <comment />
+    <image>U21_led_3D_yellow.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U22 led green</name>
+    <comment />
+    <image>U22_led_green.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U23 led grey</name>
+    <comment />
+    <image>U23_led_grey.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U24 led red</name>
+    <comment />
+    <image>U24_led_red.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U25 led yellow</name>
+    <comment />
+    <image>U25_led_yellow.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U26 line nok</name>
+    <comment />
+    <image>U26_line_nok.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U27 line nok big</name>
+    <comment />
+    <image>U27_line_nok_big.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U28 line ok</name>
+    <comment />
+    <image>U28_line_ok.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U29 line ok big</name>
+    <comment />
+    <image>U29_line_ok_big.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U3 Valve Three Way Motor U</name>
+    <comment />
+    <image>U3_Valve_Three_Way_Motor_U.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U30 link up</name>
+    <comment />
+    <image>U30_link_up.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U31 link down</name>
+    <comment />
+    <image>U31_link_down.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U32 link undef</name>
+    <comment />
+    <image>U32_link_undef.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U4 Valve Two Way ManMot H</name>
+    <comment />
+    <image>U4_Valve_Two_Way_ManMot_H.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U5 Valve Two Way ManMot V</name>
+    <comment />
+    <image>U5_Valve_Two_Way_ManMot_V.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U6 Valve Two Way Motor H</name>
+    <comment />
+    <image>U6_Valve_Two_Way_Motor_H.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U7 Valve Two Way Motor V</name>
+    <comment />
+    <image>U7_Valve_Two_Way_Motor_V.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U8 Fan L</name>
+    <comment />
+    <image>U8_Fan_L.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>U9 Fan O</name>
+    <comment />
+    <image>U9_Fan_O.svg</image>
+    <type>static</type>
+  </symbol>
+</library>
+

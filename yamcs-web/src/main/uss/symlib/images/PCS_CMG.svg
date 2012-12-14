@@ -1,0 +1,289 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="147.799" height="113.666" viewBox="0 0 147.799 113.666" overflow="visible" enable-background="new 0 0 147.799 113.666" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path fill="#6F6D6D" stroke="#050000" stroke-width="0.75" d="M58.834,25c0,1.933-3.88,3.5-8.667,3.5    c-4.786,0-8.667-1.567-8.667-3.5s3.88-3.5,8.667-3.5C54.954,21.5,58.834,23.066,58.834,25z"/>
+
+		<path fill="#6F6D6D" stroke="#050000" stroke-width="0.75" d="M107,25c0,1.933-3.88,3.5-8.667,3.5c-4.786,0-8.667-1.567-8.667-3.5    s3.88-3.5,8.667-3.5C103.12,21.5,107,23.066,107,25z"/>
+
+		<path fill="none" stroke="#000000" d="M85.021,113.166H63.646v-8.333h21.375V113.166z"/>
+
+		<path fill="#6F6D6D" stroke="#050000" stroke-width="0.75" d="M107,88.25c0,1.933-3.88,3.5-8.667,3.5    c-4.786,0-8.667-1.567-8.667-3.5s3.88-3.5,8.667-3.5C103.12,84.75,107,86.316,107,88.25z"/>
+
+		<path fill="#6F6D6D" stroke="#050000" stroke-width="0.75" d="M58.333,88.25c0,1.933-3.88,3.5-8.667,3.5    c-4.786,0-8.667-1.567-8.667-3.5s3.88-3.5,8.667-3.5C54.453,84.75,58.333,86.316,58.333,88.25z"/>
+
+	</g>
+
+	<g id="Layer_4">
+
+	</g>
+
+	<g id="blendingtopbottom">
+
+		<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="74.333" y1="108.8325" x2="85.0205" y2="108.8325" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<stop offset="0.1258" style="stop-color:#FBFBFB"/>
+
+			<stop offset="0.25" style="stop-color:#EEEEEE"/>
+
+			<stop offset="0.3762" style="stop-color:#DADADA"/>
+
+			<stop offset="0.5037" style="stop-color:#BDBDBD"/>
+
+			<stop offset="0.6323" style="stop-color:#979797"/>
+
+			<stop offset="0.7618" style="stop-color:#696969"/>
+
+			<stop offset="0.8895" style="stop-color:#343434"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.7006" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_1_)" d="M85.021,113H74.333v-8.333h10.688V113z"/>
+
+		
+
+			<linearGradient id="XMLID_2_" gradientUnits="userSpaceOnUse" x1="-7.667" y1="-100.8345" x2="3.0205" y2="-100.8345" gradientTransform="matrix(-1 0 0 -1 66.666 7.999)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<stop offset="0.1258" style="stop-color:#FBFBFB"/>
+
+			<stop offset="0.25" style="stop-color:#EEEEEE"/>
+
+			<stop offset="0.3762" style="stop-color:#DADADA"/>
+
+			<stop offset="0.5037" style="stop-color:#BDBDBD"/>
+
+			<stop offset="0.6323" style="stop-color:#979797"/>
+
+			<stop offset="0.7618" style="stop-color:#696969"/>
+
+			<stop offset="0.8895" style="stop-color:#343434"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.7006" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_2_)" d="M63.646,104.667h10.688V113H63.646V104.667z"/>
+
+		<path fill="none" stroke="#000000" d="M85.021,8.833H63.646V0.5h21.375V8.833z"/>
+
+		<linearGradient id="XMLID_3_" gradientUnits="userSpaceOnUse" x1="74.333" y1="4.6665" x2="85.0205" y2="4.6665" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<stop offset="0.1258" style="stop-color:#FBFBFB"/>
+
+			<stop offset="0.25" style="stop-color:#EEEEEE"/>
+
+			<stop offset="0.3762" style="stop-color:#DADADA"/>
+
+			<stop offset="0.5037" style="stop-color:#BDBDBD"/>
+
+			<stop offset="0.6323" style="stop-color:#979797"/>
+
+			<stop offset="0.7618" style="stop-color:#696969"/>
+
+			<stop offset="0.8895" style="stop-color:#343434"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.7006" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_3_)" d="M85.021,8.833H74.333V0.5h10.688V8.833z"/>
+
+		
+
+			<linearGradient id="XMLID_4_" gradientUnits="userSpaceOnUse" x1="-7.667" y1="3.3325" x2="3.0205" y2="3.3325" gradientTransform="matrix(-1 0 0 -1 66.666 7.999)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<stop offset="0.1258" style="stop-color:#FBFBFB"/>
+
+			<stop offset="0.25" style="stop-color:#EEEEEE"/>
+
+			<stop offset="0.3762" style="stop-color:#DADADA"/>
+
+			<stop offset="0.5037" style="stop-color:#BDBDBD"/>
+
+			<stop offset="0.6323" style="stop-color:#979797"/>
+
+			<stop offset="0.7618" style="stop-color:#696969"/>
+
+			<stop offset="0.8895" style="stop-color:#343434"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0.0056" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.7006" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_4_)" d="M63.646,0.5h10.688v8.333H63.646V0.5z"/>
+
+	</g>
+
+	<g id="Layer_3">
+
+	</g>
+
+	<g id="Layer_5">
+
+	</g>
+
+	<g id="Layer_6">
+
+		<path fill="#FFFFFF" stroke="#000000" a:adobe-blending-mode="multiply" d="M0.667,38.833L63.167,9h21.854l62.146,30"/>
+
+		<path fill="#FFFFFF" stroke="#000000" a:adobe-blending-mode="multiply" d="M147.584,74.666l-62.5,29.833H63.23l-62.146-30"/>
+
+		<path fill="none" stroke="#000000" d="M147.167,74.5H0.5V38.833h146.667V74.5z"/>
+
+		<linearGradient id="XMLID_5_" gradientUnits="userSpaceOnUse" x1="72.1655" y1="24.083" x2="-5.8323" y2="24.083" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_5_)" a:adobe-blending-mode="multiply" d="M0.604,39.167L63.167,9h11v30.167H1.296"/>
+
+		
+
+			<linearGradient id="XMLID_6_" gradientUnits="userSpaceOnUse" x1="121.6123" y1="23.6665" x2="43.6145" y2="23.6665" gradientTransform="matrix(-1 0 0 1 197.666 0)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_6_)" a:adobe-blending-mode="multiply" d="M147.614,38.75L85.052,8.583h-11V38.75h72.871"/>
+
+		<linearGradient id="XMLID_7_" gradientUnits="userSpaceOnUse" x1="71.8892" y1="89.458" x2="-6.1086" y2="89.458" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_7_)" a:adobe-blending-mode="multiply" d="M0.328,74.375l62.562,30.167h11V74.375H1.02"/>
+
+		
+
+			<linearGradient id="XMLID_8_" gradientUnits="userSpaceOnUse" x1="121.8887" y1="89.8755" x2="43.8909" y2="89.8755" gradientTransform="matrix(-1 0 0 1 197.666 0)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_8_)" a:adobe-blending-mode="multiply" d="M147.338,74.792l-62.562,30.167h-11V74.792h72.871"/>
+
+		<path fill="#535353" stroke="#000000" stroke-width="0.75" d="M58.833,24.333c0,2.117-3.955,3.833-8.833,3.833    s-8.833-1.716-8.833-3.833c0-2.117,3.955-3.833,8.833-3.833S58.833,22.216,58.833,24.333z"/>
+
+		<path fill="#535353" stroke="#000000" stroke-width="0.75" d="M107.333,24.333c0,2.117-3.955,3.833-8.833,3.833    s-8.833-1.716-8.833-3.833S93.621,20.5,98.5,20.5S107.333,22.216,107.333,24.333z"/>
+
+		<path fill="#535353" stroke="#000000" stroke-width="0.75" d="M58.417,87.666c0,2.117-3.955,3.834-8.833,3.834    s-8.833-1.717-8.833-3.834c0-2.116,3.955-3.833,8.833-3.833S58.417,85.549,58.417,87.666z"/>
+
+		<path fill="#535353" stroke="#000000" stroke-width="0.75" d="M106.916,87.667c0,2.117-3.955,3.833-8.833,3.833    s-8.833-1.716-8.833-3.833s3.955-3.833,8.833-3.833S106.916,85.549,106.916,87.667z"/>
+
+	</g>
+
+	<g id="Layer_7">
+
+	</g>
+
+	<g id="Layer_8">
+
+		
+
+			<linearGradient id="XMLID_9_" gradientUnits="userSpaceOnUse" x1="144.396" y1="66.6665" x2="265.3959" y2="66.6665" gradientTransform="matrix(-1 0 0 -1 220.334 123.333)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_9_)" d="M0.604,39.167h73.125v35H0.604V39.167z"/>
+
+		<linearGradient id="XMLID_10_" gradientUnits="userSpaceOnUse" x1="71.396" y1="56.6665" x2="192.3959" y2="56.6665" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_10_)" d="M146.729,74.167H73.604v-35h73.125V74.167z"/>
+
+		<path fill="none" stroke="#000000" stroke-width="0.25" d="M0.417,56.75h147"/>
+
+	</g>
+
+</svg>

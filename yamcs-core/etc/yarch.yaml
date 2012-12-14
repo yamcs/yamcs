@@ -1,0 +1,9 @@
+#data directory. The files will be stored in this directory + /dbname
+dataDir: /tmp/yarch
+
+# The parameters below are used for the Input/Output streams - these streams are not very useful at the moment
+
+# should the data received on the sockets be little endian? by default it is big endian
+littleEndian: false
+#max length of the data of type binary
+maxBinaryLength: 1048576

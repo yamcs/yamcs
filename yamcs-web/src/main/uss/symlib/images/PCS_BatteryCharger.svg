@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="40.375" height="37.375" viewBox="0 0 40.375 37.375" overflow="visible" enable-background="new 0 0 40.375 37.375" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path fill="#D4D4D4" stroke="#000000" d="M34.229,36.875H6.23V21.708h27.999V36.875z"/>
+
+		<path d="M15.032,18.406h-3v3h3V18.406z"/>
+
+		<path d="M28.459,18.396h-3v3h3V18.396z"/>
+
+		<path d="M13.5,16L9.167,3.5L5,9.333L2,0L0,3l5.333,11l2.833-6.833L13.5,16z"/>
+
+		<path d="M26.875,16.125l4.333-12.5l4.167,5.833l3-9.333l2,3l-5.333,11l-2.833-6.833L26.875,16.125z"/>
+
+		<path fill="none" stroke="#000000" stroke-width="1.5" d="M10.336,27.505h6.75"/>
+
+		<g>
+
+			<path fill="none" stroke="#000000" stroke-width="1.5" d="M23.956,27.521h6.75"/>
+
+			<path fill="none" stroke="#000000" stroke-width="1.5" d="M27.331,24.146v6.75"/>
+
+		</g>
+
+	</g>
+
+</svg>

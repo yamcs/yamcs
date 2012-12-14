@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="72" height="77.125" viewBox="0 0 72 77.125" overflow="visible" enable-background="new 0 0 72 77.125" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		
+
+			<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="90.6245" y1="30.501" x2="90.6245" y2="36.876" gradientTransform="matrix(0 -1 1 0 1.5 131.75)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_1_)" d="M38.625,5.125v72h-5.5v-72H38.625z"/>
+
+		<linearGradient id="XMLID_2_" gradientUnits="userSpaceOnUse" x1="36" y1="-1.1245" x2="36" y2="5.2505" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+
+			<stop offset="1" style="stop-color:#000000"/>
+
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+
+			<a:midPointStop offset="1" style="stop-color:#000000"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_2_)" d="M72,5.5H0V0h72V5.5z"/>
+
+	</g>
+
+</svg>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="41cm" height="24cm" viewBox="5 0 41 24">
+  <rect style="fill: #ffffff" x="6" y="0.7" width="8.4" height="1.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6" y="0.7" width="8.4" height="1.4"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: Helvetica; font-style: normal; font-weight: 700" x="10.2" y="1.7">CCSDS</text>
+  <rect style="fill: #ffffff" x="6" y="2.1" width="8.4" height="2.6"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6" y="2.1" width="8.4" height="2.6"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.15" y="3">+CCSDS_APID</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.15" y="3.8">+CCSDS_SH_PACKETTYPE</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.15" y="4.6">+CCSDS_PACKETID</text>
+  <rect style="fill: #ffffff" x="6" y="4.7" width="8.4" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6" y="4.7" width="8.4" height="0.4"/>
+  <rect style="fill: #ffffff" x="33.95" y="1.8" width="11.95" height="1.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="33.95" y="1.8" width="11.95" height="1.4"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: Helvetica; font-style: normal; font-weight: 700" x="39.925" y="2.8">  CCSDS_RESPONSE_PACKET  </text>
+  <rect style="fill: #ffffff" x="33.95" y="3.2" width="11.95" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="33.95" y="3.2" width="11.95" height="0.4"/>
+  <rect style="fill: #ffffff" x="33.95" y="3.6" width="11.95" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="33.95" y="3.6" width="11.95" height="0.4"/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="15.3621,2.9 33.8996,2.9 33.8996,2.9 "/>
+  <polygon style="fill: #ffffff" points="15.3621,2.5 14.5621,2.9 15.3621,3.3 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="15.3621,2.5 14.5621,2.9 15.3621,3.3 "/>
+  <rect style="fill: #ffffff" x="5.15" y="9.25" width="10.1" height="2.2"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.15" y="9.25" width="10.1" height="2.2"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.2" y="9.9">&lt;&lt;CCSDS_ADU_DESCRIPTION&gt;&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: Helvetica; font-style: normal; font-weight: 700" x="10.2" y="10.9">MDB opsname</text>
+  <rect style="fill: #ffffff" x="5.15" y="11.45" width="10.1" height="3.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.15" y="11.45" width="10.1" height="3.4"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.3" y="12.35">+MDB parameter 1</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.3" y="13.15">+MDB parameter 2</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.3" y="13.95">+MDB parameter n</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="5.3" y="14.75">+PUSFlexibleId</text>
+  <rect style="fill: #ffffff" x="5.15" y="14.85" width="10.1" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="5.15" y="14.85" width="10.1" height="0.4"/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="10.2,6.06207 10.2,9.19963 10.2,9.19963 "/>
+  <polygon style="fill: #ffffff" points="10.6,6.06207 10.2,5.26207 9.8,6.06207 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="10.6,6.06207 10.2,5.26207 9.8,6.06207 "/>
+  <rect style="fill: #ffffff" x="34.88" y="9.95" width="10.1" height="2.2"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="34.88" y="9.95" width="10.1" height="2.2"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="39.93" y="10.6">&lt;&lt;CCSDS_ADU_DESCRIPTION&gt;&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: Helvetica; font-style: normal; font-weight: 700" x="39.93" y="11.6">MDB opsname</text>
+  <rect style="fill: #ffffff" x="34.88" y="12.15" width="10.1" height="2.6"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="34.88" y="12.15" width="10.1" height="2.6"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="35.03" y="13.05">+MDB parameter 1</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="35.03" y="13.85">+MDB parameter 2</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="35.03" y="14.65">+MDB parameter n</text>
+  <rect style="fill: #ffffff" x="34.88" y="14.75" width="10.1" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="34.88" y="14.75" width="10.1" height="0.4"/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="39.925,4.95988 39.925,6.97498 39.93,6.97498 39.93,9.90064 "/>
+  <polygon style="fill: #ffffff" points="40.325,4.95988 39.925,4.15988 39.525,4.95988 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="40.325,4.95988 39.925,4.15988 39.525,4.95988 "/>
+  <rect style="fill: #ffffff" x="6.08" y="18.8" width="8.2" height="2.2"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6.08" y="18.8" width="8.2" height="2.2"/>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.18" y="19.45">&lt;&lt;PUS_STRUCTURE_ID&gt;&gt;</text>
+  <text style="fill: #000000; text-anchor:middle; font-size: 0.8; font-family: Helvetica; font-style: normal; font-weight: 700" x="10.18" y="20.45">MDB opsname</text>
+  <rect style="fill: #ffffff" x="6.08" y="21" width="8.2" height="2.6"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6.08" y="21" width="8.2" height="2.6"/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.23" y="21.9">+MDB parameter 1</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.23" y="22.7">+MDB parameter 2</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="6.23" y="23.5">+MDB parameter n</text>
+  <rect style="fill: #ffffff" x="6.08" y="23.6" width="8.2" height="0.4"/>
+  <rect style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x="6.08" y="23.6" width="8.2" height="0.4"/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="10.2,16.2122 10.2,17.025 10.18,17.025 10.18,18.7497 "/>
+  <polygon style="fill: #ffffff" points="10.6,16.2122 10.2,15.4122 9.8,16.2122 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="10.6,16.2122 10.2,15.4122 9.8,16.2122 "/>
+  <polygon style="fill: #ffffff" points="18.1,16.4 27.25,16.4 27.85,17 27.85,18.9 18.1,18.9 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="18.1,16.4 27.25,16.4 27.85,17 27.85,18.9 18.1,18.9 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.05; stroke: #000000" points="27.25,16.4 27.25,17 27.85,17 "/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.45" y="17.6">z is read from the corresponding</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.45" y="18.4">MEASUREMENT_LIST_TABLE</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="15.6368" y1="17.1562" x2="18.0519" y2="17.1871"/>
+  <polygon style="fill: #000000" points="15.2618,17.1514 15.7649,16.9078 15.6368,17.1562 15.7586,17.4078 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="15.2618,17.1514 15.7649,16.9078 15.6368,17.1562 15.7586,17.4078 "/>
+  <polygon style="fill: #ffffff" points="18.18,12.75 31.28,12.75 31.88,13.35 31.88,16.05 18.18,16.05 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="18.18,12.75 31.28,12.75 31.88,13.35 31.88,16.05 18.18,16.05 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.05; stroke: #000000" points="31.28,12.75 31.28,13.35 31.88,13.35 "/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.53" y="13.95">PUSFlexibleId definition is based on the</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.53" y="14.75">"Reference to Structure ID or Table"</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="18.53" y="15.55">aggregate of the CCSDS_ADU_DESCRIPTION</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="18.1298" y1="14.4249" x2="11.6868" y2="14.4482"/>
+  <polygon style="fill: #000000" points="11.3118,14.4496 11.8109,14.1978 11.6868,14.4482 11.8127,14.6978 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="11.3118,14.4496 11.8109,14.1978 11.6868,14.4482 11.8127,14.6978 "/>
+  <polygon style="fill: #ffffff" points="18.93,5.75 28.38,5.75 28.98,6.35 28.98,9.05 18.93,9.05 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="18.93,5.75 28.38,5.75 28.98,6.35 28.98,9.05 18.93,9.05 "/>
+  <polyline style="fill: none; fill-opacity:0; stroke-width: 0.05; stroke: #000000" points="28.38,5.75 28.38,6.35 28.98,6.35 "/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="19.28" y="6.95">x and y are read from the CCSDS </text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="19.28" y="7.75">header definition in the </text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="19.28" y="8.55">CCSDS_ADU_DESCRIPTION</text>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="18.8799" y1="7.36403" x2="17.3868" y2="7.35345"/>
+  <polygon style="fill: #000000" points="17.0118,7.35079 17.5136,7.10434 17.3868,7.35345 17.51,7.60433 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="17.0118,7.35079 17.5136,7.10434 17.3868,7.35345 17.51,7.60433 "/>
+  <line style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" x1="29.0298" y1="7.37299" x2="32.8632" y2="7.35259"/>
+  <polygon style="fill: #000000" points="33.2382,7.35059 32.7395,7.60325 32.8632,7.35259 32.7369,7.10326 "/>
+  <polygon style="fill: none; fill-opacity:0; stroke-width: 0.1; stroke: #000000" points="33.2382,7.35059 32.7395,7.60325 32.8632,7.35259 32.7369,7.10326 "/>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.35" y="6.8">CCSDS_APID=x </text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.35" y="7.6">CCSDS_PACKETID=y</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="33.725" y="7.15">CCSDS_APID=x, </text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="33.725" y="7.95">CCSDS_PACKETID=y</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="10.35" y="17.4">PUSFlexibleId=z</text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="21.5" y="1.9"></text>
+  <text style="fill: #000000; text-anchor:start; font-size: 0.55; font-family: Helvetica; font-style: normal; font-weight: normal" x="20.2" y="2.45">CCSDS_SH_PACKETTYPE=12</text>
+</svg>

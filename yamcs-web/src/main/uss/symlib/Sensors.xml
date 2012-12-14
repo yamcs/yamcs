@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Sensors">
+  <comment />
+  <symbol>
+    <name>S1 Angular Rate Assembly</name>
+    <comment />
+    <image>S1_Angular_Rate_Assembly.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S10S Pressure Sensor Unit</name>
+    <comment />
+    <image>S10S_Pressure_Sensor_Unit.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S11 Pressure Sensor with Indicator</name>
+    <comment />
+    <image>S11_Pressure_Sensor_with_Indicator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S12 Rate Gyro Assembly RGA</name>
+    <comment />
+    <image>S12_Rate_Gyro_Assembly_RGA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S12S Rate Gyro Assembly RGA A</name>
+    <comment />
+    <image>S12S_Rate_Gyro_Assembly_RGA_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S12S Rate Gyro Assembly RGA B</name>
+    <comment />
+    <image>S12S_Rate_Gyro_Assembly_RGA_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S13 Satellite Navigation GLONASS</name>
+    <comment />
+    <image>S13_Satellite_Navigation_GLONASS.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 HumiditySensor</name>
+    <comment />
+    <image>S14_HumiditySensor.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor</name>
+    <comment />
+    <image>S14_Sensor.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor CO2</name>
+    <comment />
+    <image>S14_Sensor_CO2.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Current</name>
+    <comment />
+    <image>S14_Sensor_Current.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Current Delta</name>
+    <comment />
+    <image>S14_Sensor_Current_Delta.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Delta Pressure</name>
+    <comment />
+    <image>S14_Sensor_Delta_Pressure.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Dew Point</name>
+    <comment />
+    <image>S14_Sensor_Dew_Point.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Flow Rate</name>
+    <comment />
+    <image>S14_Sensor_Flow_Rate.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Generic</name>
+    <comment />
+    <image>S14_Sensor_Generic.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Humidity</name>
+    <comment />
+    <image>S14_Sensor_Humidity.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Liquid</name>
+    <comment />
+    <image>S14_Sensor_Liquid.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Optical Smoke</name>
+    <comment />
+    <image>S14_Sensor_Optical_Smoke.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Partial Pressure CO2</name>
+    <comment />
+    <image>S14_Sensor_Partial_Pressure_CO2.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Partial Pressure Oxygen</name>
+    <comment />
+    <image>S14_Sensor_Partial_Pressure_Oxygen.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Position</name>
+    <comment />
+    <image>S14_Sensor_Position.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Pressure</name>
+    <comment />
+    <image>S14_Sensor_Pressure.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Quantity</name>
+    <comment />
+    <image>S14_Sensor_Quantity.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Rate</name>
+    <comment />
+    <image>S14_Sensor_Rate.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Tachometer</name>
+    <comment />
+    <image>S14_Sensor_Tachometer.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Temperature</name>
+    <comment />
+    <image>S14_Sensor_Temperature.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Voltage</name>
+    <comment />
+    <image>S14_Sensor_Voltage.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S14 Sensor Volume</name>
+    <comment />
+    <image>S14_Sensor_Volume.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S15 Smoke Detector</name>
+    <comment />
+    <image>S15_Smoke_Detector.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S16 Star Mapper</name>
+    <comment />
+    <image>S16_Star_Mapper.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S17 Star Sensor</name>
+    <comment />
+    <image>S17_Star_Sensor.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S18 Strain Gauge Assembly</name>
+    <comment />
+    <image>S18_Strain_Gauge_Assembly.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S19S Sun Sensor</name>
+    <comment />
+    <image>S19S_Sun_Sensor.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S1S Angular Rate Assembly</name>
+    <comment />
+    <image>S1S_Angular_Rate_Assembly.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S2 Angular Rate Processed Output Assembly</name>
+    <comment />
+    <image>S2_Angular_Rate_Processed_Output_Assembly.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S20S Sun Sensor Fixed Head</name>
+    <comment />
+    <image>S20S_Sun_Sensor_Fixed_Head.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S21 Sun Sensor Scanning</name>
+    <comment />
+    <image>S21_Sun_Sensor_Scanning.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S21S Sun Sensor Scanning</name>
+    <comment />
+    <image>S21S_Sun_Sensor_Scanning.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S22 Thermostat</name>
+    <comment />
+    <image>S22_Thermostat.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S2S Angular Rate Processed Output Assembly</name>
+    <comment />
+    <image>S2S_Angular_Rate_Processed_Output_Assembly.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S3 Control Moment Gyro CMG</name>
+    <comment />
+    <image>S3_Control_Moment_Gyro_CMG.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S4 Electric Conductivity Sensor</name>
+    <comment />
+    <image>S4_Electric_Conductivity_Sensor.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S5 Flow Indicator</name>
+    <comment />
+    <image>S5_Flow_Indicator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S6 Gyrodyne</name>
+    <comment />
+    <image>S6_Gyrodyne.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S7 Infared Horizon Sensor</name>
+    <comment />
+    <image>S7_Infared_Horizon_Sensor.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S8 Magnetometer</name>
+    <comment />
+    <image>S8_Magnetometer.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>S9 Pressure Differential Sensor</name>
+    <comment />
+    <image>S9_Pressure_Differential_Sensor.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

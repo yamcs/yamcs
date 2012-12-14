@@ -1,0 +1,14 @@
+refmdb:
+    # Configuration of the active loaders
+    # Valid loaders are: sheet, xtce or fully qualified name of the class
+    xtceLoader: 
+         type: "sheet"
+         spec: "mdb/refmdb-ccsds.xls"
+         subLoaders:
+             - type: "sheet"
+               spec: "mdb/refmdb-subsys1.xls"
+
+    ############# Processed Parameter definitions ###########
+    ppLoaders: 
+        - type: flatfile
+          spec: mdb/refpp.map

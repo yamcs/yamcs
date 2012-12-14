@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="72.333" height="63.167" viewBox="0 0 72.333 63.167" overflow="visible" enable-background="new 0 0 72.333 63.167" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path d="M9,9H0V0h9V9z"/>
+
+		<path d="M27.166,63.167h-9v-9h9V63.167z"/>
+
+		<path d="M72.333,9h-9V0h9V9z"/>
+
+		<path d="M53.833,63.167h-9v-9h9V63.167z"/>
+
+		<path stroke="#000000" d="M7.667,3H65"/>
+
+		<path stroke="#000000" d="M26,60.667h20.667"/>
+
+		<path stroke="#000000" d="M6.333,7.333l15.333,49"/>
+
+		<path stroke="#000000" d="M51,55L65.666,7.333"/>
+
+		<path stroke="#000000" d="M23,56l7-53"/>
+
+		<path stroke="#000000" d="M42.333,3l7,53"/>
+
+		<path fill-rule="evenodd" clip-rule="evenodd" fill="#B7B0B0" d="M25,58.667C25,59.955,23.955,61,22.666,61    s-2.333-1.045-2.333-2.333s1.045-2.333,2.333-2.333S25,57.378,25,58.667z"/>
+
+		<path fill-rule="evenodd" clip-rule="evenodd" fill="#B7B0B0" d="M51.833,58.5c0,1.289-1.045,2.333-2.333,2.333    s-2.333-1.045-2.333-2.333s1.045-2.333,2.333-2.333S51.833,57.211,51.833,58.5z"/>
+
+		<path fill-rule="evenodd" clip-rule="evenodd" fill="#B7B0B0" d="M6.833,4.5c0,1.289-1.045,2.333-2.333,2.333    S2.167,5.789,2.167,4.5S3.211,2.167,4.5,2.167S6.833,3.211,6.833,4.5z"/>
+
+		<path fill-rule="evenodd" clip-rule="evenodd" fill="#B7B0B0" d="M70,4.667C70,5.956,68.955,7,67.667,7s-2.333-1.045-2.333-2.333    s1.045-2.333,2.333-2.333S70,3.378,70,4.667z"/>
+
+		<path d="M22.667,20h-8V3h8V20z"/>
+
+		<path d="M57.083,19.917h-8v-17h8V19.917z"/>
+
+		<path d="M47.167,25H25v13h22.167V25z"/>
+
+		<path fill="#A8A8A7" d="M38.833,43.334h-5.5V20.167h5.5V43.334z"/>
+
+		<path stroke="#000000" d="M27.667,20h16.667"/>
+
+		<path stroke="#000000" d="M24.667,43.5H47.5"/>
+
+	</g>
+
+</svg>

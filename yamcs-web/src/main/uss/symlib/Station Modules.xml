@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Station Modules">
+  <comment />
+  <symbol>
+    <name>SS1 Airlock</name>
+    <comment />
+    <image>SS1_Airlock.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS10 Multi Purpose Logisticss Module MPLM</name>
+    <comment />
+    <image>SS10_Multi_Purpose_Logisticss_Module_MPLM.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS11 Node NASA A</name>
+    <comment />
+    <image>SS11_Node_NASA_A.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS11 Node NASA B</name>
+    <comment />
+    <image>SS11_Node_NASA_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS11 Node RASA</name>
+    <comment />
+    <image>SS11_Node_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS12 Pressurized Mating Adapter PMA</name>
+    <comment />
+    <image>SS12_Pressurized_Mating_Adapter_PMA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS13 Progress</name>
+    <comment />
+    <image>SS13_Progress.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS14 Service Module SM Zvezda NASA</name>
+    <comment />
+    <image>SS14_Service_Module_SM_Zvezda_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS14 Service Module SM Zvezda RASA</name>
+    <comment />
+    <image>SS14_Service_Module_SM_Zvezda_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS15 Soyuz Transfer Vehicle RASA</name>
+    <comment />
+    <image>SS15_Soyuz_Transfer_Vehicle_RASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS16 Truss Segment NASA</name>
+    <comment />
+    <image>SS16_Truss_Segment_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS16 Truss Segment RASA</name>
+    <comment />
+    <image>SS16_Truss_Segment_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS17 Truss Segment with Solar Array</name>
+    <comment />
+    <image>SS17_Truss_Segment_with_Solar_Array.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS18 US Lab US Destiny NASA</name>
+    <comment />
+    <image>SS18_US_Lab_US_Destiny_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS2 Automated Transfer Vehicle ATV NASA</name>
+    <comment />
+    <image>SS2_Automated_Transfer_Vehicle_ATV_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS2 Automated Transfer Vehicle ATV RASA</name>
+    <comment />
+    <image>SS2_Automated_Transfer_Vehicle_ATV_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS3 Columbus</name>
+    <comment />
+    <image>SS3_Columbus.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS4 Docking Compartment NASA</name>
+    <comment />
+    <image>SS4_Docking_Compartment_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS4 Docking Compartment RASA</name>
+    <comment />
+    <image>SS4_Docking_Compartment_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS5 Functional Cargo Block FGB Zarya Control Module NASA</name>
+    <comment />
+    <image>SS5_Functional_Cargo_Block_FGB_Zarya_Control_Module_NASA.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS5 Functional Cargo Block FGB Zarya Control Module RASA</name>
+    <comment />
+    <image>SS5_Functional_Cargo_Block_FGB_Zarya_Control_Module_RASA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS6 HII Transfer Vehicle HTV</name>
+    <comment />
+    <image>SS6_HII_Transfer_Vehicle_HTV.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS7 Japan Experiment Logistics Module JEF</name>
+    <comment />
+    <image>SS7_Japan_Experiment_Logistics_Module_JEF.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS8 Japan Experiment Logisitcs Module JLP</name>
+    <comment />
+    <image>SS8_Japan_Experiment_Logisitcs_Module_JLP.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>SS9 Japan Pressurized Module JPM</name>
+    <comment />
+    <image>SS9_Japan_Pressurized_Module_JPM.svg</image>
+    <type>static</type>
+  </symbol>
+</library>
+

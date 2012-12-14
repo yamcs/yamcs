@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Radiation Monitoring">
+  <comment />
+  <symbol>
+    <name>RM1 Dosimeter</name>
+    <comment />
+    <image>RM1_Dosimeter.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>RM2 Individual Dose</name>
+    <comment />
+    <image>RM2_Individual_Dose.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>RM3 Radiation Monitoring Subsystem</name>
+    <comment />
+    <image>RM3_Radiation_Monitoring_Subsystem.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>RM4 Radiometer</name>
+    <comment />
+    <image>RM4_Radiometer.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>RM5 Solar Flare</name>
+    <comment />
+    <image>RM5_Solar_Flare.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>RM6 Workplace</name>
+    <comment />
+    <image>RM6_Workplace.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

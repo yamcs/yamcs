@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="68.153" height="46.423" viewBox="0 0 68.153 46.423" overflow="visible" enable-background="new 0 0 68.153 46.423" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path fill="#FFFFFF" stroke="#000000" stroke-width="0.8249" d="M56.567,21.511h9.333v24.5H2.567v-24.5h9"/>
+
+		<path fill="none" stroke="#000000" stroke-width="0.82" d="M38.234,21.511h9.333"/>
+
+		<path fill="none" stroke="#000000" stroke-width="0.82" d="M20.567,21.511h9"/>
+
+		<g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="#FFFFFF" a:adobe-knockout="false" d="M39.235,8.636L34.25,0l-4.986,8.636H39.235z"/>
+
+			</g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="none" stroke="#000000" a:adobe-knockout="false" d="M34.234,7.177V17.51"/>
+
+				<path a:adobe-knockout="false" d="M39.235,8.636L34.25,0l-4.986,8.636H39.235z"/>
+
+			</g>
+
+		</g>
+
+		<g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="#FFFFFF" a:adobe-knockout="false" d="M65.572,16.579l2.581-9.632l-9.632,2.581L65.572,16.579z"/>
+
+			</g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="none" stroke="#000000" a:adobe-knockout="false" d="M63.067,12.011l-6.278,6.278"/>
+
+				<path a:adobe-knockout="false" d="M65.572,16.579l2.581-9.632l-9.632,2.581L65.572,16.579z"/>
+
+			</g>
+
+		</g>
+
+		<g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="#FFFFFF" a:adobe-knockout="false" d="M9.632,8.835L0,6.255l2.582,9.632L9.632,8.835z"/>
+
+			</g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="none" stroke="#000000" a:adobe-knockout="false" d="M5.064,11.34l6.948,6.948"/>
+
+				<path a:adobe-knockout="false" d="M9.632,8.835L0,6.255l2.582,9.632L9.632,8.835z"/>
+
+			</g>
+
+		</g>
+
+	</g>
+
+</svg>

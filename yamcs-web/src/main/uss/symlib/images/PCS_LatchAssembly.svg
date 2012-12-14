@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="302.544" height="181.539" viewBox="0 0 302.544 181.539" overflow="visible" enable-background="new 0 0 302.544 181.539" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path fill="none" stroke="#000000" d="M0.344,167.75h54.25H289"/>
+
+		<path fill="none" stroke="#000000" d="M297.291,172.958l-135-155"/>
+
+		<path fill="#969696" d="M153.5,18.25H149v-9h4.5V18.25z"/>
+
+		<path fill="#FFFFFF" stroke="#000000" stroke-width="0.5" d="M149,18.25h4.5"/>
+
+		<path fill="none" stroke="#000000" d="M5.167,173.084l135-155"/>
+
+		<path fill="#969696" stroke="#000000" stroke-width="0.5" d="M0.25,158.75h9l4.5,4.5v4.5l-4.5,13.5h-9V158.75z"/>
+
+		<path fill="#969696" stroke="#000000" stroke-width="0.5" d="M302.294,158.789h-9l-4.5,4.5v4.5l4.5,13.5h9V158.789z"/>
+
+		<g>
+
+			<path fill="none" stroke="#000000" stroke-width="0.5" d="M302.333,163.25h-13.5"/>
+
+			<path fill="#FFFFFF" stroke="#000000" stroke-width="0.5" d="M288.833,167.75h13.5"/>
+
+		</g>
+
+		<path fill="#969696" stroke="#000000" stroke-width="0.5" d="M140,0.25h4.5l4.5,9v9h-9V0.25z"/>
+
+		<path fill="#6E6E6E" stroke="#000000" stroke-width="0.5" d="M144.5,0.25v9l4.5,9"/>
+
+		<path fill="#E1AE81" stroke="#000000" stroke-width="0.5" d="M144.5,9.25H140"/>
+
+		<path fill="#FFFFFF" stroke="#000000" stroke-width="0.5" d="M149,9.25h4.5"/>
+
+		<path fill="#969696" stroke="#000000" stroke-width="0.5" d="M162.5,0.25H158l-4.5,9v9h9V0.25z"/>
+
+		<path fill="#6E6E6E" stroke="#000000" stroke-width="0.5" d="M158,0.25v9l-4.5,9"/>
+
+		<path fill="#E1AE81" stroke="#000000" stroke-width="0.5" d="M158,9.25h4.5"/>
+
+		<path fill="#6E6E6E" d="M144.688,0.938l4.188,8.438v8.313l-4.188-8.438V0.938z"/>
+
+		<path fill="#6E6E6E" d="M153.656,17.656l4.188-8.438V0.906l-4.188,8.438V17.656z"/>
+
+		<g>
+
+			<path fill="none" stroke="#000000" stroke-width="0.5" d="M13.667,163.25h-13.5"/>
+
+			<path fill="#FFFFFF" stroke="#000000" stroke-width="0.5" d="M0.167,167.75h13.5"/>
+
+		</g>
+
+	</g>
+
+</svg>

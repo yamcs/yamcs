@@ -1,0 +1,47 @@
+body {
+    margin:0;
+    font-size: 12px;
+}
+
+.uss-label {
+	display: table;
+}
+
+
+.uss-field-unit {
+	margin-left: 2px;
+}
+
+.uss-missing-symbol {
+	border-width: medium;
+	border-color: red;
+	border-style: solid;
+	background-color: white;
+	font-size: 6px;
+	text-align: center;
+}
+
+.uss-transparency img {
+	background: transparent;
+}
+
+.yamcs-task {
+    border: 0px !important; 
+    cursor:pointer; 
+    padding: .4em 1em;
+    line-height: 1.4 ;
+    display: inline-block;
+    font-weight: normal;
+}
+
+.yamcs-task-icon {
+    margin: 0px 5px;
+}
+
+.yamcs-task-list {
+    min-height: 2em;
+    font-size: 1em; 
+    border: 1px; 
+    border-spacing: 0px 1px 
+}
+

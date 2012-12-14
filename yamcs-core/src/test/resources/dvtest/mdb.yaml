@@ -1,0 +1,9 @@
+dvtest:
+    xtceLoader: 
+         type: "sheet"
+         spec: "mdb/refmdb-ccsds.xls"
+         subLoaders:
+             - type: "sheet"
+               spec: "mdb/refmdb-subsys1.xls"
+    derivedValuesProviders: [org.yamcs.DerivedValuesTest$MyDerivedValuesProvider]
+    ppLoaders: []

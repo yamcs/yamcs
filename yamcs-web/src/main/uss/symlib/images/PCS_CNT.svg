@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="62.659" height="70.24" viewBox="0 0 62.659 70.24" overflow="visible" enable-background="new 0 0 62.659 70.24" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<path fill="#57585D" stroke="#000000" stroke-width="2" d="M8.679,49.165c0,0,18.581,3.687,29.643-7.233    c11.063-10.92,12.338-20.99,10.211-33.188"/>
+
+		
+
+			<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="15.5508" y1="18.8975" x2="32.5706" y2="32.9388" gradientTransform="matrix(1.0285 -0.0288 -0.0288 1.0292 1.308 -0.5443)" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+
+			<stop offset="0" style="stop-color:#D9D9D9"/>
+
+			<stop offset="1" style="stop-color:#7F7F7F"/>
+
+			<a:midPointStop offset="0" style="stop-color:#D9D9D9"/>
+
+			<a:midPointStop offset="0.5" style="stop-color:#D9D9D9"/>
+
+			<a:midPointStop offset="1" style="stop-color:#7F7F7F"/>
+
+		</linearGradient>
+
+		<path fill="url(#XMLID_1_)" stroke="#000000" stroke-width="1.9697" d="M34.368,34.455C22.279,46.709,8.217,52.438,2.958,47.25    c-5.259-5.188,0.277-19.327,12.366-31.583C27.413,3.414,41.477-2.316,46.737,2.873C51.996,8.059,46.457,22.201,34.368,34.455z"/>
+
+		<path fill="#57585D" stroke="#000000" stroke-width="2" d="M22.938,69.24h38.72V68.17l-15.46-10.136h-7.801l-15.459,9.929V69.24z"/>
+
+		<path fill="#636369" stroke="#000000" stroke-width="2" d="M52.013,48.816c0,5.326-4.317,9.645-9.645,9.645    c-5.326,0-9.644-4.318-9.644-9.645s4.318-9.645,9.644-9.645C47.696,39.171,52.013,43.49,52.013,48.816z"/>
+
+		<path fill="none" stroke="#000000" stroke-width="1.5" d="M25.208,25.13L11.592,11.656"/>
+
+		<path d="M12.585,10.102c0,1.371-1.111,2.482-2.482,2.482c-1.371,0-2.482-1.111-2.482-2.482c0-1.371,1.111-2.482,2.482-2.482    C11.474,7.62,12.585,8.731,12.585,10.102z"/>
+
+	</g>
+
+</svg>

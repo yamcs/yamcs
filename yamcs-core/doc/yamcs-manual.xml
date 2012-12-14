@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<book>
+<bookinfo>
+  <title>Yamcs User Manual</title>
+  <subtitle>Open Source Mission Control System</subtitle>
+  <!--<authorgroup>
+  <author>
+      <firstname>Nicolae</firstname><surname>Mihalache</surname>-->
+<!--      <affiliation><address><email>nicolae.mihalache@spaceapplications.com</email></address></affiliation> -->
+<!--   </author>--> -->
+
+   <corpauthor>
+    <inlinemediaobject>
+      <imageobject>
+        <imagedata fileref="images/spaceapps-logo.png" width="8cm"/>
+      </imageobject>
+      <textobject>
+        <phrase>SpaceApps Logo</phrase>
+      </textobject>
+    </inlinemediaobject>
+  </corpauthor>
+  
+<!--   <author><firstname>Sven</firstname><surname>Thoennissen</surname></author> -->
+  
+<!--   </authorgroup> -->
+  <copyright><year>2007-2012</year><holder>Space Applications Services</holder></copyright>
+  <legalnotice>
+    <para>
+      Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.1 or any later version published by the Free Software Foundation.
+     </para>
+  </legalnotice>
+
+  <pubdate>15-Nov-2012</pubdate>
+  <releaseinfo>This is Version 1.0.0 of the Yamcs Manual documenting version 0.22.2 of Yamcs.</releaseinfo>
+  
+</bookinfo>
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="yamcs-server.xml"/>
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="yamcs-monitor.xml"/>
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="event-viewer.xml"/>
+<!-- <xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="cmd-history.xml"/> -->
+<!-- <xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="utilities.xml"/> -->
+<!-- <xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="troubleshooting.xml"/> -->
+
+
+<appendix><title>Configuration files</title>
+
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="dass-pp-mapping.xml"/>
+
+<sect1 id="command-queue.yaml"><title>command-queue.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/command-queue.yaml"/></screen>
+</sect1>
+<sect1 id="dass.yaml"><title>dass.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../../yamcs-dass/src/main/config/dass.yaml"/></screen>
+</sect1>
+<sect1><title>logging.properties</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/logging.properties"/></screen>
+</sect1>
+<sect1 id="mdb.yaml"> <title>mdb.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/mdb.yaml"/></screen>
+</sect1>
+<sect1 id="multicast.yaml"><title>multicast.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/multicast.yaml"/></screen>
+</sect1>
+<sect1 id="privileges.yaml"><title>privileges.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/privileges.yaml"/></screen>
+</sect1>
+<sect1 id="tcp.yaml"><title>tcp.yaml</title>
+<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/tcp.yaml"/></screen>
+</sect1>
+</appendix>
+
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="excel-spec.xml"/>
+
+</book>

@@ -1,0 +1,135 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          yamcs-cis-server
+# Required-Start:    $network $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description:       Start the yamcs server
+### END INIT INFO
+#
+YAMCS_USER=yamcs
+YAMCS_HOME=/opt/yamcs/
+YAMCS_BIN=$YAMCS_HOME/bin/yamcs-cis-server.sh
+PID_FILE=/var/run/yamcs-cis-server.pid
+CHANNELS=manychannels
+OUTERR=$YAMCS_HOME/log/yamcs-cis-server.out # standard out and err go here
+
+test -x $YAMCS_BIN || { echo "$YAMCS_BIN not installed"; 
+        if [ "$1" = "stop" ]; then exit 0;
+        else exit 5; fi; }
+
+function is_running {
+    pid=$1
+    return $((1-`ps ww -p $pid -o args= | grep -c "yamcs-cis-server.sh\|java.*yamcs.cis.SessionManagerImpl"`))
+}
+
+WAIT_FOR_START=30
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+        echo -n "Starting the yamcs server...   "
+        alreadyrunning=0
+        if [ -s $PID_FILE ] ; then
+            pid=`cat $PID_FILE`
+            if is_running $pid ; then
+                alreadyrunning=1
+                log_failure_msg "already running (pid=$pid)"
+            else
+                rm $PID_FILE
+            fi
+        fi
+
+        if [ $alreadyrunning -eq 0 ] ; then
+            touch $PID_FILE
+            chown $YAMCS_USER $PID_FILE
+            for i in 4 3 2 1 0; do
+               if [ -f $OUTERR.$i ] ; then mv $OUTERR.$i $OUTERR.$((i+1)) ; fi
+            done
+            su - $YAMCS_USER sh -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YAMCS_BIN $CHANNELS >$OUTERR.0  2>&1 & echo \$! >$PID_FILE"
+            pid=`cat $PID_FILE`
+            i=0
+            #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded
+            while [ $i -lt $WAIT_FOR_START ] ; do
+                if is_running $pid ; then
+                    yamcsstartup=`grep yamcsstartup $OUTERR.0`
+                    if [ "$yamcsstartup" != "" ] ; then
+                        stat=`echo $yamcsstartup | cut -d " " -f 2`
+                        if [ $stat = "success" ] ; then
+                            log_success_msg "started" 
+                        else
+                            log_failure_msg $yamcsstartup | cut -d " " -f 3-
+                        fi
+                        break
+                    fi
+                    sleep 1
+                    i=$((i+1))
+                else
+                    log_failure_msg "yamcs failed to start; see $OUTERR.0 for details"
+                    break
+                fi
+            done
+            if [ $i -eq $WAIT_FOR_START ] ; then 
+                log_failure_msg "yamcs didn't finish the initialization in $WAIT_FOR_START seconds"
+            fi
+        fi
+
+        ;;
+    stop)
+        echo -n "Shutting down yamcs server...  "
+        if [ -s $PID_FILE ] ; then
+            pid=`cat $PID_FILE`
+            i=0
+            if is_running $pid ; then
+                kill -TERM $pid
+                while [ $i -lt 5 ] ; do
+                    if is_running $pid ; then
+                        kill -TERM $pid
+                    else
+                        rm $PID_FILE
+                        break
+                    fi
+                    sleep 1
+                    i=$((i+1))
+                done
+
+                if [ $i -eq 5 ] ; then 
+                    log_failed_msg "timeout"
+		        else
+                    log_success_msg "stopped"
+                fi
+            else
+                log_warning_msg "not running"
+            fi
+        else
+            log_warning_msg "not running ($PID_FILE doesn't exist)"
+        fi
+        ;;
+    restart)
+        ## Stop the service and regardless of whether it was
+        ## running or not, start it again.
+        $0 stop
+        $0 start
+
+        ;;
+    status)
+        echo -n "Checking for yamcs server...   "
+
+        if [ -s $PID_FILE ] ; then
+            pid=`cat $PID_FILE`
+            if is_running $pid ; then 
+                log_success_msg "running (pid=$pid)"
+            else
+                log_warning_msg "not running (supposed to have pid=$pid)"
+            fi
+        else 
+            log_warning_msg "not running ($PID_FILE doesn't exist)"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status}"
+        exit 1
+        ;;
+esac

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="33.984" height="40.338" viewBox="0 0 33.984 40.338" overflow="visible" enable-background="new 0 0 33.984 40.338" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<g>
+
+			<path fill="#FFFFFF" d="M27.882,31.958L20.257,24.5v-9.584l7.265-7.265l0.985,0.681l1,1l0.918,1l0.832,1.25l0.668,0.917     l0.666,1.417l0.5,1.5L33.425,17l0.082,1.583l0.229,1.393l-0.229,2.19l-0.416,2.25l-0.75,2.166l-1.166,2.168l-1.418,1.5     l-1.082,0.832L27.882,31.958z"/>
+
+			<path fill="#B4B4B4" d="M19.45,40.307h4.141v-6.609l0.5-0.063l0.5-0.125l0.625-0.188l0.5-0.25l0.625-0.25l0.625-0.375l0.688-0.5     l-7.563-7.197l-0.063-9.553l7.375-7.313l-1.25-0.75l-1.438-0.563l-1.125-0.375V0.026h-4.188v6.109L17.528,6.76l-1.813,0.875     L14.403,8.51l-1.188,1.125l-1,1.063l-0.688,1l-0.813,1.313l-0.5,1.313l-0.438,1.625l-0.375,1.688L9.216,19.51l0.063,1.375     l0.125,1.563l0.375,1.563l0.438,1.5l0.563,1.438l0.688,1.188l0.938,1.25l1,1.125l1.438,1.188l1.25,0.75l1.438,0.688l1.063,0.375     l0.813,0.188L19.45,40.307z"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.5" d="M27.548,7.678L20.2,15.181v9.513l7.682,7.264"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.5" d="M23.604,0.022v6.11c0,0,10.132,1.855,10.132,13.844     c0,11.989-10.132,13.69-10.132,13.69v6.651"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.5" d="M19.341,0v6.083c0,0-10.132,1.856-10.132,13.844     c0,11.988,10.132,13.69,10.132,13.69v6.722"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.8494" d="M3.091,27.5V15.417"/>
+
+			<path fill="none" stroke="#000000" d="M0.391,18.104l2.7-3.375l2.7,3.375"/>
+
+		</g>
+
+	</g>
+
+</svg>

@@ -1,0 +1,136 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          hrdp-replay-server
+# Required-Start:    $network $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description:       Start the yamcs hrdp replay server
+### END INIT INFO
+#
+YAMCS_USER=yamcs
+YAMCS_HOME=/opt/yamcs/
+HRS_BIN=$YAMCS_HOME/bin/hrdp-replay-server.sh
+PID_FILE=/var/run/hrdp-replay-server.pid
+CHANNELS=manychannels
+OUTERR=$YAMCS_HOME/log/hrdp-replay-server.out # standard out and err go here
+
+function is_running {
+    pid=$1
+    return $((1-`ps ww -p $pid -o args= | grep -c "java.*yamcs.HrdpReplayServer"`))
+}
+
+
+test -x $YAMCS_BIN || { echo "$HRS_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+	echo -n "Starting the hrdp replay server...   "
+	alreadyrunning=0
+	if [ -s $PID_FILE ] ; then
+	    pid=`cat $PID_FILE`
+	    if is_running $pid ; then
+		    alreadyrunning=1
+			log_failure_msg "already running (pid=$pid)"
+	    else
+		rm $PID_FILE
+	    fi
+	fi
+	
+	if [ $alreadyrunning -eq 0 ] ; then
+	    touch $PID_FILE
+	    chown $YAMCS_USER $PID_FILE
+	    if [ -f $OUTERR ] ; then mv $OUTERR $OUTERR.old ; fi
+	    su - $YAMCS_USER sh -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $HRS_BIN $CHANNELS >$OUTERR  2>&1 & echo \$! >$PID_FILE"
+	    pid=`cat $PID_FILE`
+	    i=0
+	    while [ $i -lt 5 ] ; do
+		if is_running $pid ; then
+		    startup=`grep "hrdp-replay-server startup" $OUTERR`
+		    if [ "$startup" != "" ] ; then
+			stat=`echo $startup | cut -d " " -f 3`
+			if [ $stat = "success" ] ; then
+			    log_success_msg "started"
+			else
+			    echo $startup | cut -d " " -f 4-
+			    log_failure_msg `$startup | cut -d " " -f 3-` 
+			fi
+			break
+		    fi
+		fi
+		sleep 1
+		i=$((i+1))
+	    done
+	    if [ $i -eq 5 ] ; then 
+		tail -1 $OUTERR
+		log_failure_msg 
+	    fi
+	fi
+
+	;;
+    stop)
+	echo -n "Shutting down hrdp replay server...  "
+	if [ -s $PID_FILE ] ; then
+	    pid=`cat $PID_FILE`
+	    i=0
+	    if is_running $pid ; then
+		kill -TERM $pid
+		while [ $i -lt 5 ] ; do
+		    if is_running $pid ; then
+			kill -TERM $pid
+		    else
+			rm $PID_FILE
+			break
+		    fi
+		    sleep 1
+		    i=$((i+1))
+		done
+
+		if [ $i -eq 5 ] ; then 
+		    log_failure_msg "timeout"
+		fi
+	    else
+		echo -n "not running"	
+	    fi
+	else
+	    echo "not running ($PID_FILE doesn't exist)"	
+	fi
+
+	;;
+    restart)
+	## Stop the service and regardless of whether it was
+	## running or not, start it again.
+	$0 stop
+	$0 start
+
+	;;
+    status)
+	echo -n "Checking for hrdp replay server "
+
+	# Return value is slightly different for the status command:
+	# 0 - service up and running
+	# 1 - service dead, but /var/run/  pid  file exists
+	# 2 - service dead, but /var/lock/ lock file exists
+	# 3 - service not running (unused)
+	# 4 - service status unknown :-(
+	# 5--199 reserved (5--99 LSB, 100--149 distro, 150--199 appl.)
+	if [ -s $PID_FILE ] ; then
+	    pid=`cat $PID_FILE`
+	    if is_running $pid ; then 
+		log_success_msg "running"
+	    else
+		log_failure_msg "not running"
+	    fi
+	else 
+	    log_failure_msg "not started"
+	fi
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status}"
+	exit 1
+	;;
+esac

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="3D Graphics">
+  <comment />
+  <symbol>
+    <name>3D1 Camera Control Mode Fly Around</name>
+    <comment />
+    <image>3D1_Camera_Control_Mode_Fly_Around.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D1 Camera Rotate</name>
+    <comment />
+    <image>3D1_Camera_Rotate.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D1 Camera Translate</name>
+    <comment />
+    <image>3D1_Camera_Translate.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D10 Restore View</name>
+    <comment />
+    <image>3D10_Restore_View.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D11 Roll Left</name>
+    <comment />
+    <image>3D11_Roll_Left.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D11 Roll Left Alternate Pad</name>
+    <comment />
+    <image>3D11_Roll_Left_Alternate_Pad.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D11 Roll Right</name>
+    <comment />
+    <image>3D11_Roll_Right.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D11 Roll Right Alternate Pad</name>
+    <comment />
+    <image>3D11_Roll_Right_Alternate_Pad.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D12 Save View</name>
+    <comment />
+    <image>3D12_Save_View.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D13 Step Size</name>
+    <comment />
+    <image>3D13_Step_Size.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D14 Target</name>
+    <comment />
+    <image>3D14_Target.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D15 Translation Backward</name>
+    <comment />
+    <image>3D15_Translation_Backward.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D15 Translation Forward</name>
+    <comment />
+    <image>3D15_Translation_Forward.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D16 View Direction From The Moon</name>
+    <comment />
+    <image>3D16_View_Direction_From_The_Moon.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D16 View Direction From The Sun</name>
+    <comment />
+    <image>3D16_View_Direction_From_The_Sun.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D16 View Direction To The Earth</name>
+    <comment />
+    <image>3D16_View_Direction_To_The_Earth.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D17 Zoom</name>
+    <comment />
+    <image>3D17_Zoom.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D2 Camera Options</name>
+    <comment />
+    <image>3D2_Camera_Options.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D3 Default View</name>
+    <comment />
+    <image>3D3_Default_View.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D4 Display Options</name>
+    <comment />
+    <image>3D4_Display_Options.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D5 Earth Size 10xSmaller</name>
+    <comment />
+    <image>3D5_Earth_Size_10xSmaller.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D5 Earth Size Real Size</name>
+    <comment />
+    <image>3D5_Earth_Size_Real_Size.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D6 Motion Arrow</name>
+    <comment />
+    <image>3D6_Motion_Arrow.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D6 Motion Arrow Left Yaw Fly Around</name>
+    <comment />
+    <image>3D6_Motion_Arrow_Left_Yaw_Fly_Around.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D6 Motion Arrow Right Yaw Fly Around</name>
+    <comment />
+    <image>3D6_Motion_Arrow_Right_Yaw_Fly_Around.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D6 Motion Arrow Rotate Fly Around</name>
+    <comment />
+    <image>3D6_Motion_Arrow_Rotate_Fly_Around.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D6 Motion Arrow Translation</name>
+    <comment />
+    <image>3D6_Motion_Arrow_Translation.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D7 Panel Common</name>
+    <comment />
+    <image>3D7_Panel_Common.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D8 Pointers To The Moon</name>
+    <comment />
+    <image>3D8_Pointers_To_The_Moon.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D8 Pointers To The Sun</name>
+    <comment />
+    <image>3D8_Pointers_To_The_Sun.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame CCK</name>
+    <comment />
+    <image>3D9_Reference_Frame_CCK.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame ECK J2000</name>
+    <comment />
+    <image>3D9_Reference_Frame_ECK_J2000.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame LVLH</name>
+    <comment />
+    <image>3D9_Reference_Frame_LVLH.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame OCK</name>
+    <comment />
+    <image>3D9_Reference_Frame_OCK.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame PCO</name>
+    <comment />
+    <image>3D9_Reference_Frame_PCO.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame RS Body</name>
+    <comment />
+    <image>3D9_Reference_Frame_RS_Body.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame US Body</name>
+    <comment />
+    <image>3D9_Reference_Frame_US_Body.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>3D9 Reference Frame XPOP</name>
+    <comment />
+    <image>3D9_Reference_Frame_XPOP.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-3D1 Coordinate Platform</name>
+    <comment />
+    <image>P-3D1_Coordinate_Platform.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

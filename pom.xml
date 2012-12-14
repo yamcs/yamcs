@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.yamcs</groupId>
+  <artifactId>yamcs</artifactId>
+  <packaging>pom</packaging>
+  <name>Yamcs</name>
+  <description>Yet Another Mission Control System.</description>
+  <version>0.23.1-SNAPSHOT</version>
+
+  <issueManagement>
+    <system>Redmine</system>
+    <url>https://redmine.spaceapplications.com/projects/yamcs</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Hudson</system>
+    <url>http://aces-ci.spaceapplications.com:8080/</url>
+  </ciManagement>
+  <inceptionYear>2010-2011</inceptionYear>
+  <developers>
+    <developer>
+      <name>Nicolae Mihalache</name>
+      <id>nm</id>
+      <email>nicolae.mihalache at spaceapplications dot com</email>
+      <roles>
+        <role>project manager</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Thomas Neidhart</name>
+      <id>tn</id>
+      <email>thomas.neidhart at spaceapplications dot com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Ursik</name>
+      <id>mu</id>
+      <email>martin.ursik at spaceapplications dot com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://subversion.spaceapplications.com/svn/yamcs</url>
+    <developerConnection>scm:svn:https://subversion.spaceapplications.com/svn/yamcs/trunk</developerConnection>
+  </scm>
+
+
+  <organization>
+    <name>Space Applications Services</name>
+    <url>http://www.spaceapplications.com</url>
+  </organization>
+
+  <properties>
+    <RESTLET_VERSION>2.0.5</RESTLET_VERSION>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.7.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.4</version>
+          <configuration>
+            <formats>
+              <format>xml</format>
+            </formats>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <version>2.3.3</version>
+          <configuration>
+            <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+            <xmlOutput>true</xmlOutput>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.1</version>
+          <configuration>
+            <tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>1.7.1</version>
+      </dependency>
+
+      <!-- TEST DEPENDENCIES -->
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.8.2</version>
+        <scope>test</scope>
+      </dependency>
+
+ 
+    </dependencies>
+  </dependencyManagement>
+
+  <modules>
+    <module>yamcs-core</module>
+    <module>yamcs-api</module>
+    <module>yamcs-xtce</module>
+    <module>yamcs-web</module>
+  </modules>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+        </configuration>
+      </plugin>
+      <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
+        <configuration> <encoding>UTF-8</encoding> <configLocation>checkstyle.xml</configLocation> 
+        <enableRulesSummary>false</enableRulesSummary> </configuration> </plugin> -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.4</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <repositories>
+    <repository>
+      <id>spaceapps.internal</id>
+      <url>http://aces-ci:8888/archiva/repository/internal</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>spaceapps.snapshots</id>
+      <url>http://aces-ci:8888/archiva/repository/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>spaceapps.external</id>
+      <url>https://subversion.spaceapplications.com/maven/repository</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+</project>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="86.5" height="73" viewBox="0 0 86.5 73" overflow="visible" enable-background="new 0 0 86.5 73" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<g>
+
+			<path fill="#E1AE81" stroke="#000000" d="M0.5,50h9l4.5,4.5V59L9.5,72.5h-9V50z"/>
+
+			<path fill="none" stroke="#000000" d="M0.5,54.5H14l18-36"/>
+
+			<path fill="#FFFFFF" stroke="#000000" d="M0.5,59H14h58.5"/>
+
+		</g>
+
+		<g>
+
+			<path fill="#E1AE81" stroke="#000000" d="M86,50h-9l-4.5,4.5V59L77,72.5h9V50z"/>
+
+			<path fill="none" stroke="#000000" d="M86,54.5H72.5l-18-36"/>
+
+			<path fill="#FFFFFF" stroke="#000000" d="M72.5,59H86"/>
+
+		</g>
+
+		<g>
+
+			<path fill="#E1AE81" d="M45.5,18.5H41v-9h4.5V18.5z"/>
+
+			<g>
+
+				<path fill="#E1AE81" stroke="#000000" d="M32,0.5h4.5l4.5,9v9h-9V0.5z"/>
+
+				<path fill="#E1AE81" stroke="#000000" d="M36.5,0.5v9l4.5,9"/>
+
+				<path fill="#E1AE81" stroke="#000000" d="M36.5,9.5H32"/>
+
+			</g>
+
+			<path fill="#FFFFFF" stroke="#000000" d="M41,9.5h4.5"/>
+
+			<g>
+
+				<path fill="#E1AE81" stroke="#000000" d="M54.5,0.5H50l-4.5,9v9h9V0.5z"/>
+
+				<path fill="#E1AE81" stroke="#000000" d="M50,0.5v9l-4.5,9"/>
+
+				<path fill="#E1AE81" stroke="#000000" d="M50,9.5h4.5"/>
+
+			</g>
+
+			<path fill="#FFFFFF" stroke="#000000" d="M41,18.5h4.5"/>
+
+			<path fill="#9A795B" d="M36.75,1.5l4,8.063v7.813l-4-7.875V1.5z"/>
+
+			<path fill="#9A795B" d="M45.75,17.625v-8l4-8.125v7.875L45.75,17.625z"/>
+
+		</g>
+
+	</g>
+
+</svg>

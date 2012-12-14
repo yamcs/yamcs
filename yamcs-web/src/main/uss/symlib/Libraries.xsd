@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="library">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="comment" type="xs:string"/>
+				<xs:element ref="symbol" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="symbol">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="name" type="xs:string"/>
+				<xs:element name="comment" type="xs:string"/>
+				<xs:element ref="image" maxOccurs="unbounded"/>				
+				<xs:element name="type" type="Choice"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="image">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="URL">
+					<xs:attribute name="default">
+						<xs:simpleType>
+							<xs:restriction base="xs:NMTOKEN">
+								<xs:enumeration value="false"/>
+								<xs:enumeration value="true"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="state" type="xs:string"/>
+					<xs:attribute name="library" type="xs:string"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="URL">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z,a-z,0-9, ,_,\-,+,%]+.[a-z,A-Z]+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Choice">
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="dynamic"/>
+			<xs:enumeration value="static"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

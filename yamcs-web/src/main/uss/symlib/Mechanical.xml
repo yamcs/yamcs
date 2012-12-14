@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Mechanical">
+  <comment />
+  <symbol>
+    <name>M10S Gamah Fitting</name>
+    <comment />
+    <image>M10S_Gamah_Fitting.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M11 Grid</name>
+    <comment />
+    <image>M11_Grid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M12 Grill</name>
+    <comment />
+    <image>M12_Grill.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M13 Guide Vanes A</name>
+    <comment />
+    <image>M13_Guide_Vanes_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M13 Guide Vanes B</name>
+    <comment />
+    <image>M13_Guide_Vanes_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14 Hatch Edge On View A</name>
+    <comment />
+    <image>M14_Hatch_Edge_On_View_A.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14 Hatch Edge On View B</name>
+    <comment />
+    <image>M14_Hatch_Edge_On_View_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14S Hatch Edge On View C</name>
+    <comment />
+    <image>M14S_Hatch_Edge_On_View_C.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14S Hatch Edge On View D</name>
+    <comment />
+    <image>M14S_Hatch_Edge_On_View_D.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14S Hatch Edge on View A</name>
+    <comment />
+    <image>M14S_Hatch_Edge_on_View_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M14S Hatch Edge on View B</name>
+    <comment />
+    <image>M14S_Hatch_Edge_on_View_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M15 Hatch Front View</name>
+    <comment />
+    <image>M15_Hatch_Front_View.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M16 Lab Cradle Assembly</name>
+    <comment />
+    <image>M16_Lab_Cradle_Assembly.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M17S Panel Caution Warning</name>
+    <comment />
+    <image>M17S_Panel_Caution_Warning.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M18 Panel Close Out</name>
+    <comment />
+    <image>M18_Panel_Close_Out.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M19S Reflector</name>
+    <comment />
+    <image>M19S_Reflector.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M1S Actuator Electromechanical</name>
+    <comment />
+    <image>M1S_Actuator_Electromechanical.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M20S Spring Spiral</name>
+    <comment />
+    <image>M20S_Spring_Spiral.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M21S Spring Torsion</name>
+    <comment />
+    <image>M21S_Spring_Torsion.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M22 Torque Limiter Mechanical</name>
+    <comment />
+    <image>M22_Torque_Limiter_Mechanical.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M23 Umbilical Interface Assembly</name>
+    <comment />
+    <image>M23_Umbilical_Interface_Assembly.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M2S Bearing</name>
+    <comment />
+    <image>M2S_Bearing.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M3 Berthing Docking Target</name>
+    <comment />
+    <image>M3_Berthing_Docking_Target.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M4S Bevel Drive</name>
+    <comment />
+    <image>M4S_Bevel_Drive.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M5S Bulkhead Connector</name>
+    <comment />
+    <image>M5S_Bulkhead_Connector.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M6 Bulkhead Penetrator</name>
+    <comment />
+    <image>M6_Bulkhead_Penetrator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M6S Bulkhead Penetrator</name>
+    <comment />
+    <image>M6S_Bulkhead_Penetrator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M7 Capture Latch</name>
+    <comment />
+    <image>M7_Capture_Latch.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M8 Common Berthing Mechanism CBM</name>
+    <comment />
+    <image>M8_Common_Berthing_Mechanism_CBM.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>M9S Direct Drive Gear Train</name>
+    <comment />
+    <image>M9S_Direct_Drive_Gear_Train.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-M1 Spring</name>
+    <comment />
+    <image>P-M1_Spring.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

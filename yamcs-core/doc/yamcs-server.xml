@@ -1,0 +1,422 @@
+<chapter> <title>Yamcs Server</title>
+<section><title>Getting Started</title>	
+<para>The Yamcs server is implemented in Java and is responsible for acquiring, processing and dispatching data to clients via different protocols. It is designed to run in background as a deamon.</para>
+
+    <section><title>Installation</title>
+        <para> 
+        Yamcs depends on the TokyoCabinets library and its java API so these should be installed before installing Yamcs. 
+        </para>
+        Yamcs is delivered as rpm package<footnote><para>deb packages directly converted from rpm using the <command>alien</command> command can also be provided</para></footnote> and installation is done using the rpm command:
+        <screen>rpm -U yamcs-version.noarch.rpm	</screen>
+        If a configuration file (in the etc directory) has been updated with regard to the previous installed version, the old files will be saved with the extension .rpmsave. The user then has to inspect the difference between the two version and to implement the newly added options into the old configuration files.
+    
+    
+        In addition to the core yamcs package, there are a few other extensions:
+        <itemizedlist>
+            <listitem>yamcs-cdmcs - provides loading of TM/TC directly from CD-MCS MDB or from SCOE files (only TM) and also provides the CORBA(CIS) protocol for communicating with USS and MCS Tools</listitem>
+            <listitem>yamcs-dass - provides TM/TC receivers/senders via the DaSS protocol</listitem>
+            <listitem>yamcs-busoc - provides the SOLAR<footnote><para>SOLAR is a ISS/Columbus payload</para></footnote> event decoder and a few SOLAR specific derived variables.</listitem>
+            <listitem>yamcs-erasmus - provides the EDR and FASTER<footnote><para>these are also ISS/Columbus payloads/instruments</para></footnote> event decoder and some specific derived variables. </listitem>
+        </itemizedlist>
+        <emphasis>Note: the extensions are not part of the Yamcs open-source release. They only make sense in the specific USOC environment</emphasis>
+        <para>After installing the rpms, the following directories are created under <filename>/yamcs/opt</filename>:</para>
+        <itemizedlist>
+            <listitem>bin - contains shell scripts for starting the different programs</listitem>
+            <listitem>cache - contains cache serialized java files for the Mission Database. This has to be writable by the user yamcs.</listitem>
+            <listitem>etc - contains all the configuration files</listitem>
+            <listitem>lib - contains the jars required by yamcs. lib/ext is where extensions reside.</listitem>
+            <listitem>log - contains the log files of yamcs. It has to be writable by the user yamcs. </listitem>
+        </itemizedlist>
+        <para>Yamcs has been developed and tested with java 1.6. It doesn't work with previous versions of java but it should work with newer versions.</para>
+    </section>
+    <section><title>Configuration</title>
+        <para>
+            The Yamcs configuration files are encoded using the yaml format. This format allows to encode in a human readable way (unlike XML) the most common data types: numbers, strings, lists and maps. For detailed syntax rules, please see <ulink url="http://yaml.org/">yaml.org</ulink>.
+        </para>
+        <para>
+            The starting configuration file is <filename>yamcs.yaml</filename>. It contains a list of yamcs instances. For each instance, a file called <filename>yamcs.instance-name.yaml</filename> defines all the components that are part of the instance. Depending on which components are selected, different configuration files are needed.
+        </para>
+        <para>
+            The logging level is configured  in <filename>logging.properties</filename>. This file is used to configure the standard Java logging framework, and is encoded in standard java properties format. The formatting of the java properties files is described here: <ulink url="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)">http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)</ulink>.
+        </para>
+    </section>
+
+    <section><title>Starting the Yamcs server</title>
+    <para> The yamcs server can be started by the script <command>/opt/yamcs/bin/yamcs-server.sh</command>. All the options are read from the configuration file <filename>yamcs.yaml</filename>. Usually this script is called automatically at boot by <command>/etc/init.d/yamcs-server</command> </para>
+    </section>
+
+
+    <section><title>Main Concepts</title>
+    <para>The main concepts implemented by Yamcs are: </para>
+        <itemizedlist>
+            <listitem>The <emphasis>Mission Database</emphasis> is a dictionary containing the description of all the telemetry packets, parameters and commands.</listitem>
+            <listitem>A Yamcs <emphasis>instance</emphasis> is used to provide a separation between different processing domains (basically different Mission Databases). Each instance has its own archive.</listitem>
+            <listitem><emphasis>Streams</emphasis> are used to transfer data inside components of the same instance, running in the same Java Virtual Machine. </listitem>
+            <listitem><emphasis>Channels</emphasis> are connection points for several different streams of the same instance (typically at least one TM and one TC) and processing data according to a Mission Database. Multiple channels can exist in the same instance, processing data for different time periods.</listitem>
+            <listitem><emphasis>Channel clients</emphasis> are TM monitoring or TC commanding application (USS, MCS Tools).</listitem>
+            <listitem><emphasis>Data Links</emphasis> represent special components that inject data coming from external systems. They can be controlled using the Yamcs Monitor.</listitem>
+        </itemizedlist>
+    </section>
+</section>
+<section><title>Data types</title>
+    <para>Yamcs supports the following "high-level" data types:
+        <itemizedlist>
+            <listitem>A <emphasis> parameter </emphasis> is a data value corresponding to the observed value of a certain device. Parameters have different properties like Raw Value, Enginnering Value, Monitoring status and Validity status. Currently the raw and engineering values must be of scalar types (i.e int, float, string, etc), however in the future arrays and aggregated parameters (analogous to structs in C programming language) will be supported.</listitem>
+            <listitem>A <emphasis>processed parameter</emphasis> (abbreviated PP) is a particular type of parameter that is processed by an external (to Yamcs) entity. Yamcs does not contain information about how they are processed. The processed parameters have to be converted into Yamcs internal format (and therefore compatible with the Yamcs parameter types) in ordert to be propagated to the monitoring clients.</listitem>
+            <listitem>A <emphasis>telemetry packet</emphasis> is a binary chunk of data containing a number of parameters in raw format. The packets are split into parameters accoding to the definitions contained in the Mission Database.</listitem>
+            <listitem>The <emphasis>(tele-)commands</emphasis> are used to control remote device and are composed by a name and a list of arguments. The commands are transformed into binary packets according to the definition in the Mission Database.</listitem>
+            <listitem>An <emphasis>event</emphasis> is a data type containing a source, type, level and message used by the payload to log certain kind of events. Yamcs generates internally a number of events. In order to extract events from telemetry, a special component called <emphasis>Event Decoder</emphasis> has to be written. There exist a Yamcs application called <emphasis>Event Viewer</emphasis> that allows to monitor events and trigger alarms based on certain conditions.</listitem>
+        </itemizedlist>
+    </para>
+    <para>The high-level data types described above are modelled internally on a data structure called <emphasis>tuple</emphasis>. A tuple is a list of (name, value) pairs, where the names are simple strings and the values being of a few predefined basic data types. The exact definition of the Yamcs high-level data types in terms of tuple (e.g. a telemetry packet has the attributes gentime(timestamp), rectime(timestamp), packet(binary), etc) is currently hard-coded inside the java sourcecode. In the future it might be externalised in configuration files to allow a certain degree of customisation.</para>
+</section>
+<section><title>Instances</title>
+        <para>
+            The Yamcs instances provide means for one Yamcs server to monitor/control different payloads or version of the payloads at the same time.
+            Each instance has a name, and a directory where all data from that instance is stored, as well as a specific Mission Database used to process data for that instance. Therefore, each time the Mission Database changes (e.g. due to a on-board software upgrade), a new instance has to be created. One strategy to deal with long duration missions which require multiple instances, is to put the old instances in "read only" mode by disabling the components that inject data.
+        </para>
+</section>
+<section><title>Streams</title>
+        <para>
+            Streams are inspired from the domain of Complex Event Processing (CEP) or Stream Processing. They are similar to database tables, but they "contain" continuously moving data. SQL like statement can be defined on streams for filtering, aggregation, merging or other operations. Yamcs uses the streams for distributing data between all the components running inside the same JVM. 
+            Typically there is a stream for realtime telemetry called <code>tm_realtime</code>, one for realtime processed parameters called <code>pp_realtime</code>, one for commands called <code>tc</code>, etc.
+        </para>
+        <para>
+            Streams can be made "visible" to the external word by adding HornetQ wrappers. A wrapper is a HornetQ address that is configured such that each message published to the address gets transferred to the stream and each tuple that comes via the stream is transformed into a HornetQ message and published via the address. An external client then can bind a queue to that address and receive all the messages that transit through the respective stream.
+            Unlike the Yamcs streams which are synchronous and very light, the HornetQ addresses are asynchronous and involve more overhead.
+        </para>
+        <para>
+            Currently the only way to see all the streams that are running inside a Yamcs server, is using a JMX client like JConsole. JConsole can also be used to inspect the status of the HornetQ addresses.
+        </para>
+</section>
+<section><title>Channels</title>
+    <para>
+        Mission Control Systems like Yamcs process TM/TC according to the Mission Database definitions. Yamcs supports concurrent processing of parallel streams; one processing context is called <emphasis>Channel</emphasis>. Channels have clients that receive TM and send TC. Typically one Yamcs instance contains one realtime channel processing data comming in realtime and on-request replay channels, processing data from the archive. Internally, Yamcs creates a replay channel each time a parameter retrieval is requested from the Yamcs Monitor.
+    </para>
+    </section>
+<section><title>Data Links</title>
+    <para>
+        Data Links represent special components that communicate with the external world. There are three types of Data Links: TM (called TM Providers), TC (called TC Uplinkers) and PP (called PP Providers). TM and PP receive telemetry packets or parameters and inject them into the realtime or dump TM or pp streams. The TC data links subscribe to the realtime TC stream and send data to the external systems.
+   
+        Note that any stream (like the realtime TM stream) can be linked to an HornetQ address, making it possible to inject data externally. However, the Data Links can report the status via the Yamcs Monitor and can also be controlled to connect/disconnect to/from the data sources.
+    </para>
+    
+    <para>The following subsections provide a brief description of the different TMP/PP Providers and TC Uplinkers.</para>
+    <section><title>TM Providers</title>
+    <para>
+        The TM Providers are the components that collect data from external sources and inject them into a Yamcs stream. They are defined in the instance configuration file as part of the <emphasis>tmProviders</emphasis> list. Each TM Provider is defined in terms of a name (which allows identifying it in the Yamcs Monitor), a class (the java class instantiated by Yamcs to load the provider), a specification (used as an argument when instantiating the class) and the name of the stream where the data will be injected. There is also a property <emphasis>enabledAtStartup</emphasis> which allows to enable(default) or disable the TM provider for connecting to the external data source at the server startup.
+    </para>
+    <section><title>DassPacketProvider</title>
+        <para>Receives telemetry packets (PathTM) from DaSS.</para> 
+        <para>At startup the DassPacketProvider loads configuration properties defined in the configuration file <filename>dass.yaml</filename> (see <xref linkend="dass.yaml"/>). It builds the list of packet specifications which it should subscribe to DaSS. A specification is an object(vehicle id, packet type, apid, private header source). The list is built as follows:
+        <itemizedlist>
+                <listitem>If the property <emphasis>tmSubscriptionList</emphasis> is defined, then it considers only the specifications matching this property</listitem>
+                <listitem>If the property <emphasis>tmSubscriptionList</emphasis> is not defined, then all the APIDs defined in the MDB are considered as part of the subscription list with the vehicle id set to 2=(Columbus), the packet type set to 1(=payload) and the private header source set to -1 (=all). Please note that this kind of subscription only works when connected to the DaSS kernel not when connected to the USOC router (the USOC router does not support the wildcard subscriptions)</listitem>
+        </itemizedlist>
+    </para>
+    <para>Once the subscription list is built, the DassPacketProvider regularly tries to subscribe all the unsubscribed specifications from the list. At any time the Yamcs Monitor can be used to inspect the status of the subscription list. The Yamcs Monitor can also be used to close/re-open the connection to DaSS. </para>
+    <formalpara><title>Secure Connections and Certificates</title>
+        <para>If the property <emphasis>certificate</emphasis> is specified, it has to point to a certificate file which will be then used by the DassPacketProvider (also the DassPpProvider and the DassTcUplinker) to connect to DaSS (or to the USOC router) in an encrypted way. Unlike the TMR in CD-MCS, the DassPacketProvider will try to verify the certificate of the server (using java built-in mechanism). Normally the yamcs server is started ( by the script <command>yamcs-server.sh</command>) with the option <emphasis>-Djavax.net.ssl.trustStore=yamcs_root_directory/etc/trustStore</emphasis>. This option configures java to trust the certificates signed with the certificates stored in the trustStore file.</para>
+        <para> For the secure connection to work, the file etc/trustStore has to be populated with the key which has signed the DaSS server key. This can be easily done using the command <emphasis>keytool</emphasis> delivered as part of the Java:
+        <screen>
+            keystore -import -alias esa_root -keystore etc/trustStore -file esa_root.crt
+        </screen>
+        This command will import the file esa_root.crt into the java key store.
+        </para>
+    </formalpara>
+    </section>
+    
+    <section><title>TcpTmProvider</title>
+        <para>Provides packets received via plain Tcp sockets. The packets in CCSDS format are expected one after the other without any delimiter or separator (the length is deduced from the CCSDS header).</para>
+        <para>The specification consists of a name which selects a configuration defined in the file <filename>tcp.yaml</filename> (see <xref linkend="tcp.yaml"/>).</para>
+        <para>In case the tcp connection with the telemetry server cannot be opened or is broken, it retries to connect each 10 seconds.</para>
+    </section>
+
+    <section><title>TmapTmProvider</title>
+    <para>This provider is very similar with the TcpTmProvider above except that it expects packets having an extra 32 bytes PaCTS header followed by the CCSDS header. The PaCTS header is discarded.</para>
+    </section>
+    <section><title>MulticastTmProvider</title>
+    <para>This provider listens to a multicast (or UDP) port for datagrams containing CCSDS packets.</para>
+    <para>The specification consists of a name which selects a configuration defined in the file <filename>multicast.yaml</filename></para>
+    </section>
+    </section>
+    
+    <section><title>Processed Parameter Providers</title>
+    <section><title>DassPpProvider</title>
+        <para>Implements processed parameters from DaSS.</para>
+        <para>At startup the DassPpProvider loads configuration properties defined in the configuration file <filename>etc/dass.yaml</filename> (see <xref linkend="dass.yaml"/>). It builds the list of processed parameters which have to be subscribed from the MDB taking all the UMI tables found in the configured CCU. </para>
+        <para>Once the list of processed parameter built, it tries regularly to subscribe to any unsubscribed parameter. Using the Yamcs Monitor it is possible to stop the subscription to DaSS and to close the connection.</para>
+        <para>The processed parameters are made available to the subscribing clients, using names like opsname_PP where opsname is the original name of the processed parameter (i.e. name at the source).</para>
+        
+        <para>Unlike CD-MCS the processed parameters are made available via yamcs with the telemetry status received from DaSS. In CD-MCS the other attributes of the processed parameters are made available via other parameters like opsname_ST, etc. In yamcs these are not initialized, even the subscription is refused.</para>
+        
+        <para>
+            The mapping between DaSS status and yamcs parameters is documented in appendix dass-pp-mapping.
+        </para>
+    </section>
+    <section><title>MulticastPpProvider</title>
+        <para>Implements processed parameters received via multicast from the TMR</para>
+        <para>At startup the DassPpProvider loads configuration properties defined in the configuration file <filename>etc/multicast.yaml</filename> (see <xref linkend="multicast.yaml"/>). It builds the list of processed parameters which have to be considered from the MDB taking all the UMI tables found in the configured CCU.</para>
+        <para>The processed parameters are sent by TMR packetized in packets of variable size. Each packet is received in a UDP datagram.</para>
+        <para>The MulticastPpProvider uses some classes from the DaSS API to decode these packets which are then made available to the clients using the same mechanism and the same DaSS to CIS mapping like the DassPpProvider. The parameters which are not defined in the UMI maps loaded from the MDB are discarder</para>
+        <para> Using the Yamcs Monitor the processing of packets can be enabled/disabled. In addition the MulticatPpProvider collects simple statistics with the number of UDP datagrams received and the number of processed parameters in the last datagram. These statistics can also be seen using the Yamcs Monitor.</para>
+    </section>
+    </section>
+    
+    <section><title>TC Uplinkers</title>
+        <section><title>DassTcUplinker</title>
+        <para> Sends telecommands to the DaSS. It supports decoding of acknoledgments from DaSS, MCS, FSC, FRC, A, B, and C and upon reception of any of them, it generates two command history entries:
+            <itemizedlist>
+                <listitem> key: &lt;source&gt;_Status value: "OK" or "NACK msg"</listitem>
+                <listitem> key: &lt;source&gt;_Time value: the time at the reception of the acknowledgment</listitem>
+            </itemizedlist>
+            &lt;source&gt; is one of: Acknowledge_DaSS, Acknowledge_MCS, Acknowledge_FSC, Acknowledge_FRC, Acknowledge_A, Acknowledge_B, Acknowledge_C
+        </para>
+        <para>
+            The uplinker also supports resequencing events which is a process through which one upstream commanding server can change the sequence count of the uplinked telecommand, in order to preserve the correct sequence across multiple commanding clients
+        </para>
+        </section>
+        
+        <section><title>TcpTcUplinker</title>      
+        <para>Sends telecommands via TCP. Can be connected directly to the Columbus Emulator. It emulates all the DaSS related acknowledgments presented in the section above, with ACK OK. </para>
+        </section>
+        
+        
+        <section><title>TcapTcUplinker</title>
+            <para>Sends telecommands to the TCAP process which is a part of PaCTS. </para>
+            <formalpara><title>Note:</title>TCAP is doing its own CCSDS APID sequence counting and the protocol does not foresee a way to pass this information back to the TcapTcUplinker. Thus TcapTcUplinker will have no idea on what the final sequence count will be and will not generate corresponding re-sequencing command history events. Thus the Command History will not be able to associate the corresponding CCSDS command response (sent by the BSW) to the telecommand sent.</formalpara>
+        </section>
+    </section>
+</section>
+    
+ 
+
+
+
+<section><title>Mission Database</title>
+    <para>Currently, the Yamcs Mission Database is split into three parts: </para>
+	<itemizedlist>
+		<listitem>Telemetry is described according  to the XTCE structure.</listitem>
+		<listitem>Telecommand is described according to the CD-MCS MDB structure.</listitem>
+                <listitem>Processed Parameters is simply a list of names, according to Yamcs own structure. </listitem>
+	</itemizedlist>
+    <para>
+        Eventually, these three parts will be merged into one single XTCE hierarchical structure.
+    </para>
+    <para>
+        For faster access, the database is cached serialized on disk in the cache directory. Each of the three parts mentioned above create two files, one storing the data itself and the other one storing the time when the cache file has been created. These files should be considered Yamcs internal and are subject to change.
+    </para>
+    <para> 
+        Different loaders are possible for each database type.
+    </para>
+    <section><title>Telemetry loaders</title>
+        <section><title>CD-MCS MDB</title>
+        <para>
+            This loader loads the telemetry definition directly from the Oracle using the oracle jdbc driver. The relevant configuration file is <filename>etc/cdmcs-mdb.yaml</filename>. 
+         </para>
+         <para>
+                This configuration file contains, next to the username/password used to connect to the database, the path and the version of the CCU that will be loaded and also the testConfiguration (an end item of type EGSE_TEST_CONFIGURATION).
+        </para>
+	<para>
+            Based on the CCU parameters and on the opsname of the testConfiguration<footnote><para>Note that the test configuration can only  be specified through its opsname, so the opsname must exist and be unique.</para></footnote>, yamcs can determine the following three attributes which are used as attributes of the XTCE header:
+		<itemizedlist>
+			<listitem>CCU Internal Version - this is a number uniquely identifying the CCU and the CCU version</listitem>
+			<listitem>Test Configuration SID - this is a number uniquely identifying the test configuration</listitem>
+			<listitem>Consistency Date - this is the time when the configured CCU has been last modified.</listitem>
+		</itemizedlist>
+	</para>
+	
+        <para>
+            Please refer to <xref linkend="telemetry-processing"/> and to <xref linkend="commanding"/> for details on the loading of the MDB enditems and on the mapping to yamcs structures></para>
+	<para>
+            The configuration parameter <emphasis>checkForUpdatedMdb</emphasis> configures yamcs to check or not the Oracle database for modified versions of the MDB. If the MDB can not be loaded from the serialized file, the Oracle database is checked nevertheless.</para>
+	<para>
+            This options is useful for working "offline". However if it is set to false, yamcs will never read new versions of the database, and if the database is modified and SCOE files generated, MCS Tools will refuse to load the SCOE files (it will want old ones corresponding to the saved yamcs database).
+        </para>
+            
+        <para>
+            The packet description in CD-MCS MDB is spread over different structures. When read into yamcs, they are converted into the xtce structures as follows:
+                <orderedlist>
+                        <listitem>A generic sequence container named "ccsds" is created. This will be the root of the hierarchy. Three parameters are added to this sequence container:
+                                <itemizedlist>
+                                        <listitem>CCSDS_APID - the APID in the CCSDS primary header.</listitem>
+                                        <listitem>CCSDS_SH_PACKETTYPE - the packet type in the CCSDS secondary header.</listitem>
+                                        <listitem>CCSDS_PACKETID - the packet type in the CCSDS secondary header</listitem>
+                                </itemizedlist>
+                        </listitem>
+                        <listitem>A generic sequence container named "CCSDS_RESPONSE_PACKET" inheriting from the "CCSDS" container is created. The inheritance condition is "CCDSS_SH_PACKETTYPE=12(Response_packet)". This packet can be used by the CIS clients which want to subscribe to all the CCSDS response packets (for example the cmd-history)</listitem>
+                        <listitem>All the command responses (CCSDS_ADU_DESCRIPTION which have CCSDS Secondary Header set to CCSDS_RESPONSE_PACKET) are set to inherit the CCSDS_RESPONSE_PACKET container defined above. The inheritance condition is set on the CCSDS_APID, CCSDS_PACKETID parameters. </listitem>
+                        <listitem>All others CCSDS_ADU_DESCRIPTION are set to inherit directly the root container CCSDS. The inheritance condition is set also on the CCSDS_APID and CCSDS_PACKETID parameters</listitem>
+                        <listitem>For each CCSDS_ADU_DESCRIPTION that contains a "Reference To a Structure ID or Table" pointing to an end item of type MEASUREMENT_LIST_TABLE, an additional integer parameter is created containing the definition of the "Flexible ID" as defined in this aggregate. Then for each enditem of type PUS_STRUCTURE_ID referred in the MEASUREMENT_LIST_TABLE, a sequence container is created in yamcs, set to inherit the original CCSDS_ADU_DESCRIPTION with the inheritance condition on the Flexible ID as defined in the MEASUREMENT_LIST_TABLE </listitem>
+                </orderedlist>
+        </para>
+        <figure><title>Creation of the sequence containers from the CD-MCS MDB</title>
+                <mediaobject>
+                        <imageobject> <imagedata width="100%" fileref="images/MDBSequenceContainerCreation.svg" format="SVG"/> </imageobject>
+                </mediaobject>
+        </figure>
+		</section>
+		
+		
+		<section><title>Excel Spreadsheet</title>
+			<para>This loader constructs the MDB using containers and parameters defined in one or more Excel spreadsheets.</para>
+			<para>The loader is configured in <filename>etc/mdb.yaml</filename> (see <xref linkend="mdb.yaml"></xref> for a sample configuration). Specify the 'type' as "sheet", and provide the location of the spreadsheet file in the spec attribute. Additional spreadsheets may be specified in a 'subLoaders' list, using the type and spec attributes for each additional spreadsheet.</para>
+			<para>The format of the Excel spreadsheet is described in <xref linkend="excel-spec"></xref>.</para>
+		</section>
+		
+		
+		<section><title>XTCE files</title>
+			<para>This loader reads an MDB saved in XML format compliant with the XTCE specification. For more information about XTCE, and for the XTCE XML Schema, see <ulink url="http://www.xtce.org"></ulink>.</para>
+			<para>The loader is configured in <filename>etc/mdb.yaml</filename> (see <xref linkend="mdb.yaml"></xref> for a sample configuration). Specify the 'type' as "xtce", and provide the location of the XML file in the spec attribute.</para>
+		</section>
+		
+    </section>
+    
+    
+    <section><title>Processed Parameter loaders</title>
+    <para>
+        Processed Parameters represent parameters that are processed by systems outside Yamcs. Currently, the only such system supported is DaSS. Yamcs simply has to know the name of parameter and does not do any extra check (like out of limits, validity, etc). In addition, each parameter can be part of a group (which is just a string). The parameters part of the same group are stored together and they appear as such in the Yamcs Archive Browser.
+    </para>
+        <section><title>MDB PP Loader</title>
+        <para>
+            The MDB PP loader scans a configured CD-MCS MDB (using direct Oracle connection) for all the end items of type UMI_MAPPING_TABLE. The first part of the Opsname (string before the underscore) is used as group name.
+        </para>
+        </section>
+        <section><title>Flat file PP Loader</title>
+        <para>
+             The flatfile PP loader reads list of parameter names, groups and opsname from a tab separated file.
+         </para>
+         </section>
+     </section>   
+     
+     <section><title>Telecommand loaders</title>
+        <para> Currently the only TC loader is the CD-MCS MDB which reads data directly from the CD-MCS Oracle</para>
+     </section>
+ </section>
+ 
+ 
+<section id="telemetry-processing"><title>Telemetry Processing</title>
+    <section><title>Packet Telemetry</title>	
+	<para>The Yamcs Server implements a subset of the XTCE (XML Telemetric and Command Exchange) for telemetry processing. Only the concepts defined by the standard are supported.</para>
+	<para>For information about XTCE, please refer to <ulink url="http://www.xtce.org/">www.xtce.org</ulink>. This sections details only the xtce types implemented in yamcs.</para>
+	<formalpara><title>Sequence Containers</title>
+	<para><emphasis>Sequence containers</emphasis> are the equivalent of packets in the usual terminology, or ADU in the MDB terminology.</para>
+	<para>The sequence containers employ two mechanism to avoid the limitation of traditional "packet with parameters" approach. These mechanisms are aggregation and inheritance.</para>	
+	</formalpara>
+	<formalpara id="container-agregation"><title>Container aggregation</title>
+		<para>A sequence container contains <emphasis>sequence entries</emphasis> which can be of two types:
+			<itemizedlist>
+				<listitem>Parameter Entries - these point to normal parameters.</listitem>
+				<listitem>Container Entries - these point to other containers which are then included in the big container</listitem>
+			</itemizedlist>
+		</para>
+		<para>Special attention must be given to the specification of positions of entries in the container. For performance reasons, it is preferable that all positions are absolute (i.e. relative to the beginning of the container) rather than relative to the previous entry. The excel spreadsheet loader tries to transform the relative positions specified in the spreadsheet into absolute positions.</para>
+		<para>However, due to entries which can be of variable size, the situation cannot always be avoided. When an entry whose position is relative to the previous entry is subscribed, then yamcs adds to the subscription all the previous entries until it finds one whose position is absolute. </para>
+		<para>If a entry's position depends on another entry (it can be the same in case the entry repeats itself) which is a Container Entry (i.e makes reference to a container), and the referenced container doesn't have the size in bits specified, then all the entries of the referenced container plus all the inheriting containers and their entries recursively are added to the subscription. Thus, the processing of this entry will imply the extraction of all parameters from the referenced container and from the inheriting containers. The maximum position reached when extracting entries from the referenced and inheriting containers is considered the end of this entry and used as the beginning of the following one.</para>
+	</formalpara>
+	<formalpara><title>Container inheritance</title>
+		Sequence containers can point to another sequence container through the baseContainer property, meaning that the baseContainer is extended with additional sequence entries. The inheritance is based on a condition put on the parameters from the baseContainer (e.g. a EDR_HK packet is a CCSDS packet which has the apid=943 and the packetid=0x1300abcd).	
+	</formalpara>
+	<formalpara><title>Little Endian Parameter Encoding</title>
+	<para>Yamcs doesn't support yet the xtce way of describing byte ordering for parameter encoding. </para>
+	<para>The only alternative byte order supported is little endian. For parameters occupying entire bytes, there is no doubt on what this means. However, for parameters which occupy only part of bytes the following algorithm is applied to extract the parameter from the packet:
+		<orderedlist>
+			<listitem>Based on the location of the first bit and on the size in bits of the parameter, find the sequence of bytes that contain the parameter. Only parameters that occupy at most 4 bytes are supported.</listitem>
+			<listitem>Read the bytes in reverse order in a 4 bytes int variable.</listitem>
+			<listitem>Apply the mask and the shift required to bring the parameter to the rightmost bit.</listitem>
+		</orderedlist>
+	</para>
+	<para>For example, assuming than on an x86 CPU we have the following structure in C:</para>
+	<screen>
+		struct {
+			unsigned int parameter1:4;
+			unsigned int parameter2:16;
+			unsigned int parameter3:12;
+		} x;
+		x.a=0x1;
+		x.b=0x2345;
+		x.c=0x678;
+	</screen>
+	Would result, when converted to network order, in the sequence of hex bytes  <code>51 34 82 67</code>. Thus, the definition of this packet should look like:
+	<table><title>Little Endian Container Definition</title>
+		<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1' colwidth="0.5*"/>
+			<colspec colname='c2' colwidth="0.25*"/>
+			<colspec colname='c3' colwidth="0.25*"/>
+			<thead><row>
+					<entry>Parameter</entry>
+					<entry>Location</entry>
+					<entry>Size</entry>
+				</row></thead>
+			<tbody>
+				<row><entry>parameter1</entry><entry>4</entry><entry>4</entry></row>
+				<row><entry>parameter2</entry><entry>4</entry><entry>16</entry></row>
+				<row><entry>parameter3</entry><entry>16</entry><entry>12</entry></row>
+			</tbody>
+		</tgroup>
+	</table>
+			
+	</formalpara>
+    </section>
+
+    <section><title>Derived Values</title>
+    TBW
+    </section>
+
+    <section><title>System Variables</title>
+    TBW
+    </section>
+</section>
+
+
+<section id="commanding"><title>Commanding</title>
+    <para>Yamcs contains an HLCL parser capable to parse the telecommanding requests coming from the MCS Tools.</para> 
+    <para>Unlike for telemetry, xtce structures are not supported for commanding. Also, not supported are the command preconditions or postconditions (i.e. checking that telemetry parameters have certain values before or after sending the command).</para>
+
+
+    <section id="command-queues"><title>Command Queues</title>
+	<para> In yamcs when a command is sent by the CIS client it doesn't go directly to the TcUplinker but instead it goes into a queue. Privileges are checked before the command is put into the queue, so if the user doesn't have the privilege for the given telecommand, the command will be rejected and not appear at all in the queue<footnote><para>In fact, the command is already rejected when the prepareCommand CORBA call is made. This means that a user will not be able to open using the MCS Tools a stack containing a command for which he does not have authorization.</para></footnote></para> 
+	<para>The available queues are defined in the file <filename>etc/commandqueue.yaml</filename> (see <xref linkend="command-queue.yaml"/>).
+	Each queue has a name, a default state and a list of roles. The commands of a user logging in with a given role will be put in the first queue for which the role is specified</para>
+	<para> A queue can be in three different states:
+		<itemizedlist>
+			<listitem><emphasis>enabled</emphasis> means the commands are sent immediately</listitem>
+			<listitem><emphasis>blocked</emphasis> means the commands are accepted into the queue but need to be manually sent</listitem>
+			<listitem><emphasis>disabled</emphasis> means the commands are rejected</listitem>
+		</itemizedlist>
+	</para>		
+    <para>There is always a commandqueue called "default" whose state is enabled. If a command comes from a user whose role is not defined by any other queue (not recommended), the command will be put in the "default" queue. The "default" queue can be  redefined in the <filename>command-queue.yaml</filename> in order to have a different state.</para>
+    <para>The content of the command queue can be inspected using the yamcs monitor as explained <xref linkend="command-queue-control"/>. To be able to control the Command Queues, the user needs the MayControlCommandQueue privilege.</para>
+    </section>
+</section>
+
+<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="yamcs-server-auth.xml"/>    
+    
+<section><title>CIS Interface</title>
+        <para>This section describes how the Yamcs Server implements the CIS interfaces defined in the systemcontrol.idl. To be able to understand this section, it is better to be familiar with the CIS protocol.</para>
+        <itemizedlist>
+                <listitem>Telemetry - used for retrieving telemetry parameters.  In yamcs the parameters are sent to the client as soon as they are extracted from the packets. In CD-MCS they are grouped and sent once per second. Given this difference the subscription methods don't all make sense in yamcs. They are implemented as follows: 
+                        <itemizedlist>
+                                <listitem>DataDelivery.ALL and SampleKind.ON_CHANGE are implemented almost like in CD-MCS (because as explained above in CD-MCS SampleKind.ON_CHANGE means that the parameter is delivered in the next second and not immediately like in yamcs)</listitem>
+                                <listitem>SampleKind.ONCE subscriptions are ignored</listitem>
+                                <listitem>SampleKind.MAX_RATE behaves like SampleKind.ON_CHANGE</listitem>
+                                <listitem>DataDelivery.LAST behaves like DataDelivery.ALL </listitem>
+                                <listitem>subscribeOutOfLimits is not implemented</listitem>
+                        </itemizedlist>
+                </listitem>
+                <listitem>TelemetryPacket - used for retrieving telemetry packets. 
+                        <para>subscribePacketAcquisitions and unsubscribePacketAcquisitions are not implemented. In yamcs the acquisition/non-acquisition status of packets is not implemented, thus this methods don't make sense.</para></listitem>
+                <listitem>Commanding - used for sending telecommands. In the CIS protocol, there are two steps required to send a command:
+                        <orderedlist>
+                                <listitem>Call the method <code>prepareCommand</code> with the command string as an argument. This method returns a binary buffer containing the encoded CCSDS packet (in CD-MCS it includes also some other, unknown information. In CD-MCS (and in yamcs) the privilege checking is done at this step.</listitem>
+                                <listitem>Call the method <code>sendTC</code> with the buffer returned by the previous method as an argument. CD-MCS sends blindly the command without actually checking that it has been encoded by the prepareCommand method (certifying thus that the user is authorized to send it). In yamcs, the buffer returned by the prepareCommand is used as a key in a HashMap to retrieve back the command string. Yamcs checks again the privilege and only then sends the command.</listitem>
+                        </orderedlist>
+                        <para>The methods <code>prepareFLAPCommand, prepareSWOPCommand and prepareTwoStageCommand</code> are not implemented in yamcs.</para>
+                </listitem>
+                <listitem>CommandHistory</listitem>
+                <listitem>HLCL</listitem>
+                <listitem>Messaging</listitem>
+        </itemizedlist>
+</section>
+
+</chapter>

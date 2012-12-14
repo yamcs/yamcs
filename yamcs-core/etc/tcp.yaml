@@ -1,0 +1,23 @@
+#configuration for the TcpTmProvider and TcpUplinker 
+# they look for properties like 
+#spec:
+#    tmHost: 
+#    tmPort:
+#    tcHost:
+#    tcPort:
+#    minimumTcPacketLength (by default 48)
+
+# EPSS at Erasmus USOC
+epss:
+    tmHost: localhost
+    tmPort: 10015
+    tcHost: localhost
+    tcPort: 10003
+
+# EDR Col-Emu at Erasmus USOC
+col-emu:
+    tmHost: col-emu
+    tmPort: 10015
+    tcHost: col-emu
+    tcPort: 10003
+

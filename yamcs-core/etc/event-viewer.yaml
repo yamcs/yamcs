@@ -1,0 +1,7 @@
+# Specify path to sound file. This file will be played when event with enabled 
+# sound alerts occures. If not specified, default sound will be used.
+# File in .wav format is required.
+#soundfile: /absolute/path/to/sound/file.wav
+
+# Path to [ACES-EXCEL-DB] spreadsheet
+#aces.spreadsheet: /absolute/path/to/aces/spreadsheet.xls

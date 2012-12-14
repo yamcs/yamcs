@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="28.667" height="28.667" viewBox="0 0 28.667 28.667" overflow="visible" enable-background="new 0 0 28.667 28.667" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+	</g>
+
+	<g id="Layer_2">
+
+		<path fill="#FFFFFF" stroke="#000000" d="M28.167,28.167H0.5V0.5h27.667V28.167z"/>
+
+		<path d="M10.912,19.5V9.468h3.451c0.778,0,1.373,0.048,1.783,0.144c0.574,0.133,1.063,0.372,1.469,0.719    c0.528,0.447,0.924,1.019,1.186,1.714c0.262,0.696,0.393,1.491,0.393,2.385c0,0.762-0.089,1.437-0.267,2.025    s-0.405,1.075-0.683,1.461s-0.582,0.689-0.912,0.91s-0.729,0.389-1.196,0.503c-0.467,0.114-1.003,0.171-1.609,0.171H10.912z     M12.24,18.312h2.134c0.659,0,1.177-0.062,1.552-0.185s0.674-0.296,0.896-0.52c0.313-0.314,0.558-0.737,0.733-1.268    s0.263-1.174,0.263-1.931c0-1.048-0.171-1.854-0.515-2.417c-0.343-0.563-0.76-0.94-1.251-1.131    c-0.354-0.137-0.925-0.205-1.712-0.205h-2.1V18.312z"/>
+
+	</g>
+
+</svg>

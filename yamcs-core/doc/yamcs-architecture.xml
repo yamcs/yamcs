@@ -1,0 +1,187 @@
+<chapter id="yamcs-architecture">
+<title>Yamcs Architecture</title>
+
+Yamcs is implemented in Java and typically runs inside one single JVM. Many components are loadable with a plugin mechanism. 
+<sect1><title>Inter communication mechanisms.</title>
+
+For communication between the internal (inside JVM) componenets, Yamcs relies on a simple synchronous stream based mechanism. A stream is simply identified by a name and is providing a mechanism for transporting semi-structured data tuples from one component to any number of other components which are subscribed to the stream.
+For communication with the outside components, Yamcs relies on HornetQ which is a asynchronous messaging server. Streams can be connected to HornetQ address/queues such that external systems can inject/retrieve data from Yamcs. The HornetQ can be used to distribute different Yamcs modules on different systems.
+Finally, Yamcs provides some functionallity via a web services and via CORBA. The web services are used by the Yamcs web application which as of version 0.22 provides access to USS Displays via web.
+Generally the Stream based communication used internlly for very fast communication (planned for a future Event Detector module), the HornetQ is used for distributed inter-Yamcs componenets communication, while the Web services are used to provide access to Yamcs over Internet.
+The CORBA component is part of the yamcs-cdmcs module (which is not open-sourced) and is used for compatibility with CD-MCS software inside USOC.
+</sect1>
+
+<sect1><title>Sessions, Data Links, Streams, Processing Channels, and Channel Clients</title>
+    A Yamcs <emphasis>session</emphasis> is used to provide a separation between different processing domains. It can be used to monitor/control different payloads or version of the payloads. It can also be used to separate data from the same system that has to be processed using different rules (like a XTCE database change caused by a software upgrade).
+
+    <emphasis>Streams</emphasis> are used to transfer data inside components running in the same JVM. Currently the only way to see all the streams that are running inside Yamcs is using a JMX client like JConsole.
+    <emphasis>Data Links</emphasis> represent special components that inject data coming from external systems. Note that if a stream is linked to a HornetQ address/queue, the address can be used to inject data by an external component. However, the Data Links can reprt the status via the Yamcs Monitor and can also be enabled/disabled, meaning they connect/disconnect to/from the data sources.
+    <emphasis>Channels</emphasis> are a connection point for several different streams of the same instance (typically at least one TM and one TC) and processing data according to an XTCE database. 
+    <emphasis>Channel clients</emphasis> are TM monitoring or TC commanding application (USS, MCS Tools). They can be monitored via Yamcs Monitor.
+    
+    
+
+<sect1><title>Getting Started</title>
+	<para>The yamcs monitor is started with the command 
+	<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
+	<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
+	<figure><title>Yamcs connection dialog</title>
+		<mediaobject>
+			<imageobject> <imagedata width="25%" fileref="images/connect-to-yamcs.png" format="PNG"/> </imageobject>
+		</mediaobject>
+	</figure>
+	</para>
+	<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
+        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
+	for a non SSL connection, or 
+        <screen>yamcs-monitor.sh yamcss://localhost:5446/</screen>
+        for an SSL connection <footnote>SSL is not implemented as of Yamcs 0.22.0 (though it might work by configuring HornetQ).</footnote>.
+	</para>
+	<para>An additional command line option <emphasis>-na</emphasis> causes the yamcs monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the yamcs monitor when the admin options are enabled.</para>
+</sect1>
+<sect1><title>Data Links, Data Streams, Processing Channels and Clients</title>
+<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list clients connected to the Yamcs Server, for example USS or, MCS Tools. Furthermore a list of data links and data processing channels is shown. The data links are the sources of data inputs or outputs into/from yamcs while the channels are data processing contexs (linked typically with a XTCE database).
+    Tyipically a yamcs session has a realtime channel and different replay channels. The realtime channel is linked to data streams coming from outside while the replay channels are just providing data from the archive.
+</para>
+
+<para>In a typical operations infrastructure, the Yamcs Server runs
+on one computer(server), while Yamcs Monitor can be started on the same or any other
+computer which is able to make network connections to the Yamcs Server. 
+</para>
+<figure><title>Yamcs Monitor</title>
+   <mediaobject>
+      <imageobject> <imagedata width="100%" fileref="images/yamcs-monitor.png" format="PNG"/> </imageobject>
+  </mediaobject>
+</figure>
+<para>The Yamcs Monitor window is divided in two parts. The left side shows channel information. The right side displays client information, and it shows an input panel to create new channels.</para><para>
+<guilabel>Channels</guilabel> 
+</para>
+<para>This box displays a list of channels currently available. The Name column indicates a unique channel name. It should describe the channel data briefly. The Type column describes where the PathTM data of the channel comes from, and where TCs are sent to. The Spec column explains further configuration details. For example, if the type is "multicast", the Spec column contains the name of the configuration settings in the file "etc/multicast.properties". Another example, if the type is "HRDP Archive", the Spec contains the start and stop dates in encoded numbers, and a list of packets to receive. The Creator column shows the user who created the channel.</para>
+
+<para>Depending on the server configuration, the first entries show some channels created by the system. These are the channels created when Yamcs Server is started up.
+
+<guilabel>Connected Clients</guilabel></para>
+<para>This box shows all connected clients, excluding Yamcs Monitor itself. The ChannelName column tells the name of the channel the client is currently connected to.</para>
+<para>By right-clicking on a client, a popup menu appears, and the client can be connected to any of the channels. This way, even several clients may be connected to a single channel. Channels without clients are instantly removed.</para>
+<para>New clients are automatically connected to the "realtime" channel. The "realtime" channel will never be removed, even if there are no clients connected .</para>
+<guilabel>Selected Channel Info</guilabel> box 
+<para>This box displays current information about PathTM ("TM Status"), Processed Parameters ("PP Status"), and telecommands. Each of these parts can be temporarily disabled using the Disable buttons. To enable a part again, the Disable button is pressed again.</para>
+<para>The table shows one row per packet type received via PathTM. Over time, this table may accumulate payload HK packets, TC response packets, science packets, and SSL event packets. All packets defined in the MDB can be listed here, if they appear in the PathTM stream.</para>
+<guilabel>New Channel</guilabel> box
+<para>In this box new channels are created. The Name field contains the name of the new channel. The Type field determines the type. Depending on the type, the Spec panel changes accordingly.</para>
+<itemizedlist>
+<listitem> PaCTS File - A file in PaCTS archive format can be selected for playback. Such files are usually found in the archive folder of any PaCTS installation ("ARCHIVE/yyyy/mm/dd/hh"). The files to choose from are found in a directory specified in the "etc/archive.properties" file.</listitem>
+
+
+<listitem>Archive - A channel of type "Archive" provides PathTM played back from the High Rate Data Processor (HRDP). The HRDP is a system of servers that contains all data ever recorded. It is usually located in the operations infrastructure. The start time, stop time, and the packets to be received are shown. To populate these fields, the Archive Selector window is used. To open it, the button "Open HRDP Archive Selector" is pressed.
+Packets can be removed from the given list by selecting them and pressing the Del key.
+Realtime speed indicates that data is replayed at the same speed it was
+recorded. Fixed speed will play the data at one packet per second, no matter
+how fast they were recorded.
+<para>When the "Loop Replay" box is checked, the replay will wrap around and
+automatically restart from the beginning. Otherwise, the replay stops when it
+ends at the stop time. Commanding is not possible with the HRDP archive replay.</para>
+</listitem>
+</itemizedlist>
+<para>To finally create the channel, the Create button is pressed. One or more client must be selected which will then be assigned to the new channel.</para>
+</sect1>
+<sect1 id="command-queue-control"><title>Command Queue Control</title>
+	The Command Queue Control window can be open either from the main yamcs monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
+	<figure><title>Command Queue Control Window</title>
+		<mediaobject> 
+			<imageobject><imagedata width="100%" fileref="images/command-queues.png"/></imageobject>
+		</mediaobject>
+	</figure>
+	The window is split into two panels:
+	<itemizedlist>
+		<listitem>The upper panel contains a list with all the defined command queues. The queue name, the current state and the number of commands that are currently in the queue is displayed. Right-clicking on a command queue opens a menu giving the possibility to change the state of the queue. 
+		<para>In addition to setting the new state of the queue, the following additional actions happen if changing the state of a blocked queue:
+			<itemizedlist>
+				<listitem> blocked -> disabled: all the commands in the queue will be automatically rejected.</listitem>
+				<listitem> blocked -> enabled: all the commands in the queue will be automatically sent</listitem>
+			</itemizedlist>
+		</para>
+		</listitem>
+		<listitem> The bottom panel contains the list of commands currently present in the queue selected in the upper panel. For each command the queue name, the command id, the user that has sent the command and the command string are display 
+			The list is of course empty if the selected queue is not in the state blocked.
+		<para>Right-clicking on a command gives the possibility to Sent or Reject the command.</para>
+		</listitem>
+	</itemizedlist>
+</sect1>
+<sect1> <title>Archive Selector</title>
+<para>The Archive Selector is a dialogue used within the Yamcs Monitor application. Its purpose is to specify the details of a new HRDP channel, and to follow its progress while data is being played back.</para>
+<figure><title>HRDP Archive Selector</title>
+<mediaobject> 
+  <imageobject><imagedata width="100%" fileref="images/hrdp-archive-selector.png"/></imageobject>
+</mediaobject>
+</figure>
+<para>The Archive Selector can be opened in Yamcs Monitor by pressing the "Open HRDP Archive Selector" button in the "New Channel" panel, or by selecting the appropriate menu item in the "Windows" menu.</para>
+<para>When opened, the window still shows empty panels. The display must first be populated in order to show data. This is described below.</para>
+<para>The top panel displays the total range of data stored in the HRDP archive. It also shows the time period of the currently selected range. Furthermore, all available packets are shown by name, and how many are currently selected out of a total. For example, "EuTEF (5/15)" means that the entire HRDP archive contains 15 different packets from the EuTEF MDB, of which 5 packets are currently shown in the TM browser below. Packets not defined in the MDB are shown as "unknown".</para>
+<para>The Replay Control panel shows information when a HRDP channel is currently played. There is one button which is used to stop or resume playback. When stopped, the playback pointer will not jump back to the beginning. Playback will be resumed at the current position.</para>
+<sect2><title> Displaying the HRDP Archive</title>
+<para>The main part of the window comprises a display to visualize telemetry packets available in the HRDP archive. When opening the window for the first time, it needs to be populated. This is done by pressing the "Reload View from HRDP" button. This will request information from Yamcs Server about all packets available in the HRDP, so this operation may take some time, depending on the amount of data in the HRDP, and depending on the bandwidth of the network connection. During the reload process, the "Packets" row in the "HRDP Data Information" box displays the progress.</para>
+<para>When all data information has been loaded, the display is updated and the time scale is adjusted to match the total range of packets available.</para>
+<para>By default no packets are shown. It is now up to the user to choose and display packets. This is done by right-clicking in the empty space left to the vertical divider. A popup menu offers to add packets. One packet can be added at a time, or with one mouse click all packets of a single payload can be added. Each packet is shown in a random colour to distinguish it visually from its neighbor packets. The colour can be changed by right-clicking on the packet label and choosing the appropriate menu item.</para>
+<para>Payload names are detected from packet opsnames. It is expected that good telemetry packet opsnames start with their payload's name, separated from the remainder by an underscore.</para>
+<para>Telecommand response packets are not frequent telemetry like housekeeping packets. But they still are downlinked the same way, so they are also stored in the HRDP archive. As a consequence, they will appear next to regular packets in the archive selector when choosing the packets to show. This may pose a problem if there are very many command response packets. The popup menu used to show all packets could exceed the screen height. To avoid this, an option in the "View" menu is available to hide response packets.</para>
+<para>Telemetry packets in the HRDP archive which are not defined in the MDB are not associated to a payload. Their names are automatically constructed using the APID and CCSDS packet id.</para>
+<para>When all desired packets are selected, the timeline display can be used to inspect the data. A solid rectangle represents a block of PathTM data received at a constant rate. The mouse can be moved over the rectangle to show a tooltip which describes the exact time range and the packet frequency.</para>
+<para>To mark a selection, the left mouse button is pressed and held, and the mouse is moved to mark start and stop times.</para>
+<para>When the <guibutton>Zoom Selection</guibutton> button is pressed, the current selection will be zoomed in to fit the view. The total scrollable range will then be limited to a reasonable time frame. This means that distant times may be out of reach using the horizontal scroller. This is because the selection may be so small that the total scrollable view would grow too large to handle.
+<para>While zooming into selections, previous zoom levels will be remembered. The "Zoom Out" button restores the previous zoom level. Depending on the zoom depth, the time scale will adjust in order to be as appropriate as possible to fit the current zoom resolution. The "Show All" button will discard all zoom levels, showing the total range of telemetry in the HRDP archive.</para>
+<para>All dates shown in Archive Selector can be shown in a format using month and day (YYYY.MM.DD) or the day of the year (YYYY/DDD). This can be toggled in the <guimenu>View</guimenu> menu.</para>
+</para>
+</sect2>
+<sect2><title>Making the Selection</title>
+<para>
+When the "Apply Selection" button is pressed, the current selection is subject for replay. This includes all telemetry packets shown. Those packets visible but unwanted can be removed using the popup menu on the respective packet labels.
+
+By pressing the "Apply Selection" button, the start time, stop time, and packet names are inserted into the Yamcs Monitor "New Channel" box. There, unwanted packets can still be removed using the Del key. Further details like playback speed and loop mode can be specified there.
+
+The Archive Selector window remains open to allow the replay to be followed. It can be closed anytime if desired.
+</para>
+</sect2>
+<sect2> <title>Replaying the Data</title>
+<para>When the selection has been applied, the new channel is ready to be
+created in Yamcs Monitor. Pressing the "Create" button will create the
+channel, connect it to the selected clients, and start replay
+immediately.</para>
+<figure><title>HRDP Archive Selector in Replay Mode</title>
+<mediaobject> 
+ <imageobject><imagedata width="100%" fileref="images/hrdp-wth-edrdata.png"/></imageobject>
+</mediaobject>
+</figure>
+<para>It may take several seconds for Yamcs Server to initiate the replay.</para>
+<para>Once the replay has started, a start marker and a stop marker appear on the Archive Selector display. These are tagged with yellow rectangles. A third marker denotes the current position. It is tagged with two green triangles. The current position marker and the <guilabel>Replay Control</guilabel> panel are updated often.</para>
+<para>While the replay is progressing, selections can still be made in order to zoom in and to refine the display.</para>
+<para>HRDP replays are seekable with random access at any time. The right mouse button can be used to move the current position marker to any new position. The new position may be before or after the current position. If it is before the start marker, the replay will automatically jump exactly to the start marker. If the new position is after the stop marker, the replay will end and optionally restart if loop was enabled.</para>
+<para>The Archive Selector will show replay progress of the current channel selected in Yamcs Monitor. To switch to another HRDP replay channel, the desired channel only needs to be selected. The Archive Selector Window is updated with the information taken from the newly selected channel.</para>
+</sect2>
+<sect2><title>Starting a Replay Using CD-MCS</title>
+<para>
+This section is useful for operators only. UHB users may skip it.
+
+Although this application allows comfortable selection and replay tracking of HRDP data, it still allows for the alternative way of playing back HRDP data: HRDP data can also be played back using CD-MCS. This is accomplished by entering a command into the HLCL console of CD-MCS.
+</para>
+<figure><title>HLCL command string for SDM retrieval</title>
+<mediaobject> 
+ <imageobject><imagedata width="80%" fileref="images/hrdp-hlcl-sdm-command-string.png"/></imageobject>
+</mediaobject></figure>
+<para>
+To save the user efforts in typing in the long command, the Archive Selector window offers to display the HLCL command to start a replay. This command can be copied into the clipboard and then pasted into the HLCL console. The command contains the start time and the stop time, which are conveniently taken from the current selection. However, the packet selection is irrelevant because in CD-MCS a replay will play back all packets encountered in the given time frame.
+
+The HLCL command is displayed using the CD-MCS menu, ready for being copied to clipboard.
+
+Not only an HRDP replay command for CD-MCS can be prepared. It is also
+possible to display the HLCL command to start a replay from the DaSS at
+Col-CC.
+</para>
+<figure><title>HRDP command string for Col-CC DaSS retrieval</title>
+<mediaobject> 
+ <imageobject><imagedata width="80%" fileref="images/hrdp-hlcl-command-string.png"/></imageobject>
+</mediaobject>
+</figure>
+</sect2>
+</sect1>
+</chapter>

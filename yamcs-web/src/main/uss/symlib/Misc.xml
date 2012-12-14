@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Misc">
+  <comment />
+  <symbol>
+    <name>Attitude</name>
+    <comment />
+    <image>Attitude.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Button Typical</name>
+    <comment />
+    <image>Button_Typical.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Command Button</name>
+    <comment />
+    <image>Command%20Button.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Command Button Barber Pole</name>
+    <comment />
+    <image>Command_Button_Barber_Pole.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>CommandButton</name>
+    <comment />
+    <image>CommandButton.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Indeterminate Valve</name>
+    <comment />
+    <image>Indeterminate%20Valve.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Information Arrow</name>
+    <comment />
+    <image>Information%20Arrow.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Modulating Valve Three-way</name>
+    <comment />
+    <image>Modulating%20Valve%20Three-way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Modulating Valve Two-way</name>
+    <comment />
+    <image>Modulating%20Valve%20Two-way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Navigation Arrow</name>
+    <comment />
+    <image>Navigation%20Arrow.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Radio Button</name>
+    <comment />
+    <image>Radio%20Button.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Status Lights</name>
+    <comment />
+    <image>Status%20Lights.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Valve in Transition</name>
+    <comment />
+    <image>Valve_in_Transition.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>Valve with Modifer</name>
+    <comment />
+    <image>Valve_with_Modifer.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

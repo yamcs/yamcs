@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="13.125" height="26.183" viewBox="0 0 13.125 26.183" overflow="visible" enable-background="new 0 0 13.125 26.183" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+		<g>
+
+			<path fill="#FFFFFF" d="M0.167,12.956V6.165l0.125-1.083l0.25-0.75l0.333-0.75L1.208,3.04l0.625-0.917l0.75-0.625l0.875-0.583     l0.958-0.417l1.125-0.292l0.625-0.083l0.958,0.042l1.333,0.25L9.5,0.873l0.792,0.5L11,1.915l0.583,0.625l0.5,0.708l0.375,0.792     l0.25,0.542L13,5.706l-0.042,7.25H0.167z"/>
+
+			<path d="M0.125,12.873h13v6.625l-0.281,1.438l-0.281,1.031l-0.813,1.406l-1.25,1.344l-1.813,0.938L6.563,26.06l-1.781-0.219     L3.25,25.123l-1.719-1.5L0.5,21.81l-0.313-1.156l-0.063-1.281V12.873z"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.25" d="M0.125,6.56c0-3.555,2.882-6.438,6.438-6.438S13,3.005,13,6.56"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.25" d="M0.125,19.623c0,3.555,2.882,6.438,6.438,6.438S13,23.178,13,19.623"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.25" d="M0.125,19.873V6.498"/>
+
+			<path fill="none" stroke="#000000" stroke-width="0.25" d="M13,19.904V6.341"/>
+
+			<path fill="#FFFFFF" stroke="#000000" stroke-width="0.25" d="M3.062,5.436h6.958l-3.208,7.208L3.062,5.436z"/>
+
+		</g>
+
+	</g>
+
+</svg>

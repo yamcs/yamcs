@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="123" height="145.5" viewBox="0 0 123 145.5" overflow="visible" enable-background="new 0 0 123 145.5" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+
+	<g id="Layer_1">
+
+	</g>
+
+	<g id="Layer_2">
+
+		<path fill="none" d="M123,112.25c0,18.363-27.535,33.25-61.5,33.25S0,130.613,0,112.25S27.535,79,61.5,79S123,93.887,123,112.25z"/>
+
+		<path fill="#00FF00" stroke="#000000" d="M3.835,100.847C19.038,86.38,39.607,77.5,62.25,77.5c22.129,0,42.277,8.481,57.371,22.37    "/>
+
+		<path fill="none" stroke="#000000" d="M46.5,0.5h31l-5,16.5H52L46.5,0.5z"/>
+
+		<g a:adobe-knockout="true">
+
+			<path stroke="#000000" a:adobe-knockout="false" d="M44.5,21l-18,49.5"/>
+
+			<path stroke="#000000" a:adobe-knockout="false" d="M24.479,67.659L23.511,78.84l6.429-9.199L24.479,67.659z"/>
+
+		</g>
+
+		<g a:adobe-knockout="true">
+
+			<path stroke="#000000" a:adobe-knockout="false" d="M79.5,20.5L99,73"/>
+
+			<path stroke="#000000" a:adobe-knockout="false" d="M95.62,72.146l6.509,9.143l-1.065-11.172L95.62,72.146z"/>
+
+		</g>
+
+		<g>
+
+			<g a:adobe-knockout="true">
+
+				<path fill="none" stroke="#000000" a:adobe-knockout="false" d="M41.064,70.222c7.301-2.05,15.001-3.146,22.958-3.146      c9.768,0,19.15,1.652,27.881,4.693"/>
+
+				<path fill="none" stroke="#000000" a:adobe-knockout="false" d="M42.196,66.924l-9.652,5.726l11.223-0.133L42.196,66.924z"/>
+
+			</g>
+
+			<path stroke="#000000" d="M42.196,66.924l-9.652,5.726l11.223-0.133L42.196,66.924z"/>
+
+		</g>
+
+	</g>
+
+</svg>

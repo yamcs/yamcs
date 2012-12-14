@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Groups">
+  <comment />
+  <symbol>
+    <name>GR1 Command and Data Group</name>
+    <comment />
+    <image>GR1_Command_and_Data_Group.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR1 Command and Data Handling</name>
+    <comment />
+    <image>GR1_Command_and_Data_Handling.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR10 Integrated Operations</name>
+    <comment />
+    <image>GR10_Integrated_Operations.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR11 Payloads Group</name>
+    <comment />
+    <image>GR11_Payloads_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR12 Robotics Group</name>
+    <comment />
+    <image>GR12_Robotics_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR12-a Europeon Robotic Arm ERA</name>
+    <comment />
+    <image>GR12-a_Europeon_Robotic_Arm_ERA.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR13 Transfer Vehicle Group</name>
+    <comment />
+    <image>GR13_Transfer_Vehicle_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR13-a Kurs Radar Docking System</name>
+    <comment />
+    <image>GR13-a_Kurs_Radar_Docking_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR2 Communication and Tracking Group</name>
+    <comment />
+    <image>GR2_Communication_and_Tracking_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR2-a Flight Data Telemetry System</name>
+    <comment />
+    <image>GR2-a_Flight_Data_Telemetry_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR2-b SM Comm System</name>
+    <comment />
+    <image>GR2-b_SM_Comm_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR2-c Television System</name>
+    <comment />
+    <image>GR2-c_Television_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR3 Electrical Power Group</name>
+    <comment />
+    <image>GR3_Electrical_Power_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR4 Environmental Control Group</name>
+    <comment />
+    <image>GR4_Environmental_Control_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR5 Motion Control Group</name>
+    <comment />
+    <image>GR5_Motion_Control_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR5-a Navigation</name>
+    <comment />
+    <image>GR5-a_Navigation.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR5-b Thrust Assist</name>
+    <comment />
+    <image>GR5-b_Thrust_Assist.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR5-c SM Integrated Propulsion System</name>
+    <comment />
+    <image>GR5-c_SM_Integrated_Propulsion_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR6 Structures and Mechanisms Group</name>
+    <comment />
+    <image>GR6_Structures_and_Mechanisms_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR6-a Docking and Internal Transfer System</name>
+    <comment />
+    <image>GR6-a_Docking_and_Internal_Transfer_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR7 Thermal Control Group</name>
+    <comment />
+    <image>GR7_Thermal_Control_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR8 Extravehicular Activity Group</name>
+    <comment />
+    <image>GR8_Extravehicular_Activity_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR9 Integrated Medical Group</name>
+    <comment />
+    <image>GR9_Integrated_Medical_Group.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>GR9-a Radiation Monitoring System</name>
+    <comment />
+    <image>GR9-a_Radiation_Monitoring_System.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

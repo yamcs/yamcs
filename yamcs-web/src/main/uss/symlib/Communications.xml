@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Communications">
+  <comment />
+  <symbol>
+    <name>C10 Attenuator Signal Strength</name>
+    <comment />
+    <image>C10_Attenuator_Signal_Strength.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C11 Audio Terminal Unit ATU</name>
+    <comment />
+    <image>C11_Audio_Terminal_Unit_ATU.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C12 Camera</name>
+    <comment />
+    <image>C12_Camera.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C13 Camera Minicam</name>
+    <comment />
+    <image>C13_Camera_Minicam.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C14 Camera Still</name>
+    <comment />
+    <image>C14_Camera_Still.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C15 Fiber Optic</name>
+    <comment />
+    <image>C15_Fiber_Optic.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C16 Filter Band Pass Frequency</name>
+    <comment />
+    <image>C16_Filter_Band_Pass_Frequency.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C17 Filter Band Pass with Variable Center Frequency</name>
+    <comment />
+    <image>C17_Filter_Band_Pass_with_Variable_Center_Frequency.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C18 Filter Band Pass with Variable Pass Band Selectivity Control</name>
+    <comment />
+    <image>C18_Filter_Band_Pass_with_Variable_Pass_Band_Selectivity_Control.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C19 Filter Band Stop</name>
+    <comment />
+    <image>C19_Filter_Band_Stop.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C1S Air to Ground System</name>
+    <comment />
+    <image>C1S_Air_to_Ground_System.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C2 Antenna Dipole</name>
+    <comment />
+    <image>C2_Antenna_Dipole.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C20 Filter Band Stop Variable</name>
+    <comment />
+    <image>C20_Filter_Band_Stop_Variable.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C21 Filter High Pass</name>
+    <comment />
+    <image>C21_Filter_High_Pass.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C22 Filter Low Pass</name>
+    <comment />
+    <image>C22_Filter_Low_Pass.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C23 Frequency Control Automatic</name>
+    <comment />
+    <image>C23_Frequency_Control_Automatic.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C24S Frequency Divider</name>
+    <comment />
+    <image>C24S_Frequency_Divider.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C25S Frequency Multiplier</name>
+    <comment />
+    <image>C25S_Frequency_Multiplier.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C26S Harmonic Generator</name>
+    <comment />
+    <image>C26S_Harmonic_Generator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C27 Headset</name>
+    <comment />
+    <image>C27_Headset.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C28 Microphone</name>
+    <comment />
+    <image>C28_Microphone.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C29 Receiver</name>
+    <comment />
+    <image>C29_Receiver.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C3 Antenna Dish Parabolic A</name>
+    <comment />
+    <image>C3_Antenna_Dish_Parabolic_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C3 Antenna Dish Parabolic B</name>
+    <comment />
+    <image>C3_Antenna_Dish_Parabolic_B.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C30 Recorder Audio Tape</name>
+    <comment />
+    <image>C30_Recorder_Audio_Tape.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C31 Recorder Eject</name>
+    <comment />
+    <image>C31_Recorder_Eject.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C32 Recorder Fast Forward</name>
+    <comment />
+    <image>C32_Recorder_Fast_Forward.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C33 Recorder Next</name>
+    <comment />
+    <image>C33_Recorder_Next.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C34 Recorder Pause Standby</name>
+    <comment />
+    <image>C34_Recorder_Pause_Standby.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C35 Recorder Play</name>
+    <comment />
+    <image>C35_Recorder_Play.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C36 Recorder Previous</name>
+    <comment />
+    <image>C36_Recorder_Previous.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C37 Recorder Record</name>
+    <comment />
+    <image>C37_Recorder_Record.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C38 Recorder Rewind</name>
+    <comment />
+    <image>C38_Recorder_Rewind.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C39 Recorder Stop</name>
+    <comment />
+    <image>C39_Recorder_Stop.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C4 Antenna Global Positioning System GPS</name>
+    <comment />
+    <image>C4_Antenna_Global_Positioning_System_GPS.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C40 Recorder Video Tape</name>
+    <comment />
+    <image>C40_Recorder_Video_Tape.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C41 Speaker</name>
+    <comment />
+    <image>C41_Speaker.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C5 Antenna Helix</name>
+    <comment />
+    <image>C5_Antenna_Helix.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C6 Antenna Horn</name>
+    <comment />
+    <image>C6_Antenna_Horn.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C7 Antenna Horn Steerable</name>
+    <comment />
+    <image>C7_Antenna_Horn_Steerable.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C8 Antenna Omni Directional</name>
+    <comment />
+    <image>C8_Antenna_Omni_Directional.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>C9 Antenna Phase Array</name>
+    <comment />
+    <image>C9_Antenna_Phase_Array.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-C1 Radio Frequency RF</name>
+    <comment />
+    <image>P-C1_Radio_Frequency_RF.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-C2 Sound</name>
+    <comment />
+    <image>P-C2_Sound.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

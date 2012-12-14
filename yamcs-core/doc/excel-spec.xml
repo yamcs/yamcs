@@ -1,0 +1,390 @@
+<appendix id="excel-spec"><title>Excel Spreadsheet Specification</title>
+
+<para>Please note that only the part related to the TM Packets/Parameters is loaded
+directly into yamcs. The part related to the commands is only used by the
+script to be imported into the CD-MCS MDB.</para>
+
+<sect1><title>Conventions</title>
+	<orderedlist>
+		<listitem>Every opsname will automatically be prepended with the 'opsname prefix' value from the 'General' sheet (if 'opsname prefix' is specified)</listitem>
+		<listitem>The actual descriptive part of opsnames is WordCapitalized (eg. HK_WatchdogError)</listitem>
+		<listitem>All numeric values can be entered as decimals or as hexadecimals (with prefix 0x)</listitem>
+		<listitem>Although column names are used for reference below, columns must not be re-ordered.</listitem>
+	</orderedlist>
+	<para>A number of mandatory named sheets are described as part of this specification, though authors may add their own sheets and still use the spreadsheet file as the reference MDB.</para>
+</sect1>
+
+<sect1><title>General sheet</title>
+	<para>This sheet must be named "General", and the columns described must not be reordered.</para>
+	<variablelist><title>Columns</title>
+		<varlistentry><term>format version</term>
+			<listitem>Used by the loader to ensure a compatible spreadsheet structure. This document describes format version 2</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>name</term>
+			<listitem>Name of the MDB</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>document version</term>
+			<listitem>Used by the author to track versions in an arbitrary manner</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>opsname prefix</term>
+			<listitem>Optional value which will automatically be prepended before every opsname, useful if all the parameters have a common system prefix</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+<sect1><title>MDB sheet</title>
+	<para>This sheet is optional, but if present must be named "MDB" The columns described must not be reordered.</para>
+	<variablelist><title>Columns</title>
+		<varlistentry><term>version</term>
+						<term>issue</term>
+						<term>revision</term>
+						<term>testversion</term>
+			<listitem>Used for CDU version tracking</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>instance</term>
+			<listitem>Organisation</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>systemtree</term>
+			<listitem>Version of the system tree used</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>cupath</term>
+			<listitem>Path in MDB</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>apid</term>
+			<listitem>APID used for TCs</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>element_configuration</term>
+			<listitem>Root system</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>mission</term>
+						<term>CDU version</term>
+						<term>CDU description</term>
+			<listitem>Inserted into generated CDU</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+<sect1><title>Containers sheet</title>
+	<para>This sheet must be named "Containers", and the columns described must not be reordered. The sheet contains packets information, including their measurements. General conventions:
+		<itemizedlist>
+			<listitem>first line with a new 'packets opsname' starts a new packet</listitem>
+			<listitem>second line after a new 'packet opsname' should contain the first measurement</listitem>
+			<listitem>empty lines are only allowed between two packets</listitem>
+		</itemizedlist>
+	</para>
+	<variablelist><title>Columns</title>
+		<varlistentry><term>container name</term>
+			<listitem>The opsname of the packet</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>parent</term>
+			<listitem>Parent container and position in bits where the subcontainer starts, for example  'PARENT_CONTAINER:64'. If position in bits is not specified, the default position is to start from the last parameter in the parent. If parent is not specified, either the container is the root, or it can be used as part of another container in aggregation.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>condition</term>
+			<listitem>Inheritance condition, usually specifies a switch within the parent which activates this child, for example 'MID=0x101'</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>flags</term>
+			<listitem>Used to encode special cases. Flags are case insensitive and can be concatenated together.
+				<itemizedlist>
+					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In yamcs the parameter is NOT ignored.</listitem>
+					<listitem><emphasis>D:</emphasis> derived value, in this case the measurement MAY NOT have calibration</listitem>
+					<listitem><emphasis>L:</emphasis> little endian value</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>parameter name</term>
+			<listitem>The opsnames of the Parameters contained within this container, one per line after the line defining the opsname. Parameters are defined in the Parameters sheet. Note that the first parameter of a packet MAY NOT be on the same line as the packet opsname. Extension: for the SOLAR Instruments, this column has been extended to mean not only a measurement but also another packet in case the extension mechanism specified above is not enough.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>relpos</term>
+			<listitem>Relative position (offset) of a measurement to its predecessor. A relpos of 1 means no gap between two measurements. A relpos of 9 means a gap of one byte (i.e. 8 irrelevant bits).</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>size in bits</term>
+			<listitem>The size of the container in bits. This is not usually needed but if the container is part of another container through agregation, this size is used to determine the position of the next entry in the master container. See <xref linkend="container-agregation"/> for more details.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>expected interval</term>
+			<listitem>If the container is not updated in this interval, all the parameters from it are marked as expired</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>description</term>
+			<listitem>Optional human readable text.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>namespace:MDB:Pathname</term>
+			<listitem>Optionally specify the MDB alias for the packet.</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+
+<sect1><title>Parameters sheet</title>
+	<para>This sheet must be named "Parameters", and the columns described must not be reordered. The sheet contains measurements information (both for TM and RESP packets), excluding their calibration.</para>
+	<variablelist><title>Columns</title>
+		<varlistentry><term>opsname</term>
+			<listitem>The opsname of the measurements. Any entry starting with '#' is treated as a comment row.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>bitlength</term>
+			<listitem>Length of the measurement, in bits, not needed for terminatedstring raw types</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>raw type</term>
+			<listitem>See <xref linkend="sheet-raw-types"></xref> for descriptions of the available raw types.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>eng type</term>
+			<listitem><simplelist type="inline"><member>uint</member><member>int</member><member>string</member><member>float</member></simplelist></listitem>
+		</varlistentry>
+		
+		<varlistentry><term>eng unit</term>
+			<listitem><simplelist type="inline"><member>degC</member><member>W</member><member>V</member><member>A</member><member>s</member><member>us</member></simplelist></listitem>
+		</varlistentry>
+		
+		<varlistentry><term>calibration</term>
+			<listitem>Name of a calibration described in the Calibration sheet, leave empty if no calibration is applied</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>low warn limit</term>
+			<listitem>The lower limit of the raw value range, or a fixed raw value (if the highlimit is not filled in)</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>high warn limit</term>
+			<listitem>The upper limit of the raw value range</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>low danger limit</term>
+			<listitem>The upper limit of the raw value range</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>high danger limit</term>
+			<listitem>The upper limit of the raw value range</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>description</term>
+			<listitem>Optional human readable text.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>namespace:MDB:Pathname</term>
+			<listitem>Optionally specify the MDB alias for the packet.</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+<sect1><title>Calibration sheet</title>
+	<para>This sheet must be named "Calibration", and the columns described must not be reordered. The sheet contains calibration data including enumerations.</para>
+
+	<variablelist><title>Columns</title>
+		<varlistentry><term>parameter name</term>
+			<listitem>Name of the calibration</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>type</term>
+			<listitem>
+				<simplelist type="inline"><member>enumeration</member><member>polynomial</member><member>pointpair</member><member>identical</member></simplelist>
+				<itemizedlist>
+					<listitem><emphasis>polynomial calibration</emphasis>: the type is 'polynomial', calib1 contains the coefficients and calib2 is empty</listitem>
+					<listitem><emphasis>pointpair calibration</emphasis>: the type is 'pointpair', calib1 and calib2 fields contain the start and stop points of each line</listitem>
+					<listitem><emphasis>discrete calibration</emphasis>: the type is 'identical', calib1 contains the raw value, calib2 contains the engineering value</listitem>
+					<listitem><emphasis>enumeration calibration</emphasis>: the type is 'enumeration', calib1 contains the numeric value, and calb2 contains the corresponding presentation value</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>calib1</term>
+			<listitem>
+				<itemizedlist>
+					<listitem><emphasis>polynomial calibration</emphasis>: calib1 contains the coefficients and calib2 is empty</listitem>
+					<listitem><emphasis>pointpair calibration</emphasis>: calib1 and calib2 fields contain the start and stop points of each line</listitem>
+					<listitem><emphasis>discrete calibration</emphasis>: calib1 contains the raw value, calib2 contains the engineering value</listitem>
+					<listitem><emphasis>enumeration calibration</emphasis>: calib1 contains the numeric value which will be mapped to a text state in calib2</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>calib2</term>
+			<listitem>
+				<itemizedlist>
+					<listitem><emphasis>polynomial calibration</emphasis>: calib2 is empty</listitem>
+					<listitem><emphasis>pointpair calibration</emphasis>: calib2 fields contain the start and stop points of each line</listitem>
+					<listitem><emphasis>discrete calibration</emphasis>: calib2 contains the engineering value</listitem>
+					<listitem><emphasis>enumeration calibration</emphasis>: calib2 contains the text state corresponding to the numeric value in calib1</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+
+<sect1><title>TC sheet</title>
+	<para>This sheet must be named "TC", and the columns described must not be reordered. The sheet contains telecommand descriptions and their parameters.</para>
+	<para>Constant parameters (i.e. cannot be chosen when building the command) are specified as constants (not a range, not an enum, only a lowlimit/value) and have no name.</para>
+	<para>Ordinary parameters (parameters to be filled in by the user of the TC) MUST have a name and an enum or a range</para>
+	<para>Parameters that are calculated (eg. checksum) have a range or an enum but NO name</para>
+
+	<variablelist><title>Columns</title>
+		<varlistentry><term>packet opsname</term>
+			<listitem>The opsname of the TC</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>packet partial full pathname</term>
+			<listitem>The part of the full pathname, relative to the CDU (maintained by SpaceApps)</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>packetid</term>
+			<listitem>Identifying number.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>response packet opsname</term>
+			<listitem>The opsname of the response packet, can be left empty if no response packet is expected</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>parameter name</term>
+			<listitem>Each parameter is optionally given a name</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>flags</term>
+			<listitem>Used to encode special cases. Flags are case insensitive and can be concatenated together.
+				<itemizedlist>
+					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In yamcs the parameter is NOT ignored.</listitem>
+					<listitem><emphasis>C:</emphasis> (only for parameters): calculated value</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>bits</term>
+			<listitem>Specifies the number of bits the parameter has. Can be any nonzero number</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>datatype</term>
+			<listitem>
+				See <xref linkend="sheet-raw-types"></xref> for descriptions of the available raw types.
+				<simplelist type="inline">
+					<member>uint</member><member>int</member><member>string</member>
+					<member>varstr</member><member>float</member><member>enum</member>
+				</simplelist>
+				All case insensitive. String has a fixed size that is padded if necessary. Varstr has a maximum size and will not be padded
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>rel position</term>
+			<listitem>Specifies the offset of this parameter to the last bit of the previous parameter. No empty bits means a relative position of 1. Three irrelevant bits between parameter n and parameter n+1 means a relative position of 4.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>Value/lowlimit</term>
+			<listitem>
+				Several cases, contains engineering values:
+				<itemizedlist>
+					<listitem>this column contains 1 value, but the highlimit column is left empty for this parameter, the value means a fixed value for this parameters</listitem>
+					<listitem>the column contains 1 value and the highlimit column also contains a value for this parameter, the 2 values specify a range for this parameters</listitem>
+					<listitem>the column contains semicolons and each value seperated between semicolons (do NOT use spaces before/after the semicolons) is either:
+						<itemizedlist>
+							<listitem>a '=' b pair. Lefthandside = textual representation of the righthandside value, this textual representations cannot be longer than 8 characters</listitem>
+							<listitem>x where x is a number and meaning that any value larger or equal to x is also a valid value. Having this means that also a highlimit must be filled in combining the previous ones is also possible, see example.</listitem>
+						</itemizedlist>
+						EXAMPLE: 'ON=1;OFF=0;3' means that value 1 is encoded as ON, value 0 is encoded as OFF and any other value greater than or equal to 3 is also a valid value (of the highlimit field has been filled in and > 3)
+					</listitem>
+				</itemizedlist>
+			</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>highlimit</term>
+			<listitem>The upper limit of the values that the parameter can take</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>engunit</term>
+			<listitem>The optional engineering unit for the parameters, see the Measurement sheet for the possibilities</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>calibration</term>
+			<listitem>Name of a calibration described in the Calibration sheet.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>description</term>
+			<listitem>An optional description for the commands or parameters.</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+	
+<sect1><title>RESP sheet</title>
+	<para>This sheet is optional, but if present must be named "RESP" and the columns must not be reordered. The sheet specifies the basic identifying information for packets which are expected in response to TC.</para>
+	
+	<variablelist><title>Columns</title>
+		<varlistentry><term>response opsname</term>
+			<listitem>OpsName of the packet</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>response partial full pathname</term>
+			<listitem>The part of the full pathname, relative to the CDU (maintained by SpaceApps)</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>apid</term>
+			<listitem>APID to which the packet belongs</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>packetid</term>
+			<listitem>ID of the packet.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>measurement opsname</term>
+			<listitem>OpsName of the triggering packet</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>relpos</term>
+			<listitem></listitem>
+		</varlistentry>
+		
+		<varlistentry><term>description</term>
+			<listitem>Optional human readable text.</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+
+<sect1 id="sheet-raw-types"><title>Raw types</title>
+	<para>Raw types describe how the parameter is encoded in the raw packet. All titles are case-insensitive. All engineering values can be encoded as raw string values.</para>
+	<variablelist>
+		<varlistentry><term>uint</term>
+			<listitem>Unsigned integer, need to specify bit length.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>float</term>
+			<listitem>Floating point number, need to specify bit length</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>enumerated</term>
+			<listitem></listitem>
+		</varlistentry>
+		
+		<varlistentry><term>string</term>
+			<listitem>Synonym for TerminatedString(0x0)</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>TerminatedString(0x0)</term>
+			<listitem>A string terminated by the specified byte.</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>FixedString</term>
+			<listitem>Fixed length string, specify size in bitlength</listitem>
+		</varlistentry>
+		
+		<varlistentry><term>PrependedSizeString</term>
+			<listitem>Has size specified in the leading byte of the value.</listitem>
+		</varlistentry>
+	</variablelist>
+</sect1>
+
+</appendix>

@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Libraries.xsd" name="Fluid">
+  <comment />
+  <symbol>
+    <name>F1 Air Inlet</name>
+    <comment />
+    <image>F1_Air_Inlet.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F10 Common Cabin Air Assembly</name>
+    <comment />
+    <image>F10_Common_Cabin_Air_Assembly.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F11S Compensator</name>
+    <comment />
+    <image>F11S_Compensator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F12 Compressor A</name>
+    <comment />
+    <image>F12_Compressor_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F12 Compressor B</name>
+    <comment />
+    <image>F12_Compressor_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F13 Condensation Collector</name>
+    <comment />
+    <image>F13_Condensation_Collector.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F14 Electrolyzer</name>
+    <comment />
+    <image>F14_Electrolyzer.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F15S Elektron Electrolysis Unit</name>
+    <comment />
+    <image>F15S_Elektron_Electrolysis_Unit.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F16 Fan Active</name>
+    <comment />
+    <image>F16_Fan_Active.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F17 Fan Cabin</name>
+    <comment />
+    <image>F17_Fan_Cabin.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F18 Fan Direction of Flow General</name>
+    <comment />
+    <image>F18_Fan_Direction_of_Flow_General.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F19 Filter Coarse</name>
+    <comment />
+    <image>F19_Filter_Coarse.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F19 Filter Course</name>
+    <comment />
+    <image>F19_Filter_Course.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F19 Filter Fine</name>
+    <comment />
+    <image>F19_Filter_Fine.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F2 Air Inlet Outlet</name>
+    <comment />
+    <image>F2_Air_Inlet_Outlet.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F20S Filter Chemically Active</name>
+    <comment />
+    <image>F20S_Filter_Chemically_Active.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F21S Filter Regenerative</name>
+    <comment />
+    <image>F21S_Filter_Regenerative.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F22S Filter TCCS</name>
+    <comment />
+    <image>F22S_Filter_TCCS.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F23 Fire Extinguisher</name>
+    <comment />
+    <image>F23_Fire_Extinguisher.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F24 Flow Resistor Choke</name>
+    <comment />
+    <image>F24_Flow_Resistor_Choke.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F25 Flowmeter Heat Transfer Agent A</name>
+    <comment />
+    <image>F25_Flowmeter_Heat_Transfer_Agent_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F25 Flowmeter Heat Transfer Agent B</name>
+    <comment />
+    <image>F25_Flowmeter_Heat_Transfer_Agent_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F26 Gas Analyzer General</name>
+    <comment />
+    <image>F26_Gas_Analyzer_General.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F27S Generator Solid Oxygen</name>
+    <comment />
+    <image>F27S_Generator_Solid_Oxygen.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Air A</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Air_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Air B</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Air_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Liquid A</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Liquid_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Liquid B</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Liquid_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Liquid Condensing A</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Liquid_Condensing_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Air Liquid Condensing B</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Air_Liquid_Condensing_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Liquid Liquid A</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Liquid_Liquid_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F28 Heat Exchanger Liquid Liquid B</name>
+    <comment />
+    <image>F28_Heat_Exchanger_Liquid_Liquid_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F29 Heat Exchanger Radiative</name>
+    <comment />
+    <image>F29_Heat_Exchanger_Radiative.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F3 Air Inlet with Filter</name>
+    <comment />
+    <image>F3_Air_Inlet_with_Filter.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F30 Heat Pipe</name>
+    <comment />
+    <image>F30_Heat_Pipe.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F31 Hose Flex Corrugated A</name>
+    <comment />
+    <image>F31_Hose_Flex_Corrugated_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F31 Hose Flex Corrugated B</name>
+    <comment />
+    <image>F31_Hose_Flex_Corrugated_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F32 Ionator</name>
+    <comment />
+    <image>F32_Ionator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F33 Mass Spectrometer</name>
+    <comment />
+    <image>F33_Mass_Spectrometer.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F34 Poisonous Toxic Indicator</name>
+    <comment />
+    <image>F34_Poisonous_Toxic_Indicator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F35 Portable Breathing Apparatus</name>
+    <comment />
+    <image>F35_Portable_Breathing_Apparatus.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F36 Pressure Control Assembly</name>
+    <comment />
+    <image>F36_Pressure_Control_Assembly.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F37S Pressure Relay</name>
+    <comment />
+    <image>F37S_Pressure_Relay.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F38 Pump</name>
+    <comment />
+    <image>F38_Pump.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F39 Pump Centrifugal</name>
+    <comment />
+    <image>F39_Pump_Centrifugal.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F39S Pump Centrifugal</name>
+    <comment />
+    <image>F39S_Pump_Centrifugal.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F4 Air Outlet</name>
+    <comment />
+    <image>F4_Air_Outlet.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F40 Pump Condensation Evacuation</name>
+    <comment />
+    <image>F40_Pump_Condensation_Evacuation.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F41 Pump Manual</name>
+    <comment />
+    <image>F41_Pump_Manual.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F42 Pump Membrane</name>
+    <comment />
+    <image>F42_Pump_Membrane.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F42S Pump Membrane</name>
+    <comment />
+    <image>F42S_Pump_Membrane.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F43 Pump Positive Displacement</name>
+    <comment />
+    <image>F43_Pump_Positive_Displacement.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F44S Purification Column Unit</name>
+    <comment />
+    <image>F44S_Purification_Column_Unit.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F45 Quick Disconnect</name>
+    <comment />
+    <image>F45_Quick_Disconnect.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F46 Quick Disconnect Self Sealing</name>
+    <comment />
+    <image>F46_Quick_Disconnect_Self_Sealing.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F47 Reductor Reducer</name>
+    <comment />
+    <image>F47_Reductor_Reducer.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F48 Refueling Device</name>
+    <comment />
+    <image>F48_Refueling_Device.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F49S Regenerator</name>
+    <comment />
+    <image>F49S_Regenerator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F5 Air Water Separator</name>
+    <comment />
+    <image>F5_Air_Water_Separator.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F50 Regulator Liquid Flow</name>
+    <comment />
+    <image>F50_Regulator_Liquid_Flow.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F51 Regulator Pressure A</name>
+    <comment />
+    <image>F51_Regulator_Pressure_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F51 Regulator Pressure B</name>
+    <comment />
+    <image>F51_Regulator_Pressure_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F52 Screen Debris</name>
+    <comment />
+    <image>F52_Screen_Debris.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F53 Tank Active Fluid Level</name>
+    <comment />
+    <image>F53_Tank_Active_Fluid_Level.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F54 Tank Bellows</name>
+    <comment />
+    <image>F54_Tank_Bellows.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F55 Tank Bladder Positive Expulsion</name>
+    <comment />
+    <image>F55_Tank_Bladder_Positive_Expulsion.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F55S Tank Bladder Positive Expulsion</name>
+    <comment />
+    <image>F55S_Tank_Bladder_Positive_Expulsion.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F56S Tank Waste Fluid</name>
+    <comment />
+    <image>F56S_Tank_Waste_Fluid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F57 Thermal Plate</name>
+    <comment />
+    <image>F57_Thermal_Plate.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F58 Thruster Attitude Control</name>
+    <comment />
+    <image>F58_Thruster_Attitude_Control.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F59 Thruster Orbital Correction Gimbaled A</name>
+    <comment />
+    <image>F59_Thruster_Orbital_Correction_Gimbaled_A.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F59 Thruster Orbital Correction Gimbaled B</name>
+    <comment />
+    <image>F59_Thruster_Orbital_Correction_Gimbaled_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F5S Air Water Separator</name>
+    <comment />
+    <image>F5S_Air_Water_Separator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F6 Blower</name>
+    <comment />
+    <image>F6_Blower.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F60S Tubing with Connector</name>
+    <comment />
+    <image>F60S_Tubing_with_Connector.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F61 Turbine</name>
+    <comment />
+    <image>F61_Turbine.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F62 Urinal</name>
+    <comment />
+    <image>F62_Urinal.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F63 Valve Ball Three Way</name>
+    <comment />
+    <image>F63_Valve_Ball_Three_Way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F63 Valve Ball Two Way</name>
+    <comment />
+    <image>F63_Valve_Ball_Two_Way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F64 Valve Check</name>
+    <comment />
+    <image>F64_Valve_Check.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F64S Valve Check</name>
+    <comment />
+    <image>F64S_Valve_Check.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F65 Valve Drain</name>
+    <comment />
+    <image>F65_Valve_Drain.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F66 Valve Flow Contolled</name>
+    <comment />
+    <image>F66_Valve_Flow_Contolled.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F67 Valve Gas Trap</name>
+    <comment />
+    <image>F67_Valve_Gas_Trap.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F67 Valve Generic Three Way</name>
+    <comment />
+    <image>F67_Valve_Generic_Three_Way.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F68 Valve Generic Three Way</name>
+    <comment />
+    <image>F68_Valve_Generic_Three_Way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F68 Valve Generic Two Way</name>
+    <comment />
+    <image>F68_Valve_Generic_Two_Way.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F69 Valve Generic Two Way</name>
+    <comment />
+    <image>F69_Valve_Generic_Two_Way.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F7 Burst Diaphragm</name>
+    <comment />
+    <image>F7_Burst_Diaphragm.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F70S Valve Interfaced on Both Sides of Bulkhead</name>
+    <comment />
+    <image>F70S_Valve_Interfaced_on_Both_Sides_of_Bulkhead.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F71S Valve Non Standard A</name>
+    <comment />
+    <image>F71S_Valve_Non_Standard_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F71S Valve Non Standard B</name>
+    <comment />
+    <image>F71S_Valve_Non_Standard_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F72 Valve Plate Manual Closed</name>
+    <comment />
+    <image>F72_Valve_Plate_Manual_Closed.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F72 Valve Plate Manual Open</name>
+    <comment />
+    <image>F72_Valve_Plate_Manual_Open.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F73 Valve Plate Perforated Manual Closed</name>
+    <comment />
+    <image>F73_Valve_Plate_Perforated_Manual_Closed.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F73 Valve Plate Perforated Manual Open</name>
+    <comment />
+    <image>F73_Valve_Plate_Perforated_Manual_Open.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F74 Valve Reverse Special Purpose Diverter</name>
+    <comment />
+    <image>F74_Valve_Reverse_Special_Purpose_Diverter.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F75 Valve Select Loop Crossover Assembly A</name>
+    <comment />
+    <image>F75_Valve_Select_Loop_Crossover_Assembly_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F75 Valve Select Loop Crossover Assembly B</name>
+    <comment />
+    <image>F75_Valve_Select_Loop_Crossover_Assembly_B.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F75 Valve Select Loop Crossover Assembly C</name>
+    <comment />
+    <image>F75_Valve_Select_Loop_Crossover_Assembly_C.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F76 Valve Selector</name>
+    <comment />
+    <image>F76_Valve_Selector.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F77 Vent Vacuum Overboard Non Propulsive</name>
+    <comment />
+    <image>F77_Vent_Vacuum_Overboard_Non_Propulsive.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F77S Vent Vacuum Overboard Non Propulsive</name>
+    <comment />
+    <image>F77S_Vent_Vacuum_Overboard_Non_Propulsive.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F78 Vent Vacuum Overboard Propulsive</name>
+    <comment />
+    <image>F78_Vent_Vacuum_Overboard_Propulsive.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F78S Vent Vacuum Overboard Propulsive</name>
+    <comment />
+    <image>F78S_Vent_Vacuum_Overboard_Propulsive.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F79S Wash Fountain</name>
+    <comment />
+    <image>F79S_Wash_Fountain.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F8 Chamber Receiver</name>
+    <comment />
+    <image>F8_Chamber_Receiver.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F80S Water Conditioning Unit</name>
+    <comment />
+    <image>F80S_Water_Conditioning_Unit.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>F9 Coil Pipe Radiator</name>
+    <comment />
+    <image>F9_Coil_Pipe_Radiator.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F1 Bellows Sleeve Generic</name>
+    <comment />
+    <image>P-F1_Bellows_Sleeve_Generic.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F10 Quick Opening</name>
+    <comment />
+    <image>P-F10_Quick_Opening.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F11 Regulating Variable or Adjustable</name>
+    <comment />
+    <image>P-F11_Regulating_Variable_or_Adjustable.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F12 Solenoid Latching</name>
+    <comment />
+    <image>P-F12_Solenoid_Latching.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F13 Solenoid Non Latching</name>
+    <comment />
+    <image>P-F13_Solenoid_Non_Latching.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F2 Fluid Coil</name>
+    <comment />
+    <image>P-F2_Fluid_Coil.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Cooling Gas</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Cooling_Gas.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Cooling Liquid</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Cooling_Liquid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Electric Current for Gas</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Electric_Current_for_Gas.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Electric Current for Liquid</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Electric_Current_for_Liquid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Heating Gas</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Heating_Gas.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Heating Gas for Gas</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Heating_Gas_for_Gas.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Heating Gas for Liquid</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Heating_Gas_for_Liquid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Forced Heating Liquid</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Forced_Heating_Liquid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Heating Gas</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Heating_Gas.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F3 Heat Exchanger Heating Liquid</name>
+    <comment />
+    <image>P-F3_Heat_Exchanger_Heating_Liquid.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F4 Manual Pushbutton</name>
+    <comment />
+    <image>P-F4_Manual_Pushbutton.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F5 Motor</name>
+    <comment />
+    <image>P-F5_Motor.svg</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F6 Pneumatic</name>
+    <comment />
+    <image>P-F6_Pneumatic.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F7 Pressure Regulated Device</name>
+    <comment />
+    <image>P-F7_Pressure_Regulated_Device.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F8 Pressure Relief Safety A</name>
+    <comment />
+    <image>P-F8_Pressure_Relief_Safety_A.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F8 Pressure Relief Safety B</name>
+    <comment />
+    <image>P-F8_Pressure_Relief_Safety_B.gif</image>
+    <type>static</type>
+  </symbol>
+  <symbol>
+    <name>P-F9 Pyrotechnical</name>
+    <comment />
+    <image>P-F9_Pyrotechnical.gif</image>
+    <type>static</type>
+  </symbol>
+</library>
+

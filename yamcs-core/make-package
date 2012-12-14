@@ -1,0 +1,28 @@
+#!/bin/sh
+
+cd `dirname $0`
+yamcshome=`pwd`
+dist=yamcs-`ls lib/yamcs*.jar | sed -e 's/.*yamcs-\(.*\)\.jar/\1/'`
+usochome=`cd ../../usoc/trunk && pwd`
+
+cd /tmp
+rm -rf $dist
+mkdir -p $dist/mdb
+for f in lib etc bin; do
+	svn export -r BASE $yamcshome/$f $dist/$f
+done
+#for f in $sheets; do
+#	svn export -r BASE $usochome/$f $dist/$f
+#done
+cp $yamcshome/lib/yamcs* $dist/lib
+
+echo "creating tarball"
+tar cjfh $yamcshome/$dist.tar.bz2 $dist
+
+echo "creating zip archive"
+rm -f $yamcshome/$dist.zip
+zip -r9q $yamcshome/$dist.zip $dist
+
+rm -rf $dist
+cd $yamcshome
+ls -l $dist*

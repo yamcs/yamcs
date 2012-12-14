@@ -1,0 +1,21 @@
+<chapter id="utilities">
+<title>Utilities</title>
+<sect1><title>EGSE CIS Interface</title>
+egsecisif.sh
+</sect1>
+<sect1 id="print-mdb.sh"><title>Database Printout</title>
+The <emphasis>print-mdb.sh</emphasis> script can be used to obtain a textual printout of the database. The script has no option.
+</sect1>
+<sect1><title>Simple Parameter Extractor</title>
+	The <emphasis>simple-parameter-extractor.sh</emphasis> script can be used to extract parameters in tabular form. The source of data can be eithter the hrdp-replay-server or directly files in pacts format. It does not require a yamcs server running.
+	<para>Please launch the script without any option to get usage information</para>
+</sect1>
+<sect1><title>CIS Raw Packet Dump</title>
+	The <emphasis>cis-raw-packet-dump.sh</emphasis> script can be used to retrieva parameters from a CIS server (that is eiter yamcs or CD-MCS CIS). It takes a list of packet ops-names as argument and prints the received telemetry packets in hexadecimal form. When connected to the yamcs server, it is just another client and the yamcs-monitor can be used to create new channels or to assign it to existing channels.
+	<para>Please launch the script without any option to get usage information</para>
+</sect1>
+<sect1><title>HRDP Raw Packet Dump</title>
+	The <emphasis>hrdp-raw-packet-dump.sh</emphasis> script can be used to perform telemetry dumps directly from the hrdp archive. It connects and performs requests directly to the hrdp replay server.
+	<para>Please launch the script without any option to get usage information</para>
+</sect1>
+</chapter>

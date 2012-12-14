@@ -1,0 +1,153 @@
+package org.yamcs.yarch;
+
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
+
+import org.junit.Test;
+import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+
+/**
+ * test for table insert and insert_append in a table with a dynamic schema
+ * @author nm
+ *
+ */
+public class DynamicSchemaTableTest extends YarchTestCase {
+
+    private void emit(Stream s, long key, String colName, int colValue) {
+        TupleDefinition tdef=new TupleDefinition();
+        tdef.addColumn("t",DataType.TIMESTAMP);
+        tdef.addColumn(colName,DataType.INT);
+        Tuple t=new Tuple(tdef, new Object[]{key, colValue});
+        s.emitTuple(t);
+    }
+    
+    @Test
+    public void testInsert() throws Exception {
+        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t))");
+        ydb.execute("create stream test_insert_in (t timestamp)");
+        ydb.execute("insert into test_insert select * from test_insert_in");
+        
+        TableDefinition tblDef=ydb.getTable("test_insert");
+        
+        TupleDefinition keyDef=tblDef.getKeyDefinition();
+        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        assertEquals(1, keyCols.size());
+        
+        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(2, valueCols.size());
+        
+        Stream s=ydb.getStream("test_insert_in");
+        emit(s, 1, "v1", 1);
+        emit(s, 1, "v2", 2);
+        emit(s, 1, "v3", 3);
+        emit(s, 2, "v3", 3);
+        
+        System.out.println("tableDef: "+tblDef);
+        
+        
+        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(3, valueCols.size());
+        assertEquals("v3", valueCols.get(2).getName());
+        
+        ydb.execute("create stream test_insert_out as select * from test_insert");
+        Stream sout=ydb.getStream("test_insert_out");
+        final Semaphore semaphore=new Semaphore(0);
+        final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
+        sout.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+            
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                tuples.add(tuple);
+            }
+        });
+        sout.start();
+        semaphore.acquire();
+        assertEquals(2, tuples.size());
+        Tuple t=tuples.get(0);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(1L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(1, ((Integer)t.getColumn("v1")).intValue());
+        
+        t=tuples.get(1);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(2L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        ydb.execute("drop table test_insert");
+    }
+
+    @Test
+    public void testInsertAppend() throws Exception {
+        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t))");
+        ydb.execute("create stream test_inserta_in (t timestamp)");
+        ydb.execute("insert_append into test_inserta select * from test_inserta_in");
+        
+        TableDefinition tblDef=ydb.getTable("test_inserta");
+        
+        System.out.println("tableDef: "+tblDef);
+        TupleDefinition keyDef=tblDef.getKeyDefinition();
+        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        assertEquals(1, keyCols.size());
+        
+        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(2, valueCols.size());
+        
+        Stream s=ydb.getStream("test_inserta_in");
+        emit(s, 1, "v1", 1);
+        emit(s, 1, "v2", 2);
+        emit(s, 1, "v3", 3);
+        emit(s, 2, "v3", 30);
+        
+        System.out.println("tableDef: "+tblDef);
+        
+        
+        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(3, valueCols.size());
+        assertEquals("v3", valueCols.get(2).getName());
+        
+        ydb.execute("create stream test_inserta_out as select * from test_inserta");
+        Stream sout=ydb.getStream("test_inserta_out");
+        final Semaphore semaphore=new Semaphore(0);
+        final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
+        sout.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+            
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                tuples.add(tuple);
+            }
+        });
+        sout.start();
+        semaphore.acquire();
+        assertEquals(2, tuples.size());
+        Tuple t=tuples.get(0);
+        assertEquals(4, t.getColumns().size());
+        assertEquals(1L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(1, ((Integer)t.getColumn("v1")).intValue());
+        assertEquals(2, ((Integer)t.getColumn("v2")).intValue());
+        assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        t=tuples.get(1);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(2L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(30, ((Integer)t.getColumn("v3")).intValue());
+        ydb.execute("drop table test_inserta");
+    }
+
+}

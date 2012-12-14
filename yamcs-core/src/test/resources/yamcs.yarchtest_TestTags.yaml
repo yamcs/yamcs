@@ -1,0 +1,25 @@
+#all services that are started for this instance instance
+services:
+    - org.yamcs.archive.TmProviderAdapter
+    - org.yamcs.archive.PpProviderAdapter
+    - org.yamcs.archive.TcUplinkerAdapter
+    - org.yamcs.archive.CcsdsTmRecorder
+    - org.yamcs.archive.PpRecorder
+    - org.yamcs.archive.ReplayServer
+    - org.yamcs.archive.IndexServer
+    - org.yamcs.YarchChannel
+
+
+# config the tm providers started by the TmProviderAdapter
+tmProviders:
+    - class: org.yamcs.tctm.FilePollingTmProvider
+      spec: /storage/yamcs-incoming/byops/tm
+      stream: tm_dump
+
+# config the pp providers started by the PpProviderAdapter
+ppProviders:
+    - class: org.yamcs.tctm.FilePollingPpProvider
+      spec: /storage/yamcs-incoming/byops/pp
+      stream: pp_dump
+
+mdb: refmdb

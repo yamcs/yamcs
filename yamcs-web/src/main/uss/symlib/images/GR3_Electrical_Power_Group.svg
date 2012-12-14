@@ -1,0 +1,15 @@
+<!-- Generator: Adobe Illustrator 10.0, SVG Export Plug-In . SVG Version: 3.0.0 Build 76)  -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="58.515" height="74.561" viewBox="0 0 58.515 74.561" overflow="visible" enable-background="new 0 0 58.515 74.561" xml:space="preserve" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" version="1.0" contentScriptType="text/ecmascript" contentStyleType="text/css">
+	<g id="Layer_1">
+		<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="45.4214" y1="4.2012" x2="15.2471" y2="62.253" xlink:type="simple" xlink:show="other" xlink:actuate="onLoad">
+			<stop offset="0" style="stop-color:#FFFFFF"/>
+			<stop offset="1" style="stop-color:#BDD7DE"/>
+			<a:midPointStop offset="0" style="stop-color:#FFFFFF"/>
+			<a:midPointStop offset="0.5" style="stop-color:#FFFFFF"/>
+			<a:midPointStop offset="1" style="stop-color:#BDD7DE"/>
+		</linearGradient>
+		<path fill="url(#XMLID_1_)" stroke="#000000" stroke-width="1.5" d="M55.118,1.286L33.772,4.962L7.12,36.823l18.488,5.361    L0.579,72.622l47.907-33.248L30.702,27.832L55.118,1.286z"/>
+		<path fill="none" stroke="#000000" stroke-width="2" d="M32.348,28.605L57.776,0.673"/>
+		<path fill="none" stroke="#000000" stroke-width="2" d="M1.506,73.739l48.71-33.699"/>
+	</g>
+</svg>
