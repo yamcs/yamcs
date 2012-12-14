@@ -16,7 +16,7 @@
     <system>Hudson</system>
     <url>http://aces-ci.spaceapplications.com:8080/</url>
   </ciManagement>
-  <inceptionYear>2010-2011</inceptionYear>
+  <inceptionYear>2010-2012</inceptionYear>
   <developers>
     <developer>
       <name>Nicolae Mihalache</name>
@@ -44,12 +44,6 @@
       </roles>
     </developer>
   </developers>
-
-  <scm>
-    <url>https://subversion.spaceapplications.com/svn/yamcs</url>
-    <developerConnection>scm:svn:https://subversion.spaceapplications.com/svn/yamcs/trunk</developerConnection>
-  </scm>
-
 
   <organization>
     <name>Space Applications Services</name>
