@@ -1,7 +1,6 @@
-Version 0.23.1 Released
+Version 0.23.1 Released 14-December-2012
 - Services and event decoders in yamcs.instance.yaml can now be specified with {class: classname, args:...} map (in addition to the old way of just specifiyng the classname)
 - The CompactFormatter log formatter prints always the full class name (it used to remove the com.spaceapplications prefix)
-- The DaSS PPs include the byte buffer as raw value for all the parameter types
 - added 64 bits signed and unsigned integer parameter types
 - Merged yamcs-era branch:
   - fixed a bug in translating processed parameters from DaSS to Yamcs parameters
@@ -9,6 +8,7 @@ Version 0.23.1 Released
     WARNING: all entries have to be separated by tab now (in the past both tab and space were allowed as separators)
   - added a test generator for DaSS Processed Parameters to be used for ERA-SC
   - cleanup the old shell scripts from the bin directory
+- moved to github and separate from yamcs-cdmcs, yamcs-busoc, yamcs-erasmus and yamcs-dass
 
 
 
