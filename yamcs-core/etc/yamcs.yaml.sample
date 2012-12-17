@@ -1,8 +1,4 @@
-#instances (or domains). One yarch database will be created for each of them
-#instances:
-#  - test 
-#  - eyops 
-#  - byops 
+#instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
 instances:
   - testinst
