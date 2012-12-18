@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitionManager;
@@ -37,7 +36,7 @@ public class PartitionManagerTest {
 
     
     @BeforeClass
-    static public void init() throws OrekitException {
+    static public void init() {
         TimeEncoding.setUp();
     }
  

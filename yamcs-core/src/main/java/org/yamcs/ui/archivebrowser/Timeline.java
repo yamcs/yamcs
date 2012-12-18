@@ -16,10 +16,10 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
-import org.orekit.time.DateTimeComponents;
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
 import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
 
+import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
 class Timeline extends JComponent implements MouseInputListener {
@@ -93,13 +93,13 @@ class Timeline extends JComponent implements MouseInputListener {
         }
 
 
-        DateTimeComponents dtcStart=TimeEncoding.getComponents(chunk.startInstant);
-        DateTimeComponents dtcStop=TimeEncoding.getComponents(chunk.stopInstant);
+        DateTimeComponents dtcStart=TimeEncoding.toUtc(chunk.startInstant);
+        DateTimeComponents dtcStop=TimeEncoding.toUtc(chunk.stopInstant);
 
 
-        String timestring = (dtcStart.getDate().getYear() == dtcStop.getDate().getYear()) &&
-        (dtcStart.getDate().getDayOfYear() == dtcStop.getDate().getDayOfYear()) ?
-                String.format("%s - %s", TimeEncoding.toCombinedFormat(chunk.startInstant), dtcStop.getTime().toString()) :
+        String timestring = (dtcStart.year == dtcStop.year) &&
+        (dtcStart.doy == dtcStop.doy) ?
+                String.format("%s - %s", TimeEncoding.toCombinedFormat(chunk.startInstant), dtcStop.toIso8860String()) :
                     String.format("%s - %s", TimeEncoding.toCombinedFormat(chunk.startInstant), TimeEncoding.toCombinedFormat(chunk.stopInstant));
     
         StringBuilder sb=new StringBuilder();

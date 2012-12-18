@@ -133,7 +133,7 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 				//the time sent by TMR is not really GPS, it's the unix local computer time shifted to GPS epoch
 				long unixTimesec=(0xFFFFFFFFL & (long)bb.getInt(offset+1))+315964800L;
 				int unixTimeMicrosec=(0xFF&bb.get(offset+5))*(1000000/256);
-				rectime=TimeEncoding.getInstantFromUnix(unixTimesec, unixTimeMicrosec);
+				rectime=TimeEncoding.fromUnixTime(unixTimesec, unixTimeMicrosec);
 				int pktLength=7+((data[14+offset]&0xFF)<<8)+(data[15+offset]&0xFF);
 				if(datagram.getLength()<10+pktLength) {
 					invalidDatagramCount++;

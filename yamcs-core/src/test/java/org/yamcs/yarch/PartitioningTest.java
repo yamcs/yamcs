@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.orekit.time.AbsoluteDate;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -72,9 +71,8 @@ public class PartitioningTest extends YarchTestCase {
         assertEquals("2000/366/test1",it.next());
         assertEquals("2001/001/test1",it.next());
 
-
-        AbsoluteDate ad=new AbsoluteDate("2008-12-31T23:59:59",TimeEncoding.getUtcScale()).shiftedBy(1);
-        long instant5=TimeEncoding.fromAbsoluteDate(ad);
+        
+        long instant5=TimeEncoding.parse("2008-12-31T23:59:60");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant5, 2000}));
         Thread.sleep(100);//give time to the other thread to finish reading the input
         partitions=pmgr.getPartitions();

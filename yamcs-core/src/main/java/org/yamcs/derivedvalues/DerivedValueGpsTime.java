@@ -30,7 +30,7 @@ public class DerivedValueGpsTime extends MdbDerivedValue {
 	}
 
 	static public String getGPSTimeString( int coarseTime, byte fineTime ) {
-		long instant=TimeEncoding.fromGpsCcsds(coarseTime, fineTime);
+		long instant=TimeEncoding.fromGpsCcsdsTime(coarseTime, fineTime);
 		return TimeEncoding.toCombinedFormat(instant);
 		
 	}

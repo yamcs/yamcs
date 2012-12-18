@@ -85,7 +85,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 
 	@Override
 	public void getTag(final String instance, final TimeInterval interval) {
-		   System.out.println("receiving tags for "+instance);
+	    //System.out.println("receiving tags for "+instance);
 	        if(receiving){
 	            indexListener.log("already receiving data");
 	            return;
@@ -109,6 +109,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 	                        seq++;
 	                    }
 	                } catch (Exception e) {
+	                    e.printStackTrace();
 	                    indexListener.receiveArchiveRecordsError(e.getMessage());
 	                }  finally {
 	                    receiving=false;

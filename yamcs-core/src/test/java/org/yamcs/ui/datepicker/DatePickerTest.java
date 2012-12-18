@@ -2,7 +2,6 @@ package org.yamcs.ui.datepicker;
 
 import javax.swing.JFrame;
 
-import org.orekit.errors.OrekitException;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -17,7 +16,7 @@ public final class DatePickerTest {
      * @param args arguments to the main method.
      */
     static DatePicker myDatePicker;
-    public static void main(final String[] args) throws InterruptedException, OrekitException {
+    public static void main(final String[] args) throws InterruptedException {
         TimeEncoding.setUp();
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override

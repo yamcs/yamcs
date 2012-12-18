@@ -64,7 +64,7 @@ public class TmFileReader  {
 				ByteBuffer bb=ByteBuffer.wrap(b);
 				long unixTimesec=(0xFFFFFFFFL & (long)bb.getInt(1))+315964800L;
 				int unixTimeMicrosec=(bb.get()&0xFF)*(1000000/256);
-				rectime=TimeEncoding.getInstantFromUnix(unixTimesec,unixTimeMicrosec);
+				rectime=TimeEncoding.fromUnixTime(unixTimesec,unixTimeMicrosec);
 			}
 		} else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
 			System.arraycopy(fourb, 0, ccsdshdr, 0, 4);

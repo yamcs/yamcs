@@ -29,7 +29,6 @@ import javax.swing.border.BevelBorder;
 
 
 
-import org.orekit.errors.OrekitException;
 import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
 
 import org.yamcs.utils.TimeEncoding;
@@ -280,7 +279,7 @@ public class TagBox extends Box implements MouseListener{
     @Override
     public void mouseClicked(MouseEvent e) {                }
     
-    static public void main(String[] args) throws OrekitException {
+    static public void main(String[] args) {
         TimeEncoding.setUp();
         JFrame frame=new JFrame();
         frame.setSize(new Dimension(1000,100));

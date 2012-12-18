@@ -59,32 +59,36 @@ public final class DatePicker extends JPanel {
      * Returns the starting date.
      */
     public long getStartTimestamp() {
-        return TimeEncoding.getInstantFromCal(start.getValue());
+        if(start.getValue()==null) return TimeEncoding.INVALID_INSTANT;
+        
+        return TimeEncoding.fromCalendar(start.getValue());
     }
 
     /**
      * Returns the ending date.
      */
     public long getEndTimestamp() {
-        return TimeEncoding.getInstantFromCal(end.getValue());
+        if(end.getValue()==null) return TimeEncoding.INVALID_INSTANT;
+        
+        return TimeEncoding.fromCalendar(end.getValue());
     }
 
     public TimeInterval getInterval() {
         TimeInterval ti=new TimeInterval();
         Calendar calStart=start.getValue();
         Calendar calEnd=end.getValue();
-        if(calStart!=null) ti.setStart(TimeEncoding.getInstantFromCal(calStart));
-        if(calEnd!=null) ti.setStop(TimeEncoding.getInstantFromCal(calEnd));
+        if(calStart!=null) ti.setStart(TimeEncoding.fromCalendar(calStart));
+        if(calEnd!=null) ti.setStop(TimeEncoding.fromCalendar(calEnd));
         return ti;
     }
     
 
     public void setStartTimestamp(long t) {
-        start.setTime(TimeEncoding.getCalFromInstant(t));
+        start.setTime(TimeEncoding.toCalendar(t));
     }
 
     public void setEndTimestamp(long t) {
-        end.setTime(TimeEncoding.getCalFromInstant(t));
+        end.setTime(TimeEncoding.toCalendar(t));
     }
     /**
      * wraps a date picker with a formatter that remembers hh:mm:ss.SSS in a private calendar

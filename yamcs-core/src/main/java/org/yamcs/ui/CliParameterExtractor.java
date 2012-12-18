@@ -16,7 +16,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.orekit.errors.OrekitException;
 import org.yamcs.xtce.MdbMappings;
 
 import org.yamcs.YamcsException;
@@ -76,7 +75,7 @@ public class CliParameterExtractor {
      * yamcs://aces-test/aces-test 2010-05-19T00:00:00 2011-05-20T00:00:00   aces_SHM_HP_SET aces_SHM_HP_MEAS aces_SHM_IS_HEATER
      * 
      */
-    public static void main(String[] args) throws YamcsApiException, URISyntaxException, HornetQException, IOException, YamcsException, InterruptedException, OrekitException{
+    public static void main(String[] args) throws YamcsApiException, URISyntaxException, HornetQException, IOException, YamcsException, InterruptedException {
         if(args.length<1) printUsageAndExit(null);
         
         int k=0, timewindow = -1;

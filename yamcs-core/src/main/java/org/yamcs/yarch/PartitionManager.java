@@ -3,6 +3,7 @@ package org.yamcs.yarch;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentSkipListMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +21,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.netty.util.internal.ConcurrentHashMap;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 
+import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -93,12 +94,17 @@ public class PartitionManager {
 	                pcache=entry.getValue();
 	                if(value!=null) pcache.values.add(value);
 	            } else {//no partition in this interval. Find the start and end and create the directory
-	                AbsoluteDate ad=TimeEncoding.getAbsoluteDate(instant);
-	                DateComponents dc=ad.getComponents(TimeEncoding.getUtcScale()).getDate();
-	                AbsoluteDate dayStart=new AbsoluteDate(dc,TimeEncoding.getUtcScale());
-	                AbsoluteDate nextDayStart=new AbsoluteDate(dayStart, 86400, TimeEncoding.getUtcScale());
-	                pcache=new Interval(TimeEncoding.fromAbsoluteDate(dayStart), TimeEncoding.fromAbsoluteDate(nextDayStart));
-	                pcache.dir=String.format("%4d/%03d",dc.getYear(),dc.getDayOfYear());
+	                DateTimeComponents dtc =TimeEncoding.toUtc(instant);
+	                Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+	                cal.clear();
+	                cal.set(Calendar.YEAR, dtc.year);
+	                cal.set(Calendar.DAY_OF_YEAR, dtc.doy);
+	                long dayStartInstant = TimeEncoding.fromCalendar(cal);
+	                cal.add(Calendar.DAY_OF_YEAR, 1);
+	                long nextDayStartInstant = TimeEncoding.fromCalendar(cal);
+
+	                pcache=new Interval(dayStartInstant, nextDayStartInstant);
+	                pcache.dir=String.format("%4d/%03d", dtc.year, dtc.doy);
 	                if(value!=null) pcache.values.add(value);
 	                File f=new File(dataDir+"/"+pcache.dir);
 	                if(!f.exists()) { 
@@ -201,15 +207,17 @@ public class PartitionManager {
 	}
 	
 	private void addPartition(int year, int day, String dir, Object o) {
-	   DateComponents dc=new DateComponents(year, day);
-	   AbsoluteDate dayStart=new AbsoluteDate(dc, TimeEncoding.getUtcScale());
-	   long start=TimeEncoding.fromAbsoluteDate(dayStart);
-	   Interval intv=intervals.get(start);
-	   if(intv==null) {
-	       AbsoluteDate nextDayStart=new AbsoluteDate(dayStart, 86400, TimeEncoding.getUtcScale());
-	       long end=TimeEncoding.fromAbsoluteDate(nextDayStart);
-	       intv=new Interval(start, end);
-	       intervals.put(start, intv);
+	    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+	    cal.clear();
+	    cal.set(Calendar.YEAR, year);
+	    cal.set(Calendar.DAY_OF_YEAR, day);
+	    long start=TimeEncoding.fromCalendar(cal);
+	    Interval intv=intervals.get(start);
+	    if(intv==null) {
+	        cal.add(Calendar.DAY_OF_YEAR, 1);
+	        long end=TimeEncoding.fromCalendar(cal);
+	        intv=new Interval(start, end);
+	        intervals.put(start, intv);
 	   }
 	   intv.dir=dir;
 	   if(o!=null) intv.values.add(o);

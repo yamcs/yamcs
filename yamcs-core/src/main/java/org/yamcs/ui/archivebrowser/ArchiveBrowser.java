@@ -8,7 +8,6 @@ import java.util.Map;
 
 import javax.swing.*;
 
-import org.orekit.errors.OrekitException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
@@ -390,7 +389,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         
     }
 
-    public static void main(String[] args) throws OrekitException, URISyntaxException, ConfigurationException {
+    public static void main(String[] args) throws URISyntaxException, ConfigurationException {
         String initialUrl = null;
         YamcsConnectData params=null;
         for(int i=0;i<args.length;i++) {

@@ -74,11 +74,11 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	 * @return instant
 	 */
 	public long getInstant() {
-		return TimeEncoding.fromGpsCcsds(bb.getInt(6), bb.get(10)) ;
+		return TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10)) ;
 	}
 
 	public static long getInstant(ByteBuffer bb) {
-		return TimeEncoding.fromGpsCcsds(bb.getInt(6), bb.get(10)) ;
+		return TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10)) ;
 	}
 
 	/**

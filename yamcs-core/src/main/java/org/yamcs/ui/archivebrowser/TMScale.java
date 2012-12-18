@@ -19,10 +19,9 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
 
+import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
 public class TMScale extends JSlider {
@@ -92,7 +91,7 @@ public class TMScale extends JSlider {
             cal.set(Calendar.DAY_OF_MONTH, 1);
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.MONTH, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.MONTH, -1) ) {
                 if ( cal.get(Calendar.MONTH) == 0 ) {
                     f = f_yyyy_MMM;
                 } else if ( cal.get(Calendar.MONTH) % 3 == 0 ) {
@@ -110,7 +109,7 @@ public class TMScale extends JSlider {
             cal.set(Calendar.DAY_OF_MONTH, 1);
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.MONTH, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.MONTH, -1) ) {
                 if ( cal.get(Calendar.MONTH) == 0 ) {
                     f = f_yyyy_MMM;
                 } else {
@@ -134,7 +133,7 @@ public class TMScale extends JSlider {
             d = d >= 22 ? 22 : (d >= 15 ? 15 : (d >= 8 ? 8 : 1));
             cal.set(Calendar.DAY_OF_MONTH, d);
 
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant; ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant; ) {
                 if (d == 1) {
                     f = f_yyyy_MM_dd;
                 } else {
@@ -160,7 +159,7 @@ public class TMScale extends JSlider {
             // align calendar to 00:00:00
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.DAY_OF_YEAR, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.DAY_OF_YEAR, -1) ) {
                 if ( cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY ) {
                     f = f_yyyy_MM_dd;
                 } else {
@@ -177,7 +176,7 @@ public class TMScale extends JSlider {
             // align calendar to 00:00:00
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.DAY_OF_YEAR, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.DAY_OF_YEAR, -1) ) {
                 f = f_yyyy_MM_dd;
                 addLabel(instant, f.format(cal.getTime()));
             }
@@ -188,7 +187,7 @@ public class TMScale extends JSlider {
             // draw 1 hour per major tick, and midnight shows the DoY + year
 
             cal.set(Calendar.MINUTE, 0);
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.HOUR_OF_DAY, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.HOUR_OF_DAY, -1) ) {
                 if ( cal.get(Calendar.HOUR) == 0 ) {
                     f = f_yyyy_MM_dd_HH;
                 } else {
@@ -204,7 +203,7 @@ public class TMScale extends JSlider {
 
             int m = cal.get(Calendar.MINUTE);
             cal.set(Calendar.MINUTE, m - m % 15); // rounding down to quarter of an hour
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.MINUTE, -15) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.MINUTE, -15) ) {
                 if ( cal.get(Calendar.MINUTE) == 0 ) {
                     f = f_yyyy_MM_dd_HH;
                 } else {
@@ -219,7 +218,7 @@ public class TMScale extends JSlider {
             // the view is showing <10 minutes
             // draw 1 minute per major tick, and every 10th shows the DoY + year
 
-            for ( ; (instant=TimeEncoding.getInstantFromCal(cal))>zoom.startInstant ; cal.add(Calendar.MINUTE, -1) ) {
+            for ( ; (instant=TimeEncoding.fromCalendar(cal))>zoom.startInstant ; cal.add(Calendar.MINUTE, -1) ) {
                 if ( cal.get(Calendar.MINUTE) % 10 == 0 ) {
                     f = f_yyyy_MM_dd_HH_mm;
                 } else {
@@ -239,11 +238,9 @@ public class TMScale extends JSlider {
      * @return a calendar with the seconds set to 0, suitable for "gross" operations
      */
     static Calendar getTruncatedCal(long instant) {
-        AbsoluteDate ad=TimeEncoding.getAbsoluteDate(instant);
-        DateTimeComponents dtc=ad.getComponents(TimeEncoding.getHmiTimeScale());
+        DateTimeComponents dtc = TimeEncoding.toUtc(instant);
         Calendar cal=Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        cal.set(dtc.getDate().getYear(), dtc.getDate().getMonth()-1,dtc.getDate().getDay(),
-                dtc.getTime().getHour(), dtc.getTime().getMinute(),0);
+        cal.set(dtc.year, dtc.month-1,dtc.day, dtc.hour, dtc.minute, 0);
         cal.set(Calendar.MILLISECOND, 0);
         cal.setFirstDayOfWeek(Calendar.MONDAY);
         return cal;

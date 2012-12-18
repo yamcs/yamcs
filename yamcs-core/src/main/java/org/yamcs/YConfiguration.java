@@ -15,8 +15,6 @@ import java.util.logging.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.orekit.errors.OrekitException;
-
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -103,12 +101,7 @@ public class YConfiguration {
 	            //do nothing, the default java builtin logging is used
 	        }
 	    }
-	    
-	    try {
-	        TimeEncoding.setUp();
-	    } catch (OrekitException e) {
-	        throw new ConfigurationException("Cannot setup the time encoding: "+e.toString());
-	    }
+	    TimeEncoding.setUp();
 	}
 
     

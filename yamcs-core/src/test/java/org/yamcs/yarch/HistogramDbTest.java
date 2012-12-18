@@ -4,12 +4,10 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 
 
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.yamcs.TimeInterval;
 import org.yamcs.yarch.HistogramDb.HistogramIterator;
 import org.yamcs.yarch.HistogramDb.Record;
@@ -37,11 +35,7 @@ public class HistogramDbTest {
 
     @Before
     public void setUp() {
-        try {
-            TimeEncoding.setUp();
-        } catch (OrekitException e) {
-            e.printStackTrace();
-        }
+        TimeEncoding.setUp();
     }
 
     @Test

@@ -10,8 +10,6 @@ import java.util.TimeZone;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
-import org.orekit.time.AbsoluteDate;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.TimeEncoding;
 
@@ -20,7 +18,7 @@ import org.yamcs.utils.TimeEncoding;
 public class TimeEncodingTest {
     static final long j1972=(2L*365*24*3600+10)*1000+123;
     @BeforeClass
-    public static void setUpBeforeClass() throws OrekitException {
+    public static void setUpBeforeClass() {
         TimeEncoding.setUp();
     }
 
@@ -45,29 +43,6 @@ public class TimeEncodingTest {
     }
     
     @Test
-    public void testCurrentAbsoluteDate() {
-        AbsoluteDate ad=TimeEncoding.currentAbsoluteDate();
-        long instant1=TimeEncoding.currentInstant();
-        long instant2=TimeEncoding.fromAbsoluteDate(ad);
-        System.out.println("instant1="+instant1+" instant2="+instant2);
-        assertTrue(Math.abs(instant1-instant2)<10);
-    }
-
-    @Test
-    public void testGetAbsoluteDate() {
-        AbsoluteDate ad=TimeEncoding.getAbsoluteDate(j1972);
-        assertEquals("1972-01-01T00:00:00.123",ad.toString());
-    }
-    
-    @Test
-    public void testToCombinedFormatAbsoluteDate() {
-        String s="2010-04-21T16:59:02.300";
-        String sc="2010-04-21/111T16:59:02.300";
-        AbsoluteDate ad=new AbsoluteDate(s, TimeEncoding.getUtcScale());
-        assertEquals(sc, TimeEncoding.toCombinedFormat(ad));
-    }
-    
-    @Test
     public void testToStringLong() {
         assertEquals("1972-01-01T00:00:00.123", TimeEncoding.toString(j1972));
     }
@@ -85,7 +60,7 @@ public class TimeEncodingTest {
     
     @Test
     public void testFromGpsCcsds() {
-        long instant=TimeEncoding.fromGpsCcsds(0, (byte)128);
+        long instant=TimeEncoding.fromGpsCcsdsTime(0, (byte)128);
         assertEquals("1980-01-06T00:00:00.500", TimeEncoding.toString(instant));
     }
     
@@ -96,14 +71,38 @@ public class TimeEncodingTest {
     }
 
     @Test
-    public void getInstantFromUnix2() {
-        long instant=TimeEncoding.getInstantFromUnix(123);
+    public void getInstantFromUnix2() throws ParseException {
+        long instant=TimeEncoding.fromUnixTime(123);
         assertEquals("1970-01-01T00:00:00.123", TimeEncoding.toString(instant));
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        long inst1 = TimeEncoding.fromUnixTime(sdf.parse("2008-12-31T23:59:59.125").getTime());
+        long inst2 = TimeEncoding.fromUnixTime(sdf.parse("2009-01-01T00:00:00.126").getTime());
+        assertEquals("2008-12-31T23:59:59.125", TimeEncoding.toString(inst1));
+        assertEquals("2009-01-01T00:00:00.126", TimeEncoding.toString(inst2));
+        assertEquals(2001, (inst2-inst1));
+    } 
+    
+    @Test
+    public void getUnixFromInstant() throws ParseException {
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        long unix1 = sdf.parse("2008-12-31T23:59:59.125").getTime();
+        long unix2 = sdf.parse("2009-01-01T00:00:00.126").getTime();
+
+        long inst1 = TimeEncoding.fromUnixTime(unix1);
+        long inst2 = TimeEncoding.fromUnixTime(unix2);
+
+        assertEquals("2008-12-31T23:59:59.125", TimeEncoding.toString(inst1));
+        assertEquals("2009-01-01T00:00:00.126", TimeEncoding.toString(inst2));
+        assertEquals(1001, (unix2-unix1));
+        assertEquals(2001, (inst2-inst1));
     } 
     
     @Test
     public void testGetInstantFromUnix() {
-        long instant=TimeEncoding.getInstantFromUnix(1266539888, 20000);
+        long instant=TimeEncoding.fromUnixTime(1266539888, 20000);
         assertEquals("2010-02-19T00:38:08.020", TimeEncoding.toString(instant));
     }
 
@@ -117,7 +116,7 @@ public class TimeEncodingTest {
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date d=sdf.parse(utc);
         cal.setTime(d);
-        long instant=TimeEncoding.getInstantFromCal(cal);
+        long instant=TimeEncoding.fromCalendar(cal);
         String s=TimeEncoding.toString(instant);
        
         assertEquals(utc,s);
@@ -126,7 +125,7 @@ public class TimeEncodingTest {
         d=sdf.parse(utc);
         cal.setTime(d);
         System.out.println("sdf,format:"+sdf.format(d)+"\nd="+d+"\ncal="+cal.getTime()+"\nhod="+cal.get(Calendar.HOUR_OF_DAY));
-        instant=TimeEncoding.getInstantFromCal(cal);
+        instant=TimeEncoding.fromCalendar(cal);
         s=TimeEncoding.toString(instant);
         System.out.println("s="+s);
         assertEquals(utc,s);
@@ -147,9 +146,16 @@ public class TimeEncodingTest {
     
     @Test
     public void testParse() {
-        String utc="2009-12-24T09:21:00";
-        long instant=TimeEncoding.parse(utc);
-        assertEquals(1261646494000L, instant);
+        assertEquals(1230768032000L, TimeEncoding.parse("2008-12-31T23:59:59"));
+        assertEquals(1230768033000L, TimeEncoding.parse("2008-12-31T23:59:60"));
+        assertEquals(1230768034000L, TimeEncoding.parse("2009-01-01T00:00:00"));
+    }
+    
+    @Test
+    public void testToString() {
+        assertEquals("2008-12-31T23:59:59.000", TimeEncoding.toString(1230768032000L));
+        assertEquals("2008-12-31T23:59:60.000", TimeEncoding.toString(1230768033000L));
+        assertEquals("2009-01-01T00:00:00.000", TimeEncoding.toString(1230768034000L));
     }
     
     @Test
@@ -159,7 +165,7 @@ public class TimeEncodingTest {
         for (int coarseTime = startCoarseTime; coarseTime < startCoarseTime + 5; ++coarseTime) {
             for (short fineTime=0; fineTime < 256; ++fineTime)
             {
-                GpsCcsdsTime time = TimeEncoding.getGpsTime( TimeEncoding.fromGpsCcsds(coarseTime, (byte)fineTime) );
+                GpsCcsdsTime time = TimeEncoding.toGpsTime( TimeEncoding.fromGpsCcsdsTime(coarseTime, (byte)fineTime) );
                 
                // System.out.println("in coarse: " + coarseTime + "\tin fine: " + (fineTime&0xFF));
                 //System.out.println("out coarse: " + time.coarseTime + "\tout fine: " + (time.fineTime&0xFF));
@@ -173,7 +179,7 @@ public class TimeEncodingTest {
     @Test
     public void testGetGpsTime2() {
         long instant=1293841234004L;
-        GpsCcsdsTime time = TimeEncoding.getGpsTime(instant);
+        GpsCcsdsTime time = TimeEncoding.toGpsTime(instant);
         assertEquals(977876415, time.coarseTime);
         assertEquals(1, time.fineTime);
     }

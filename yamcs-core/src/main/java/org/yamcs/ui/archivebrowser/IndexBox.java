@@ -718,7 +718,7 @@ public class IndexBox extends Box implements MouseInputListener {
     }
     public void receiveArchiveRecords(List<ArchiveRecord> records) {
         String[] nameparts;
-        System.out.println("received records: "+records);
+       // System.out.println("received records: "+records);
         synchronized (tmData) {
             //progressMonitor.setProgress(30);
             //progressMonitor.setNote("Receiving data");

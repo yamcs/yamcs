@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.TmFileReader;
 
@@ -17,7 +16,7 @@ import org.yamcs.utils.TimeEncoding;
 public class TmFileReaderTest {
 	
 	@BeforeClass
-	public static void beforeClass() throws OrekitException {
+	public static void beforeClass() {
 		TimeEncoding.setUp();
 	}
 	
