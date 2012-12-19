@@ -149,7 +149,7 @@ var YamcsWebSocket = function(instance) {
         for(var paraname in parameters) {
             var p=parameters[paraname];
             if (p.type=='Computation') {
-                var cdef={name: paraname, expression: p.expression, argument: []};
+                var cdef={name: paraname, expression: p.expression, argument: [], language: 'jformula'};
                 var args=p.args;
                 for(var i=0;i<args.length;i++) {
                     var a=args[i];

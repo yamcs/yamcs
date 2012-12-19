@@ -61,6 +61,13 @@ public final class Comp {
       return argument_.get(index);
     }
     
+    // optional string language = 4;
+    public static final int LANGUAGE_FIELD_NUMBER = 4;
+    private boolean hasLanguage;
+    private java.lang.String language_ = "";
+    public boolean hasLanguage() { return hasLanguage; }
+    public java.lang.String getLanguage() { return language_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -84,6 +91,9 @@ public final class Comp {
       for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getArgumentList()) {
         output.writeMessage(3, element);
       }
+      if (hasLanguage()) {
+        output.writeString(4, getLanguage());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -104,6 +114,10 @@ public final class Comp {
       for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getArgumentList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, element);
+      }
+      if (hasLanguage()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(4, getLanguage());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -279,6 +293,9 @@ public final class Comp {
           }
           result.argument_.addAll(other.argument_);
         }
+        if (other.hasLanguage()) {
+          setLanguage(other.getLanguage());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -316,6 +333,10 @@ public final class Comp {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addArgument(subBuilder.buildPartial());
+              break;
+            }
+            case 34: {
+              setLanguage(input.readString());
               break;
             }
           }
@@ -413,6 +434,27 @@ public final class Comp {
       }
       public Builder clearArgument() {
         result.argument_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // optional string language = 4;
+      public boolean hasLanguage() {
+        return result.hasLanguage();
+      }
+      public java.lang.String getLanguage() {
+        return result.getLanguage();
+      }
+      public Builder setLanguage(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasLanguage = true;
+        result.language_ = value;
+        return this;
+      }
+      public Builder clearLanguage() {
+        result.hasLanguage = false;
+        result.language_ = getDefaultInstance().getLanguage();
         return this;
       }
       
@@ -782,11 +824,12 @@ public final class Comp {
   static {
     java.lang.String[] descriptorData = {
       "\n\ncomp.proto\022\022org.yamcs.protobuf\032\013yamcs." +
-      "proto\"g\n\016ComputationDef\022\014\n\004name\030\001 \002(\t\022\022\n" +
+      "proto\"y\n\016ComputationDef\022\014\n\004name\030\001 \002(\t\022\022\n" +
       "\nexpression\030\002 \002(\t\0223\n\010argument\030\003 \003(\0132!.or" +
-      "g.yamcs.protobuf.NamedObjectId\"I\n\022Comput" +
-      "ationDefList\0223\n\007compDef\030\001 \003(\0132\".org.yamc" +
-      "s.protobuf.ComputationDef"
+      "g.yamcs.protobuf.NamedObjectId\022\020\n\010langua" +
+      "ge\030\004 \001(\t\"I\n\022ComputationDefList\0223\n\007compDe" +
+      "f\030\001 \003(\0132\".org.yamcs.protobuf.Computation" +
+      "Def"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -798,7 +841,7 @@ public final class Comp {
           internal_static_org_yamcs_protobuf_ComputationDef_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ComputationDef_descriptor,
-              new java.lang.String[] { "Name", "Expression", "Argument", },
+              new java.lang.String[] { "Name", "Expression", "Argument", "Language", },
               org.yamcs.protobuf.Comp.ComputationDef.class,
               org.yamcs.protobuf.Comp.ComputationDef.Builder.class);
           internal_static_org_yamcs_protobuf_ComputationDefList_descriptor =

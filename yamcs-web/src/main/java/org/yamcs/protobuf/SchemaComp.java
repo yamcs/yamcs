@@ -25,6 +25,8 @@ public final class SchemaComp
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId argument : message.getArgumentList())
                     output.writeObject(3, argument, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
+                if(message.hasLanguage())
+                    output.writeString(4, message.getLanguage(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Comp.ComputationDef message)
             {
@@ -74,6 +76,9 @@ public final class SchemaComp
                             builder.addArgument(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
+                        case 4:
+                            builder.setLanguage(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -117,6 +122,7 @@ public final class SchemaComp
                 case 1: return "name";
                 case 2: return "expression";
                 case 3: return "argument";
+                case 4: return "language";
                 default: return null;
             }
         }
@@ -131,6 +137,7 @@ public final class SchemaComp
             fieldMap.put("name", 1);
             fieldMap.put("expression", 2);
             fieldMap.put("argument", 3);
+            fieldMap.put("language", 4);
         }
     }
 

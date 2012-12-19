@@ -189,18 +189,25 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
                 prm.addItemsToRequest(compSubscriptionId, argList);
             } else {
                 compSubscriptionId=prm.addRequest(argList, this);
-                System.out.println("---------------- here4 compSubscriptionID: "+compSubscriptionId);
             }
-            wsHandler.sendReply(reqId, "OK", null);
+            
         } catch (InvalidIdentification e) {
             NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
             wsHandler.sendException(reqId, "InvalidIdentification", nol, org.yamcs.protobuf.SchemaYamcs.NamedObjectList.WRITE);
+            return;
         }
         
-        for(ComputationDef cdef:cdefList) {
-            Computation c=new Computation(cdef.getName(), cdef.getExpression(), cdef.getArgumentList());
-            compList.add(c);
+        try {
+            for(ComputationDef cdef:cdefList) {
+                Computation c = ComputationFactory.getComputation(cdef);
+                compList.add(c);
+            }
+        } catch (Exception e) {
+            log.warn("Cannot create computation: ",e);
+            wsHandler.sendException(reqId, "error creating computation: "+e.toString());
+            return;
         }
+        wsHandler.sendReply(reqId, "OK", null);
     }
     
     private void unsubscribeAll(int reqId, JsonParser jsp) {
