@@ -1,3 +1,8 @@
+Version 0.23.2 Released 
+- Implemented a simple TAI to UTC converter to remove dependency on orekit
+- renamed several config files to .sample such that they are not installed by default as part of the rpm, and a rpm can be made for specific configurations/deployments
+
+
 Version 0.23.1 Released 14-December-2012
 - Services and event decoders in yamcs.instance.yaml can now be specified with {class: classname, args:...} map (in addition to the old way of just specifiyng the classname)
 - The CompactFormatter log formatter prints always the full class name (it used to remove the com.spaceapplications prefix)
