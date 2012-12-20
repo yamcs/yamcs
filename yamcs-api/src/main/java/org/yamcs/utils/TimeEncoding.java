@@ -196,7 +196,7 @@ public class TimeEncoding {
         dtc.minute = Integer.parseInt(m.group(5));
         dtc.second = Integer.parseInt(m.group(6));
         if(m.group(7)!=null) {
-            dtc.millisec = Integer.parseInt(m.group(7));
+            dtc.millisec = Integer.parseInt(m.group(8));
         }
         return taiUtcConverter.utcToInstant(dtc);
     }

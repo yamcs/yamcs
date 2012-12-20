@@ -146,7 +146,7 @@ public class TimeEncodingTest {
     
     @Test
     public void testParse() {
-        assertEquals(1230768032000L, TimeEncoding.parse("2008-12-31T23:59:59"));
+        assertEquals(1230768032001L, TimeEncoding.parse("2008-12-31T23:59:59.001"));
         assertEquals(1230768033000L, TimeEncoding.parse("2008-12-31T23:59:60"));
         assertEquals(1230768034000L, TimeEncoding.parse("2009-01-01T00:00:00"));
     }
