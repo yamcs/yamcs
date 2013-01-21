@@ -8,6 +8,10 @@
 
 #set this to where you want to live "installation" to be performed
 TARGET="live"
+#Allow overriding default from the command line
+if [ -n "$1" ] ; then
+        TARGET="$1"
+fi
 
 
 YAMCS_HOME=`pwd`
