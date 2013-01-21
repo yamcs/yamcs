@@ -127,7 +127,7 @@ public class CliParameterExtractor {
             prr=getRequest(Arrays.copyOfRange(args, k, args.length));
         }
         
-        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.STOP)
+        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
             .addType(ProtoDataType.PARAMETER).setParameterRequest(prr)
             .setStart(start).setStop(stop).build();
       
