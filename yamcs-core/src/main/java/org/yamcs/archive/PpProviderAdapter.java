@@ -40,18 +40,22 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class PpProviderAdapter extends AbstractService {
+	public static final String PP_TUPLE_COL_RECTIME = "rectime";
+	public static final String PP_TUPLE_COL_SEQ_NUM = "seqNum";
+	public static final String PP_TUPLE_COL_PPGROUP = "ppgroup";
+	public static final String PP_TUPLE_COL_GENTIME = "gentime";
 	String archiveInstance;
 	private Collection<PpProvider> ppproviders=new ArrayList<PpProvider>();
 	final private Logger log;
 	
 	static public final TupleDefinition PP_TUPLE_DEFINITION=new TupleDefinition();
 	//first columns from the PP tuples
-	//the actual values are encoded as separated columns (umi_0x010203040506, value) value is binary
+	//the actual values are encoded as separated columns (umi_0x010203040506, value) value is ParameterValue
 	static {
-	    PP_TUPLE_DEFINITION.addColumn("gentime", DataType.TIMESTAMP); //generation time
-	    PP_TUPLE_DEFINITION.addColumn("ppgroup", DataType.ENUM);
-	    PP_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
-	    PP_TUPLE_DEFINITION.addColumn("rectime", DataType.TIMESTAMP); //recording time
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_GENTIME, DataType.TIMESTAMP); //generation time
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_PPGROUP, DataType.ENUM);
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_SEQ_NUM, DataType.INT);
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
 	    
 	} 
 	

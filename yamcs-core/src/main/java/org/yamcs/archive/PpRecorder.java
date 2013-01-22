@@ -1,9 +1,14 @@
 package org.yamcs.archive;
 
 import java.io.IOException;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.yamcs.ConfigurationException;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.hornet.StreamAdapter;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -49,9 +54,15 @@ public class PpRecorder extends AbstractService {
 	        ydb.execute("create stream pp_is("+cols+")");
 	        ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_PP_STREAM_NAME);
 	        ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_PP_STREAM_NAME);
-        } catch (StreamSqlException e) {
-            throw new ConfigurationException("exception when creating pp input stream", e);
-        } catch (ParseException e) {
+	       
+
+	        Stream realtimePpStream=ydb.getStream(REALTIME_PP_STREAM_NAME);
+	        new StreamAdapter(realtimePpStream, new SimpleString(archiveInstance+"."+REALTIME_PP_STREAM_NAME), new PpTupleTranslator());
+	        
+	        Stream dumpPpStream=ydb.getStream(DUMP_PP_STREAM_NAME);
+	        new StreamAdapter(dumpPpStream, new SimpleString(archiveInstance+"."+DUMP_PP_STREAM_NAME), new PpTupleTranslator());
+	        
+        } catch (Exception e) {
             throw new ConfigurationException("exception when creating pp input stream", e);
         }
 	}
