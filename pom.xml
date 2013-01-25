@@ -6,44 +6,13 @@
   <packaging>pom</packaging>
   <name>Yamcs</name>
   <description>Yet Another Mission Control System.</description>
-  <version>0.23.2</version>
+  <version>0.23.3-SNAPSHOT</version>
 
-  <issueManagement>
-    <system>Redmine</system>
-    <url>https://redmine.spaceapplications.com/projects/yamcs</url>
-  </issueManagement>
-  <ciManagement>
-    <system>Hudson</system>
-    <url>http://aces-ci.spaceapplications.com:8080/</url>
-  </ciManagement>
-  <inceptionYear>2010-2012</inceptionYear>
-  <developers>
-    <developer>
-      <name>Nicolae Mihalache</name>
-      <id>nm</id>
-      <email>nicolae.mihalache at spaceapplications dot com</email>
-      <roles>
-        <role>project manager</role>
-        <role>developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <name>Thomas Neidhart</name>
-      <id>tn</id>
-      <email>thomas.neidhart at spaceapplications dot com</email>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <name>Martin Ursik</name>
-      <id>mu</id>
-      <email>martin.ursik at spaceapplications dot com</email>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
-  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
+    <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
+    <url>http://github.com/yamcs/yamcs</url>
+    </scm>
 
   <organization>
     <name>Space Applications Services</name>
