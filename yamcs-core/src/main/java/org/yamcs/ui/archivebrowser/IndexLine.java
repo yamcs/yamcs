@@ -63,7 +63,11 @@ debugLog("tmpanel postTip");
 
     @Override
     public void mouseReleased(MouseEvent e) {
-//        maybeShowPopup(e);
+    	// Cross-platform popups
+    	if (e.isPopupTrigger()) {
+            tmBox.selectedPacket = pkt;
+            tmBox.showPopup(translateEvent(e));    
+        }
         tmBox.doMouseReleased(translateEvent(e));
     }
 
