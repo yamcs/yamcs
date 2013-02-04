@@ -486,7 +486,7 @@ ParameterListener, PacketListener, ConnectionListener {
 						progress.setProgress((int)(offset>>10));
 					}
 					reader.close();
-				} catch (IOException x) {
+				} catch (Exception x) {
 					final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
 					log(msg);
 					showError(msg);
@@ -497,20 +497,15 @@ ParameterListener, PacketListener, ConnectionListener {
 			}
 
 			@Override
-            protected void process(final List<ListPacket> chunks) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-                    public void run() {
-						for (ListPacket ccsds:chunks) {
-							packetsModel.addRow(new Object[] {
-									TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-									ccsds.getAPID(),
-									ccsds,
-									ccsds.getCccsdsPacketLength() + 7
-							});
-						}
-					}
-				});
+			protected void process(final List<ListPacket> chunks) {
+			    for (ListPacket ccsds:chunks) {
+			        packetsModel.addRow(new Object[] {
+			                TimeEncoding.toCombinedFormat(ccsds.getInstant()),
+			                ccsds.getAPID(),
+			                ccsds,
+			                ccsds.getCccsdsPacketLength() + 7
+			        });
+			    }
 			}
 
 			@Override

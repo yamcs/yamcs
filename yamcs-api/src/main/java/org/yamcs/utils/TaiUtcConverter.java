@@ -222,11 +222,9 @@ public class TaiUtcConverter {
 	    int ls = diffTaiUtc;
         for(int i = timesecs.length -1 ; i>=0; i--) {
             long u = timesecs[i]-ls+1;
-            System.out.println("s: "+s+" u: "+u+" dtc.seconds: "+dtc.second);
             if (s > u) break;
             if((s < u) || (dtc.second==60)) ls--;
          }
-        System.out.println("ls: "+ls);
         s+=ls;
         
 	    return dtc.millisec + 1000 * s;
@@ -282,7 +280,6 @@ public class TaiUtcConverter {
 		for(String s:sa) {
 			Date d = sdf.parse(s);
 			dtc = te.instantToUtc(d.getTime());
-			System.out.println(s+" -->: "+dtc);
 		}		
 	}
 }

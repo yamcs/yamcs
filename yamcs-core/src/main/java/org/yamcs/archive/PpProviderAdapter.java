@@ -1,8 +1,6 @@
 package org.yamcs.archive;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +14,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.tctm.PpListener;
 import org.yamcs.tctm.PpProvider;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
