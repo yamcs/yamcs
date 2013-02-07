@@ -12,6 +12,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ParameterValue;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.PpListener;
 import org.yamcs.tctm.PpProvider;
 import org.yamcs.utils.TimeEncoding;
@@ -113,13 +114,13 @@ public class PpProviderAdapter extends AbstractService {
                     cols.add(seqNum);
                     cols.add(TimeEncoding.currentInstant());
                     for(ParameterValue pv:params) {
-                        int idx=tdef.getColumnIndex(pv.def.getName());
+                        int idx=tdef.getColumnIndex(pv.def.getQualifiedName());
                         if(idx!=-1) {
                             log.warn("duplicate value for "+pv.def+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
                             continue;
                         }
                         tdef.addColumn(pv.def.getName(), paraDataType);
-                        cols.add(pv.toGpb(null));
+                        cols.add(pv.toGpb( NamedObjectId.newBuilder().setName( pv.def.getQualifiedName() ).build() ));
                     }
                     Tuple t=new Tuple(tdef, cols);
                     stream.emitTuple(t);
