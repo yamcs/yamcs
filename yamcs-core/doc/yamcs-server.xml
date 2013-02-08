@@ -42,7 +42,8 @@
     </section>
 
     <section><title>Starting the Yamcs server</title>
-    <para> The yamcs server can be started by the script <command>/opt/yamcs/bin/yamcs-server.sh</command>. All the options are read from the configuration file <filename>yamcs.yaml</filename>. Usually this script is called automatically at boot by <command>/etc/init.d/yamcs-server</command> </para>
+    <para>Normally the Yamcs server should be configured to start automatically on boot via <command>/etc/init.d/yamcs-server</command>. The command will automatically run itself as a lower privileged yamcs user, but must initially be run as root for this to happen. Yamcs server can be started and stopped as a service via commands such as <command>service yamcs-server start</command> and <command>service yamcs-server stop</command>. These commands use the init.d script and will run Yamcs as the appropriate user. It is also possible to directly use the script <command>/opt/yamcs/bin/yamcs-server.sh</command>, but use of the <command>service</command> command is preferred.</para>
+    <para>Regardless of how Yamcs server is started, all the options are read from the configuration file <filename>yamcs.yaml</filename>.</para>
     </section>
 
 
