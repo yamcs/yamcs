@@ -6,13 +6,13 @@
         <para>
             After the startup, the menu entry <guimenu>File->Connect</guimenu> has to be used to connect to the Yamcs server.
         </para>
-        <para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
+        <para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling connect from the menu:
             <screen>yamcs-monitor.sh yamcs://localhost:5445/instance</screen>
         </para>
 </section>
 <section><title>Overview</title>
     <para>
-        The Event Viwer allows to display the events from the Yamcs Server. In the previous versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being anther component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.
+        The Event Viewer displays events from the Yamcs Server. In the previous versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being another component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.
     </para>
     <figure><title>Event Viewer</title>
     <mediaobject>
@@ -40,8 +40,8 @@
     <para> 
         The filters can be changed by selecting <guimenu>Edit->Preferences</guimenu>. Each filter can be applied on any of the Source, Type or Text properties of an event and can have a sound or popup alert properties. The Show = Yes/No means that the events maching the filter will be shown or not in the Event Viewer.
     </para>
-    <para> 
-        When the Event Viewer receives an event, it applies one by one all the filters until one matches. If a filter maches, then it is show or not depending on the Show option. Indepented of the Show option, if the filter matching has specified an alarm or a popup, the action is performed. If no filter matches, then by default the event is shown. 
+    <para> /
+        When the Event Viewer receives an event, it applies one by one all the filters until one matches. If a filter maches, then it is shown or not depending on the Show option. Independent of the Show option, if the filter matching has specified an alarm or a popup, the action is performed. If no filter matches, then by default the event is shown. 
     </para>
     <para>
         The filters can be activated or disabled in the preferences or by using the View menu. The filters that are not active, are ignored by the Event Viewer and not matched against incoming events.
