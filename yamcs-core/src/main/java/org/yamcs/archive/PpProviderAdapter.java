@@ -114,13 +114,18 @@ public class PpProviderAdapter extends AbstractService {
                     cols.add(seqNum);
                     cols.add(TimeEncoding.currentInstant());
                     for(ParameterValue pv:params) {
-                        int idx=tdef.getColumnIndex(pv.def.getQualifiedName());
+                    	String qualifiedName = pv.def.getQualifiedName();
+                    	if( qualifiedName == null || "".equals( qualifiedName ) ) {
+                    		qualifiedName = pv.def.getName();
+                    		log.debug( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
+                    	}
+                        int idx=tdef.getColumnIndex(qualifiedName);
                         if(idx!=-1) {
                             log.warn("duplicate value for "+pv.def+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
                             continue;
                         }
                         tdef.addColumn(pv.def.getName(), paraDataType);
-                        cols.add(pv.toGpb( NamedObjectId.newBuilder().setName( pv.def.getQualifiedName() ).build() ));
+                        cols.add(pv.toGpb( NamedObjectId.newBuilder().setName( qualifiedName ).build() ));
                     }
                     Tuple t=new Tuple(tdef, cols);
                     stream.emitTuple(t);
