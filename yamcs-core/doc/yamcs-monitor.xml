@@ -1,7 +1,14 @@
 <chapter id="monitor">
 <title>Yamcs Monitor</title>
  <section><title>Getting Started</title>
-	<para>The yamcs monitor is started with the command 
+ 
+	<section><title>Installation</title>
+		<para> 
+		The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.
+		</para>
+	</section>
+ 
+	<para>The Yamcs Monitor is started with the command 
 	<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
 	<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
 	<figure><title>Yamcs connection dialog</title>
