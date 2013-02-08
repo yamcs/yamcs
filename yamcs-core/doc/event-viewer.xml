@@ -1,6 +1,15 @@
 <chapter id="eventviewer">
 <title>Event Viewer</title>
 <section><title>Getting Started</title>
+	<section><title>Installation</title>
+		<para> 
+		The Event Viewer is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.
+		</para>
+		<para>No further configuration is needed, but you may specify a custom sound file to be used when an event with "sound alert" enabled is received. In this case, edit the <filename>etc/event-viewer.yaml</filename> file in the extracted location and change <emphasis>soundfile</emphasis> entry to a full path to a WAV format sound file.</para>
+	</section>
+	
+	<section><title>Starting the Event Viewer</title>
+
 <para>The event viewer is started with the command 
         <command>event-viewer.sh</command> or <command>event-viewer.bat</command></para>
         <para>
