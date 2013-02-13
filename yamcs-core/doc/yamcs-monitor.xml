@@ -1,37 +1,51 @@
 <chapter id="monitor">
 <title>Yamcs Monitor</title>
- <section><title>Getting Started</title>
- 
+<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list of data links, channels and clients connected to the Yamcs Server.  Only one Yamcs instance is shown at the time, and the currently selected instance can be changed using the Instance menu.</para>
+
+
+<section><title>Installing</title>
+	
 	<section><title>Installation</title>
-		<para> 
-		The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.
-		</para>
+		<para>The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.</para>
+	</section>
+	
+	<section><title>Configuration</title>
 		<para>No further configuration is needed, unless the Yamcs server has been configured to require authentication. In this case, edit the <filename>etc/yamcs-ui.yaml</filename> file in the extracted location and change <emphasis>authenticationEnabled</emphasis> entry to <emphasis>true</emphasis>.</para>
 	</section>
 	
-	<section><title>Starting Yamcs Monitor</title>
- 
-	<para>The Yamcs Monitor is started with the command 
-	<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
-	<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
-	<figure><title>Yamcs connection dialog</title>
-		<mediaobject>
-			<imageobject> <imagedata width="25%" fileref="images/connect-to-yamcs.png" format="PNG"/> </imageobject>
-		</mediaobject>
-	</figure>
-	</para>
-	<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
-        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
-	for a non SSL connection, or 
-        <screen>yamcs-monitor.sh yamcss://localhost:5446/</screen>
-        for an SSL connection <footnote><para>SSL is not implemented as of Yamcs 0.22.0 (though it might work by configuring HornetQ).</para></footnote>.
-	</para>
-	<para>An additional command line option <emphasis>-na</emphasis> causes the yamcs monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the yamcs monitor when the admin options are enabled.</para>
+	<section><title>Updating</title>
+		<para>Updated applications are made available as an archived client tools package. This should be extracted into its own folder, separate to any previous installation. The configuration files in <filename>etc/</filename> can be copied from a previous installation into the new installation.</para>
+	</section>
+	
+	<section><title>Removing</title>
+		<para>To remove an installation, delete the extracted folder.</para>
+	</section>
+	
 </section>
+ 
 
-<section><title>Overview</title>
-    <para>Yamcs Monitor allows to control a Yamcs Server. It shows the list of data links, channels and clients connected to the Yamcs Server.  Only one instance is shown at the time, and the currently selected instance can be changed using the Instance menu.
-    </para>
+
+	<section><title>Starting Yamcs Monitor</title>
+		<para>The Yamcs Monitor is started with the command 
+		<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
+		<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
+		<figure><title>Yamcs connection dialog</title>
+			<mediaobject>
+				<imageobject> <imagedata width="25%" fileref="images/connect-to-yamcs.png" format="PNG"/> </imageobject>
+			</mediaobject>
+		</figure>
+		</para>
+		<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
+	        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
+		for a non SSL connection, or 
+	        <screen>yamcs-monitor.sh yamcss://localhost:5446/</screen>
+	        for an SSL connection <footnote><para>SSL is not implemented as of Yamcs 0.22.0 (though it might work by configuring HornetQ).</para></footnote>.
+		</para>
+		<para>An additional command line option <emphasis>-na</emphasis> causes the yamcs monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the yamcs monitor when the admin options are enabled.</para>
+	</section>
+
+
+<section><title>User interface</title>
     <figure><title>Yamcs Monitor</title>
     <mediaobject>
       <imageobject> <imagedata width="100%" fileref="images/yamcs-monitor.png" format="PNG"/> </imageobject>
@@ -266,4 +280,6 @@
 		</varlistentry>
 	</variablelist>
 </section>
+ 
+
 </chapter>

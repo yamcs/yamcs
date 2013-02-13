@@ -1,14 +1,30 @@
 <chapter id="eventviewer">
 <title>Event Viewer</title>
-<section><title>Getting Started</title>
+<para>The Event Viewer displays events from the Yamcs Server. In the previous versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being another component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.</para>
+
+
+<section><title>Installing</title>
+
 	<section><title>Installation</title>
-		<para> 
-		The Event Viewer is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.
-		</para>
+		<para>The Event Viewer is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.</para>
+	</section>
+
+	<section><title>Configuration</title>
 		<para>No further configuration is needed, but you may specify a custom sound file to be used when an event with "sound alert" enabled is received. In this case, edit the <filename>etc/event-viewer.yaml</filename> file in the extracted location and change <emphasis>soundfile</emphasis> entry to a full path to a WAV format sound file.</para>
 	</section>
+
+
+	<section><title>Updating</title>
+		<para>Updated applications are made available as an archived client tools package. This should be extracted into its own folder, separate to any previous installation. The configuration files in <filename>etc/</filename> can be copied from a previous installation into the new installation.</para>
+	</section>
 	
-	<section><title>Starting the Event Viewer</title>
+	<section><title>Removing</title>
+		<para>To remove an installation, delete the extracted folder.</para>
+	</section>
+</section>
+
+
+<section><title>Starting the Event Viewer</title>
 
 <para>The event viewer is started with the command 
         <command>event-viewer.sh</command> or <command>event-viewer.bat</command></para>
@@ -19,10 +35,7 @@
             <screen>yamcs-monitor.sh yamcs://localhost:5445/instance</screen>
         </para>
 </section>
-<section><title>Overview</title>
-    <para>
-        The Event Viewer displays events from the Yamcs Server. In the previous versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being another component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.
-    </para>
+<section><title>User interface</title>
     <figure><title>Event Viewer</title>
     <mediaobject>
       <imageobject> <imagedata width="100%" fileref="images/event-viewer.png" format="PNG"/> </imageobject>
@@ -62,4 +75,5 @@
         The menu <guimenu>File->Retrieve Past Events</guimenu> pops up a dialog allowing to select a start/end range for retrieving events from the archive. All the retrieved events are subjected to the filters on the client side. In the future, the server might be improved to apply the filters directly on the server.
     </para> 
 </section>
+
 </chapter>

@@ -1,14 +1,14 @@
 <chapter> <title>Yamcs Server</title>
-<section><title>Getting Started</title>	
 <para>The Yamcs server is implemented in Java and is responsible for acquiring, processing and dispatching data to clients via different protocols. It is designed to run in background as a deamon.</para>
 
-    <section><title>Installation</title>
+<section><title>Installing</title>
+
+<section><title>Installation</title>
         <para> 
         Yamcs depends on the TokyoCabinets library and its java API so these should be installed before installing Yamcs. 
         </para>
         Yamcs is delivered as rpm package<footnote><para>deb packages directly converted from rpm using the <command>alien</command> command can also be provided</para></footnote> and installation is done using the rpm command:
         <screen>rpm -U yamcs-version.noarch.rpm	</screen>
-        If a configuration file (in the etc directory) has been updated with regard to the previous installed version, the old files will be saved with the extension .rpmsave. The user then has to inspect the difference between the two version and to implement the newly added options into the old configuration files.
     
     
         In addition to the core yamcs package, there are a few other extensions:
@@ -40,8 +40,23 @@
             The logging level is configured  in <filename>logging.properties</filename>. This file is used to configure the standard Java logging framework, and is encoded in standard java properties format. The formatting of the java properties files is described here: <ulink url="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)">http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)</ulink>.
         </para>
     </section>
+    
+    <section><title>Updating</title>
+    	<para>Upgrading is done using the rpm command:
+        <screen>rpm -U yamcs-version.noarch.rpm</screen>
+        If a configuration file (in the etc directory) has been updated with regard to the previous installed version, the old files will be saved with the extension .rpmsave. The user then has to inspect the difference between the two version and to implement the newly added options into the old configuration files.</para>
+    </section>
 
-    <section><title>Starting the Yamcs server</title>
+	<section><title>Removing</title>
+		<para>Yamcs Server can be removed (erased) using the rpm command:
+			<screen>rpm -e yamcs</screen>
+		</para>
+	</section>
+
+</section>
+
+
+<section><title>Starting the Yamcs server</title>
     <para>Normally the Yamcs server should be configured to start automatically on boot via <command>/etc/init.d/yamcs-server</command>. The command will automatically run itself as a lower privileged yamcs user, but must initially be run as root for this to happen. Yamcs server can be started and stopped as a service via commands such as <command>service yamcs-server start</command> and <command>service yamcs-server stop</command>. These commands use the init.d script and will run Yamcs as the appropriate user. It is also possible to directly use the script <command>/opt/yamcs/bin/yamcs-server.sh</command>, but use of the <command>service</command> command is preferred.</para>
     <para>Regardless of how Yamcs server is started, all the options are read from the configuration file <filename>yamcs.yaml</filename>.</para>
     </section>
@@ -58,7 +73,8 @@
             <listitem><emphasis>Data Links</emphasis> represent special components that inject data coming from external systems. They can be controlled using the Yamcs Monitor.</listitem>
         </itemizedlist>
     </section>
-</section>
+    
+
 <section><title>Data types</title>
     <para>Yamcs supports the following "high-level" data types:
         <itemizedlist>
