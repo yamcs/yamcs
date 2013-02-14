@@ -5,6 +5,18 @@
 
 <section><title>Installing</title>
 	
+	<section><title>Dependencies</title>
+	<variablelist>
+	    <varlistentry><term>OS</term>
+			<listitem>Linux or Windows, 32bit or 64bit</listitem>
+		</varlistentry>
+	    
+	    <varlistentry><term>Java runtime (JRE)</term>
+			<listitem>>= version 1.6</listitem>
+		</varlistentry>
+	</variablelist>
+	</section>
+	
 	<section><title>Installation</title>
 		<para>The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.</para>
 	</section>
@@ -37,11 +49,8 @@
 		</para>
 		<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
 	        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
-		for a non SSL connection, or 
-	        <screen>yamcs-monitor.sh yamcss://localhost:5446/</screen>
-	        for an SSL connection <footnote><para>SSL is not implemented as of Yamcs 0.22.0 (though it might work by configuring HornetQ).</para></footnote>.
 		</para>
-		<para>An additional command line option <emphasis>-na</emphasis> causes the yamcs monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the yamcs monitor when the admin options are enabled.</para>
+		<para>An additional command line option <emphasis>-na</emphasis> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
 	</section>
 
 
@@ -65,7 +74,7 @@
     <guilabel>Data Links</guilabel>
     This box displays a list of data links. Each element in the list contains these items:
         <itemizedlist>
-            <listitem> Name - has to be unique and can be specified in the <filename>yamcs.instance.yaml</filename> configuration file. If not specified, it is chosen automatically by the yamcs server. </listitem>
+            <listitem> Name - has to be unique and can be specified in the <filename>yamcs.instance.yaml</filename> configuration file. If not specified, it is chosen automatically by the Yamcs Server. </listitem>
             <listitem> Type  - represents the Java class name of the implementor of the data link. </listitem>
             <listitem> Spec - represents the configuration of the data link. It can contain different information depending on the data link type</listitem>
             <listitem> Stream - represents the stream name used by the data link to write (in case of TM and PP) or read (in case of TC) data.</listitem>
@@ -126,7 +135,7 @@
 
 
 <section id="command-queue-control"><title>Command Queue Control</title>
-	The Command Queue Control window can be open either from the main yamcs monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
+	The Command Queue Control window can be open either from the main Yamcs Monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
 	<figure><title>Command Queue Control Window</title>
 		<mediaobject> 
 			<imageobject><imagedata width="100%" fileref="images/command-queues.png"/></imageobject>
@@ -149,7 +158,7 @@
 	</itemizedlist>
 </section>
 
-<section> <title>Archive Browser</title>
+<section id="archive-browser"> <title>Archive Browser</title>
     <para>
         The Archive Browser is an application that allows inspecting the content of the TM and PP archive, as well as retrieving data as packets or parameters. It can be run either as a standalone application (<command>archive-browser.sh</command>) or from the Yamcs Monitor.
     </para>

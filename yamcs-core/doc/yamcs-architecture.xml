@@ -22,7 +22,7 @@ The CORBA component is part of the yamcs-cdmcs module (which is not open-sourced
     
 
 <sect1><title>Getting Started</title>
-	<para>The yamcs monitor is started with the command 
+	<para>The Yamcs Monitor is started with the command 
 	<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
 	<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
 	<figure><title>Yamcs connection dialog</title>
@@ -33,15 +33,12 @@ The CORBA component is part of the yamcs-cdmcs module (which is not open-sourced
 	</para>
 	<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
         <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
-	for a non SSL connection, or 
-        <screen>yamcs-monitor.sh yamcss://localhost:5446/</screen>
-        for an SSL connection <footnote>SSL is not implemented as of Yamcs 0.22.0 (though it might work by configuring HornetQ).</footnote>.
 	</para>
-	<para>An additional command line option <emphasis>-na</emphasis> causes the yamcs monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the yamcs monitor when the admin options are enabled.</para>
+	<para>An additional command line option <emphasis>-na</emphasis> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
 </sect1>
 <sect1><title>Data Links, Data Streams, Processing Channels and Clients</title>
-<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list clients connected to the Yamcs Server, for example USS or, MCS Tools. Furthermore a list of data links and data processing channels is shown. The data links are the sources of data inputs or outputs into/from yamcs while the channels are data processing contexs (linked typically with a XTCE database).
-    Tyipically a yamcs session has a realtime channel and different replay channels. The realtime channel is linked to data streams coming from outside while the replay channels are just providing data from the archive.
+<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list clients connected to the Yamcs Server, for example USS or, MCS Tools. Furthermore a list of data links and data processing channels is shown. The data links are the sources of data inputs or outputs into/from Yamcs while the channels are data processing contexs (linked typically with a XTCE database).
+    Tyipically a Yamcs session has a realtime channel and different replay channels. The realtime channel is linked to data streams coming from outside while the replay channels are just providing data from the archive.
 </para>
 
 <para>In a typical operations infrastructure, the Yamcs Server runs
@@ -86,7 +83,7 @@ ends at the stop time. Commanding is not possible with the HRDP archive replay.<
 <para>To finally create the channel, the Create button is pressed. One or more client must be selected which will then be assigned to the new channel.</para>
 </sect1>
 <sect1 id="command-queue-control"><title>Command Queue Control</title>
-	The Command Queue Control window can be open either from the main yamcs monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
+	The Command Queue Control window can be open either from the main Yamcs Monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
 	<figure><title>Command Queue Control Window</title>
 		<mediaobject> 
 			<imageobject><imagedata width="100%" fileref="images/command-queues.png"/></imageobject>

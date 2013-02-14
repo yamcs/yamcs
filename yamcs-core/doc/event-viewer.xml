@@ -5,6 +5,18 @@
 
 <section><title>Installing</title>
 
+	<section><title>Dependencies</title>
+	<variablelist>
+	    <varlistentry><term>OS</term>
+			<listitem>Linux or Windows, 32bit or 64bit</listitem>
+		</varlistentry>
+	    
+	    <varlistentry><term>Java runtime (JRE)</term>
+			<listitem>>= version 1.6</listitem>
+		</varlistentry>
+	</variablelist>
+	</section>
+
 	<section><title>Installation</title>
 		<para>The Event Viewer is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.</para>
 	</section>

@@ -1,7 +1,7 @@
 <appendix id="excel-spec"><title>Excel Spreadsheet Specification</title>
 
 <para>Please note that only the part related to the TM Packets/Parameters is loaded
-directly into yamcs. The part related to the commands is only used by the
+directly into Yamcs. The part related to the commands is only used by the
 script to be imported into the CD-MCS MDB.</para>
 
 <sect1><title>Conventions</title>
@@ -97,7 +97,7 @@ script to be imported into the CD-MCS MDB.</para>
 		<varlistentry><term>flags</term>
 			<listitem>Used to encode special cases. Flags are case insensitive and can be concatenated together.
 				<itemizedlist>
-					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In yamcs the parameter is NOT ignored.</listitem>
+					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In Yamcs the parameter is NOT ignored.</listitem>
 					<listitem><emphasis>D:</emphasis> derived value, in this case the measurement MAY NOT have calibration</listitem>
 					<listitem><emphasis>L:</emphasis> little endian value</listitem>
 				</itemizedlist>
@@ -259,7 +259,7 @@ script to be imported into the CD-MCS MDB.</para>
 		<varlistentry><term>flags</term>
 			<listitem>Used to encode special cases. Flags are case insensitive and can be concatenated together.
 				<itemizedlist>
-					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In yamcs the parameter is NOT ignored.</listitem>
+					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In Yamcs the parameter is NOT ignored.</listitem>
 					<listitem><emphasis>C:</emphasis> (only for parameters): calculated value</listitem>
 				</itemizedlist>
 			</listitem>

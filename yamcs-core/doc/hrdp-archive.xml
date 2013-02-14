@@ -83,7 +83,7 @@ When the HRDP Archive Scanner runs, it performs these operations:
 </orderedlist>
 </sect2>
 <sect2><title>Configuration</title>
-The HRDP Archive Scanner looks uses the yamcs java classes for accessing the mission database (in order to find packet names), and uses the archive.properities file for the settings of the Postgresql database.
+The HRDP Archive Scanner looks uses the Yamcs java classes for accessing the mission database (in order to find packet names), and uses the archive.properities file for the settings of the Postgresql database.
 </sect2>
 </sect1>
 
