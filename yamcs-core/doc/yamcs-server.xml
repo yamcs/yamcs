@@ -315,7 +315,7 @@
 <section id="telemetry-processing"><title>Telemetry Processing</title>
     <section><title>Packet Telemetry</title>	
 	<para>The Yamcs Server implements a subset of the XTCE (XML Telemetric and Command Exchange) for telemetry processing. Only the concepts defined by the standard are supported.</para>
-	<para>For information about XTCE, please refer to <ulink url="http://www.xtce.org/">www.xtce.org</ulink>. This sections details only the xtce types implemented in yamcs.</para>
+	<para>For information about XTCE, please refer to <ulink url="http://www.xtce.org/">www.xtce.org</ulink>. This sections details only the XTCE types implemented in yamcs.</para>
 	<formalpara><title>Sequence Containers</title>
 	<para><emphasis>Sequence containers</emphasis> are the equivalent of packets in the usual terminology, or ADU in the MDB terminology.</para>
 	<para>The sequence containers employ two mechanism to avoid the limitation of traditional "packet with parameters" approach. These mechanisms are aggregation and inheritance.</para>	
@@ -327,15 +327,15 @@
 				<listitem>Container Entries - these point to other containers which are then included in the big container</listitem>
 			</itemizedlist>
 		</para>
-		<para>Special attention must be given to the specification of positions of entries in the container. For performance reasons, it is preferable that all positions are absolute (i.e. relative to the beginning of the container) rather than relative to the previous entry. The excel spreadsheet loader tries to transform the relative positions specified in the spreadsheet into absolute positions.</para>
+		<para>Special attention must be given to the specification of positions of entries in the container. For performance reasons, it is preferable that all positions are absolute (i.e. relative to the beginning of the container) rather than relative to the previous entry. The Excel spreadsheet loader tries to transform the relative positions specified in the spreadsheet into absolute positions.</para>
 		<para>However, due to entries which can be of variable size, the situation cannot always be avoided. When an entry whose position is relative to the previous entry is subscribed, then yamcs adds to the subscription all the previous entries until it finds one whose position is absolute. </para>
-		<para>If a entry's position depends on another entry (it can be the same in case the entry repeats itself) which is a Container Entry (i.e makes reference to a container), and the referenced container doesn't have the size in bits specified, then all the entries of the referenced container plus all the inheriting containers and their entries recursively are added to the subscription. Thus, the processing of this entry will imply the extraction of all parameters from the referenced container and from the inheriting containers. The maximum position reached when extracting entries from the referenced and inheriting containers is considered the end of this entry and used as the beginning of the following one.</para>
+		<para>If an entry's position depends on another entry (it can be the same in case the entry repeats itself) which is a Container Entry (i.e makes reference to a container), and the referenced container doesn't have the size in bits specified, then all the entries of the referenced container plus all the inheriting containers and their entries recursively are added to the subscription. Thus, the processing of this entry will imply the extraction of all parameters from the referenced container and from the inheriting containers. The maximum position reached when extracting entries from the referenced and inheriting containers is considered the end of this entry and used as the beginning of the following one.</para>
 	</formalpara>
 	<formalpara><title>Container inheritance</title>
 		Sequence containers can point to another sequence container through the baseContainer property, meaning that the baseContainer is extended with additional sequence entries. The inheritance is based on a condition put on the parameters from the baseContainer (e.g. a EDR_HK packet is a CCSDS packet which has the apid=943 and the packetid=0x1300abcd).	
 	</formalpara>
 	<formalpara><title>Little Endian Parameter Encoding</title>
-	<para>Yamcs doesn't support yet the xtce way of describing byte ordering for parameter encoding. </para>
+	<para>Yamcs does not currently support the XTCE way of describing byte ordering for parameter encoding. </para>
 	<para>The only alternative byte order supported is little endian. For parameters occupying entire bytes, there is no doubt on what this means. However, for parameters which occupy only part of bytes the following algorithm is applied to extract the parameter from the packet:
 		<orderedlist>
 			<listitem>Based on the location of the first bit and on the size in bits of the parameter, find the sequence of bytes that contain the parameter. Only parameters that occupy at most 4 bytes are supported.</listitem>
@@ -343,7 +343,7 @@
 			<listitem>Apply the mask and the shift required to bring the parameter to the rightmost bit.</listitem>
 		</orderedlist>
 	</para>
-	<para>For example, assuming than on an x86 CPU we have the following structure in C:</para>
+	<para>For example, assuming that on an x86 CPU we have the following structure in C:</para>
 	<screen>
 		struct {
 			unsigned int parameter1:4;
@@ -375,7 +375,7 @@
 			
 	</formalpara>
     </section>
-
+<!-- 
     <section><title>Derived Values</title>
     TBW
     </section>
@@ -383,12 +383,14 @@
     <section><title>System Variables</title>
     TBW
     </section>
+ -->
+ 
 </section>
 
 
 <section id="commanding"><title>Commanding</title>
     <para>Yamcs contains an HLCL parser capable to parse the telecommanding requests coming from the MCS Tools.</para> 
-    <para>Unlike for telemetry, xtce structures are not supported for commanding. Also, not supported are the command preconditions or postconditions (i.e. checking that telemetry parameters have certain values before or after sending the command).</para>
+    <para>XTCE structures are not supported for commanding, and neither are command preconditions or postconditions (i.e. checking that telemetry parameters have certain values before or after sending the command).</para>
 
 
     <section id="command-queues"><title>Command Queues</title>
