@@ -62,7 +62,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
         } catch (HornetQException e) {
-            log.warn("got exception when sending message:"+e);
+            log.warn("Got exception when sending message:", e);
         }
     }
 
@@ -87,7 +87,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         try {
             msgClient.close();
         } catch (HornetQException e) {
-            log.warn("got exception when quiting:"+e);
+            log.warn("Got exception when quiting:", e);
         }
         stream.removeSubscriber(this);
         

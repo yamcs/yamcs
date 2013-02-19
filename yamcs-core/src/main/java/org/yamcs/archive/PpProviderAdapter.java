@@ -117,7 +117,7 @@ public class PpProviderAdapter extends AbstractService {
                     	String qualifiedName = pv.def.getQualifiedName();
                     	if( qualifiedName == null || "".equals( qualifiedName ) ) {
                     		qualifiedName = pv.def.getName();
-                    		log.debug( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
+                    		log.trace( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
                     	}
                         int idx=tdef.getColumnIndex(qualifiedName);
                         if(idx!=-1) {

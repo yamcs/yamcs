@@ -117,7 +117,7 @@ public class YamcsConnector implements SessionFailureListener {
                             for(ConnectionListener cl:connectionListeners) {
                                 cl.log("Connection failed: "+e.getMessage());
                             }
-                            log.warn("Connection failed: {}", e.getMessage());
+                            log.warn("Connection failed: ", e);
                             Thread.sleep(5000);
                         }
                     }
@@ -166,7 +166,7 @@ public class YamcsConnector implements SessionFailureListener {
         for(ConnectionListener cl:connectionListeners) {
             cl.disconnected();
         }
-        log.warn("Connection to Yamcs lost: {}", e.getMessage());
+        log.warn("Connection to Yamcs lost: ", e);
         doConnect();
     }
 

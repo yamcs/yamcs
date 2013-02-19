@@ -129,13 +129,13 @@ class YarchReplay implements StreamSubscriber, Runnable {
                         throw new YamcsException("Unknown request '"+req+"'");
                     }
                 } catch (YamcsException e) {
-                    log.warn("sending error reply "+e);
+                    log.warn("sending error reply ", e);
                     yclient.sendErrorReply(replyto, e.getMessage());
 
                 }
             }
         } catch (Exception e) {
-            log.warn("caught exception in packet reply: "+e);
+            log.warn("caught exception in packet reply: ", e);
             e.printStackTrace();
         }
     }
@@ -192,7 +192,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
                 state=ReplayState.RUNNING;
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("Got exception when creating the stream: " +e);
+                log.error("Got exception when creating the stream: ", e);
                 errorString=e.toString();
                 state=ReplayState.ERROR;
             }
@@ -275,7 +275,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
                 db.execute(query);
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("Got exception when closing the stream: " +e);
+                log.error("Got exception when closing the stream: ", e);
                 errorString=e.toString();
                 state=ReplayState.ERROR;
                 signalStateChange();
@@ -302,13 +302,14 @@ class YarchReplay implements StreamSubscriber, Runnable {
             yclient.close();
             ysession.close();
         } catch (HornetQException e) {
-            log.warn("got exception when quititng: "+e);
+            log.warn("Got exception when quitting: ", e);
         }
         try {
             YarchDatabase db=YarchDatabase.getInstance(instance);
             if(db.getStream(streamName)!=null) db.execute("close stream "+streamName);
         } catch (Exception e) {
             e.printStackTrace();
+            log.error( "Exception whilst quitting", e );
         };
         replayServer.replayFinished();
     }
@@ -331,7 +332,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
                 yclient.sendData(dataAddress, type, data);
         } catch (Exception e) {
             if(!quitting) {
-                log.warn("Exception received: "+e);
+                log.warn("Exception received: ", e);
                 e.printStackTrace();
                 quit();
             }
@@ -375,7 +376,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
             ReplayStatus rs=rsb.build();
             yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rs);
         } catch (Exception e) {
-            log.warn("got exception while signaling the sate change: "+e);
+            log.warn("got exception while signaling the sate change: ", e);
         }
     }
 }

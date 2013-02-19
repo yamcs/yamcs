@@ -108,7 +108,7 @@ public class HornetManagement {
                 throw new YamcsException("Unknown request '"+req+"'");
             }
         } catch (YamcsException e) {
-            log.warn("sending error reply "+e);
+            log.warn("Sending error reply ", e);
             linkControlServer.sendErrorReply(replyto, e.getMessage());
         } 
         
@@ -120,7 +120,7 @@ public class HornetManagement {
             sendLinkUpdate(lci);
             links.add(lci);
         } catch (Exception e) {
-            log.error("Exception when registering link in hornet: "+e.getMessage());
+            log.error("Exception when registering link in hornet: ", e);
             e.printStackTrace();
         }
     }
@@ -141,7 +141,7 @@ public class HornetManagement {
             Protocol.encode(msg, li);
             yclient.dataProducer.send(LINK_INFO_ADDRESS, msg);
         }   catch (HornetQException e) {
-            log.error("Exception while updating links status: "+e.getMessage());
+            log.error("Exception while updating links status: ", e);
             e.printStackTrace();
         }
     }

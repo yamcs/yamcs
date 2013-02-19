@@ -166,7 +166,7 @@ public class CommandQueueManager {
 			try {
 				pc=commandingManager.buildCommand(pc.source, pc.getCommandId().toBuilder());
 			} catch (YamcsException e) {
-				log.warn("Got Exception for a command already in the queue: "+e.getMessage());
+				log.warn("Got Exception for a command already in the queue: ", e);
 				return;
 			}
 		}

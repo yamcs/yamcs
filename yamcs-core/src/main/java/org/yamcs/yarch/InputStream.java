@@ -52,7 +52,7 @@ public class InputStream extends AbstractStream implements Runnable {
 			}
 		} catch (IOException e) {
 			if(state==QUITTING) return;
-			log.warn("Exception caught when reading from socket: "+e);
+			log.warn("Exception caught when reading from socket: ", e);
 		}
 	}
 	
@@ -62,7 +62,7 @@ public class InputStream extends AbstractStream implements Runnable {
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
-			log.warn("Got exception when closing the sockets:"+e);
+			log.warn("Got exception when closing the sockets:", e);
 		}
 	}
 	

@@ -61,13 +61,13 @@ public class OutputStream extends AbstractStream implements StreamSubscriber {
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
-			log.error("got exception when closing the output stream socket: "+e);
+			log.error("got exception when closing the output stream socket: ", e);
 		}
 		if(socket!=null)
 			try {
 				socket.close();
 			} catch (IOException e) {
-				log.warn("got exception when closing the output stream socket:" +e);
+				log.warn("got exception when closing the output stream socket:", e);
 			}
 	}
 	

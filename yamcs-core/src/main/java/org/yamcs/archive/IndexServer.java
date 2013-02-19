@@ -157,7 +157,7 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
                 } 
             }
         } catch (Exception e) {
-            log.error("got exception while processing the requests "+e);
+            log.error("got exception while processing the requests ", e);
             e.printStackTrace();
         }
     }
@@ -171,7 +171,7 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
                 throw new YamcsException("Invalid instance "+req.getInstance());
             }
         } catch (YamcsApiException e) {
-            log.warn("failed to decode the message: "+e);
+            log.warn("failed to decode the message: ", e);
             return;
         }
         IndexRequestProcessor p=new IndexRequestProcessor(tmIndexer, req, dataAddress);

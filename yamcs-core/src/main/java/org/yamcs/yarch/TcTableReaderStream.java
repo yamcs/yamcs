@@ -79,7 +79,7 @@ public class TcTableReaderStream extends AbstractStream implements Runnable, DbR
                 return;
             }
         } catch (Exception e) {
-            log.error("got exception "+e);
+            log.error("got exception ", e);
             e.printStackTrace();
         } finally {
             close();

@@ -143,7 +143,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	        
 	        
 	    } catch (Exception e) {
-	        log.error("got exception in tmprocessor "+e);
+	        log.error("got exception in tmprocessor ", e);
 	        e.printStackTrace();
 	    }
 	}

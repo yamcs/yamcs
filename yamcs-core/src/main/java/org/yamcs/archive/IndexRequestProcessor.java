@@ -120,18 +120,18 @@ class IndexRequestProcessor implements Runnable{
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
             if (ok) yamcsClient.sendDataEnd(dataAddress);
         } catch (Exception e) {
-            log.error("got exception while sending the resposne: "+e);
+            log.error("got exception while sending the resposne: ", e);
             e.printStackTrace();
         } finally {
         	try {
         		if( yamcsClient != null ) yamcsClient.close();
 			} catch (HornetQException e) {
-				log.warn( "Got exception whilst closing client: "+e );
+				log.warn( "Got exception whilst closing client: ", e );
 			}
         	try {
         		if( yamcsSession != null ) yamcsSession.close();
 			} catch (HornetQException e) {
-				log.warn( "Got exception whilst closing client: "+e );
+				log.warn( "Got exception whilst closing client: ", e );
 			}
         }
     }

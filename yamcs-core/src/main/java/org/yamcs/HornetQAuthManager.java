@@ -183,7 +183,8 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 				return true;
 			}
 		}
-		
+
+		log.trace( "User '{}' does not have any of '{}' for '{}'", username, configuredRoles, checkType );
 		return false;
 	}
 }

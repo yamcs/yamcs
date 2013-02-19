@@ -57,7 +57,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
             }
             return;
         } catch (Exception e) {
-            log.error("got exception "+e);
+            log.error("got exception ", e);
             e.printStackTrace();
         } finally {
             close();

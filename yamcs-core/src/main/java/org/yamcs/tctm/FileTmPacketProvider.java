@@ -85,7 +85,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} catch (IOException e) {
-			log.warn("got exception while reading packets: "+e);
+			log.warn("Got exception while reading packets: ", e);
 		}
 		tmProcessor.finished();
 	}
@@ -128,7 +128,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 		try {
 			tmFileReader.close();
 		} catch (IOException e) {
-			log.warn("Got exception while closing the stream: "+e);
+			log.warn("Got exception while closing the stream: ", e);
 		}
 	}
 	@Override

@@ -69,7 +69,7 @@ public class ManagementService {
                 hornetChannelMgr=new HornetChannelManagement(this, timer);
                 Channel.addChannelListener(hornetChannelMgr);
             } catch (Exception e) {
-                log.error("failed to start hornet management service: "+e);
+                log.error("failed to start hornet management service: ", e);
                 hornetEnabled=false;
                 e.printStackTrace();
             }

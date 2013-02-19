@@ -171,7 +171,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 						return true;
 					}
 				} catch (ParseException e) {
-					log.warn("can not parse the date from "+line+": "+e);
+					log.warn("can not parse the date from "+line+": ", e);
 					return true;
 				}
 			}

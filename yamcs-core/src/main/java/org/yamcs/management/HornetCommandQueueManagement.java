@@ -110,7 +110,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
             }
         } catch (YamcsException e) {
         	e.printStackTrace();
-            log.warn("sending error reply "+e);
+            log.warn("Sending error reply ", e);
             queueControlServer.sendErrorReply(replyto, e.getMessage());
         } 
     }

@@ -152,7 +152,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 			try {
 				tmSocket.close();
 			} catch (IOException e) {
-				log.warn("Exception got when closing the tm socket:"+e);
+				log.warn("Exception got when closing the tm socket:", e);
 			}
 			tmSocket=null;
 		}
@@ -165,7 +165,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 			try {
 				tmSocket.close();
 			} catch (IOException e) {
-				log.warn("Exception got when closing the tm socket:"+e);
+				log.warn("Exception got when closing the tm socket:", e);
 			}
 			tmSocket=null;
 		}

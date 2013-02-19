@@ -120,7 +120,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
                 tmQueue.put(t);
             }
         } catch (InterruptedException e) {
-            log.warn("got interrupted exception while putting data in the queue: "+e);
+            log.warn("Got interrupted exception while putting data in the queue: ", e);
         }
     }
 
@@ -140,7 +140,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
                 saveTuple(t);
             }
         } catch (InterruptedException e) {
-            log.warn("Got InteruptedException when waiting for the next tuple "+e);
+            log.warn("Got InteruptedException when waiting for the next tuple ", e);
             Thread.currentThread().interrupt();
         }
     }

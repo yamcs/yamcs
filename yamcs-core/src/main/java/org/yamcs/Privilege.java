@@ -94,7 +94,7 @@ public abstract class Privilege {
 				contextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
 			}
 		} catch (ConfigurationException e) {
-			log.error("Failed to load 'privileges' configuration: "+e);
+			log.error("Failed to load 'privileges' configuration: ", e);
 			System.exit( -1 );
 		}
 	}
@@ -173,7 +173,7 @@ public abstract class Privilege {
 			}
 			return roles;
 		} catch (NamingException e) {
-			log.error("NamingException caught when reading the user:" +e);
+			log.error("NamingException caught when reading the user:", e);
 		}
 		return null;
 		
@@ -197,7 +197,7 @@ public abstract class Privilege {
 			String requestedRoleDn = "cn="+role+","+rolePath.replaceAll(" ", "");
 			return ( u.rolesDn.contains( requestedRoleDn ) || u.rolesDn.contains( role ) );
 		} catch (NamingException e) {
-			log.error("NamingException caught when reading the user:" +e);
+			log.error("NamingException caught when reading the user:", e);
 		}
 		return false;
 	}
@@ -240,7 +240,10 @@ public abstract class Privilege {
 		XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 		ArrayList<String> l=new ArrayList<String>();
 		for(String name: xtcedb.getParameterNames() ) {
-			if(!hasPrivilege(Privilege.Type.TM_PARAMETER, name)) continue;
+			if(!hasPrivilege(Privilege.Type.TM_PARAMETER, name)) {
+				log.trace( "User '{}' does not have privilege '{}' for parameter '{}'", this.getCurrentUser(), Privilege.Type.TM_PARAMETER, name );
+				continue;
+			}
 			l.add( xtcedb.getParameter( name ).getAlias( namespace ) );
 		}
 		return l;
@@ -285,7 +288,7 @@ public abstract class Privilege {
 					return true;
 			}
 		} catch (NamingException e) {
-			log.warn("got exception when reading user " + dn + " :" + e);
+			log.warn("got exception when reading user " + dn + " :", e);
 			return false;
 		}
 		return false;
@@ -307,7 +310,7 @@ public abstract class Privilege {
 			User u = getUser(dn);
 			return u.assertedIdentities.contains("uid=" + assertedIdentity+ "," + userPath);
 		} catch (NamingException e) {
-			log.error("caught NamingException while verifying if " + userName+ " can assert identity of " + assertedIdentity + ":" + e);
+			log.error("caught NamingException while verifying if " + userName+ " can assert identity of " + assertedIdentity + ":", e);
 			return false;
 		}
 	}

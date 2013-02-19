@@ -91,7 +91,7 @@ public class XtceTmExtractor {
 	            }
 	        }
 	    } catch (Exception e) {
-	        log.error("got exception in tmextractor "+e);
+	        log.error("got exception in tmextractor ", e);
 	        e.printStackTrace();
 	    }
 	}

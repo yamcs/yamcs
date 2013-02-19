@@ -144,7 +144,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
                     msgClient.sendData(address, ProtoDataType.EVENT, ev);
                 }
             } catch (HornetQException e) {
-                log.warn("Exception when sending event: "+e);
+                log.warn("Exception when sending event: ", e);
             }
         }
     }

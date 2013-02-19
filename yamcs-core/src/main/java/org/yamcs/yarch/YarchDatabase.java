@@ -109,9 +109,9 @@ public class YarchDatabase {
 		                tables.put(tblDef.getName(), tblDef);
 		                log.debug("loaded table definition "+tblDef.getName()+" from "+f);
 		            } catch (IOException e) {
-		                log.warn("Got exception when reading the table definition from "+f+": "+e);
+		                log.warn("Got exception when reading the table definition from "+f+": ", e);
 		            } catch (ClassNotFoundException e) {
-		                log.warn("Got exception when reading the table definition from "+f+": "+e);
+		                log.warn("Got exception when reading the table definition from "+f+": ", e);
 		            } 
 		        }
 		    }
@@ -159,7 +159,7 @@ public class YarchDatabase {
             fos.getFD().sync();
             w.close();
         } catch (IOException e) {
-            log.error("Got exception when writing table definition to "+fn+": "+e);
+            log.error("Got exception when writing table definition to "+fn+": ", e);
             e.printStackTrace();
         }
 	}

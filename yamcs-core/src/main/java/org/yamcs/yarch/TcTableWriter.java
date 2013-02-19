@@ -63,7 +63,7 @@ public class TcTableWriter implements StreamSubscriber {
 			    addHistogram(t);
 			}
 		} catch (IOException e) {
-			log.error("failed to insert a record: "+e);
+			log.error("failed to insert a record: ", e);
 			e.printStackTrace();
 		}
 	}

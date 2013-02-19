@@ -99,7 +99,7 @@ public class TcapTcUplinker extends TcpTcUplinker {
 					tcCount++;
 					sent=true;
 				} catch (IOException e) {
-					log.warn("Error writing to TC socket to "+host+":"+port+": "+e.getMessage());
+					log.warn("Error writing to TC socket to "+host+":"+port+": ", e);
 					try {
 						if(socketChannel.isOpen()) socketChannel.close();
 						selector.close();

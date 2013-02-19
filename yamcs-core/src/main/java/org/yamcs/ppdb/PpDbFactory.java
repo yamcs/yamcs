@@ -87,7 +87,7 @@ public class PpDbFactory {
                 filename.append(l.getConfigName() + ".");
             }
         } catch (ConfigurationException e) {
-            log.error("Cannot load the database configuration: " + e);
+            log.error("Cannot load the database configuration: ", e);
             System.exit(-1);
         }
         filename.append("ppdb");
@@ -101,10 +101,10 @@ public class PpDbFactory {
                 raf.seek(0);
             }
         } catch (IOException e) {
-            log.warn("can't check the consistency date of the serialized database: " + e);
+            log.warn("Cannot check the consistency date of the serialized database: ", e);
             loadSerialized = false;
         } catch (ConfigurationException e) {
-            log.error("Cannot check the consistency date of the serialized database: " + e);
+            log.error("Cannot check the consistency date of the serialized database: ", e);
             System.exit(-1);
         }
 
@@ -113,7 +113,7 @@ public class PpDbFactory {
                db=loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
-                log.info("Cannot load serialized database: " + e);
+                log.info("Cannot load serialized database: ", e);
             }
         }
 
@@ -125,7 +125,7 @@ public class PpDbFactory {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("Cannot load the database: " + e);
+                log.error("Cannot load the database: ", e);
                 System.exit(-1);// if we can not read the database we are out of
                                 // the game
             }
@@ -137,7 +137,7 @@ public class PpDbFactory {
                 saveSerializedInstance(db, filename.toString());
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
-                log.warn("Cannot save serialized MDB: " + e);
+                log.warn("Cannot save serialized MDB: ", e);
                 e.printStackTrace();
             }
         }

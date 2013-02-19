@@ -81,11 +81,11 @@ public class XtceDbFactory {
                 loadSerialized = false;
             }
         } catch (IOException e) {
-            log.warn("can't check the consistency date of the serialized database: " + e);
+            log.warn("can't check the consistency date of the serialized database: ", e);
             loadSerialized = false;
         } catch (ConfigurationException e) {
             e.printStackTrace();
-            log.error("Cannot check the consistency date of the serialized database: " + e);
+            log.error("Cannot check the consistency date of the serialized database: ", e);
             System.exit(-1);
         }
 
@@ -94,7 +94,7 @@ public class XtceDbFactory {
                 db=loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
-                log.info("Cannot load serialized database: " + e);
+                log.info("Cannot load serialized database: ", e);
                 db = null;
             }
         }
@@ -112,7 +112,7 @@ public class XtceDbFactory {
                 db.buildIndexMaps();
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("Cannot load the database: " + e);
+                log.error("Cannot load the database: ", e);
                 System.exit(-1);// if we can not read the database we are out of
                                 // the game
             }

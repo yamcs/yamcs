@@ -60,7 +60,7 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
                                    tmCount++;
                                }
                            } catch (IOException e) {
-                               log.warn("Got IOException while reading from "+f+": "+e);
+                               log.warn("Got IOException while reading from "+f+": ", e);
                            }
                            if(!f.delete()) log.warn("Could not remove "+f);
                        }

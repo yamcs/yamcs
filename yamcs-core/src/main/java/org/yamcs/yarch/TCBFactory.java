@@ -118,7 +118,7 @@ public class TCBFactory implements Runnable {
 					log.debug("Closing the database: "+entry.getKey());
 					daat.db.close();
 				} catch (IOException e) {
-					log.error("Got exception while closing the database "+entry.getKey()+": "+e);
+					log.error("Got exception while closing the database "+entry.getKey()+": ", e);
 				}
 				it.remove();
 			} else {
@@ -126,7 +126,7 @@ public class TCBFactory implements Runnable {
 			        try {
 			            daat.db.sync();
 			        } catch (IOException e) {
-			            log.error("Got exception while closing the database "+entry.getKey()+": "+e);
+			            log.error("Got exception while closing the database "+entry.getKey()+": ", e);
 			        }
 			    }
 			}
@@ -141,7 +141,7 @@ public class TCBFactory implements Runnable {
  				entry.getValue().db.close();
 				it.remove();
 			} catch (IOException e) {
-				log.error("Got exception while closing the database "+entry.getKey()+": "+e);
+				log.error("Got exception while closing the database "+entry.getKey()+": ", e);
 			}
 		}
 	}

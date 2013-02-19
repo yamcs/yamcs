@@ -94,7 +94,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 			socketChannel=null;
 		} catch (IOException e) {
 			e.printStackTrace();
-			log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:"+e);
+			log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:", e);
 		}
 	}
 	/**
@@ -129,7 +129,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 				connected=false;
 			}
 		} catch (IOException e) {
-			log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:"+e);
+			log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:", e);
 			connected=false;
 		}
 		return connected;

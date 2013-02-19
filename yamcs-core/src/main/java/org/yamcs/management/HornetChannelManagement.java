@@ -116,7 +116,7 @@ public class HornetChannelManagement implements ChannelListener {
             }
         } catch (YamcsException e) {
         	e.printStackTrace();
-            log.warn("sending error reply "+e);
+            log.warn("Sending error reply ", e);
             channelControlServer.sendErrorReply(replyto, e.getMessage());
         } 
     }
@@ -128,7 +128,7 @@ public class HornetChannelManagement implements ChannelListener {
             sendChannelEvent("channelUpdated", ci, false);
             channels.put(channel, STATS_NULL);
         } catch (Exception e) {
-            log.error("Exception when registering channel: "+e.getMessage());
+            log.error("Exception when registering channel: ", e);
         }
     }
     
@@ -146,7 +146,7 @@ public class HornetChannelManagement implements ChannelListener {
             ChannelInfo ci=getChannelInfo(channel);
             sendChannelEvent("channelUpdated", ci, false);
         } catch (Exception e) {
-            log.error("Exception when sending channelPaused event: "+e.getMessage());
+            log.error("Exception when sending channelPaused event: ", e);
         }
     }
 
@@ -163,7 +163,7 @@ public class HornetChannelManagement implements ChannelListener {
         try {
             yclient.dataProducer.send(CHANNEL_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
-            log.error("Exception when sending channel event: "+e);
+            log.error("Exception when sending channel event: ", e);
         }
     }
     
@@ -218,7 +218,7 @@ public class HornetChannelManagement implements ChannelListener {
             Protocol.encode(msg, stats);
             yclient.dataProducer.send(CHANNEL_STATISTICS_ADDRESS, msg);
         } catch (HornetQException e){
-            log.error("got exception when sending the channel processing statistics: "+e);
+            log.error("got exception when sending the channel processing statistics: ", e);
         }
     }
 
@@ -263,7 +263,7 @@ public class HornetChannelManagement implements ChannelListener {
         try {
             yclient.dataProducer.send(CHANNEL_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
-           log.error("exception when sedning client event: "+e);
+           log.error("exception when sedning client event: ", e);
         }
     }
 

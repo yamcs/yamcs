@@ -45,7 +45,7 @@ public class ManagementService {
             sci = new StreamControlImpl(stream);
             mbeanServer.registerMBean(sci, ObjectName.getInstance(tld+"."+instance+":type=streams,name="+stream.getName()));
         } catch (Exception e) {
-            log.warn("Got exception when registering a stream: "+e);
+            log.warn("Got exception when registering a stream: ", e);
         }
     }
     
@@ -54,7 +54,7 @@ public class ManagementService {
         try {
             mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=streams,name="+streamName));
         } catch (Exception e) {
-            log.warn("Got exception when unregistering a stream: "+e);
+            log.warn("Got exception when unregistering a stream: ", e);
         }
     }
  
@@ -65,7 +65,7 @@ public class ManagementService {
             TableControlImpl tci = new TableControlImpl(table);
             mbeanServer.registerMBean(tci, ObjectName.getInstance(tld+"."+instance+":type=tables,name="+table.getName()));
         } catch (Exception e) {
-            log.warn("Got exception when registering a stream: "+e);
+            log.warn("Got exception when registering a stream: ", e);
         }
     }
     
@@ -74,7 +74,7 @@ public class ManagementService {
         try {
             mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=tables,name="+tableName));
         } catch (Exception e) {
-            log.warn("Got exception when unregistering a stream: "+e);
+            log.warn("Got exception when unregistering a stream: ", e);
         }
     }
 }

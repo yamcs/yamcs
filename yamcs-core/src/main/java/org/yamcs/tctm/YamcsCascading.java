@@ -201,7 +201,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
                 break;
             }
         } catch (Exception e) {
-            log.warn("Error when receiving data : "+e);
+            log.warn("Error when receiving data : ", e);
             e.printStackTrace();
             tmProcessor.finished();
         }
@@ -254,7 +254,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
             yclient.sendRequest(packetReplayAddress, "quit", null);
             closeYSession();
         } catch (HornetQException e) {
-            log.warn("Got Exception when quitting the packet replay: "+e);
+            log.warn("Got Exception when quitting the packet replay: ", e);
         }
         notifyStopped();
     }
@@ -270,7 +270,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
             yclient.executeRpc(packetReplayAddress, "Start", null, null);
         } catch (Exception e) {
             e.printStackTrace();
-            log.warn("Got Exception when starting the packet replay: "+e);
+            log.warn("Got Exception when starting the packet replay: ", e);
         }
         notifyStarted();
     }
@@ -280,7 +280,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
         try {
             yclient.executeRpc(packetReplayAddress, "Pause", null, null);
         } catch (Exception e) {
-            log.warn("Got Exception when pausing the packet replay: "+e);
+            log.warn("Got Exception when pausing the packet replay: ", e);
         }
     }
 
@@ -289,7 +289,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
         try {
             yclient.executeRpc(packetReplayAddress, "Resume", null, null);
         } catch (Exception e) {
-            log.warn("Got Exception when resuming the packet replay: "+e);
+            log.warn("Got Exception when resuming the packet replay: ", e);
         }
     }
 
@@ -299,7 +299,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
         try {
             yclient.executeRpc(packetReplayAddress, "Seek", Instant.newBuilder().setInstant(time).build(), null);
         } catch (Exception e) {
-            log.warn("Got Exception when seeking the packet replay: "+e);
+            log.warn("Got Exception when seeking the packet replay: ", e);
         }
     }
 
@@ -379,7 +379,7 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
             return status.getState();
         } catch (Exception e) {
             e.printStackTrace();
-            log.warn("Got Exception when starting the packet replay: "+e);
+            log.warn("Got Exception when starting the packet replay: ", e);
             return ReplayState.ERROR;
         }
     }
