@@ -63,13 +63,13 @@ public class ReplayServer extends AbstractExecutionThreadService {
             while(isRunning()) {
                 ClientMessage msg=msgClient.rpcConsumer.receive();
                 if(msg==null) {
-                    if(isRunning()) log.warn("null message received from the control queue");
+                    if(isRunning()) log.warn("Null message received from the control queue");
                     continue;
                 }
                 SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
                 SimpleString dataAddress=msg.getSimpleStringProperty(DATA_TO_HEADER_NAME);
                 if(replyto==null) {
-                    if(isRunning()) log.warn("did not receive a replyto header. Ignoring the request");
+                    if(isRunning()) log.warn("Did not receive a replyto header. Ignoring the request");
                     continue;
                 }
                 try {
@@ -85,7 +85,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
                 }
             }
         } catch (Exception e) {
-            log.error("got exception while processing the requests "+e);
+            log.error("Got exception while processing the requests ", e);
             e.printStackTrace();
         }
     }
@@ -149,7 +149,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
             StringMessage addr=StringMessage.newBuilder().setMessage(yr.yclient.rpcAddress.toString()).build();
             msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
         } catch (final Exception e) {
-            log.warn("got exception when creating a PacketReplay object: "+e);
+            log.warn("Got exception when creating a PacketReplay object: ", e);
             e.printStackTrace();
             throw e;
         }
@@ -164,7 +164,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
         try {
             msgClient.close();
         } catch (HornetQException e) {
-            log.warn("got exception when quitting");
+            log.warn("Got exception when quitting", e);
         }
     }
 }
