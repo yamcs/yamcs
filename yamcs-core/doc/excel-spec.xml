@@ -1,4 +1,4 @@
-<appendix id="excel-spec"><title>Excel Spreadsheet Specification</title>
+<appendix id="excel-spec"><title>Excel Spreadsheet for MDB Specification</title>
 
 <para>Please note that only the part related to the TM Packets/Parameters is loaded
 directly into Yamcs. The part related to the commands is only used by the

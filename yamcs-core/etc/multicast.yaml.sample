@@ -1,0 +1,7 @@
+#Properties for the MulticastPpProvider and MulticastTmProvider
+example:
+    ppGroup: localhost
+    ppPort: 101
+    tmGroup: localhost
+    tmPort: 102
+

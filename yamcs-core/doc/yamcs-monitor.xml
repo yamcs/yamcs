@@ -18,7 +18,7 @@
 	</section>
 	
 	<section><title>Installation</title>
-		<para>The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <emphasis>bin</emphasis> folder.</para>
+		<para>The Yamcs Monitor is delivered as part of an archived client tools package. The package does not need to be installed, just extracted to a suitable location. The tools can be run from the extracted location using starting scripts found in the <filename class="directory">bin</filename> folder.</para>
 	</section>
 	
 	<section><title>Configuration</title>
@@ -39,7 +39,7 @@
 
 	<section><title>Starting Yamcs Monitor</title>
 		<para>The Yamcs Monitor is started with the command 
-		<emphasis>yamcs-monitor.sh</emphasis> or <emphasis>yamcs-monitor.bat</emphasis></para>
+		<command>yamcs-monitor.sh</command> or <command>yamcs-monitor.bat</command></para>
 		<para>After the startup, the menu entry <guimenu>File->Connect to Yamcs</guimenu> has to be used to connect to the server:
 		<figure><title>Yamcs connection dialog</title>
 			<mediaobject>
@@ -47,10 +47,10 @@
 			</mediaobject>
 		</figure>
 		</para>
-		<para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling the connect from the menu:
+		<para>The command line option <option>-url</option> can be used to connect directly after the startup without calling the connect from the menu:
 	        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
 		</para>
-		<para>An additional command line option <emphasis>-na</emphasis> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
+		<para>An additional command line option <option>-na</option> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
 	</section>
 
 

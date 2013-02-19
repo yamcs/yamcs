@@ -1,5 +1,5 @@
 <chapter id="yamcs-server"> <title>Yamcs Server</title>
-<para>The Yamcs server is implemented in Java and is responsible for acquiring, processing and dispatching data to clients via different protocols. It is designed to run in background as a deamon.</para>
+<para>The Yamcs server is implemented in Java and is responsible for acquiring, processing and dispatching data to clients via different protocols. It is designed to run in the background as a daemon.</para>
 
 <section><title>Installing</title>
 
@@ -10,7 +10,7 @@
 	</varlistentry>
       	
       	<varlistentry><term>Hardware</term>
-		<listitem>RAM >= 1Gb, HD >= 500Gb (dependent on amount of data archived)</listitem>
+		<listitem><hardware>RAM</hardware> >= 1Gb, <hardware>HD</hardware> >= 500Gb (dependent on amount of data archived)</listitem>
 	</varlistentry>
       	
       	<varlistentry><term>Java runtime (JRE)</term>
@@ -29,25 +29,56 @@
         Yamcs is delivered as an rpm package<footnote><para>deb packages directly converted from rpm using the <command>alien</command> command can also be provided</para></footnote> and installation is achieved using the rpm command:
         <screen>rpm -U yamcs-version.noarch.rpm	</screen>
     
+    	<para>After installing the rpms, the following directories are created under <filename class="directory">/yamcs/opt</filename> :</para>
+        
+        <variablelist>
+        	<varlistentry><term><filename class="directory">bin</filename></term>
+        		<listitem>Contains shell scripts for starting the different programs</listitem>
+        	</varlistentry>
+        
+        	<varlistentry><term><filename class="directory">cache</filename></term>
+        		<listitem>Contains cached serialized java files for the Mission Database. This has to be writable by the user <varname>yamcs</varname>.</listitem>
+        	</varlistentry>
+        	
+        	<varlistentry><term><filename class="directory">etc</filename></term>
+        		<listitem>Contains all the configuration files</listitem>
+        	</varlistentry>
+        	
+        	<varlistentry><term><filename class="directory">lib</filename></term>
+        		<listitem>Contains the jars required by Yamcs. <filename class="directory">lib/ext</filename> is where extensions reside.</listitem>
+        	</varlistentry>
+        
+        	<varlistentry><term><filename class="directory">log</filename></term>
+        		<listitem>Contains the log files of Yamcs. It has to be writable by the user <varname>yamcs</varname>. </listitem>
+        	</varlistentry>
+        
+        </variablelist>
     
-        In addition to the core Yamcs package, there are a few other proprietary extensions:
-        <itemizedlist>
-            <listitem>yamcs-cdmcs - provides loading of TM/TC directly from CD-MCS MDB or from SCOE files (only TM) and also provides the CORBA(CIS) protocol for communicating with USS and MCS Tools</listitem>
-            <listitem>yamcs-dass - provides TM/TC receivers/senders via the DaSS protocol</listitem>
-            <listitem>yamcs-busoc - provides the SOLAR<footnote><para>SOLAR is a ISS/Columbus payload</para></footnote> event decoder and a few SOLAR specific derived variables.</listitem>
-            <listitem>yamcs-erasmus - provides the EDR and FASTER<footnote><para>these are also ISS/Columbus payloads/instruments</para></footnote> event decoder and some specific derived variables. </listitem>
-        </itemizedlist>
+    
+    
+        <para>In addition to the core Yamcs package, there are a few other proprietary extensions:</para>
+        <variablelist>
+			<varlistentry><term>yamcs-cdmcs</term>
+				<listitem>Provides loading of TM/TC directly from CD-MCS MDB or from SCOE files (only TM) and also provides the CORBA (CIS) protocol for communicating with USS and MCS Tools</listitem>
+			</varlistentry>
+
+			<varlistentry><term>yamcs-dass</term>
+				<listitem>Provides TM/TC receivers/senders via the DaSS protocol</listitem>
+			</varlistentry>
+			
+			<varlistentry><term>yamcs-busoc</term>
+				<listitem>Provides the SOLAR<footnote><para>SOLAR is a ISS/Columbus payload</para></footnote> event decoder and a few SOLAR specific derived variables.</listitem>
+			</varlistentry>
+			
+			<varlistentry><term>yamcs-erasmus</term>
+				<listitem>Provides the EDR and FASTER<footnote><para>these are also ISS/Columbus payloads/instruments</para></footnote> event decoder and some specific derived variables.</listitem>
+			</varlistentry>
+			
+		</variablelist>
+
         <emphasis>Note: the extensions are not part of the Yamcs open-source release. They only make sense in the specific USOC environment</emphasis>
-        <para>After installing the rpms, the following directories are created under <filename>/yamcs/opt</filename>:</para>
-        <itemizedlist>
-            <listitem>bin - contains shell scripts for starting the different programs</listitem>
-			<listitem>cache - contains cache serialized java files for the Mission Database. This has to be writable by the user <emphasis>yamcs</emphasis>.</listitem>
-            <listitem>etc - contains all the configuration files</listitem>
-            <listitem>lib - contains the jars required by Yamcs. lib/ext is where extensions reside.</listitem>
-			<listitem>log - contains the log files of Yamcs. It has to be writable by the user <emphasis>yamcs</emphasis>. </listitem>
-        </itemizedlist>
-        <para>Yamcs has been developed and tested with java 1.6. It doesn't work with previous versions of java but it should work with newer versions.</para>
     </section>
+    
     <section><title>Configuration</title>
         <para>
             The Yamcs configuration files are encoded using the yaml format. This format allows to encode in a human readable way (unlike XML) the most common data types: numbers, strings, lists and maps. For detailed syntax rules, please see <ulink url="http://yaml.org/">yaml.org</ulink>.
@@ -76,7 +107,7 @@
 
 
 <section><title>Starting the Yamcs Server</title>
-		<para>Normally the Yamcs Server should be configured to start automatically on boot via <command>/etc/init.d/yamcs-server</command>. The command will automatically run itself as a lower privilege user (username <emphasis>yamcs</emphasis>), but must initially be run as root for this to happen. Yamcs Server can be started and stopped as a service via commands such as <command>service yamcs-server start</command> and <command>service yamcs-server stop</command>. These commands use the init.d script and will run Yamcs as the appropriate user. It is also possible to directly use the script <command>/opt/yamcs/bin/yamcs-server.sh</command>, but use of the <command>service</command> command is preferred.</para>
+		<para>Normally the Yamcs Server should be configured to start automatically on boot via <command>/etc/init.d/yamcs-server</command>. The command will automatically run itself as a lower privilege user (username <varname>yamcs</varname>), but must initially be run as root for this to happen. Yamcs Server can be started and stopped as a service via commands such as <command>service yamcs-server start</command> and <command>service yamcs-server stop</command>. These commands use the init.d script and will run Yamcs as the appropriate user. It is also possible to directly use the script <command>/opt/yamcs/bin/yamcs-server.sh</command>, but use of the <command>service</command> command is preferred.</para>
     <para>Regardless of how Yamcs server is started, all the options are read from the configuration file <filename>yamcs.yaml</filename>.</para>
     </section>
 
@@ -152,8 +183,8 @@
     </para>
     <para>Once the subscription list is built, the DassPacketProvider regularly tries to subscribe all the unsubscribed specifications from the list. At any time the Yamcs Monitor can be used to inspect the status of the subscription list. The Yamcs Monitor can also be used to close/re-open the connection to DaSS. </para>
     <formalpara><title>Secure Connections and Certificates</title>
-        <para>If the property <emphasis>certificate</emphasis> is specified, it has to point to a certificate file which will be then used by the DassPacketProvider (also the DassPpProvider and the DassTcUplinker) to connect to DaSS (or to the USOC router) in an encrypted way. Unlike the TMR in CD-MCS, the DassPacketProvider will try to verify the certificate of the server (using java built-in mechanism). Normally the Yamcs Server is started ( by the script <command>yamcs-server.sh</command>) with the option <emphasis>-Djavax.net.ssl.trustStore=yamcs_root_directory/etc/trustStore</emphasis>. This option configures java to trust the certificates signed with the certificates stored in the trustStore file.</para>
-        <para> For the secure connection to work, the file etc/trustStore has to be populated with the key which has signed the DaSS server key. This can be easily done using the command <emphasis>keytool</emphasis> delivered as part of the Java:
+			<para>If the property <emphasis>certificate</emphasis> is specified, it has to point to a certificate file which will be then used by the DassPacketProvider (also the DassPpProvider and the DassTcUplinker) to connect to DaSS (or to the USOC router) in an encrypted way. Unlike the TMR in CD-MCS, the DassPacketProvider will try to verify the certificate of the server (using java built-in mechanism). Normally the Yamcs Server is started ( by the script <command>yamcs-server.sh</command>) with the option <option>-Djavax.net.ssl.trustStore=yamcs_root_directory/etc/trustStore</option>. This option configures java to trust the certificates signed with the certificates stored in the trustStore file.</para>
+		<para> For the secure connection to work, the file <filename>etc/trustStore</filename> has to be populated with the key which has signed the DaSS server key. This can be easily done using the command <emphasis>keytool</emphasis> delivered as part of the Java distribution:
         <screen>
             keystore -import -alias esa_root -keystore etc/trustStore -file esa_root.crt
         </screen>
@@ -267,7 +298,7 @@
 	<para>
             The configuration parameter <emphasis>checkForUpdatedMdb</emphasis> configures Yamcs to check or not the Oracle database for modified versions of the MDB. If the MDB can not be loaded from the serialized file, the Oracle database is checked nevertheless.</para>
 	<para>
-            This options is useful for working "offline". However if it is set to false, Yamcs will never read new versions of the database, and if the database is modified and SCOE files generated, MCS Tools will refuse to load the SCOE files (it will want old ones corresponding to the saved Yamcs database).
+            This option is useful for working "offline". However if it is set to false, Yamcs will never read new versions of the database, and if the database is modified and SCOE files generated, MCS Tools will refuse to load the SCOE files (it will want old ones corresponding to the saved Yamcs database).
         </para>
             
         <para>

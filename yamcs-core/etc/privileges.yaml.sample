@@ -7,7 +7,7 @@ enabled: false
 #maximum number of CIS sessions clients are allowed
 maxNoSessions: 10
 
-ldaphost:        cdmcs-s
+ldaphost:        host
 userPath:        "ou=People,o=usoc"
 rolePath:        "ou=Roles, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
 systemPath:      "ou=System, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"

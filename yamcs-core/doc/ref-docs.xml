@@ -1,0 +1,47 @@
+<chapter><title>Applicable and Reference documents</title>
+
+<sect1><title>Applicable documents</title>
+
+	<table><title>Applicable documents</title>
+		<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1' colwidth="0.25*"/>
+			<colspec colname='c2' colwidth="0.5*"/>
+			<colspec colname='c3' colwidth="0.25*"/>
+			<thead><row>
+					<entry>Reference</entry>
+					<entry>Title</entry>
+					<entry>Version</entry>
+				</row></thead>
+			<tbody>
+				<row><entry>..</entry><entry>..</entry><entry>..</entry></row>
+			</tbody>
+		</tgroup>
+	</table>
+
+</sect1>
+
+
+
+<sect1><title>Reference documents</title>
+
+	<table><title>Reference documents</title>
+		<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1' colwidth="0.25*"/>
+			<colspec colname='c2' colwidth="0.5*"/>
+			<colspec colname='c3' colwidth="0.25*"/>
+			<thead><row>
+					<entry>Reference</entry>
+					<entry>Title</entry>
+					<entry>Version</entry>
+				</row></thead>
+			<tbody>
+				<row><entry>..</entry><entry>..</entry><entry>..</entry></row>
+			</tbody>
+		</tgroup>
+	</table>
+
+</sect1>
+
+
+
+</chapter>
