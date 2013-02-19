@@ -103,18 +103,17 @@ public class ReplayServer extends AbstractExecutionThreadService {
         
         if( Privilege.usePrivileges ) {
         	Privilege priv = HornetQAuthPrivilege.getInstance( msg );
-            Collection<String> allowedParameters = priv.getTmParameterNames( instance, "MDB:OPS Name" );
             List<NamedObjectId> invalidParameters = new ArrayList<NamedObjectId>();
             for( NamedObjectId noi : replayRequest.getParameterRequest().getParameterList() ) {
-            	if( ! allowedParameters.contains( noi.getName() ) ) {
+            	if( ! priv.hasPrivilege( Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
             		invalidParameters.add( noi );
             	}
             }
             
             if( ! invalidParameters.isEmpty() ) {
             	NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidParameters ).build();
-            	log.warn( "Cannot create replay - InvalidIdentification for parameters: {}", invalidParameters );
-                throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
+            	log.warn( "Cannot create replay - No privilege for parameters: {}", invalidParameters );
+                throw new YamcsException("InvalidIdentification", "No privilege", nol);
             }
             
             // Now check for packets.
