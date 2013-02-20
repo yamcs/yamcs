@@ -81,7 +81,7 @@
     
     <section><title>Configuration</title>
         <para>
-            The Yamcs configuration files are encoded using the yaml format. This format allows to encode in a human readable way (unlike XML) the most common data types: numbers, strings, lists and maps. For detailed syntax rules, please see <ulink url="http://yaml.org/">yaml.org</ulink>.
+            The Yamcs configuration files are encoded using the yaml format. This format allows to encode in a human readable way (unlike XML) the most common data types: numbers, strings, lists and maps. For detailed syntax rules, please see <xref linkend="RD5"></xref>.
         </para>
         <para>
             The starting configuration file is <filename>yamcs.yaml</filename>. It contains a list of Yamcs instances. For each instance, a file called <filename>yamcs.instance-name.yaml</filename> defines all the components that are part of the instance. Depending on which components are selected, different configuration files are needed.
@@ -150,7 +150,7 @@
         </para>
         <para>
             Streams can be made "visible" to the external word by adding HornetQ wrappers. A wrapper is a HornetQ address that is configured such that each message published to the address gets transferred to the stream and each tuple that comes via the stream is transformed into a HornetQ message and published via the address. An external client then can bind a queue to that address and receive all the messages that transit through the respective stream.
-            Unlike the Yamcs streams which are synchronous and very light, the HornetQ addresses are asynchronous and involve more overhead.
+            Unlike the Yamcs streams which are synchronous and very light, the HornetQ addresses are asynchronous and involve more overhead. See <xref linkend="RD4"></xref> for more detailed HornetQ documentation.
         </para>
         <para>
             Currently the only way to see all the streams that are running inside a Yamcs server, is using a JMX client like JConsole. JConsole can also be used to inspect the status of the HornetQ addresses.
@@ -263,7 +263,7 @@
 <section><title>Mission Database</title>
     <para>Currently, the Yamcs Mission Database is split into three parts: </para>
 	<itemizedlist>
-		<listitem>Telemetry is described according  to the XTCE structure.</listitem>
+		<listitem>Telemetry is described according  to the XTCE structure <xref linkend="RD3"></xref>.</listitem>
 		<listitem>Telecommand is described according to the CD-MCS MDB structure.</listitem>
                 <listitem>Processed Parameters is simply a list of names, according to Yamcs own structure. </listitem>
 	</itemizedlist>
@@ -333,7 +333,7 @@
 		
 		
 		<section><title>XTCE files</title>
-			<para>This loader reads an MDB saved in XML format compliant with the XTCE specification. For more information about XTCE, and for the XTCE XML Schema, see <ulink url="http://www.xtce.org"></ulink>.</para>
+			<para>This loader reads an MDB saved in XML format compliant with the XTCE specification <xref linkend="RD3"></xref>. For more information about XTCE, see <xref linkend="RD2"></xref>.</para>
 			<para>The loader is configured in <filename>etc/mdb.yaml</filename> (see <xref linkend="mdb.yaml"></xref> for a sample configuration). Specify the 'type' as "xtce", and provide the location of the XML file in the spec attribute.</para>
 		</section>
 		
@@ -365,7 +365,7 @@
 <section id="telemetry-processing"><title>Telemetry Processing</title>
     <section><title>Packet Telemetry</title>	
 	<para>The Yamcs Server implements a subset of the XTCE (XML Telemetric and Command Exchange) for telemetry processing. Only the concepts defined by the standard are supported.</para>
-	<para>For information about XTCE, please refer to <ulink url="http://www.xtce.org/">www.xtce.org</ulink>. This sections details only the XTCE types implemented in Yamcs.</para>
+	<para>For information about XTCE, please refer to <xref linkend="RD2"></xref> and <xref linkend="RD3"></xref>. This sections details only the XTCE types implemented in Yamcs.</para>
 	<formalpara><title>Sequence Containers</title>
 	<para><emphasis>Sequence containers</emphasis> are the equivalent of packets in the usual terminology, or ADU in the MDB terminology.</para>
 	<para>The sequence containers employ two mechanism to avoid the limitation of traditional "packet with parameters" approach. These mechanisms are aggregation and inheritance.</para>	

@@ -5,7 +5,7 @@ Yamcs is implemented in Java and typically runs inside one single JVM. Many comp
 <sect1><title>Inter communication mechanisms.</title>
 
 For communication between the internal (inside JVM) componenets, Yamcs relies on a simple synchronous stream based mechanism. A stream is simply identified by a name and is providing a mechanism for transporting semi-structured data tuples from one component to any number of other components which are subscribed to the stream.
-For communication with the outside components, Yamcs relies on HornetQ which is a asynchronous messaging server. Streams can be connected to HornetQ address/queues such that external systems can inject/retrieve data from Yamcs. The HornetQ can be used to distribute different Yamcs modules on different systems.
+For communication with the outside components, Yamcs relies on HornetQ which is a asynchronous messaging server <xref linkend="RD4"></xref>. Streams can be connected to HornetQ address/queues such that external systems can inject/retrieve data from Yamcs. The HornetQ can be used to distribute different Yamcs modules on different systems.
 Finally, Yamcs provides some functionallity via a web services and via CORBA. The web services are used by the Yamcs web application which as of version 0.22 provides access to USS Displays via web.
 Generally the Stream based communication used internlly for very fast communication (planned for a future Event Detector module), the HornetQ is used for distributed inter-Yamcs componenets communication, while the Web services are used to provide access to Yamcs over Internet.
 The CORBA component is part of the yamcs-cdmcs module (which is not open-sourced) and is used for compatibility with CD-MCS software inside USOC.

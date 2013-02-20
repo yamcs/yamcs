@@ -6,7 +6,7 @@ for handling telemetry (TM) and telecommands (TC), and client applications for m
 server ((<xref linkend="monitor"/>)), accessing live and archived data ((<xref linkend="archive-browser"/>)), and monitoring
 events ((<xref linkend="eventviewer"/>)).</para>
 
-<para>The core of Yamcs is Open Source under the GNU AFFERO General Public License (version 3), with some additional USOC oriented proprietary packages. Yamcs software is available from <ulink url="https://github.com/yamcs/yamcs">github.com/yamcs</ulink></para>
+<para>The core of Yamcs is Open Source under the GNU AFFERO General Public License (version 3) <xref linkend="RD1"></xref>, with some additional USOC oriented proprietary packages. Yamcs software is available from <ulink url="https://github.com/yamcs/yamcs">github.com/yamcs</ulink></para>
 
 
 <section><title>Features</title>
@@ -28,7 +28,7 @@ possible.</para>
 		</itemizedlist>
 	</listitem>
 	<listitem>Custom protocols can be easily added.</listitem>
-	<listitem>Comfortable packet structure definition, partially implementing the XTCE standard: www.xtce.org</listitem>
+	<listitem>Comfortable packet structure definition, partially implementing the XTCE standard <xref linkend="RD3"></xref></listitem>
 	<listitem>Compatible with the Unified Synoptic System (USS): www.e-columbus.de/projects/uss</listitem>
 	<listitem>Telemetry replay, scientific data extraction, profiling, and offline analysis</listitem>
 	<listitem>Detailed packet and parameter inspection.</listitem>
