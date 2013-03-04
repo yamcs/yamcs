@@ -58,6 +58,8 @@ public class PpDbFactory {
             String spec=c.getString(m, "spec");
             if (type.equals("flatfile")) {
                 loaders.add(new FlatFilePpDbLoader(spec));
+            } else if (type.equals("sheet")) {
+            	loaders.add( new SpreadsheetPpDbLoader( spec ) );
             } else {
                 // custom class
                 try {
@@ -65,7 +67,7 @@ public class PpDbFactory {
                     Constructor<PpDatabaseLoader> constr= cl.getConstructor(String.class);
                     loaders.add(constr.newInstance(spec));
                 } catch (ClassNotFoundException e) {
-                    log.warn(e.toString());
+                    log.warn("Could not find appropriate loader class", e);
                     throw new ConfigurationException("Invalid database loader class: " + type);
                 } catch (Exception e1) {
                     log.warn("Cannot instantiate class " + type, e1);
@@ -101,7 +103,7 @@ public class PpDbFactory {
                 raf.seek(0);
             }
         } catch (IOException e) {
-            log.warn("Cannot check the consistency date of the serialized database: ", e);
+            log.info("Could not read date for when the database was last serialized so database will be re-loaded.", e);
             loadSerialized = false;
         } catch (ConfigurationException e) {
             log.error("Cannot check the consistency date of the serialized database: ", e);
@@ -113,7 +115,7 @@ public class PpDbFactory {
                db=loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
-                log.info("Cannot load serialized database: ", e);
+                log.info("Found a date for when the database was last serialized, but could not load the serialized database: ", e);
             }
         }
 
