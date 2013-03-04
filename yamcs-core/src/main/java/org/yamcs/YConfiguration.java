@@ -122,7 +122,10 @@ public class YConfiguration {
     private static InputStream getConfigurationStream(String name) throws ConfigurationException {
     	InputStream is;
     	if(prefix!=null) {
-    	    if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) return is;
+    	    if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
+    	    	log.info( "Reading configuration from "+new File( YConfiguration.class.getResource("/"+prefix+name).getFile() ).getAbsolutePath() );
+    	    	return is;
+    	    }
     	}
     	
     	//see if the users has a own version of the file
@@ -130,6 +133,7 @@ public class YConfiguration {
     	if(f.exists()) {
     		try {
 				is=new FileInputStream(f);
+				log.info( "Reading configuration from "+f.getAbsolutePath() );
 				return is;
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -138,9 +142,9 @@ public class YConfiguration {
     	if((is=YConfiguration.class.getResourceAsStream(name))==null) {
     		throw(new ConfigurationException("Can not find resource "+name));
     	}
+    	log.info( "Reading configuration from "+new File( YConfiguration.class.getResource(name).getFile() ).getAbsolutePath() );
     	return is;
     }
-    
 
     public String getGlobalProperty(String key) {
         return System.getProperty(key);
