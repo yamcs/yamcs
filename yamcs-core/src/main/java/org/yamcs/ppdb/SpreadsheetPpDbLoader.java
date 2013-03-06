@@ -54,7 +54,6 @@ public class SpreadsheetPpDbLoader implements PpDatabaseLoader {
 		}
 		
 		Sheet para_sheet = workbook.getSheet("ProcessedParameters");
-		// For backward compatibility, this sheet is optional
 		if( para_sheet == null ) {
 			throw new ConfigurationException( "Spreadsheet from '"+ssFile.getAbsolutePath()+"' does not have 'ProcessedParameters' workbook." );
 		}
