@@ -18,7 +18,7 @@ services:
     - org.yamcs.cmdhistory.CommandHistoryRecorder
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
-tmIndexer: [] 
+#tmIndexer: 
 
 #name of the class that is used to to generate events from the streams
 eventDecoders: []

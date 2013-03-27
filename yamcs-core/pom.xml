@@ -221,28 +221,6 @@
 
   <repositories>
     <repository>
-      <id>spaceapps.internal</id>
-      <url>http://aces-ci:8888/archiva/repository/internal</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>spaceapps.snapshots</id>
-      <url>http://aces-ci:8888/archiva/repository/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>spaceapps.external</id>
-      <url>http://subversion.spaceapplications.com/maven/repository</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>repository.jboss.org</id>
       <url>http://repository.jboss.org/nexus/content/groups/public/</url>
       <snapshots>
