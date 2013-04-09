@@ -39,7 +39,7 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core-client</artifactId>
-      <version>2.2.16.Final</version>
+      <version>${hornetQVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.yaml</groupId>

@@ -22,6 +22,7 @@
   <properties>
     <RESTLET_VERSION>2.0.5</RESTLET_VERSION>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <hornetQVersion>2.2.24.Snapshot</hornetQVersion>
   </properties>
 
   <build>
@@ -127,5 +128,30 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <repositories>
+    <repository>
+      <id>repository.jboss.org</id>
+      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>yamcs-mvn-repo-releases</id>
+      <url>https://raw.github.com/yamcs/mvn-repo/master/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>yamcs-mvn-repo-snapshots</id>
+      <url>https://raw.github.com/yamcs/mvn-repo/master/snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
 
 </project>

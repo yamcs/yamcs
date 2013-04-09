@@ -80,7 +80,7 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core</artifactId>
-      <version>2.2.16.Final</version>
+      <version>${hornetQVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -218,14 +218,4 @@
       <name>SpaceApps License</name>
     </license>
   </licenses>
-
-  <repositories>
-    <repository>
-      <id>repository.jboss.org</id>
-      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 </project>
