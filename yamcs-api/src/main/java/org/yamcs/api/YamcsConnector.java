@@ -171,8 +171,9 @@ public class YamcsConnector implements SessionFailureListener {
     }
 
     @Override
-    public void beforeReconnect(HornetQException arg0) {
+    public void beforeReconnect(HornetQException e) {
         //should not be called because reconnection is not configured in the factory
+        log.warn("Before reconnecti: ", e);
     }
 
     public YamcsSession getSession() {
