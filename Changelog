@@ -1,4 +1,11 @@
-Version 0.23.2 Released 
+Version 0.23.4 Released ??
+- implemented some workaround for archive browser in java 7
+- read the dates in UTC-TAI.history file in english no matter what the user.language property is
+
+Version 0.23.3 Released ??
+
+
+Version 0.23.2 Released ??
 - Implemented a simple TAI to UTC converter to remove dependency on orekit
 - renamed several config files to .sample such that they are not installed by default as part of the rpm, and a rpm can be made for specific configurations/deployments
 
