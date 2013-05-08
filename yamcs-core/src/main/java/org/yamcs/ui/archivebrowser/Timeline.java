@@ -51,28 +51,38 @@ class Timeline extends JComponent implements MouseInputListener {
         return tmBox.getToolTipLocation(e);
     }
 
-    private MouseEvent translateEvent(MouseEvent e, Component dest)	{
-        return SwingUtilities.convertMouseEvent(e.getComponent(), e, dest);
+    private MouseEvent translateEvent(MouseEvent e, Component dest)	 {
+        // workaround for this bug
+        //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7181403
+        MouseEvent me=SwingUtilities.convertMouseEvent(e.getComponent(), e, dest);
+        return new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), me.getModifiers(), me.getX(), me.getY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), e.getButton());
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         getParent().dispatchEvent(translateEvent(e, getParent()));
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         getParent().dispatchEvent(translateEvent(e, getParent()));
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {}
+    @Override
     public void mouseExited(MouseEvent e) {}
+    @Override
     public void mouseClicked(MouseEvent e) {}
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e, tmBox);
         setToolTipText(tmBox.getMouseText(transEvent));
         tmBox.setPointer(transEvent);
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         tmBox.doMouseDragged(translateEvent(e, tmBox));
 

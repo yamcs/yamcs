@@ -41,7 +41,10 @@ class IndexLine extends JPanel implements MouseInputListener {
     }
 
     private MouseEvent translateEvent(MouseEvent e) {
-        return SwingUtilities.convertMouseEvent(e.getComponent(), e, tmBox);
+        // workaround for this bug
+        //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7181403
+        MouseEvent me=SwingUtilities.convertMouseEvent(e.getComponent(), e, tmBox);
+        return new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), me.getModifiers(), me.getX(), me.getY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), e.getButton());
     }
 
     @Override

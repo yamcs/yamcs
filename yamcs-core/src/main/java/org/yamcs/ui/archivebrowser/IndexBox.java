@@ -469,7 +469,7 @@ public class IndexBox extends Box implements MouseInputListener {
         doMouseDragged(e);
 
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
-        dispatchEvent(new MouseEvent(e.getComponent(), e.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
+        dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
                 e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
 
