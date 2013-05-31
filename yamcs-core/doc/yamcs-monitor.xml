@@ -1,6 +1,6 @@
 <chapter id="monitor">
 <title>Yamcs Monitor</title>
-<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list of data links, channels and clients connected to the Yamcs Server.  Only one Yamcs instance is shown at the time, and the currently selected instance can be changed using the Instance menu.</para>
+<para>Yamcs Monitor allows to control a Yamcs Server. It shows the list of data links, channels and clients connected to the Yamcs Server.  Only one Yamcs instance is shown at a time, and the currently selected instance can be changed using the Instance menu.</para>
 
 
 <section><title>Installing</title>
@@ -117,7 +117,7 @@
             By right-clicking on a client, a popup menu appears, and the client can be connected to any of the channels. This way, even several clients may be connected to a single channel. Channels without clients are instantly removed.
         </para>
         <para>
-            New clients are automatically connected to the "realtime" channel. The "realtime" channel will never be removed, even if there are no clients connected .
+            New clients are automatically connected to the "realtime" channel. The "realtime" channel will never be removed, even if there are no clients connected.
         </para>
 
    <guilabel>New Channel</guilabel> box
@@ -135,7 +135,7 @@
 
 
 <section id="command-queue-control"><title>Command Queue Control</title>
-	The Command Queue Control window can be open either from the main Yamcs Monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
+	The Command Queue Control window can be opened either from the main Yamcs Monitor window by double-clicking on a channel name. The Command Queue Control only makes sense for channels which have commanding 
 	<figure><title>Command Queue Control Window</title>
 		<mediaobject> 
 			<imageobject><imagedata width="100%" fileref="images/command-queues.png"/></imageobject>
@@ -171,7 +171,7 @@
 
     <section><title>Getting Started</title>
         <para>
-            The main part of the window comprises a display to visualize the content of the archive. When opening the window for the first time, it needs to be populated. This is done by entering the start and end range and pressing the "Reload View" button. The buttons next to the "Reload Range" input fields can be pressed to popup a calendar that can be used to select the date. The time of the day has to be entered manually. In addition, the "Select last..." dropdown can be used to fill in the range start with current_time - 3,6 or 12 months. Leaving any of the fields empty, means minus or plus infinity. To refresh data with the newest realtime data, the end of the range can be left empty.
+            The main part of the window comprises a display to visualize the content of the archive. When opening the window for the first time, it needs to be populated. This is done by entering the start and end range and pressing the "Reload View" button. The buttons next to the "Reload Range" input fields can be pressed to popup a calendar that can be used to select the date. The time of the day has to be entered manually. In addition, the "Select last..." dropdown can be used to fill in the range start with current_time (3, 6 or 12 months). Leaving any of the fields empty, means minus or plus infinity. To refresh data with the newest realtime data, the end of the range can be left empty.
             
             Pressing the "Reload View" button, will request information from Yamcs Server about all data available in the selected range, so this operation may take some time, depending on the amount of data, and depending on the bandwidth of the network connection. During the reload process, the "Packets" row in the "Archive Information" box displays the progress.
         </para>
@@ -181,7 +181,7 @@
         <itemizedlist>
             <listitem>Tags - these are simply names that can be used by the operator to mark special activities. Together with a name, a tag has associated a color, a description and a start/end time. New tags can be created by selecting a data range and pressing the <guibutton> New Tag </guibutton> Button. </listitem>
             <listitem>Completeness Data - these are records created by a completeness checker running on the server. The way to check the completeness and the granularity, depends on the input data. For CCSDS packets, it can be checked at APID level based on the CCSDS Sequence Count.</listitem>
-            <listitem>Histogram Data - these are records showing statistical information about the packets (or data items in general). Unlike the Completeness Data, heuristics are used to determine the start/end of a record. This are not useful to determine the data completeness but rather to have a overview of what data is available in the archive.</listitem>                
+            <listitem>Histogram Data - these are records showing statistical information about the packets (or data items in general). Unlike the Completeness Data, heuristics are used to determine the start/end of a record. These are not useful to determine the data completeness but rather to have a overview of what data is available in the archive.</listitem>                
         </itemizedlist>
         <para>
             By default no data is shown. It is now up to the user to choose and display packets. This is done by right-clicking in the empty space left to the vertical divider. A popup menu offers to add packets. One packet can be added at a time, or with one mouse click all packets of a single payload can be added. Each packet is shown in a random colour to distinguish it visually from its neighbour packets. The colour can be changed by right-clicking on the packet label and choosing the appropriate menu item.
@@ -241,7 +241,7 @@
         </mediaobject>
     </figure>
     <para>
-        The operation of the Parameter Retrieval tool is very simple: a number of parameter names has to be added to the left panel, and the <guibutton>Start Retrieval</guibutton> button pressed.
+        The operation of the Parameter Retrieval tool is very simple: a number of parameter names have to be added to the left panel, and the <guibutton>Start Retrieval</guibutton> button pressed.
     </para>
     <para>
         There are a number of methods for selecting parameters to be replayed:
@@ -269,7 +269,7 @@
 		</varlistentry>
 		
 		<varlistentry><term>Print only the full lines</term>
-			<listitem>discard lines that do not have all the columns filled in. For example if some headers parameters are selected in addition to parameters from a specific packet, this option will avoid printing the headers for all the packets.</listitem>
+			<listitem>Discard lines that do not have all the columns filled in. For example if some headers parameters are selected in addition to parameters from a specific packet, this option will avoid printing the headers for all the packets.</listitem>
 		</varlistentry>
 		
 		<varlistentry><term>Keep previous values</term>
