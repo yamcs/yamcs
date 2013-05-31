@@ -128,7 +128,7 @@ Version 0.19.4 Released 3-Nov-2011
 
 
 
-Version 0.19.3 Released 19-Aug-2012
+Version 0.19.3 Released 19-Aug-2011
  - changed the relpos in spreadsheets to start from 0 instead of 1
  - fixed the string parameter decoding
  - keep some statistics XtceStaxReader
