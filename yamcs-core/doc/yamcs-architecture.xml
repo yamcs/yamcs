@@ -18,8 +18,7 @@ The CORBA component is part of the yamcs-cdmcs module (which is not open-sourced
     <emphasis>Data Links</emphasis> represent special components that inject data coming from external systems. Note that if a stream is linked to a HornetQ address/queue, the address can be used to inject data by an external component. However, the Data Links can reprt the status via the Yamcs Monitor and can also be enabled/disabled, meaning they connect/disconnect to/from the data sources.
     <emphasis>Channels</emphasis> are a connection point for several different streams of the same instance (typically at least one TM and one TC) and processing data according to an XTCE database. 
     <emphasis>Channel clients</emphasis> are TM monitoring or TC commanding application (USS, MCS Tools). They can be monitored via Yamcs Monitor.
-    
-    
+</sect1>
 
 <sect1><title>Getting Started</title>
 	<para>The Yamcs Monitor is started with the command 

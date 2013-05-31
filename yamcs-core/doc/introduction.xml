@@ -3,8 +3,8 @@
 <para>Yamcs, (Yet Another Mission Control System) is a software package for handling
 long term payload operations. The package consists of a server (<xref linkend="yamcs-server"/>)
 for handling telemetry (TM) and telecommands (TC), and client applications for managing the
-server ((<xref linkend="monitor"/>)), accessing live and archived data ((<xref linkend="archive-browser"/>)), and monitoring
-events ((<xref linkend="eventviewer"/>)).</para>
+server (<xref linkend="monitor"/>), accessing live and archived data (<xref linkend="archive-browser"/>), and monitoring
+events (<xref linkend="eventviewer"/>).</para>
 
 <para>The core of Yamcs is Open Source under the GNU AFFERO General Public License (version 3) <xref linkend="RD1"></xref>, with some additional USOC oriented proprietary packages. Yamcs software is available from <ulink url="https://github.com/yamcs/yamcs">github.com/yamcs</ulink></para>
 

@@ -9,7 +9,7 @@ script to be imported into the CD-MCS MDB.</para>
 		<listitem>Every opsname will automatically be prepended with the 'opsname prefix' value from the 'General' sheet (if 'opsname prefix' is specified)</listitem>
 		<listitem>The actual descriptive part of opsnames is WordCapitalized (eg. HK_WatchdogError)</listitem>
 		<listitem>All numeric values can be entered as decimals or as hexadecimals (with prefix 0x)</listitem>
-		<listitem>Although column names are used for reference below, columns must not be re-ordered.</listitem>
+		<listitem>Although column names are used for reference below, columns must not be reordered.</listitem>
 	</orderedlist>
 	<para>A number of mandatory named sheets are described as part of this specification, though authors may add their own sheets and still use the spreadsheet file as the reference MDB.</para>
 </sect1>
@@ -36,7 +36,7 @@ script to be imported into the CD-MCS MDB.</para>
 </sect1>
 
 <sect1><title>MDB sheet</title>
-	<para>This sheet is optional, but if present must be named "MDB" The columns described must not be reordered.</para>
+	<para>This sheet is optional, but if present must be named "MDB". The columns described must not be reordered.</para>
 	<variablelist><title>Columns</title>
 		<varlistentry><term>version</term>
 						<term>issue</term>
@@ -95,7 +95,7 @@ script to be imported into the CD-MCS MDB.</para>
 		</varlistentry>
 		
 		<varlistentry><term>flags</term>
-			<listitem>Used to encode special cases. Flags are case insensitive and can be concatenated together.
+			<listitem>Used to encode special cases. Flags are case-insensitive and can be concatenated together.
 				<itemizedlist>
 					<listitem><emphasis>I:</emphasis> ignore completely when generating the Oracle MDB. In Yamcs the parameter is NOT ignored.</listitem>
 					<listitem><emphasis>D:</emphasis> derived value, in this case the measurement MAY NOT have calibration</listitem>
@@ -113,7 +113,7 @@ script to be imported into the CD-MCS MDB.</para>
 		</varlistentry>
 		
 		<varlistentry><term>size in bits</term>
-			<listitem>The size of the container in bits. This is not usually needed but if the container is part of another container through agregation, this size is used to determine the position of the next entry in the master container. See <xref linkend="container-agregation"/> for more details.</listitem>
+			<listitem>The size of the container in bits. This is not usually needed but if the container is part of another container through aggregation, this size is used to determine the position of the next entry in the master container. See <xref linkend="container-agregation"/> for more details.</listitem>
 		</varlistentry>
 		
 		<varlistentry><term>expected interval</term>
@@ -295,7 +295,7 @@ script to be imported into the CD-MCS MDB.</para>
 							<listitem>a '=' b pair. Lefthandside = textual representation of the righthandside value, this textual representations cannot be longer than 8 characters</listitem>
 							<listitem>x where x is a number and meaning that any value larger or equal to x is also a valid value. Having this means that also a highlimit must be filled in combining the previous ones is also possible, see example.</listitem>
 						</itemizedlist>
-						EXAMPLE: 'ON=1;OFF=0;3' means that value 1 is encoded as ON, value 0 is encoded as OFF and any other value greater than or equal to 3 is also a valid value (of the highlimit field has been filled in and > 3)
+						EXAMPLE: 'ON=1;OFF=0;3' means that value 1 is encoded as ON, value 0 is encoded as OFF and any other value greater than or equal to 3 is also a valid value (if the highlimit field has been filled in and > 3)
 					</listitem>
 				</itemizedlist>
 			</listitem>
