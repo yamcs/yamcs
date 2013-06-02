@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<SpaceSystem xmlns="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://archive.astro.umd.edu/omg/trunk/SpaceSystemV1.1.xsd" name="TEST for javascript derived values">
+	<TelemetryMetaData>
+		<AlgorithmSet>
+			<CustomAlgorithm name="test_float_add_js">
+				<AlgorithmText language="JavaScript">
+					f0 = FloatPara11_2;
+					f1 = FloatPara11_3;
+					test_float_add_js = f0+f1;
+				</AlgorithmText>
+				<InputSet>
+					<ParameterInstanceRef parameterName="SUBSYS1_FloatPara11_2"/>
+					<ParameterInstanceRef parameterName="SUBSYS1_FloatPara11_3"/>
+				</InputSet>
+				<OutputSet>
+					<OutputParameterRef parameterName="test_float_add_js"/>
+				</OutputSet>
+			</CustomAlgorithm>
+		</AlgorithmSet>
+		
+		<AlgorithmSet>
+			<CustomAlgorithm name="test_float_ypr_js">
+				<AlgorithmText language="JavaScript">
+					q0 = FloatPara11_2;
+q1 = FloatPara11_3;
+q2 = IntegerPara11_6;
+q3 = IntegerPara11_7;
+test_float_ypr_js = Math.atan2(2*(q0*q1 + q3*q2), (1 - 2*(q1*q1 + q2*q2))) * 360 / (2 * Math.PI);
+				</AlgorithmText>
+				<InputSet>
+					<ParameterInstanceRef parameterName="SUBSYS1_FloatPara11_2"/>
+					<ParameterInstanceRef parameterName="SUBSYS1_FloatPara11_3"/>
+					<ParameterInstanceRef parameterName="SUBSYS1_IntegerPara11_6"/>
+					<ParameterInstanceRef parameterName="SUBSYS1_IntegerPara11_7"/>
+				</InputSet>
+				<OutputSet>
+					<OutputParameterRef parameterName="test_float_ypr_js"/>
+				</OutputSet>
+			</CustomAlgorithm>
+		</AlgorithmSet>
+	</TelemetryMetaData>
+</SpaceSystem>
