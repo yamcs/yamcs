@@ -5,8 +5,8 @@
 #cat ../etc/MDB.properties | sed s/mdbconfig.password==.*$/mdbconfig.password==abracadabra/ >MDB.properties
 
 # Include word-wrapped changelog
-cat ../../../yamcs-internal/yamcs-dass/Changelog | fold -s > Changelog-yamcs-dass
-cat ../../Changelog | fold -s > Changelog-yamcs
+#cat ../yamcs-internal/yamcs-dass/Changelog | fold -s > Changelog-yamcs-dass
+cat ../Changelog | fold -s > Changelog-yamcs
 
 for i in MDBSequenceContainerCreation 
 do
@@ -31,6 +31,6 @@ xsltproc --stringparam fop1.extensions 1\
           #/tmp/docbook5-xsl-1.72.0/fo/docbook.xsl smallsize.xsl ~nm/USOC/trunk/doc/yamcs-manual.xml >yamcs-manual.fo
 fop yamcs-manual.fo yamcs-manual.pdf
 
-rm Changelog-yamcs-dass
+#rm Changelog-yamcs-dass
 rm Changelog-yamcs
 #rm archive.properties cmdhistory.properties MDB.properties

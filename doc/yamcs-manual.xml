@@ -24,10 +24,10 @@
      </para>
   </legalnotice>
 
-  <pubdate>19-Feb-2013</pubdate>
+  <pubdate>31-May-2013</pubdate>
   
   <releaseinfo>
-  	<para>This is Version 1.1.0 of the Yamcs Manual documenting version 0.23.2 of Yamcs.</para>
+  	<para>This is Version 1.2.0 of the Yamcs Manual documenting version 0.23.4 of Yamcs.</para>
    	<para>For help or further information, please contact <email>docs@yamcs.org</email></para>
    </releaseinfo>
   
@@ -48,25 +48,26 @@
 	<xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" href="dass-pp-mapping.xml"/>
 	
 	<sect1 id="command-queue.yaml"><title>command-queue.yaml</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/command-queue.yaml.sample"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/command-queue.yaml.sample"/></screen>
 	</sect1>
-	<sect1 id="dass.yaml"><title>dass.yaml</title>
+	<!-- <sect1 id="dass.yaml"><title>dass.yaml</title>
 	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../../../yamcs-internal/yamcs-dass/src/main/config/dass.yaml.sample"/></screen>
 	</sect1>
+-->
 	<sect1><title>logging.properties</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/logging.properties"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/logging.properties"/></screen>
 	</sect1>
 	<sect1 id="mdb.yaml"> <title>mdb.yaml</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/mdb.yaml.sample"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/mdb.yaml.sample"/></screen>
 	</sect1>
 	<sect1 id="multicast.yaml"><title>multicast.yaml</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/multicast.yaml.sample"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/multicast.yaml.sample"/></screen>
 	</sect1>
 	<sect1 id="privileges.yaml"><title>privileges.yaml</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/privileges.yaml.sample"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/privileges.yaml.sample"/></screen>
 	</sect1>
 	<sect1 id="tcp.yaml"><title>tcp.yaml</title>
-	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../etc/tcp.yaml.sample"/></screen>
+	<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="../yamcs-core/etc/tcp.yaml.sample"/></screen>
 	</sect1>
 </appendix>
 
@@ -76,10 +77,11 @@
 	<sect1 id="changelog-yamcs"><title>Yamcs core</title>
 		<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="Changelog-yamcs"/></screen>
 	</sect1>
-	
+<!--	
 	<sect1 id="changelog-yamcs-dass"><title>Yamcs DaSS</title>
 		<screen><xi:include  xmlns:xi="http://www.w3.org/2003/XInclude" parse="text" href="Changelog-yamcs-dass"/></screen>
 	</sect1>
+-->
 </appendix>
 
 </book>

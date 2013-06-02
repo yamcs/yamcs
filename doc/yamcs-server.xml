@@ -175,7 +175,7 @@
     </para>
     <section><title>DassPacketProvider</title>
         <para>Receives telemetry packets (PathTM) from DaSS.</para> 
-        <para>At startup the DassPacketProvider loads configuration properties defined in the configuration file <filename>dass.yaml</filename> (see <xref linkend="dass.yaml"/>). It builds the list of packet specifications which it should subscribe to DaSS. A specification is an object(vehicle id, packet type, apid, private header source). The list is built as follows:
+        <para>At startup the DassPacketProvider loads configuration properties defined in the configuration file <filename>dass.yaml</filename>. It builds the list of packet specifications which it should subscribe to DaSS. A specification is an object(vehicle id, packet type, apid, private header source). The list is built as follows:
         <itemizedlist>
                 <listitem>If the property <emphasis>tmSubscriptionList</emphasis> is defined, then it considers only the specifications matching this property.</listitem>
                 <listitem>If the property <emphasis>tmSubscriptionList</emphasis> is not defined, then all the APIDs defined in the MDB are considered as part of the subscription list with the vehicle id set to 2=(Columbus), the packet type set to 1(=payload) and the private header source set to -1 (=all). Please note that this kind of subscription only works when connected to the DaSS kernel not when connected to the USOC router (the USOC router does not support the wildcard subscriptions).</listitem>
@@ -211,7 +211,7 @@
     <section><title>Processed Parameter Providers</title>
     <section><title>DassPpProvider</title>
         <para>Implements processed parameters from DaSS.</para>
-        <para>At startup the DassPpProvider loads configuration properties defined in the configuration file <filename>etc/dass.yaml</filename> (see <xref linkend="dass.yaml"/>). It builds the list of processed parameters which have to be subscribed from the MDB taking all the UMI tables found in the configured CCU. </para>
+        <para>At startup the DassPpProvider loads configuration properties defined in the configuration file <filename>etc/dass.yaml</filename>. It builds the list of processed parameters which have to be subscribed from the MDB taking all the UMI tables found in the configured CCU. </para>
         <para>Once the list of processed parameters is built, it tries regularly to subscribe to any unsubscribed parameter. Using the Yamcs Monitor it is possible to stop the subscription to DaSS and to close the connection.</para>
         <para>The processed parameters are made available to the subscribing clients, using names like opsname_PP where opsname is the original name of the processed parameter (i.e. name at the source).</para>
         
