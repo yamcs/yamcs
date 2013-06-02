@@ -64,7 +64,7 @@ public class DerivedValuesTest {
         c.start();
 
         long t0 = System.currentTimeMillis();
-        int n = 1000000;
+        int n = 10;
         for(int i = 0 ; i<n; i++)  {
             tmGenerator.generate_PKT11();
         }
@@ -74,7 +74,7 @@ public class DerivedValuesTest {
         System.out.println("params1: "+params.get(1));
         System.out.println("got "+params.size()+" parameters + in "+(t1-t0)/1000.0+" seconds");
 
-        assertEquals(2, params.size());
+        assertEquals(2*n, params.size());
         ParameterValue p=params.get(0).getParameterValue();
         assertEquals(0.1672918, p.getEngValue().getFloatValue(), 0.001);
 
