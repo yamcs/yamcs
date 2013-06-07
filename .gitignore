@@ -21,6 +21,6 @@ yamcs-xtce/bin/
 yamcs-xtce/target/
 live
 make-live-devel.sh
-yamcs-core/doc/yamcs-manual.fo
-yamcs-core/doc/yamcs-manual.pdf
+doc/yamcs-manual.fo
+doc/yamcs-manual.pdf
 server.lock
