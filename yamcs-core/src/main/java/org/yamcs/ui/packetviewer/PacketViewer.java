@@ -4,8 +4,13 @@ import static org.yamcs.api.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -23,25 +28,34 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.SplitPaneUI;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -89,6 +103,10 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
+
+    static final ImageIcon ICON_DOWN = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/down.png"));
+    static final ImageIcon ICON_UP = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/up.png"));
+    static final ImageIcon ICON_CLOSE = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/close.png"));
     static final String hexstring = "0123456789abcdef";
     static final StringBuilder asciiBuf = new StringBuilder(), hexBuf = new StringBuilder();
     static PacketViewer theApp;
@@ -109,6 +127,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     DefaultMutableTreeNode structureRoot;
     DefaultTreeModel structureModel;
     JSplitPane mainsplit;
+    JPanel findBar;
+    JTextField searchField;
     ListPacket currentPacket;
     FileAndDbChooser fileChooser;
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -116,6 +136,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     YamcsConnector yconnector;
     YamcsClient yclient;
     ConnectDialog connectDialog;
+    static final KeyStroke KEY_CTRL_F = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+    static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); 
 
     ConnectionParameters connectionParams;
     XtceUtil xtceutil;
@@ -147,7 +169,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         menuitem.addActionListener(this);
         menu.add(menuitem);
 
-        menuitem = new JMenuItem("Open Yamcs connection...", KeyEvent.VK_C);
+        menuitem = new JMenuItem("Open Yamcs connection...");
+        menuitem.setMnemonic(KeyEvent.VK_C);
+        menuitem.setDisplayedMnemonicIndex(11);
         //menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
         menuitem.setActionCommand("connect-yamcs");
         menuitem.addActionListener(this);
@@ -209,9 +233,87 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         structureTree.addTreeSelectionListener(this);
         JScrollPane treeScrollpane = new JScrollPane(structureTree);
 
+        Insets oldInsets = UIManager.getInsets("TabbedPane.contentBorderInsets");
+        UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
+
         JTabbedPane tabpane = new JTabbedPane();
+        UIManager.put("TabbedPane.contentBorderInsets", oldInsets);
         tabpane.add("Parameters", tableScrollpane);
         tabpane.add("Structure", treeScrollpane);
+
+        searchField = new JTextField(25);
+        ImageIconButton downButton = new ImageIconButton(ICON_DOWN);
+
+        ActionListener searchListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchTerm = searchField.getText();
+                if (searchTerm != null && !searchTerm.trim().equals("")) {
+                    parametersTable.nextSearchResult(searchTerm.toLowerCase());
+                }
+            }
+        };
+
+        AbstractAction closeFindBarAction = new AbstractAction() {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                findBar.setVisible(false);
+                parametersTable.clearSearchResults();
+                parametersTable.requestFocusInWindow();
+            }
+        };
+
+        searchField.getInputMap().put(KEY_ESC, "closeFindBar");
+        searchField.getActionMap().put("closeFindBar", closeFindBarAction);
+
+        searchField.addActionListener(searchListener);
+        downButton.addActionListener(searchListener);
+
+        ImageIconButton upButton = new ImageIconButton(ICON_UP);
+        upButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchTerm = searchField.getText();
+                if (searchTerm != null && !searchTerm.trim().equals("")) {
+                    parametersTable.previousSearchResult(searchTerm.toLowerCase());
+                }
+            }
+        });
+
+        searchField.setPreferredSize(downButton.getPreferredSize());
+
+        JPanel findBar_left = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        findBar_left.add(new JLabel("Find:"));
+        findBar_left.add(searchField);
+        findBar_left.add(downButton);
+        findBar_left.add(upButton);
+
+        ImageIconButton closeFindBarButton = new ImageIconButton(ICON_CLOSE);
+        closeFindBarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                findBar.setVisible(false);
+                parametersTable.clearSearchResults();
+                parametersTable.requestFocusInWindow();
+            }
+        });
+
+        // GridBag, just for the vertical alignment..
+        JPanel findBar_right = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = GridBagConstraints.RELATIVE;
+        findBar_right.add(closeFindBarButton, gbc);
+
+        findBar = new JPanel(new BorderLayout());
+        findBar.add(findBar_left, BorderLayout.CENTER);
+        findBar.add(findBar_right, BorderLayout.EAST);
+        findBar.setVisible(false);
+
+        JPanel parameterPanel = new JPanel(new BorderLayout());
+        parameterPanel.add(tabpane, BorderLayout.CENTER);
+        parameterPanel.add(findBar, BorderLayout.SOUTH);
 
         // hexdump panel
 
@@ -228,14 +330,16 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         highlightedStyle = hexDoc.addStyle("highlighted", fixedStyle);
         StyleConstants.setBackground(highlightedStyle, Color.YELLOW.darker());
         hexText.setEditable(false);
-        JScrollPane hexScrollpane = new JScrollPane(hexText);
-        hexSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabpane, hexScrollpane);
-        hexSplit.setResizeWeight(0.7);
-        hexSplit.setContinuousLayout(true);
 
-        mainsplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, packetScrollpane, hexSplit);
+        JScrollPane hexScrollpane = new JScrollPane(hexText);        
+        hexScrollpane.getViewport().setBackground(hexText.getBackground());
+        hexSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, parameterPanel, hexScrollpane);
+        removeBorders(hexSplit);
+        hexSplit.setResizeWeight(0.7);
+
+        mainsplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, packetScrollpane, hexSplit);
+        removeBorders(mainsplit);
         mainsplit.setResizeWeight(0.0);
-        mainsplit.setContinuousLayout(true);
 
         // log text
 
@@ -243,15 +347,35 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         logText.setEditable(false);
         logScrollpane = new JScrollPane(logText);
         JSplitPane logsplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainsplit, logScrollpane);
+        removeBorders(logsplit);
         logsplit.setResizeWeight(1.0);
         logsplit.setContinuousLayout(true);
 
         getContentPane().add(logsplit, BorderLayout.CENTER);
 
+        configureGlobalKeyboardShortcuts();
+
         clearWindow();
         updateTitle();
         pack();
         setVisible(true);
+    }
+
+    private void configureGlobalKeyboardShortcuts() {
+        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
+                if (keyStroke.equals(KEY_CTRL_F)) {
+                    findBar.setVisible(true);
+                    searchField.selectAll();
+                    searchField.requestFocusInWindow();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     void updateTitle() {
@@ -847,6 +971,14 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     @Override
     public void disconnected() {
         log("disconnected");
+    }
+
+    private void removeBorders(JSplitPane splitPane) {
+        SplitPaneUI ui = splitPane.getUI();
+        if(ui instanceof BasicSplitPaneUI) { // We don't want to mess with other L&Fs
+            ((BasicSplitPaneUI)ui).getDivider().setBorder(null);
+            splitPane.setBorder(BorderFactory.createEmptyBorder());
+        }
     }
 
     private static void printUsageAndExit() {

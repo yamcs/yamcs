@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 import java.util.Comparator;
 import java.util.Vector;
 
@@ -30,8 +29,8 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     private static final long serialVersionUID = 1L;
     private static final String[] COLUMNS = {"", "Generation Time", "APID", "Opsname", "Size"};
 
-    private static final ImageIcon ICON_UNSTARRED = createImageIcon("/org/yamcs/images/unstarred.png");
-    private static final ImageIcon ICON_STARRED = createImageIcon("/org/yamcs/images/starred.png");
+    private static final ImageIcon ICON_UNSTARRED = new ImageIcon(PacketsTable.class.getResource("/org/yamcs/images/unstarred.png"));
+    private static final ImageIcon ICON_STARRED = new ImageIcon(PacketsTable.class.getResource("/org/yamcs/images/starred.png"));
 
     private PacketViewer packetViewer;
     private int maxLines = 1000;
@@ -171,16 +170,6 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     @Override
     public void replayFinished() {
         // TODO Auto-generated method stub        
-    }
-
-    protected static ImageIcon createImageIcon(String path) {
-        URL imgURL = PacketsTable.class.getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
     }
 
     private class TableMouseListener extends MouseAdapter {
