@@ -33,6 +33,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -40,6 +41,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -437,6 +439,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             if(fileChooser==null) {
                 try {
                     fileChooser = new FileAndDbChooser();
+                    installEscapeCloseAction(fileChooser);
                 } catch (ConfigurationException e) {
                     showError("Cannot load local mdb config: "+e.getMessage());
                     return;
@@ -451,7 +454,10 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
             }
         } else if (cmd.equals("connect-yamcs")) {
-            if(connectDialog==null) connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+            if(connectDialog==null) {
+                connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+                installEscapeCloseAction(connectDialog);
+            }
             int ret=connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 connectYamcs(connectDialog.getConnectData());
@@ -979,6 +985,22 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             ((BasicSplitPaneUI)ui).getDivider().setBorder(null);
             splitPane.setBorder(BorderFactory.createEmptyBorder());
         }
+    }
+
+    /**
+     * Enables Escape key for closing the specified dialog
+     */
+    private static void installEscapeCloseAction(final JDialog dialog) {
+        JRootPane root = dialog.getRootPane();
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KEY_ESC, "closeDialog");
+        root.getActionMap().put("closeDialog", new AbstractAction() {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispatchEvent(new WindowEvent(dialog,
+                        WindowEvent.WINDOW_CLOSING));
+            }
+        });
     }
 
     private static void printUsageAndExit() {

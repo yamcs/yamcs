@@ -48,7 +48,7 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
      * Return value if approve (yes, ok) is chosen.
      */
     public static final int APPROVE_OPTION = 0;
-    
+
     public FileAndDbChooser() throws ConfigurationException {
         JPanel inputPanel, buttonPanel;
         JLabel lab;
@@ -61,7 +61,7 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
         ceast.anchor=GridBagConstraints.EAST;
         GridBagConstraints cwest = new GridBagConstraints();
         cwest.weightx=1; cwest.fill=GridBagConstraints.HORIZONTAL;
-        
+
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
         getContentPane().add(inputPanel, BorderLayout.CENTER);
 
@@ -70,30 +70,29 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
         ceast.gridy=0;      inputPanel.add(lab,ceast);
         recentFiles=(Vector<String>)PrefsObject.getObject(prefs, "RecentFiles");
         if(recentFiles==null) recentFiles=new Vector<String>();
-        
+
         fileNameComboModel=new DefaultComboBoxModel(recentFiles);
         fileNameCombo = new JComboBox(fileNameComboModel);
-        
+
         fileNameCombo.setEditable(true);
         cwest.gridy=0;inputPanel.add(fileNameCombo, cwest);
-        button = new JButton("Select");
+        button = new JButton("...");
         button.setActionCommand("selectFile");
         button.addActionListener(this);
         ceast.gridy=0;inputPanel.add(button,ceast);
-        
+
         YConfiguration c=YConfiguration.getConfiguration("mdb");
         String[] dbconfigs=c.getKeys().toArray(new String[0]);
         lab = new JLabel("DB Config: ");
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         ceast.gridy=1; inputPanel.add(lab,ceast);
-        
-        
+
         dbConfigCombo = new JComboBox(dbconfigs);
         //dbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
         dbConfigCombo.setEditable(true);
         cwest.gridy=1; inputPanel.add(dbConfigCombo,cwest);
-        
-        
+
+
         // button panel
 
         buttonPanel = new JPanel();
@@ -115,45 +114,46 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         String oldDir=prefs.get("LastUsedDirectory", null);
         fileChooser=new JFileChooser(oldDir);
+        setTitle("Open File");
         setModal(true);
     }
-    
+
     public int showDialog(Component parent) {
         returnValue=CANCEL_OPTION;
         setLocationRelativeTo(parent);
         setVisible(true);
         return returnValue;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
-       String cmd=e.getActionCommand();
-       if("selectFile".equals(cmd)) {
-           int r=fileChooser.showOpenDialog(this);
-           if(r==JFileChooser.APPROVE_OPTION) {
-               File selectedFile=fileChooser.getSelectedFile();
-               fileNameComboModel.insertElementAt(selectedFile.getAbsolutePath(), 0);
-               fileNameCombo.setSelectedIndex(0);
-               PrefsObject.putObject(prefs,"RecentFiles", recentFiles);
-               prefs.put("LastUsedDirectory", fileChooser.getSelectedFile().getParent());
-           }
-       } else if("ok".equals(cmd)) {
-           returnValue=APPROVE_OPTION;
-           setVisible(false);
-       } else if("cancel".equals(cmd)) {
-           returnValue=CANCEL_OPTION;
-           setVisible(false);
-       }
+        String cmd=e.getActionCommand();
+        if("selectFile".equals(cmd)) {
+            int r=fileChooser.showOpenDialog(this);
+            if(r==JFileChooser.APPROVE_OPTION) {
+                File selectedFile=fileChooser.getSelectedFile();
+                fileNameComboModel.insertElementAt(selectedFile.getAbsolutePath(), 0);
+                fileNameCombo.setSelectedIndex(0);
+                PrefsObject.putObject(prefs,"RecentFiles", recentFiles);
+                prefs.put("LastUsedDirectory", fileChooser.getSelectedFile().getParent());
+            }
+        } else if("ok".equals(cmd)) {
+            returnValue=APPROVE_OPTION;
+            setVisible(false);
+        } else if("cancel".equals(cmd)) {
+            returnValue=CANCEL_OPTION;
+            setVisible(false);
+        }
     }
 
     String getSelectedFile() {
         return (String) fileNameComboModel.getSelectedItem();
     }
-    
+
     String getSelectedDbConfig() {
         return (String) dbConfigCombo.getSelectedItem();
     }
-    
+
     static public void main(String[] args) throws ConfigurationException {
         YConfiguration.setup();
         FileAndDbChooser fc=new FileAndDbChooser();
