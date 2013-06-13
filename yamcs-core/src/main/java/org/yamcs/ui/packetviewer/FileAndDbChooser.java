@@ -88,6 +88,7 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
         ceast.gridy=1; inputPanel.add(lab,ceast);
 
         dbConfigCombo = new JComboBox(dbconfigs);
+        dbConfigCombo.setSelectedItem(prefs.get("LastUsedDbConfig", null));
         //dbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
         dbConfigCombo.setEditable(true);
         cwest.gridy=1; inputPanel.add(dbConfigCombo,cwest);
@@ -138,6 +139,7 @@ public class FileAndDbChooser extends JDialog implements ActionListener {
                 prefs.put("LastUsedDirectory", fileChooser.getSelectedFile().getParent());
             }
         } else if("ok".equals(cmd)) {
+            prefs.put("LastUsedDbConfig", "" + dbConfigCombo.getSelectedItem());
             returnValue=APPROVE_OPTION;
             setVisible(false);
         } else if("cancel".equals(cmd)) {
