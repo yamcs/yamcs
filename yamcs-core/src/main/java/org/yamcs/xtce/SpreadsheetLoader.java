@@ -852,7 +852,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 				// after adding this measurement, we need to update the absoluteoffset for the next one. For this, we add the size of the current SequenceEntry to the absoluteoffset
 				int size=getSize(param,sc);
-				if ((repeated != -1) && (size != -1)) {
+				if ((repeated != -1) && (size != -1) && (absoluteoffset != -1)) {
 					absoluteoffset += repeated * size;
 				} else {
 					// from this moment on, absoluteoffset is set to -1, meaning that all subsequent SequenceEntries must be relative
