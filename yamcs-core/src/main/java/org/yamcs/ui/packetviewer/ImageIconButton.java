@@ -11,6 +11,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 
 /**
  * Image that looks and acts like a button, but only when mouse events are
@@ -19,9 +20,9 @@ import javax.swing.border.Border;
 public class ImageIconButton extends JLabel implements MouseListener {
 
     private static final long serialVersionUID = 1L;
-    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(3, 3, 3, 3);
-    private static final Border HOVER_BORDER = BorderFactory.createRaisedSoftBevelBorder();
-    private static final Border PRESSED_BORDER = BorderFactory.createLoweredSoftBevelBorder();
+    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+    private static final Border HOVER_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+    private static final Border PRESSED_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
     private Set<ActionListener> actionListeners = new HashSet<ActionListener>();
 
     public ImageIconButton(Icon image) {
