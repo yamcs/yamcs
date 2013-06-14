@@ -497,10 +497,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.start();
-        log("Loaded "+xtcedb.getSequenceContainers().size()+" sequence containers and "+xtcedb.getParameterNames().size()+" parameters");
+        log(String.format("Loaded definition of %d sequence container%s and %d parameter%s"
+                , xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s":"")
+                , xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s":"")));
         return true;
     }
-
 
     private boolean loadRemoteXtcedb(String configName) {
         if(tmProcessor!=null) tmProcessor.stop();
@@ -628,7 +629,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                         clearWindow();
                         log(String.format("Cancelled loading %s", lastFile.getName()));
                     } else {
-                        log(String.format("Loaded %d packets from \"%s\".", packetsTable.getRowCount(), lastFile.getPath()));
+                        log(String.format("Loaded %d packet%s from \"%s\"", 
+                                packetsTable.getRowCount(),
+                                packetsTable.getRowCount()!=1?"s":"", lastFile.getPath()));
                     }
                     progress.close();
                 }

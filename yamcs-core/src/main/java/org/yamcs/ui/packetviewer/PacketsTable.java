@@ -43,6 +43,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         setModel(packetsModel);
 
         setPreferredScrollableViewportSize(getPreferredSize());
+        setFillsViewportHeight(true);
         getColumnModel().getColumn(0).setPreferredWidth(50);
         getColumnModel().getColumn(1).setPreferredWidth(330);
         getColumnModel().getColumn(2).setPreferredWidth(50);
@@ -54,7 +55,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         setIntercellSpacing(new Dimension(0, 0));
 
         TableRowSorter<DefaultTableModel> packetsSorter = new TableRowSorter<DefaultTableModel>(packetsModel);
-        packetsSorter.setComparator(1, new Comparator<Number>() {
+        packetsSorter.setComparator(2, new Comparator<Number>() {
             @Override
             public int compare(Number o1, Number o2) {
                 return o1.intValue() < o2.intValue() ? -1 : (o1.intValue() > o2.intValue() ? 1 : 0);

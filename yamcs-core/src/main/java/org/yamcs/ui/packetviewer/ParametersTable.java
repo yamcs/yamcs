@@ -35,8 +35,8 @@ public class ParametersTable extends JTable implements ListSelectionListener {
     public ParametersTable(PacketViewer packetViewer) {
         super(new DefaultTableModel(COLUMNS, 0));
         this.packetViewer = packetViewer;
-
         setPreferredScrollableViewportSize(getPreferredSize());
+        setFillsViewportHeight(true);
         getSelectionModel().addListSelectionListener(this);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
