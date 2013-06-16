@@ -773,7 +773,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
             @Override
             public void run() {
-                String[] vec = new String[parametersTable.getColumnCount()];
+                Object[] vec = new Object[parametersTable.getColumnCount()];
                 DataEncoding encoding;
                 Calibrator calib;
                 Object paramtype;
@@ -807,7 +807,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
 
                     paramtype = value.getParameter().getParameterType();
                     if (paramtype instanceof EnumeratedParameterType) {
-                        vec[9] = ((EnumeratedParameterType)paramtype).getCalibrationDescription();
+                        vec[9] = paramtype;
                     } else if (paramtype instanceof BaseDataType) {
                         encoding = ((BaseDataType)paramtype).getEncoding();
                         calib = null;
