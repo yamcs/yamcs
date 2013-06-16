@@ -9,8 +9,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -105,7 +104,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
-
+    private static final long serialVersionUID = 1L;
     static final ImageIcon ICON_DOWN = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/down.png"));
     static final ImageIcon ICON_UP = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/up.png"));
     static final ImageIcon ICON_CLOSE = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/close.png"));
@@ -138,6 +137,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     YamcsConnector yconnector;
     YamcsClient yclient;
     ConnectDialog connectDialog;
+    GoToPacketDialog goToPacketDialog;
     static final KeyStroke KEY_CTRL_F = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
     static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); 
 
@@ -153,66 +153,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
-
-        // application menu
-
-        JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
-
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
-
-
-
-        JMenuItem menuitem = new JMenuItem("Open File...", KeyEvent.VK_O);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("open file");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menuitem = new JMenuItem("Open Yamcs connection...");
-        menuitem.setMnemonic(KeyEvent.VK_C);
-        menuitem.setDisplayedMnemonicIndex(11);
-        //menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("connect-yamcs");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menu.addSeparator();
-
-        /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
-		menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
-		menu.add(menuitem);
-		menu.addSeparator();*/
-
-        menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("quit");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menu = new JMenu("View");
-        menu.setMnemonic(KeyEvent.VK_V);
-        menuBar.add(menu);
-
-        miAutoScroll = new JCheckBoxMenuItem("Auto-Scroll To Last Packet");
-        miAutoScroll.setSelected(true);
-        menu.add(miAutoScroll);
-
-        miAutoSelect = new JCheckBoxMenuItem("Auto-Select Last Packet");
-        miAutoSelect.setSelected(false);
-        menu.add(miAutoSelect);
-
-        menu.addSeparator();
-
-        menuitem = new JMenuItem("Clear", KeyEvent.VK_C);
-        menuitem.setActionCommand("clear");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-        //
-        // window contents
-        //
 
         // table to the left which shows one row per packet
 
@@ -353,9 +293,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         logsplit.setResizeWeight(1.0);
         logsplit.setContinuousLayout(true);
 
-        getContentPane().add(logsplit, BorderLayout.CENTER);
+        installMenubar();
 
-        configureGlobalKeyboardShortcuts();
+        getContentPane().add(logsplit, BorderLayout.CENTER);
 
         clearWindow();
         updateTitle();
@@ -363,21 +303,97 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         setVisible(true);
     }
 
-    private void configureGlobalKeyboardShortcuts() {
-        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
-                if (keyStroke.equals(KEY_CTRL_F)) {
-                    findBar.setVisible(true);
-                    searchField.selectAll();
-                    searchField.requestFocusInWindow();
-                    return true;
-                }
-                return false;
-            }
-        });
+    private void installMenubar() {
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(menu);
+
+        JMenuItem menuitem = new JMenuItem("Open File...", KeyEvent.VK_O);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("open file");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);
+
+        menuitem = new JMenuItem("Open Yamcs connection...");
+        menuitem.setMnemonic(KeyEvent.VK_C);
+        menuitem.setDisplayedMnemonicIndex(11);
+        //menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("connect-yamcs");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);
+
+        menu.addSeparator();
+
+        /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
+        menu.add(menuitem);
+        menu.addSeparator();*/
+
+        menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("quit");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);
+
+        menu = new JMenu("Edit");
+        menu.setMnemonic(KeyEvent.VK_E);
+        menuBar.add(menu);
+
+        menuitem = new JMenuItem("Find Parameter...", KeyEvent.VK_F);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("find");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);
+
+        menu.addSeparator();
+
+        Action toggleMarkAction = packetsTable.getActionMap().get(PacketsTable.TOGGLE_MARK_ACTION_KEY);
+        menu.add(new JMenuItem(toggleMarkAction));
+
+        menu = new JMenu("Navigate");
+        menu.setMnemonic(KeyEvent.VK_N);
+        menuBar.add(menu);
+
+        Action goToPacketAction = packetsTable.getActionMap().get(PacketsTable.GO_TO_PACKET_ACTION_KEY);
+        menu.add(new JMenuItem(goToPacketAction));
+
+        menu.addSeparator();
+
+        Action backAction = packetsTable.getActionMap().get(PacketsTable.BACK_ACTION_KEY);
+        menu.add(new JMenuItem(backAction));
+
+        Action forwardAction = packetsTable.getActionMap().get(PacketsTable.FORWARD_ACTION_KEY);
+        menu.add(new JMenuItem(forwardAction));
+
+        menu.addSeparator();
+
+        Action upAction = packetsTable.getActionMap().get(PacketsTable.UP_ACTION_KEY);
+        menu.add(new JMenuItem(upAction));
+
+        Action downAction = packetsTable.getActionMap().get(PacketsTable.DOWN_ACTION_KEY);
+        menu.add(new JMenuItem(downAction));
+
+        menu = new JMenu("View");
+        menu.setMnemonic(KeyEvent.VK_V);
+        menuBar.add(menu);
+
+        miAutoScroll = new JCheckBoxMenuItem("Auto-Scroll To Last Packet");
+        miAutoScroll.setSelected(true);
+        menu.add(miAutoScroll);
+
+        miAutoSelect = new JCheckBoxMenuItem("Auto-Select Last Packet");
+        miAutoSelect.setSelected(false);
+        menu.add(miAutoSelect);
+
+        menu.addSeparator();
+
+        menuitem = new JMenuItem("Clear", KeyEvent.VK_C);
+        menuitem.setActionCommand("clear");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);        
     }
 
     void updateTitle() {
@@ -462,6 +478,10 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 connectYamcs(connectDialog.getConnectData());
             }
+        } else if (cmd.equals("find")) {
+            findBar.setVisible(true);
+            searchField.selectAll();
+            searchField.requestFocusInWindow();
         }
     }
 
@@ -646,6 +666,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             public void run() {
                 packetsTable.clear();
                 parametersTable.clear();
+                hexText.setText(null);
                 packetsTable.revalidate();
                 parametersTable.revalidate();
                 structureRoot.removeAllChildren();
@@ -813,6 +834,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 // build hexdump text
                 currentPacket.hexdump();
                 hexText.setCaretPosition(0);
+
+                // select first row
+                parametersTable.setRowSelectionInterval(0, 0);
             }
         });
     }
