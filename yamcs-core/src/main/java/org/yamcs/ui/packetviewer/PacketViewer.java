@@ -4,10 +4,7 @@ import static org.yamcs.api.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,12 +26,10 @@ import java.util.TimeZone;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -45,7 +40,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -105,9 +99,6 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
     private static final long serialVersionUID = 1L;
-    static final ImageIcon ICON_DOWN = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/down.png"));
-    static final ImageIcon ICON_UP = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/up.png"));
-    static final ImageIcon ICON_CLOSE = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/close.png"));
     static final String hexstring = "0123456789abcdef";
     static final StringBuilder asciiBuf = new StringBuilder(), hexBuf = new StringBuilder();
     static PacketViewer theApp;
@@ -128,8 +119,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     DefaultMutableTreeNode structureRoot;
     DefaultTreeModel structureModel;
     JSplitPane mainsplit;
-    JPanel findBar;
-    JTextField searchField;
+    FindParameterBar findBar;
     ListPacket currentPacket;
     FileAndDbChooser fileChooser;
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -138,7 +128,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     YamcsClient yclient;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;
-    static final KeyStroke KEY_CTRL_F = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
     static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); 
 
     ConnectionParameters connectionParams;
@@ -183,75 +172,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tabpane.add("Parameters", tableScrollpane);
         tabpane.add("Structure", treeScrollpane);
 
-        searchField = new JTextField(25);
-        ImageIconButton downButton = new ImageIconButton(ICON_DOWN);
-
-        ActionListener searchListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    parametersTable.nextSearchResult(searchTerm.toLowerCase());
-                }
-            }
-        };
-
-        AbstractAction closeFindBarAction = new AbstractAction() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findBar.setVisible(false);
-                parametersTable.clearSearchResults();
-                parametersTable.requestFocusInWindow();
-            }
-        };
-
-        searchField.getInputMap().put(KEY_ESC, "closeFindBar");
-        searchField.getActionMap().put("closeFindBar", closeFindBarAction);
-
-        searchField.addActionListener(searchListener);
-        downButton.addActionListener(searchListener);
-
-        ImageIconButton upButton = new ImageIconButton(ICON_UP);
-        upButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    parametersTable.previousSearchResult(searchTerm.toLowerCase());
-                }
-            }
-        });
-
-        searchField.setPreferredSize(downButton.getPreferredSize());
-
-        JPanel findBar_left = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        findBar_left.add(new JLabel("Find:"));
-        findBar_left.add(searchField);
-        findBar_left.add(downButton);
-        findBar_left.add(upButton);
-
-        ImageIconButton closeFindBarButton = new ImageIconButton(ICON_CLOSE);
-        closeFindBarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findBar.setVisible(false);
-                parametersTable.clearSearchResults();
-                parametersTable.requestFocusInWindow();
-            }
-        });
-
-        // GridBag, just for the vertical alignment..
-        JPanel findBar_right = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = GridBagConstraints.RELATIVE;
-        findBar_right.add(closeFindBarButton, gbc);
-
-        findBar = new JPanel(new BorderLayout());
-        findBar.add(findBar_left, BorderLayout.CENTER);
-        findBar.add(findBar_right, BorderLayout.EAST);
-        findBar.setVisible(false);
+        findBar = new FindParameterBar(parametersTable);
 
         JPanel parameterPanel = new JPanel(new BorderLayout());
         parameterPanel.add(tabpane, BorderLayout.CENTER);
@@ -342,11 +263,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         menu.setMnemonic(KeyEvent.VK_E);
         menuBar.add(menu);
 
-        menuitem = new JMenuItem("Find Parameter...", KeyEvent.VK_F);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("find");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
+        Action openFindBarAction = findBar.getActionMap().get(FindParameterBar.OPEN_ACTION);
+        menu.add(new JMenuItem(openFindBarAction));
 
         menu.addSeparator();
 
@@ -478,10 +396,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 connectYamcs(connectDialog.getConnectData());
             }
-        } else if (cmd.equals("find")) {
-            findBar.setVisible(true);
-            searchField.selectAll();
-            searchField.requestFocusInWindow();
         }
     }
 

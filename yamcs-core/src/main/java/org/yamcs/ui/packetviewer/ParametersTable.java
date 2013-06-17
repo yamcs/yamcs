@@ -137,9 +137,10 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         }
     }
 
-    public void nextSearchResult(String searchTerm) {
+    public SearchStats nextSearchResult(String searchTerm) {
         updateMatchingRows(searchTerm);
 
+        SearchStats stats = null;
         if (!rowsWithSearchResults.isEmpty()) {
             // Always search up/down relative to current selected row
             int relpos = getSelectedRow();
@@ -166,17 +167,24 @@ public class ParametersTable extends JTable implements ListSelectionListener {
             if (nextIndex != relpos) {
                 setRowSelectionInterval(nextIndex, nextIndex);
                 scrollRectToVisible(getCellRect(nextIndex, 0, true));
+
+                stats = new SearchStats();
+                stats.totalMatching = rowsWithSearchResults.size();
+                stats.selectedMatch = rowsWithSearchResults.indexOf(nextIndex) + 1;
             }
         }
 
         lastSearchTerm = searchTerm;
         repaint();
+        return (stats != null) ? stats : null;
     }
 
-    public void previousSearchResult(String searchTerm) {
+    public SearchStats previousSearchResult(String searchTerm) {
         updateMatchingRows(searchTerm);
 
+        SearchStats stats = null;
         if (!rowsWithSearchResults.isEmpty()) {
+
             // Always search up/down relative to current selected row
             int relpos = getSelectedRow();
 
@@ -203,10 +211,16 @@ public class ParametersTable extends JTable implements ListSelectionListener {
             if (prevIndex != relpos) {
                 setRowSelectionInterval(prevIndex, prevIndex);
                 scrollRectToVisible(getCellRect(prevIndex, 0, true));
+
+                stats = new SearchStats();
+                stats.totalMatching = rowsWithSearchResults.size();
+                stats.selectedMatch = rowsWithSearchResults.indexOf(prevIndex) + 1;
             }
         }
 
+        lastSearchTerm = searchTerm;
         repaint();
+        return (stats != null) ? stats : null;
     }
 
     @SuppressWarnings("rawtypes")
@@ -305,5 +319,17 @@ public class ParametersTable extends JTable implements ListSelectionListener {
             }
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
+    }
+
+    static class SearchStats {
+        /**
+         * row index of selected match (as visible to user)
+         */
+        int selectedMatch;
+
+        /**
+         * total matching search results
+         */
+        int totalMatching;
     }
 }
