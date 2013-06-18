@@ -45,7 +45,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
     public ParametersTable(PacketViewer packetViewer) {
         super(new DefaultTableModel(COLUMNS, 0));
         this.packetViewer = packetViewer;
-        setPreferredScrollableViewportSize(getPreferredSize());
+        setPreferredScrollableViewportSize(new Dimension(600, 400));
         setFillsViewportHeight(true);
         getSelectionModel().addListSelectionListener(this);
         setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -54,10 +54,10 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         addMouseListener(linkListener);
         addMouseMotionListener(linkListener);
 
-        for (String colname : COLUMNS) {
+        for (String colname : COLUMNS)
             getColumn(colname).setPreferredWidth(85);
-        }
         getColumnModel().getColumn(0).setPreferredWidth(300);
+        setAutoResizeMode(AUTO_RESIZE_OFF);
 
         // Disable Grid
         setShowGrid(false);

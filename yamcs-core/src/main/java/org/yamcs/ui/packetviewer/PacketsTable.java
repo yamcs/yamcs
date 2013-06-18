@@ -81,7 +81,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         };
         setModel(packetsModel);
 
-        setPreferredScrollableViewportSize(getPreferredSize());
+        setPreferredScrollableViewportSize(new Dimension(400, 400));
         setFillsViewportHeight(true);
         getColumnModel().getColumn(0).setPreferredWidth(50);
         getColumnModel().getColumn(1).setPreferredWidth(160);

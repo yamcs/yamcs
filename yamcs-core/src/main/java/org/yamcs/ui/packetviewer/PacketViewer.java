@@ -8,6 +8,8 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -39,6 +41,7 @@ import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
@@ -153,6 +156,15 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
 
         parametersTable = new ParametersTable(this);
         JScrollPane tableScrollpane = new JScrollPane(parametersTable);
+        tableScrollpane.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (e.getComponent().getWidth() < parametersTable.getPreferredSize().getWidth())
+                    parametersTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                else
+                    parametersTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            }
+        });
 
         // tree to the right which shows the container structure of the selected packet
 
