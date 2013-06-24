@@ -22,8 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.prefs.Preferences;
 
@@ -105,7 +107,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     static final String hexstring = "0123456789abcdef";
     static final StringBuilder asciiBuf = new StringBuilder(), hexBuf = new StringBuilder();
     static PacketViewer theApp;
-    static int maxLines = 1000;
+    static int maxLines = -1;
     XtceDb xtcedb;
 
     File lastFile;
@@ -457,6 +459,10 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     }
 
     private void openFile(File file, String xtceDb) {
+        if (!file.exists() || !file.isFile()) {
+            JOptionPane.showMessageDialog(null, "File not found: " + file, "File not found", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         disconnect();
         lastFile = file;
         if(loadLocalXtcedb(xtceDb))
@@ -548,57 +554,61 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                     long len, offset = 0;
 
                     clearWindow();
-                    progress = new ProgressMonitor(theApp,
-                            String.format("Loading %s", lastFile.getName()),
-                            null, 0, (int)(lastFile.length()>>10));
+                    int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
+        progress = new ProgressMonitor(theApp,
+                String.format("Loading %s", lastFile.getName()),
+                null, 0, progressMax);
 
-                    while (!progress.isCanceled()) {
-                        res = reader.read(fourb, 0, 4);
-                        if (res != 4) break;
-                        buf = ByteBuffer.allocate(16);
-                        if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                            if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
-                            offset+=10;
-                            if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
-                        } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                            buf.put(fourb, 0, 4);
-                            if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
-                        } else {//pacts packet
-                            isPacts=true;
-                            //System.out.println("pacts packet");
-                            // read ASCII header up to the second blank
-                            int i, j;
-                            StringBuffer hdr = new StringBuffer();
-                            j = 0;
-                            for(i=0;i<4;i++) {
-                                hdr.append((char)fourb[i]);
-                                if ( fourb[i] == 32 ) ++j;
-                            }
-                            offset+=4;
-                            while((j < 2) && (i < 20)) {
-                                int c = reader.read();
-                                if(c==-1)throw new ShortReadException(1, 0, offset);
-                                offset++;
-                                hdr.append((char)c);
-                                if ( c == 32 ) ++j;
-                                i++;
-                            }
-                            if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
-                        }
-                        ccsds = new ListPacket(buf, offset);
-                        len = ccsds.getCccsdsPacketLength() + 7;
-                        r = reader.skip(len - 16);
-                        if (r != len - 16) throw new ShortReadException(len-16, r, offset);
-                        offset += len;
-                        if(isPacts) {
-                            if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
-                            offset+=1;
-                        }
-                        publish(ccsds);
+        int packetCount = 0;
+        while (!progress.isCanceled()) {
+            res = reader.read(fourb, 0, 4);
+            if (res != 4) break;
+            buf = ByteBuffer.allocate(16);
+            if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
+                if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
+                offset+=10;
+                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
+            } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                buf.put(fourb, 0, 4);
+                if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
+            } else {//pacts packet
+                isPacts=true;
+                //System.out.println("pacts packet");
+                // read ASCII header up to the second blank
+                int i, j;
+                StringBuffer hdr = new StringBuffer();
+                j = 0;
+                for(i=0;i<4;i++) {
+                    hdr.append((char)fourb[i]);
+                    if ( fourb[i] == 32 ) ++j;
+                }
+                offset+=4;
+                while((j < 2) && (i < 20)) {
+                    int c = reader.read();
+                    if(c==-1)throw new ShortReadException(1, 0, offset);
+                    offset++;
+                    hdr.append((char)c);
+                    if ( c == 32 ) ++j;
+                    i++;
+                }
+                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
+            }
+            ccsds = new ListPacket(buf, offset);
+            len = ccsds.getCccsdsPacketLength() + 7;
+            r = reader.skip(len - 16);
+            if (r != len - 16) throw new ShortReadException(len-16, r, offset);
+            offset += len;
+            if(isPacts) {
+                if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
+                offset+=1;
+            }
+            publish(ccsds);
 
-                        progress.setProgress((int)(offset>>10));
-                    }
-                    reader.close();
+            packetCount++;
+            if (packetCount == maxLines) break;
+            progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
+        }
+        reader.close();
                 } catch (Exception x) {
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
                     log(msg);
@@ -1024,42 +1034,98 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         }
     }
 
-    private static void printUsageAndExit() {
-        System.err.println("Usage: packetviewer.sh [-h] [-l n] [url]");
-        System.err.println("-h:\tShow this help text");
-        System.err.println("-l:\tMaximum number of packet lines to keep (only for realtime connection), default 1000");
-        System.err.println("url:\tConnect at startup to the given url");
-        System.err.println("Example:\n\tpacketviewer.sh yamcs://localhost:5445/yops");
+    private static void printUsageAndExit(boolean full) {
+        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [file|url]");
+        if (full) {
+            System.err.println();
+            System.err.println("    file       The file to open at startup. Requires the use of -db");
+            System.err.println("    url        Connect at startup to the given url");
+            System.err.println();
+            System.err.println("OPTIONS");
+            System.err.println("    -h         Print a help message and exit");
+            System.err.println();
+            System.err.println("    -l  n      Limit the view to n packets only. If the Packet Viewer is");
+            System.err.println("               connected to a live instance, only the last n packets will");
+            System.err.println("               be visible. For offline file consulting, only the first n");
+            System.err.println("               packets of the file will be displayed.");
+            System.err.println("               Defaults to 1000 for realtime connections. There is no");
+            System.err.println("               default limitation for viewing offline files.");
+            System.err.println();
+            System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
+            System.err.println("               mdb.yaml configuration file.");
+            System.err.println();
+            System.err.println("EXAMPLES");
+            System.err.println("        packetviewer.sh yamcs://localhost:5445/yops");
+            System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
+        }
         System.exit(1);
     }
 
-    public static void main(String[] args) throws ConfigurationException, URISyntaxException {
-        String initialUrl = null;
+    private static void printArgsError(String message) {
+        System.err.println(message);
+        printUsageAndExit(false);
+    }
 
-        try {
-            for(int i=0;i<args.length;i++) {
-                if(args[i].startsWith("yamcs://")) {
-                    initialUrl=args[i];
-                } else if("-l".equals(args[i])) {
-                    if(i+1==args.length) printUsageAndExit();
-                    maxLines=Integer.valueOf(args[++i]);
-                } else if(args[i].equals("-h")) {
-                    printUsageAndExit();
+    public static void main(String[] args) throws ConfigurationException, URISyntaxException {
+        // Scan args
+        String fileOrUrl = null;
+        Map<String,Object> options = new HashMap<String,Object>();
+        for (int i = 0; i < args.length; i++) {
+            if ("-h".equals(args[i])) {
+                printUsageAndExit(true);
+            } else if ("-l".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
                 } else {
-                    printUsageAndExit();
+                    printArgsError("Number of lines not specified for -l option");
                 }
-            } 
-        } catch (NumberFormatException e) {
-            System.err.println("Illegal number: "+e.getMessage());
-            printUsageAndExit();
+            } else if ("-x".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of XTCE DB not specified for -x option");
+                }
+            } else if (args[i].startsWith("-")) {
+                printArgsError("Unknown option: " + args[i]);
+            } else { // i should now be positioned at [file|url]
+                if (i == args.length - 1) {
+                    fileOrUrl = args[i];
+                } else {
+                    printArgsError("Too many arguments. Only one file or url can be opened at a time");
+                }
+            }
         }
 
+        // Do some more preparatory stuff
+        if (options.containsKey("-l")) {
+            try {
+                maxLines = Integer.parseInt((String) options.get("-l"));
+            } catch (NumberFormatException e) {
+                printArgsError("-l argument must be integer. Got: " + options.get("-l"));
+            }
+        }
+        if (fileOrUrl != null && fileOrUrl.startsWith("yamcs://")) {
+            if (!options.containsKey("-l")) {
+                maxLines = 1000; // Default for realtime connections
+            }
+        }
+        if (fileOrUrl != null && !fileOrUrl.startsWith("yamcs://")) {
+            if (!options.containsKey("-x")) {
+                printArgsError("-x argument must be specified when opening a file");
+            }
+        }
+
+        // Okay, launch the GUI now
         YConfiguration.setup();
         theApp = new PacketViewer();
-
-        if (initialUrl != null) {
-            YamcsConnectData ycd=YamcsConnectData.parse(initialUrl);
-            theApp.connectYamcs(ycd);
+        if (fileOrUrl != null) {
+            if (fileOrUrl.startsWith("yamcs://")) {
+                YamcsConnectData ycd = YamcsConnectData.parse(fileOrUrl);
+                theApp.connectYamcs(ycd);
+            } else {
+                File file = new File(fileOrUrl);
+                theApp.openFile(file, (String) options.get("-x"));
+            }
         }
     }
 }
