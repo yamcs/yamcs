@@ -19,25 +19,24 @@ import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -83,6 +82,7 @@ import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.ui.PrefsObject;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
@@ -113,6 +113,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     JTextPane hexText;
     StyledDocument hexDoc;
     Style fixedStyle, highlightedStyle;
+    JMenu fileMenu;
+    List<JMenuItem> miRecentFiles;
     JMenuItem miAutoScroll, miAutoSelect;
     JTextArea logText;
     JScrollPane logScrollpane;
@@ -124,14 +126,14 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     JSplitPane mainsplit;
     FindParameterBar findBar;
     ListPacket currentPacket;
-    FileAndDbChooser fileChooser;
+    OpenFileDialog openFileDialog; 
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     static final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
     YamcsConnector yconnector;
     YamcsClient yclient;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;
-    static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); 
+    Preferences uiPrefs; 
 
     ConnectionParameters connectionParams;
     XtceUtil xtceutil;
@@ -140,6 +142,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
 
     public PacketViewer() throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if(config.containsKey("authenticationEnabled")) {
@@ -240,25 +244,38 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
+        fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(fileMenu);
 
-        JMenuItem menuitem = new JMenuItem("Open File...", KeyEvent.VK_O);
+        JMenuItem menuitem = new JMenuItem("Open...", KeyEvent.VK_O);
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         menuitem.setActionCommand("open file");
         menuitem.addActionListener(this);
-        menu.add(menuitem);
+        fileMenu.add(menuitem);
 
-        menuitem = new JMenuItem("Open Yamcs connection...");
+        menuitem = new JMenuItem("Connect to Yamcs...");
         menuitem.setMnemonic(KeyEvent.VK_C);
-        menuitem.setDisplayedMnemonicIndex(11);
-        //menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
         menuitem.setActionCommand("connect-yamcs");
         menuitem.addActionListener(this);
-        menu.add(menuitem);
+        fileMenu.add(menuitem);
 
-        menu.addSeparator();
+        fileMenu.addSeparator();
+
+        miRecentFiles = new ArrayList<JMenuItem>();
+        for (int i = 0; i < 4; i++) {
+            menuitem = new JMenuItem();
+            menuitem.setMnemonic(KeyEvent.VK_1 + i);
+            menuitem.setActionCommand("recent-file-" + i);
+            menuitem.addActionListener(this);
+            fileMenu.add(menuitem);
+            miRecentFiles.add(menuitem);
+        }
+
+        updateMenuWithRecentFiles();
+        if (!getRecentFiles().isEmpty())
+            fileMenu.addSeparator();
 
         /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
@@ -269,9 +286,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
         menuitem.setActionCommand("quit");
         menuitem.addActionListener(this);
-        menu.add(menuitem);
+        fileMenu.add(menuitem);
 
-        menu = new JMenu("Edit");
+        JMenu menu = new JMenu("Edit");
         menu.setMnemonic(KeyEvent.VK_E);
         menuBar.add(menu);
 
@@ -344,6 +361,35 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         });
     }
 
+    void updateMenuWithRecentFiles() {
+        List<String[]> recentFiles = getRecentFiles();
+        int i;
+        for (i = 0; i < recentFiles.size() && i < miRecentFiles.size(); i++) {
+            String fileRef = recentFiles.get(i)[0];
+            int maxChars = 30;
+            if (fileRef.length() > maxChars) {
+                // Search first slash from right to left
+                int slashIndex = fileRef.lastIndexOf(File.separatorChar);
+                if (fileRef.length() - slashIndex > maxChars - 3) {
+                    // Chop off the end of the string of the last path segment
+                    fileRef = "..." + fileRef.substring(slashIndex, slashIndex + maxChars - 2*3) + "...";
+                } else {
+                    // Output the complete filename, and fill up with initial path segments
+                    fileRef = fileRef.substring(0, maxChars - 3 - (fileRef.length() - slashIndex))
+                            + "..." + fileRef.substring(slashIndex);
+                }
+            }
+
+            JMenuItem mi = miRecentFiles.get(i);
+            mi.setVisible(true);
+            mi.setText((i+1) + " " + fileRef);
+            mi.setToolTipText(recentFiles.get(i)[0]);
+        }
+
+        for (; i < miRecentFiles.size(); i++)
+            miRecentFiles.get(i).setVisible(false);
+    }
+
     static void debugLogComponent(String name, JComponent c) {
         Insets in = c.getInsets();
         System.out.println("component " + name + ": "
@@ -382,33 +428,40 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         } else if (cmd.equals("clear")) {
             clearWindow();
         } else if (cmd.equals("open file")) {
-            if(fileChooser==null) {
+            if(openFileDialog==null) {
                 try {
-                    fileChooser = new FileAndDbChooser();
-                    installEscapeCloseAction(fileChooser);
+                    openFileDialog = new OpenFileDialog();
                 } catch (ConfigurationException e) {
                     showError("Cannot load local mdb config: "+e.getMessage());
                     return;
                 }
             }
-            int returnVal = fileChooser.showDialog(this);
-            if (returnVal == FileAndDbChooser.APPROVE_OPTION) {
-                disconnect();
-                lastFile = new File(fileChooser.getSelectedFile());
-                if(loadLocalXtcedb(fileChooser.getSelectedDbConfig())) {
-                    loadFile();
-                }
+            int returnVal = openFileDialog.showDialog(this);
+            if (returnVal == OpenFileDialog.APPROVE_OPTION) {
+                openFile(openFileDialog.getSelectedFile(), openFileDialog.getSelectedDbConfig());
             }
         } else if (cmd.equals("connect-yamcs")) {
             if(connectDialog==null) {
                 connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
-                installEscapeCloseAction(connectDialog);
             }
             int ret=connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 connectYamcs(connectDialog.getConnectData());
             }
+        } else if (cmd.startsWith("recent-file-")) {
+            JMenuItem mi = (JMenuItem) ae.getSource();
+            for (String[] recentFile : getRecentFiles())
+                if (recentFile[0].equals(mi.getToolTipText()))
+                    openFile(new File(recentFile[0]), recentFile[1]);
         }
+    }
+
+    private void openFile(File file, String xtceDb) {
+        disconnect();
+        lastFile = file;
+        if(loadLocalXtcedb(xtceDb))
+            loadFile();
+        updateRecentFiles(lastFile, xtceDb);
     }
 
     private static class ShortReadException extends Exception{
@@ -932,28 +985,43 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         log("disconnected");
     }
 
+    /**
+     * Returns the recently opened files from preferences
+     * Each entry is a String array with the filename on
+     * index 0, and the last used XTCE DB for that file on
+     * index 1.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String[]> getRecentFiles() {
+        List<String[]> recentFiles = (ArrayList<String[]>) PrefsObject.getObject(uiPrefs, "RecentFiles");
+        return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
+    }
+
+    private void updateRecentFiles(File file, String xtceDb) {
+        String filename = file.getAbsolutePath();
+        List<String[]> recentFiles = getRecentFiles();
+        boolean exists = false;
+        for (int i = 0; i < recentFiles.size(); i++) {
+            String[] entry = recentFiles.get(i);
+            if (entry[0].equals(filename)) {
+                entry[1] = xtceDb;
+                recentFiles.add(0, recentFiles.remove(i));
+                exists = true;
+            }
+        }
+        if (!exists) recentFiles.add(0, new String[] { filename, xtceDb });
+        PrefsObject.putObject(uiPrefs, "RecentFiles", recentFiles);
+
+        // Also update JMenu accordingly
+        updateMenuWithRecentFiles();
+    }
+
     private void removeBorders(JSplitPane splitPane) {
         SplitPaneUI ui = splitPane.getUI();
         if(ui instanceof BasicSplitPaneUI) { // We don't want to mess with other L&Fs
             ((BasicSplitPaneUI)ui).getDivider().setBorder(null);
             splitPane.setBorder(BorderFactory.createEmptyBorder());
         }
-    }
-
-    /**
-     * Enables Escape key for closing the specified dialog
-     */
-    private static void installEscapeCloseAction(final JDialog dialog) {
-        JRootPane root = dialog.getRootPane();
-        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KEY_ESC, "closeDialog");
-        root.getActionMap().put("closeDialog", new AbstractAction() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.dispatchEvent(new WindowEvent(dialog,
-                        WindowEvent.WINDOW_CLOSING));
-            }
-        });
     }
 
     private static void printUsageAndExit() {
