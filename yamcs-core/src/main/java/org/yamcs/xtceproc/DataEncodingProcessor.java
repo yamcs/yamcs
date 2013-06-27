@@ -45,8 +45,7 @@ public class DataEncodingProcessor {
         int byteSize=(pcontext.bitPosition+ide.getSizeInBits()-1)/8-byteOffset+1;
         int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
         int bitsToShift=8*byteSize-bitOffsetInsideMask-ide.getSizeInBits();
-        int mask=(-1<<(32-ide.getSizeInBits()))>>>(32-ide.getSizeInBits()-bitsToShift);
-
+        long mask=(-1L<<(64-ide.getSizeInBits()))>>>(64-ide.getSizeInBits()-bitsToShift);
         pcontext.bb.order(ide.getByteOrder());
 
         long rv=0;
@@ -69,6 +68,38 @@ public class DataEncodingProcessor {
         case 4:
             rv=pcontext.bb.getInt(byteOffset);
             break;
+        case 5:
+            if(ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
+                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 8;
+                rv += pcontext.bb.get(byteOffset + 4) & 0xFF;
+            } else {
+                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += (pcontext.bb.get(byteOffset + 4) & 0xFFL) << 32;
+            }
+            break;
+        case 6:
+            if (ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
+                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 16;
+                rv += pcontext.bb.getShort(byteOffset + 4) & 0xFFFF;
+            } else {
+                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL << 32;
+            }
+            break;
+        case 7:
+            if (ide.getByteOrder() == ByteOrder.BIG_ENDIAN) {
+                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 24;
+                rv += (pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL) << 8;
+                rv += pcontext.bb.get(byteOffset + 6) & 0xFFL;
+            } else {
+                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += (pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL) << 32;
+                rv += (pcontext.bb.get(byteOffset + 6) & 0xFFL) << 48;
+            }
+            break;
+        case 8:
+            rv = pcontext.bb.getLong(byteOffset);
+            break;
         default:
         	if( ide.getEncoding() != IntegerDataEncoding.Encoding.string ) {
         		log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
@@ -81,7 +112,11 @@ public class DataEncodingProcessor {
             //we shift it to the left first such that the sign bit arrives on the first position
             rv= (rv&mask)<<(64-ide.getSizeInBits()-bitsToShift);
             rv=rv>>(64-ide.getSizeInBits());
-            pv.setRawSignedInteger((int)rv);
+            if (ide.getSizeInBits() <= 32)
+                pv.setRawSignedInteger((int)rv);
+            else
+                pv.setRawSignedLong(rv);
+            
             if(ide.getDefaultCalibrator()==null)
                 return Long.valueOf(rv);
             else return ide.getDefaultCalibrator().calibrate((double)rv);
@@ -90,10 +125,14 @@ public class DataEncodingProcessor {
             //we use the ">>>" such that the sign bit is not carried
             rv=(rv&mask)>>>bitsToShift;
             //System.out.println("extracted rv="+rv+" from byteOffset="+byteOffset+" using mask="+mask+" and bitsToShift="+bitsToShift);
-            pv.setRawUnsignedInteger((int)rv);
+            if (ide.getSizeInBits() <= 32)
+                pv.setRawUnsignedInteger((int)rv);
+            else
+                pv.setRawUnsignedLong(rv);
+            
             if(ide.getDefaultCalibrator()==null)
                 return Long.valueOf(rv);
-            else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFL));
+            else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
         case string:
         	String s=(String)extractRawAndCalibrate(ide.getStringEncoding(), pv);
         	long l = Long.valueOf( s );
@@ -129,7 +168,7 @@ public class DataEncodingProcessor {
             break;
         }
         byte[] b=new byte[sizeInBytes];
-        System.out.println(sde.getName()+" Extracting string of size "+sizeInBytes+" para sizeInBytes of size tag="+sde.getSizeInBitsOfSizeTag()+" bitposition: "+pcontext.bitPosition);
+        //System.out.println(sde.getName()+" Extracting string of size "+sizeInBytes+" para sizeInBytes of size tag="+sde.getSizeInBitsOfSizeTag()+" bitposition: "+pcontext.bitPosition);
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.get(b);
         pv.setRawValue(b);

@@ -1,6 +1,7 @@
 package org.yamcs.utils;
 
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 
@@ -11,6 +12,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 public class StringConvertors {
 
 	static SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss.SSS");
+	static final BigInteger B64 = BigInteger.ZERO.setBit(64);
 	
 	
 	public static String toString(Value rv) {
@@ -25,6 +27,10 @@ public class StringConvertors {
 	        return "(SIGNED_INTEGER)"+rv.getSint32Value();
 	    case UINT32:
 	        return "(UNSIGNED_INTEGER)"+rv.getUint32Value();
+	    case SINT64:
+	        return "(SIGNED_INTEGER)"+rv.getSint64Value();
+	    case UINT64:
+	        return "(UNSIGNED_INTEGER)"+rv.getUint64Value();
 	    case STRING:
 	        return "(STRING)"+rv.getStringValue();
 	    case TIMESTAMP:
@@ -46,6 +52,13 @@ public class StringConvertors {
 	            return Integer.toString(rv.getSint32Value());
 	        case UINT32:
 	            return Long.toString(rv.getUint32Value()&0xFFFFFFFFL);
+	        case SINT64:
+	            return Long.toString(rv.getSint64Value());
+	        case UINT64:
+	            if (rv.getUint64Value() >= 0)
+	                return Long.toString(rv.getUint64Value());
+	            else
+	                return BigInteger.valueOf(rv.getUint64Value()).add(B64).toString();
 	        case STRING:
 	            return rv.getStringValue();
 	        case TIMESTAMP:
