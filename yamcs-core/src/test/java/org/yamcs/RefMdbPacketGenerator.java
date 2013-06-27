@@ -5,22 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.TmPacketProvider;
-
-import com.google.common.util.concurrent.AbstractService;
-
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Generates packets according to the refmdb database
@@ -46,7 +41,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile float pFloatPara11_3=2;
     public volatile byte pEnumerationPara11_4=0;
     public volatile String pStringPara11_5="cucu";
-    public volatile int pIntegerPara11_6=99;
+    public volatile int pIntegerPara11_6=236;
     public volatile byte pIntegerPara11_7=34;
     
     public volatile String pFixedStringPara13_1="Ab"; // 16 bits

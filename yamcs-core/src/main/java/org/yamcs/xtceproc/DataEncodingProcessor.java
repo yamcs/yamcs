@@ -1,10 +1,10 @@
 package org.yamcs.xtceproc;
 
 import java.nio.ByteOrder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
-
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
@@ -58,10 +58,13 @@ public class DataEncodingProcessor {
             rv=pcontext.bb.getShort(byteOffset);
             break;
         case 3:
-            if(ide.getByteOrder()==ByteOrder.BIG_ENDIAN)
-                rv=(pcontext.bb.getShort(byteOffset)<<8)+pcontext.bb.get(byteOffset+2);
-            else
-                rv=pcontext.bb.getShort(byteOffset)+(pcontext.bb.get(byteOffset+2)<<16);
+            if(ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
+                rv = (pcontext.bb.getShort(byteOffset) & 0xFFFF) << 8;
+                rv += pcontext.bb.get(byteOffset + 2) & 0xFF;
+            } else {
+                rv = pcontext.bb.getShort(byteOffset) & 0xFFFF;
+                rv += (pcontext.bb.get(byteOffset + 2) & 0xFF) << 16;
+            }
             break;
         case 4:
             rv=pcontext.bb.getInt(byteOffset);
