@@ -5,22 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.TmPacketProvider;
-
-import com.google.common.util.concurrent.AbstractService;
-
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Generates packets according to the refmdb database
@@ -31,7 +26,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     TmProcessor tmProcessor;
     final int headerLength=16;
     final int pkt1Length=3;
-    final int pkt11Length=headerLength+pkt1Length+50;
+    final int pkt11Length=headerLength+pkt1Length+56;
     final int pkt12Length=headerLength+pkt1Length+7;
     final int pkt13Length=headerLength+pkt1Length+100;
     final int pkt14Length=headerLength+pkt1Length+100;
@@ -46,8 +41,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile float pFloatPara11_3=2;
     public volatile byte pEnumerationPara11_4=0;
     public volatile String pStringPara11_5="cucu";
-    public volatile int pIntegerPara11_6=99;
+    public volatile int pIntegerPara11_6=236;
     public volatile byte pIntegerPara11_7=34;
+    public volatile long pIntegerPara11_8=5084265585L;
     
     public volatile String pFixedStringPara13_1="Ab"; // 16 bits
     public volatile String pFixedStringPara13_2="A"; // 8 bits
@@ -155,6 +151,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put((byte)(pIntegerPara11_6>>16));
         bb.putShort((short)(pIntegerPara11_6&0xFFFF));
         bb.put(pIntegerPara11_7);
+        
+        bb.putShort((short)(pIntegerPara11_8>>32));
+        bb.putInt((int)pIntegerPara11_8&0xFFFFFFFF);
         
         byte[] b=new byte[10];
         System.arraycopy(pStringPara11_5.getBytes(), 0, b, 0, pStringPara11_5.getBytes().length);
