@@ -8408,7 +8408,7 @@ public final class Yamcs {
     public boolean hasSpeed() { return hasSpeed; }
     public org.yamcs.protobuf.Yamcs.ReplaySpeed getSpeed() { return speed_; }
     
-    // repeated .org.yamcs.protobuf.ProtoDataType type = 5;
+    // repeated .org.yamcs.protobuf.ProtoDataType type = 5 [deprecated = true];
     public static final int TYPE_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> type_ =
       java.util.Collections.emptyList();
@@ -8420,7 +8420,7 @@ public final class Yamcs {
       return type_.get(index);
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6;
+    // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6 [deprecated = true];
     public static final int TMPACKETFILTER_FIELD_NUMBER = 6;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> tmPacketFilter_ =
       java.util.Collections.emptyList();
@@ -8432,7 +8432,7 @@ public final class Yamcs {
       return tmPacketFilter_.get(index);
     }
     
-    // repeated string ppGroupFilter = 7;
+    // repeated string ppGroupFilter = 7 [deprecated = true];
     public static final int PPGROUPFILTER_FIELD_NUMBER = 7;
     private java.util.List<java.lang.String> ppGroupFilter_ =
       java.util.Collections.emptyList();
@@ -8451,10 +8451,42 @@ public final class Yamcs {
     public boolean hasParameterRequest() { return hasParameterRequest; }
     public org.yamcs.protobuf.Yamcs.ParameterReplayRequest getParameterRequest() { return parameterRequest_; }
     
+    // optional .org.yamcs.protobuf.PacketReplayRequest packetRequest = 9;
+    public static final int PACKETREQUEST_FIELD_NUMBER = 9;
+    private boolean hasPacketRequest;
+    private org.yamcs.protobuf.Yamcs.PacketReplayRequest packetRequest_;
+    public boolean hasPacketRequest() { return hasPacketRequest; }
+    public org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest() { return packetRequest_; }
+    
+    // optional .org.yamcs.protobuf.EventReplayRequest eventRequest = 10;
+    public static final int EVENTREQUEST_FIELD_NUMBER = 10;
+    private boolean hasEventRequest;
+    private org.yamcs.protobuf.Yamcs.EventReplayRequest eventRequest_;
+    public boolean hasEventRequest() { return hasEventRequest; }
+    public org.yamcs.protobuf.Yamcs.EventReplayRequest getEventRequest() { return eventRequest_; }
+    
+    // optional .org.yamcs.protobuf.CommandHistoryReplayRequest commandHistoryRequest = 11;
+    public static final int COMMANDHISTORYREQUEST_FIELD_NUMBER = 11;
+    private boolean hasCommandHistoryRequest;
+    private org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest commandHistoryRequest_;
+    public boolean hasCommandHistoryRequest() { return hasCommandHistoryRequest; }
+    public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest getCommandHistoryRequest() { return commandHistoryRequest_; }
+    
+    // optional .org.yamcs.protobuf.PpReplayRequest ppRequest = 12;
+    public static final int PPREQUEST_FIELD_NUMBER = 12;
+    private boolean hasPpRequest;
+    private org.yamcs.protobuf.Yamcs.PpReplayRequest ppRequest_;
+    public boolean hasPpRequest() { return hasPpRequest; }
+    public org.yamcs.protobuf.Yamcs.PpReplayRequest getPpRequest() { return ppRequest_; }
+    
     private void initFields() {
       endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
       speed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
       parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
+      packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
+      eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
+      commandHistoryRequest_ = org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance();
+      ppRequest_ = org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance();
     }
     public final boolean isInitialized() {
       if (hasSpeed()) {
@@ -8465,6 +8497,9 @@ public final class Yamcs {
       }
       if (hasParameterRequest()) {
         if (!getParameterRequest().isInitialized()) return false;
+      }
+      if (hasPacketRequest()) {
+        if (!getPacketRequest().isInitialized()) return false;
       }
       return true;
     }
@@ -8495,6 +8530,18 @@ public final class Yamcs {
       }
       if (hasParameterRequest()) {
         output.writeMessage(8, getParameterRequest());
+      }
+      if (hasPacketRequest()) {
+        output.writeMessage(9, getPacketRequest());
+      }
+      if (hasEventRequest()) {
+        output.writeMessage(10, getEventRequest());
+      }
+      if (hasCommandHistoryRequest()) {
+        output.writeMessage(11, getCommandHistoryRequest());
+      }
+      if (hasPpRequest()) {
+        output.writeMessage(12, getPpRequest());
       }
       getUnknownFields().writeTo(output);
     }
@@ -8546,6 +8593,22 @@ public final class Yamcs {
       if (hasParameterRequest()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, getParameterRequest());
+      }
+      if (hasPacketRequest()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, getPacketRequest());
+      }
+      if (hasEventRequest()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, getEventRequest());
+      }
+      if (hasCommandHistoryRequest()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(11, getCommandHistoryRequest());
+      }
+      if (hasPpRequest()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, getPpRequest());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8750,6 +8813,18 @@ public final class Yamcs {
         if (other.hasParameterRequest()) {
           mergeParameterRequest(other.getParameterRequest());
         }
+        if (other.hasPacketRequest()) {
+          mergePacketRequest(other.getPacketRequest());
+        }
+        if (other.hasEventRequest()) {
+          mergeEventRequest(other.getEventRequest());
+        }
+        if (other.hasCommandHistoryRequest()) {
+          mergeCommandHistoryRequest(other.getCommandHistoryRequest());
+        }
+        if (other.hasPpRequest()) {
+          mergePpRequest(other.getPpRequest());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -8844,6 +8919,42 @@ public final class Yamcs {
               }
               input.readMessage(subBuilder, extensionRegistry);
               setParameterRequest(subBuilder.buildPartial());
+              break;
+            }
+            case 74: {
+              org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder subBuilder = org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder();
+              if (hasPacketRequest()) {
+                subBuilder.mergeFrom(getPacketRequest());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setPacketRequest(subBuilder.buildPartial());
+              break;
+            }
+            case 82: {
+              org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder subBuilder = org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder();
+              if (hasEventRequest()) {
+                subBuilder.mergeFrom(getEventRequest());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setEventRequest(subBuilder.buildPartial());
+              break;
+            }
+            case 90: {
+              org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder subBuilder = org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder();
+              if (hasCommandHistoryRequest()) {
+                subBuilder.mergeFrom(getCommandHistoryRequest());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setCommandHistoryRequest(subBuilder.buildPartial());
+              break;
+            }
+            case 98: {
+              org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder subBuilder = org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder();
+              if (hasPpRequest()) {
+                subBuilder.mergeFrom(getPpRequest());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setPpRequest(subBuilder.buildPartial());
               break;
             }
           }
@@ -8945,7 +9056,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.ProtoDataType type = 5;
+      // repeated .org.yamcs.protobuf.ProtoDataType type = 5 [deprecated = true];
       public java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> getTypeList() {
         return java.util.Collections.unmodifiableList(result.type_);
       }
@@ -8985,7 +9096,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6;
+      // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6 [deprecated = true];
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getTmPacketFilterList() {
         return java.util.Collections.unmodifiableList(result.tmPacketFilter_);
       }
@@ -9036,7 +9147,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated string ppGroupFilter = 7;
+      // repeated string ppGroupFilter = 7 [deprecated = true];
       public java.util.List<java.lang.String> getPpGroupFilterList() {
         return java.util.Collections.unmodifiableList(result.ppGroupFilter_);
       }
@@ -9113,6 +9224,154 @@ public final class Yamcs {
         return this;
       }
       
+      // optional .org.yamcs.protobuf.PacketReplayRequest packetRequest = 9;
+      public boolean hasPacketRequest() {
+        return result.hasPacketRequest();
+      }
+      public org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest() {
+        return result.getPacketRequest();
+      }
+      public Builder setPacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasPacketRequest = true;
+        result.packetRequest_ = value;
+        return this;
+      }
+      public Builder setPacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builderForValue) {
+        result.hasPacketRequest = true;
+        result.packetRequest_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergePacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
+        if (result.hasPacketRequest() &&
+            result.packetRequest_ != org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance()) {
+          result.packetRequest_ =
+            org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder(result.packetRequest_).mergeFrom(value).buildPartial();
+        } else {
+          result.packetRequest_ = value;
+        }
+        result.hasPacketRequest = true;
+        return this;
+      }
+      public Builder clearPacketRequest() {
+        result.hasPacketRequest = false;
+        result.packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
+        return this;
+      }
+      
+      // optional .org.yamcs.protobuf.EventReplayRequest eventRequest = 10;
+      public boolean hasEventRequest() {
+        return result.hasEventRequest();
+      }
+      public org.yamcs.protobuf.Yamcs.EventReplayRequest getEventRequest() {
+        return result.getEventRequest();
+      }
+      public Builder setEventRequest(org.yamcs.protobuf.Yamcs.EventReplayRequest value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasEventRequest = true;
+        result.eventRequest_ = value;
+        return this;
+      }
+      public Builder setEventRequest(org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builderForValue) {
+        result.hasEventRequest = true;
+        result.eventRequest_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeEventRequest(org.yamcs.protobuf.Yamcs.EventReplayRequest value) {
+        if (result.hasEventRequest() &&
+            result.eventRequest_ != org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance()) {
+          result.eventRequest_ =
+            org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder(result.eventRequest_).mergeFrom(value).buildPartial();
+        } else {
+          result.eventRequest_ = value;
+        }
+        result.hasEventRequest = true;
+        return this;
+      }
+      public Builder clearEventRequest() {
+        result.hasEventRequest = false;
+        result.eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
+        return this;
+      }
+      
+      // optional .org.yamcs.protobuf.CommandHistoryReplayRequest commandHistoryRequest = 11;
+      public boolean hasCommandHistoryRequest() {
+        return result.hasCommandHistoryRequest();
+      }
+      public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest getCommandHistoryRequest() {
+        return result.getCommandHistoryRequest();
+      }
+      public Builder setCommandHistoryRequest(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasCommandHistoryRequest = true;
+        result.commandHistoryRequest_ = value;
+        return this;
+      }
+      public Builder setCommandHistoryRequest(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builderForValue) {
+        result.hasCommandHistoryRequest = true;
+        result.commandHistoryRequest_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeCommandHistoryRequest(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest value) {
+        if (result.hasCommandHistoryRequest() &&
+            result.commandHistoryRequest_ != org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance()) {
+          result.commandHistoryRequest_ =
+            org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder(result.commandHistoryRequest_).mergeFrom(value).buildPartial();
+        } else {
+          result.commandHistoryRequest_ = value;
+        }
+        result.hasCommandHistoryRequest = true;
+        return this;
+      }
+      public Builder clearCommandHistoryRequest() {
+        result.hasCommandHistoryRequest = false;
+        result.commandHistoryRequest_ = org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance();
+        return this;
+      }
+      
+      // optional .org.yamcs.protobuf.PpReplayRequest ppRequest = 12;
+      public boolean hasPpRequest() {
+        return result.hasPpRequest();
+      }
+      public org.yamcs.protobuf.Yamcs.PpReplayRequest getPpRequest() {
+        return result.getPpRequest();
+      }
+      public Builder setPpRequest(org.yamcs.protobuf.Yamcs.PpReplayRequest value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasPpRequest = true;
+        result.ppRequest_ = value;
+        return this;
+      }
+      public Builder setPpRequest(org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builderForValue) {
+        result.hasPpRequest = true;
+        result.ppRequest_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergePpRequest(org.yamcs.protobuf.Yamcs.PpReplayRequest value) {
+        if (result.hasPpRequest() &&
+            result.ppRequest_ != org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance()) {
+          result.ppRequest_ =
+            org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder(result.ppRequest_).mergeFrom(value).buildPartial();
+        } else {
+          result.ppRequest_ = value;
+        }
+        result.hasPpRequest = true;
+        return this;
+      }
+      public Builder clearPpRequest() {
+        result.hasPpRequest = false;
+        result.ppRequest_ = org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ReplayRequest)
     }
     
@@ -9152,16 +9411,16 @@ public final class Yamcs {
       return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId parameter = 1;
-    public static final int PARAMETER_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> parameter_ =
+    // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+    public static final int NAMEFILTER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_ =
       java.util.Collections.emptyList();
-    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getParameterList() {
-      return parameter_;
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+      return nameFilter_;
     }
-    public int getParameterCount() { return parameter_.size(); }
-    public org.yamcs.protobuf.Yamcs.NamedObjectId getParameter(int index) {
-      return parameter_.get(index);
+    public int getNameFilterCount() { return nameFilter_.size(); }
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+      return nameFilter_.get(index);
     }
     
     // optional bool sendRaw = 2 [default = false];
@@ -9181,7 +9440,7 @@ public final class Yamcs {
     private void initFields() {
     }
     public final boolean isInitialized() {
-      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getParameterList()) {
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
         if (!element.isInitialized()) return false;
       }
       return true;
@@ -9190,7 +9449,7 @@ public final class Yamcs {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getParameterList()) {
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
         output.writeMessage(1, element);
       }
       if (hasSendRaw()) {
@@ -9208,7 +9467,7 @@ public final class Yamcs {
       if (size != -1) return size;
     
       size = 0;
-      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getParameterList()) {
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, element);
       }
@@ -9362,9 +9621,9 @@ public final class Yamcs {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
-        if (result.parameter_ != java.util.Collections.EMPTY_LIST) {
-          result.parameter_ =
-            java.util.Collections.unmodifiableList(result.parameter_);
+        if (result.nameFilter_ != java.util.Collections.EMPTY_LIST) {
+          result.nameFilter_ =
+            java.util.Collections.unmodifiableList(result.nameFilter_);
         }
         org.yamcs.protobuf.Yamcs.ParameterReplayRequest returnMe = result;
         result = null;
@@ -9382,11 +9641,11 @@ public final class Yamcs {
       
       public Builder mergeFrom(org.yamcs.protobuf.Yamcs.ParameterReplayRequest other) {
         if (other == org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance()) return this;
-        if (!other.parameter_.isEmpty()) {
-          if (result.parameter_.isEmpty()) {
-            result.parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        if (!other.nameFilter_.isEmpty()) {
+          if (result.nameFilter_.isEmpty()) {
+            result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
           }
-          result.parameter_.addAll(other.parameter_);
+          result.nameFilter_.addAll(other.nameFilter_);
         }
         if (other.hasSendRaw()) {
           setSendRaw(other.getSendRaw());
@@ -9422,7 +9681,7 @@ public final class Yamcs {
             case 10: {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
-              addParameter(subBuilder.buildPartial());
+              addNameFilter(subBuilder.buildPartial());
               break;
             }
             case 16: {
@@ -9438,54 +9697,54 @@ public final class Yamcs {
       }
       
       
-      // repeated .org.yamcs.protobuf.NamedObjectId parameter = 1;
-      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getParameterList() {
-        return java.util.Collections.unmodifiableList(result.parameter_);
+      // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+        return java.util.Collections.unmodifiableList(result.nameFilter_);
       }
-      public int getParameterCount() {
-        return result.getParameterCount();
+      public int getNameFilterCount() {
+        return result.getNameFilterCount();
       }
-      public org.yamcs.protobuf.Yamcs.NamedObjectId getParameter(int index) {
-        return result.getParameter(index);
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+        return result.getNameFilter(index);
       }
-      public Builder setParameter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+      public Builder setNameFilter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        result.parameter_.set(index, value);
+        result.nameFilter_.set(index, value);
         return this;
       }
-      public Builder setParameter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        result.parameter_.set(index, builderForValue.build());
+      public Builder setNameFilter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        result.nameFilter_.set(index, builderForValue.build());
         return this;
       }
-      public Builder addParameter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+      public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        if (result.parameter_.isEmpty()) {
-          result.parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
         }
-        result.parameter_.add(value);
+        result.nameFilter_.add(value);
         return this;
       }
-      public Builder addParameter(org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (result.parameter_.isEmpty()) {
-          result.parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+      public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
         }
-        result.parameter_.add(builderForValue.build());
+        result.nameFilter_.add(builderForValue.build());
         return this;
       }
-      public Builder addAllParameter(
+      public Builder addAllNameFilter(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (result.parameter_.isEmpty()) {
-          result.parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
         }
-        super.addAll(values, result.parameter_);
+        super.addAll(values, result.nameFilter_);
         return this;
       }
-      public Builder clearParameter() {
-        result.parameter_ = java.util.Collections.emptyList();
+      public Builder clearNameFilter() {
+        result.nameFilter_ = java.util.Collections.emptyList();
         return this;
       }
       
@@ -9535,6 +9794,1153 @@ public final class Yamcs {
     }
     
     // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ParameterReplayRequest)
+  }
+  
+  public static final class PacketReplayRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use PacketReplayRequest.newBuilder() to construct.
+    private PacketReplayRequest() {
+      initFields();
+    }
+    private PacketReplayRequest(boolean noInit) {}
+    
+    private static final PacketReplayRequest defaultInstance;
+    public static PacketReplayRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public PacketReplayRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable;
+    }
+    
+    // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+    public static final int NAMEFILTER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_ =
+      java.util.Collections.emptyList();
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+      return nameFilter_;
+    }
+    public int getNameFilterCount() { return nameFilter_.size(); }
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+      return nameFilter_.get(index);
+    }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
+        if (!element.isInitialized()) return false;
+      }
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
+        output.writeMessage(1, element);
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getNameFilterList()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, element);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PacketReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.PacketReplayRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private org.yamcs.protobuf.Yamcs.PacketReplayRequest result;
+      
+      // Construct using org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new org.yamcs.protobuf.Yamcs.PacketReplayRequest();
+        return builder;
+      }
+      
+      protected org.yamcs.protobuf.Yamcs.PacketReplayRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new org.yamcs.protobuf.Yamcs.PacketReplayRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDescriptor();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.PacketReplayRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public org.yamcs.protobuf.Yamcs.PacketReplayRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private org.yamcs.protobuf.Yamcs.PacketReplayRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.PacketReplayRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        if (result.nameFilter_ != java.util.Collections.EMPTY_LIST) {
+          result.nameFilter_ =
+            java.util.Collections.unmodifiableList(result.nameFilter_);
+        }
+        org.yamcs.protobuf.Yamcs.PacketReplayRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.PacketReplayRequest) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.PacketReplayRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.PacketReplayRequest other) {
+        if (other == org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance()) return this;
+        if (!other.nameFilter_.isEmpty()) {
+          if (result.nameFilter_.isEmpty()) {
+            result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+          }
+          result.nameFilter_.addAll(other.nameFilter_);
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addNameFilter(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+        return java.util.Collections.unmodifiableList(result.nameFilter_);
+      }
+      public int getNameFilterCount() {
+        return result.getNameFilterCount();
+      }
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+        return result.getNameFilter(index);
+      }
+      public Builder setNameFilter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.nameFilter_.set(index, value);
+        return this;
+      }
+      public Builder setNameFilter(int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        result.nameFilter_.set(index, builderForValue.build());
+        return this;
+      }
+      public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        }
+        result.nameFilter_.add(value);
+        return this;
+      }
+      public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        }
+        result.nameFilter_.add(builderForValue.build());
+        return this;
+      }
+      public Builder addAllNameFilter(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
+        if (result.nameFilter_.isEmpty()) {
+          result.nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+        }
+        super.addAll(values, result.nameFilter_);
+        return this;
+      }
+      public Builder clearNameFilter() {
+        result.nameFilter_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.PacketReplayRequest)
+    }
+    
+    static {
+      defaultInstance = new PacketReplayRequest(true);
+      org.yamcs.protobuf.Yamcs.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.PacketReplayRequest)
+  }
+  
+  public static final class EventReplayRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use EventReplayRequest.newBuilder() to construct.
+    private EventReplayRequest() {
+      initFields();
+    }
+    private EventReplayRequest(boolean noInit) {}
+    
+    private static final EventReplayRequest defaultInstance;
+    public static EventReplayRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public EventReplayRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable;
+    }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.EventReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.EventReplayRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private org.yamcs.protobuf.Yamcs.EventReplayRequest result;
+      
+      // Construct using org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new org.yamcs.protobuf.Yamcs.EventReplayRequest();
+        return builder;
+      }
+      
+      protected org.yamcs.protobuf.Yamcs.EventReplayRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new org.yamcs.protobuf.Yamcs.EventReplayRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.EventReplayRequest.getDescriptor();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.EventReplayRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public org.yamcs.protobuf.Yamcs.EventReplayRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private org.yamcs.protobuf.Yamcs.EventReplayRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.EventReplayRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        org.yamcs.protobuf.Yamcs.EventReplayRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.EventReplayRequest) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.EventReplayRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.EventReplayRequest other) {
+        if (other == org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.EventReplayRequest)
+    }
+    
+    static {
+      defaultInstance = new EventReplayRequest(true);
+      org.yamcs.protobuf.Yamcs.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.EventReplayRequest)
+  }
+  
+  public static final class CommandHistoryReplayRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use CommandHistoryReplayRequest.newBuilder() to construct.
+    private CommandHistoryReplayRequest() {
+      initFields();
+    }
+    private CommandHistoryReplayRequest(boolean noInit) {}
+    
+    private static final CommandHistoryReplayRequest defaultInstance;
+    public static CommandHistoryReplayRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public CommandHistoryReplayRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable;
+    }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest result;
+      
+      // Construct using org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest();
+        return builder;
+      }
+      
+      protected org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDescriptor();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest other) {
+        if (other == org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandHistoryReplayRequest)
+    }
+    
+    static {
+      defaultInstance = new CommandHistoryReplayRequest(true);
+      org.yamcs.protobuf.Yamcs.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandHistoryReplayRequest)
+  }
+  
+  public static final class PpReplayRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use PpReplayRequest.newBuilder() to construct.
+    private PpReplayRequest() {
+      initFields();
+    }
+    private PpReplayRequest(boolean noInit) {}
+    
+    private static final PpReplayRequest defaultInstance;
+    public static PpReplayRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public PpReplayRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable;
+    }
+    
+    // repeated string groupNameFilter = 1;
+    public static final int GROUPNAMEFILTER_FIELD_NUMBER = 1;
+    private java.util.List<java.lang.String> groupNameFilter_ =
+      java.util.Collections.emptyList();
+    public java.util.List<java.lang.String> getGroupNameFilterList() {
+      return groupNameFilter_;
+    }
+    public int getGroupNameFilterCount() { return groupNameFilter_.size(); }
+    public java.lang.String getGroupNameFilter(int index) {
+      return groupNameFilter_.get(index);
+    }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (java.lang.String element : getGroupNameFilterList()) {
+        output.writeString(1, element);
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      {
+        int dataSize = 0;
+        for (java.lang.String element : getGroupNameFilterList()) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeStringSizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * getGroupNameFilterList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.yamcs.protobuf.Yamcs.PpReplayRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.PpReplayRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private org.yamcs.protobuf.Yamcs.PpReplayRequest result;
+      
+      // Construct using org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new org.yamcs.protobuf.Yamcs.PpReplayRequest();
+        return builder;
+      }
+      
+      protected org.yamcs.protobuf.Yamcs.PpReplayRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new org.yamcs.protobuf.Yamcs.PpReplayRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.PpReplayRequest.getDescriptor();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.PpReplayRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public org.yamcs.protobuf.Yamcs.PpReplayRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private org.yamcs.protobuf.Yamcs.PpReplayRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public org.yamcs.protobuf.Yamcs.PpReplayRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        if (result.groupNameFilter_ != java.util.Collections.EMPTY_LIST) {
+          result.groupNameFilter_ =
+            java.util.Collections.unmodifiableList(result.groupNameFilter_);
+        }
+        org.yamcs.protobuf.Yamcs.PpReplayRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.PpReplayRequest) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.PpReplayRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.PpReplayRequest other) {
+        if (other == org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance()) return this;
+        if (!other.groupNameFilter_.isEmpty()) {
+          if (result.groupNameFilter_.isEmpty()) {
+            result.groupNameFilter_ = new java.util.ArrayList<java.lang.String>();
+          }
+          result.groupNameFilter_.addAll(other.groupNameFilter_);
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              addGroupNameFilter(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // repeated string groupNameFilter = 1;
+      public java.util.List<java.lang.String> getGroupNameFilterList() {
+        return java.util.Collections.unmodifiableList(result.groupNameFilter_);
+      }
+      public int getGroupNameFilterCount() {
+        return result.getGroupNameFilterCount();
+      }
+      public java.lang.String getGroupNameFilter(int index) {
+        return result.getGroupNameFilter(index);
+      }
+      public Builder setGroupNameFilter(int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.groupNameFilter_.set(index, value);
+        return this;
+      }
+      public Builder addGroupNameFilter(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  if (result.groupNameFilter_.isEmpty()) {
+          result.groupNameFilter_ = new java.util.ArrayList<java.lang.String>();
+        }
+        result.groupNameFilter_.add(value);
+        return this;
+      }
+      public Builder addAllGroupNameFilter(
+          java.lang.Iterable<? extends java.lang.String> values) {
+        if (result.groupNameFilter_.isEmpty()) {
+          result.groupNameFilter_ = new java.util.ArrayList<java.lang.String>();
+        }
+        super.addAll(values, result.groupNameFilter_);
+        return this;
+      }
+      public Builder clearGroupNameFilter() {
+        result.groupNameFilter_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.PpReplayRequest)
+    }
+    
+    static {
+      defaultInstance = new PpReplayRequest(true);
+      org.yamcs.protobuf.Yamcs.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.PpReplayRequest)
   }
   
   public static final class ReplayStatus extends
@@ -12262,6 +13668,26 @@ public final class Yamcs {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_yamcs_protobuf_ReplayStatus_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -12338,62 +13764,73 @@ public final class Yamcs {
       "Tag\"?\n\020DeleteTagRequest\022+\n\003tag\030\003 \002(\0132\036.o" +
       "rg.yamcs.protobuf.ArchiveTag\"O\n\013ReplaySp" +
       "eed\0221\n\004type\030\001 \002(\0162#.org.yamcs.protobuf.R" +
-      "eplaySpeedType\022\r\n\005param\030\002 \001(\002\"\335\002\n\rReplay" +
+      "eplaySpeedType\022\r\n\005param\030\002 \001(\002\"\357\004\n\rReplay" +
       "Request\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\0226\n\t" +
       "endAction\030\003 \001(\0162\035.org.yamcs.protobuf.End" +
       "Action:\004QUIT\022.\n\005speed\030\004 \001(\0132\037.org.yamcs." +
-      "protobuf.ReplaySpeed\022/\n\004type\030\005 \003(\0162!.org" +
-      ".yamcs.protobuf.ProtoDataType\0229\n\016tmPacke" +
-      "tFilter\030\006 \003(\0132!.org.yamcs.protobuf.Named",
-      "ObjectId\022\025\n\rppGroupFilter\030\007 \003(\t\022D\n\020param" +
-      "eterRequest\030\010 \001(\0132*.org.yamcs.protobuf.P" +
-      "arameterReplayRequest\"\210\001\n\026ParameterRepla" +
-      "yRequest\0224\n\tparameter\030\001 \003(\0132!.org.yamcs." +
-      "protobuf.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:" +
-      "\005false\022 \n\021performMonitoring\030\003 \001(\010:\005false" +
-      "\"\365\001\n\014ReplayStatus\022;\n\005state\030\001 \002(\0162,.org.y" +
-      "amcs.protobuf.ReplayStatus.ReplayState\0222" +
-      "\n\007request\030\002 \001(\0132!.org.yamcs.protobuf.Rep" +
-      "layRequest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013Repl",
-      "ayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001" +
-      "\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006" +
-      "CLOSED\020\005\"e\n\014TmPacketData\022\025\n\rreceptionTim" +
-      "e\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTim" +
-      "e\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\"\354\001\n\005Even" +
-      "t\022\016\n\006source\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(" +
-      "\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 " +
-      "\002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\022?\n\010se" +
-      "verity\030\007 \001(\0162\'.org.yamcs.protobuf.Event." +
-      "EventSeverity:\004INFO\"1\n\rEventSeverity\022\010\n\004",
-      "INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*)\n\tEndAct" +
-      "ion\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*:\n\017Rep" +
-      "laySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022" +
-      "\014\n\010REALTIME\020\003*\225\001\n\rProtoDataType\022\014\n\010DT_ER" +
-      "ROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006" +
-      "\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013" +
-      "ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HIST" +
-      "ORY\020\t2\275\001\n\014YamcsControl\022Q\n\021GetYamcsInstan" +
-      "ces\022\030.org.yamcs.protobuf.Void\032\".org.yamc" +
-      "s.protobuf.YamcsInstances\022Z\n\022GetMissionD",
-      "atabase\022*.org.yamcs.protobuf.MissionData" +
-      "baseRequest\032\030.org.yamcs.protobuf.Void2\307\002" +
-      "\n\030RealtimeParameterService\022J\n\tSubscribe\022" +
-      "#.org.yamcs.protobuf.NamedObjectList\032\030.o" +
-      "rg.yamcs.protobuf.Void\022K\n\014SubscribeAll\022!" +
-      ".org.yamcs.protobuf.StringMessage\032\030.org." +
-      "yamcs.protobuf.Void\022L\n\013Unsubscribe\022#.org" +
-      ".yamcs.protobuf.NamedObjectList\032\030.org.ya" +
-      "mcs.protobuf.Void\022D\n\016UnsubscribeAll\022\030.or" +
-      "g.yamcs.protobuf.Void\032\030.org.yamcs.protob",
-      "uf.Void2\310\002\n\014ArchiveIndex\022M\n\010GetIndex\022 .o" +
-      "rg.yamcs.protobuf.IndexRequest\032\037.org.yam" +
-      "cs.protobuf.IndexResult\022I\n\006GetTag\022 .org." +
-      "yamcs.protobuf.IndexRequest\032\035.org.yamcs." +
-      "protobuf.TagResult\022Q\n\tUpsertTag\022$.org.ya" +
-      "mcs.protobuf.UpsertTagRequest\032\036.org.yamc" +
-      "s.protobuf.ArchiveTag\022K\n\tDeleteTag\022$.org" +
-      ".yamcs.protobuf.DeleteTagRequest\032\030.org.y" +
-      "amcs.protobuf.Void"
+      "protobuf.ReplaySpeed\0223\n\004type\030\005 \003(\0162!.org" +
+      ".yamcs.protobuf.ProtoDataTypeB\002\030\001\022=\n\016tmP" +
+      "acketFilter\030\006 \003(\0132!.org.yamcs.protobuf.N",
+      "amedObjectIdB\002\030\001\022\031\n\rppGroupFilter\030\007 \003(\tB" +
+      "\002\030\001\022D\n\020parameterRequest\030\010 \001(\0132*.org.yamc" +
+      "s.protobuf.ParameterReplayRequest\022>\n\rpac" +
+      "ketRequest\030\t \001(\0132\'.org.yamcs.protobuf.Pa" +
+      "cketReplayRequest\022<\n\014eventRequest\030\n \001(\0132" +
+      "&.org.yamcs.protobuf.EventReplayRequest\022" +
+      "N\n\025commandHistoryRequest\030\013 \001(\0132/.org.yam" +
+      "cs.protobuf.CommandHistoryReplayRequest\022" +
+      "6\n\tppRequest\030\014 \001(\0132#.org.yamcs.protobuf." +
+      "PpReplayRequest\"\211\001\n\026ParameterReplayReque",
+      "st\0225\n\nnameFilter\030\001 \003(\0132!.org.yamcs.proto" +
+      "buf.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005fals" +
+      "e\022 \n\021performMonitoring\030\003 \001(\010:\005false\"L\n\023P" +
+      "acketReplayRequest\0225\n\nnameFilter\030\001 \003(\0132!" +
+      ".org.yamcs.protobuf.NamedObjectId\"\024\n\022Eve" +
+      "ntReplayRequest\"\035\n\033CommandHistoryReplayR" +
+      "equest\"*\n\017PpReplayRequest\022\027\n\017groupNameFi" +
+      "lter\030\001 \003(\t\"\365\001\n\014ReplayStatus\022;\n\005state\030\001 \002" +
+      "(\0162,.org.yamcs.protobuf.ReplayStatus.Rep" +
+      "layState\0222\n\007request\030\002 \001(\0132!.org.yamcs.pr",
+      "otobuf.ReplayRequest\022\024\n\014errorMessage\030\003 \001" +
+      "(\t\"^\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n" +
+      "\007RUNNING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PA" +
+      "USED\020\004\022\n\n\006CLOSED\020\005\"e\n\014TmPacketData\022\025\n\rre" +
+      "ceptionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016gen" +
+      "erationTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(" +
+      "\005\"\354\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generatio" +
+      "nTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tse" +
+      "qNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006" +
+      " \002(\t\022?\n\010severity\030\007 \001(\0162\'.org.yamcs.proto",
+      "buf.Event.EventSeverity:\004INFO\"1\n\rEventSe" +
+      "verity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002" +
+      "*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STO" +
+      "P\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXE" +
+      "D_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rProtoDataTyp" +
+      "e\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_" +
+      "PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_I" +
+      "NDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017" +
+      "\n\013CMD_HISTORY\020\t2\275\001\n\014YamcsControl\022Q\n\021GetY" +
+      "amcsInstances\022\030.org.yamcs.protobuf.Void\032",
+      "\".org.yamcs.protobuf.YamcsInstances\022Z\n\022G" +
+      "etMissionDatabase\022*.org.yamcs.protobuf.M" +
+      "issionDatabaseRequest\032\030.org.yamcs.protob" +
+      "uf.Void2\307\002\n\030RealtimeParameterService\022J\n\t" +
+      "Subscribe\022#.org.yamcs.protobuf.NamedObje" +
+      "ctList\032\030.org.yamcs.protobuf.Void\022K\n\014Subs" +
+      "cribeAll\022!.org.yamcs.protobuf.StringMess" +
+      "age\032\030.org.yamcs.protobuf.Void\022L\n\013Unsubsc" +
+      "ribe\022#.org.yamcs.protobuf.NamedObjectLis" +
+      "t\032\030.org.yamcs.protobuf.Void\022D\n\016Unsubscri",
+      "beAll\022\030.org.yamcs.protobuf.Void\032\030.org.ya" +
+      "mcs.protobuf.Void2\310\002\n\014ArchiveIndex\022M\n\010Ge" +
+      "tIndex\022 .org.yamcs.protobuf.IndexRequest" +
+      "\032\037.org.yamcs.protobuf.IndexResult\022I\n\006Get" +
+      "Tag\022 .org.yamcs.protobuf.IndexRequest\032\035." +
+      "org.yamcs.protobuf.TagResult\022Q\n\tUpsertTa" +
+      "g\022$.org.yamcs.protobuf.UpsertTagRequest\032" +
+      "\036.org.yamcs.protobuf.ArchiveTag\022K\n\tDelet" +
+      "eTag\022$.org.yamcs.protobuf.DeleteTagReque" +
+      "st\032\030.org.yamcs.protobuf.Void"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -12565,7 +14002,7 @@ public final class Yamcs {
           internal_static_org_yamcs_protobuf_ReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ReplayRequest_descriptor,
-              new java.lang.String[] { "Start", "Stop", "EndAction", "Speed", "Type", "TmPacketFilter", "PpGroupFilter", "ParameterRequest", },
+              new java.lang.String[] { "Start", "Stop", "EndAction", "Speed", "Type", "TmPacketFilter", "PpGroupFilter", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", },
               org.yamcs.protobuf.Yamcs.ReplayRequest.class,
               org.yamcs.protobuf.Yamcs.ReplayRequest.Builder.class);
           internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor =
@@ -12573,11 +14010,43 @@ public final class Yamcs {
           internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor,
-              new java.lang.String[] { "Parameter", "SendRaw", "PerformMonitoring", },
+              new java.lang.String[] { "NameFilter", "SendRaw", "PerformMonitoring", },
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.class,
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ReplayStatus_descriptor =
+          internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(22);
+          internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor,
+              new java.lang.String[] { "NameFilter", },
+              org.yamcs.protobuf.Yamcs.PacketReplayRequest.class,
+              org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder.class);
+          internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor =
+            getDescriptor().getMessageTypes().get(23);
+          internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor,
+              new java.lang.String[] { },
+              org.yamcs.protobuf.Yamcs.EventReplayRequest.class,
+              org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder.class);
+          internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor =
+            getDescriptor().getMessageTypes().get(24);
+          internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor,
+              new java.lang.String[] { },
+              org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class,
+              org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder.class);
+          internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor =
+            getDescriptor().getMessageTypes().get(25);
+          internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor,
+              new java.lang.String[] { "GroupNameFilter", },
+              org.yamcs.protobuf.Yamcs.PpReplayRequest.class,
+              org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder.class);
+          internal_static_org_yamcs_protobuf_ReplayStatus_descriptor =
+            getDescriptor().getMessageTypes().get(26);
           internal_static_org_yamcs_protobuf_ReplayStatus_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ReplayStatus_descriptor,
@@ -12585,7 +14054,7 @@ public final class Yamcs {
               org.yamcs.protobuf.Yamcs.ReplayStatus.class,
               org.yamcs.protobuf.Yamcs.ReplayStatus.Builder.class);
           internal_static_org_yamcs_protobuf_TmPacketData_descriptor =
-            getDescriptor().getMessageTypes().get(23);
+            getDescriptor().getMessageTypes().get(27);
           internal_static_org_yamcs_protobuf_TmPacketData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_TmPacketData_descriptor,
@@ -12593,7 +14062,7 @@ public final class Yamcs {
               org.yamcs.protobuf.Yamcs.TmPacketData.class,
               org.yamcs.protobuf.Yamcs.TmPacketData.Builder.class);
           internal_static_org_yamcs_protobuf_Event_descriptor =
-            getDescriptor().getMessageTypes().get(24);
+            getDescriptor().getMessageTypes().get(28);
           internal_static_org_yamcs_protobuf_Event_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_Event_descriptor,

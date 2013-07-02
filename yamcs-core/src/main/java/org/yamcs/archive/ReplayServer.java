@@ -1,24 +1,20 @@
 package org.yamcs.archive;
 
+import static org.yamcs.api.Protocol.DATA_TO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.Protocol.decode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ppdb.PpDbFactory;
-import org.yamcs.ppdb.PpDefDb;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
-
-
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.HornetQAuthPrivilege;
 import org.yamcs.Privilege;
 import org.yamcs.YConfiguration;
@@ -27,9 +23,17 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.ppdb.PpDbFactory;
+import org.yamcs.ppdb.PpDefDb;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtceproc.XtceDbFactory;
 
-import static org.yamcs.api.Protocol.*;
-import static org.yamcs.protobuf.Yamcs.*;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 /**
  *Yarch replay server based on hornetq
@@ -37,7 +41,7 @@ import static org.yamcs.protobuf.Yamcs.*;
  *
  */
 public class ReplayServer extends AbstractExecutionThreadService {
-    static Logger log=LoggerFactory.getLogger(ReplayServer.class.getName());
+    static Logger log=LoggerFactory.getLogger(ReplayServer.class);
 
     final int MAX_REPLAYS=200;
     final String instance;
@@ -45,7 +49,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
     final YamcsClient msgClient;
 
     AtomicInteger replayCount=new AtomicInteger();
-    
+
     public ReplayServer(String instance) throws HornetQException, YamcsApiException {
         this.instance=instance;
         YamcsSession ys=YamcsSession.newBuilder().build();
@@ -56,7 +60,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
     protected void startUp() {
         Thread.currentThread().setName(this.getClass().getSimpleName()+"["+instance+"]");
     }
-    
+
     @Override
     public void run() {
         try {
@@ -86,7 +90,6 @@ public class ReplayServer extends AbstractExecutionThreadService {
             }
         } catch (Exception e) {
             log.error("Got exception while processing the requests ", e);
-            e.printStackTrace();
         }
     }
 
@@ -100,40 +103,60 @@ public class ReplayServer extends AbstractExecutionThreadService {
             throw new YamcsException("maximum number of replays reached");
         }
         ReplayRequest replayRequest=(ReplayRequest)decode(msg, ReplayRequest.newBuilder());
-        
+
         if( Privilege.usePrivileges ) {
-        	Privilege priv = HornetQAuthPrivilege.getInstance( msg );
-            List<NamedObjectId> invalidParameters = new ArrayList<NamedObjectId>();
-            for( NamedObjectId noi : replayRequest.getParameterRequest().getParameterList() ) {
-            	if( ! priv.hasPrivilege( Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
-            		invalidParameters.add( noi );
-            	}
+            Privilege priv = HornetQAuthPrivilege.getInstance( msg );
+
+            // Check privileges for requested parameters
+            if (replayRequest.hasParameterRequest()) {
+                List<NamedObjectId> invalidParameters = new ArrayList<NamedObjectId>();
+                for( NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList() ) {
+                    if( ! priv.hasPrivilege( Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
+                        invalidParameters.add( noi );
+                    }
+                }
+                if( ! invalidParameters.isEmpty() ) {
+                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidParameters ).build();
+                    log.warn( "Cannot create replay - No privilege for parameters: {}", invalidParameters );
+                    throw new YamcsException("InvalidIdentification", "No privilege", nol);
+                }
             }
-            
-            if( ! invalidParameters.isEmpty() ) {
-            	NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidParameters ).build();
-            	log.warn( "Cannot create replay - No privilege for parameters: {}", invalidParameters );
-                throw new YamcsException("InvalidIdentification", "No privilege", nol);
-            }
-            
-            // Now check for packets.
-            // If no packets specified, assumed to be all packets they have privilege for
-            if( replayRequest.getTmPacketFilterCount() != 0 ) {
+
+            // Check privileges for requested packets
+            // TODO delete right half of if-statement once no longer deprecated
+            if (replayRequest.hasPacketRequest() || replayRequest.getTmPacketFilterCount() > 0) {
+                Collection<String> allowedPackets = priv.getTmPacketNames(instance, MdbMappings.MDB_OPSNAME);
                 List<NamedObjectId> invalidPackets = new ArrayList<NamedObjectId>();
-                Collection<String> allowedPackets = priv.getTmPacketNames( instance, "MDB:OPS Name" );
+    
+                // TODO OLD API, delete this for once no longer deprecated
                 for( NamedObjectId noi : replayRequest.getTmPacketFilterList() ) {
-                	if( ! allowedPackets.contains( noi.getName() ) ) {
-                		invalidPackets.add( noi );
-                	}
+                    if( ! allowedPackets.contains( noi.getName() ) ) {
+                        invalidPackets.add( noi );
+                    }
+                }
+                for (NamedObjectId noi : replayRequest.getPacketRequest().getNameFilterList()) {
+                    if (! allowedPackets.contains(noi.getName())) {
+                        invalidPackets.add(noi);
+                    }
                 }
                 if( ! invalidPackets.isEmpty() ) {
-                	NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidPackets ).build();
-                	log.warn( "Cannot create replay - InvalidIdentification for packets: {}", invalidPackets );
+                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidPackets ).build();
+                    log.warn( "Cannot create replay - InvalidIdentification for packets: {}", invalidPackets );
                     throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
+                }
+    
+                // Even when no filter is specified, limit request to authorised packets only
+                if (replayRequest.getPacketRequest().getNameFilterList().isEmpty()) {
+                    PacketReplayRequest.Builder prr = PacketReplayRequest.newBuilder(replayRequest.getPacketRequest());
+                    for (String allowedPacket : allowedPackets) {
+                        prr.addNameFilter(NamedObjectId.newBuilder().setName(allowedPacket)
+                                        .setNamespace(MdbMappings.MDB_OPSNAME));
+                    }
+                    replayRequest = ReplayRequest.newBuilder(replayRequest).setPacketRequest(prr).build();
                 }
             }
         }
-        
+
         try {
             YConfiguration c=YConfiguration.getConfiguration("yamcs."+instance);
             String mdbsection=c.getString("mdb");
@@ -149,7 +172,6 @@ public class ReplayServer extends AbstractExecutionThreadService {
             msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
         } catch (final Exception e) {
             log.warn("Got exception when creating a PacketReplay object: ", e);
-            e.printStackTrace();
             throw e;
         }
     }
@@ -157,7 +179,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
     public void replayFinished() {
         replayCount.decrementAndGet();
     }
-    
+
     @Override
     public void triggerShutdown() {
         try {

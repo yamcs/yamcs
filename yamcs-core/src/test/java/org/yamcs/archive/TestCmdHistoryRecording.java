@@ -1,6 +1,7 @@
 package org.yamcs.archive;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.yamcs.api.Protocol.decode;
 
 import java.util.concurrent.Semaphore;
@@ -14,11 +15,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.ReplayServer;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
-
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
@@ -27,10 +23,14 @@ import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
 /**
@@ -106,8 +106,9 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         YamcsClient yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
         
+        CommandHistoryReplayRequest chr = CommandHistoryReplayRequest.newBuilder().build();
         ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).
-                    addType(ProtoDataType.CMD_HISTORY).build();
+                    setCommandHistoryRequest(chr).build();
         SimpleString replayServer=Protocol.getYarchReplayControlAddress(ydb.getName());
         StringMessage answer=(StringMessage) yclient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
         

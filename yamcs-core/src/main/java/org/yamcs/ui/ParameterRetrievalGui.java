@@ -12,15 +12,15 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.CharArrayReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.prefs.*;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,16 +40,13 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
-import org.yamcs.xtce.MdbMappings;
-
-
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.Protocol;
@@ -57,8 +54,8 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -69,6 +66,7 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.PetParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.MdbMappings;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -530,8 +528,8 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
 
             ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
             yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            ParameterReplayRequest prr=ParameterReplayRequest.newBuilder().addAllParameter(paramList).build();
-            ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).addType(ProtoDataType.PARAMETER)
+            ParameterReplayRequest prr=ParameterReplayRequest.newBuilder().addAllNameFilter(paramList).build();
+            ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
                 .setParameterRequest(prr).setStart(start).setStop(stop).build();
             
             StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.instance), "createReplay", rr, StringMessage.newBuilder());

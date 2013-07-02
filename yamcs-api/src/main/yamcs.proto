@@ -225,7 +225,7 @@ enum ProtoDataType {
        CMD_HISTORY=9;
 };
 
-//used to reply (concurrently) TM packets, parameters and events
+//used to replay (concurrently) TM packets, parameters and events
 message ReplayRequest {
     //time specification
     optional int64 start=1;
@@ -239,24 +239,42 @@ message ReplayRequest {
     
     //what data to be replayed
     //if PP is requested, the ParameterData message will be used but the data type will be PP
-    repeated ProtoDataType type=5; 
+    repeated ProtoDataType type=5[deprecated=true];
 
     //if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-    repeated NamedObjectId tmPacketFilter=6;
+    repeated NamedObjectId tmPacketFilter=6[deprecated=true];
 
     //if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-    repeated string ppGroupFilter=7; 
+    repeated string ppGroupFilter=7[deprecated=true];
 
-
+    // At least one of the following request types should be added
     optional ParameterReplayRequest parameterRequest=8;
+    optional PacketReplayRequest packetRequest=9;
+    optional EventReplayRequest eventRequest=10;
+    optional CommandHistoryReplayRequest commandHistoryRequest=11;
+    optional PpReplayRequest ppRequest=12;
 }
 
 message ParameterReplayRequest {
-    repeated NamedObjectId parameter=1;
+    repeated NamedObjectId nameFilter=1; // At least 1 filter is required
     optional bool sendRaw=2[default=false];
     optional bool performMonitoring=3[default=false]; //i.e. out of limit checking
 }
 
+message PacketReplayRequest {
+    // No filter, means all packets for which privileges exist, are sent
+    repeated NamedObjectId nameFilter=1;
+}
+
+message EventReplayRequest {
+}
+
+message CommandHistoryReplayRequest {
+}
+
+message PpReplayRequest {
+    repeated string groupNameFilter=1; // At least 1 filter is required
+}
 
 message ReplayStatus {
      enum ReplayState {
