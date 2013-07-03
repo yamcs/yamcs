@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import com.google.protobuf.ByteString;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -8,6 +7,8 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
+
+import com.google.protobuf.ByteString;
 
 /** 
  * Holds the value of a parameter
@@ -215,6 +216,15 @@ public class ParameterValue {
             .setUint32Value(x).build();
     }
     
+    public void setRawSignedLong(long x) {
+        rawValue=Value.newBuilder().setType(Value.Type.SINT64)
+            .setSint64Value(x).build();
+    }
+    
+    public void setRawUnsignedLong(long x) {
+        rawValue=Value.newBuilder().setType(Value.Type.UINT64)
+            .setUint64Value(x).build();
+    }
     
     public void setStringValue(String s) {
         engValue=Value.newBuilder().setType(Value.Type.STRING)
@@ -243,6 +253,16 @@ public class ParameterValue {
     public void setUnsignedIntegerValue(int v) {
         engValue = Value.newBuilder().setType(Value.Type.UINT32)
             .setUint32Value(v).build();
+    }
+    
+    public void setSignedLongValue(long v) {
+        engValue = Value.newBuilder().setType(Value.Type.SINT64)
+            .setSint64Value(v).build();
+    }
+    
+    public void setUnsignedLongValue(long v) {
+        engValue = Value.newBuilder().setType(Value.Type.UINT64)
+            .setUint64Value(v).build();
     }
 
     public void setEngineeringValue(Value ev) {
