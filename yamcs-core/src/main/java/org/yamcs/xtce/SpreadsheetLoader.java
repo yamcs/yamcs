@@ -11,12 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,37 +21,10 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
-import org.yamcs.xtce.AlarmRanges;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.BinaryDataEncoding;
-import org.yamcs.xtce.BinaryParameterType;
-import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.Comparison;
-import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.ContainerEntry;
-import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.DynamicIntegerValue;
-import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.FixedIntegerValue;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerParameterType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.xtce.NameReference.ResolvedAction;
-import org.yamcs.xtce.NumericContextAlarm;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.ParameterInstanceRef;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.PolynomialCalibrator;
-import org.yamcs.xtce.Repeat;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.SplineCalibrator;
-import org.yamcs.xtce.SplinePoint;
-import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
@@ -456,7 +423,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			} else {
 				error("Parameters:"+(i+1)+": unknown parameter type " + engtype);
 			}
-		
+			
+			String units=null;
+			if(cells.length>IDX_PARAM_ENGUNIT) units = cells[IDX_PARAM_ENGUNIT].getContents();
+			if(!"".equals(units) && units != null && ptype instanceof BaseDataType) {
+				UnitType unitType = new UnitType(units);
+				((BaseDataType) ptype).addUnit(unitType);
+			}
+			
 			loadParameterLimits(ptype,cells);
 			
 			//calibrations
