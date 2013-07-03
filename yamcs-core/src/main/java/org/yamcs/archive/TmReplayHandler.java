@@ -2,18 +2,19 @@ package org.yamcs.archive;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.usoctools.XtceUtil;
-import org.yamcs.yarch.Tuple;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.usoctools.XtceUtil;
+import org.yamcs.yarch.Tuple;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
 
 public class TmReplayHandler implements ReplayHandler {
     Set<String> partitions=new HashSet<String>();
@@ -31,20 +32,28 @@ public class TmReplayHandler implements ReplayHandler {
     public void setRequest(ReplayRequest newRequest) throws YamcsException{
         this.request=newRequest;
         partitions.clear();
+        // TODO OLD API, delete this for once deprecated API no longer in use
         for(NamedObjectId pnoi:newRequest.getTmPacketFilterList()) {
-            Integer packetId;
-            if(pnoi.hasNamespace()) {
-                packetId=xtceutil.getPacketId(pnoi.getName(),pnoi.getNamespace());
-            } else {
-                packetId=xtceutil.getPacketId(pnoi.getName());
-            }
-            if(packetId==null) {
-                log.warn("cannot find packetid for "+pnoi);
-                throw new YamcsException("cannot find packetid for "+pnoi);
-            }
-            String part=Integer.toHexString(packetId);
-            partitions.add(part);
+            addPartition(pnoi);
         }
+        for(NamedObjectId pnoi:newRequest.getPacketRequest().getNameFilterList()) {
+            addPartition(pnoi);
+        }
+    }
+    
+    private void addPartition(NamedObjectId pnoi) throws YamcsException {
+        Integer packetId;
+        if(pnoi.hasNamespace()) {
+            packetId=xtceutil.getPacketId(pnoi.getName(),pnoi.getNamespace());
+        } else {
+            packetId=xtceutil.getPacketId(pnoi.getName());
+        }
+        if(packetId==null) {
+            log.warn("cannot find packetid for "+pnoi);
+            throw new YamcsException("cannot find packetid for "+pnoi);
+        }
+        String part=Integer.toHexString(packetId);
+        partitions.add(part);        
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.yamcs;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -12,18 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.usoctools.XtceUtil;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Arrays;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -33,7 +25,13 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import java.security.cert.X509Certificate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.api.YamcsSession;
+import org.yamcs.usoctools.XtceUtil;
+import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 
 /**
@@ -213,7 +211,7 @@ public abstract class Privilege {
 	 */
 	public Collection<String> getTmPacketNames(String yamcsInstance, String namespace) throws ConfigurationException {
 		if( namespace == null ) {
-			namespace = "MDB:OPS Name";
+			namespace = MdbMappings.MDB_OPSNAME;
 		}
 		Collection<String> tl=XtceUtil.getInstance(XtceDbFactory.getInstance(yamcsInstance)).getTmPacketNames( namespace );
 		ArrayList<String> l=new ArrayList<String>();
@@ -235,7 +233,7 @@ public abstract class Privilege {
 	 */
 	public Collection<String> getTmParameterNames(String yamcsInstance, String namespace) throws ConfigurationException {
 		if( namespace == null ) {
-			namespace = "MDB:OPS Name";
+			namespace = MdbMappings.MDB_OPSNAME;
 		}
 		XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 		ArrayList<String> l=new ArrayList<String>();

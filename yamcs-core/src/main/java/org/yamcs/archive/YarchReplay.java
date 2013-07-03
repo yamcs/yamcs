@@ -1,33 +1,27 @@
 package org.yamcs.archive;
 
-import static org.yamcs.api.Protocol.*;
+import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.Protocol.decode;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.ppdb.PpDefDb;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
-
-import com.google.protobuf.MessageLite;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Instant;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -35,6 +29,14 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
+
+import com.google.protobuf.MessageLite;
 
 /**
  * Performs a replay from Yarch to HornetQ. So far supported are: TM packets, PP groups, Events, Parameters and Command History.
@@ -78,7 +80,13 @@ class YarchReplay implements StreamSubscriber, Runnable {
         this.xtceDb=xtceDb;
         this.instance=replayServer.instance;
 
-        if(rr.getTypeList().isEmpty()) throw new YamcsException("no replay data types specified");
+        if (rr.getTypeList().isEmpty() // TODO delete first clause once no longer deprecated
+                        && !rr.hasPacketRequest() && !rr.hasParameterRequest()
+                        && !rr.hasEventRequest() && !rr.hasPpRequest()
+                        && !rr.hasCommandHistoryRequest()) {
+            throw new YamcsException("Empty replay request");
+        }
+
         setRequest(rr);
         ysession=YamcsSession.newBuilder().build();
         yclient=ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
@@ -146,14 +154,16 @@ class YarchReplay implements StreamSubscriber, Runnable {
         }
         
         if (newRequest.getStart()>newRequest.getStop()) {
-            log.warn("throwing new packetexception: stop time has to be grater than start time");
+            log.warn("throwing new packetexception: stop time has to be greater than start time");
             throw new YamcsException("stop has to be greater than start");
         }
 
         currentRequest=newRequest;
         handlers=new HashMap<ProtoDataType,ReplayHandler>();
-        for(ProtoDataType rdp:currentRequest.getTypeList()) {
-            switch(rdp) {
+        
+        // TODO delete this entire For, once API in proto removed, instead of deprecated
+        for (ProtoDataType rdp : currentRequest.getTypeList()) {
+            switch (rdp) {
             case EVENT:
                 handlers.put(rdp, new EventReplayHandler());
                 break;
@@ -163,13 +173,25 @@ class YarchReplay implements StreamSubscriber, Runnable {
             case PP:
                 handlers.put(rdp, new PpReplayHandler(ppdb));
                 break;
-            case PARAMETER:
-                handlers.put(rdp, new ParameterReplayHandler(instance, xtceDb, ppdb));
-                break;
+// Covered by new API
+//            case PARAMETER:
+//                handlers.put(rdp, new ParameterReplayHandler(instance, xtceDb, ppdb));
+//                break;
             case CMD_HISTORY:
                 handlers.put(rdp, new CommandHistoryReplayHandler(instance));
             }
         }
+        
+        if (currentRequest.hasEventRequest())
+            handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
+        if (currentRequest.hasPacketRequest())
+            handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(xtceDb));
+        if (currentRequest.hasPpRequest())
+            handlers.put(ProtoDataType.PP, new PpReplayHandler(ppdb));
+        if (currentRequest.hasParameterRequest())
+            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb, ppdb));
+        if (currentRequest.hasCommandHistoryRequest())
+            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
         
         for(ReplayHandler rh:handlers.values()) {
             rh.setRequest(newRequest);

@@ -1,7 +1,15 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.Protocol.decode;
+
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ChannelException;
@@ -12,39 +20,32 @@ import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterValue;
 import org.yamcs.ProcessedParameterDefinition;
 import org.yamcs.TmProcessor;
-import org.yamcs.archive.PacketWithTime;
-import org.yamcs.ppdb.PpDbFactory;
-import org.yamcs.ppdb.PpDefDb;
-import org.yamcs.xtce.MdbMappings;
-
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-
-
-import com.google.common.util.concurrent.AbstractService;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.archive.PacketWithTime;
+import org.yamcs.ppdb.PpDbFactory;
+import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Instant;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Yamcs.Instant;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.PpReplayRequest;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.Parameter;
 
-import static org.yamcs.api.Protocol.*;
+import com.google.common.util.concurrent.AbstractService;
 
 
 /**
@@ -124,20 +125,21 @@ public class YamcsCascading extends AbstractService implements MessageHandler, A
 
             ReplayRequest.Builder rrbuilder=ReplayRequest.newBuilder().setStart(start).setStop(stop).
             setEndAction(endAction).setSpeed(speed);
-            boolean pp=false, tm=false;
 
+            PacketReplayRequest.Builder packetRequestBuilder = PacketReplayRequest.newBuilder();
+            PpReplayRequest.Builder ppRequestBuilder = PpReplayRequest.newBuilder();
             for(String packet:packets) {
                 if(packet.startsWith("PP_")) {
-                    rrbuilder.addPpGroupFilter(packet);
-                    pp=true;
+                    ppRequestBuilder.addGroupNameFilter(packet);
                 } else {
-                    rrbuilder.addTmPacketFilter(NamedObjectId.newBuilder().setName(packet).setNamespace(MdbMappings.MDB_OPSNAME).build());
-                    tm=true;
+                    packetRequestBuilder.addNameFilter(NamedObjectId.newBuilder().setName(packet).setNamespace(MdbMappings.MDB_OPSNAME));
                 }
             }
             
-            if(tm)rrbuilder.addType(ProtoDataType.TM_PACKET);
-            if(pp)rrbuilder.addType(ProtoDataType.PP);
+            if (!packetRequestBuilder.getNameFilterList().isEmpty())
+                rrbuilder.setPacketRequest(packetRequestBuilder);
+            if (!ppRequestBuilder.getGroupNameFilterList().isEmpty())
+                rrbuilder.setPpRequest(ppRequestBuilder);
             
             replayRequest=rrbuilder.build();
             StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(archiveInstance),

@@ -25,18 +25,17 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsConnector;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.utils.TimeEncoding;
 
 public class YamcsEventReceiver implements ConnectionListener, EventReceiver, MessageHandler, SessionFailureListener {
     EventViewer eventViewer;
@@ -200,8 +199,9 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
                 YamcsClient msgClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).
                     build();
                
-                ReplayRequest crr=ReplayRequest.newBuilder().addType(ProtoDataType.EVENT).setStart(params.start).setStop(params.stop).
-                        setEndAction(EndAction.QUIT).build();
+                EventReplayRequest err=EventReplayRequest.newBuilder().build();
+                ReplayRequest crr=ReplayRequest.newBuilder().setStart(params.start).setStop(params.stop).
+                        setEndAction(EndAction.QUIT).setEventRequest(err).build();
                 
                 SimpleString replayServer=Protocol.getYarchReplayControlAddress(yconnector.getConnectionParams().getInstance());
                 StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", crr, StringMessage.newBuilder());
