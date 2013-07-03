@@ -6,21 +6,20 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ppdb.PpDefDb;
-import org.yamcs.yarch.Tuple;
-
-import com.google.protobuf.MessageLite;
-
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.yarch.Tuple;
+
+import com.google.protobuf.MessageLite;
 
 public class PpReplayHandler implements ReplayHandler {
     Set<String>currentGroups=new HashSet<String>();
     final PpDefDb ppdb;
     ReplayRequest request;
-    final static Logger log=LoggerFactory.getLogger(PpReplayHandler.class.getName());
+    final static Logger log=LoggerFactory.getLogger(PpReplayHandler.class);
     
     public PpReplayHandler(PpDefDb ppdb) {
         this.ppdb=ppdb;
@@ -30,7 +29,8 @@ public class PpReplayHandler implements ReplayHandler {
     public void setRequest(ReplayRequest newRequest) {
         this.request=newRequest;
         currentGroups.clear();
-        currentGroups.addAll(newRequest.getPpGroupFilterList());
+        currentGroups.addAll(newRequest.getPpGroupFilterList()); // TODO delete once no longer deprecated
+        currentGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
     }
 
     @Override
@@ -50,7 +50,7 @@ public class PpReplayHandler implements ReplayHandler {
             else sb.append(", ");
             sb.append("'").append(g).append("'");
         }
-        sb.append(")");
+        sb.append(") and ");
         XtceTmReplayHandler.appendTimeClause(sb, request);
         return sb.toString();
     }
@@ -78,7 +78,5 @@ public class PpReplayHandler implements ReplayHandler {
 
     @Override
     public void reset() {
-        // TODO Auto-generated method stub
-        
     }
 }

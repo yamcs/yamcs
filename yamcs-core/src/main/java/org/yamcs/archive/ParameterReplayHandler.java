@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
@@ -20,25 +21,24 @@ import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.ProcessedParameterDefinition;
 import org.yamcs.TmProcessor;
+import org.yamcs.YamcsException;
 import org.yamcs.ppdb.PpDefDb;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.tctm.AbstractTcTmService;
 import org.yamcs.tctm.TmPacketProvider;
-import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.yarch.Tuple;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
-import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer {
     final XtceDb xtcedb;
@@ -77,7 +77,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         tmPartitions.clear();
 
         //find all the packets where a given parameter appears
-        List<NamedObjectId> plist=request.getParameterRequest().getParameterList();
+        List<NamedObjectId> plist=request.getParameterRequest().getNameFilterList();
         if(plist.isEmpty()) throw new YamcsException("Cannot create a replay with an empty parameter list");
 
         MyTcTmService tctms=new MyTcTmService();
@@ -150,7 +150,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
                 else sb.append(", ");
                 sb.append("'").append(pn).append("'");
             }
-            sb.append(")");
+            sb.append(") and ");
 
             XtceTmReplayHandler.appendTimeClause(sb, request);
         }
@@ -165,7 +165,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
                 else sb.append(", ");
                 sb.append("'").append(g).append("'");
             }
-            sb.append(")");
+            sb.append(") and ");
             XtceTmReplayHandler.appendTimeClause(sb, request);
         }
         if(hasTm && hasPp) sb.append(") USING gentime");
