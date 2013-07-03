@@ -9,8 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
@@ -33,9 +30,8 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SpreadsheetLoader;
-import org.yamcs.xtce.XtceLoader;
-
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.XtceLoader;
 
 
 public class XtceDbFactory {
@@ -75,18 +71,24 @@ public class XtceDbFactory {
         boolean loadSerialized = true;
         String filename = loaderTree.getConfigName()+".xtce";
 
-        try {
-            RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
-            if(loaderTree.neesUpdate(raf)) {
+        if (new File(getFullName(filename) + ".serialized").exists()) {
+            try {
+                RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
+                if(loaderTree.neesUpdate(raf)) {
+                    loadSerialized = false;
+                }
+            } catch (IOException e) {
+                if (new File(getFullName(filename) + ".serialized").exists()) {
+                    log.warn("can't check the consistency date of the serialized database: ", e);
+                }
                 loadSerialized = false;
+            } catch (ConfigurationException e) {
+                e.printStackTrace();
+                log.error("Cannot check the consistency date of the serialized database: ", e);
+                System.exit(-1);
             }
-        } catch (IOException e) {
-            log.warn("can't check the consistency date of the serialized database: ", e);
+        } else {
             loadSerialized = false;
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-            log.error("Cannot check the consistency date of the serialized database: ", e);
-            System.exit(-1);
         }
 
         if (loadSerialized) {

@@ -29,20 +29,20 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-
 import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.utils.CommandHistoryFormatter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.utils.CommandHistoryFormatter;
+import org.yamcs.utils.TimeEncoding;
 
 
 /**
@@ -142,8 +142,9 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 			    ycd.instance=archiveInstance;
 			    ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
 			    yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-			    ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).addType(ProtoDataType.CMD_HISTORY)
-                    .setStart(startInstant).setStop(stopInstant);
+			    CommandHistoryReplayRequest chr = CommandHistoryReplayRequest.newBuilder().build();
+			    ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
+                    .setStart(startInstant).setStop(stopInstant).setCommandHistoryRequest(chr);
                
 			    StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.instance), "createReplay", rr.build(), StringMessage.newBuilder());
 			    SimpleString replayAddress=new SimpleString(answer.getMessage());

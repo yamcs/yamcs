@@ -1,5 +1,7 @@
 package org.yamcs.xtceproc;
 
+import static org.junit.Assert.assertEquals;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -12,13 +14,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtceproc.XtceDbFactory;
-
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-
-
-import static org.junit.Assert.*;
 
 public class TestXtceTmExtractor {
 
@@ -52,12 +49,15 @@ public class TestXtceTmExtractor {
         assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", pv.getParameter().getQualifiedName());
         assertEquals(tmGenerator.pIntegerPara11_6, pv.getEngValue().getUint32Value());
        
-        
         pv=received.get(11);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara11_7", pv.getParameter().getQualifiedName());
         assertEquals(tmGenerator.pIntegerPara11_7, pv.getEngValue().getUint32Value());
-        
+
         pv=received.get(12);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_8", pv.getParameter().getQualifiedName());
+        assertEquals(tmGenerator.pIntegerPara11_8, pv.getEngValue().getUint64Value());
+        
+        pv=received.get(13);
         assertEquals("/REFMDB/SUBSYS1/StringPara11_5", pv.getParameter().getQualifiedName());
         assertEquals(tmGenerator.pStringPara11_5, pv.getEngValue().getStringValue());
     }

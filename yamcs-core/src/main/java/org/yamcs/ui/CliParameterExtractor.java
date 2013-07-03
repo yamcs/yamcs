@@ -16,8 +16,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.yamcs.xtce.MdbMappings;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -34,6 +32,7 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.MdbMappings;
 
 /**
  * Command line tool to retrieve parameters
@@ -45,7 +44,7 @@ public class CliParameterExtractor {
     
     static void printUsageAndExit(String error) {
         if(error!=null) System.err.println(error);
-        System.err.println("Usage: parameter-retrieval.sh [OPTIONS] yamcs-url startTime stopTime [parameter_opsnames | -f file_with_parameters]");
+        System.err.println("Usage: parameter-extractor.sh [OPTIONS] yamcs-url startTime stopTime [parameter_opsnames | -f file_with_parameters]");
         System.err.println("The yamcs-url has to contain the archive instance");
         System.err.println("OPTIONS:");
         System.err.println("         \t-a      print only those lines where all parameters are set");
@@ -63,7 +62,7 @@ public class CliParameterExtractor {
     public static ParameterReplayRequest getRequest(String... params) {
         ParameterReplayRequest.Builder prr=ParameterReplayRequest.newBuilder();
         for(String p:params) {
-            prr.addParameter(NamedObjectId.newBuilder().setName(p).setNamespace(MdbMappings.MDB_OPSNAME).build());
+            prr.addNameFilter(NamedObjectId.newBuilder().setName(p).setNamespace(MdbMappings.MDB_OPSNAME));
         }
         return prr.build();
     }
@@ -112,26 +111,27 @@ public class CliParameterExtractor {
         if(args.length<k+4)printUsageAndExit("too few arguments");
       
         YamcsConnectData ycd=YamcsConnectData.parse(args[k++]);
-        if(ycd.getInstance()==null) printUsageAndExit("The yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
+        if(ycd.getInstance()==null) printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
         
         TimeEncoding.setUp();
         
         long start=TimeEncoding.parse(args[k++]);
         long stop=TimeEncoding.parse(args[k++]);
         ParameterReplayRequest prr=null;
+        
         if("-f".equals(args[k])) {
             prr=ParameterReplayRequest.newBuilder()
-                .addAllParameter(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(args[k+1]))))
+                .addAllNameFilter(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(args[k+1]))))
                 .build();
         } else {
             prr=getRequest(Arrays.copyOfRange(args, k, args.length));
         }
         
         ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-            .addType(ProtoDataType.PARAMETER).setParameterRequest(prr)
+            .setParameterRequest(prr)
             .setStart(start).setStop(stop).build();
       
-        final ParameterFormatter pf=new ParameterFormatter(new BufferedWriter(new PrintWriter(System.out)), prr.getParameterList());
+        final ParameterFormatter pf=new ParameterFormatter(new BufferedWriter(new PrintWriter(System.out)), prr.getNameFilterList());
         pf.setPrintRaw(printRaw);
         pf.setPrintTime(printTime);
         pf.setPrintUnique(printUnique);

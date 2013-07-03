@@ -11,8 +11,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.yamcs.xtce.MdbMappings;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -21,17 +19,18 @@ import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.PacketFormatter;
 import org.yamcs.utils.TimeEncoding;
-
-import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.xtce.MdbMappings;
 
 /**
- * Command line tool to retrieve parameters
+ * Command line tool to retrieve packets
  * @author nm
  *
  */
@@ -43,7 +42,7 @@ public class CliPacketDump {
         System.err.println(" -wc  print packets without CCSDS header.");
         System.err.println(" -p   print packets with a fake 32 bytes pacts header and without CCSDS header.");
         System.err.println(" -oh  print only the header of the packets, not the body");
-        System.err.println("\nExample:\n yarch-raw-packet-dump.sh yamcs://localhost/yops 2007-06-02T18:32:01 2007-12-31T23:59:59 \"EUTEF_INST_EUTEMP_HK_EUTEMP EUTEF_Tlm_Pkt_HK_DHPU\"");
+        System.err.println("\nExample:\n packet-dump.sh yamcs://localhost/yops 2007-06-02T18:32:01 2007-12-31T23:59:59 \"EUTEF_INST_EUTEMP_HK_EUTEMP EUTEF_Tlm_Pkt_HK_DHPU\"");
         System.exit(-1);
     }
     
@@ -74,11 +73,14 @@ public class CliPacketDump {
                 packetFormatter.setWithoutCcsds(true);
                 continue;
             }
+            if(!args[argcnt].startsWith("-")) {
+                break;
+            }
         }
-        if((args.length-argcnt)<4) printUsageAndExit("too few arguments");
+        if((args.length-argcnt)<3) printUsageAndExit("too few arguments");
 
         YamcsConnectData ycd=YamcsConnectData.parse(args[argcnt++]);
-        if(ycd.getInstance()==null) printUsageAndExit("The yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
+        if(ycd.getInstance()==null) printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
 
         TimeEncoding.setUp();
         
@@ -87,12 +89,13 @@ public class CliPacketDump {
         stop = TimeEncoding.parse(args[argcnt++]);
 
         ReplayRequest.Builder rrb=ReplayRequest.newBuilder();
-        rrb.addType(ProtoDataType.TM_PACKET);
+        
+        PacketReplayRequest.Builder prrb=PacketReplayRequest.newBuilder();
         while(argcnt<args.length) {
-            rrb.addTmPacketFilter(NamedObjectId.newBuilder().setName(args[argcnt++]).setNamespace(MdbMappings.MDB_OPSNAME).build());
+            prrb.addNameFilter(NamedObjectId.newBuilder().setName(args[argcnt++]).setNamespace(MdbMappings.MDB_OPSNAME));
         }
-        rrb.setEndAction(EndAction.STOP).setStart(start).setStop(stop).build();
-      
+        
+        rrb.setPacketRequest(prrb).setEndAction(EndAction.STOP).setStart(start).setStop(stop);
         
         YamcsSession ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
         YamcsClient yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
@@ -119,7 +122,6 @@ public class CliPacketDump {
                 } catch (Exception e) {
                     System.err.println("cannot decode packet message"+e);
                 }
-
             }
         });
         yclient.executeRpc(packetReplayAddress, "start", null, null);

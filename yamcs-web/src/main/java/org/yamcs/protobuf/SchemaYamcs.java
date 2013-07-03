@@ -2592,6 +2592,18 @@ public final class SchemaYamcs
                 if(message.hasParameterRequest())
                     output.writeObject(8, message.getParameterRequest(), org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.WRITE, false);
 
+                if(message.hasPacketRequest())
+                    output.writeObject(9, message.getPacketRequest(), org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.WRITE, false);
+
+                if(message.hasEventRequest())
+                    output.writeObject(10, message.getEventRequest(), org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.WRITE, false);
+
+                if(message.hasCommandHistoryRequest())
+                    output.writeObject(11, message.getCommandHistoryRequest(), org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.WRITE, false);
+
+                if(message.hasPpRequest())
+                    output.writeObject(12, message.getPpRequest(), org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.ReplayRequest message)
             {
@@ -2658,6 +2670,22 @@ public final class SchemaYamcs
                             builder.setParameterRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.ParameterReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.MERGE));
 
                             break;
+                        case 9:
+                            builder.setPacketRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.MERGE));
+
+                            break;
+                        case 10:
+                            builder.setEventRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.MERGE));
+
+                            break;
+                        case 11:
+                            builder.setCommandHistoryRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.MERGE));
+
+                            break;
+                        case 12:
+                            builder.setPpRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2706,6 +2734,10 @@ public final class SchemaYamcs
                 case 6: return "tmPacketFilter";
                 case 7: return "ppGroupFilter";
                 case 8: return "parameterRequest";
+                case 9: return "packetRequest";
+                case 10: return "eventRequest";
+                case 11: return "commandHistoryRequest";
+                case 12: return "ppRequest";
                 default: return null;
             }
         }
@@ -2725,6 +2757,10 @@ public final class SchemaYamcs
             fieldMap.put("tmPacketFilter", 6);
             fieldMap.put("ppGroupFilter", 7);
             fieldMap.put("parameterRequest", 8);
+            fieldMap.put("packetRequest", 9);
+            fieldMap.put("eventRequest", 10);
+            fieldMap.put("commandHistoryRequest", 11);
+            fieldMap.put("ppRequest", 12);
         }
     }
 
@@ -2739,8 +2775,8 @@ public final class SchemaYamcs
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ParameterReplayRequest message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Yamcs.NamedObjectId parameter : message.getParameterList())
-                    output.writeObject(1, parameter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId nameFilter : message.getNameFilterList())
+                    output.writeObject(1, nameFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
                 if(message.hasSendRaw())
                     output.writeBool(2, message.getSendRaw(), false);
@@ -2786,7 +2822,7 @@ public final class SchemaYamcs
                         case 0:
                             return;
                         case 1:
-                            builder.addParameter(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+                            builder.addNameFilter(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
                         case 2:
@@ -2835,7 +2871,7 @@ public final class SchemaYamcs
         {
             switch(number)
             {
-                case 1: return "parameter";
+                case 1: return "nameFilter";
                 case 2: return "sendRaw";
                 case 3: return "performMonitoring";
                 default: return null;
@@ -2849,9 +2885,441 @@ public final class SchemaYamcs
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("parameter", 1);
+            fieldMap.put("nameFilter", 1);
             fieldMap.put("sendRaw", 2);
             fieldMap.put("performMonitoring", 3);
+        }
+    }
+
+    public static final class PacketReplayRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId nameFilter : message.getNameFilterList())
+                    output.writeObject(1, nameFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.PacketReplayRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.PacketReplayRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Yamcs.PacketReplayRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addNameFilter(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "nameFilter";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("nameFilter", 1);
+        }
+    }
+
+    public static final class EventReplayRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException
+            {
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.EventReplayRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.EventReplayRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Yamcs.EventReplayRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+        }
+    }
+
+    public static final class CommandHistoryReplayRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException
+            {
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+        }
+    }
+
+    public static final class PpReplayRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException
+            {
+                for(String groupNameFilter : message.getGroupNameFilterList())
+                    output.writeString(1, groupNameFilter, true);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.PpReplayRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.PpReplayRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Yamcs.PpReplayRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addGroupNameFilter(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "groupNameFilter";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("groupNameFilter", 1);
         }
     }
 

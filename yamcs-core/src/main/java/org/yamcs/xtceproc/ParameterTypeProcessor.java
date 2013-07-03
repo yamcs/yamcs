@@ -3,13 +3,13 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
-
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
+import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
@@ -18,7 +18,6 @@ import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
-import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 
 
 public class ParameterTypeProcessor {
@@ -156,11 +155,17 @@ public class ParameterTypeProcessor {
         } else if(calValue instanceof Float) {
             longCalValue=(long)((Float)calValue).floatValue();
         }
-
-        if(ipt.isSigned())
-            pv.setSignedIntegerValue((int)longCalValue);
-        else 
-            pv.setUnsignedIntegerValue((int)longCalValue);
+        if (ipt.getEncoding().getSizeInBits() <= 32) {
+            if(ipt.isSigned())
+                pv.setSignedIntegerValue((int)longCalValue);
+            else
+                pv.setUnsignedIntegerValue((int)longCalValue);
+        } else {
+            if(ipt.isSigned())
+                pv.setSignedLongValue(longCalValue);
+            else
+                pv.setUnsignedLongValue(longCalValue);
+        }
 
         //check if it out of range
         return pv;

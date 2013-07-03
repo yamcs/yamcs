@@ -4,12 +4,11 @@ package org.yamcs.xtceproc;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ItemIdPacketConsumerStruct;
 import org.yamcs.ParameterValue;
-
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -25,7 +24,7 @@ import org.yamcs.xtce.XtceDb;
  */
 
 public class XtceTmExtractor {
-	Logger log=LoggerFactory.getLogger(this.getClass().getName());
+	private static final Logger log=LoggerFactory.getLogger(XtceTmExtractor.class);
 	protected final Subscription subscription;
 	private ProcessingStatistics stats=new ProcessingStatistics();
 
@@ -39,7 +38,6 @@ public class XtceTmExtractor {
 	 * @param xtcedb
 	 */
 	public XtceTmExtractor(XtceDb xtcedb) {
-		log=LoggerFactory.getLogger(this.getClass().getName());
 		this.xtcedb=xtcedb;
 		this.subscription=new Subscription(xtcedb);
 		rootContainer=xtcedb.getRootSequenceContainer();
@@ -69,16 +67,11 @@ public class XtceTmExtractor {
 	}
 	
 	/**
-	 * Extract one packets
+	 * Extract one packet
 	 *
 	 */
-    public void processPacket(ByteBuffer bb, long generationTime){
+    public void processPacket(ByteBuffer bb, long generationTime) {
 	    try {
-	        //we only support packets that have ccsds secondary header
-	        if(bb.capacity()<16) {
-	            log.warn("packet smaller than 16 bytes has been received size="+(bb.capacity())+" content:"+StringConvertors.byteBufferToHexString(bb));
-	            return;
-	        }
 	        paramResult=new ArrayList<ParameterValue>();
 	        containerResult=new ArrayList<SequenceContainer>();
 	        synchronized(subscription) {
@@ -92,10 +85,9 @@ public class XtceTmExtractor {
 	        }
 	    } catch (Exception e) {
 	        log.error("got exception in tmextractor ", e);
-	        e.printStackTrace();
 	    }
 	}
-	
+    
 	public void resetStatistics() {
 		stats.reset();
 	}
