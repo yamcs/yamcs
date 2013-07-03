@@ -1,4 +1,9 @@
 Version 0.24.0
+- Slightly modified the structure of different types of ReplayRequests to be more consistent
+- Added XTCE support for extraction of 64-bit integers
+- Fixed a bug with the extraction of some 3-byte integers
+- Add initial support for XTCE eng units in spreadsheet
+- Clean-up some code
 
 
 Version 0.23.5 Released 04-June-2013
