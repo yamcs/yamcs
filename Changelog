@@ -1,3 +1,9 @@
+Version 0.24.0
+
+
+Version 0.23.5 Released 04-June-2013
+- fix typos in the user manual
+
 Version 0.23.4 Released 08-May-2013
 - implemented some workaround for archive browser in java 7
 - read the dates in UTC-TAI.history file in english no matter what the user.language property is
