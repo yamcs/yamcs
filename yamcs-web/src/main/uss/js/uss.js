@@ -172,9 +172,11 @@ USS.parseTextStyle=function(e) {
     }
     var bold= ($("IsBold:first", e).text().toLowerCase() === 'true');
     if(bold)  ts.fontWeight="bold";
-    var italic= ($("IsITalic:first", e).text().toLowerCase() === 'true');
+    var italic= ($("IsItalic:first", e).text().toLowerCase() === 'true');
     if(italic)  ts.fontStyle="italic";
-    ts.color=USS.parseColor($(e).children('Color')[0]);
+    var underline= ($("IsUnderlined:first", e).text().toLowerCase() === 'true');
+    if(underline) ts.textDecoration="underline";
+    ts.fill=USS.parseColor($(e).children('Color')[0]);
     return ts;
 }
 
