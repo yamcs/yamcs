@@ -96,16 +96,12 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	
 	@Override
     public boolean canProvide(NamedObjectId paraId) {
-		if(paraId.hasNamespace()) {
-			return (xtcedb.getParameter(paraId.getNamespace(), paraId.getName())!=null);
-		} else { 
-			return (xtcedb.getParameter(paraId.getName())!=null);
-		}
+	    return xtcedb.getParameter(paraId) != null;
 	}
 	
 	@Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-		Parameter p=paraId.hasNamespace()?xtcedb.getParameter(paraId.getNamespace(), paraId.getName()):xtcedb.getParameter(paraId.getName());
+		Parameter p = xtcedb.getParameter(paraId);
 		if(p==null) throw new InvalidIdentification(paraId);
 		return p;
 	}
