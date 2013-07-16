@@ -3,9 +3,11 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterProvider;
@@ -20,6 +22,7 @@ import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+
 
 /**
  * 
@@ -124,7 +127,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	        tmExtractor.processPacket(bb, pwrt.getGenerationTime());
 	        
 	        ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();
-	        ArrayList<SequenceContainer> containerResult=tmExtractor.getContainerResult();
+	        ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
 	        
 	        if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
 	            //careful out of the synchronized block in order to avoid dead locks 

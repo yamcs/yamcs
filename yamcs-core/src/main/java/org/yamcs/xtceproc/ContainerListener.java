@@ -2,7 +2,7 @@ package org.yamcs.xtceproc;
 
 import java.util.List;
 
-import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.ContainerExtractionResult;
 
 /**
  * Used together with the XtceTmProcessor to find out which containers a specific data packet is representing
@@ -10,5 +10,5 @@ import org.yamcs.xtce.SequenceContainer;
  *
  */
 public interface ContainerListener {
-    public abstract void update(List<SequenceContainer> c);
+    public abstract void update(List<ContainerExtractionResult> c);
 }

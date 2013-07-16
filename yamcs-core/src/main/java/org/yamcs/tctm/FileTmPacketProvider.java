@@ -2,14 +2,14 @@ package org.yamcs.tctm;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.tctm.TmPacketProvider;
+import org.yamcs.protobuf.Yamcs.EndAction;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
-import org.yamcs.protobuf.Yamcs.EndAction;
 
 /**
  * Plays files in pacts format, hrdp format or containing raw ccsds packets.
@@ -145,7 +145,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 	}
 	@Override
     public String getDetailedStatus() {
-		return "Playing file "+fileName+", endAction="+endAction+" delayBetweenPackets="+delayBetweenPackets+" packetcound="+packetcount;
+		return "Playing file "+fileName+", endAction="+endAction+" delayBetweenPackets="+delayBetweenPackets+" packetcount="+packetcount;
 	}
 
     @Override

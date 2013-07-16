@@ -24,13 +24,13 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class RefMdbPacketGenerator extends AbstractService implements TmPacketProvider {
     TmProcessor tmProcessor;
-    final int headerLength=16;
-    final int pkt1Length=3;
-    final int pkt11Length=headerLength+pkt1Length+56;
-    final int pkt12Length=headerLength+pkt1Length+7;
-    final int pkt13Length=headerLength+pkt1Length+100;
-    final int pkt14Length=headerLength+pkt1Length+100;
-    final int pkt15Length=headerLength+pkt1Length+50;
+    public final int headerLength=16;
+    public final int pkt1Length=headerLength+3;
+    public final int pkt11Length=pkt1Length+56;
+    public final int pkt12Length=pkt1Length+7;
+    public final int pkt13Length=pkt1Length+100;
+    public final int pkt14Length=pkt1Length+100;
+    public final int pkt15Length=pkt1Length+50;
     
     //raw values of parameters 
     public volatile short pIntegerPara1_1=5;
@@ -141,7 +141,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     private void fill_PKT11(ByteBuffer bb) {
         fill_PKT1(bb, 1);
-        int offset=headerLength+pkt1Length;
+        int offset=pkt1Length;
         bb.position(offset);
         bb.put(pIntergerPara11_1);
         bb.putShort(pFloatPara11_2);
@@ -162,7 +162,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     
     private void fill_PKT13(ByteBuffer bb) {
         fill_PKT1(bb, 3);
-        int offset=headerLength+pkt1Length;
+        int offset=pkt1Length;
         bb.position(offset);
         
         putFixedStringParam(bb, pFixedStringPara13_1, 16);
@@ -179,7 +179,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     
     private void fill_PKT14(ByteBuffer bb) {
         fill_PKT1(bb, 4);
-        int offset=headerLength+pkt1Length;
+        int offset=pkt1Length;
         bb.position(offset);
         
         // Floats in strings
@@ -193,7 +193,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     
     private void fill_PKT15(ByteBuffer bb) {
         fill_PKT1(bb, 5);
-        int offset=headerLength+pkt1Length;
+        int offset=pkt1Length;
         bb.position(offset);
         
         // Integers in strings
