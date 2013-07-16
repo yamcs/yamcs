@@ -57,7 +57,7 @@ public class XtceTmExtractor {
 	}
 
 	/**
-	 * adds all parameters to the subscription
+	 * Adds all containers and parameters to the subscription
 	 */
     public void startProvidingAll() {
 	    subscription.addAll(rootContainer);
@@ -66,7 +66,7 @@ public class XtceTmExtractor {
     public void stopProviding(Parameter param) {
 		//TODO 2.0 do something here
 	}
-	
+    
 	/**
 	 * Extract one packet
 	 *
@@ -102,6 +102,10 @@ public class XtceTmExtractor {
         synchronized(subscription) {
             subscription.addSequenceContainer(sequenceContainer);
         }
+    }
+    
+    public void stopProviding(SequenceContainer sequenceContainer) {
+        //TODO
     }
     
 	public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {

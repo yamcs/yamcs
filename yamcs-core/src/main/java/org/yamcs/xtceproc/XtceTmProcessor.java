@@ -8,38 +8,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.ContainerProvider;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
-
-import com.google.common.util.concurrent.AbstractService;
-
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * 
- * Does the job of getting packets and transforming them into parameters which are then sent to the 
+ * Does the job of getting containers and transforming them into parameters which are then sent to the 
  *  parameter request manager for the distribution to the requesters.
  * 
- * Relies on {@link XtceTmExtractor} for extracting the parameters out of packets
+ * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
  * 
  *  @author mache
  * 
  */
 
-public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider {
-	Logger log=LoggerFactory.getLogger(this.getClass().getName());
-	private ParameterListener parameterRequestManager;
-	private ContainerListener containerListener;
-	
+public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
+
+    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    private ParameterListener parameterRequestManager;
+    private ContainerListener containerRequestManager;
 	
 	private final Channel channel;
 	public final XtceDb xtcedb;
@@ -54,8 +53,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	
 	/**
 	 * Creates a TmProcessor to be used in "standalone" mode, outside of any channel.
-	 * @param p
-	 * @param xtcedb
 	 */
 	public XtceTmProcessor(XtceDb xtcedb) {
 		log=LoggerFactory.getLogger(this.getClass().getName());
@@ -69,8 +66,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	    this.parameterRequestManager=p;
 	}
 
+	@Override
 	public void setContainerListener(ContainerListener c) {
-	    this.containerListener=c;
+	    this.containerRequestManager=c;
 	}
 
 	/**
@@ -83,7 +81,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public void startProviding(Parameter param) { 
 	    tmExtractor.startProviding(param);
 	}
-
+	
 	/**
 	 * adds all parameters to the subscription
 	 */
@@ -118,12 +116,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
 	    try {
 	        ByteBuffer bb=pwrt.bb;
-
-	        //we only support packets that have ccsds secondary header
-	        if(bb.capacity()<16) {
-	            log.warn("packet smaller than 16 bytes has been received size="+(bb.capacity())+" content:"+StringConvertors.byteBufferToHexString(bb));
-	            return;
-	        }
 	        tmExtractor.processPacket(bb, pwrt.getGenerationTime());
 	        
 	        ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();
@@ -136,14 +128,12 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	            parameterRequestManager.update(paramResult);
 	        }
 	        
-	        if((containerListener!=null) && (containerResult.size()>0)) {
-	            containerListener.update(containerResult);
+	        if((containerRequestManager!=null) && (containerResult.size()>0)) {
+	            containerRequestManager.update(containerResult);
 	        }
-	        
 	        
 	    } catch (Exception e) {
 	        log.error("got exception in tmprocessor ", e);
-	        e.printStackTrace();
 	    }
 	}
 	
@@ -161,10 +151,39 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 		return tmExtractor.getStatistics();
 	}
 
-
-    public void startProviding(SequenceContainer sequenceContainer) {
-        tmExtractor.startProviding(sequenceContainer);
+    @Override
+    public boolean canProvideContainer(NamedObjectId containerId) {
+        return xtcedb.getSequenceContainer(containerId) != null;
     }
+	
+    @Override
+	public void startProviding(SequenceContainer container) {
+        tmExtractor.startProviding(container);
+    }
+    
+    @Override
+    public void stopProviding(SequenceContainer container) {
+        tmExtractor.stopProviding(container);
+    }
+
+    @Override
+    public String getDetailedStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void startProvidingAllContainers() {
+        tmExtractor.startProvidingAll();
+    }
+
+    @Override
+    public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
+        SequenceContainer c = xtcedb.getSequenceContainer(containerId);
+        if(c==null) throw new InvalidIdentification(containerId);
+        return c;
+    }
+
     /*
 	public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {
 	    synchronized(subscription) {
@@ -190,11 +209,4 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     protected void doStop() {
         notifyStopped();
     }
-
-    @Override
-    public String getDetailedStatus() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
