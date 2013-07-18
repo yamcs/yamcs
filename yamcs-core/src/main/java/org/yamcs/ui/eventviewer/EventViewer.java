@@ -3,8 +3,8 @@ package org.yamcs.ui.eventviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -12,11 +12,13 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
@@ -28,31 +30,53 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-
-
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnectDialog;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.utils.TimeEncoding;
+
+import com.csvreader.CsvWriter;
 
 public class EventViewer extends JFrame implements ActionListener, ItemListener, MenuListener, ConnectionListener {
-    static Logger log= LoggerFactory.getLogger(YamcsConnector.class);
+    static Logger log= LoggerFactory.getLogger(EventViewer.class);
     // colors taken from USS configuration
     final Color                                 iconColorGreen         = new Color(0x86B78A);
     final Color                                 iconColorRed           = new Color(0xB88687);
@@ -177,7 +201,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
 
-        JMenuItem menuItem = new JMenuItem("Connect");
+        JMenuItem menuItem = new JMenuItem("Connect to Yamcs...");
         menuItem.addActionListener(this);
         menuItem.setActionCommand("connect");
         menu.add(menuItem);
@@ -190,13 +214,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         miRetrievePast.setEnabled(false);
         menu.addSeparator();
 
-        menuItem = new JMenuItem("New", KeyEvent.VK_N);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(this);
-        menuItem.setActionCommand("new");
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Save As ...", KeyEvent.VK_S);
+        menuItem = new JMenuItem("Save As...", KeyEvent.VK_S);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(this);
         menuItem.setActionCommand("save");
@@ -234,10 +252,18 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         viewMenu.add(miAutoScroll);
 
         viewMenu.addSeparator();
-
-        populateViewMenu();
+        menuItem = new JMenuItem("Clear", KeyEvent.VK_C);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+        menuItem.addActionListener(this);
+        menuItem.setActionCommand("clear");
+        viewMenu.add(menuItem);
+        
         menuBar.add(viewMenu);
 
+
+        populateViewMenu();
+
+        viewMenu.addSeparator();
         //
         // frame content
         //
@@ -307,9 +333,15 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 if (column == 4) {
                     return renderer;
                 }
-                return super.getCellRenderer(row, column);
+                // Disable blue focus border
+                return new DefaultTableCellRenderer() {
+                    private static final long serialVersionUID = 1L;
+                    
+                    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                        return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
+                    }
+                };
             }
-
         };
 
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -340,12 +372,17 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventPane, logPane);
         split.setResizeWeight(1.0);
+        split.setContinuousLayout(true);
         getContentPane().add(split, BorderLayout.CENTER);
 
         // popup menu
         popupMenu = new JPopupMenu();
         JMenuItem item = new JMenuItem("New filtering rule");
         item.setActionCommand("new_rule_popup");
+        item.addActionListener(this);
+        popupMenu.add(item);
+        item=new JMenuItem("Details...");
+        item.setActionCommand("show_event_details");
         item.addActionListener(this);
         popupMenu.add(item);
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -432,11 +469,15 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         private void checkPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                // show the popup menu and select the row under the mouse
-                // pointer
-                popupMenu.show(eventTable, e.getX(), e.getY());
+                // show the popup menu and select the row under the mouse pointer.
+                // If multiple rows are selected keep them selected, unless the right
+                // click landed on a previously unselected row.
                 int row = eventTable.rowAtPoint(e.getPoint());
-                eventTable.getSelectionModel().setSelectionInterval(row, row);
+                if(!eventTable.getSelectionModel().isSelectedIndex(row)) {
+                    eventTable.getSelectionModel().setSelectionInterval(row, row);
+                } else {
+                    popupMenu.show(eventTable, e.getX(), e.getY());
+                }
             }
         }
     }
@@ -521,12 +562,12 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             int index = viewMenuFilterChkBoxes.get(item);
 
             getFilteringRulesTable().switchRuleActivation(index, item.isSelected());
-        } else if (cmd.equals("new")) {
+        } else if (cmd.equals("clear")) {
             clearTable();
         } else if (cmd.equals("save")) {
             saveTableAs();
         } else if (cmd.equals("exit")) {
-            System.exit(0);
+            processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         } else if (cmd.equals("preferences")) {
             getPreferencesDialog().setVisible(true);
         } else if (cmd.equals("new_rule_popup")) {
@@ -542,6 +583,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             }
 
             getPreferencesDialog().setVisible(true);
+        } else if (cmd.equals("show_event_details")) {
+            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(eventTable.getSelectedRow()));
         }
     }
 
@@ -597,6 +640,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         labelEventCount.setText(String.valueOf(eventCount));
         labelWarnings.setText(String.valueOf(warningCount));
         labelErrors.setText(String.valueOf(errorCount));
+        eventTable.repaint();
     }
 
     void showMessage(String msg) {
@@ -614,7 +658,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         @Override
         public boolean accept(File f) {
-            return !f.isFile() || f.getName().toLowerCase().endsWith("." + ext);
+            return f.isDirectory() || f.getName().toLowerCase().endsWith("." + ext);
         }
 
         @Override
@@ -629,45 +673,61 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     void saveTableAs() {
         if (filechooser == null) {
-            filechooser = new JFileChooser();
+            filechooser = new JFileChooser() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public File getSelectedFile() {
+                    File file = super.getSelectedFile();
+                    if (getFileFilter() instanceof ExtendedFileFilter) {
+                        file = ((ExtendedFileFilter) getFileFilter()).appendExtensionIfNeeded(file);
+                    }
+                    return file;
+                }
+                
+                @Override
+                public void approveSelection() {
+                    File file=getSelectedFile();
+                    if(file.exists()) {
+                        int response=JOptionPane.showConfirmDialog(filechooser, "The file "+file+" already exists. Do you want to replace the existing file?", "Overwrite file", JOptionPane.YES_NO_OPTION);
+                        if(response!=JOptionPane.YES_OPTION) {
+                            return;
+                        }
+                    }
+                    super.approveSelection();
+                }
+            };
             filechooser.setMultiSelectionEnabled(false);
-            filechooser.addChoosableFileFilter(new ExtendedFileFilter("csv", "CSV Files"));
-            filechooser.addChoosableFileFilter(new ExtendedFileFilter("txt", "Text Files"));
+            FileFilter csvFilter=new ExtendedFileFilter("csv", "CSV File");
+            filechooser.addChoosableFileFilter(csvFilter);
+            FileFilter txtFilter=new ExtendedFileFilter("txt", "Text File");
+            filechooser.addChoosableFileFilter(txtFilter);
+            filechooser.setFileFilter(csvFilter); // By default, choose CSV
         }
         int ret = filechooser.showSaveDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            FileFilter filt = filechooser.getFileFilter();
-            File file = filechooser.getSelectedFile();
-            if (filt instanceof ExtendedFileFilter) {
-                file = ((ExtendedFileFilter) filt).appendExtensionIfNeeded(file);
-            }
+            File file=filechooser.getSelectedFile();
+            CsvWriter writer=null;
             try {
-                PrintStream out = new PrintStream(file);
+                writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
+                writer.writeRecord(new String[] {"Source","Generation Time","Reception Time","Event Type","Event Text"});
+                writer.setForceQualifier(true);
                 int iend = tableModel.getRowCount();
-                
-                /*
-                 * $UHB_UI_040
-                 * Add column names as part of the Event Viewer CVS output.
-                 * (2.5.4 Include header line in event viewer output files.)
-                 * Initial implementation by ES 
-                 * 
-                 *  TO DO: Code review (by NM, MU, or TN?)
-                 */
-                String headerLine = "Source\tGeneration Time\tReception Time" 
-                 							   + "\tEvent Type\tEvent Text\n";
-                out.printf(headerLine);
-                /*
-                 * End of $UHB_UI_040 implementation.
-                 */
-                
-                for (int row = 0; row < iend; ++row) {
-                    out.printf("\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\n", tableModel.getValueAt(row, 0), tableModel.getValueAt(row, 1), tableModel.getValueAt(row, 2), tableModel.getValueAt(row, 3), ((Event) tableModel.getValueAt(row, 4)).getMessage());
+                for (int i=0; i<iend; i++) {
+                    writer.writeRecord(new String[] {
+                                    (String) tableModel.getValueAt(i, 0),
+                                    (String) tableModel.getValueAt(i, 1),
+                                    (String) tableModel.getValueAt(i, 2),
+                                    (String) tableModel.getValueAt(i, 3),
+                                    ((Event) tableModel.getValueAt(i, 4)).getMessage()});
                 }
-                out.close();
-                log("Saved table to " + file.getAbsolutePath());
-            } catch (IOException x) {
-                showMessage("Cannot open file '" + file.getPath() + "' for writing: " + x.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+                showMessage("Could not export events to file '" + file.getPath() + "': " + e.getMessage());
+            } finally {
+                writer.close();
             }
+            log("Saved table to " + file.getAbsolutePath());
         }
     }
 
@@ -1159,7 +1219,7 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer
             setText(event.getMessage());
         }
         
-        int height_wanted = (int) getPreferredSize().getHeight();
+        int height_wanted = (int) getPreferredSize().getHeight() + table.getIntercellSpacing().height;
         if (height_wanted != table.getRowHeight(row))
             table.setRowHeight(row, height_wanted);
         if (isSelected)
