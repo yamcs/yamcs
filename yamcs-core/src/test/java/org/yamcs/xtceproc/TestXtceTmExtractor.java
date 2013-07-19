@@ -1,6 +1,7 @@
 package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -8,13 +9,13 @@ import java.util.ArrayList;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class TestXtceTmExtractor {
@@ -258,18 +259,47 @@ public class TestXtceTmExtractor {
     }
 
     @Test
-    public void testPacketSubscrPKT11() throws ConfigurationException {
+    public void testContainerSubscriptionPKT11() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        //   xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProviding(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
-        tmExtractor.processPacket(tmGenerator.generate_PKT11(), TimeEncoding.currentInstant());
+        ByteBuffer bb = tmGenerator.generate_PKT11();
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        ArrayList<SequenceContainer> received=tmExtractor.getContainerResult();
+        ArrayList<ContainerExtractionResult> received=tmExtractor.getContainerResult();
         assertEquals(2, received.size());
-        assertEquals("/REFMDB/ccsds-default", received.get(0).getQualifiedName());
-        assertEquals("/REFMDB/SUBSYS1/PKT1", received.get(1).getQualifiedName());
+        assertEquals("/REFMDB/ccsds-default", received.get(0).getContainer().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/PKT1", received.get(1).getContainer().getQualifiedName());
+        
+        bb.position(0);
+        String pkt11 = byteBufferToHexString(bb);
+        
+        // First example, access the received PKT1, as its PKT11 instantiation
+        ContainerExtractionResult pkt1Result = received.get(1);
+        ByteBuffer pkt1Buffer = pkt1Result.getContainerContent();
+        assertEquals(0, pkt1Buffer.position());
+        String pkt1 = byteBufferToHexString(pkt1Buffer);
+        assertTrue(pkt11.equals(pkt1));
+
+        // Second example, access only parameters in XTCE PKT1 definition
+        pkt1Buffer.position(pkt1Result.getLocationInContainerInBits() / 8);
+        pkt1Buffer.limit(pkt1Buffer.position() + tmGenerator.pkt1Length);
+        String pkt1b = byteBufferToHexString(pkt1Buffer.slice());
+        assertTrue(pkt11.contains(pkt1b));
+        assertEquals(tmGenerator.headerLength, pkt11.indexOf(pkt1b) / 2);
+    }
+    
+    private String byteBufferToHexString(ByteBuffer bb) {
+        bb.mark();
+        StringBuilder sb =new StringBuilder();
+        while(bb.hasRemaining()) {
+            String s=Integer.toString(bb.get()&0xFF,16);
+            if(s.length()==1) sb.append("0");
+            sb.append(s.toUpperCase());
+        }
+        bb.reset();
+        return sb.toString();
     }
 }

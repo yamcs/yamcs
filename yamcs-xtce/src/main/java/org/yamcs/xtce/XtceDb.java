@@ -22,14 +22,14 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 29L;
+    private static final long  serialVersionUID   = 30L;
     SpaceSystem rootSystem;
     
     public XtceDb(SpaceSystem spaceSystem) {
         this.rootSystem=spaceSystem;
     }
 
-    transient static Logger log = LoggerFactory.getLogger(XtceDb.class.getName());
+    transient static Logger log = LoggerFactory.getLogger(XtceDb.class);
 
     //map from the fully qualified names to the objects
     private HashMap<String, SpaceSystem> spaceSystems = new HashMap<String, SpaceSystem>();
@@ -38,6 +38,7 @@ public class XtceDb implements Serializable {
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
     //different namespaces
+    private NamedDescriptionIndex<SpaceSystem> spaceSystemAliases = new NamedDescriptionIndex<SpaceSystem>();
     private NamedDescriptionIndex<Parameter> parameterAliases = new NamedDescriptionIndex<Parameter>();
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases =new NamedDescriptionIndex<SequenceContainer>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<MetaCommand>();
@@ -60,12 +61,12 @@ public class XtceDb implements Serializable {
     private HashMap<SequenceContainer, ArrayList<SequenceContainer>> sequenceContainer2InheritingContainerMap;
 
 
-    public SequenceContainer getSequenceContainer(String name) {
-        return sequenceContainers.get(name);
+    public SequenceContainer getSequenceContainer(String qualifiedName) {
+        return sequenceContainers.get(qualifiedName);
     }
 
-    public SequenceContainer getSequenceContainer(String nameSpace, String name) {
-        return sequenceContainerAliases.get(nameSpace, name);
+    public SequenceContainer getSequenceContainer(String namespace, String name) {
+        return sequenceContainerAliases.get(namespace, name);
     }
     
     public SequenceContainer getSequenceContainer(NamedObjectId id) {
@@ -76,14 +77,22 @@ public class XtceDb implements Serializable {
         }
     }
     
-    public Parameter getParameter(String name) {
-        return parameters.get(name);
+    public Parameter getParameter(String qualifiedName) {
+        return parameters.get(qualifiedName);
     }
 
-    public Parameter getParameter(String nameSpace, String name) {
-        return parameterAliases.get(nameSpace,name);
+    public Parameter getParameter(String namespace, String name) {
+        return parameterAliases.get(namespace,name);
     }
-   
+    
+    public Parameter getParameter(NamedObjectId id) {
+        if (id.hasNamespace()) {
+            return parameterAliases.get(id.getNamespace(), id.getName());
+        } else {
+            return parameterAliases.get(id.getName());
+        }
+    }
+
     public SequenceContainer getRootSequenceContainer() {
         return rootSystem.getRootSequenceContainer();
     }
@@ -92,12 +101,12 @@ public class XtceDb implements Serializable {
     
     /**
      * Returns a command based on a name in a namespace
-     * @param nameSpace
+     * @param namespace
      * @param name
      * @return
      */
-    public MetaCommand getMetaCommand(String nameSpace, String name) {
-        return commandAliases.get(nameSpace, name);
+    public MetaCommand getMetaCommand(String namespace, String name) {
+        return commandAliases.get(namespace, name);
     }
     
     /**
@@ -108,10 +117,28 @@ public class XtceDb implements Serializable {
         return commands.values();
     }
     
-    
-    
     public SpaceSystem getRootSpaceSystem() {
         return rootSystem;
+    }
+    
+    public SpaceSystem getSpaceSystem(String qualifiedName) {
+        return spaceSystemAliases.get(qualifiedName);
+    }
+    
+    public SpaceSystem getSpaceSystem(String namespace, String name) {
+        return spaceSystemAliases.get(namespace, name);
+    }
+    
+    public SpaceSystem getSpaceSystem(NamedObjectId id) {
+        if (id.hasNamespace()) {
+            return spaceSystemAliases.get(id.getNamespace(), id.getName());
+        } else {
+            return spaceSystemAliases.get(id.getName());
+        }
+    }
+    
+    public Collection<SpaceSystem> getSpaceSystems() {
+        return spaceSystems.values();
     }
     
     public Collection<SequenceContainer> getSequenceContainers() {
@@ -190,7 +217,11 @@ public class XtceDb implements Serializable {
         }
 
         
-        //build aliases maps        
+        //build aliases maps
+        for (SpaceSystem ss : spaceSystems.values()) {
+            spaceSystemAliases.add(ss);
+        }
+        
         for (SequenceContainer sc : sequenceContainers.values()) {
             sequenceContainerAliases.add(sc);
         }

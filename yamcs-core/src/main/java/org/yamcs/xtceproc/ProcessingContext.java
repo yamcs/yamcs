@@ -3,8 +3,8 @@ package org.yamcs.xtceproc;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ParameterValue;
-import org.yamcs.xtce.SequenceContainer;
 
 
 /**
@@ -21,7 +21,7 @@ public class ProcessingContext {
 	
 	//this is the result of the processing
 	public ArrayList<ParameterValue> paramResult;
-	public ArrayList<SequenceContainer> containerResult;
+	public ArrayList<ContainerExtractionResult> containerResult;
 	
 	public long acquisitionTime;
 	public long generationTime;
@@ -35,9 +35,8 @@ public class ProcessingContext {
 	ComparisonProcessor comparisonProcessor=new ComparisonProcessor(this);
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
-	        ArrayList<ParameterValue> params, ArrayList<SequenceContainer> containers, 
+	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
 	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
-		super();
 		this.bb = bb;
 		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;
 		this.bitPosition = bitPosition;

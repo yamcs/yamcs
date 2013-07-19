@@ -4,9 +4,10 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.util.HashSet;
 import java.util.TreeSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 
@@ -19,8 +20,8 @@ public class SequenceContainerProcessor {
     
     public void extract(SequenceContainer seq) {
         //First add it to the result
-        
-        pcontext.containerResult.add(seq);
+        pcontext.containerResult.add(new ContainerExtractionResult(seq, pcontext.bb
+                        .asReadOnlyBuffer(), pcontext.bitPosition));
 
         int maxposition=pcontext.bitPosition;
         //then extract the entries

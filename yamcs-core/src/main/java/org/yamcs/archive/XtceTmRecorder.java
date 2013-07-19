@@ -10,6 +10,7 @@ import org.hornetq.api.core.HornetQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -161,7 +162,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
 
         //the result contains a list with all the matching containers, the first one is the root container
         //we should normally have just two elements in the list
-        List<SequenceContainer> result=tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> result=tmExtractor.getContainerResult();
 
         
         try {
@@ -175,12 +176,11 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
             List<Object> columns=new ArrayList<Object>(c.size()+1);
             columns.addAll(c);
             
-            columns.add(c.size(), result.get(k).getQualifiedName());
+            columns.add(c.size(), result.get(k).getContainer().getQualifiedName());
             Tuple tp=new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
             stream.emitTuple(tp);
         } catch (Exception e) {
             log.error("got exception when saving packet ", e);
-            e.printStackTrace();
         }
     }
 

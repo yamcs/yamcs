@@ -1,13 +1,19 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
+import org.yamcs.YConfiguration;
+import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.XtceDb;
 
 
 public class TestXtceDbFactory {
@@ -51,8 +57,6 @@ public class TestXtceDbFactory {
         nd=XtceDbFactory.findReference(a, new NameReference("p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(nd, a_b2_c1_p1);
         
-      
-        
         nd=XtceDbFactory.findReference(a, new NameReference("p1", Type.PARAMETER, null), a_b2);
         assertEquals(a_p1, nd);
         
@@ -64,7 +68,6 @@ public class TestXtceDbFactory {
         
         nd=XtceDbFactory.findReference(a, new NameReference("b2/.//../b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(a_b2_c1_p1, nd);
-        
         
         nd=XtceDbFactory.findReference(a, new NameReference("../p1", Type.PARAMETER, null), a_b2_c1);
         assertNull(nd);
@@ -84,11 +87,32 @@ public class TestXtceDbFactory {
         nd=XtceDbFactory.findReference(a, new NameReference("/a/b2/c1/.//p1", Type.PARAMETER, null), a_b2);
         assertEquals(a_b2_c1_p1, nd);
         
-        
         nd=XtceDbFactory.findReference(a, new NameReference("/a/..", Type.PARAMETER, null), a_b2);
         assertNull(nd);
         
         nd=XtceDbFactory.findReference(a, new NameReference("p2", Type.PARAMETER, null), a_b2);
         assertNull(nd);
+    }
+    
+    @Test
+    public void testNamespaces() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false, false);
+        XtceDbFactory.reset();
+        
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        
+        SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
+        assertNotNull(pkt1);
+        // assertEquals(pkt1, db.getSequenceContainer("/REFMDB", "SUBSYS1/PKT1")); // Not supported yet
+        assertEquals(pkt1, db.getSequenceContainer("/REFMDB/SUBSYS1", "PKT1"));
+        
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        assertNotNull(p);
+        assertEquals(p, db.getParameter("/REFMDB/SUBSYS1", "IntegerPara1_1"));
+        
+        SpaceSystem ss = db.getSpaceSystem("/REFMDB/SUBSYS1");
+        assertNotNull(ss);
+        assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
     }
 }
