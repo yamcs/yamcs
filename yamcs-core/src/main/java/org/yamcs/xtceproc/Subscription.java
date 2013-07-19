@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.Parameter;
@@ -29,7 +29,7 @@ public class Subscription {
     private final Map<SequenceContainer, TreeSet<SequenceEntry>> container2EntryMap = new HashMap<SequenceContainer, TreeSet<SequenceEntry>>();
     //For each container list the derived containers which have to be processed also
     private final Map<SequenceContainer, HashSet<SequenceContainer>> container2InheritingContainerMap = new HashMap<SequenceContainer, HashSet<SequenceContainer>>();
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(Subscription.class);
     
 
     XtceDb xtcedb;

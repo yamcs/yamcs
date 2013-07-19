@@ -7,14 +7,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.tctm.TmPacketProvider;
-import org.yamcs.xtceproc.XtceTmProcessor;
-
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
  * @author mache
@@ -42,7 +42,7 @@ public class ParameterRequestManager implements ParameterListener {
 	private SystemVariablesManager systemVariablesManager=null;
 	private ParameterProvider ppProvider=null;
 	
-	private static AtomicInteger lastSubscriptionId= new AtomicInteger();;
+	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
 	TmPacketProvider tmPacketProvider;
 	
@@ -212,20 +212,18 @@ public class ParameterRequestManager implements ParameterListener {
 					param2RequestMap.remove(paramDef);
 				}
 			} else {
-				log.warn("parameter removal requested for "+para+" but not part of subscribtion "+subscriptionId);		
+				log.warn("parameter removal requested for "+para+" but not part of subscription "+subscriptionId);		
 			}
 		} else {
 			log.warn("parameter removal requested for "+para+" but not subscribed");
 		}
 	}
 
-	/**
-	 * Removes all the items from this subscription and returns them into an ArrayList. 
-	 * The result is usually used in the TelemetryImpl to move this subscription to a different
-	 *    ParmaeterRequestManager
-	 * @param subscriptionID
-	 * @return
-	 */
+    /**
+     * Removes all the items from this subscription and returns them into an
+     * ArrayList. The result is usually used in the TelemetryImpl to move this
+     * subscription to a different ParameterRequestManager
+     */
 	public synchronized ArrayList<NamedObjectId> removeRequest(int subscriptionId) {
 		log.debug("removing request for subscriptionId "+subscriptionId);
 		//It's a bit annoying that we have to loop through all the parameters to find the ones that

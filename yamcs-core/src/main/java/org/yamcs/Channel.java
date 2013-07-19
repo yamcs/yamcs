@@ -7,29 +7,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.tctm.ArchiveTmPacketProvider;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
-
-
-import com.google.common.util.concurrent.Service.State;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
+import org.yamcs.tctm.ArchiveTmPacketProvider;
+import org.yamcs.tctm.TcTmService;
+import org.yamcs.tctm.TcUplinker;
+import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.xtceproc.XtceTmProcessor;
+
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * This class helps keeping track of the different objects used in a channel - i.e. all the 
@@ -49,6 +47,7 @@ import org.yamcs.xtce.XtceDb;
 public class Channel {
 	static private Map<String,Channel>instances=Collections.synchronizedMap(new HashMap<String,Channel>());
 	private ParameterRequestManager parameterRequestManager;
+	private ContainerRequestManager containerRequestManager;
 	private CommandHistory commandHistoryListener;
 	private CommandingManager commandingManager;
 	private TmPacketProvider tmPacketProvider;
@@ -108,6 +107,10 @@ public class Channel {
             parameterRequestManager=new ParameterRequestManager(this);
             parameterRequestManager.setPacketProvider(tmPacketProvider);
             parameterRequestManager.setProcessedParameterProvider(paramProvider);
+            
+            containerRequestManager = new ContainerRequestManager(this);
+            containerRequestManager.setPacketProvider(tmPacketProvider);
+            
             if(tcUplinker!=null) { 
                 commandingManager=new CommandingManager(this);
                 if(commandHistoryListener!=null) tcUplinker.setCommandHistoryListener(commandHistoryListener);
@@ -142,6 +145,7 @@ public class Channel {
 		paramProvider=null;
 		tcUplinker=null;
 		parameterRequestManager=null;
+		containerRequestManager=null;
 		commandHistoryListener=null;
 	}
 	
@@ -152,6 +156,10 @@ public class Channel {
 
 	public ParameterRequestManager getParameterRequestManager() {
 		return parameterRequestManager;
+	}
+	
+	public ContainerRequestManager getContainerRequestManager() {
+	    return containerRequestManager;
 	}
 
 	public XtceTmProcessor getTmProcessor() {
@@ -172,6 +180,7 @@ public class Channel {
 	    if(tcUplinker!=null)tcUplinker.start();
 	    if(paramProvider!=null) paramProvider.start();
 		if(parameterRequestManager!=null) parameterRequestManager.start();
+		if(containerRequestManager!=null) containerRequestManager.start();
 		try {
             f.get();
         } catch (Exception e) {
@@ -307,6 +316,7 @@ public class Channel {
 		quitting=true;
 		instances.remove(key(yamcsInstance,name));
 		parameterRequestManager.quit();
+		containerRequestManager.quit();
 		//if(commandHistoryListener!=null) commandHistoryListener.channelStopped();
 		if(tcUplinker!=null) tcUplinker.stop();
 		log.info("Channel "+name+" is out of business");
