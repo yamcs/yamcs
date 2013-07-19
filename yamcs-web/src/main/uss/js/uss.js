@@ -123,6 +123,8 @@ USS.writeText = function(svg, parent, opts, textStyle, text) {
         x=opts.x+opts.width;
         settings.textAnchor='end';
     }
+
+    text = text.split(" ").join("\u00a0"); // Preserve whitespace
     var t=svg.text(parent, x, opts.y, text, settings);
     var bbox=t.getBBox();
     //shift to have the bbox correspond to x,y,width,height
@@ -168,13 +170,15 @@ USS.parseTextStyle=function(e) {
     ts.fontSize=$(e).children('Fontsize').text()+'px';
     ts.fontFamily=$(e).children('Fontname').text();
     if(ts.fontFamily=='Lucida Sans Typewriter') {
-       ts.fontFamily='Lucida Sans Typewriter, sans-serif';
+       ts.fontFamily='Lucida Sans Typewriter, monospace';
     }
     var bold= ($("IsBold:first", e).text().toLowerCase() === 'true');
     if(bold)  ts.fontWeight="bold";
-    var italic= ($("IsITalic:first", e).text().toLowerCase() === 'true');
+    var italic= ($("IsItalic:first", e).text().toLowerCase() === 'true');
     if(italic)  ts.fontStyle="italic";
-    ts.color=USS.parseColor($(e).children('Color')[0]);
+    var underline= ($("IsUnderlined:first", e).text().toLowerCase() === 'true');
+    if(underline) ts.textDecoration="underline";
+    ts.fill=USS.parseColor($(e).children('Color')[0]);
     return ts;
 }
 
