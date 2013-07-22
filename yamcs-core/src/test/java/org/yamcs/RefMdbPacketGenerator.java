@@ -31,6 +31,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt13Length=pkt1Length+100;
     public final int pkt14Length=pkt1Length+100;
     public final int pkt15Length=pkt1Length+50;
+    public final int pkt2Length=8;
     
     //raw values of parameters 
     public volatile short pIntegerPara1_1=5;
@@ -67,6 +68,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile String pStringIntPrePara15_4="1204507"; // Prepended size (16 bits)
     public volatile String pStringIntStrPara15_5="123406789"; // string
     
+    public volatile int pIntegerPara2_1 = 123;
+    public volatile int pIntegerPara2_2 = 25;
+    
     Map<Integer, AtomicInteger> seqCount=new HashMap<Integer, AtomicInteger>();
     
     @Override
@@ -99,6 +103,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public ByteBuffer generate_PKT15() {
         ByteBuffer bb=ByteBuffer.allocate(pkt15Length);
         fill_PKT15(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
+    public ByteBuffer generate_PKT2() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt2Length);
+        fill_PKT2(bb);
         sendToTmProcessor(bb);
         return bb;
     }
@@ -203,6 +214,12 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         putPrependedSizeStringParam(bb, pStringIntPrePara15_4, 16);
         // Straight string is null terminated
         putTerminatedStringParam(bb, pStringIntStrPara15_5, (byte)0);
+    }
+    
+    private void fill_PKT2(ByteBuffer bb) {
+        bb.position(4);
+        bb.putShort((short)(pIntegerPara2_1&0xFFFF));
+        bb.putShort((short)(pIntegerPara2_2&0xFFFF));
     }
     
     private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {

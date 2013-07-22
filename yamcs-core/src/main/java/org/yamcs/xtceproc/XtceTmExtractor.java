@@ -60,34 +60,44 @@ public class XtceTmExtractor {
 	 * Adds all containers and parameters to the subscription
 	 */
     public void startProvidingAll() {
-	    subscription.addAll(rootContainer);
+        for (SequenceContainer c : xtcedb.getSequenceContainers()) {
+            if (c.getBaseContainer() == null) {
+                subscription.addAll(c);
+            }
+        }
 	}
-	
+    
     public void stopProviding(Parameter param) {
 		//TODO 2.0 do something here
 	}
     
 	/**
-	 * Extract one packet
-	 *
+	 * Extract one packet, starting at the root sequence container
 	 */
     public void processPacket(ByteBuffer bb, long generationTime) {
-	    try {
-	        paramResult=new ArrayList<ParameterValue>();
-	        containerResult=new ArrayList<ContainerExtractionResult>();
-	        synchronized(subscription) {
-	            long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
-	            ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
-	            pcontext.sequenceContainerProcessor.extract(rootContainer);
-
-	            for(ParameterValue pv:paramResult) {
-	                pcontext.parameterTypeProcessor.performLimitChecking(pv.getParameter().getParameterType(), pv);
-	            }
-	        }
-	    } catch (Exception e) {
-	        log.error("got exception in tmextractor ", e);
-	    }
+        processPacket(bb, generationTime, rootContainer);
 	}
+    
+    /**
+     * Extract one packet, starting at the specified container.
+     */
+    public void processPacket(ByteBuffer bb, long generationTime, SequenceContainer startContainer) {
+        try {
+            paramResult=new ArrayList<ParameterValue>();
+            containerResult=new ArrayList<ContainerExtractionResult>();
+            synchronized(subscription) {
+                long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
+                ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
+                pcontext.sequenceContainerProcessor.extract(startContainer);
+
+                for(ParameterValue pv:paramResult) {
+                    pcontext.parameterTypeProcessor.performLimitChecking(pv.getParameter().getParameterType(), pv);
+                }
+            }
+        } catch (Exception e) {
+            log.error("got exception in tmextractor ", e);
+        }
+    }
     
 	public void resetStatistics() {
 		stats.reset();
