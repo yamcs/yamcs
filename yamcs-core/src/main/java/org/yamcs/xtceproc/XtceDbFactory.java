@@ -348,7 +348,7 @@ public class XtceDbFactory {
 
     private static String getFullName(String filename) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
-        return c.getGlobalProperty("cacheDirectory") + File.separator + filename;
+        return new File(c.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
     private static void saveSerializedInstance(XtceDb db, String filename) throws IOException, ConfigurationException {
