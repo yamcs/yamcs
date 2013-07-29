@@ -108,7 +108,7 @@ public class Channel {
             parameterRequestManager.setPacketProvider(tmPacketProvider);
             parameterRequestManager.setProcessedParameterProvider(paramProvider);
             
-            containerRequestManager = new ContainerRequestManager(this);
+            containerRequestManager = new ContainerRequestManager(this, parameterRequestManager.getTmProcessor());
             containerRequestManager.setPacketProvider(tmPacketProvider);
             
             if(tcUplinker!=null) { 

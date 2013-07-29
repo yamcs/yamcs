@@ -54,11 +54,23 @@ public class ParameterRequestManager implements ParameterListener {
         derivedValuesManager=new DerivedValuesManager(yamcsChannel, this, xtcedb);
     }
     
-	public ParameterRequestManager(Channel chan) throws ConfigurationException {
+    /**
+     * Creates a new ParameterRequestManager, configured to listen to a newly
+     * created XtceTmProcessor.
+     */
+    public ParameterRequestManager(Channel chan) throws ConfigurationException {
+        this(chan, new XtceTmProcessor(chan));
+    }
+    
+	/**
+	 * Creates a new ParameterRequestManager, configured to listen to the
+	 * specified XtceTmProcessor.
+	 */
+    public ParameterRequestManager(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.channel=chan;
+        this.tmProcessor=tmProcessor;
 	    systemVariablesManager=new SystemVariablesManager(this, chan);
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
-		tmProcessor=new XtceTmProcessor(chan);
 		tmProcessor.setParameterListener(this);
 		//derived values should be the last one because it can be based on tm and system variables
 		derivedValuesManager=new DerivedValuesManager(chan.getInstance(), this, chan.xtcedb);
@@ -101,7 +113,7 @@ public class ParameterRequestManager implements ParameterListener {
 		int id=lastSubscriptionId.incrementAndGet();
 		log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
 		for(int i=0;i<paraList.size();i++) {
-			log.trace("adding to subscribtionID:{} item:{} ",id, paraList.get(i));
+			log.trace("adding to subscriptionID:{} item:{} ",id, paraList.get(i));
 			addItemToRequest(id,paraList.get(i),providers.get(i));
 			//log.info("afterwards the subscription looks like: "+toString());
 		}
