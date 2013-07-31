@@ -23,6 +23,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
@@ -33,7 +34,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ui.PacketListener;
-import org.yamcs.ui.packetviewer.PacketViewer.ListPacket;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 
@@ -464,8 +464,8 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
 
     @Override
     public void packetReceived(CcsdsPacket c) {
-        final ListPacket ccsds = packetViewer.new ListPacket(c.getByteBuffer());
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        final ListPacket ccsds = new ListPacket(c.getByteBuffer());
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 DefaultTableModel packetsModel = (DefaultTableModel) getModel();
