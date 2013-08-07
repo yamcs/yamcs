@@ -35,6 +35,10 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+            <compilerArguments>
+              <verbose />
+              <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
+            </compilerArguments>
           </configuration>
         </plugin>
         <plugin>

@@ -31,13 +31,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt13Length=pkt1Length+100;
     public final int pkt14Length=pkt1Length+100;
     public final int pkt15Length=pkt1Length+50;
+    public final int pkt16Length=pkt1Length+8;
     public final int pkt2Length=8;
     
     //raw values of parameters 
     public volatile short pIntegerPara1_1=5;
     
     
-    public volatile byte pIntergerPara11_1=20;
+    public volatile byte pIntegerPara11_1=20;
     public volatile short pFloatPara11_2=1000;
     public volatile float pFloatPara11_3=2;
     public volatile byte pEnumerationPara11_4=0;
@@ -113,6 +114,16 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb;
     }
+    
+    /**
+     * Generate a packet with configurable content
+     */
+    public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2) {
+        ByteBuffer bb=ByteBuffer.allocate(pkt16Length);
+        fill_PKT16(bb, pIntegerPara16_1, pIntegerPara16_2);
+        sendToTmProcessor(bb);
+        return bb;
+    }
 
     private void fill_CcsdsHeader(ByteBuffer bb, int apid, int packetId) {
         short xs;
@@ -154,7 +165,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         fill_PKT1(bb, 1);
         int offset=pkt1Length;
         bb.position(offset);
-        bb.put(pIntergerPara11_1);
+        bb.put(pIntegerPara11_1);
         bb.putShort(pFloatPara11_2);
         bb.putFloat(pFloatPara11_3);
         bb.put(pEnumerationPara11_4);
@@ -220,6 +231,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(4);
         bb.putShort((short)(pIntegerPara2_1&0xFFFF));
         bb.putShort((short)(pIntegerPara2_2&0xFFFF));
+    }
+    
+    private void fill_PKT16(ByteBuffer bb, int pIntegerPara16_1, int pIntegerPara16_2) {
+        fill_PKT1(bb, 6);
+        int offset=pkt1Length;
+        bb.position(offset);
+        bb.putShort((short)(pIntegerPara16_1&0xFFFF));
+        bb.putShort((short)(pIntegerPara16_2&0xFFFF));
     }
     
     private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {

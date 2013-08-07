@@ -1,19 +1,26 @@
 package org.yamcs.derivedvalues;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.regex.*;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.FilenameFilter;
-
-import javax.xml.parsers.*;
-import javax.script.*;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -21,8 +28,6 @@ import org.yamcs.DerivedValue;
 import org.yamcs.DerivedValuesProvider;
 import org.yamcs.MdbDerivedValue;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.xtce.*;
-
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -31,7 +36,9 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 public class DerivedValues_XTCE implements DerivedValuesProvider {
-	Logger log = LoggerFactory.getLogger(getClass().getName());
+    private static final String KEY_UPDATED = "updated";
+    private static final String KEY_YAMCS = "Yamcs";
+	private static final Logger log = LoggerFactory.getLogger(DerivedValues_XTCE.class);
 	ArrayList<DerivedValue> derivedValues = new ArrayList<DerivedValue>();
 	int algoCount;
 	String currentCode, currentOutputParam, currentAlgo;
@@ -39,9 +46,9 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	File currentXtceDir;
 	ScriptEngineManager semgr;
 	ScriptEngine currentEngine;
-	ScriptHelper scriptHelper = new ScriptHelper();
 	HashMap<String,ScriptEngine> enginesByName = new HashMap<String,ScriptEngine>();
 	HashMap<String,ScriptEngine> enginesByExtension = new HashMap<String,ScriptEngine>();
+	HashMap<String,WindowBuffer> buffersByPname = new HashMap<String,WindowBuffer>();
 	private XtceDb xtcedb;
 	
 	public DerivedValues_XTCE(XtceDb xtcedb) {
@@ -55,7 +62,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					factory.getLanguageName(), factory.getLanguageVersion(),
 					factory.getNames(), factory.getExtensions()));
 				final ScriptEngine engine = factory.getScriptEngine();
-				engine.put("Yamcs", scriptHelper);
+				engine.put(KEY_YAMCS, new ScriptHelper(engine));
 				for (String name:factory.getNames()) {
 					enginesByName.put(name, engine);
 				}
@@ -63,6 +70,13 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					enginesByExtension.put(ext, engine);
 				}
 			}
+			
+			// Pass Java values as JavaScript primitives instead of objects
+			// This is pretty dirty. We're depending on non-public Rhino API
+			sun.org.mozilla.javascript.internal.Context ctx = sun.org.mozilla.javascript.internal.Context.enter();
+			sun.org.mozilla.javascript.internal.WrapFactory wf = new sun.org.mozilla.javascript.internal.WrapFactory();
+			wf.setJavaPrimitiveWrap(false);
+			ctx.setWrapFactory(wf);
 
 			// load XML files from classpath
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -243,8 +257,17 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			for (int i = 0; i < args.length; ++i) {
 				final String pname = args[i].getParameter().getName();
 				Value v = args[i].getEngValue();
+				
+				// Store current engine values for parameters used in an algorithm window
+				if (buffersByPname.containsKey(pname)) {
+				    buffersByPname.get(pname).append((Number) engine.get(pname));
+				    log.debug("Adding pname of type {}", engine.get(pname).getClass());
+                    log.debug("Buffer: {}", buffersByPname.get(pname));
+				}
+				
+				// Now, update the engine
 				switch(v.getType()) {
-				    case  BINARY:
+				    case BINARY:
 				        engine.put(pname, v.getBinaryValue().toByteArray());
 				        break;
 				    case DOUBLE:
@@ -261,14 +284,25 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				        break;
 				    case UINT32:
 				        engine.put(pname, v.getUint32Value()&0xFFFFFFFFL);
+				        break;
+				    case SINT64:
+				        engine.put(pname, v.getSint64Value());
+				        break;
+				    case UINT64:
+				        engine.put(pname, v.getUint64Value()&0xFFFFFFFFFFFFFFFFL);
+				        break;
+				    default:
+				        log.warn("Ignoring update of unexpected value type {}", v.getType());
 				}
 			}
-			engine.put("updated", updated);
+			updated = true;
+			engine.put(KEY_UPDATED, updated);
+			
 			try {
 				//long ts = System.currentTimeMillis();
 				engine.eval(programCode);
 				//System.out.println("script time "+(System.currentTimeMillis() - ts));
-				updated = (Boolean)engine.get("updated");
+				updated = (Boolean) engine.get(KEY_UPDATED);
 				if (updated) {
 					Object res = engine.get(getParameter().getName());
 					if (res == null) {
@@ -297,6 +331,12 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	}
 
 	public class ScriptHelper {
+	    private ScriptEngine engine;
+
+        private ScriptHelper(ScriptEngine engine) {
+	        this.engine = engine;
+	    }
+        
 		public Object calibrate(int raw, String parameter) {
 		// calibrate raw value according to the calibration rule of the given parameter
 		// returns a Float or String object
@@ -316,10 +356,55 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			}
 			return null;
 		}
+		
+		public Object prev(String parameter, int index) {
+		    if (index < 1) { throw new IllegalArgumentException("Index into previous values should be >= 1"); }
+		    if (!buffersByPname.containsKey(parameter)) {
+		        buffersByPname.put(parameter, new WindowBuffer(index));
+		    }
+		    Object historicValue = buffersByPname.get(parameter).getHistoricValue(index);
+		    if (historicValue == null) {
+		        engine.put(KEY_UPDATED, Boolean.FALSE);
+		    }
+		    return historicValue;
+		}
 
 		public long letohl(int value) {
 		// little endian to host long
 			return ((value>>24)&0xff) + ((value>>8)&0xff00) + ((value&0xff00)<<8) + ((value&0xff)<<24);
 		}
+	}
+	
+	private static class WindowBuffer {
+	    private Object[] historicValues; // LTR: least-recent to most-recent
+	    
+	    /**
+	     * @param size Initial estimate of size
+	     */
+	    WindowBuffer(int size) {
+	        historicValues = new Object[size];
+	    }
+	    
+	    public Object getHistoricValue(int index) {
+	        if (index > historicValues.length) {
+	            historicValues = Arrays.copyOf(historicValues, index);
+	            return null;
+	        } else {
+	            return historicValues[historicValues.length - index];
+	        }
+	    }
+	    
+	    void append(Object value) {
+	        int i = 0;
+	        for (; i < historicValues.length - 1; i++) {
+	            historicValues[i] = historicValues[i+1];
+	        }
+	        historicValues[i] = value;
+	    }
+	    
+	    @Override
+	    public String toString() {
+	        return Arrays.toString(historicValues);
+	    }
 	}
 }

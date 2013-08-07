@@ -1,23 +1,18 @@
 package org.yamcs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.Channel;
-import org.yamcs.ChannelFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.DerivedValue;
-import org.yamcs.DerivedValuesProvider;
-import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
-import org.yamcs.ParameterValue;
-import org.yamcs.ParameterValueWithId;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.DummyPpProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TcUplinker;
@@ -27,9 +22,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-
-import static org.junit.Assert.*;
 
 public class DerivedValuesTest {
     @BeforeClass
@@ -165,6 +157,44 @@ public class DerivedValuesTest {
 
         p=params.get(1).getParameterValue();
         assertEquals(2.1672918, p.getEngValue().getDoubleValue(), 0.001);
+
+        c.quit();
+    }
+    
+    @Test
+    public void testSlidingWindow() throws Exception {
+        RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
+        Channel c = ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new MyTcTmService(tmGenerator), "dvtest", null);
+        ParameterRequestManager prm = c.getParameterRequestManager();
+        
+        List<NamedObjectId> subList = Arrays.asList(NamedObjectId.newBuilder().setName("res").build());
+        final List<ParameterValueWithId> params = new ArrayList<ParameterValueWithId>();
+        prm.addRequest(subList, new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT16(1, 2);
+        assertEquals(0, params.size()); // Windows:  [*  *  *  1]  &&  [*  2]
+        
+        tmGenerator.generate_PKT16(2, 4);
+        assertEquals(0, params.size()); // Windows:  [*  *  1  2]  &&  [2  4]
+        
+        tmGenerator.generate_PKT16(3, 6);
+        assertEquals(0, params.size()); // Windows:  [*  1  2  3]  &&  [4  6]
+        
+        // Production starts only when all relevant values for the expression are present
+        tmGenerator.generate_PKT16(5, 8);
+        assertEquals(1, params.size()); // Windows:  [1  2  3  5]  &&  [6  8] => produce (1 + 5) * 6
+        assertEquals(36, params.get(0).getParameterValue().getEngValue().getUint32Value());
+        
+        params.clear();
+        tmGenerator.generate_PKT16(8, 10);
+        assertEquals(1, params.size()); // Windows:  [2  3  5  8]  &&  [8 10] => produce (2 + 8) * 8
+        assertEquals(80, params.get(0).getParameterValue().getEngValue().getUint32Value());
 
         c.quit();
     }

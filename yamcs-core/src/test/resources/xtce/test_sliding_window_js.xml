@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<SpaceSystem xmlns="http://www.omg.org/space/xtce"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.omg.org/spec/XTCE/20061101/06-11-06.xsd"
+    name="TEST for javascript derived values">
+  <TelemetryMetaData>
+    <AlgorithmSet>
+      <CustomAlgorithm name="test_sliding_window">
+        <AlgorithmText language="JavaScript">
+          res = Yamcs.prev('IntegerPara16_1', 3) + IntegerPara16_1;
+          res *= Yamcs.prev('IntegerPara16_2', 1);
+        </AlgorithmText>
+        <InputSet>
+          <ParameterInstanceRef parameterName="SUBSYS1_IntegerPara16_1" />
+          <ParameterInstanceRef parameterName="SUBSYS1_IntegerPara16_2" />
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterName="res" />
+        </OutputSet>
+      </CustomAlgorithm>
+    </AlgorithmSet>
+  </TelemetryMetaData>
+</SpaceSystem>
