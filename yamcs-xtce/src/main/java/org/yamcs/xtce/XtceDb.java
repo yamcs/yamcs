@@ -35,12 +35,14 @@ public class XtceDb implements Serializable {
     private HashMap<String, SpaceSystem> spaceSystems = new HashMap<String, SpaceSystem>();
     private HashMap<String, SequenceContainer> sequenceContainers = new HashMap<String, SequenceContainer>();
     private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>();
+    private HashMap<String, Algorithm> algorithms = new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
     //different namespaces
     private NamedDescriptionIndex<SpaceSystem> spaceSystemAliases = new NamedDescriptionIndex<SpaceSystem>();
     private NamedDescriptionIndex<Parameter> parameterAliases = new NamedDescriptionIndex<Parameter>();
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases =new NamedDescriptionIndex<SequenceContainer>();
+    private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<Algorithm>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<MetaCommand>();
     
     /**
@@ -97,7 +99,29 @@ public class XtceDb implements Serializable {
         return rootSystem.getRootSequenceContainer();
     }
 
+    public Algorithm getAlgorithm(String qualifiedName) {
+        return algorithmAliases.get(qualifiedName);
+    }
     
+    public Algorithm getAlgorithm(String namespace, String name) {
+        return algorithmAliases.get(namespace, name);
+    }
+    
+    public Algorithm getAlgorithm(NamedObjectId id) {
+        if (id.hasNamespace()) {
+            return algorithmAliases.get(id.getNamespace(), id.getName());
+        } else {
+            return algorithmAliases.get(id.getName());
+        }
+    }
+    
+    public Collection<Algorithm> getAlgorithms() {
+        return algorithms.values();
+    }
+    
+    public MetaCommand getMetaCommand(String qualifiedName) {
+        return commandAliases.get(qualifiedName);
+    }
     
     /**
      * Returns a command based on a name in a namespace
@@ -107,6 +131,14 @@ public class XtceDb implements Serializable {
      */
     public MetaCommand getMetaCommand(String namespace, String name) {
         return commandAliases.get(namespace, name);
+    }
+    
+    public MetaCommand getMetaCommand(NamedObjectId id) {
+        if (id.hasNamespace()) {
+            return commandAliases.get(id.getNamespace(), id.getName());
+        } else {
+            return commandAliases.get(id.getName());
+        }
     }
     
     /**
@@ -178,6 +210,7 @@ public class XtceDb implements Serializable {
         buildSpaceSystemsMap(rootSystem) ;
         buildParameterMap(rootSystem);
         buildSequenceContainerMap(rootSystem);
+        buildAlgorithmMap(rootSystem);
         buildMetaCommandMap(rootSystem);
         
         parameter2ParameterEntryMap = new HashMap<Parameter, ArrayList<ParameterEntry>>();
@@ -229,6 +262,10 @@ public class XtceDb implements Serializable {
         for(Parameter p:parameters.values()) {
             parameterAliases.add(p);
         }
+
+        for(Algorithm a:algorithms.values()) {
+            algorithmAliases.add(a);
+        }
         
         for(MetaCommand mc:commands.values()) {
             commandAliases.add(mc);
@@ -257,6 +294,15 @@ public class XtceDb implements Serializable {
         }
         for(SpaceSystem ss1:ss.getSubSystems()) {
             buildSequenceContainerMap(ss1);
+        }
+    }
+    
+    private void buildAlgorithmMap(SpaceSystem ss) {
+        for(Algorithm a:ss.getAlgorithms()) {
+            algorithms.put(a.getQualifiedName(), a);
+        }
+        for(SpaceSystem ss1:ss.getSubSystems()) {
+            buildAlgorithmMap(ss1);
         }
     }
     
@@ -291,6 +337,12 @@ public class XtceDb implements Serializable {
         Arrays.sort(sca, comparator);
         for (SequenceContainer sc : sca) {
             sc.print(out);
+        }
+        
+        Algorithm[] aa=ss.getAlgorithms().toArray(new Algorithm[0]);
+        Arrays.sort(aa, comparator);
+        for (Algorithm a : aa) {
+            a.print(out);
         }
         
         MetaCommand[] mca=ss.getMetaCommands().toArray(new MetaCommand[0]);

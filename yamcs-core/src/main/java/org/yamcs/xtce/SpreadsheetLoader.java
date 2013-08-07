@@ -41,6 +41,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
 	HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
 	HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
+	HashMap<String,Algorithm> algorithms = new HashMap<String, Algorithm>();
 	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
@@ -71,6 +72,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static int IDX_CALIB_CALIB1=2;
 	final static int IDX_CALIB_CALIB2=3;
 	
+	//columns in the algorithms sheet
+	final static int IDX_ALGO_NAME=0;
+	final static int IDX_ALGO_LANGUAGE=1;
+	final static int IDX_ALGO_TEXT=2;
+	final static int IDX_ALGO_PARA_NAME=3;
+	final static int IDX_ALGO_PARA_INOUT=4;
 	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
@@ -112,6 +119,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			loadLimitsSheet();
 			loadParameters();
 			loadContainers();
+			loadAlgorithms();
 		} catch (BiffException e) {
 			throw new DatabaseLoadException(e);
 		} catch (IOException e) {
@@ -921,6 +929,75 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			spaceSystem.addSequenceContainer(container);
 		}
 	}
+	
+    private void loadAlgorithms() throws DatabaseLoadException {
+        Sheet algo_sheet = workbook.getSheet("Algorithms");
+        if (algo_sheet == null) {
+            return;
+        }
+
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new algorithm
+            while (start < algo_sheet.getRows()) {
+                Cell[] cells = algo_sheet.getRow(start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= algo_sheet.getRows()) {
+               break;
+            }
+
+            Cell[] cells = algo_sheet.getRow(start);
+            String name = cells[IDX_ALGO_NAME].getContents();
+            String language = cells[IDX_ALGO_LANGUAGE].getContents();
+            String algorithmText = cells[IDX_ALGO_TEXT].getContents();
+            
+            // now we search for the matching last row of that algorithm
+            int end = start + 1;
+            while (end < algo_sheet.getRows()) {
+                cells = algo_sheet.getRow(end);
+                if (!hasColumn(cells, IDX_ALGO_PARA_NAME)) {
+                    break;
+                }
+                end++;
+            }
+            
+            Algorithm algorithm = new Algorithm(name);
+
+            if ("JavaScript".equalsIgnoreCase(language)) {
+                algorithm.setLanguage(language);
+            } else {
+                error("Algorithm:"+(start+1)+" language '"+language+"' not supported. Supported languages: JavaScript");
+            }
+            
+            algorithm.setAlgorithmText(algorithmText);
+            
+            // In/out params
+            for (int j = start+1; j < end; j++) {
+                cells = algo_sheet.getRow(j);
+                String paraName = cells[IDX_ALGO_PARA_NAME].getContents();
+                String paraInout = cells[IDX_ALGO_PARA_INOUT].getContents();
+                Parameter param = parameters.get(paraName);
+                if (param != null) {
+                    if ("in".equalsIgnoreCase(paraInout)) {
+                        algorithm.addInput(param);
+                    } else if ("out".equalsIgnoreCase(paraInout)) {
+                        algorithm.addOutput(param);
+                    } else {
+                        error("Algorithm:"+(j+1)+" in/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
+                    }
+                } else {
+                    throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraName + "' was not found in the parameters sheet");
+                }
+            }
+            algorithms.put(name, algorithm);
+            start = end;
+        }
+   }
 
 	private boolean hasColumn(Cell[] cells, int idx) {
 	    return (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));

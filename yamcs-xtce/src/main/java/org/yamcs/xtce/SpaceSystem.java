@@ -32,6 +32,7 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, SequenceContainer> containers=new HashMap<String, SequenceContainer>();
     private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>(); 
     private HashMap<String, ParameterType> parameterTypes=new HashMap<String, ParameterType>();
+    private HashMap<String, Algorithm> algorithms=new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands=new HashMap<String, MetaCommand>();
     
     private HashMap<String, SpaceSystem> subsystems=new HashMap<String, SpaceSystem>();
@@ -68,8 +69,13 @@ public class SpaceSystem extends NameDescription {
         parameterTypes.put(ptn, parameterType);
         
     }
-    
-    
+
+    public void addAlgorithm(Algorithm algorithm) {
+        if(algorithms.containsKey(algorithm.getName()))
+            throw new IllegalArgumentException("there is already an algorithm with name "+algorithm.getName());
+        algorithms.put(algorithm.getName(), algorithm);
+    }
+
     public void addMetaCommand(MetaCommand command) {
         if(commands.containsKey(command.getName()))
             throw new IllegalArgumentException("there is already a command with name "+command.getName());
@@ -112,6 +118,10 @@ public class SpaceSystem extends NameDescription {
     
     public Collection<SpaceSystem> getSubSystems() {
         return subsystems.values();
+    }
+    
+    public Collection<Algorithm> getAlgorithms() {
+        return algorithms.values();
     }
     
     public Collection<MetaCommand> getMetaCommands() {
