@@ -7,11 +7,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.DummyPpProvider;
 import org.yamcs.tctm.TcTmService;
@@ -196,6 +200,52 @@ public class DerivedValuesTest {
         assertEquals(1, params.size()); // Windows:  [2  3  5  8]  &&  [8 10] => produce (2 + 8) * 8
         assertEquals(80, params.get(0).getParameterValue().getEngValue().getUint32Value());
 
+        c.quit();
+    }
+    
+    @Test
+    public void testEvents() throws Exception {
+        EventProducerFactory.setMockup(true);
+        Queue<Event> q = EventProducerFactory.getMockupQueue();
+        
+        RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
+        Channel c = ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new MyTcTmService(tmGenerator), "dvtest", null);
+        ParameterRequestManager prm = c.getParameterRequestManager();
+        
+        List<NamedObjectId> subList = Arrays.asList(NamedObjectId.newBuilder().setName("test_events").build());
+        final List<ParameterValueWithId> params = new ArrayList<ParameterValueWithId>();
+        prm.addRequest(subList, new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT16(1, 0);
+        assertEquals(1, q.size());
+        Event evt = q.poll();
+        assertEquals("CustomAlgorithm", evt.getSource());
+        assertEquals("test_events", evt.getType());
+        assertEquals("low (1)", evt.getMessage());
+        assertEquals(EventSeverity.INFO, evt.getSeverity());
+        
+        tmGenerator.generate_PKT16(7, 0);
+        assertEquals(1, q.size());
+        evt = q.poll();
+        assertEquals("CustomAlgorithm", evt.getSource());
+        assertEquals("test_events", evt.getType());
+        assertEquals("med (7)", evt.getMessage());
+        assertEquals(EventSeverity.WARNING, evt.getSeverity());
+        
+        tmGenerator.generate_PKT16(10, 0);
+        assertEquals(1, q.size());
+        evt = q.poll();
+        assertEquals("CustomAlgorithm", evt.getSource());
+        assertEquals("test_events", evt.getType());
+        assertEquals("high (10)", evt.getMessage());
+        assertEquals(EventSeverity.ERROR, evt.getSeverity());
+        
         c.quit();
     }
 

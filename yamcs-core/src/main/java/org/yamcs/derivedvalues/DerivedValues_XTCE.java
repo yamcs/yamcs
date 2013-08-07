@@ -27,6 +27,8 @@ import org.w3c.dom.Text;
 import org.yamcs.DerivedValue;
 import org.yamcs.DerivedValuesProvider;
 import org.yamcs.MdbDerivedValue;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
@@ -36,6 +38,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 public class DerivedValues_XTCE implements DerivedValuesProvider {
+    private static final String KEY_ALGO_NAME = "algoName";
     private static final String KEY_UPDATED = "updated";
     private static final String KEY_YAMCS = "Yamcs";
 	private static final Logger log = LoggerFactory.getLogger(DerivedValues_XTCE.class);
@@ -62,7 +65,10 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					factory.getLanguageName(), factory.getLanguageVersion(),
 					factory.getNames(), factory.getExtensions()));
 				final ScriptEngine engine = factory.getScriptEngine();
-				engine.put(KEY_YAMCS, new ScriptHelper(engine));
+				
+				EventProducer eventProducer = EventProducerFactory.getEventProducer();
+				eventProducer.setSource("CustomAlgorithm");
+				engine.put(KEY_YAMCS, new ScriptHelper(engine, eventProducer));
 				for (String name:factory.getNames()) {
 					enginesByName.put(name, engine);
 				}
@@ -165,10 +171,8 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 
 		if (currentCode == null) {
 			log.warn(String.format("Algorithm %s: no code", currentAlgo));
-		} else if ((currentOutputParam == null) || currentOutputParam.isEmpty()) {
-			log.warn(String.format("Algorithm %s: no output parameter", currentAlgo));
 		} else {
-			derivedValues.add(new Algorithm(currentEngine, currentCode, currentInputParams, currentOutputParam));
+			derivedValues.add(new Algorithm(currentEngine, currentAlgo, currentCode, currentInputParams, currentOutputParam));
 			++algoCount;
 		}
 	}
@@ -243,11 +247,13 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	}
 
 	class Algorithm extends MdbDerivedValue {
-		String programCode;
+	    String algoName;
+	    String programCode;
 		ScriptEngine engine;
 
-		Algorithm(ScriptEngine engine, String programCode, String[] inputParams, String outputParam) {
-			super(outputParam, inputParams);
+		Algorithm(ScriptEngine engine, String algoName, String programCode, String[] inputParams, String outputParam) {
+			super((outputParam != null ? outputParam : algoName), inputParams);
+			this.algoName = algoName;
 			this.engine = engine;
 			this.programCode = programCode;
 		}
@@ -297,6 +303,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			}
 			updated = true;
 			engine.put(KEY_UPDATED, updated);
+			engine.put(KEY_ALGO_NAME, algoName);
 			
 			try {
 				//long ts = System.currentTimeMillis();
@@ -306,7 +313,9 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				if (updated) {
 					Object res = engine.get(getParameter().getName());
 					if (res == null) {
-						log.warn("script variable "+getParameter().getName()+" was not set");
+					    if (!getParameter().getName().equals(algoName)) {
+					        log.warn("script variable "+getParameter().getName()+" was not set");
+					    }
 						updated = false;
 					} else {
 						if (res instanceof Double) {
@@ -332,9 +341,11 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 
 	public class ScriptHelper {
 	    private ScriptEngine engine;
+	    private EventProducer eventProducer;
 
-        private ScriptHelper(ScriptEngine engine) {
+        private ScriptHelper(ScriptEngine engine, EventProducer eventProducer) {
 	        this.engine = engine;
+	        this.eventProducer = eventProducer;
 	    }
         
 		public Object calibrate(int raw, String parameter) {
@@ -356,6 +367,30 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			}
 			return null;
 		}
+		
+		public void info(String msg) {
+		    info((String) engine.get(KEY_ALGO_NAME), msg);
+		}
+		
+		public void info(String type, String msg) {
+		    eventProducer.sendInfo(type, msg);
+		}
+		
+        public void warning(String msg) {
+            warning((String) engine.get(KEY_ALGO_NAME), msg);
+        }
+        
+        public void warning(String type, String msg) {
+            eventProducer.sendWarning(type, msg);
+        }
+        
+        public void error(String msg) {
+            error((String) engine.get(KEY_ALGO_NAME), msg);
+        }
+        
+        public void error(String type, String msg) {
+            eventProducer.sendError(type, msg);
+        }
 		
 		public Object prev(String parameter, int index) {
 		    if (index < 1) { throw new IllegalArgumentException("Index into previous values should be >= 1"); }
