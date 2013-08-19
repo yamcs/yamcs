@@ -55,7 +55,11 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	private XtceDb xtcedb;
 	
 	public DerivedValues_XTCE(XtceDb xtcedb) {
-	    this.xtcedb=xtcedb;
+	    this.xtcedb = xtcedb;
+	    
+        // For use in scripts
+        EventProducer eventProducer = EventProducerFactory.getEventProducer();
+        eventProducer.setSource("CustomAlgorithm");
 		try {
 			// load scripting engines
 			semgr = new ScriptEngineManager();
@@ -66,8 +70,30 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					factory.getNames(), factory.getExtensions()));
 				final ScriptEngine engine = factory.getScriptEngine();
 				
-				EventProducer eventProducer = EventProducerFactory.getEventProducer();
-				eventProducer.setSource("CustomAlgorithm");
+                // If the engine is JavaScript, install a syntactic shortcut function
+                // prev() to every object. Since there's no way to know the variable
+                // name of the object this method is called on, we require that
+                // the attribute parameterName is set elsewhere.
+                if (factory.getNames().contains("js")) {
+                    try {
+                        engine.eval("Object.prototype.prev = function(idx) {"
+                                  + "    var p = Yamcs.prev(this.parameterName, idx);"
+                                  // the above java call will return a wrapped object
+                                  // unwrap it here, so it is considered a Number in JavaScript
+                                  + "    if (p instanceof java.lang.Integer) return p.intValue();"
+                                  + "    else if (p instanceof java.lang.Long) return p.longValue();"
+                                  + "    else if (p instanceof java.lang.Double) return p.doubleValue();"
+                                  + "    else if (p instanceof java.lang.Short) return p.shortValue();"
+                                  + "    else if (p instanceof java.lang.Byte) return p.byteValue();"
+                                  + "    else if (p instanceof java.lang.Float) return p.floatValue();"
+                                  + "    else if (p instanceof java.lang.Boolean) return p.booleanValue();"
+                                  + "    else return p;"
+                                  + " };");
+                    } catch (ScriptException e) {
+                        log.error("Could not install prev() function on JavaScript engine", e);
+                    }
+                }
+
 				engine.put(KEY_YAMCS, new ScriptHelper(engine, eventProducer));
 				for (String name:factory.getNames()) {
 					enginesByName.put(name, engine);
@@ -77,13 +103,6 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				}
 			}
 			
-			// Pass Java values as JavaScript primitives instead of objects
-			// This is pretty dirty. We're depending on non-public Rhino API
-			sun.org.mozilla.javascript.internal.Context ctx = sun.org.mozilla.javascript.internal.Context.enter();
-			sun.org.mozilla.javascript.internal.WrapFactory wf = new sun.org.mozilla.javascript.internal.WrapFactory();
-			wf.setJavaPrimitiveWrap(false);
-			ctx.setWrapFactory(wf);
-
 			// load XML files from classpath
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
@@ -266,7 +285,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				
 				// Store current engine values for parameters used in an algorithm window
 				if (buffersByPname.containsKey(pname)) {
-				    buffersByPname.get(pname).append((Number) engine.get(pname));
+				    buffersByPname.get(pname).append(engine.get(pname));
 				    log.debug("Adding pname of type {}", engine.get(pname).getClass());
                     log.debug("Buffer: {}", buffersByPname.get(pname));
 				}
@@ -300,6 +319,15 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				    default:
 				        log.warn("Ignoring update of unexpected value type {}", v.getType());
 				}
+
+                if (engine.getFactory().getNames().contains("js")) {
+                    try {
+                        engine.eval(String.format("%s=new %s.constructor(%s); %s.parameterName='%s'",
+                                                        pname, pname, pname, pname, pname));
+                    } catch (ScriptException e) {
+                        log.error("Could not extends '%' with parameterName attribute", e);
+                    }
+                }
 			}
 			updated = true;
 			engine.put(KEY_UPDATED, updated);
