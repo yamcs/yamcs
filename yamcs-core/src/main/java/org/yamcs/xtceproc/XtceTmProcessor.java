@@ -97,7 +97,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	
 	@Override
     public boolean canProvide(NamedObjectId paraId) {
-	    return xtcedb.getParameter(paraId) != null;
+	    Parameter p = xtcedb.getParameter(paraId);
+	    return (p != null && p.getParameterType() != null); // Exclude derived values
 	}
 	
 	@Override

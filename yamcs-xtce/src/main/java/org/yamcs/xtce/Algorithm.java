@@ -5,14 +5,15 @@ import java.util.ArrayList;
 
 // No triggers yet
 public class Algorithm extends NameDescription {
-    private static final long serialVersionUID = -8568698748072662696L;
+    private static final long serialVersionUID = 201308201317L;
     
     private String language;
     private String algorithmText;
-    private ArrayList<Parameter> inputSet = new ArrayList<Parameter>();
-    private ArrayList<Parameter> outputSet = new ArrayList<Parameter>();
+    private AutoActivateType autoActivate; // This is not in XTCE
+    private ArrayList<InputParameter> inputSet = new ArrayList<InputParameter>();
+    private ArrayList<OutputParameter> outputSet = new ArrayList<OutputParameter>();
     
-    // Contrary to XTCE, no support for multiple algo's at this level
+    // Contrary to XTCE, no support for multiple algorithms at this level
     // private String algorithmLocation;
 
     public Algorithm(String name) {
@@ -35,25 +36,39 @@ public class Algorithm extends NameDescription {
         this.algorithmText = algorithmText;
     }
     
-    public void addInput(Parameter inputParameter) {
+    public void addInput(InputParameter inputParameter) {
         inputSet.add(inputParameter);
     }
     
-    public void addOutput(Parameter outputParameter) {
+    public void addOutput(OutputParameter outputParameter) {
         outputSet.add(outputParameter);
     }
     
-    public ArrayList<Parameter> getInputSet() {
+    public ArrayList<InputParameter> getInputSet() {
         return inputSet;
     }
 
-    public ArrayList<Parameter> getOutputSet() {
+    public ArrayList<OutputParameter> getOutputSet() {
         return outputSet;
+    }
+    
+    public void setAutoActivate(AutoActivateType autoActivate) {
+        this.autoActivate=autoActivate;
+    }
+    
+    public AutoActivateType getAutoActivate() {
+        return autoActivate;
     }
     
     public void print(PrintStream out) {
         out.print("Algorithm name: "+name);
         if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-        out.println( "." );
+        out.println(".");
+    }
+    
+    public enum AutoActivateType {
+        ALWAYS,
+        REALTIME_ONLY,
+        REPLAY_ONLY
     }
 }

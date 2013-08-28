@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -27,8 +26,6 @@ import org.w3c.dom.Text;
 import org.yamcs.DerivedValue;
 import org.yamcs.DerivedValuesProvider;
 import org.yamcs.MdbDerivedValue;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
@@ -38,9 +35,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 public class DerivedValues_XTCE implements DerivedValuesProvider {
-    private static final String KEY_ALGO_NAME = "algoName";
-    private static final String KEY_UPDATED = "updated";
-    private static final String KEY_YAMCS = "Yamcs";
 	private static final Logger log = LoggerFactory.getLogger(DerivedValues_XTCE.class);
 	ArrayList<DerivedValue> derivedValues = new ArrayList<DerivedValue>();
 	int algoCount;
@@ -51,59 +45,30 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	ScriptEngine currentEngine;
 	HashMap<String,ScriptEngine> enginesByName = new HashMap<String,ScriptEngine>();
 	HashMap<String,ScriptEngine> enginesByExtension = new HashMap<String,ScriptEngine>();
-	HashMap<String,WindowBuffer> buffersByPname = new HashMap<String,WindowBuffer>();
 	private XtceDb xtcedb;
 	
 	public DerivedValues_XTCE(XtceDb xtcedb) {
 	    this.xtcedb = xtcedb;
 	    
-        // For use in scripts
-        EventProducer eventProducer = EventProducerFactory.getEventProducer();
-        eventProducer.setSource("CustomAlgorithm");
-		try {
-			// load scripting engines
-			semgr = new ScriptEngineManager();
-			for (ScriptEngineFactory factory:semgr.getEngineFactories()) {
-				log.debug(String.format("Loading scripting engine: %s/%s, language: %s/%s, names: %s, extensions: %s",
-					factory.getEngineName(), factory.getEngineVersion(),
-					factory.getLanguageName(), factory.getLanguageVersion(),
-					factory.getNames(), factory.getExtensions()));
-				final ScriptEngine engine = factory.getScriptEngine();
-				
-                // If the engine is JavaScript, install a syntactic shortcut function
-                // prev() to every object. Since there's no way to know the variable
-                // name of the object this method is called on, we require that
-                // the attribute parameterName is set elsewhere.
-                if (factory.getNames().contains("js")) {
-                    try {
-                        engine.eval("Object.prototype.prev = function(idx) {"
-                                  + "    var p = Yamcs.prev(this.parameterName, idx);"
-                                  // the above java call will return a wrapped object
-                                  // unwrap it here, so it is considered a Number in JavaScript
-                                  + "    if (p instanceof java.lang.Integer) return p.intValue();"
-                                  + "    else if (p instanceof java.lang.Long) return p.longValue();"
-                                  + "    else if (p instanceof java.lang.Double) return p.doubleValue();"
-                                  + "    else if (p instanceof java.lang.Short) return p.shortValue();"
-                                  + "    else if (p instanceof java.lang.Byte) return p.byteValue();"
-                                  + "    else if (p instanceof java.lang.Float) return p.floatValue();"
-                                  + "    else if (p instanceof java.lang.Boolean) return p.booleanValue();"
-                                  + "    else return p;"
-                                  + " };");
-                    } catch (ScriptException e) {
-                        log.error("Could not install prev() function on JavaScript engine", e);
-                    }
-                }
-
-				engine.put(KEY_YAMCS, new ScriptHelper(engine, eventProducer));
-				for (String name:factory.getNames()) {
-					enginesByName.put(name, engine);
-				}
-				for (String ext:factory.getExtensions()) {
-					enginesByExtension.put(ext, engine);
-				}
+		// Load scripting engines
+		semgr = new ScriptEngineManager();
+		for (ScriptEngineFactory factory:semgr.getEngineFactories()) {
+			log.debug(String.format("Loading scripting engine: %s/%s, language: %s/%s, names: %s, extensions: %s",
+				factory.getEngineName(), factory.getEngineVersion(),
+				factory.getLanguageName(), factory.getLanguageVersion(),
+				factory.getNames(), factory.getExtensions()));
+			final ScriptEngine engine = factory.getScriptEngine();
+			engine.put("Yamcs", new ScriptHelper());
+			for (String name:factory.getNames()) {
+				enginesByName.put(name, engine);
 			}
-			
-			// load XML files from classpath
+			for (String ext:factory.getExtensions()) {
+				enginesByExtension.put(ext, engine);
+			}
+		}
+
+		// Load algorithms from XML files in classpath
+	    try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			String[] cp = ((String)System.getProperties().get("java.class.path")).split((String)System.getProperties().get("path.separator"));
@@ -127,7 +92,6 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					}
 				}
 			}
-
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		} catch (org.xml.sax.SAXException e) {
@@ -191,7 +155,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 		if (currentCode == null) {
 			log.warn(String.format("Algorithm %s: no code", currentAlgo));
 		} else {
-			derivedValues.add(new Algorithm(currentEngine, currentAlgo, currentCode, currentInputParams, currentOutputParam));
+			derivedValues.add(new Algorithm(currentEngine, currentCode, currentInputParams, currentOutputParam));
 			++algoCount;
 		}
 	}
@@ -266,13 +230,11 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	}
 
 	class Algorithm extends MdbDerivedValue {
-	    String algoName;
 	    String programCode;
 		ScriptEngine engine;
 
-		Algorithm(ScriptEngine engine, String algoName, String programCode, String[] inputParams, String outputParam) {
-			super((outputParam != null ? outputParam : algoName), inputParams);
-			this.algoName = algoName;
+		Algorithm(ScriptEngine engine, String programCode, String[] inputParams, String outputParam) {
+			super(outputParam, inputParams);
 			this.engine = engine;
 			this.programCode = programCode;
 		}
@@ -282,14 +244,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			for (int i = 0; i < args.length; ++i) {
 				final String pname = args[i].getParameter().getName();
 				Value v = args[i].getEngValue();
-				
-				// Store current engine values for parameters used in an algorithm window
-				if (buffersByPname.containsKey(pname)) {
-				    buffersByPname.get(pname).append(engine.get(pname));
-				    log.debug("Adding pname of type {}", engine.get(pname).getClass());
-                    log.debug("Buffer: {}", buffersByPname.get(pname));
-				}
-				
+
 				// Now, update the engine
 				switch(v.getType()) {
 				    case BINARY:
@@ -319,31 +274,19 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				    default:
 				        log.warn("Ignoring update of unexpected value type {}", v.getType());
 				}
-
-                if (engine.getFactory().getNames().contains("js")) {
-                    try {
-                        engine.eval(String.format("%s=new %s.constructor(%s); %s.parameterName='%s'",
-                                                        pname, pname, pname, pname, pname));
-                    } catch (ScriptException e) {
-                        log.error("Could not extends '%' with parameterName attribute", e);
-                    }
-                }
 			}
 			updated = true;
-			engine.put(KEY_UPDATED, updated);
-			engine.put(KEY_ALGO_NAME, algoName);
+			engine.put("updated", updated);
 			
 			try {
 				//long ts = System.currentTimeMillis();
 				engine.eval(programCode);
 				//System.out.println("script time "+(System.currentTimeMillis() - ts));
-				updated = (Boolean) engine.get(KEY_UPDATED);
+				updated = (Boolean) engine.get("updated");
 				if (updated) {
 					Object res = engine.get(getParameter().getName());
 					if (res == null) {
-					    if (!getParameter().getName().equals(algoName)) {
-					        log.warn("script variable "+getParameter().getName()+" was not set");
-					    }
+					    log.warn("script variable "+getParameter().getName()+" was not set");
 						updated = false;
 					} else {
 						if (res instanceof Double) {
@@ -368,14 +311,6 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	}
 
 	public class ScriptHelper {
-	    private ScriptEngine engine;
-	    private EventProducer eventProducer;
-
-        private ScriptHelper(ScriptEngine engine, EventProducer eventProducer) {
-	        this.engine = engine;
-	        this.eventProducer = eventProducer;
-	    }
-        
 		public Object calibrate(int raw, String parameter) {
 		// calibrate raw value according to the calibration rule of the given parameter
 		// returns a Float or String object
@@ -396,78 +331,9 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			return null;
 		}
 		
-		public void info(String msg) {
-		    info((String) engine.get(KEY_ALGO_NAME), msg);
-		}
-		
-		public void info(String type, String msg) {
-		    eventProducer.sendInfo(type, msg);
-		}
-		
-        public void warning(String msg) {
-            warning((String) engine.get(KEY_ALGO_NAME), msg);
-        }
-        
-        public void warning(String type, String msg) {
-            eventProducer.sendWarning(type, msg);
-        }
-        
-        public void error(String msg) {
-            error((String) engine.get(KEY_ALGO_NAME), msg);
-        }
-        
-        public void error(String type, String msg) {
-            eventProducer.sendError(type, msg);
-        }
-		
-		public Object prev(String parameter, int index) {
-		    if (index < 1) { throw new IllegalArgumentException("Index into previous values should be >= 1"); }
-		    if (!buffersByPname.containsKey(parameter)) {
-		        buffersByPname.put(parameter, new WindowBuffer(index));
-		    }
-		    Object historicValue = buffersByPname.get(parameter).getHistoricValue(index);
-		    if (historicValue == null) {
-		        engine.put(KEY_UPDATED, Boolean.FALSE);
-		    }
-		    return historicValue;
-		}
-
 		public long letohl(int value) {
 		// little endian to host long
 			return ((value>>24)&0xff) + ((value>>8)&0xff00) + ((value&0xff00)<<8) + ((value&0xff)<<24);
 		}
-	}
-	
-	private static class WindowBuffer {
-	    private Object[] historicValues; // LTR: least-recent to most-recent
-	    
-	    /**
-	     * @param size Initial estimate of size
-	     */
-	    WindowBuffer(int size) {
-	        historicValues = new Object[size];
-	    }
-	    
-	    public Object getHistoricValue(int index) {
-	        if (index > historicValues.length) {
-	            historicValues = Arrays.copyOf(historicValues, index);
-	            return null;
-	        } else {
-	            return historicValues[historicValues.length - index];
-	        }
-	    }
-	    
-	    void append(Object value) {
-	        int i = 0;
-	        for (; i < historicValues.length - 1; i++) {
-	            historicValues[i] = historicValues[i+1];
-	        }
-	        historicValues[i] = value;
-	    }
-	    
-	    @Override
-	    public String toString() {
-	        return Arrays.toString(historicValues);
-	    }
 	}
 }

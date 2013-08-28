@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
@@ -328,6 +329,11 @@ public class XtceDbFactory {
         for(MetaCommand c: ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName()+"/"+c.getName());
             c.addAlias(ss.getQualifiedName(), c.getName());
+        }
+        
+        for(Algorithm a: ss.getAlgorithms()) {
+            a.setQualifiedName(ss.getQualifiedName()+"/"+a.getName());
+            a.addAlias(ss.getQualifiedName(), a.getName());
         }
         
         for(SpaceSystem ss1:ss.getSubSystems()) {

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
@@ -39,6 +40,7 @@ public class ParameterRequestManager implements ParameterListener {
 	
 	private XtceTmProcessor tmProcessor=null;
 	private DerivedValuesManager derivedValuesManager=null;
+	private AlgorithmManager algorithmManager=null;
 	private SystemVariablesManager systemVariablesManager=null;
 	private ParameterProvider ppProvider=null;
 	
@@ -52,6 +54,7 @@ public class ParameterRequestManager implements ParameterListener {
         tmProcessor=new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
         derivedValuesManager=new DerivedValuesManager(yamcsChannel, this, xtcedb);
+        algorithmManager=new AlgorithmManager(yamcsChannel, this, xtcedb);
     }
     
     /**
@@ -72,6 +75,7 @@ public class ParameterRequestManager implements ParameterListener {
 	    systemVariablesManager=new SystemVariablesManager(this, chan);
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
+		algorithmManager=new AlgorithmManager(chan.getInstance(), this, chan.xtcedb);
 		//derived values should be the last one because it can be based on tm and system variables
 		derivedValuesManager=new DerivedValuesManager(chan.getInstance(), this, chan.xtcedb);
 	}
@@ -92,6 +96,7 @@ public class ParameterRequestManager implements ParameterListener {
         if(subscribeAll.isEmpty()) {
             tmProcessor.startProvidingAll();
             derivedValuesManager.startProvidingAll();
+            algorithmManager.startProvidingAll();
             systemVariablesManager.startProvidingAll();
         }
         subscribeAll.put(id, namespace);
@@ -288,6 +293,7 @@ public class ParameterRequestManager implements ParameterListener {
 	private ParameterProvider getProvider(NamedObjectId itemId) {
 		if(tmProcessor.canProvide(itemId)) return tmProcessor;
 		if ((systemVariablesManager!=null)&&(systemVariablesManager.canProvide(itemId))) return systemVariablesManager;
+		if (algorithmManager.canProvide(itemId)) return algorithmManager;
 		if (derivedValuesManager.canProvide(itemId)) return derivedValuesManager;
 		if ((ppProvider!=null)&&(ppProvider.canProvide(itemId))) return ppProvider;
 		return null;
@@ -301,6 +307,7 @@ public class ParameterRequestManager implements ParameterListener {
 	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
 		if(tmProcessor.canProvide(paraId)) return tmProcessor.getParameter(paraId);
 		if ((systemVariablesManager!=null)&&(systemVariablesManager.canProvide(paraId))) return systemVariablesManager.getParameter(paraId);
+		if (algorithmManager.canProvide(paraId)) return algorithmManager.getParameter(paraId);
 		if (derivedValuesManager.canProvide(paraId)) return derivedValuesManager.getParameter(paraId);
 		if ((ppProvider!=null)&&(ppProvider.canProvide(paraId))) return ppProvider.getParameter(paraId);
 		throw new InvalidIdentification(paraId);
@@ -317,6 +324,7 @@ public class ParameterRequestManager implements ParameterListener {
 		
 		//so first we add to the delivery the parameters just received
 		updateDelivery(delivery,params);
+		
 		int derivedValueSubscriptionId=derivedValuesManager.getSubscriptionId();
 		//then if the delivery updates some of the parameters required by the derived values
 		//  compute the derived values
@@ -324,6 +332,13 @@ public class ParameterRequestManager implements ParameterListener {
 		if(delivery.containsKey(derivedValueSubscriptionId)) {
 			updateDelivery(delivery,derivedValuesManager.updateDerivedValues(delivery.get(derivedValueSubscriptionId))); 
 		}
+		
+		int algoSubscriptionId=algorithmManager.getSubscriptionId();
+        //same for the algorithms
+        if(delivery.containsKey(algoSubscriptionId)) {
+            updateDelivery(delivery,algorithmManager.updateAlgorithms(delivery.get(algoSubscriptionId))); 
+        }
+
 		//and finally deliver the delivery :)
 		for(Map.Entry<Integer, ArrayList<ParameterValueWithId>> entry: delivery.entrySet()){
 			Integer subscriptionId=entry.getKey();
