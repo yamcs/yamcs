@@ -14,7 +14,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -37,7 +36,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 	ArrayList<DerivedValue> requestedValues=new ArrayList<DerivedValue>();
 	ParameterRequestManager parameterRequestManager;
 	
-	public DerivedValuesManager(String yamcsInstance, ParameterRequestManager parameterRequestManager, XtceDb xtcedb) throws ConfigurationException {
+	public DerivedValuesManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
 		if(parameterRequestManager!=null) {
 			//it is invoked with parameterRequestManager=null from the MDB Loader TODO: fix this mess
 			this.parameterRequestManager=parameterRequestManager;
@@ -47,8 +46,8 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 				log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
 			}
 		}
-		addAll(new DerivedValues_XTCE(xtcedb).getDerivedValues());
-		YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+		addAll(new DerivedValues_XTCE(chan.xtcedb).getDerivedValues());
+		YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
 		String mdbconfig=yconf.getString("mdb");
 		YConfiguration conf=YConfiguration.getConfiguration("mdb");
 		if(conf.containsKey(mdbconfig, "derivedValuesProviders")) {

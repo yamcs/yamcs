@@ -14,7 +14,6 @@ import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
@@ -43,19 +42,11 @@ public class ParameterRequestManager implements ParameterListener {
 	private AlgorithmManager algorithmManager=null;
 	private SystemVariablesManager systemVariablesManager=null;
 	private ParameterProvider ppProvider=null;
+	private List<ParameterProvider> parameterProviders=new ArrayList<ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
 	TmPacketProvider tmPacketProvider;
-	
-    public ParameterRequestManager(String yamcsChannel, XtceDb xtcedb) throws ConfigurationException {
-        this.channel=null;
-        log=LoggerFactory.getLogger(this.getClass().getName());
-        tmProcessor=new XtceTmProcessor(xtcedb);
-        tmProcessor.setParameterListener(this);
-        derivedValuesManager=new DerivedValuesManager(yamcsChannel, this, xtcedb);
-        algorithmManager=new AlgorithmManager(yamcsChannel, this, xtcedb);
-    }
     
     /**
      * Creates a new ParameterRequestManager, configured to listen to a newly
@@ -75,12 +66,15 @@ public class ParameterRequestManager implements ParameterListener {
 	    systemVariablesManager=new SystemVariablesManager(this, chan);
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
-		algorithmManager=new AlgorithmManager(chan.getInstance(), this, chan.xtcedb);
+		algorithmManager=new AlgorithmManager(this, chan);
 		//derived values should be the last one because it can be based on tm and system variables
-		derivedValuesManager=new DerivedValuesManager(chan.getInstance(), this, chan.xtcedb);
+		derivedValuesManager=new DerivedValuesManager(this, chan);
 	}
 	
-	
+    // TODO replace by configuration in yaml file
+    public void addParameterProvider(ParameterProvider parameterProvider) {
+        parameterProviders.add(parameterProvider);
+    }
 	
 	/** Added by AMI on request of NM during a remote email session. */
 	public int generateDummyRequestId() {
@@ -98,6 +92,9 @@ public class ParameterRequestManager implements ParameterListener {
             derivedValuesManager.startProvidingAll();
             algorithmManager.startProvidingAll();
             systemVariablesManager.startProvidingAll();
+            for(ParameterProvider provider:parameterProviders) {
+                provider.startProvidingAll();
+            }
         }
         subscribeAll.put(id, namespace);
         request2ParameterConsumerMap.put(id, consumer);
@@ -296,6 +293,11 @@ public class ParameterRequestManager implements ParameterListener {
 		if (algorithmManager.canProvide(itemId)) return algorithmManager;
 		if (derivedValuesManager.canProvide(itemId)) return derivedValuesManager;
 		if ((ppProvider!=null)&&(ppProvider.canProvide(itemId))) return ppProvider;
+		for(ParameterProvider provider:parameterProviders) {
+		    if(provider.canProvide(itemId)) {
+		        return provider;
+		    }
+		}
 		return null;
 	}
 
@@ -310,6 +312,11 @@ public class ParameterRequestManager implements ParameterListener {
 		if (algorithmManager.canProvide(paraId)) return algorithmManager.getParameter(paraId);
 		if (derivedValuesManager.canProvide(paraId)) return derivedValuesManager.getParameter(paraId);
 		if ((ppProvider!=null)&&(ppProvider.canProvide(paraId))) return ppProvider.getParameter(paraId);
+		for(ParameterProvider provider:parameterProviders) {
+		    if(provider.canProvide(paraId)) {
+		        return provider.getParameter(paraId);
+		    }
+		}
 		throw new InvalidIdentification(paraId);
 	}
 

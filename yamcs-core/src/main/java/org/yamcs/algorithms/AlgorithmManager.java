@@ -12,6 +12,7 @@ import javax.script.ScriptEngineManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
@@ -54,8 +55,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	// For storing a window of previous parameter instances
 	HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
 	
-	public AlgorithmManager(String yamcsInstance, ParameterRequestManager parameterRequestManager, XtceDb xtcedb) throws ConfigurationException {
-		this.xtcedb=xtcedb;
+	public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
+		this.xtcedb=chan.xtcedb;
 	    this.parameterRequestManager=parameterRequestManager;
 		try {
 			subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
@@ -65,7 +66,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 		
         // Load only JavaScript engine (included by default in JDK)
 		scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
-		scriptEngine.put("Yamcs", new AlgorithmUtils(yamcsInstance, xtcedb, scriptEngine));
+		scriptEngine.put("Yamcs", new AlgorithmUtils(chan.getInstance(), xtcedb, scriptEngine));
 		 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
             loadAlgorithm(algo);
