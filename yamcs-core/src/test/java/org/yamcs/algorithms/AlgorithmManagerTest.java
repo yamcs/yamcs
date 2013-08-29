@@ -2,6 +2,7 @@ package org.yamcs.algorithms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +22,6 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterConsumer;
 import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
-import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
@@ -73,12 +73,11 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testFloatAdd() throws InvalidIdentification {
-        List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
-        paraList.add(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatAddition").build());
-        paraList.add(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build());
+        NamedObjectId floatParaId=NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build();
+        NamedObjectId floatAddition=NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatAddition").build();
 
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(paraList, new ParameterConsumer() {
+        prm.addRequest(Arrays.asList(floatParaId, floatAddition), new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId,   ArrayList<ParameterValueWithId> items) {
                 params.addAll(items);
@@ -88,11 +87,15 @@ public class AlgorithmManagerTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(2, params.size());
-        ParameterValue p=params.get(0).getParameterValue();
-        assertEquals(0.1672918, p.getEngValue().getFloatValue(), 0.001);
-
-        p=params.get(1).getParameterValue();
-        assertEquals(2.1672918, p.getEngValue().getDoubleValue(), 0.001);
+        for(ParameterValueWithId pvwi:params) {
+            if(pvwi.getId().equals(floatParaId)) {
+                assertEquals(0.1672918, pvwi.getParameterValue().getEngValue().getFloatValue(), 0.001);
+            } else if(pvwi.getId().equals(floatAddition)) {
+                assertEquals(2.1672918, pvwi.getParameterValue().getEngValue().getDoubleValue(), 0.001);
+            } else {
+                fail("Unexpected id "+pvwi.getId());
+            }
+        }
     }
 
     @Ignore
@@ -121,11 +124,6 @@ public class AlgorithmManagerTest {
         long t1 = System.currentTimeMillis();
         System.out.println("got "+params.size()+" parameters + in "+(t1-t0)/1000.0+" seconds");
         assertEquals(2*n, params.size());
-        ParameterValue p=params.get(0).getParameterValue();
-        assertEquals(0.1672918, p.getEngValue().getFloatValue(), 0.001);
-
-        p=params.get(1).getParameterValue();
-        assertEquals(2.1672918, p.getEngValue().getDoubleValue(), 0.001);
     }
     
     @Test

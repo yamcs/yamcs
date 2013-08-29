@@ -1,1 +1,4 @@
+parameterProviders:
+    #- class: org.yamcs.SystemVariablesManager
+    - class: org.yamcs.algorithms.AlgorithmManager
 mdb: refmdb

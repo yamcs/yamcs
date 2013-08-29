@@ -208,24 +208,25 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 		}
 	}
 
-	public ArrayList<ParameterValue> updateAlgorithms(ArrayList<ParameterValueWithId> items) {
-	    // Update history window for the parameters that need it
-	    for(ParameterValueWithId pvwi:items) {
-	        if(buffersByParam.containsKey(pvwi.getParameterValue().def)) {
-	            buffersByParam.get(pvwi.getParameterValue().def).update(pvwi.getParameterValue());
-	        }
-	    }
-	    
-		// Set the correct arguments for every Algorithm involved
-	    HashSet<AlgorithmEngine> needsRun=new HashSet<AlgorithmEngine>();
-	    HashSet<AlgorithmEngine> invalid=new HashSet<AlgorithmEngine>();
-		for(ParameterValueWithId pvwi:items) {
-		    for(Entry<Algorithm,AlgorithmEngine> entry:engineByAlgorithm.entrySet()) {
-		        Algorithm def=entry.getKey();
-		        AlgorithmEngine engine=entry.getValue();
-		        for(InputParameter inputParameter:def.getInputSet()) {
-		            ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
-		            if(pInstance.getParameter().equals(pvwi.getParameterValue().def)) {
+	@Override
+    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+        // Update history window for the parameters that need it
+        for(ParameterValueWithId pvwi:items) {
+            if(buffersByParam.containsKey(pvwi.getParameterValue().def)) {
+                buffersByParam.get(pvwi.getParameterValue().def).update(pvwi.getParameterValue());
+            }
+        }
+        
+        // Set the correct arguments for every Algorithm involved
+        HashSet<AlgorithmEngine> needsRun=new HashSet<AlgorithmEngine>();
+        HashSet<AlgorithmEngine> invalid=new HashSet<AlgorithmEngine>();
+        for(ParameterValueWithId pvwi:items) {
+            for(Entry<Algorithm,AlgorithmEngine> entry:engineByAlgorithm.entrySet()) {
+                Algorithm def=entry.getKey();
+                AlgorithmEngine engine=entry.getValue();
+                for(InputParameter inputParameter:def.getInputSet()) {
+                    ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
+                    if(pInstance.getParameter().equals(pvwi.getParameterValue().def)) {
                         if(engine.getLookbackSize(pInstance.getParameter())==0) {
                             engine.updateInput(inputParameter, pvwi.getParameterValue());
                             needsRun.add(engine);
@@ -239,39 +240,37 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                                 invalid.add(engine); // Exclude algo as soon as one param is not available
                             }
                         }
-		            }
-		        }
-		    }
-		}
-		
-		// Finally, run the algorithm
-		long acqTime=TimeEncoding.currentInstant();
-		ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
-		for(AlgorithmEngine engine:needsRun) {
-		    if(!invalid.contains(engine)) {
-    			try {
-    			    r.addAll(engine.runAlgorithm());
-    			} catch (Exception e) {
-    				log.warn("Exception while updating algorithm "+engine.def, e);
-    			}
-		    }
-		}
-
-        for(ParameterValue pval:r) {
-            pval.setAcquisitionTime(acqTime);
-            pval.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
+                    }
+                }
+            }
         }
-		return r;
-	}
-
-	@Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
-		//do nothing. everything is done in the updateDerivedValues method
+        
+        // Finally, run the algorithm
+        if(!needsRun.isEmpty()) {
+            long acqTime=TimeEncoding.currentInstant();
+            ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
+            for(AlgorithmEngine engine:needsRun) {
+                if(!invalid.contains(engine)) {
+                    try {
+                        r.addAll(engine.runAlgorithm());
+                    } catch (Exception e) {
+                        log.warn("Exception while updating algorithm "+engine.def, e);
+                    }
+                }
+            }
+    
+            for(ParameterValue pval:r) {
+                pval.setAcquisitionTime(acqTime);
+                pval.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
+            }
+            parameterRequestManager.update(r);
+        }
 	}
 
     @Override
     public void setParameterListener(ParameterListener parameterRequestManager) {
-        // do nothing,  everything is done in the updateDerivedValues method
+        // do nothing,  we're more interested in a ParameterRequestManager, which we're
+        // getting from the constructor
     }
 
     @Override

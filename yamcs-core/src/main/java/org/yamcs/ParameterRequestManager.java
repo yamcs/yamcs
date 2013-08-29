@@ -1,5 +1,6 @@
 package org.yamcs;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.TmPacketProvider;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
@@ -39,9 +41,6 @@ public class ParameterRequestManager implements ParameterListener {
 	
 	private XtceTmProcessor tmProcessor=null;
 	private DerivedValuesManager derivedValuesManager=null;
-	private AlgorithmManager algorithmManager=null;
-	private SystemVariablesManager systemVariablesManager=null;
-	private ParameterProvider ppProvider=null;
 	private List<ParameterProvider> parameterProviders=new ArrayList<ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
@@ -63,16 +62,36 @@ public class ParameterRequestManager implements ParameterListener {
     public ParameterRequestManager(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.channel=chan;
         this.tmProcessor=tmProcessor;
-	    systemVariablesManager=new SystemVariablesManager(this, chan);
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
-		algorithmManager=new AlgorithmManager(this, chan);
-		//derived values should be the last one because it can be based on tm and system variables
-		derivedValuesManager=new DerivedValuesManager(this, chan);
+		
+        YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
+        if(yconf.containsKey("parameterProviders")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> providers=yconf.getList("parameterProviders");
+            for(Map<String,String> provider:providers) {
+                String className=provider.get("class");
+                try {
+                    ParameterProvider p=new YObjectLoader<ParameterProvider>().loadObject(className, this, chan);
+                    addParameterProvider(p);
+                } catch (IOException e) {
+                    throw new ConfigurationException("Cannot load parameter provider from class "+className, e);
+                }
+            }
+        } else {
+            log.debug("No parameter providers defined in yamcs."+chan.getInstance()+".yaml. Using defaults.");
+            // Load default parameter providers
+            addParameterProvider(new SystemVariablesManager(this, chan));
+            addParameterProvider(new AlgorithmManager(this, chan));
+            //derived values should be the last one because it can be based on tm and system variables
+            derivedValuesManager=new DerivedValuesManager(this, chan);
+        }
 	}
 	
-    // TODO replace by configuration in yaml file
+    // TODO replace by configuration in yaml file? (what about ppProvider?)
     public void addParameterProvider(ParameterProvider parameterProvider) {
+        log.debug("Adding parameter provider: "+parameterProvider.getClass());
+        parameterProvider.setParameterListener(this);
         parameterProviders.add(parameterProvider);
     }
 	
@@ -89,9 +108,7 @@ public class ParameterRequestManager implements ParameterListener {
         log.debug("new subscribeAll with subscriptionId "+id);
         if(subscribeAll.isEmpty()) {
             tmProcessor.startProvidingAll();
-            derivedValuesManager.startProvidingAll();
-            algorithmManager.startProvidingAll();
-            systemVariablesManager.startProvidingAll();
+            if(derivedValuesManager!=null) derivedValuesManager.startProvidingAll();
             for(ParameterProvider provider:parameterProviders) {
                 provider.startProvidingAll();
             }
@@ -134,7 +151,7 @@ public class ParameterRequestManager implements ParameterListener {
 	public synchronized void addRequest(int id, List<NamedObjectId> paraList, ParameterConsumer tpc) throws InvalidIdentification {
 		List<ParameterProvider> providers=getProviders(paraList);
 		for(int i=0;i<paraList.size();i++) {
-			log.trace("adding to subscibtionID:{} item:{}",id, paraList.get(i));
+			log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
 			addItemToRequest(id,paraList.get(i),providers.get(i));
 			//log.info("afterwards the subscription looks like: "+toString());
 		}
@@ -289,10 +306,7 @@ public class ParameterRequestManager implements ParameterListener {
 
 	private ParameterProvider getProvider(NamedObjectId itemId) {
 		if(tmProcessor.canProvide(itemId)) return tmProcessor;
-		if ((systemVariablesManager!=null)&&(systemVariablesManager.canProvide(itemId))) return systemVariablesManager;
-		if (algorithmManager.canProvide(itemId)) return algorithmManager;
-		if (derivedValuesManager.canProvide(itemId)) return derivedValuesManager;
-		if ((ppProvider!=null)&&(ppProvider.canProvide(itemId))) return ppProvider;
+		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(itemId))) return derivedValuesManager;
 		for(ParameterProvider provider:parameterProviders) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
@@ -308,10 +322,7 @@ public class ParameterRequestManager implements ParameterListener {
 	 */
 	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
 		if(tmProcessor.canProvide(paraId)) return tmProcessor.getParameter(paraId);
-		if ((systemVariablesManager!=null)&&(systemVariablesManager.canProvide(paraId))) return systemVariablesManager.getParameter(paraId);
-		if (algorithmManager.canProvide(paraId)) return algorithmManager.getParameter(paraId);
-		if (derivedValuesManager.canProvide(paraId)) return derivedValuesManager.getParameter(paraId);
-		if ((ppProvider!=null)&&(ppProvider.canProvide(paraId))) return ppProvider.getParameter(paraId);
+		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(paraId))) return derivedValuesManager.getParameter(paraId);
 		for(ParameterProvider provider:parameterProviders) {
 		    if(provider.canProvide(paraId)) {
 		        return provider.getParameter(paraId);
@@ -332,19 +343,15 @@ public class ParameterRequestManager implements ParameterListener {
 		//so first we add to the delivery the parameters just received
 		updateDelivery(delivery,params);
 		
-		int derivedValueSubscriptionId=derivedValuesManager.getSubscriptionId();
-		//then if the delivery updates some of the parameters required by the derived values
-		//  compute the derived values
-		//System.out.println("---------------delivery:"+delivery+" derivedValueSubscriptionId:"+derivedValueSubscriptionId);
-		if(delivery.containsKey(derivedValueSubscriptionId)) {
-			updateDelivery(delivery,derivedValuesManager.updateDerivedValues(delivery.get(derivedValueSubscriptionId))); 
+        //then if the delivery updates some of the parameters required by the derived values
+        //  compute the derived values
+		if(derivedValuesManager!=null) {
+    		int derivedValueSubscriptionId=derivedValuesManager.getSubscriptionId();
+    		//System.out.println("---------------delivery:"+delivery+" derivedValueSubscriptionId:"+derivedValueSubscriptionId);
+    		if(delivery.containsKey(derivedValueSubscriptionId)) {
+    			updateDelivery(delivery,derivedValuesManager.updateDerivedValues(delivery.get(derivedValueSubscriptionId))); 
+    		}
 		}
-		
-		int algoSubscriptionId=algorithmManager.getSubscriptionId();
-        //same for the algorithms
-        if(delivery.containsKey(algoSubscriptionId)) {
-            updateDelivery(delivery,algorithmManager.updateAlgorithms(delivery.get(algoSubscriptionId))); 
-        }
 
 		//and finally deliver the delivery :)
 		for(Map.Entry<Integer, ArrayList<ParameterValueWithId>> entry: delivery.entrySet()){
@@ -422,27 +429,21 @@ public class ParameterRequestManager implements ParameterListener {
 	}
 
 	/**
-	 * @param ppProvider the ppProvider to set
-	 */
-	public void setProcessedParameterProvider(ParameterProvider paramProvider) {
-		if(paramProvider!=null) paramProvider.setParameterListener(this);
-		this.ppProvider = paramProvider;
-	}
-	
-	/**
 	 * Starts processing by creating a new thread for the associated TmProcessor and SystemVariablesManager
 	 *
 	 */
 	public void start() {
 		tmProcessor.start();
-		if(ppProvider!=null) ppProvider.start();
-		if(systemVariablesManager!=null) systemVariablesManager.start();
+		for(ParameterProvider provider:parameterProviders) {
+		    provider.start();
+		}
 	}
 
 	public void quit() {
-        if(systemVariablesManager!=null) systemVariablesManager.stop();
-	    tmPacketProvider.stop();
-		if(ppProvider!=null) ppProvider.stop();
+		for(ParameterProvider provider:parameterProviders) {
+		    provider.stop();
+		}
+		tmPacketProvider.stop();
 	}
 	
 	@Override
