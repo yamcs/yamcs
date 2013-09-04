@@ -41,7 +41,7 @@ public class ParameterRequestManager implements ParameterListener {
 	
 	private XtceTmProcessor tmProcessor=null;
 	private DerivedValuesManager derivedValuesManager=null;
-	private List<ParameterProvider> parameterProviders=new ArrayList<ParameterProvider>();
+	private Map<Class<?>,ParameterProvider> parameterProviders=new HashMap<Class<?>,ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
@@ -90,9 +90,13 @@ public class ParameterRequestManager implements ParameterListener {
 	
     // TODO replace by configuration in yaml file? (what about ppProvider?)
     public void addParameterProvider(ParameterProvider parameterProvider) {
-        log.debug("Adding parameter provider: "+parameterProvider.getClass());
-        parameterProvider.setParameterListener(this);
-        parameterProviders.add(parameterProvider);
+        if(parameterProviders.containsKey(parameterProvider.getClass())) {
+            log.warn("Ignoring duplicate parameter provider of type "+parameterProvider.getClass());
+        } else {
+            log.debug("Adding parameter provider: "+parameterProvider.getClass());
+            parameterProvider.setParameterListener(this);
+            parameterProviders.put(parameterProvider.getClass(), parameterProvider);
+        }
     }
 	
 	/** Added by AMI on request of NM during a remote email session. */
@@ -109,7 +113,7 @@ public class ParameterRequestManager implements ParameterListener {
         if(subscribeAll.isEmpty()) {
             tmProcessor.startProvidingAll();
             if(derivedValuesManager!=null) derivedValuesManager.startProvidingAll();
-            for(ParameterProvider provider:parameterProviders) {
+            for(ParameterProvider provider:parameterProviders.values()) {
                 provider.startProvidingAll();
             }
         }
@@ -307,7 +311,7 @@ public class ParameterRequestManager implements ParameterListener {
 	private ParameterProvider getProvider(NamedObjectId itemId) {
 		if(tmProcessor.canProvide(itemId)) return tmProcessor;
 		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(itemId))) return derivedValuesManager;
-		for(ParameterProvider provider:parameterProviders) {
+		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
 		    }
@@ -323,7 +327,7 @@ public class ParameterRequestManager implements ParameterListener {
 	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
 		if(tmProcessor.canProvide(paraId)) return tmProcessor.getParameter(paraId);
 		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(paraId))) return derivedValuesManager.getParameter(paraId);
-		for(ParameterProvider provider:parameterProviders) {
+		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(paraId)) {
 		        return provider.getParameter(paraId);
 		    }
@@ -418,6 +422,11 @@ public class ParameterRequestManager implements ParameterListener {
 		return tmProcessor;
 	}
 	
+	@SuppressWarnings("unchecked")
+    public <T extends ParameterProvider> T getParameterProvider(Class<T> type) {
+	    return (T) parameterProviders.get(type);
+	}
+	
 	/**
 	 * Sets the telemetry packet provider by simply calling the corresponding method in the associated
 	 *  TmProcessor
@@ -434,13 +443,13 @@ public class ParameterRequestManager implements ParameterListener {
 	 */
 	public void start() {
 		tmProcessor.start();
-		for(ParameterProvider provider:parameterProviders) {
+		for(ParameterProvider provider:parameterProviders.values()) {
 		    provider.start();
 		}
 	}
 
 	public void quit() {
-		for(ParameterProvider provider:parameterProviders) {
+		for(ParameterProvider provider:parameterProviders.values()) {
 		    provider.stop();
 		}
 		tmPacketProvider.stop();
