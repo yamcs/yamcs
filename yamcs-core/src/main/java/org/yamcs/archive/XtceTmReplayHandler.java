@@ -87,8 +87,6 @@ public class XtceTmReplayHandler implements ReplayHandler {
             sb.append(") and ");
         }
         appendTimeClause(sb, request);
-        
-        System.out.println("cmd: "+sb);
         return sb.toString();
     }
 
