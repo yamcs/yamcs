@@ -48,7 +48,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
     static AtomicInteger counter=new AtomicInteger(); 
     XtceTmProcessor tmProcessor;
     ParameterRequestManager paramManager;
-    ArrayList<ParameterValueWithId> paramList;
+    ArrayList<ParameterValueWithId> paramList=new ArrayList<ParameterValueWithId>();
     final Set<String> tmPartitions=new HashSet<String>();
     Set<String>ppGroups=new HashSet<String>();
     Set<ProcessedParameterDefinition> ppSet=new HashSet<ProcessedParameterDefinition>();
@@ -208,13 +208,13 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             if(!params.isEmpty()) paramManager.update(params);
         }
 
-        if(paramList!=null && !paramList.isEmpty()) {
+        if(!paramList.isEmpty()) {
             ParameterData.Builder pd=ParameterData.newBuilder();
             for(ParameterValueWithId pvwi:paramList) {
                 ParameterValue pv=pvwi.getParameterValue();
                 pd.addParameter(pv.toGpb(pvwi.getId()));
             }
-            paramList=null;
+            paramList.clear();
             return pd.build();
         } else {
             return null;
@@ -224,7 +224,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
 
     @Override
     public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> plist) {
-        this.paramList=plist;
+        this.paramList.addAll(plist);
     }
 
 
