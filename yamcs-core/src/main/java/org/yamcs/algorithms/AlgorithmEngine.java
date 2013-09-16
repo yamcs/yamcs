@@ -131,6 +131,8 @@ public class AlgorithmEngine {
                     } else {
                         pval.setDoubleValue(dres.doubleValue());
                     }
+                } else if(res instanceof String) {
+                    pval.setStringValue((String) res);
                 } else if(res instanceof Boolean) {
                     pval.setBinaryValue((((Boolean)res).booleanValue() ? "YES" : "NO").getBytes());
                 } else {

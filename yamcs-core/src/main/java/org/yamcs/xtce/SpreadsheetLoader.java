@@ -994,7 +994,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             Algorithm algorithm = new Algorithm(name);
             algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
             algorithm.setLanguage("JavaScript");
-            algorithm.setAlgorithmText(algorithmText);
+            // Replace smart-quotes “ and ” with regular quotes "
+            algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
+            
             algorithm.setAutoActivate(autoActivate);
             
             // In/out params
