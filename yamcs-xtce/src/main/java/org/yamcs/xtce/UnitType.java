@@ -12,7 +12,7 @@ public class UnitType implements Serializable {
     double power = 1;
     String factor = "1";
 
-    UnitType(String description) {
+    public UnitType(String description) {
         this.description = description;
     }
 
