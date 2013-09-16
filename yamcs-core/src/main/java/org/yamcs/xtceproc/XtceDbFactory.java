@@ -25,6 +25,7 @@ import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
@@ -334,6 +335,10 @@ public class XtceDbFactory {
         for(Algorithm a: ss.getAlgorithms()) {
             a.setQualifiedName(ss.getQualifiedName()+"/"+a.getName());
             a.addAlias(ss.getQualifiedName(), a.getName());
+        }
+        
+        for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
+            nonStandardData.setSpaceSystemQualifiedName(ss.getQualifiedName());
         }
         
         for(SpaceSystem ss1:ss.getSubSystems()) {

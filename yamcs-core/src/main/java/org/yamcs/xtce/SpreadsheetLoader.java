@@ -38,10 +38,10 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  *
  */
 public class SpreadsheetLoader implements SpaceSystemLoader {
-	HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
-	HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
-	HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
-	HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
+	protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
+	protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
+	protected HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
+	protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
 	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
@@ -87,17 +87,17 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{ "1.6", "1.7", "2.0", FORMAT_VERSION };
 
 	
-	Workbook workbook;
-	String opsnamePrefix;
+	protected Workbook workbook;
+	protected String opsnamePrefix;
+	protected SpaceSystem spaceSystem;
 	String configName, path;
-	SpaceSystem spaceSystem;
 	static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
 	
 	
 	/*
 	 * configSection is the name under which this config appears in the database
 	 */
-	public SpreadsheetLoader(String filename ) throws ConfigurationException {
+	public SpreadsheetLoader(String filename) throws ConfigurationException {
 	    this.configName = new File(filename).getName();
         path = filename;
     }
@@ -121,6 +121,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			loadLimitsSheet();
 			loadParameters();
 			loadContainers();
+			loadNonStandardSheets(); // Extension point
 			loadAlgorithms();
 		} catch (BiffException e) {
 			throw new DatabaseLoadException(e);
@@ -932,6 +933,15 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             
 			spaceSystem.addSequenceContainer(container);
 		}
+	}
+	
+	/**
+	 * Extension point enabling processing additional non-standard sheets. This method is
+	 * called after all Parameters and Containers definitions are loaded, and just before
+	 * loading the Algorithms.
+	 */
+	protected void loadNonStandardSheets() {
+	    // By default do nothing
 	}
 	
     private void loadAlgorithms() throws DatabaseLoadException {

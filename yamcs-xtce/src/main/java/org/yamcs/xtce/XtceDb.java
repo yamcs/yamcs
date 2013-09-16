@@ -38,6 +38,9 @@ public class XtceDb implements Serializable {
     private HashMap<String, Algorithm> algorithms = new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
+    @SuppressWarnings("rawtypes")
+    private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<Class<?>, NonStandardData>();
+
     //different namespaces
     private NamedDescriptionIndex<SpaceSystem> spaceSystemAliases = new NamedDescriptionIndex<SpaceSystem>();
     private NamedDescriptionIndex<Parameter> parameterAliases = new NamedDescriptionIndex<Parameter>();
@@ -200,6 +203,19 @@ public class XtceDb implements Serializable {
         return parameters.keySet();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends NonStandardData<T>> T getNonStandardDataOfType(Class<T> clazz) {
+        if(nonStandardDatas.containsKey(clazz))
+            return (T) nonStandardDatas.get(clazz);
+        else
+            return null;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public Collection<NonStandardData> getNonStandardData() {
+        return nonStandardDatas.values();
+    }
+
     /**
      * Called after the database has been populated to build the maps for
      * quickly finding things
@@ -212,6 +228,7 @@ public class XtceDb implements Serializable {
         buildSequenceContainerMap(rootSystem);
         buildAlgorithmMap(rootSystem);
         buildMetaCommandMap(rootSystem);
+        buildNonStandardDataMap(rootSystem);
         
         parameter2ParameterEntryMap = new HashMap<Parameter, ArrayList<ParameterEntry>>();
         sequenceContainer2ContainerEntryMap = new HashMap<SequenceContainer, ArrayList<ContainerEntry>>();
@@ -312,6 +329,21 @@ public class XtceDb implements Serializable {
         }
         for(SpaceSystem ss1:ss.getSubSystems()) {
             buildMetaCommandMap(ss1);
+        }
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void buildNonStandardDataMap(SpaceSystem ss) {
+        for(NonStandardData data:ss.getNonStandardData()) {
+            if(nonStandardDatas.containsKey(data.getClass())) {
+                NonStandardData mergeResult=nonStandardDatas.get(data.getClass()).mergeWithChild(data);
+                nonStandardDatas.put(data.getClass(), mergeResult);
+            } else {
+                nonStandardDatas.put(data.getClass(), data);
+            }
+        }
+        for(SpaceSystem ss1:ss.getSubSystems()) {
+            buildNonStandardDataMap(ss1);
         }
     }
     
