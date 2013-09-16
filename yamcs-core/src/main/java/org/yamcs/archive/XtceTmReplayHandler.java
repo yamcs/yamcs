@@ -84,9 +84,11 @@ public class XtceTmReplayHandler implements ReplayHandler {
                 else sb.append(", ");
                 sb.append("'").append(pn).append("'");
             }
-            sb.append(") and ");
+            sb.append(")");
+            appendTimeClause(sb, request, false);
+        } else {
+            appendTimeClause(sb, request, true);
         }
-        appendTimeClause(sb, request);
         return sb.toString();
     }
 
@@ -104,8 +106,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
     }
 
 
-    static void appendTimeClause(StringBuilder sb, ReplayRequest request) {
+    static void appendTimeClause(StringBuilder sb, ReplayRequest request, boolean firstRestriction) {
         if(request.hasStart() || (request.hasStop())) {
+            if(!firstRestriction) sb.append(" and ");
             if(request.hasStart()) {
                 sb.append("gentime>="+request.getStart());
                 if(request.hasStop()) sb.append(" and gentime<"+request.getStop());

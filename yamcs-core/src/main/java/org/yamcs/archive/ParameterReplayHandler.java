@@ -150,9 +150,8 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
                 else sb.append(", ");
                 sb.append("'").append(pn).append("'");
             }
-            sb.append(") and ");
-
-            XtceTmReplayHandler.appendTimeClause(sb, request);
+            sb.append(")");
+            XtceTmReplayHandler.appendTimeClause(sb, request, false);
         }
         if(hasTm && hasPp) sb.append("), (");
 
@@ -165,8 +164,8 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
                 else sb.append(", ");
                 sb.append("'").append(g).append("'");
             }
-            sb.append(") and ");
-            XtceTmReplayHandler.appendTimeClause(sb, request);
+            sb.append(")");
+            XtceTmReplayHandler.appendTimeClause(sb, request, false);
         }
         if(hasTm && hasPp) sb.append(") USING gentime");
         return sb.toString();
