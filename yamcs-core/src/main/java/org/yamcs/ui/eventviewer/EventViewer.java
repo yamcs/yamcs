@@ -1099,24 +1099,26 @@ class EventTableModel extends AbstractTableModel implements Observer {
  */
 class EventTableRenderer extends JTextArea implements TableCellRenderer
 {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void validate() {
-    };
+    }
 
     @Override
     public void invalidate() {
-    };
+    }
 
     @Override
     public void revalidate() {
-    };
+    }
 
     @Override
     public void repaint() {
-    };
+    }
 
     public void firePropertyChange() {
-    };
+    }
 
     @Override
     public boolean isOpaque() {
@@ -1144,7 +1146,19 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer
             setBackground(null);
             break;
         }
-        setText(event.getMessage());
+
+        String[] lines=event.getMessage().split("\n");
+        if(lines.length>5) {
+            StringBuilder buf=new StringBuilder();
+            for(int i=0;i<5;i++) {
+                buf.append(lines[i]).append("\n");
+            }
+            buf.append("[truncated]");
+            setText(buf.toString());
+        } else {
+            setText(event.getMessage());
+        }
+        
         int height_wanted = (int) getPreferredSize().getHeight();
         if (height_wanted != table.getRowHeight(row))
             table.setRowHeight(row, height_wanted);
