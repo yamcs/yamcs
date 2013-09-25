@@ -4,20 +4,36 @@
 
 package org.yamcs.ui.eventviewer;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
 
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * @author Martin Ursik
  */
 public class EventDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+    
     public EventDialog(Frame owner) {
         super(owner);
         initComponents();
@@ -34,6 +50,7 @@ public class EventDialog extends JDialog {
         textFieldGenerationTime.setText(TimeEncoding.toCombinedFormat(event.getGenerationTime()));
         textFieldReceptionTime.setText(TimeEncoding.toCombinedFormat(event.getReceptionTime()));
         textAreaMessage.setText(event.getMessage());
+        textAreaMessage.setCaretPosition(0);
         textFieldSequenceNo.setText(Integer.toString(event.getSeqNumber()));
         textFieldSeverity.setText(event.getSeverity().toString());
         textFieldType.setText(event.getType());
@@ -184,7 +201,7 @@ public class EventDialog extends JDialog {
                     textAreaMessage.setColumns(40);
                     scrollPane1.setViewportView(textAreaMessage);
                 }
-                contentPanel.add(scrollPane1, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0,
+                contentPanel.add(scrollPane1, new GridBagConstraints(1, 6, 1, 1, 1.0, 1.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }
