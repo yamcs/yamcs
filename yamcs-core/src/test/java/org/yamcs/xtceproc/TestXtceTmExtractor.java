@@ -16,6 +16,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class TestXtceTmExtractor {
@@ -289,6 +290,24 @@ public class TestXtceTmExtractor {
         String pkt1b = byteBufferToHexString(pkt1Buffer.slice());
         assertTrue(pkt11.contains(pkt1b));
         assertEquals(tmGenerator.headerLength, pkt11.indexOf(pkt1b) / 2);
+    }
+    
+    @Test
+    public void testProcessPacket_startContainer() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
+        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");
+
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb = tmGenerator.generate_PKT2();
+        SequenceContainer startContainer = xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT2");
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant(), startContainer);
+        
+        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        assertEquals(2, received.size());
+        assertEquals(tmGenerator.pIntegerPara2_1, received.get(0).getEngValue().getUint32Value());
+        assertEquals(tmGenerator.pIntegerPara2_2, received.get(1).getEngValue().getUint32Value());
     }
     
     private String byteBufferToHexString(ByteBuffer bb) {

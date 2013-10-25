@@ -4,28 +4,53 @@
 
 package org.yamcs.ui.eventviewer;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
 
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * @author Martin Ursik
  */
 public class EventDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+    private static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    
     public EventDialog(Frame owner) {
         super(owner);
         initComponents();
-    }
-
-    public EventDialog(Dialog owner) {
-        super(owner);
-        initComponents();
+        
+        // Close on escape
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KEY_ESC, "close");
+        getRootPane().getActionMap().put("close", new AbstractAction() { 
+            private static final long serialVersionUID = 1L;
+            public void actionPerformed(ActionEvent event) { 
+                dispatchEvent(new WindowEvent(EventDialog.this, WindowEvent.WINDOW_CLOSING)); 
+            }
+        });
     }
 
     public void setEvent(Yamcs.Event event)
@@ -34,6 +59,7 @@ public class EventDialog extends JDialog {
         textFieldGenerationTime.setText(TimeEncoding.toCombinedFormat(event.getGenerationTime()));
         textFieldReceptionTime.setText(TimeEncoding.toCombinedFormat(event.getReceptionTime()));
         textAreaMessage.setText(event.getMessage());
+        textAreaMessage.setCaretPosition(0);
         textFieldSequenceNo.setText(Integer.toString(event.getSeqNumber()));
         textFieldSeverity.setText(event.getSeverity().toString());
         textFieldType.setText(event.getType());
@@ -184,7 +210,7 @@ public class EventDialog extends JDialog {
                     textAreaMessage.setColumns(40);
                     scrollPane1.setViewportView(textAreaMessage);
                 }
-                contentPanel.add(scrollPane1, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0,
+                contentPanel.add(scrollPane1, new GridBagConstraints(1, 6, 1, 1, 1.0, 1.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }

@@ -2,6 +2,7 @@ package org.yamcs.ui.packetviewer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -301,10 +304,10 @@ public class ParametersTable extends JTable implements ListSelectionListener {
 
                     String title = "List of Values · " + type.getName();
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    JOptionPane.showMessageDialog(null, msgPanelScroll, title, JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(getJFrameContainer(ParametersTable.this), msgPanelScroll, title, JOptionPane.INFORMATION_MESSAGE);
                 }
             }
-        }
+        }        
         @Override
         public void mouseMoved(MouseEvent e) {
             int column = convertColumnIndexToModel(columnAtPoint(e.getPoint()));
@@ -318,6 +321,13 @@ public class ParametersTable extends JTable implements ListSelectionListener {
                 }
             }
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+        private JFrame getJFrameContainer(JComponent component) {
+            Container parent = component.getParent();
+            if (parent instanceof JFrame)
+                return (JFrame) parent;
+            else
+                return getJFrameContainer((JComponent) parent);
         }
     }
 

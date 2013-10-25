@@ -50,8 +50,8 @@ public class PpReplayHandler implements ReplayHandler {
             else sb.append(", ");
             sb.append("'").append(g).append("'");
         }
-        sb.append(") and ");
-        XtceTmReplayHandler.appendTimeClause(sb, request);
+        sb.append(")");
+        XtceTmReplayHandler.appendTimeClause(sb, request, false);
         return sb.toString();
     }
 

@@ -32,9 +32,21 @@ public class ContainerRequestManager implements ContainerListener {
     private XtceTmProcessor tmProcessor;
     private TmPacketProvider tmPacketProvider;
     
+    /**
+     * Creates a new ContainerRequestManager, configured to listen to a newly
+     * created XtceTmProcessor.
+     */
     public ContainerRequestManager(Channel yamcsChannel) {
+        this(yamcsChannel, new XtceTmProcessor(yamcsChannel));
+    }
+    
+    /**
+     * Creates a new ContainerRequestManager, configured to listen to the
+     * specified XtceTmProcessor.
+     */
+    public ContainerRequestManager(Channel yamcsChannel, XtceTmProcessor tmProcessor) {
+        this.tmProcessor = tmProcessor;
         log = LoggerFactory.getLogger(getClass().getName() + "[" + yamcsChannel.getName() + "]");
-        tmProcessor = new XtceTmProcessor(yamcsChannel);
         tmProcessor.setContainerListener(this);
     }
     
@@ -119,7 +131,7 @@ public class ContainerRequestManager implements ContainerListener {
 
     @Override
     public synchronized void update(List<ContainerExtractionResult> results) {
-        log.info("Getting update of {} container(s)", results.size());
+        log.debug("Getting update of {} container(s)", results.size());
         for (ContainerExtractionResult result : results) {
             SequenceContainer def = result.getContainer();
             if (!subscriptions.containsKey(def)) continue;

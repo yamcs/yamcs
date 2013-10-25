@@ -15,7 +15,7 @@ import org.yamcs.ParameterValue;
 public class ProcessingContext {
 	
 	ByteBuffer bb;
-	int bitPosition;
+	public int bitPosition;
 	int containerAbsoluteByteOffset; //keeps track of the absolute offset of the container where the processing takes place. Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
 	Subscription subscription;
 	
@@ -27,12 +27,12 @@ public class ProcessingContext {
 	public long generationTime;
 	ProcessingStatistics stats;
 	
-	SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
-	SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
-	ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
-	ValueProcessor valueProcessor=new ValueProcessor(this);
-	ComparisonProcessor comparisonProcessor=new ComparisonProcessor(this);
+	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
+	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
+	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
+	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
+	public ValueProcessor valueProcessor=new ValueProcessor(this);
+	public ComparisonProcessor comparisonProcessor=new ComparisonProcessor(this);
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
 	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 

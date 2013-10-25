@@ -32,7 +32,9 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, SequenceContainer> containers=new HashMap<String, SequenceContainer>();
     private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>(); 
     private HashMap<String, ParameterType> parameterTypes=new HashMap<String, ParameterType>();
+    private HashMap<String, Algorithm> algorithms=new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands=new HashMap<String, MetaCommand>();
+    private HashMap<Class<?>, NonStandardData> nonStandardDatas=new HashMap<Class<?>, NonStandardData>();
     
     private HashMap<String, SpaceSystem> subsystems=new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
@@ -68,8 +70,13 @@ public class SpaceSystem extends NameDescription {
         parameterTypes.put(ptn, parameterType);
         
     }
-    
-    
+
+    public void addAlgorithm(Algorithm algorithm) {
+        if(algorithms.containsKey(algorithm.getName()))
+            throw new IllegalArgumentException("there is already an algorithm with name "+algorithm.getName());
+        algorithms.put(algorithm.getName(), algorithm);
+    }
+
     public void addMetaCommand(MetaCommand command) {
         if(commands.containsKey(command.getName()))
             throw new IllegalArgumentException("there is already a command with name "+command.getName());
@@ -114,6 +121,10 @@ public class SpaceSystem extends NameDescription {
         return subsystems.values();
     }
     
+    public Collection<Algorithm> getAlgorithms() {
+        return algorithms.values();
+    }
+    
     public Collection<MetaCommand> getMetaCommands() {
         return commands.values();
     }
@@ -146,5 +157,29 @@ public class SpaceSystem extends NameDescription {
         return header;
     }
 
-  
+    /**
+     * Add non-standard data to this SpaceSystem. This enables loading any kind
+     * of data from within custom SpaceSystemLoaders and making it available
+     * through the XtceDb.
+     * <p>
+     * Non-standard data is distinguished from each other using the classname.
+     * Only one object is allowed for each classname.
+     */
+    public void addNonStandardData(NonStandardData data) {
+        if(nonStandardDatas.containsKey(data.getClass()))
+            throw new IllegalArgumentException("there is already non-standard data of type "+data.getClass());
+        nonStandardDatas.put(data.getClass(), data);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T extends NonStandardData> T getNonStandardDataOfType(Class<T> clazz) {
+        if(nonStandardDatas.containsKey(clazz))
+            return (T) nonStandardDatas.get(clazz);
+        else
+            return null;
+    }
+    
+    public Collection<NonStandardData> getNonStandardData() {
+        return nonStandardDatas.values();
+    }
 }

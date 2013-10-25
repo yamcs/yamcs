@@ -35,7 +35,12 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
                 m.put(aliases.getAlias(ns).toUpperCase(), o);
             }
         }
-        index.put(o.getQualifiedName(), o);
+        
+        if (o.getQualifiedName() != null) {
+            index.put(o.getQualifiedName(), o);
+        } else {
+            index.put(o.getName(), o); // Happens for Derived Values
+        }
     }
    
     /**

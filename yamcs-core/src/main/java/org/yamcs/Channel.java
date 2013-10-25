@@ -52,7 +52,7 @@ public class Channel {
 	private CommandingManager commandingManager;
 	private TmPacketProvider tmPacketProvider;
 	private TcUplinker tcUplinker;
-	private ParameterProvider paramProvider;
+	private ParameterProvider ppProvider;
 	
 	public XtceDb xtcedb;
 	
@@ -92,11 +92,11 @@ public class Channel {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
         
         synchronized(instances) {
-            if(instances.containsKey(key(yamcsInstance,name))) throw new ChannelException("An channel named '"+name+"' already exists in instance "+yamcsInstance);
+            if(instances.containsKey(key(yamcsInstance,name))) throw new ChannelException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
            
             this.tmPacketProvider=tctms.getTmPacketProvider();
             this.tcUplinker=tctms.getTcUplinker();
-            this.paramProvider=tctms.getParameterProvider();
+            this.ppProvider=tctms.getParameterProvider();
             this.commandHistoryListener=cmdHistListener;
             
             if(tmPacketProvider instanceof ArchiveTmPacketProvider) {
@@ -106,9 +106,9 @@ public class Channel {
             
             parameterRequestManager=new ParameterRequestManager(this);
             parameterRequestManager.setPacketProvider(tmPacketProvider);
-            parameterRequestManager.setProcessedParameterProvider(paramProvider);
+            if(ppProvider!=null) parameterRequestManager.addParameterProvider(ppProvider);
             
-            containerRequestManager = new ContainerRequestManager(this);
+            containerRequestManager=new ContainerRequestManager(this, parameterRequestManager.getTmProcessor());
             containerRequestManager.setPacketProvider(tmPacketProvider);
             
             if(tcUplinker!=null) { 
@@ -142,7 +142,7 @@ public class Channel {
 			commandingManager=null;
 		}
 		tmPacketProvider = null;
-		paramProvider=null;
+		ppProvider=null;
 		tcUplinker=null;
 		parameterRequestManager=null;
 		containerRequestManager=null;
@@ -168,7 +168,7 @@ public class Channel {
 
 	
 	public ParameterProvider getParameterProvider() {
-		return paramProvider;
+		return ppProvider;
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class Channel {
 	public void start() {
 	    Future<State> f=tmPacketProvider.start();
 	    if(tcUplinker!=null)tcUplinker.start();
-	    if(paramProvider!=null) paramProvider.start();
+	    if(ppProvider!=null) ppProvider.start();
 		if(parameterRequestManager!=null) parameterRequestManager.start();
 		if(containerRequestManager!=null) containerRequestManager.start();
 		try {

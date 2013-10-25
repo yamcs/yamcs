@@ -20,10 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
@@ -330,6 +332,15 @@ public class XtceDbFactory {
             c.addAlias(ss.getQualifiedName(), c.getName());
         }
         
+        for(Algorithm a: ss.getAlgorithms()) {
+            a.setQualifiedName(ss.getQualifiedName()+"/"+a.getName());
+            a.addAlias(ss.getQualifiedName(), a.getName());
+        }
+        
+        for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
+            nonStandardData.setSpaceSystemQualifiedName(ss.getQualifiedName());
+        }
+        
         for(SpaceSystem ss1:ss.getSubSystems()) {
             setQualifiedNames(ss1, ss.getQualifiedName());
         }
@@ -348,7 +359,7 @@ public class XtceDbFactory {
 
     private static String getFullName(String filename) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
-        return c.getGlobalProperty("cacheDirectory") + File.separator + filename;
+        return new File(c.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
     private static void saveSerializedInstance(XtceDb db, String filename) throws IOException, ConfigurationException {

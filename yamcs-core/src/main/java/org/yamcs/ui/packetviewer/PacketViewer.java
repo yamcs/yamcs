@@ -55,7 +55,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.SplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -104,8 +103,6 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
     private static final long serialVersionUID = 1L;
-    static final String hexstring = "0123456789abcdef";
-    static final StringBuilder asciiBuf = new StringBuilder(), hexBuf = new StringBuilder();
     static PacketViewer theApp;
     static int maxLines = -1;
     XtceDb xtcedb;
@@ -593,7 +590,14 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
+            
             ccsds = new ListPacket(buf, offset);
+            
+            String opsname = xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
+            ccsds.setOpsname(opsname);
+            
             len = ccsds.getCccsdsPacketLength() + 7;
             r = reader.skip(len - 16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
@@ -821,7 +825,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
 
                 // build hexdump text
-                currentPacket.hexdump();
+                currentPacket.hexdump(hexDoc);
                 hexText.setCaretPosition(0);
 
                 // select first row
@@ -833,7 +837,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     public void setSelectedPacket(ListPacket listPacket) {
         currentPacket = listPacket;
         try {
-            currentPacket.load();
+            currentPacket.load(lastFile);
             ByteBuffer bb=currentPacket.getByteBuffer();
             tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), currentPacket.getByteBuffer()));
         } catch (IOException x) {
@@ -863,87 +867,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         Range(int offset, int size) {
             this.offset = offset;
             this.size = size;
-        }
-    }
-
-    class ListPacket extends CcsdsPacket {
-        String opsname;
-        long fileOffset;
-
-        ListPacket(ByteBuffer bb) {
-            this(bb, -1);
-        }
-
-        ListPacket(ByteBuffer bb, long fileOffset) {
-            super(bb);
-            this.fileOffset = fileOffset;
-            opsname = xtceutil.getPacketNameByApidPacketid(getAPID(), getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname==null) opsname = xtceutil.getPacketNameByPacketId(getPacketID(), MdbMappings.MDB_OPSNAME);
-            if (opsname == null) opsname = String.format("Packet ID %d", getPacketID());
-        }
-
-        @Override
-        public String toString() {
-            return opsname;
-        }
-
-        void load() throws IOException {
-            if (bb.capacity() == 16) {
-                FileInputStream reader = new FileInputStream(lastFile);
-                int len = getCccsdsPacketLength() + 7;
-                byte[] data = new byte[len];
-                reader.skip(fileOffset + 16);
-                int res = reader.read(data, 16, len - 16);
-                if(res!=len-16) throw new IOException("short read, expected "+(len-16)+", got "+res);
-                reader.close();
-                bb.rewind();
-                bb.get(data, 0, 16);
-                bb = ByteBuffer.wrap(data);
-            }
-        }
-
-        void hexdump() {
-            try {
-                byte b;
-                char c;
-                int i, j;
-
-                hexDoc.remove(0, hexDoc.getLength());
-
-                for (i = 0; i < bb.capacity();) {
-
-                    // build one row of hexdump: offset, hex bytes, ascii bytes
-
-                    asciiBuf.setLength(0);
-                    hexBuf.setLength(0);
-                    hexBuf.append(hexstring.charAt(i>>12));
-                    hexBuf.append(hexstring.charAt((i>>8) & 0x0f));
-                    hexBuf.append(hexstring.charAt((i>>4) & 0x0f));
-                    hexBuf.append(hexstring.charAt(i & 0x0f));
-                    hexBuf.append(' ');
-
-                    for (j = 0; j < 16; ++j, ++i) {
-                        if (i < bb.capacity()) {
-                            b = bb.get(i);
-                            hexBuf.append(hexstring.charAt((b>>4) & 0x0f));
-                            hexBuf.append(hexstring.charAt(b & 0x0f));
-                            if ((j & 1) == 1) hexBuf.append(' ');
-                            c = (b < 32) || (b > 126) ? '.' : (char)b;
-                            asciiBuf.append(c);
-                        } else {
-                            hexBuf.append((j & 1) == 1 ? "   " : "  ");
-                            asciiBuf.append(' ');
-                        }
-                    }
-
-                    hexBuf.append(asciiBuf);
-                    hexBuf.append('\n');
-                    hexDoc.insertString(hexDoc.getLength(), hexBuf.toString(), fixedStyle);
-                }
-
-            } catch (BadLocationException x) {
-                System.out.println("cannot format hexdump of "+opsname+": "+x.getMessage());
-            }
         }
     }
 
