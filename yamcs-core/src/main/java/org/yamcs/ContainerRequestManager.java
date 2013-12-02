@@ -131,7 +131,7 @@ public class ContainerRequestManager implements ContainerListener {
 
     @Override
     public synchronized void update(List<ContainerExtractionResult> results) {
-        log.debug("Getting update of {} container(s)", results.size());
+        log.trace("Getting update of {} container(s)", results.size());
         for (ContainerExtractionResult result : results) {
             SequenceContainer def = result.getContainer();
             if (!subscriptions.containsKey(def)) continue;
