@@ -20,5 +20,8 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 # set classpath
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
+#set library path (for tokyocabinet)
+. "$YAMCS_HOME"/bin/setlibrarypath.sh
+
 # run the program
-exec "$_RUNJAVA" -Djava.library.path=/usr/local/lib -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yarch.properties org.yamcs.yarch.HistogramDb "$@"
+exec "$_RUNJAVA" $JAVA_LIBRARY_PATH -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yarch.properties org.yamcs.yarch.HistogramDb "$@"
