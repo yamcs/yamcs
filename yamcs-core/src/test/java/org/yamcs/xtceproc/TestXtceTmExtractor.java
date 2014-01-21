@@ -293,6 +293,44 @@ public class TestXtceTmExtractor {
     }
     
     @Test
+    public void testPKT17FloatStructure() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        xtcedb.print(System.out);
+
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb=tmGenerator.generate_PKT17();
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
+        
+        System.out.println("PKT17 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+
+        assertEquals(11, received.size());
+        
+        ParameterValue pv=received.get(6);
+        assertEquals("/REFMDB/SUBSYS1/FloatPara17_1", pv.getParameter().getQualifiedName());
+        assertEquals(-14.928, pv.getEngValue().getFloatValue(), 1e-5);
+        
+        pv=received.get(7);
+        assertEquals("/REFMDB/SUBSYS1/FloatPara17_2", pv.getParameter().getQualifiedName());
+        assertEquals(6, pv.getEngValue().getSint32Value());
+        
+        pv=received.get(8);
+        assertEquals("/REFMDB/SUBSYS1/FloatPara17_3", pv.getParameter().getQualifiedName());
+        assertEquals(-6, pv.getEngValue().getSint32Value());
+        
+        pv=received.get(9);
+        assertEquals("/REFMDB/SUBSYS1/FloatPara17_4", pv.getParameter().getQualifiedName());
+        assertEquals(6, pv.getEngValue().getSint32Value());
+        
+        pv=received.get(10);
+        assertEquals("/REFMDB/SUBSYS1/FloatPara17_5", pv.getParameter().getQualifiedName());
+        assertEquals(-6, pv.getEngValue().getSint32Value());
+    }
+    
+    @Test
     public void testProcessPacket_startContainer() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
         XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");

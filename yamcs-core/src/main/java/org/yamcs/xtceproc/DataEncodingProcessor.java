@@ -133,6 +133,20 @@ public class DataEncodingProcessor {
             if(ide.getDefaultCalibrator()==null)
                 return Long.valueOf(rv);
             else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
+        case signMagnitude:
+        	pcontext.bitPosition+=ide.getSizeInBits();
+        	boolean negative = ((rv>>>(ide.getSizeInBits()-1) & 1L) == 1L);
+        	mask >>>= 1; // Don't include sign in mask
+            rv=(rv&(mask))>>>bitsToShift;
+            if (negative) rv = -rv;
+            if (ide.getSizeInBits() <= 32)
+            	pv.setRawSignedInteger((int) rv);
+            else
+            	pv.setRawSignedLong(rv);
+
+            if(ide.getDefaultCalibrator()==null)
+                return Long.valueOf(rv);
+            else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
         case string:
         	String s=(String)extractRawAndCalibrate(ide.getStringEncoding(), pv);
         	long l = Long.valueOf( s );
