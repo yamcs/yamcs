@@ -25,6 +25,7 @@ public class TimeEncoding {
  
     static TaiUtcConverter taiUtcConverter;
     static Pattern iso8860Pattern = Pattern.compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?");  
+    static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?");  
     
     public static void setUp() throws RuntimeException {
         try {
@@ -186,17 +187,41 @@ public class TimeEncoding {
 
 
     public static long parse(String s) {
+        TaiUtcConverter.DateTimeComponents dtc; 
         Matcher m = iso8860Pattern.matcher(s);
-        if(!m.matches()) throw new IllegalArgumentException("Cannot parse '"+s+"' with the pattern '"+iso8860Pattern);
-        TaiUtcConverter.DateTimeComponents dtc = new TaiUtcConverter.DateTimeComponents();
-        dtc.year = Integer.parseInt(m.group(1));
-        dtc.month = Integer.parseInt(m.group(2));
-        dtc.day = Integer.parseInt(m.group(3));
-        dtc.hour = Integer.parseInt(m.group(4));
-        dtc.minute = Integer.parseInt(m.group(5));
-        dtc.second = Integer.parseInt(m.group(6));
-        if(m.group(7)!=null) {
-            dtc.millisec = Integer.parseInt(m.group(8));
+        
+        
+        if(m.matches()) {
+            
+            int year = Integer.parseInt(m.group(1));
+            int month = Integer.parseInt(m.group(2));
+            int day = Integer.parseInt(m.group(3));
+            int hour = Integer.parseInt(m.group(4));
+            int minute = Integer.parseInt(m.group(5));
+            int second = Integer.parseInt(m.group(6));
+            int millisec =0;
+            if(m.group(7)!=null) {
+                millisec = Integer.parseInt(m.group(8));
+            }
+            dtc = new TaiUtcConverter.DateTimeComponents(year, month, day, hour, minute, second, millisec);
+        } else {
+            m = doyPattern.matcher(s);
+            if(m.matches()) {
+                int year = Integer.parseInt(m.group(1));
+                int doy = Integer.parseInt(m.group(2));
+                int hour = Integer.parseInt(m.group(3));
+                int minute = Integer.parseInt(m.group(4));
+                int second = Integer.parseInt(m.group(5));
+                int millisec = 0;
+                if(m.group(6)!=null) {
+                    millisec = Integer.parseInt(m.group(7));
+                }
+                
+                dtc = new TaiUtcConverter.DateTimeComponents(year, doy, hour, minute, second, millisec);
+                
+            } else {
+                throw new IllegalArgumentException("Cannot parse '"+s+"' with the pattern '"+iso8860Pattern+" or "+doyPattern);
+            }
         }
         return taiUtcConverter.utcToInstant(dtc);
     }

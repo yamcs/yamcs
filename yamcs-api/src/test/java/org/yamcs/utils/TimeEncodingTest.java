@@ -100,6 +100,9 @@ public class TimeEncodingTest {
         assertEquals(2001, (inst2-inst1));
     } 
     
+    
+    
+    
     @Test
     public void testGetInstantFromUnix() {
         long instant=TimeEncoding.fromUnixTime(1266539888, 20000);
@@ -149,6 +152,9 @@ public class TimeEncodingTest {
         assertEquals(1230768032001L, TimeEncoding.parse("2008-12-31T23:59:59.001"));
         assertEquals(1230768033000L, TimeEncoding.parse("2008-12-31T23:59:60"));
         assertEquals(1230768034000L, TimeEncoding.parse("2009-01-01T00:00:00"));
+        
+        assertEquals(1230768034000L, TimeEncoding.parse("2009/001T00:00:00"));
+        assertEquals(1230768033000L, TimeEncoding.parse("2008/366T23:59:60"));
     }
     
     @Test

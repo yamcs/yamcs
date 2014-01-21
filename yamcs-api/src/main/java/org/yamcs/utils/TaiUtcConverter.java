@@ -33,8 +33,11 @@ public class TaiUtcConverter {
 	
 	static final int[] times365 = new int[]{ 0, 365, 730, 1095 } ;
 	static final int[] times36524 = new int[]{ 0, 36524, 73048, 109572 } ;
-	static final int[] montab = new int[] { 0, 31, 61, 92, 122, 153, 184, 214, 245, 275, 306, 337 } ;
+	static final int[] montab = { 0, 31, 61, 92, 122, 153, 184, 214, 245, 275, 306, 337 } ;
 	/* month length after february is (306 * m + 5) / 10 */
+	
+	static final int[] PREVIOUS_MONTH_END_DAY = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+	static final int[] PREVIOUS_MONTH_END_DAY_LS = {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
 	
 	
 	public TaiUtcConverter() throws IOException, ParseException {
@@ -245,7 +248,11 @@ public class TaiUtcConverter {
          }
         return t+ls*1000;
     }
-    
+	
+	public static boolean isLeap(final int year) {
+        return ((year % 4) == 0) && (((year % 400) == 0) || ((year % 100) != 0));
+    }
+
 	
 	public static class DateTimeComponents {
 		public int year;
@@ -257,7 +264,39 @@ public class TaiUtcConverter {
         public int millisec;
         public int doy;
 
-		@Override
+		public DateTimeComponents(int year, int month, int day, int hour,
+                int minute, int second, int millisec) {
+            this.year=year;
+            this.month=month;
+            this.day=day;
+            this.hour=hour;
+            this.minute=minute;
+            this.second=second;
+            this.millisec=millisec;
+        }
+
+        private DateTimeComponents() {        }
+
+        public DateTimeComponents(int year, int doy, int hour, int minute,
+                int second, int millisec) {
+            this.year=year;
+            this.doy = doy;
+            this.hour=hour;
+            this.minute=minute;
+            this.second=second;
+            this.millisec=millisec;
+            
+            if(isLeap(year)) {
+                this.month = (doy < 32) ? 1 : (10 * doy + 313) / 306;
+                this.day = doy - PREVIOUS_MONTH_END_DAY_LS[this.month];
+            } else {
+                this.month = (doy < 32) ? 1 : (10 * doy + 323) / 306;
+                this.day = doy - PREVIOUS_MONTH_END_DAY[this.month];
+            }
+            
+        }
+
+        @Override
 		public String toString() {
 			return "DateTimeComponents [year=" + year + ", month=" + month
 					+ ", day=" + day + ", hour=" + hour + ", minute=" + minute
@@ -272,7 +311,7 @@ public class TaiUtcConverter {
 	
 	
 	public static void main(String[] args) throws Exception {
-		DateTimeComponents dtc= new DateTimeComponents();
+		DateTimeComponents dtc;// new DateTimeComponents(2013, 10, 24, 0, 5, 9, 0);
 		TaiUtcConverter te = new TaiUtcConverter();
 		//caltime_utc(dtc, 0x400000002a2b2c2dL);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
