@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.Parameter;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.Parameter;
 
 /**
  * Periodically collects a set of system variables.

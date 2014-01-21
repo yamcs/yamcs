@@ -1,5 +1,8 @@
 package org.yamcs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,17 +10,8 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.Channel;
-import org.yamcs.ChannelFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.DerivedValue;
-import org.yamcs.DerivedValuesProvider;
-import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
-import org.yamcs.ParameterValue;
-import org.yamcs.ParameterValueWithId;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.DummyPpProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TcUplinker;
@@ -27,9 +21,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-
-import static org.junit.Assert.*;
 
 public class DerivedValuesTest {
     @BeforeClass
@@ -168,7 +159,7 @@ public class DerivedValuesTest {
 
         c.quit();
     }
-
+    
     static class MyTcTmService extends AbstractService implements TcTmService {
         TmPacketProvider tm;
         ParameterProvider pp;

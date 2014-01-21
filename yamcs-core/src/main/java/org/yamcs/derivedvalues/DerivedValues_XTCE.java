@@ -1,19 +1,25 @@
 package org.yamcs.derivedvalues;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.regex.*;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.FilenameFilter;
-
-import javax.xml.parsers.*;
-import javax.script.*;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -21,8 +27,6 @@ import org.yamcs.DerivedValue;
 import org.yamcs.DerivedValuesProvider;
 import org.yamcs.MdbDerivedValue;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.xtce.*;
-
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -31,7 +35,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 public class DerivedValues_XTCE implements DerivedValuesProvider {
-	Logger log = LoggerFactory.getLogger(getClass().getName());
+	private static final Logger log = LoggerFactory.getLogger(DerivedValues_XTCE.class);
 	ArrayList<DerivedValue> derivedValues = new ArrayList<DerivedValue>();
 	int algoCount;
 	String currentCode, currentOutputParam, currentAlgo;
@@ -39,32 +43,32 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	File currentXtceDir;
 	ScriptEngineManager semgr;
 	ScriptEngine currentEngine;
-	ScriptHelper scriptHelper = new ScriptHelper();
 	HashMap<String,ScriptEngine> enginesByName = new HashMap<String,ScriptEngine>();
 	HashMap<String,ScriptEngine> enginesByExtension = new HashMap<String,ScriptEngine>();
 	private XtceDb xtcedb;
 	
 	public DerivedValues_XTCE(XtceDb xtcedb) {
-	    this.xtcedb=xtcedb;
-		try {
-			// load scripting engines
-			semgr = new ScriptEngineManager();
-			for (ScriptEngineFactory factory:semgr.getEngineFactories()) {
-				log.debug(String.format("Loading scripting engine: %s/%s, language: %s/%s, names: %s, extensions: %s",
-					factory.getEngineName(), factory.getEngineVersion(),
-					factory.getLanguageName(), factory.getLanguageVersion(),
-					factory.getNames(), factory.getExtensions()));
-				final ScriptEngine engine = factory.getScriptEngine();
-				engine.put("Yamcs", scriptHelper);
-				for (String name:factory.getNames()) {
-					enginesByName.put(name, engine);
-				}
-				for (String ext:factory.getExtensions()) {
-					enginesByExtension.put(ext, engine);
-				}
+	    this.xtcedb = xtcedb;
+	    
+		// Load scripting engines
+		semgr = new ScriptEngineManager();
+		for (ScriptEngineFactory factory:semgr.getEngineFactories()) {
+			log.debug(String.format("Loading scripting engine: %s/%s, language: %s/%s, names: %s, extensions: %s",
+				factory.getEngineName(), factory.getEngineVersion(),
+				factory.getLanguageName(), factory.getLanguageVersion(),
+				factory.getNames(), factory.getExtensions()));
+			final ScriptEngine engine = factory.getScriptEngine();
+			engine.put("Yamcs", new ScriptHelper());
+			for (String name:factory.getNames()) {
+				enginesByName.put(name, engine);
 			}
+			for (String ext:factory.getExtensions()) {
+				enginesByExtension.put(ext, engine);
+			}
+		}
 
-			// load XML files from classpath
+		// Load algorithms from XML files in classpath
+	    try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			String[] cp = ((String)System.getProperties().get("java.class.path")).split((String)System.getProperties().get("path.separator"));
@@ -88,7 +92,6 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					}
 				}
 			}
-
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		} catch (org.xml.sax.SAXException e) {
@@ -151,8 +154,6 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 
 		if (currentCode == null) {
 			log.warn(String.format("Algorithm %s: no code", currentAlgo));
-		} else if ((currentOutputParam == null) || currentOutputParam.isEmpty()) {
-			log.warn(String.format("Algorithm %s: no output parameter", currentAlgo));
 		} else {
 			derivedValues.add(new Algorithm(currentEngine, currentCode, currentInputParams, currentOutputParam));
 			++algoCount;
@@ -229,7 +230,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	}
 
 	class Algorithm extends MdbDerivedValue {
-		String programCode;
+	    String programCode;
 		ScriptEngine engine;
 
 		Algorithm(ScriptEngine engine, String programCode, String[] inputParams, String outputParam) {
@@ -243,8 +244,10 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			for (int i = 0; i < args.length; ++i) {
 				final String pname = args[i].getParameter().getName();
 				Value v = args[i].getEngValue();
+
+				// Now, update the engine
 				switch(v.getType()) {
-				    case  BINARY:
+				    case BINARY:
 				        engine.put(pname, v.getBinaryValue().toByteArray());
 				        break;
 				    case DOUBLE:
@@ -261,18 +264,29 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				        break;
 				    case UINT32:
 				        engine.put(pname, v.getUint32Value()&0xFFFFFFFFL);
+				        break;
+				    case SINT64:
+				        engine.put(pname, v.getSint64Value());
+				        break;
+				    case UINT64:
+				        engine.put(pname, v.getUint64Value()&0xFFFFFFFFFFFFFFFFL);
+				        break;
+				    default:
+				        log.warn("Ignoring update of unexpected value type {}", v.getType());
 				}
 			}
+			updated = true;
 			engine.put("updated", updated);
+			
 			try {
 				//long ts = System.currentTimeMillis();
 				engine.eval(programCode);
 				//System.out.println("script time "+(System.currentTimeMillis() - ts));
-				updated = (Boolean)engine.get("updated");
+				updated = (Boolean) engine.get("updated");
 				if (updated) {
 					Object res = engine.get(getParameter().getName());
 					if (res == null) {
-						log.warn("script variable "+getParameter().getName()+" was not set");
+					    log.warn("script variable "+getParameter().getName()+" was not set");
 						updated = false;
 					} else {
 						if (res instanceof Double) {
@@ -316,7 +330,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 			}
 			return null;
 		}
-
+		
 		public long letohl(int value) {
 		// little endian to host long
 			return ((value>>24)&0xff) + ((value>>8)&0xff00) + ((value&0xff00)<<8) + ((value&0xff)<<24);

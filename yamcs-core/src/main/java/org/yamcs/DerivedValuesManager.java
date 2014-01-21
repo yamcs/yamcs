@@ -6,16 +6,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.derivedvalues.*;
-
-import com.google.common.util.concurrent.AbstractService;
+import org.yamcs.derivedvalues.DerivedValues_XTCE;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * takes care of derived values. It subscribes in a normal way to the other parameters
@@ -36,19 +36,18 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 	ArrayList<DerivedValue> requestedValues=new ArrayList<DerivedValue>();
 	ParameterRequestManager parameterRequestManager;
 	
-	public DerivedValuesManager(String yamcsInstance, ParameterRequestManager parameterRequestManager, XtceDb xtcedb) throws ConfigurationException {
+	public DerivedValuesManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
 		if(parameterRequestManager!=null) {
 			//it is invoked with parameterRequestManager=null from the MDB Loader TODO: fix this mess
 			this.parameterRequestManager=parameterRequestManager;
 			try {
 				subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
 			} catch (InvalidIdentification e) {
-				log.error("InvalidIdentification got when subscribing to the parameterRequestManager with an empty subscription list");
-				e.printStackTrace();
+				log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
 			}
 		}
-		addAll(new DerivedValues_XTCE(xtcedb).getDerivedValues());
-		YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+		addAll(new DerivedValues_XTCE(chan.xtcedb).getDerivedValues());
+		YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
 		String mdbconfig=yconf.getString("mdb");
 		YConfiguration conf=YConfiguration.getConfiguration("mdb");
 		if(conf.containsKey(mdbconfig, "derivedValuesProviders")) {
@@ -91,9 +90,9 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 				try {
 					parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
 				} catch (InvalidIdentification e) {
-					log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The Invalid itmes are:"+e.invalidParameters);
+					log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The invalid items are:"+e.invalidParameters, e);
 				} catch (InvalidRequestIdentification e) {
-					log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.def);
+					log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.def, e);
 				}
 				return;
 			}
@@ -169,7 +168,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 					dv.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
 				}
 			} catch (Exception e) {
-				log.warn("got exception when updating derived value"+dv.def+": "+Arrays.toString(e.getStackTrace()));
+				log.warn("got exception when updating derived value "+dv.def+": "+Arrays.toString(e.getStackTrace()));
 			}
 		}
 		return r;
@@ -199,6 +198,4 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public String getDetailedStatus() {
         return "processing "+requestedValues.size()+" out of "+derivedValues.size()+" parameters";
     }
-
- 
 }

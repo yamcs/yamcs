@@ -24,6 +24,7 @@ import jxl.read.biff.BiffException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.xtce.Algorithm.AutoActivateType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
@@ -37,10 +38,10 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  *
  */
 public class SpreadsheetLoader implements SpaceSystemLoader {
-	HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
-	HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
-	HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
-	HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
+	protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
+	protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
+	protected HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
+	protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
 	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
@@ -71,6 +72,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static int IDX_CALIB_CALIB1=2;
 	final static int IDX_CALIB_CALIB2=3;
 	
+	//columns in the algorithms sheet
+	final static int IDX_ALGO_NAME=0;
+	final static int IDX_ALGO_TEXT=1;
+	final static int IDX_ALGO_ACTIVATE=2;
+	final static int IDX_ALGO_PARA_INOUT=3;
+	final static int IDX_ALGO_PARA_REF=4;
+	final static int IDX_ALGO_PARA_INSTANCE=5;
+	final static int IDX_ALGO_PARA_NAME=6;
 	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
@@ -78,17 +87,17 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{ "1.6", "1.7", "2.0", FORMAT_VERSION };
 
 	
-	Workbook workbook;
-	String opsnamePrefix;
+	protected Workbook workbook;
+	protected String opsnamePrefix;
+	protected SpaceSystem spaceSystem;
 	String configName, path;
-	SpaceSystem spaceSystem;
 	static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
 	
 	
 	/*
 	 * configSection is the name under which this config appears in the database
 	 */
-	public SpreadsheetLoader(String filename ) throws ConfigurationException {
+	public SpreadsheetLoader(String filename) throws ConfigurationException {
 	    this.configName = new File(filename).getName();
         path = filename;
     }
@@ -112,6 +121,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			loadLimitsSheet();
 			loadParameters();
 			loadContainers();
+			loadNonStandardSheets(); // Extension point
+			loadAlgorithms();
 		} catch (BiffException e) {
 			throw new DatabaseLoadException(e);
 		} catch (IOException e) {
@@ -377,13 +388,23 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		Sheet para_sheet = workbook.getSheet("Parameters");
 		for (int i = 1; i < para_sheet.getRows(); i++) {
 			Cell[] cells = para_sheet.getRow(i);
-			if ((cells == null) || (cells.length < 4) || cells[0].getContents().startsWith("#")) {
+			if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
 				continue;
 			}
 			String name = cells[IDX_PARAM_OPSNAME].getContents();
 			if (name.length() == 0) {
 				continue;
 			}
+			
+			Parameter param = new Parameter(name);
+            parameters.put(param.getName(), param);
+
+            XtceAliasSet xas=new XtceAliasSet();
+            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
+            param.setAliasSet(xas);
+            
+            spaceSystem.addParameter(param);
+            
 			//String path = cells[IDX_MEAS_PATH].getContents();
 			String rawtype = cells[IDX_PARAM_RAWTYPE].getContents();
 			if("DerivedValue".equalsIgnoreCase(rawtype)) continue;
@@ -564,16 +585,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			} else if (ptype instanceof StringParameterType) {
 			    ((StringParameterType)ptype).encoding = encoding;
 			}     
-			
-			Parameter param = new Parameter(name);
-			param.setParameterType(ptype);
-			parameters.put(param.getName(), param);
 
-			XtceAliasSet xas=new XtceAliasSet();
-			xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
-			param.setAliasSet(xas);
-			
-			spaceSystem.addParameter(param);
+			param.setParameterType(ptype);
 		}
 		
 /*		System.out.println("got parameters:");
@@ -921,6 +934,118 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			spaceSystem.addSequenceContainer(container);
 		}
 	}
+	
+	/**
+	 * Extension point enabling processing additional non-standard sheets. This method is
+	 * called after all Parameters and Containers definitions are loaded, and just before
+	 * loading the Algorithms.
+	 */
+	protected void loadNonStandardSheets() {
+	    // By default do nothing
+	}
+	
+    private void loadAlgorithms() throws DatabaseLoadException {
+        Sheet algo_sheet = workbook.getSheet("Algorithms");
+        if (algo_sheet == null) {
+            return;
+        }
+
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new algorithm
+            while (start < algo_sheet.getRows()) {
+                Cell[] cells = algo_sheet.getRow(start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= algo_sheet.getRows()) {
+               break;
+            }
+
+            Cell[] cells = algo_sheet.getRow(start);
+            String name = cells[IDX_ALGO_NAME].getContents();
+            String algorithmText = cells[IDX_ALGO_TEXT].getContents();
+            AutoActivateType autoActivate = null;
+            if(cells.length>IDX_ALGO_ACTIVATE && !"".equals(cells[IDX_ALGO_ACTIVATE].getContents())) {
+                if("Always".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
+                    autoActivate = AutoActivateType.ALWAYS;
+                } else if("RealtimeOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
+                    autoActivate = AutoActivateType.REALTIME_ONLY;
+                } else if("ReplayOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
+                    autoActivate = AutoActivateType.REPLAY_ONLY;
+                } else {
+                    error("Auto-activate '"+cells[IDX_ALGO_ACTIVATE].getContents()+"' not supported. Can only go back in time. Use values <= 0.");
+                }
+            }
+            
+            // now we search for the matching last row of that algorithm
+            int end = start + 1;
+            while (end < algo_sheet.getRows()) {
+                cells = algo_sheet.getRow(end);
+                if (!hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
+                    break;
+                }
+                end++;
+            }
+            
+            Algorithm algorithm = new Algorithm(name);
+            algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
+            algorithm.setLanguage("JavaScript");
+            // Replace smart-quotes “ and ” with regular quotes "
+            algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
+            
+            algorithm.setAutoActivate(autoActivate);
+            
+            // In/out params
+            for (int j = start+1; j < end; j++) {
+                cells = algo_sheet.getRow(j);
+                String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
+                String paraInout = cells[IDX_ALGO_PARA_INOUT].getContents();
+                if ("in".equalsIgnoreCase(paraInout)) {
+                    Parameter param = spaceSystem.getParameter(paraRef);
+                    if (param != null) {
+                        ParameterInstanceRef parameterInstance = new ParameterInstanceRef(param);
+                        if (cells.length > IDX_ALGO_PARA_INSTANCE) {
+                            if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
+                                int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
+                                if (instance > 0) {
+                                    error("Algorithm:"+(j+1)+" instance '"+instance+"' not supported. Can only go back in time. Use values <= 0.");
+                                }
+                                parameterInstance.setInstance(instance);
+                            }
+                        }
+                        
+                        InputParameter inputParameter = new InputParameter(parameterInstance);
+                        if (cells.length > IDX_ALGO_PARA_NAME) {
+                            if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
+                                inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
+                            }
+                        }
+                        algorithm.addInput(inputParameter);
+                    } else {
+                        throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraRef + "' was not found on the parameters sheet");
+                    }
+                } else if ("out".equalsIgnoreCase(paraInout)) {
+                    Parameter param = spaceSystem.getParameter(paraRef);
+                    if (param == null) {
+                        throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraRef + "' was not found on the parameters sheet");
+                    }
+                    OutputParameter outputParameter = new OutputParameter(param);
+                    if (cells.length > IDX_ALGO_PARA_NAME) {
+                        outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
+                    }
+                    algorithm.addOutput(outputParameter);
+                } else {
+                    error("Algorithm:"+(j+1)+" in/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
+                }
+            }
+            spaceSystem.addAlgorithm(algorithm);
+            start = end;
+        }
+   }
 
 	private boolean hasColumn(Cell[] cells, int idx) {
 	    return (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));

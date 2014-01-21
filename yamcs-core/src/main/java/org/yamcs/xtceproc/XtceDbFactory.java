@@ -20,10 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
@@ -35,7 +37,7 @@ import org.yamcs.xtce.XtceLoader;
 
 
 public class XtceDbFactory {
-    static Logger log = LoggerFactory.getLogger(XtceDbFactory.class.getName());
+    static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
     
     /**
      * map instance names and config names to databases
@@ -83,7 +85,6 @@ public class XtceDbFactory {
                 }
                 loadSerialized = false;
             } catch (ConfigurationException e) {
-                e.printStackTrace();
                 log.error("Cannot check the consistency date of the serialized database: ", e);
                 System.exit(-1);
             }
@@ -113,7 +114,6 @@ public class XtceDbFactory {
                 db = new XtceDb(rootSs);
                 db.buildIndexMaps();
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error("Cannot load the database: ", e);
                 System.exit(-1);// if we can not read the database we are out of
                                 // the game
@@ -126,8 +126,7 @@ public class XtceDbFactory {
                 saveSerializedInstance(db, filename.toString());
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
-                log.warn("Cannot save serialized MDB: " + e);
-                e.printStackTrace();
+                log.warn("Cannot save serialized MDB: ", e);
             }
         }
         return db;
@@ -305,26 +304,41 @@ public class XtceDbFactory {
     }
     
     /**
-     * propagates qualified name to enclosing objects including subsystems 
-     * @param parentname
+     * Propagates qualified name to enclosing objects including subsystems. Also
+     * registers aliases under each subsystem.
      */
     private static void setQualifiedNames(SpaceSystem ss, String parentname) {
         ss.setQualifiedName(parentname+"/"+ss.getName());
-        
+        if (!parentname.equals("")) {
+            ss.addAlias(parentname, ss.getName());
+        }
         for(Parameter p: ss.getParameters()) {
             p.setQualifiedName(ss.getQualifiedName()+"/"+p.getName());
+            p.addAlias(ss.getQualifiedName(), p.getName());
         }
         for(ParameterType pt: ss.getParameterTypes()) {
             NameDescription nd=(NameDescription)pt;
             nd.setQualifiedName(ss.getQualifiedName()+"/"+nd.getName());
+            nd.addAlias(ss.getQualifiedName(), nd.getName());
         }
         
         for(SequenceContainer c: ss.getSequenceContainers()) {
             c.setQualifiedName(ss.getQualifiedName()+"/"+c.getName());
+            c.addAlias(ss.getQualifiedName(), c.getName());
         }
         
         for(MetaCommand c: ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName()+"/"+c.getName());
+            c.addAlias(ss.getQualifiedName(), c.getName());
+        }
+        
+        for(Algorithm a: ss.getAlgorithms()) {
+            a.setQualifiedName(ss.getQualifiedName()+"/"+a.getName());
+            a.addAlias(ss.getQualifiedName(), a.getName());
+        }
+        
+        for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
+            nonStandardData.setSpaceSystemQualifiedName(ss.getQualifiedName());
         }
         
         for(SpaceSystem ss1:ss.getSubSystems()) {
@@ -345,7 +359,7 @@ public class XtceDbFactory {
 
     private static String getFullName(String filename) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
-        return c.getGlobalProperty("cacheDirectory") + File.separator + filename;
+        return new File(c.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
     private static void saveSerializedInstance(XtceDb db, String filename) throws IOException, ConfigurationException {
@@ -420,7 +434,7 @@ public class XtceDbFactory {
         
         /**
          * 
-         * @return a concatenation of all confis
+         * @return a concatenation of all configs
          * @throws ConfigurationException 
          */
         String getConfigName() throws ConfigurationException {

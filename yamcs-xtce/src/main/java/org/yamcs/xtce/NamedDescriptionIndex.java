@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 
@@ -36,16 +35,19 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
                 m.put(aliases.getAlias(ns).toUpperCase(), o);
             }
         }
-        index.put(o.getName(), o);
+        
+        if (o.getQualifiedName() != null) {
+            index.put(o.getQualifiedName(), o);
+        } else {
+            index.put(o.getName(), o); // Happens for Derived Values
+        }
     }
    
     /**
-     * returns the object based on its canonical name
-     * @param name
-     * @return
+     * returns the object based on its qualified name
      */
-    public T get(String name) {
-        return index.get(name);
+    public T get(String qualifiedName) {
+        return index.get(qualifiedName);
     }
     
     /**

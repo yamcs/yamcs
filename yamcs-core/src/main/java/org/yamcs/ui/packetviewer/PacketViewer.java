@@ -4,15 +4,12 @@ import static org.yamcs.api.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -22,19 +19,21 @@ import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -43,8 +42,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -56,7 +55,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.SplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -85,6 +83,7 @@ import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.ui.PrefsObject;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
@@ -103,14 +102,9 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
-
-    static final ImageIcon ICON_DOWN = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/down.png"));
-    static final ImageIcon ICON_UP = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/up.png"));
-    static final ImageIcon ICON_CLOSE = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/close.png"));
-    static final String hexstring = "0123456789abcdef";
-    static final StringBuilder asciiBuf = new StringBuilder(), hexBuf = new StringBuilder();
+    private static final long serialVersionUID = 1L;
     static PacketViewer theApp;
-    static int maxLines = 1000;
+    static int maxLines = -1;
     XtceDb xtcedb;
 
     File lastFile;
@@ -118,6 +112,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     JTextPane hexText;
     StyledDocument hexDoc;
     Style fixedStyle, highlightedStyle;
+    JMenu fileMenu;
+    List<JMenuItem> miRecentFiles;
     JMenuItem miAutoScroll, miAutoSelect;
     JTextArea logText;
     JScrollPane logScrollpane;
@@ -127,17 +123,16 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     DefaultMutableTreeNode structureRoot;
     DefaultTreeModel structureModel;
     JSplitPane mainsplit;
-    JPanel findBar;
-    JTextField searchField;
+    FindParameterBar findBar;
     ListPacket currentPacket;
-    FileAndDbChooser fileChooser;
+    OpenFileDialog openFileDialog; 
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     static final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
     YamcsConnector yconnector;
     YamcsClient yclient;
     ConnectDialog connectDialog;
-    static final KeyStroke KEY_CTRL_F = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
-    static final KeyStroke KEY_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); 
+    GoToPacketDialog goToPacketDialog;
+    Preferences uiPrefs; 
 
     ConnectionParameters connectionParams;
     XtceUtil xtceutil;
@@ -147,70 +142,12 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     public PacketViewer() throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
+
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
-
-        // application menu
-
-        JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
-
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
-
-
-
-        JMenuItem menuitem = new JMenuItem("Open File...", KeyEvent.VK_O);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("open file");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menuitem = new JMenuItem("Open Yamcs connection...");
-        menuitem.setMnemonic(KeyEvent.VK_C);
-        menuitem.setDisplayedMnemonicIndex(11);
-        //menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("connect-yamcs");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menu.addSeparator();
-
-        /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
-		menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
-		menu.add(menuitem);
-		menu.addSeparator();*/
-
-        menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-        menuitem.setActionCommand("quit");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-
-        menu = new JMenu("View");
-        menu.setMnemonic(KeyEvent.VK_V);
-        menuBar.add(menu);
-
-        miAutoScroll = new JCheckBoxMenuItem("Auto-Scroll To Last Packet");
-        miAutoScroll.setSelected(true);
-        menu.add(miAutoScroll);
-
-        miAutoSelect = new JCheckBoxMenuItem("Auto-Select Last Packet");
-        miAutoSelect.setSelected(false);
-        menu.add(miAutoSelect);
-
-        menu.addSeparator();
-
-        menuitem = new JMenuItem("Clear", KeyEvent.VK_C);
-        menuitem.setActionCommand("clear");
-        menuitem.addActionListener(this);
-        menu.add(menuitem);
-        //
-        // window contents
-        //
 
         // table to the left which shows one row per packet
 
@@ -222,6 +159,15 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
 
         parametersTable = new ParametersTable(this);
         JScrollPane tableScrollpane = new JScrollPane(parametersTable);
+        tableScrollpane.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                if (e.getComponent().getWidth() < parametersTable.getPreferredSize().getWidth())
+                    parametersTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                else
+                    parametersTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            }
+        });
 
         // tree to the right which shows the container structure of the selected packet
 
@@ -241,75 +187,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tabpane.add("Parameters", tableScrollpane);
         tabpane.add("Structure", treeScrollpane);
 
-        searchField = new JTextField(25);
-        ImageIconButton downButton = new ImageIconButton(ICON_DOWN);
-
-        ActionListener searchListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    parametersTable.nextSearchResult(searchTerm.toLowerCase());
-                }
-            }
-        };
-
-        AbstractAction closeFindBarAction = new AbstractAction() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findBar.setVisible(false);
-                parametersTable.clearSearchResults();
-                parametersTable.requestFocusInWindow();
-            }
-        };
-
-        searchField.getInputMap().put(KEY_ESC, "closeFindBar");
-        searchField.getActionMap().put("closeFindBar", closeFindBarAction);
-
-        searchField.addActionListener(searchListener);
-        downButton.addActionListener(searchListener);
-
-        ImageIconButton upButton = new ImageIconButton(ICON_UP);
-        upButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    parametersTable.previousSearchResult(searchTerm.toLowerCase());
-                }
-            }
-        });
-
-        searchField.setPreferredSize(downButton.getPreferredSize());
-
-        JPanel findBar_left = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        findBar_left.add(new JLabel("Find:"));
-        findBar_left.add(searchField);
-        findBar_left.add(downButton);
-        findBar_left.add(upButton);
-
-        ImageIconButton closeFindBarButton = new ImageIconButton(ICON_CLOSE);
-        closeFindBarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findBar.setVisible(false);
-                parametersTable.clearSearchResults();
-                parametersTable.requestFocusInWindow();
-            }
-        });
-
-        // GridBag, just for the vertical alignment..
-        JPanel findBar_right = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = GridBagConstraints.RELATIVE;
-        findBar_right.add(closeFindBarButton, gbc);
-
-        findBar = new JPanel(new BorderLayout());
-        findBar.add(findBar_left, BorderLayout.CENTER);
-        findBar.add(findBar_right, BorderLayout.EAST);
-        findBar.setVisible(false);
+        findBar = new FindParameterBar(parametersTable);
 
         JPanel parameterPanel = new JPanel(new BorderLayout());
         parameterPanel.add(tabpane, BorderLayout.CENTER);
@@ -351,9 +229,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         logsplit.setResizeWeight(1.0);
         logsplit.setContinuousLayout(true);
 
-        getContentPane().add(logsplit, BorderLayout.CENTER);
+        installMenubar();
 
-        configureGlobalKeyboardShortcuts();
+        getContentPane().add(logsplit, BorderLayout.CENTER);
 
         clearWindow();
         updateTitle();
@@ -361,21 +239,107 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         setVisible(true);
     }
 
-    private void configureGlobalKeyboardShortcuts() {
-        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
-                if (keyStroke.equals(KEY_CTRL_F)) {
-                    findBar.setVisible(true);
-                    searchField.selectAll();
-                    searchField.requestFocusInWindow();
-                    return true;
-                }
-                return false;
-            }
-        });
+    private void installMenubar() {
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(fileMenu);
+
+        JMenuItem menuitem = new JMenuItem("Open...", KeyEvent.VK_O);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("open file");
+        menuitem.addActionListener(this);
+        fileMenu.add(menuitem);
+
+        menuitem = new JMenuItem("Connect to Yamcs...");
+        menuitem.setMnemonic(KeyEvent.VK_C);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("connect-yamcs");
+        menuitem.addActionListener(this);
+        fileMenu.add(menuitem);
+
+        fileMenu.addSeparator();
+
+        miRecentFiles = new ArrayList<JMenuItem>();
+        for (int i = 0; i < 4; i++) {
+            menuitem = new JMenuItem();
+            menuitem.setMnemonic(KeyEvent.VK_1 + i);
+            menuitem.setActionCommand("recent-file-" + i);
+            menuitem.addActionListener(this);
+            fileMenu.add(menuitem);
+            miRecentFiles.add(menuitem);
+        }
+
+        updateMenuWithRecentFiles();
+        if (!getRecentFiles().isEmpty())
+            fileMenu.addSeparator();
+
+        /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
+        menu.add(menuitem);
+        menu.addSeparator();*/
+
+        menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        menuitem.setActionCommand("quit");
+        menuitem.addActionListener(this);
+        fileMenu.add(menuitem);
+
+        JMenu menu = new JMenu("Edit");
+        menu.setMnemonic(KeyEvent.VK_E);
+        menuBar.add(menu);
+
+        Action openFindBarAction = findBar.getActionMap().get(FindParameterBar.OPEN_ACTION);
+        menu.add(new JMenuItem(openFindBarAction));
+
+        menu.addSeparator();
+
+        Action toggleMarkAction = packetsTable.getActionMap().get(PacketsTable.TOGGLE_MARK_ACTION_KEY);
+        menu.add(new JMenuItem(toggleMarkAction));
+
+        menu = new JMenu("Navigate");
+        menu.setMnemonic(KeyEvent.VK_N);
+        menuBar.add(menu);
+
+        Action goToPacketAction = packetsTable.getActionMap().get(PacketsTable.GO_TO_PACKET_ACTION_KEY);
+        menu.add(new JMenuItem(goToPacketAction));
+
+        menu.addSeparator();
+
+        Action backAction = packetsTable.getActionMap().get(PacketsTable.BACK_ACTION_KEY);
+        menu.add(new JMenuItem(backAction));
+
+        Action forwardAction = packetsTable.getActionMap().get(PacketsTable.FORWARD_ACTION_KEY);
+        menu.add(new JMenuItem(forwardAction));
+
+        menu.addSeparator();
+
+        Action upAction = packetsTable.getActionMap().get(PacketsTable.UP_ACTION_KEY);
+        menu.add(new JMenuItem(upAction));
+
+        Action downAction = packetsTable.getActionMap().get(PacketsTable.DOWN_ACTION_KEY);
+        menu.add(new JMenuItem(downAction));
+
+        menu = new JMenu("View");
+        menu.setMnemonic(KeyEvent.VK_V);
+        menuBar.add(menu);
+
+        miAutoScroll = new JCheckBoxMenuItem("Auto-Scroll To Last Packet");
+        miAutoScroll.setSelected(true);
+        menu.add(miAutoScroll);
+
+        miAutoSelect = new JCheckBoxMenuItem("Auto-Select Last Packet");
+        miAutoSelect.setSelected(false);
+        menu.add(miAutoSelect);
+
+        menu.addSeparator();
+
+        menuitem = new JMenuItem("Clear", KeyEvent.VK_C);
+        menuitem.setActionCommand("clear");
+        menuitem.addActionListener(this);
+        menu.add(menuitem);        
     }
 
     void updateTitle() {
@@ -394,6 +358,35 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 setTitle(title.toString());
             }
         });
+    }
+
+    void updateMenuWithRecentFiles() {
+        List<String[]> recentFiles = getRecentFiles();
+        int i;
+        for (i = 0; i < recentFiles.size() && i < miRecentFiles.size(); i++) {
+            String fileRef = recentFiles.get(i)[0];
+            int maxChars = 30;
+            if (fileRef.length() > maxChars) {
+                // Search first slash from right to left
+                int slashIndex = fileRef.lastIndexOf(File.separatorChar);
+                if (fileRef.length() - slashIndex > maxChars - 3) {
+                    // Chop off the end of the string of the last path segment
+                    fileRef = "..." + fileRef.substring(slashIndex, slashIndex + maxChars - 2*3) + "...";
+                } else {
+                    // Output the complete filename, and fill up with initial path segments
+                    fileRef = fileRef.substring(0, maxChars - 3 - (fileRef.length() - slashIndex))
+                            + "..." + fileRef.substring(slashIndex);
+                }
+            }
+
+            JMenuItem mi = miRecentFiles.get(i);
+            mi.setVisible(true);
+            mi.setText((i+1) + " " + fileRef);
+            mi.setToolTipText(recentFiles.get(i)[0]);
+        }
+
+        for (; i < miRecentFiles.size(); i++)
+            miRecentFiles.get(i).setVisible(false);
     }
 
     static void debugLogComponent(String name, JComponent c) {
@@ -434,29 +427,44 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         } else if (cmd.equals("clear")) {
             clearWindow();
         } else if (cmd.equals("open file")) {
-            if(fileChooser==null) {
+            if(openFileDialog==null) {
                 try {
-                    fileChooser = new FileAndDbChooser();
+                    openFileDialog = new OpenFileDialog();
                 } catch (ConfigurationException e) {
                     showError("Cannot load local mdb config: "+e.getMessage());
                     return;
                 }
             }
-            int returnVal = fileChooser.showDialog(this);
-            if (returnVal == FileAndDbChooser.APPROVE_OPTION) {
-                disconnect();
-                lastFile = new File(fileChooser.getSelectedFile());
-                if(loadLocalXtcedb(fileChooser.getSelectedDbConfig())) {
-                    loadFile();
-                }
+            int returnVal = openFileDialog.showDialog(this);
+            if (returnVal == OpenFileDialog.APPROVE_OPTION) {
+                openFile(openFileDialog.getSelectedFile(), openFileDialog.getSelectedDbConfig());
             }
         } else if (cmd.equals("connect-yamcs")) {
-            if(connectDialog==null) connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+            if(connectDialog==null) {
+                connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+            }
             int ret=connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 connectYamcs(connectDialog.getConnectData());
             }
+        } else if (cmd.startsWith("recent-file-")) {
+            JMenuItem mi = (JMenuItem) ae.getSource();
+            for (String[] recentFile : getRecentFiles())
+                if (recentFile[0].equals(mi.getToolTipText()))
+                    openFile(new File(recentFile[0]), recentFile[1]);
         }
+    }
+
+    private void openFile(File file, String xtceDb) {
+        if (!file.exists() || !file.isFile()) {
+            JOptionPane.showMessageDialog(null, "File not found: " + file, "File not found", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        disconnect();
+        lastFile = file;
+        if(loadLocalXtcedb(xtceDb))
+            loadFile();
+        updateRecentFiles(lastFile, xtceDb);
     }
 
     private static class ShortReadException extends Exception{
@@ -491,10 +499,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.start();
-        log("Loaded "+xtcedb.getSequenceContainers().size()+" sequence containers and "+xtcedb.getParameterNames().size()+" parameters");
+        log(String.format("Loaded definition of %d sequence container%s and %d parameter%s"
+                , xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s":"")
+                , xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s":"")));
         return true;
     }
-
 
     private boolean loadRemoteXtcedb(String configName) {
         if(tmProcessor!=null) tmProcessor.stop();
@@ -542,57 +551,68 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                     long len, offset = 0;
 
                     clearWindow();
-                    progress = new ProgressMonitor(theApp,
-                            String.format("Loading %s", lastFile.getName()),
-                            null, 0, (int)(lastFile.length()>>10));
+                    int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
+        progress = new ProgressMonitor(theApp,
+                String.format("Loading %s", lastFile.getName()),
+                null, 0, progressMax);
 
-                    while (!progress.isCanceled()) {
-                        res = reader.read(fourb, 0, 4);
-                        if (res != 4) break;
-                        buf = ByteBuffer.allocate(16);
-                        if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                            if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
-                            offset+=10;
-                            if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
-                        } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                            buf.put(fourb, 0, 4);
-                            if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
-                        } else {//pacts packet
-                            isPacts=true;
-                            //System.out.println("pacts packet");
-                            // read ASCII header up to the second blank
-                            int i, j;
-                            StringBuffer hdr = new StringBuffer();
-                            j = 0;
-                            for(i=0;i<4;i++) {
-                                hdr.append((char)fourb[i]);
-                                if ( fourb[i] == 32 ) ++j;
-                            }
-                            offset+=4;
-                            while((j < 2) && (i < 20)) {
-                                int c = reader.read();
-                                if(c==-1)throw new ShortReadException(1, 0, offset);
-                                offset++;
-                                hdr.append((char)c);
-                                if ( c == 32 ) ++j;
-                                i++;
-                            }
-                            if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
-                        }
-                        ccsds = new ListPacket(buf, offset);
-                        len = ccsds.getCccsdsPacketLength() + 7;
-                        r = reader.skip(len - 16);
-                        if (r != len - 16) throw new ShortReadException(len-16, r, offset);
-                        offset += len;
-                        if(isPacts) {
-                            if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
-                            offset+=1;
-                        }
-                        publish(ccsds);
+        int packetCount = 0;
+        while (!progress.isCanceled()) {
+            res = reader.read(fourb, 0, 4);
+            if (res != 4) break;
+            buf = ByteBuffer.allocate(16);
+            if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
+                if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
+                offset+=10;
+                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
+            } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                buf.put(fourb, 0, 4);
+                if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
+            } else {//pacts packet
+                isPacts=true;
+                //System.out.println("pacts packet");
+                // read ASCII header up to the second blank
+                int i, j;
+                StringBuffer hdr = new StringBuffer();
+                j = 0;
+                for(i=0;i<4;i++) {
+                    hdr.append((char)fourb[i]);
+                    if ( fourb[i] == 32 ) ++j;
+                }
+                offset+=4;
+                while((j < 2) && (i < 20)) {
+                    int c = reader.read();
+                    if(c==-1)throw new ShortReadException(1, 0, offset);
+                    offset++;
+                    hdr.append((char)c);
+                    if ( c == 32 ) ++j;
+                    i++;
+                }
+                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
+            }
+            
+            ccsds = new ListPacket(buf, offset);
+            
+            String opsname = xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
+            ccsds.setOpsname(opsname);
+            
+            len = ccsds.getCccsdsPacketLength() + 7;
+            r = reader.skip(len - 16);
+            if (r != len - 16) throw new ShortReadException(len-16, r, offset);
+            offset += len;
+            if(isPacts) {
+                if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
+                offset+=1;
+            }
+            publish(ccsds);
 
-                        progress.setProgress((int)(offset>>10));
-                    }
-                    reader.close();
+            packetCount++;
+            if (packetCount == maxLines) break;
+            progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
+        }
+        reader.close();
                 } catch (Exception x) {
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
                     log(msg);
@@ -622,7 +642,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                         clearWindow();
                         log(String.format("Cancelled loading %s", lastFile.getName()));
                     } else {
-                        log(String.format("Loaded %d packets from \"%s\".", packetsTable.getRowCount(), lastFile.getPath()));
+                        log(String.format("Loaded %d packet%s from \"%s\"", 
+                                packetsTable.getRowCount(),
+                                packetsTable.getRowCount()!=1?"s":"", lastFile.getPath()));
                     }
                     progress.close();
                 }
@@ -637,6 +659,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             public void run() {
                 packetsTable.clear();
                 parametersTable.clear();
+                hexText.setText(null);
                 packetsTable.revalidate();
                 parametersTable.revalidate();
                 structureRoot.removeAllChildren();
@@ -743,7 +766,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
             @Override
             public void run() {
-                String[] vec = new String[parametersTable.getColumnCount()];
+                Object[] vec = new Object[parametersTable.getColumnCount()];
                 DataEncoding encoding;
                 Calibrator calib;
                 Object paramtype;
@@ -777,7 +800,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
 
                     paramtype = value.getParameter().getParameterType();
                     if (paramtype instanceof EnumeratedParameterType) {
-                        vec[9] = ((EnumeratedParameterType)paramtype).getCalibrationDescription();
+                        vec[9] = paramtype;
                     } else if (paramtype instanceof BaseDataType) {
                         encoding = ((BaseDataType)paramtype).getEncoding();
                         calib = null;
@@ -802,8 +825,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
 
                 // build hexdump text
-                currentPacket.hexdump();
+                currentPacket.hexdump(hexDoc);
                 hexText.setCaretPosition(0);
+
+                // select first row
+                parametersTable.setRowSelectionInterval(0, 0);
             }
         });
     }
@@ -811,7 +837,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     public void setSelectedPacket(ListPacket listPacket) {
         currentPacket = listPacket;
         try {
-            currentPacket.load();
+            currentPacket.load(lastFile);
             ByteBuffer bb=currentPacket.getByteBuffer();
             tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), currentPacket.getByteBuffer()));
         } catch (IOException x) {
@@ -841,87 +867,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         Range(int offset, int size) {
             this.offset = offset;
             this.size = size;
-        }
-    }
-
-    class ListPacket extends CcsdsPacket {
-        String opsname;
-        long fileOffset;
-
-        ListPacket(ByteBuffer bb) {
-            this(bb, -1);
-        }
-
-        ListPacket(ByteBuffer bb, long fileOffset) {
-            super(bb);
-            this.fileOffset = fileOffset;
-            opsname = xtceutil.getPacketNameByApidPacketid(getAPID(), getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname==null) opsname = xtceutil.getPacketNameByPacketId(getPacketID(), MdbMappings.MDB_OPSNAME);
-            if (opsname == null) opsname = String.format("Packet ID %d", getPacketID());
-        }
-
-        @Override
-        public String toString() {
-            return opsname;
-        }
-
-        void load() throws IOException {
-            if (bb.capacity() == 16) {
-                FileInputStream reader = new FileInputStream(lastFile);
-                int len = getCccsdsPacketLength() + 7;
-                byte[] data = new byte[len];
-                reader.skip(fileOffset + 16);
-                int res = reader.read(data, 16, len - 16);
-                if(res!=len-16) throw new IOException("short read, expected "+(len-16)+", got "+res);
-                reader.close();
-                bb.rewind();
-                bb.get(data, 0, 16);
-                bb = ByteBuffer.wrap(data);
-            }
-        }
-
-        void hexdump() {
-            try {
-                byte b;
-                char c;
-                int i, j;
-
-                hexDoc.remove(0, hexDoc.getLength());
-
-                for (i = 0; i < bb.capacity();) {
-
-                    // build one row of hexdump: offset, hex bytes, ascii bytes
-
-                    asciiBuf.setLength(0);
-                    hexBuf.setLength(0);
-                    hexBuf.append(hexstring.charAt(i>>12));
-                    hexBuf.append(hexstring.charAt((i>>8) & 0x0f));
-                    hexBuf.append(hexstring.charAt((i>>4) & 0x0f));
-                    hexBuf.append(hexstring.charAt(i & 0x0f));
-                    hexBuf.append(' ');
-
-                    for (j = 0; j < 16; ++j, ++i) {
-                        if (i < bb.capacity()) {
-                            b = bb.get(i);
-                            hexBuf.append(hexstring.charAt((b>>4) & 0x0f));
-                            hexBuf.append(hexstring.charAt(b & 0x0f));
-                            if ((j & 1) == 1) hexBuf.append(' ');
-                            c = (b < 32) || (b > 126) ? '.' : (char)b;
-                            asciiBuf.append(c);
-                        } else {
-                            hexBuf.append((j & 1) == 1 ? "   " : "  ");
-                            asciiBuf.append(' ');
-                        }
-                    }
-
-                    hexBuf.append(asciiBuf);
-                    hexBuf.append('\n');
-                    hexDoc.insertString(hexDoc.getLength(), hexBuf.toString(), fixedStyle);
-                }
-
-            } catch (BadLocationException x) {
-                System.out.println("cannot format hexdump of "+opsname+": "+x.getMessage());
-            }
         }
     }
 
@@ -973,6 +918,37 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         log("disconnected");
     }
 
+    /**
+     * Returns the recently opened files from preferences
+     * Each entry is a String array with the filename on
+     * index 0, and the last used XTCE DB for that file on
+     * index 1.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String[]> getRecentFiles() {
+        List<String[]> recentFiles = (ArrayList<String[]>) PrefsObject.getObject(uiPrefs, "RecentFiles");
+        return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
+    }
+
+    private void updateRecentFiles(File file, String xtceDb) {
+        String filename = file.getAbsolutePath();
+        List<String[]> recentFiles = getRecentFiles();
+        boolean exists = false;
+        for (int i = 0; i < recentFiles.size(); i++) {
+            String[] entry = recentFiles.get(i);
+            if (entry[0].equals(filename)) {
+                entry[1] = xtceDb;
+                recentFiles.add(0, recentFiles.remove(i));
+                exists = true;
+            }
+        }
+        if (!exists) recentFiles.add(0, new String[] { filename, xtceDb });
+        PrefsObject.putObject(uiPrefs, "RecentFiles", recentFiles);
+
+        // Also update JMenu accordingly
+        updateMenuWithRecentFiles();
+    }
+
     private void removeBorders(JSplitPane splitPane) {
         SplitPaneUI ui = splitPane.getUI();
         if(ui instanceof BasicSplitPaneUI) { // We don't want to mess with other L&Fs
@@ -981,42 +957,98 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         }
     }
 
-    private static void printUsageAndExit() {
-        System.err.println("Usage: packetviewer.sh [-h] [-l n] [url]");
-        System.err.println("-h:\tShow this help text");
-        System.err.println("-l:\tMaximum number of packet lines to keep (only for realtime connection), default 1000");
-        System.err.println("url:\tConnect at startup to the given url");
-        System.err.println("Example:\n\tpacketviewer.sh yamcs://localhost:5445/yops");
+    private static void printUsageAndExit(boolean full) {
+        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [file|url]");
+        if (full) {
+            System.err.println();
+            System.err.println("    file       The file to open at startup. Requires the use of -db");
+            System.err.println("    url        Connect at startup to the given url");
+            System.err.println();
+            System.err.println("OPTIONS");
+            System.err.println("    -h         Print a help message and exit");
+            System.err.println();
+            System.err.println("    -l  n      Limit the view to n packets only. If the Packet Viewer is");
+            System.err.println("               connected to a live instance, only the last n packets will");
+            System.err.println("               be visible. For offline file consulting, only the first n");
+            System.err.println("               packets of the file will be displayed.");
+            System.err.println("               Defaults to 1000 for realtime connections. There is no");
+            System.err.println("               default limitation for viewing offline files.");
+            System.err.println();
+            System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
+            System.err.println("               mdb.yaml configuration file.");
+            System.err.println();
+            System.err.println("EXAMPLES");
+            System.err.println("        packetviewer.sh yamcs://localhost:5445/yops");
+            System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
+        }
         System.exit(1);
     }
 
-    public static void main(String[] args) throws ConfigurationException, URISyntaxException {
-        String initialUrl = null;
+    private static void printArgsError(String message) {
+        System.err.println(message);
+        printUsageAndExit(false);
+    }
 
-        try {
-            for(int i=0;i<args.length;i++) {
-                if(args[i].startsWith("yamcs://")) {
-                    initialUrl=args[i];
-                } else if("-l".equals(args[i])) {
-                    if(i+1==args.length) printUsageAndExit();
-                    maxLines=Integer.valueOf(args[++i]);
-                } else if(args[i].equals("-h")) {
-                    printUsageAndExit();
+    public static void main(String[] args) throws ConfigurationException, URISyntaxException {
+        // Scan args
+        String fileOrUrl = null;
+        Map<String,Object> options = new HashMap<String,Object>();
+        for (int i = 0; i < args.length; i++) {
+            if ("-h".equals(args[i])) {
+                printUsageAndExit(true);
+            } else if ("-l".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
                 } else {
-                    printUsageAndExit();
+                    printArgsError("Number of lines not specified for -l option");
                 }
-            } 
-        } catch (NumberFormatException e) {
-            System.err.println("Illegal number: "+e.getMessage());
-            printUsageAndExit();
+            } else if ("-x".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of XTCE DB not specified for -x option");
+                }
+            } else if (args[i].startsWith("-")) {
+                printArgsError("Unknown option: " + args[i]);
+            } else { // i should now be positioned at [file|url]
+                if (i == args.length - 1) {
+                    fileOrUrl = args[i];
+                } else {
+                    printArgsError("Too many arguments. Only one file or url can be opened at a time");
+                }
+            }
         }
 
+        // Do some more preparatory stuff
+        if (options.containsKey("-l")) {
+            try {
+                maxLines = Integer.parseInt((String) options.get("-l"));
+            } catch (NumberFormatException e) {
+                printArgsError("-l argument must be integer. Got: " + options.get("-l"));
+            }
+        }
+        if (fileOrUrl != null && fileOrUrl.startsWith("yamcs://")) {
+            if (!options.containsKey("-l")) {
+                maxLines = 1000; // Default for realtime connections
+            }
+        }
+        if (fileOrUrl != null && !fileOrUrl.startsWith("yamcs://")) {
+            if (!options.containsKey("-x")) {
+                printArgsError("-x argument must be specified when opening a file");
+            }
+        }
+
+        // Okay, launch the GUI now
         YConfiguration.setup();
         theApp = new PacketViewer();
-
-        if (initialUrl != null) {
-            YamcsConnectData ycd=YamcsConnectData.parse(initialUrl);
-            theApp.connectYamcs(ycd);
+        if (fileOrUrl != null) {
+            if (fileOrUrl.startsWith("yamcs://")) {
+                YamcsConnectData ycd = YamcsConnectData.parse(fileOrUrl);
+                theApp.connectYamcs(ycd);
+            } else {
+                File file = new File(fileOrUrl);
+                theApp.openFile(file, (String) options.get("-x"));
+            }
         }
     }
 }

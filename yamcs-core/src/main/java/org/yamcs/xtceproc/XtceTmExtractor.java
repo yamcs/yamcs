@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ItemIdPacketConsumerStruct;
 import org.yamcs.ParameterValue;
 import org.yamcs.utils.TimeEncoding;
@@ -31,7 +32,7 @@ public class XtceTmExtractor {
 	public final XtceDb xtcedb;
 	final SequenceContainer rootContainer;
 	ArrayList<ParameterValue> paramResult=new ArrayList<ParameterValue>();
-	ArrayList<SequenceContainer> containerResult=new ArrayList<SequenceContainer>();
+	ArrayList<ContainerExtractionResult> containerResult=new ArrayList<ContainerExtractionResult>();
 
 	/**
 	 * Creates a TmExtractor extracting data according to the XtceDb
@@ -56,37 +57,47 @@ public class XtceTmExtractor {
 	}
 
 	/**
-	 * adds all parameters to the subscription
+	 * Adds all containers and parameters to the subscription
 	 */
     public void startProvidingAll() {
-	    subscription.addAll(rootContainer);
+        for (SequenceContainer c : xtcedb.getSequenceContainers()) {
+            if (c.getBaseContainer() == null) {
+                subscription.addAll(c);
+            }
+        }
 	}
-	
+    
     public void stopProviding(Parameter param) {
 		//TODO 2.0 do something here
 	}
-	
+    
 	/**
-	 * Extract one packet
-	 *
+	 * Extract one packet, starting at the root sequence container
 	 */
     public void processPacket(ByteBuffer bb, long generationTime) {
-	    try {
-	        paramResult=new ArrayList<ParameterValue>();
-	        containerResult=new ArrayList<SequenceContainer>();
-	        synchronized(subscription) {
-	            long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
-	            ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
-	            pcontext.sequenceContainerProcessor.extract(rootContainer);
-
-	            for(ParameterValue pv:paramResult) {
-	                pcontext.parameterTypeProcessor.performLimitChecking(pv.getParameter().getParameterType(), pv);
-	            }
-	        }
-	    } catch (Exception e) {
-	        log.error("got exception in tmextractor ", e);
-	    }
+        processPacket(bb, generationTime, rootContainer);
 	}
+    
+    /**
+     * Extract one packet, starting at the specified container.
+     */
+    public void processPacket(ByteBuffer bb, long generationTime, SequenceContainer startContainer) {
+        try {
+            paramResult=new ArrayList<ParameterValue>();
+            containerResult=new ArrayList<ContainerExtractionResult>();
+            synchronized(subscription) {
+                long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
+                ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
+                pcontext.sequenceContainerProcessor.extract(startContainer);
+
+                for(ParameterValue pv:paramResult) {
+                    pcontext.parameterTypeProcessor.performLimitChecking(pv.getParameter().getParameterType(), pv);
+                }
+            }
+        } catch (Exception e) {
+            log.error("got exception in tmextractor ", e);
+        }
+    }
     
 	public void resetStatistics() {
 		stats.reset();
@@ -103,6 +114,10 @@ public class XtceTmExtractor {
         }
     }
     
+    public void stopProviding(SequenceContainer sequenceContainer) {
+        //TODO
+    }
+    
 	public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {
 	    synchronized(subscription) {
 	        for(ItemIdPacketConsumerStruct i:iipcs) {
@@ -115,7 +130,7 @@ public class XtceTmExtractor {
         return paramResult;
     }
 
-    public ArrayList<SequenceContainer> getContainerResult() {
+    public ArrayList<ContainerExtractionResult> getContainerResult() {
         return containerResult;
     }
 

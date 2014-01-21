@@ -33,7 +33,7 @@ public class ParameterTypeProcessor {
      * @param bitb
      * @return value of the parameter after extraction
      */
-    ParameterValue extract(ParameterType ptype) {
+    public ParameterValue extract(ParameterType ptype) {
     	if(ptype instanceof EnumeratedParameterType) {
     		return extractEnumerated((EnumeratedParameterType) ptype);
     	} else if(ptype instanceof IntegerParameterType) {

@@ -158,7 +158,7 @@ public class PpDbFactory {
 
     private static String getFullName(String filename) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
-        return c.getGlobalProperty("cacheDirectory") + File.separator + filename;
+        return new File(c.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
     private static void saveSerializedInstance(PpDefDb db, String filename) throws IOException, ConfigurationException {
