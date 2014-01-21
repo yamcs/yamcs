@@ -2,7 +2,6 @@ package org.yamcs.ui.eventviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -22,8 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.sound.sampled.AudioFormat;
@@ -55,9 +53,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
@@ -77,6 +72,7 @@ import org.yamcs.utils.TimeEncoding;
 import com.csvreader.CsvWriter;
 
 public class EventViewer extends JFrame implements ActionListener, ItemListener, MenuListener, ConnectionListener {
+    private static final long serialVersionUID = 1L;
     static Logger log= LoggerFactory.getLogger(EventViewer.class);
     // colors taken from USS configuration
     final Color                                 iconColorGreen         = new Color(0x86B78A);
@@ -123,6 +119,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     boolean                                     connected              = false;
     Thread                                      connectingThread       = null;
     private String                              soundFile              = null;
+    List<Map<String,String>>                    extraColumns           = null;
 
     private Clip                                alertClip              = null;
     private JPopupMenu                          popupMenu              = null;
@@ -140,13 +137,16 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     /**
      * Read properties from configuration file
      */
-    private void readConfiruration() throws ConfigurationException {
+    private void readConfiguration() throws ConfigurationException {
         YConfiguration cfg = null;
 
         cfg = YConfiguration.getConfiguration("event-viewer");
         if(cfg.containsKey("soundfile")) {
             soundFile = cfg.getString("soundfile");
-        } 
+        }
+        if(cfg.containsKey("extraColumns")) {
+            extraColumns=(List<Map<String,String>>) cfg.getList("extraColumns");
+        }
     }
 
     /**
@@ -174,7 +174,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         this.yconnector=yc;
         this.eventReceiver = eventReceiver;
         
-        readConfiruration();
+        readConfiguration();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setIconImage(getIcon("yamcs-event-32.png").getImage());
@@ -324,30 +324,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         // event table
 
-        tableModel = new EventTableModel(getFilteringRulesTable());
-        final EventTableRenderer renderer = new EventTableRenderer();
-        eventTable = new JTable(tableModel) {
-
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-
-            @Override
-            public TableCellRenderer getCellRenderer(int row, int column) {
-                if (column == 4) {
-                    return renderer;
-                }
-                // Disable blue focus border
-                return new DefaultTableCellRenderer() {
-                    private static final long serialVersionUID = 1L;
-                    
-                    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                        return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
-                    }
-                };
-            }
-        };
+        tableModel = new EventTableModel(getFilteringRulesTable(), extraColumns);
+        eventTable = new EventTable(tableModel);
 
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         eventTable.setPreferredScrollableViewportSize(new Dimension(920, 400));
@@ -998,257 +976,4 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public void menuCanceled(MenuEvent e) {
         // do nothing
     }
-
- 
 }
-
-class EventTableModel extends AbstractTableModel implements Observer {
-    /** Column names */
-    static final String[]   columnNames         = { "Source", "Generation Time", "Reception Time", "Event Type", "Event Text" };
-
-    /** Column indices */
-    public static final int SOURCE_COL          = 0;
-    public static final int GENERATION_TIME_COL = 1;
-    public static final int RECEPTION_TIME_COL  = 2;
-    public static final int EVENT_TYPE_COL      = 3;
-    public static final int EVENT_TEXT_COL      = 4;
-
-    /** Vector with all events */
-    private Vector<Event>   allEvents           = null;
-
-    /** Parallel data model with only visible events */
-    private Vector<Event>   visibleEvents       = null;
-
-    /** Filtering table */
-    FilteringRulesTable     filteringTable      = null;
-
-    /**
-     * Constructor.
-     */
-    public EventTableModel(FilteringRulesTable table) {
-        allEvents = new Vector<Event>();
-        visibleEvents = new Vector<Event>();
-        filteringTable = table;
-        filteringTable.registerObserver(this);
-    }
-
-    @Override
-    public int getRowCount() {
-        return visibleEvents.size();
-    }
-
-    @Override
-    public int getColumnCount() {
-        return columnNames.length;
-    }
-
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        Object value = null;
-        Event event = visibleEvents.elementAt(rowIndex);
-
-        switch (columnIndex)
-        {
-        case EventTableModel.SOURCE_COL:
-            value = event.getSource();
-            break;
-        case EventTableModel.EVENT_TEXT_COL:
-            // return event here to be compatible with older code
-            value = event;
-            break;
-        case EventTableModel.EVENT_TYPE_COL:
-            value = event.getType();
-            break;
-        case EventTableModel.GENERATION_TIME_COL:
-            value = TimeEncoding.toString(event.getGenerationTime());
-            break;
-        case EventTableModel.RECEPTION_TIME_COL:
-            value = TimeEncoding.toString(event.getReceptionTime());
-            break;
-        default:
-            break;
-        }
-
-        return value;
-    }
-
-    @Override
-    public String getColumnName(int col) {
-        return columnNames[col];
-    }
-
-    /**
-     * Add list of events into model.
-     * @param eventList List of events to be added.
-     */
-    public void addEvents(final List<Event> eventList) {
-        allEvents.addAll(eventList);
-
-        int firstr = visibleEvents.size();
-        for (Event event : eventList) {
-            if (filteringTable.isEventVisible(event))
-            {
-                visibleEvents.add(event);
-            }
-        }
-        int lastr = visibleEvents.size() - 1;
-
-        if (firstr <= lastr) {
-            fireTableRowsInserted(firstr, lastr);
-        }
-    }
-
-    /**
-     * Add single event into model.
-     * @param event Event to be added.
-     */
-    public void addEvent(final Event event) {
-        allEvents.add(event);
-
-        if (filteringTable.isEventVisible(event))
-        {
-            visibleEvents.add(event);
-            int addedRow = visibleEvents.size() - 1;
-            fireTableRowsInserted(addedRow, addedRow);
-        }
-    }
-
-    /**
-     * Access to event on the specific row.
-     * @param row Row
-     * @return Event on the row.
-     */
-    public Event getEvent(int row)
-    {
-        return visibleEvents.elementAt(row);
-    }
-
-    /**
-     * Remove all events from the model.
-     */
-    public void clear()
-    {
-        allEvents.clear();
-        visibleEvents.clear();
-    }
-
-    /**
-     * Apply new filtering rules. After the change of filtering rules the
-     * visible data must conform with them.
-     */
-    public void applyNewFilteringRules()
-    {
-        visibleEvents.clear();
-
-        for (Event event : allEvents)
-        {
-            if (filteringTable.isEventVisible(event))
-            {
-                visibleEvents.add(event);
-            }
-        }
-
-        fireTableDataChanged();
-    }
-
-    @Override
-    public void update(Observable o, Object arg)
-    {
-        applyNewFilteringRules();
-    }
-}
-
-/**
- * Event table renderer class. Its purpose is to highlight the events with
- * severity WARNING and ERROR
- */
-class EventTableRenderer extends JTextArea implements TableCellRenderer
-{
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void validate() {
-    }
-
-    @Override
-    public void invalidate() {
-    }
-
-    @Override
-    public void revalidate() {
-    }
-
-    @Override
-    public void repaint() {
-    }
-
-    public void firePropertyChange() {
-    }
-
-    @Override
-    public boolean isOpaque() {
-        return true;
-    }
-
-    public EventTableRenderer() {
-        super();
-    }
-
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        Event event = (Event) value;
-        switch (event.getSeverity())
-        {
-        case WARNING:
-            setBackground(Color.YELLOW);
-            setSelectedTextColor(Color.YELLOW);
-            setDisabledTextColor(Color.YELLOW);
-            break;
-        case ERROR:
-            setBackground(Color.RED);
-            break;
-        default:
-            setBackground(null);
-            break;
-        }
-
-        String[] lines=event.getMessage().split("\n");
-        if(lines.length>5) {
-            StringBuilder buf=new StringBuilder();
-            for(int i=0;i<5;i++) {
-                buf.append(lines[i]).append("\n");
-            }
-            buf.append("[truncated]");
-            setText(buf.toString());
-        } else {
-            setText(event.getMessage());
-        }
-        
-        int height_wanted = (int) getPreferredSize().getHeight() + table.getIntercellSpacing().height;
-        if (height_wanted != table.getRowHeight(row))
-            table.setRowHeight(row, height_wanted);
-        if (isSelected)
-        {
-            setForeground(table.getSelectionForeground());
-            setBackground(table.getSelectionBackground());
-        }
-        else
-        {
-            switch (event.getSeverity())
-            {
-            case WARNING:
-                setBackground(Color.YELLOW);
-                break;
-            case ERROR:
-                setBackground(Color.RED);
-                break;
-            default:
-                setForeground(table.getForeground());
-                setBackground(table.getBackground());
-                break;
-            }
-        }
-        return this;
-    }
-}
-

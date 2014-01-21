@@ -17,4 +17,9 @@ public interface EventProducer {
 
     public abstract void sendInfo(String type, String msg);
 
+    /**
+     * Creates a default Event Builder with these fields pre-filled: source,
+     * seqNo, receptionTime, generationTime
+     */
+    public abstract Event.Builder newEvent();
 }
