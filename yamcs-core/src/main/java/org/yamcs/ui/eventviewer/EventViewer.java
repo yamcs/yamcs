@@ -212,7 +212,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menu.add(menuItem);
 
         menu.addSeparator();
-        miRetrievePast = new JMenuItem("Retrieve Past Events");
+        miRetrievePast = new JMenuItem("Retrieve Past Events...");
         miRetrievePast.addActionListener(this);
         miRetrievePast.setActionCommand("retrieve_past");
         menu.add(miRetrievePast);

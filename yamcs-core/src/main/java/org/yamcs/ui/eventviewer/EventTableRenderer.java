@@ -1,6 +1,5 @@
 package org.yamcs.ui.eventviewer;
 
-import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JTable;
@@ -14,7 +13,7 @@ import org.yamcs.protobuf.Yamcs.Event;
  * severity WARNING and ERROR
  */
 class EventTableRenderer extends JTextArea implements TableCellRenderer {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID=1L;
 
     @Override
     public void validate() {
@@ -47,21 +46,6 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Event event = (Event) value;
-        switch (event.getSeverity())
-        {
-        case WARNING:
-            setBackground(Color.YELLOW);
-            setSelectedTextColor(Color.YELLOW);
-            setDisabledTextColor(Color.YELLOW);
-            break;
-        case ERROR:
-            setBackground(Color.RED);
-            break;
-        default:
-            setBackground(null);
-            break;
-        }
-
         String[] lines=event.getMessage().split("\n");
         if(lines.length>5) {
             StringBuilder buf=new StringBuilder();
@@ -77,20 +61,17 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
         int height_wanted = (int) getPreferredSize().getHeight() + table.getIntercellSpacing().height;
         if (height_wanted != table.getRowHeight(row))
             table.setRowHeight(row, height_wanted);
-        if (isSelected)
-        {
+        if (isSelected) {
             setForeground(table.getSelectionForeground());
             setBackground(table.getSelectionBackground());
-        }
-        else
-        {
-            switch (event.getSeverity())
-            {
+        } else {
+            // This is a textarea, so does not follow the row layout set by prepareRenderer
+            switch (event.getSeverity()) {
             case WARNING:
-                setBackground(Color.YELLOW);
+                setBackground(EventTable.COLOR_WARNING_BG);
                 break;
             case ERROR:
-                setBackground(Color.RED);
+                setBackground(EventTable.COLOR_ERROR_BG);
                 break;
             default:
                 setForeground(table.getForeground());
