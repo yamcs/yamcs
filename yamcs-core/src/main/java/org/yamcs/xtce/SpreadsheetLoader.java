@@ -456,12 +456,29 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			
 			//calibrations
 			DataEncoding encoding = null;
-			if (("uint".equalsIgnoreCase(rawtype)) || ("int".equalsIgnoreCase(rawtype))) {
+			if (("uint".equalsIgnoreCase(rawtype)) || rawtype.toLowerCase().startsWith("int")) {
 			    if(bitlength==-1) error("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory");
 				encoding = new IntegerDataEncoding(name, bitlength);
-				if ("int".equalsIgnoreCase(rawtype)) {
-					encoding = new IntegerDataEncoding(name, bitlength);
-					((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+				if (rawtype.toLowerCase().startsWith("int")) {
+					encoding = new IntegerDataEncoding(name, bitlength);encoding = new IntegerDataEncoding(name, bitlength);
+					if ("int".equals(rawtype)) {
+						((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+					} else {
+						int startBracket = rawtype.indexOf('(');
+						if (startBracket != -1) {
+							int endBracket = rawtype.indexOf(')', startBracket);
+							if (endBracket != -1) {
+								String intRepresentation = rawtype.substring(startBracket+1, endBracket).trim().toLowerCase();
+								if ("2c".equals(intRepresentation)) {
+									((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+								} else if ("si".equals(intRepresentation)) {
+									((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
+								} else {
+									error("Unsupported signed integer representation: "+intRepresentation);	
+								}
+							}
+						}
+					}	
 				}
 				if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
 					Calibrator c = calibrators.get(calib);

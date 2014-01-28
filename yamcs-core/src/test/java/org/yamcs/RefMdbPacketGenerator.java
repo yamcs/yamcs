@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.GpsCcsdsTime;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -31,7 +32,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt13Length=pkt1Length+100;
     public final int pkt14Length=pkt1Length+100;
     public final int pkt15Length=pkt1Length+50;
-    public final int pkt16Length=pkt1Length+8;
+    public final int pkt16Length=pkt1Length+4;
+    public final int pkt17Length=pkt1Length+6;
     public final int pkt2Length=8;
     
     //raw values of parameters 
@@ -121,6 +123,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2) {
         ByteBuffer bb=ByteBuffer.allocate(pkt16Length);
         fill_PKT16(bb, pIntegerPara16_1, pIntegerPara16_2);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
+    public ByteBuffer generate_PKT17() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt17Length);
+        fill_PKT17(bb);
         sendToTmProcessor(bb);
         return bb;
     }
@@ -241,6 +250,19 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.putShort((short)(pIntegerPara16_2&0xFFFF));
     }
     
+    private void fill_PKT17(ByteBuffer bb) {
+        fill_PKT1(bb, 7);
+        int offset=pkt1Length;
+        bb.position(offset);
+        
+        // 16-bit signed integer (in sign-magnitude)
+        bb.put(StringConvertors.hexStringToArray("BA50"));
+        // 6 (000110), filler (000), -6 (100110) (sign-magnitude)
+        bb.put(StringConvertors.hexStringToArray("1846"));
+        // 6 (000110), filler (000), -6 (111010) (2's complement)
+        bb.put(StringConvertors.hexStringToArray("187A"));
+    }
+    
     private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {
     	int baSize = bits / 8;
     	if( bits == -1 ) {
@@ -253,6 +275,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
     private void putTerminatedStringParam( ByteBuffer bb, String value, byte terminator ) {
     	byte[] ba=new byte[ value.getBytes().length+1];
+    	System.out.println("WRITING "+StringConvertors.arrayToHexString(value.getBytes()));
         System.arraycopy(value.getBytes(), 0, ba, 0, value.getBytes().length);
         ba[ba.length-1] = terminator;
         bb.put( ba );
