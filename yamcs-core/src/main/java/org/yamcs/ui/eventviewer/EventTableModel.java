@@ -55,32 +55,34 @@ class EventTableModel extends AbstractTableModel implements Observer {
         visibleEvents = new Vector<Event>();
         filteringTable = table;
         filteringTable.registerObserver(this);
-        for(Map<String,String> col:extraColumns) {
-            if(registry==null) {
-                registry=ExtensionRegistry.newInstance();
-            }
-            try {
-                Class<?> extensionClazz=Class.forName(col.get("class"));
-                Field field=extensionClazz.getField(col.get("extension"));
-                @SuppressWarnings("unchecked")
-                GeneratedExtension<Yamcs.Event, Type> extension=(GeneratedExtension<Yamcs.Event, Type>)field.get(null);
-                extensions.add(extension);
-                registry.add(extension);
-                log.info("Installing extension "+extension.getDescriptor().getFullName());
-            } catch (IllegalAccessException e) {
-                log.error("Could not load extension class", e);
-                continue;
-            } catch (ClassNotFoundException e) {
-                log.error("Could not load extension class", e);
-                continue;
-            } catch (SecurityException e) {
-                log.error("Could not load extension class", e);
-                continue;
-            } catch (NoSuchFieldException e) {
-                log.error("Could not load extension class", e);
-                continue;
-            }
-            columnNames.add(col.get("label"));
+        if(extraColumns!=null) {
+	        for(Map<String,String> col:extraColumns) {
+	            if(registry==null) {
+	                registry=ExtensionRegistry.newInstance();
+	            }
+	            try {
+	                Class<?> extensionClazz=Class.forName(col.get("class"));
+	                Field field=extensionClazz.getField(col.get("extension"));
+	                @SuppressWarnings("unchecked")
+	                GeneratedExtension<Yamcs.Event, Type> extension=(GeneratedExtension<Yamcs.Event, Type>)field.get(null);
+	                extensions.add(extension);
+	                registry.add(extension);
+	                log.info("Installing extension "+extension.getDescriptor().getFullName());
+	            } catch (IllegalAccessException e) {
+	                log.error("Could not load extension class", e);
+	                continue;
+	            } catch (ClassNotFoundException e) {
+	                log.error("Could not load extension class", e);
+	                continue;
+	            } catch (SecurityException e) {
+	                log.error("Could not load extension class", e);
+	                continue;
+	            } catch (NoSuchFieldException e) {
+	                log.error("Could not load extension class", e);
+	                continue;
+	            }
+	            columnNames.add(col.get("label"));
+	        }
         }
     }
 
