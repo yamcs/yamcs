@@ -930,8 +930,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
      */
     @SuppressWarnings("unchecked")
     public List<String[]> getRecentFiles() {
-        List<String[]> recentFiles = (ArrayList<String[]>) PrefsObject.getObject(uiPrefs, "RecentFiles");
-        return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
+    	List<String[]> recentFiles = null;
+    	Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
+    	if(obj instanceof ArrayList)
+    		recentFiles = (ArrayList<String[]>)obj;
+    	return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
     }
 
     private void updateRecentFiles(File file, String xtceDb) {
@@ -947,7 +950,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
         }
         if (!exists) recentFiles.add(0, new String[] { filename, xtceDb });
-        PrefsObject.putObject(uiPrefs, "RecentFiles", recentFiles);
+        PrefsObject.putObject(uiPrefs, "RecentlyOpened", recentFiles);
 
         // Also update JMenu accordingly
         updateMenuWithRecentFiles();
