@@ -34,9 +34,12 @@ public class CommandHistoryFormatter {
         tmpWriter=new BufferedWriter(new FileWriter(tmpFile));
     }
 
-    public void writeCommand(CommandHistoryEntry che) throws IOException {
+    /**
+     *returns the size in characters of the written command
+    */
+    public int writeCommand(CommandHistoryEntry che) throws IOException {
         ArrayList<String> values=new ArrayList<String>(columns.size());
-        
+               
         //initialize the list with nulls so we can do set later
         for(int i=0; i<columns.size(); i++) {
             values.add(null);
@@ -65,6 +68,7 @@ public class CommandHistoryFormatter {
         }
         tmpWriter.write(sb.toString());
         tmpWriter.write("\n");
+        return sb.length()+1;
     }
 
     public void close() throws IOException {
