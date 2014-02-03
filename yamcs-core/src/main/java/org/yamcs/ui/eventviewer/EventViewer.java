@@ -12,6 +12,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -88,7 +89,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     JMenuItem                                   miAutoScroll           = null;
     JMenuItem                                   miShowErrors           = null;
     JMenuItem                                   miRetrievePast         = null;
-    JTable                                      eventTable             = null;
+    EventTable                                  eventTable             = null;
     JScrollPane                                 eventPane              = null;
 
     JLabel                                      labelEventCount        = null;
@@ -145,7 +146,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             soundFile = cfg.getString("soundfile");
         }
         if(cfg.containsKey("extraColumns")) {
-            extraColumns=(List<Map<String,String>>) cfg.getList("extraColumns");
+            extraColumns=cfg.getList("extraColumns");
         }
     }
 
@@ -177,6 +178,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         readConfiguration();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				eventTable.storePreferences();
+				dispose();
+			}
+        });
+        
         setIconImage(getIcon("yamcs-event-32.png").getImage());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -275,6 +284,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         Box panel = Box.createHorizontalBox();
         getContentPane().add(panel, BorderLayout.SOUTH);
+        panel.add(Box.createHorizontalStrut(20));
 
         panel.add(new JLabel("Total Events:"));
         labelEventCount = new JLabel(String.valueOf(eventCount));
@@ -334,16 +344,16 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         eventTable.setRowSorter(tableSorter);
 
         final TableColumnModel tcm = eventTable.getColumnModel();
-        tcm.getColumn(0).setMaxWidth(200);
-        tcm.getColumn(1).setMaxWidth(200);
-        tcm.getColumn(2).setMaxWidth(200);
-        tcm.getColumn(3).setMaxWidth(150);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.SOURCE_COL)).setMaxWidth(200);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.GENERATION_TIME_COL)).setMaxWidth(200);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.RECEPTION_TIME_COL)).setMaxWidth(200);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.EVENT_TYPE_COL)).setMaxWidth(150);
 
-        tcm.getColumn(0).setPreferredWidth(100);
-        tcm.getColumn(1).setPreferredWidth(200);
-        tcm.getColumn(2).setPreferredWidth(100);
-        tcm.getColumn(3).setPreferredWidth(100);
-        tcm.getColumn(4).setPreferredWidth(400);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.SOURCE_COL)).setPreferredWidth(100);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.GENERATION_TIME_COL)).setPreferredWidth(200);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.RECEPTION_TIME_COL)).setPreferredWidth(100);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.EVENT_TYPE_COL)).setPreferredWidth(100);
+        tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.EVENT_TEXT_COL)).setPreferredWidth(400);
 
         eventPane = new JScrollPane(eventTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 

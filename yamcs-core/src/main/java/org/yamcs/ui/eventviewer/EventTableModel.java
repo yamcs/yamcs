@@ -51,6 +51,7 @@ class EventTableModel extends AbstractTableModel implements Observer {
         columnNames.add("Reception Time");
         columnNames.add("Event Type");
         columnNames.add("Event Text");
+        
         allEvents = new Vector<Event>();
         visibleEvents = new Vector<Event>();
         filteringTable = table;

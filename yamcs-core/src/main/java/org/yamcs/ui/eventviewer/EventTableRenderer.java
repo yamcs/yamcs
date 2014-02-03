@@ -68,9 +68,11 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
             // This is a textarea, so does not follow the row layout set by prepareRenderer
             switch (event.getSeverity()) {
             case WARNING:
-                setBackground(EventTable.COLOR_WARNING_BG);
+            	setForeground(table.getForeground());
+            	setBackground(EventTable.COLOR_WARNING_BG);
                 break;
             case ERROR:
+            	setForeground(table.getForeground());
                 setBackground(EventTable.COLOR_ERROR_BG);
                 break;
             default:
