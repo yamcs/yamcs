@@ -30,7 +30,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 	
 	static Logger log=LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
 
-	public FileTmPacketProvider(String instance, String fileName) throws FileNotFoundException {
+	public FileTmPacketProvider(String instance, String name, String fileName) throws FileNotFoundException {
 		this(fileName, "STOP",1000);
 	}
 

@@ -42,7 +42,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 	
 	protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
 
-	public TcpTcUplinker(String yamcsInstance, String spec) throws ConfigurationException {
+	public TcpTcUplinker(String yamcsInstance, String name, String spec) throws ConfigurationException {
 		YConfiguration c=YConfiguration.getConfiguration("tcp");
 		host=c.getString(spec, "tcHost");
 		port=c.getInt(spec, "tcPort"); 
@@ -276,7 +276,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 	}
 	
 	public static void main(String[] argv) throws ConfigurationException, InterruptedException {
-		TcpTcUplinker tc=new TcpTcUplinker("epss", "epss");
+		TcpTcUplinker tc=new TcpTcUplinker("epss", "test", "epss");
 		PreparedCommand pc=new PreparedCommand(new byte[20]);
 		for(int i=0;i<10;i++) {
 			System.out.println("getFwLinkStatus: "+tc.getLinkStatus());

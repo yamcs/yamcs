@@ -31,7 +31,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 
 	protected TcpTmProvider() {} // dummy constructor which is automatically invoked by subclass constructors
 
-	public TcpTmProvider(String instance, String spec) throws ConfigurationException  {
+	public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
 		YConfiguration c=YConfiguration.getConfiguration("tcp");
 		host=c.getString(spec, "tmHost");
 		port=c.getInt(spec, "tmPort"); 

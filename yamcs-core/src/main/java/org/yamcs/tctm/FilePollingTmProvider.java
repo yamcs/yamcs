@@ -26,7 +26,7 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
        TmProcessor tmProcessor;
        volatile long tmCount=0;
        
-       public FilePollingTmProvider(String archiveInstance, String incomingDir) {
+       public FilePollingTmProvider(String archiveInstance, String name, String incomingDir) {
     	   log=LoggerFactory.getLogger(this.getClass().getName()+"["+archiveInstance+"]");
     	   this.incomingDir=incomingDir;
        }
@@ -36,8 +36,8 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
         * @param archiveInstance
         * @throws ConfigurationException
         */
-       public FilePollingTmProvider(String archiveInstance) throws ConfigurationException {
-           this(archiveInstance, YConfiguration.getConfiguration("yamcs").getString("incomingDir")
+       public FilePollingTmProvider(String archiveInstance, String name) throws ConfigurationException {
+           this(archiveInstance, name, YConfiguration.getConfiguration("yamcs").getString("incomingDir")
                                                          +File.separator+archiveInstance+File.separator+"tm");
        }
 

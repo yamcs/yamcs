@@ -51,8 +51,8 @@ public class PpProviderAdapter extends AbstractService {
 	//the actual values are encoded as separated columns (umi_0x010203040506, value) value is ParameterValue
 	static {
 	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_GENTIME, DataType.TIMESTAMP); //generation time
-	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_PPGROUP, DataType.ENUM);
-	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_SEQ_NUM, DataType.INT);
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_PPGROUP, DataType.ENUM); //pp group - used for partitioning (i.e. splitting the archive in multiple files)
+	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_SEQ_NUM, DataType.INT); //sequence number
 	    PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
 	    
 	} 
@@ -96,9 +96,9 @@ public class PpProviderAdapter extends AbstractService {
             
             PpProvider prov= null;
             if(args!=null) {
-                prov = objloader.loadObject(className, archiveInstance, args);
+                prov = objloader.loadObject(className, archiveInstance, providerName, args);
             } else {
-                prov = objloader.loadObject(className, archiveInstance);
+                prov = objloader.loadObject(className, archiveInstance, providerName);
             }
             
             if(!enabledAtStartup) prov.disable();

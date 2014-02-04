@@ -21,14 +21,14 @@ import org.yamcs.yarch.YarchDatabase;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Provides DaSS PPs from yarch streams. Should disappear once we pass around yamcs ParameterValues
+ * Provides PPs from yarch streams (pp_realtime) to ParameterRequestManager.
+ * 
  * @author nm
  *
  */
-public class YarchPpProvider extends AbstractService implements PpProvider, StreamSubscriber, ParameterProvider {
+public class YarchPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
     PpListener ppListener;
-    volatile boolean disabled=false;
     ParameterListener paraListener;
     final PpDefDb ppdb;
     
@@ -40,34 +40,12 @@ public class YarchPpProvider extends AbstractService implements PpProvider, Stre
     }
     
 
-    @Override
-    public String getLinkStatus() {
-        return "OK";
-    }
 
     @Override
     public String getDetailedStatus() {
         return "receiving PPs from "+stream;
     }
 
-    @Override
-    public void disable() {
-        disabled=true;
-        if(isRunning()) {
-            stream.removeSubscriber(this);
-        }
-    }
-
-    @Override
-    public void enable() {
-        stream.addSubscriber(this);
-        disabled=false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
 
     @Override
     protected void doStart() {
@@ -100,18 +78,6 @@ public class YarchPpProvider extends AbstractService implements PpProvider, Stre
        notifyStopped();
     }
 
-
-    @Override
-    public void setPpListener(PpListener ppListener) {
-        this.ppListener=ppListener;
-    }
-
-
-    @Override
-    public long getDataCount() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
 
     @Override
     public void setParameterListener(ParameterListener paraListener) {
@@ -149,5 +115,4 @@ public class YarchPpProvider extends AbstractService implements PpProvider, Stre
         // TODO Auto-generated method stub
         
     }
-
 }

@@ -1,8 +1,6 @@
 package org.yamcs.archive;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +13,7 @@ import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
 import org.yamcs.tctm.TcUplinker;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -34,7 +33,7 @@ import org.yamcs.api.YamcsClient;
  */
 public class TcUplinkerAdapter extends AbstractService {
 	private Collection<TcUplinker> tcuplinkers=new ArrayList<TcUplinker>();
-	final String archiveInstance;
+	final String yamcsInstance;
 
 	static public final TupleDefinition TC_TUPLE_DEFINITION=new TupleDefinition();
 	//this is the commandId (used as the primary key when recording), the rest will be handled dynamically
@@ -50,9 +49,10 @@ public class TcUplinkerAdapter extends AbstractService {
 	final private Stream realtimeStream;
 	YamcsClient yclient;
 	
-	public TcUplinkerAdapter(String archiveInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
-		this.archiveInstance=archiveInstance;
-		YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+	@SuppressWarnings({ "rawtypes", "static-access", "unchecked" })
+    public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
+		this.yamcsInstance=yamcsInstance;
+		YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
 		ydb.execute("create stream "+REALTIME_TC_STREAM_NAME+TC_TUPLE_DEFINITION.getStringDefinition());
 		
 		realtimeStream=ydb.getStream(TcUplinkerAdapter.REALTIME_TC_STREAM_NAME);
@@ -60,7 +60,7 @@ public class TcUplinkerAdapter extends AbstractService {
 		//new StreamAdapter(realtimeStream, new SimpleString(archiveInstance+".tc.realtime"), new TmTupleTranslator());
 
 
-        YConfiguration c=YConfiguration.getConfiguration("yamcs."+archiveInstance);
+        YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         List uplinkers=c.getList("tcUplinkers");
         int count=1;
         for(Object o:uplinkers) {
@@ -74,7 +74,7 @@ public class TcUplinkerAdapter extends AbstractService {
                enabledAtStartup=c.getBoolean(m, "enabledAtStartup"); 
             }
 			final Stream stream;
-
+			String name = "tc"+count;
 			if(streamName!=null) {
 				if(streamName.equals(REALTIME_TC_STREAM_NAME)) {
 					stream=realtimeStream;
@@ -84,7 +84,8 @@ public class TcUplinkerAdapter extends AbstractService {
 			} else {
 				stream=realtimeStream;
 			}
-			final TcUplinker tcuplinker=loadTcUplinker(className, spec);
+			YObjectLoader<TcUplinker> objloader=new YObjectLoader<TcUplinker>();
+			final TcUplinker tcuplinker = objloader.loadObject(className, yamcsInstance, name, spec);
 			if(!enabledAtStartup) tcuplinker.disable();
 			
 			stream.addSubscriber(new StreamSubscriber() {
@@ -99,30 +100,10 @@ public class TcUplinkerAdapter extends AbstractService {
                 }
             });
 			
-			tcuplinker.setCommandHistoryListener(new YarchCommandHistoryAdapter(archiveInstance));
+			tcuplinker.setCommandHistoryListener(new YarchCommandHistoryAdapter(yamcsInstance));
 			tcuplinkers.add(tcuplinker);
-			ManagementService.getInstance().registerLink(archiveInstance, "tc"+count, streamName, spec,  tcuplinker);
+			ManagementService.getInstance().registerLink(yamcsInstance, name, streamName, spec,  tcuplinker);
 			count++;
-		}
-	}
-	
-	private TcUplinker loadTcUplinker(String className, String spec) throws ConfigurationException, IOException {
-		try {
-			Class<TcUplinker> ic=(Class<TcUplinker>)Class.forName(className);
-			Constructor<TcUplinker> c=ic.getConstructor(String.class, String.class);
-			return c.newInstance(archiveInstance, spec);
-		} catch (InvocationTargetException e) {
-			Throwable t=e.getCause();
-			if(t instanceof ConfigurationException) {
-				throw (ConfigurationException)t;
-			} else if(t instanceof IOException) {
-				throw (IOException)t;
-			} else {
-				throw new ConfigurationException("Cannot instantiate tc uplinker from class " +className, t);
-			}
-
-		} catch (Exception e) {
-			throw new ConfigurationException("Cannot instantiate tc uplinker from class "+className+": "+e);
 		}
 	}
 

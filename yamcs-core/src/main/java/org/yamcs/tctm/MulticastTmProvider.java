@@ -47,7 +47,7 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 	 * @param spec
 	 * @throws ConfigurationException if tmGroup or tmPort are not defined in the configuration files 
 	 */
-	public MulticastTmProvider(String instance, String spec) throws ConfigurationException  {
+	public MulticastTmProvider(String instance, String name, String spec) throws ConfigurationException  {
 		YConfiguration c=YConfiguration.getConfiguration("multicast");
 		group=c.getString(spec, "tmGroup");
 		port=c.getInt(spec, "tmPort");

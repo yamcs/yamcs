@@ -51,17 +51,18 @@ public class TmProviderAdapter extends AbstractService {
 
 	YamcsClient yclient;
 	
-	public TmProviderAdapter(String archiveInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    public TmProviderAdapter(String archiveInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
 		this.archiveInstance=archiveInstance;
 		YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
 		
 		YConfiguration c=YConfiguration.getConfiguration("yamcs."+archiveInstance);
-		List providers=c.getList("tmProviders");
+        List providers=c.getList("tmProviders");
 		int count=1;
 		for(Object o:providers) {
 		    if(!(o instanceof Map<?, ?>)) throw new ConfigurationException("tmProvider has to be a Map and not a "+o.getClass());
 		    Map<String, Object> m=(Map<String, Object>)o;
-		    String className=c.getString(m, "class");
+		    String className=YConfiguration.getString(m, "class");
 		    Object args=null;
 		    if(m.containsKey("args")) {
 		        args=m.get("args");
@@ -74,9 +75,9 @@ public class TmProviderAdapter extends AbstractService {
 		    }
 		    boolean enabledAtStartup=true;
             if(m.containsKey("enabledAtStartup")) {
-               enabledAtStartup=c.getBoolean(m, "enabledAtStartup"); 
+               enabledAtStartup=YConfiguration.getBoolean(m, "enabledAtStartup"); 
             }
-			String streamName=c.getString(m, "stream");
+			String streamName=YConfiguration.getString(m, "stream");
 			Stream s=ydb.getStream(streamName);
 			if(s==null) {
 			    s=createTmStream(ydb, streamName);
@@ -86,9 +87,9 @@ public class TmProviderAdapter extends AbstractService {
 			
 			TmPacketProvider prov= null;
 			if(args!=null) {
-			    prov = objloader.loadObject(className, archiveInstance, args);
+			    prov = objloader.loadObject(className, archiveInstance, name, args);
 			} else {
-			    prov = objloader.loadObject(className, archiveInstance);
+			    prov = objloader.loadObject(className, archiveInstance, name);
 			}
 			
 			if(!enabledAtStartup) prov.disable();
