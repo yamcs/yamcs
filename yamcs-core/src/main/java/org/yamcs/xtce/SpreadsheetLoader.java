@@ -54,7 +54,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static int IDX_PARAM_HIGHWARNILIMIT=7;
 	final static int IDX_PARAM_LOWCRITICALLIMIT=8;
 	final static int IDX_PARAM_HIGHCRITICALLIMIT=9;
-	final static int IDX_PARAM_PATH=10;
 	
 	//columns in the containers sheet
 	final static int IDX_CONT_NAME=0;
