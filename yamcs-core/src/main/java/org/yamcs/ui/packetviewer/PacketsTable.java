@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -261,6 +262,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     }
 
     private void createActions() {
+        // Ctrl on win/linux, Command on mac
+        int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        
         //
         // GO TO PACKET
         Action goToPacketAction = new AbstractAction("Go to Packet...") {
@@ -278,7 +282,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             }
         };
         goToPacketAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
-        goToPacketAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK));
+        goToPacketAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, menuKey));
         getActionMap().put(GO_TO_PACKET_ACTION_KEY, goToPacketAction);
 
         //
@@ -352,7 +356,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             }
         };
         toggleMarkAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_M);
-        toggleMarkAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.CTRL_MASK));
+        toggleMarkAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_M, menuKey));
         getActionMap().put(TOGGLE_MARK_ACTION_KEY, toggleMarkAction);
 
         updateActionStates();

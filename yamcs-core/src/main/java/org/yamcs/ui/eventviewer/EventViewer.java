@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -200,8 +201,12 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
+        
+        // Ctrl on win/linux, Command on mac
+        int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
         JMenuItem menuItem = new JMenuItem("Connect to Yamcs...");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
         menuItem.addActionListener(this);
         menuItem.setActionCommand("connect");
         menu.add(menuItem);
@@ -215,7 +220,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menu.addSeparator();
 
         menuItem = new JMenuItem("Save As...", KeyEvent.VK_S);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, menuKey));
         menuItem.addActionListener(this);
         menuItem.setActionCommand("save");
         menu.add(menuItem);
@@ -223,7 +228,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menu.addSeparator();
 
         menuItem = new JMenuItem("Quit", KeyEvent.VK_Q);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
         menuItem.getAccessibleContext().setAccessibleDescription("Quit the event viewer");
         menuItem.addActionListener(this);
         menuItem.setActionCommand("exit");
@@ -234,7 +239,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menu.setMnemonic(KeyEvent.VK_E);
 
         menuItem = new JMenuItem("Preferences", KeyEvent.VK_P);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, menuKey));
         menuItem.getAccessibleContext().setAccessibleDescription("Edit preferences");
         menuItem.addActionListener(this);
         menuItem.setActionCommand("preferences");
@@ -253,7 +258,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         viewMenu.addSeparator();
         menuItem = new JMenuItem("Clear", KeyEvent.VK_C);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, menuKey));
         menuItem.addActionListener(this);
         menuItem.setActionCommand("clear");
         viewMenu.add(menuItem);

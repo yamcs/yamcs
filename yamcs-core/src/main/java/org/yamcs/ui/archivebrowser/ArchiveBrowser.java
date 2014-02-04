@@ -1,32 +1,40 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.event.*;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
+import org.yamcs.api.ConnectionListener;
+import org.yamcs.api.YamcsConnectData;
+import org.yamcs.api.YamcsConnectDialog;
+import org.yamcs.api.YamcsConnector;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.CommandHistoryRetrievalGui;
 import org.yamcs.ui.PacketRetrievalGui;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.TagBox.TagEvent;
-
-
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 
 /**
  * Standalone Archive Browser (useful for browsing the index, retrieving telemetry packets and parameters).
@@ -69,7 +77,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 
         JMenuItem closeMenuItem=new JMenuItem();
         closeMenuItem.setMnemonic(KeyEvent.VK_Q);
-        closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         closeMenuItem.setText("Quit");
         closeMenuItem.setActionCommand("exit");
         closeMenuItem.addActionListener(this);

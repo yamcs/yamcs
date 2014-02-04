@@ -8,22 +8,82 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.*;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
+import javax.swing.text.JTextComponent;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsVersion;
+import org.yamcs.api.ConnectionListener;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectData;
+import org.yamcs.api.YamcsConnectDialog;
+import org.yamcs.api.YamcsConnector;
+import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.ui.ChannelListener;
 import org.yamcs.ui.CommandQueueControlClient;
@@ -31,19 +91,6 @@ import org.yamcs.ui.LinkControlClient;
 import org.yamcs.ui.LinkListener;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
-
-
-import org.yamcs.YamcsVersion;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.utils.TimeEncoding;
 
 
@@ -133,6 +180,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		frame.setIconImage(getIcon("yamcs-monitor-32.png").getImage());
 
 		JMenuBar menuBar = new JMenuBar();
+		
+        // Ctrl on win/linux, Command on mac
+        int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
 		JMenu menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(menu);
@@ -145,8 +196,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		menu.addSeparator();
 
 		JMenuItem menuItem = new JMenuItem("Quit",KeyEvent.VK_Q);
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
-		menuItem.getAccessibleContext().setAccessibleDescription("Quit YaMCS Monitor");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
+		menuItem.getAccessibleContext().setAccessibleDescription("Quit Yamcs Monitor");
 		menuItem.addActionListener(this);
 		menuItem.setActionCommand("exit");
 		menu.add(menuItem);
@@ -899,6 +950,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	}
 
 
+	@Override
 	public void itemStateChanged(ItemEvent arg0) {
 		// TODO Auto-generated method stub
 	}

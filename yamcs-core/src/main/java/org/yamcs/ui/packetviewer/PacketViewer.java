@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -246,16 +247,19 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(fileMenu);
+        
+        // Ctrl on win/linux, Command on mac
+        int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
         JMenuItem menuitem = new JMenuItem("Open...", KeyEvent.VK_O);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, menuKey));
         menuitem.setActionCommand("open file");
         menuitem.addActionListener(this);
         fileMenu.add(menuitem);
 
         menuitem = new JMenuItem("Connect to Yamcs...");
         menuitem.setMnemonic(KeyEvent.VK_C);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
         menuitem.setActionCommand("connect-yamcs");
         menuitem.addActionListener(this);
         fileMenu.add(menuitem);
@@ -277,12 +281,12 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             fileMenu.addSeparator();
 
         /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, ActionEvent.CTRL_MASK));
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, menuKey));
         menu.add(menuitem);
         menu.addSeparator();*/
 
         menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
         menuitem.setActionCommand("quit");
         menuitem.addActionListener(this);
         fileMenu.add(menuitem);
@@ -926,8 +930,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
      */
     @SuppressWarnings("unchecked")
     public List<String[]> getRecentFiles() {
-        List<String[]> recentFiles = (ArrayList<String[]>) PrefsObject.getObject(uiPrefs, "RecentFiles");
-        return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
+    	List<String[]> recentFiles = null;
+    	Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
+    	if(obj instanceof ArrayList)
+    		recentFiles = (ArrayList<String[]>)obj;
+    	return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
     }
 
     private void updateRecentFiles(File file, String xtceDb) {
@@ -943,7 +950,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
         }
         if (!exists) recentFiles.add(0, new String[] { filename, xtceDb });
-        PrefsObject.putObject(uiPrefs, "RecentFiles", recentFiles);
+        PrefsObject.putObject(uiPrefs, "RecentlyOpened", recentFiles);
 
         // Also update JMenu accordingly
         updateMenuWithRecentFiles();

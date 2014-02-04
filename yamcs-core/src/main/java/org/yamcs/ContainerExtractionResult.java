@@ -35,4 +35,9 @@ public class ContainerExtractionResult {
 	public int getLocationInContainerInBits() {
 	    return locationInContainerInBits;
 	}
+	
+	@Override
+	public String toString() {
+	    return container.toString();
+	}
 }
