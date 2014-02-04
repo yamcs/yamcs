@@ -189,16 +189,8 @@ public class RealtimeParameterService implements ParameterConsumer {
         ParameterData.Builder pd=ParameterData.newBuilder();
         for(ParameterValueWithId pvwi:paramList) {
             ParameterValue pv=pvwi.getParameterValue();
-            org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setId(pvwi.getId())
-                .setAcquisitionStatus(pv.getAcquisitionStatus())
-                .setAcquisitionTime(pv.getAcquisitionTime())
-                .setEngValue(pv.getEngValue())
-                .setGenerationTime(pv.getGenerationTime())
-                .setMonitoringResult(pv.getMonitoringResult())
-                .setProcessingStatus(pv.getProcessingStatus());
-            if(pv.getRawValue()!=null) gpvb.setRawValue(pv.getRawValue());
-            pd.addParameter(gpvb.build());
+            org.yamcs.protobuf.Pvalue.ParameterValue gpv=pv.toGpb(pvwi.getId());
+            pd.addParameter(gpv);
         } 
         try {
             yclient.sendData(addr, ProtoDataType.PARAMETER, pd.build());
