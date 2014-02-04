@@ -15,7 +15,7 @@ import tokyocabinet.BDB;;
  * @author nm
  *
  */
-public class YBDB{
+public class YBDB {
 	BDB bdb;
 	ReadWriteLock rwlock=new ReentrantReadWriteLock();
 	ArrayList<YBDBCUR> cursors=new ArrayList<YBDBCUR>();

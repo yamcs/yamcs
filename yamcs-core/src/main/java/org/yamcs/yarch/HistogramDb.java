@@ -22,7 +22,7 @@ import com.google.common.primitives.UnsignedBytes;
 
 /**
  * 
- * Histogram
+ * Histogram dataase
  * @author nm
  *
  */
@@ -125,7 +125,6 @@ public class HistogramDb {
         for(int i=0;i<args.length;i++) {
             if("-s".equals(args[i])) {
                 String s=args[++i];
-                System.out.println("parsing "+s);
                 interval.setStart(TimeEncoding.parse(s));
             } else 	if("-e".equals(args[i])) {
                 interval.setStop(TimeEncoding.parse(args[++i]));

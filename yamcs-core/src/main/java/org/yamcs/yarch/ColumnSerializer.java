@@ -52,6 +52,7 @@ public class ColumnSerializer {
         
     } 
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public ColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
         this.cd=cd;
         this.tblDef=tblDef;
@@ -61,11 +62,11 @@ public class ColumnSerializer {
             Class c;
             try {
                 c = Class.forName(type.getClassName());
-                newBuilderMethod=c.getMethod("newBuilder", null);
+                newBuilderMethod=c.getMethod("newBuilder");
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Cannot find class "+type.getClassName()+" required to deserialize column "+cd.getName());
+                throw new RuntimeException("Cannot find class '"+type.getClassName()+"' required to deserialize column '"+cd.getName()+"'");
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Class "+type.getClassName()+" required to deserialize column "+cd.getName()+" does not have a method newBuilder");
+                throw new RuntimeException("Class '"+type.getClassName()+"' required to deserialize column '"+cd.getName()+"' does not have a method newBuilder");
             }
         } else {
             newBuilderMethod=null;
