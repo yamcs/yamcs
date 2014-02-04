@@ -376,6 +376,7 @@ public class ParameterRequestManager implements ParameterListener {
 		//and finally deliver the delivery :)
 		for(Map.Entry<Integer, ArrayList<ParameterValueWithId>> entry: delivery.entrySet()){
 			Integer subscriptionId=entry.getKey();
+			if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
 			ArrayList<ParameterValueWithId> al=entry.getValue();
 			ParameterConsumer consumer=request2ParameterConsumerMap.get(subscriptionId);
 			if(consumer==null) {
