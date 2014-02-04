@@ -172,7 +172,8 @@ public abstract class AbstractEventProducer implements EventProducer {
                 && originalEvent.getType().equals(e.getType());
     }
 
-    private Event.Builder newEvent() {
+    @Override
+    public Event.Builder newEvent() {
         long t=TimeEncoding.currentInstant();
         return Event.newBuilder().setSource(source).
             setSeqNumber(seqNo.getAndIncrement()).setGenerationTime(t).

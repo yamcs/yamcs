@@ -308,5 +308,6 @@ message Event {
     required string message         = 6;
     enum EventSeverity {INFO=0; WARNING=1; ERROR=2;};
     optional EventSeverity  severity      = 7[default=INFO];
+    extensions 100 to 10000;
 }
 

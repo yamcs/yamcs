@@ -11829,7 +11829,8 @@ public final class Yamcs {
   }
   
   public static final class Event extends
-      com.google.protobuf.GeneratedMessage {
+      com.google.protobuf.GeneratedMessage.ExtendableMessage<
+        Event> {
     // Use Event.newBuilder() to construct.
     private Event() {
       initFields();
@@ -11982,12 +11983,15 @@ public final class Yamcs {
       if (!hasReceptionTime) return false;
       if (!hasSeqNumber) return false;
       if (!hasMessage) return false;
+      if (!extensionsAreInitialized()) return false;
       return true;
     }
     
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      com.google.protobuf.GeneratedMessage.ExtendableMessage
+        .ExtensionWriter extensionWriter = newExtensionWriter();
       if (hasSource()) {
         output.writeString(1, getSource());
       }
@@ -12009,6 +12013,7 @@ public final class Yamcs {
       if (hasSeverity()) {
         output.writeEnum(7, getSeverity().getNumber());
       }
+      extensionWriter.writeUntil(10001, output);
       getUnknownFields().writeTo(output);
     }
     
@@ -12046,6 +12051,7 @@ public final class Yamcs {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(7, getSeverity().getNumber());
       }
+      size += extensionsSerializedSize();
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -12126,7 +12132,8 @@ public final class Yamcs {
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
+          org.yamcs.protobuf.Yamcs.Event, Builder> {
       private org.yamcs.protobuf.Yamcs.Event result;
       
       // Construct using org.yamcs.protobuf.Yamcs.Event.newBuilder()
@@ -12225,6 +12232,7 @@ public final class Yamcs {
         if (other.hasSeverity()) {
           setSeverity(other.getSeverity());
         }
+        this.mergeExtensionFields(other);
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -13797,40 +13805,40 @@ public final class Yamcs {
       "USED\020\004\022\n\n\006CLOSED\020\005\"e\n\014TmPacketData\022\025\n\rre" +
       "ceptionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016gen" +
       "erationTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(" +
-      "\005\"\354\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generatio" +
+      "\005\"\363\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generatio" +
       "nTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tse" +
       "qNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006" +
       " \002(\t\022?\n\010severity\030\007 \001(\0162\'.org.yamcs.proto",
       "buf.Event.EventSeverity:\004INFO\"1\n\rEventSe" +
       "verity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002" +
-      "*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STO" +
-      "P\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXE" +
-      "D_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rProtoDataTyp" +
-      "e\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_" +
-      "PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_I" +
-      "NDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017" +
-      "\n\013CMD_HISTORY\020\t2\275\001\n\014YamcsControl\022Q\n\021GetY" +
-      "amcsInstances\022\030.org.yamcs.protobuf.Void\032",
-      "\".org.yamcs.protobuf.YamcsInstances\022Z\n\022G" +
-      "etMissionDatabase\022*.org.yamcs.protobuf.M" +
-      "issionDatabaseRequest\032\030.org.yamcs.protob" +
-      "uf.Void2\307\002\n\030RealtimeParameterService\022J\n\t" +
-      "Subscribe\022#.org.yamcs.protobuf.NamedObje" +
-      "ctList\032\030.org.yamcs.protobuf.Void\022K\n\014Subs" +
-      "cribeAll\022!.org.yamcs.protobuf.StringMess" +
-      "age\032\030.org.yamcs.protobuf.Void\022L\n\013Unsubsc" +
-      "ribe\022#.org.yamcs.protobuf.NamedObjectLis" +
-      "t\032\030.org.yamcs.protobuf.Void\022D\n\016Unsubscri",
-      "beAll\022\030.org.yamcs.protobuf.Void\032\030.org.ya" +
-      "mcs.protobuf.Void2\310\002\n\014ArchiveIndex\022M\n\010Ge" +
-      "tIndex\022 .org.yamcs.protobuf.IndexRequest" +
-      "\032\037.org.yamcs.protobuf.IndexResult\022I\n\006Get" +
-      "Tag\022 .org.yamcs.protobuf.IndexRequest\032\035." +
-      "org.yamcs.protobuf.TagResult\022Q\n\tUpsertTa" +
-      "g\022$.org.yamcs.protobuf.UpsertTagRequest\032" +
-      "\036.org.yamcs.protobuf.ArchiveTag\022K\n\tDelet" +
-      "eTag\022$.org.yamcs.protobuf.DeleteTagReque" +
-      "st\032\030.org.yamcs.protobuf.Void"
+      "*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002" +
+      "\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022" +
+      "\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rProto" +
+      "DataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002" +
+      "\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rAR" +
+      "CHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAME" +
+      "TER\020\010\022\017\n\013CMD_HISTORY\020\t2\275\001\n\014YamcsControl\022" +
+      "Q\n\021GetYamcsInstances\022\030.org.yamcs.protobu",
+      "f.Void\032\".org.yamcs.protobuf.YamcsInstanc" +
+      "es\022Z\n\022GetMissionDatabase\022*.org.yamcs.pro" +
+      "tobuf.MissionDatabaseRequest\032\030.org.yamcs" +
+      ".protobuf.Void2\307\002\n\030RealtimeParameterServ" +
+      "ice\022J\n\tSubscribe\022#.org.yamcs.protobuf.Na" +
+      "medObjectList\032\030.org.yamcs.protobuf.Void\022" +
+      "K\n\014SubscribeAll\022!.org.yamcs.protobuf.Str" +
+      "ingMessage\032\030.org.yamcs.protobuf.Void\022L\n\013" +
+      "Unsubscribe\022#.org.yamcs.protobuf.NamedOb" +
+      "jectList\032\030.org.yamcs.protobuf.Void\022D\n\016Un",
+      "subscribeAll\022\030.org.yamcs.protobuf.Void\032\030" +
+      ".org.yamcs.protobuf.Void2\310\002\n\014ArchiveInde" +
+      "x\022M\n\010GetIndex\022 .org.yamcs.protobuf.Index" +
+      "Request\032\037.org.yamcs.protobuf.IndexResult" +
+      "\022I\n\006GetTag\022 .org.yamcs.protobuf.IndexReq" +
+      "uest\032\035.org.yamcs.protobuf.TagResult\022Q\n\tU" +
+      "psertTag\022$.org.yamcs.protobuf.UpsertTagR" +
+      "equest\032\036.org.yamcs.protobuf.ArchiveTag\022K" +
+      "\n\tDeleteTag\022$.org.yamcs.protobuf.DeleteT" +
+      "agRequest\032\030.org.yamcs.protobuf.Void"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
