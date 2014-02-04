@@ -11,12 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.yamcs.algorithms.AlgorithmManager;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.syspp.SystemVariablesChannelProvider;
 import org.yamcs.tctm.TmPacketProvider;
+import org.yamcs.xtceproc.XtceTmProcessor;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
  * @author mache
@@ -27,6 +29,8 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  *  - subscribe to a set
  * Both types have an unique id associated but different methods work with them
  * 
+ *  TODO: we should get rid of direct reference to tmProcessor
+ * 
  */
 public class ParameterRequestManager implements ParameterListener {
 	Logger log;
@@ -35,12 +39,14 @@ public class ParameterRequestManager implements ParameterListener {
 	//Maps the request (subscription id) to an object that is consuming the results who has requested it
 	private Map<Integer,ParameterConsumer> request2ParameterConsumerMap = new HashMap<Integer,ParameterConsumer>();
 	
+	//these are the consumers that may update the list of parmaeters
+	private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
+	
 	//contains the subscribeAll ids -> namespace mapping
 	private Map<Integer,String> subscribeAll =new HashMap<Integer,String>();
 	
 	
 	private XtceTmProcessor tmProcessor=null;
-	private DerivedValuesManager derivedValuesManager=null;
 	private Map<Class<?>,ParameterProvider> parameterProviders=new HashMap<Class<?>,ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
@@ -81,14 +87,12 @@ public class ParameterRequestManager implements ParameterListener {
         } else {
             log.debug("No parameter providers defined in yamcs."+chan.getInstance()+".yaml. Using defaults.");
             // Load default parameter providers
-            addParameterProvider(new SystemVariablesManager(this, chan));
+            addParameterProvider(new SystemVariablesChannelProvider(this, chan));
             addParameterProvider(new AlgorithmManager(this, chan));
-            //derived values should be the last one because it can be based on tm and system variables
-            derivedValuesManager=new DerivedValuesManager(this, chan);
+            addParameterProvider(new DerivedValuesManager(this, chan));
         }
 	}
 	
-    // TODO replace by configuration in yaml file? (what about ppProvider?)
     public void addParameterProvider(ParameterProvider parameterProvider) {
         if(parameterProviders.containsKey(parameterProvider.getClass())) {
             log.warn("Ignoring duplicate parameter provider of type "+parameterProvider.getClass());
@@ -112,7 +116,6 @@ public class ParameterRequestManager implements ParameterListener {
         log.debug("new subscribeAll with subscriptionId "+id);
         if(subscribeAll.isEmpty()) {
             tmProcessor.startProvidingAll();
-            if(derivedValuesManager!=null) derivedValuesManager.startProvidingAll();
             for(ParameterProvider provider:parameterProviders.values()) {
                 provider.startProvidingAll();
             }
@@ -137,12 +140,26 @@ public class ParameterRequestManager implements ParameterListener {
 		log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
 		for(int i=0;i<paraList.size();i++) {
 			log.trace("adding to subscriptionID:{} item:{} ",id, paraList.get(i));
-			addItemToRequest(id,paraList.get(i),providers.get(i));
+			addItemToRequest(id, paraList.get(i), providers.get(i));
 			//log.info("afterwards the subscription looks like: "+toString());
 		}
 		request2ParameterConsumerMap.put(id, tpc);
 		return id;
 	}
+	
+	
+	public synchronized int addRequest(List<NamedObjectId> paraList, DVParameterConsumer dvtpc) throws InvalidIdentification {
+        List<ParameterProvider> providers=getProviders(paraList);
+        int id=lastSubscriptionId.incrementAndGet();
+        log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
+        for(int i=0;i<paraList.size();i++) {
+            log.trace("adding to subscriptionID:{} item:{} ",id, paraList.get(i));
+            addItemToRequest(id, paraList.get(i), providers.get(i));
+            //log.info("afterwards the subscription looks like: "+toString());
+        }
+        request2DVParameterConsumerMap.put(id, dvtpc);
+        return id;
+    }
 	
 	/**
 	 * Create request with a given id. This is called when switching channels, the id is comming from the other channel.
@@ -156,7 +173,7 @@ public class ParameterRequestManager implements ParameterListener {
 		List<ParameterProvider> providers=getProviders(paraList);
 		for(int i=0;i<paraList.size();i++) {
 			log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
-			addItemToRequest(id,paraList.get(i),providers.get(i));
+			addItemToRequest(id,paraList.get(i), providers.get(i));
 			//log.info("afterwards the subscription looks like: "+toString());
 		}
 		request2ParameterConsumerMap.put(id, tpc);
@@ -216,7 +233,7 @@ public class ParameterRequestManager implements ParameterListener {
 	public synchronized void removeItemsFromRequest(int subscriptionID, List<NamedObjectId> paraList) throws InvalidIdentification {
 		List<ParameterProvider> providers=getProviders(paraList);
 		for(int i=0;i<paraList.size();i++) {
-			removeItemFromRequest(subscriptionID,paraList.get(i),providers.get(i));
+			removeItemFromRequest(subscriptionID,paraList.get(i), providers.get(i));
 		}
 	}
 
@@ -310,7 +327,6 @@ public class ParameterRequestManager implements ParameterListener {
 
 	private ParameterProvider getProvider(NamedObjectId itemId) {
 		if(tmProcessor.canProvide(itemId)) return tmProcessor;
-		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(itemId))) return derivedValuesManager;
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
@@ -322,11 +338,10 @@ public class ParameterRequestManager implements ParameterListener {
 	/**
 	 * @param paraId
 	 * @return the corresponding parameter definition for a IntemIdentification
-	 * @throws InvalidIdentification in case no provider knows of this parameter. The InvalidIdentification is empty so it can't be passed via CORBA
+	 * @throws InvalidIdentification in case no provider knows of this parameter.
 	 */
 	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
 		if(tmProcessor.canProvide(paraId)) return tmProcessor.getParameter(paraId);
-		if ((derivedValuesManager!=null)&&(derivedValuesManager.canProvide(paraId))) return derivedValuesManager.getParameter(paraId);
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(paraId)) {
 		        return provider.getParameter(paraId);
@@ -345,18 +360,19 @@ public class ParameterRequestManager implements ParameterListener {
 		HashMap<Integer,ArrayList<ParameterValueWithId>> delivery= new HashMap<Integer,ArrayList<ParameterValueWithId>>();
 		
 		//so first we add to the delivery the parameters just received
-		updateDelivery(delivery,params);
+		updateDelivery(delivery, params);
+		
 		
         //then if the delivery updates some of the parameters required by the derived values
         //  compute the derived values
-		if(derivedValuesManager!=null) {
-    		int derivedValueSubscriptionId=derivedValuesManager.getSubscriptionId();
-    		//System.out.println("---------------delivery:"+delivery+" derivedValueSubscriptionId:"+derivedValueSubscriptionId);
-    		if(delivery.containsKey(derivedValueSubscriptionId)) {
-    			updateDelivery(delivery,derivedValuesManager.updateDerivedValues(delivery.get(derivedValueSubscriptionId))); 
+		for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
+		    Integer subscriptionId = entry.getKey();
+    		if(delivery.containsKey(subscriptionId)) {
+    			updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
     		}
 		}
-
+		
+		
 		//and finally deliver the delivery :)
 		for(Map.Entry<Integer, ArrayList<ParameterValueWithId>> entry: delivery.entrySet()){
 			Integer subscriptionId=entry.getKey();
@@ -365,6 +381,7 @@ public class ParameterRequestManager implements ParameterListener {
 			if(consumer==null) {
 				log.error("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
 			} else {
+			    System.out.println("------------- sending : "+al +" for subscriptionId "+subscriptionId);
 				consumer.updateItems(subscriptionId,al);
 			}
 		}
@@ -376,6 +393,8 @@ public class ParameterRequestManager implements ParameterListener {
 	 * @param params
 	 */
 	private void updateDelivery(HashMap<Integer, ArrayList<ParameterValueWithId>> delivery, Collection<ParameterValue> params) {
+	    if(params==null) return;
+	    
 		for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 			ParameterValue pv=it.next();
 			Parameter pDef=pv.def;
@@ -471,10 +490,6 @@ public class ParameterRequestManager implements ParameterListener {
 		}
 		sb.append("TmProcessor subscription:"+tmProcessor);
 		return sb.toString();
-	}
-
-	public DerivedValuesManager getDerivedValuesManager() {
-		return derivedValuesManager;
 	}
 }
 /**

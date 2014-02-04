@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
+import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.ParameterConsumer;
@@ -34,7 +35,7 @@ import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
-public class AlgorithmManager extends AbstractService implements ParameterProvider, ParameterConsumer {
+public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
 	private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
     static final String KEY_ALGO_NAME="algoName";
     
@@ -209,7 +210,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
 
 	@Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+	public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValueWithId> items) { 
         // Update history window for the parameters that need it
         for(ParameterValueWithId pvwi:items) {
             if(buffersByParam.containsKey(pvwi.getParameterValue().def)) {
@@ -263,7 +264,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 pval.setAcquisitionTime(acqTime);
                 pval.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
             }
-            parameterRequestManager.update(r);
+            return r;
+        } else {
+            return null;
         }
 	}
 
@@ -288,4 +291,5 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         return String.format("processing %d out of %d parameters",
                         engineByAlgorithm.size(), xtcedb.getAlgorithms().size());
     }
+
 }

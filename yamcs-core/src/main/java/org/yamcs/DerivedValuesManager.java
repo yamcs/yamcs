@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author mache
  *
  */
-public class DerivedValuesManager extends AbstractService implements ParameterProvider, ParameterConsumer {
+public class DerivedValuesManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	
 	//the id used for suscribing to the parameterManager
@@ -142,41 +142,37 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 		}
 	}
 
-	public ArrayList<ParameterValue> updateDerivedValues(ArrayList<ParameterValueWithId> items) {
-		HashSet<DerivedValue> needUpdate=new HashSet<DerivedValue>();
-		for(Iterator<ParameterValueWithId> it=items.iterator();it.hasNext();) {
-			ParameterValueWithId pvwi=it.next();
-			for(Iterator<DerivedValue> it1=requestedValues.iterator();it1.hasNext();) {
-				DerivedValue dv=it1.next();
-				for(int i=0;i<dv.getArgumentIds().length;i++) {
-					if(dv.getArgumentIds()[i]==pvwi.getId()) {
-						dv.args[i]=pvwi.getParameterValue();
-						needUpdate.add(dv);
-					}
-				}
-			}
-		}
-		long acqTime=TimeEncoding.currentInstant();
-		
-		ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
-		for(DerivedValue dv:needUpdate) {
-			try{
-				dv.setAcquisitionTime(acqTime);
-				dv.updateValue();
-				if(dv.isUpdated()) {
-					r.add(dv);
-					dv.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
-				}
-			} catch (Exception e) {
-				log.warn("got exception when updating derived value "+dv.def+": "+Arrays.toString(e.getStackTrace()));
-			}
-		}
-		return r;
-	}
-
-	@Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
-		//do nothing. everything is done in the updateDerivedValues method
+    @Override
+    public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValueWithId> items) {
+	    HashSet<DerivedValue> needUpdate=new HashSet<DerivedValue>();
+        for(Iterator<ParameterValueWithId> it=items.iterator();it.hasNext();) {
+            ParameterValueWithId pvwi=it.next();
+            for(Iterator<DerivedValue> it1=requestedValues.iterator();it1.hasNext();) {
+                DerivedValue dv=it1.next();
+                for(int i=0;i<dv.getArgumentIds().length;i++) {
+                    if(dv.getArgumentIds()[i]==pvwi.getId()) {
+                        dv.args[i]=pvwi.getParameterValue();
+                        needUpdate.add(dv);
+                    }
+                }
+            }
+        }
+        long acqTime=TimeEncoding.currentInstant();
+        
+        ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
+        for(DerivedValue dv:needUpdate) {
+            try{
+                dv.setAcquisitionTime(acqTime);
+                dv.updateValue();
+                if(dv.isUpdated()) {
+                    r.add(dv);
+                    dv.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
+                }
+            } catch (Exception e) {
+                log.warn("got exception when updating derived value "+dv.def+": "+Arrays.toString(e.getStackTrace()));
+            }
+        }
+        return r;
 	}
 
     @Override
