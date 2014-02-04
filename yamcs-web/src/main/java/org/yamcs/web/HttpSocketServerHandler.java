@@ -144,6 +144,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        log.warn("caught exception ChannelHandlerContext: "+ctx, e);
         e.getCause().printStackTrace();
         e.getChannel().close();
     }
