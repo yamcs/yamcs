@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.yamcs.algorithms.AlgorithmManager;
-import org.yamcs.syspp.SystemVariablesChannelProvider;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -87,7 +86,7 @@ public class ParameterRequestManager implements ParameterListener {
         } else {
             log.debug("No parameter providers defined in yamcs."+chan.getInstance()+".yaml. Using defaults.");
             // Load default parameter providers
-            addParameterProvider(new SystemVariablesChannelProvider(this, chan));
+         //   addParameterProvider(new SystemVariablesChannelProvider(this, chan));
             addParameterProvider(new AlgorithmManager(this, chan));
             addParameterProvider(new DerivedValuesManager(this, chan));
         }
@@ -187,8 +186,8 @@ public class ParameterRequestManager implements ParameterListener {
 	 * @throws InvalidIdentification
 	 */
 	public synchronized void addItemsToRequest(int subscriptionId, List<NamedObjectId> paraList) throws InvalidIdentification, InvalidRequestIdentification {
-		if(!request2ParameterConsumerMap.containsKey(subscriptionId)) {
-			log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap);
+		if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
+			log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 			throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
 		}
 		List<ParameterProvider> providers=getProviders(paraList);
@@ -306,6 +305,7 @@ public class ParameterRequestManager implements ParameterListener {
 			}
 		}
 		request2ParameterConsumerMap.remove(subscriptionId);
+		request2DVParameterConsumerMap.remove(subscriptionId);
 		return result;
 	}
 	
@@ -381,7 +381,6 @@ public class ParameterRequestManager implements ParameterListener {
 			if(consumer==null) {
 				log.error("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
 			} else {
-			    System.out.println("------------- sending : "+al +" for subscriptionId "+subscriptionId);
 				consumer.updateItems(subscriptionId,al);
 			}
 		}
