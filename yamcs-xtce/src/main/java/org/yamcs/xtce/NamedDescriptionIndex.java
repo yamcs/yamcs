@@ -3,6 +3,7 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -12,11 +13,11 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 /**
  * Keeps a list of parameters with corresponding indexes to be able to retrieve them in any namespace.
  * 
- * Currently the name is case sensitive while aliases are not. Is this the correct behaviour???
+ * Currently the name is case sensitive while aliases are not. Is this the correct behavior???
  * @author nm
  *
  */
-public class NamedDescriptionIndex<T extends NameDescription> implements Serializable{
+public class NamedDescriptionIndex<T extends NameDescription> implements Serializable, Iterable<T>{
     private static final long serialVersionUID = 3L;
     
     private LinkedHashMap<String, LinkedHashMap<String,T>> aliasIndex =new LinkedHashMap<String, LinkedHashMap<String,T>>();
@@ -78,5 +79,10 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
      */
     public int size() {
         return index.size();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return index.values().iterator();
     }
 }
