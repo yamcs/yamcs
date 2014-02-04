@@ -36,6 +36,7 @@ import javax.swing.table.AbstractTableModel;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
@@ -64,10 +65,16 @@ public class CcsdsCompletenessGui extends JFrame implements ArchiveIndexListener
     PrefsToolbar prefs;
     YamcsClient yclient;
     final static public String DASS_PLAYBACK_REQUEST_ADDRESS = "DassPlaybackRequest";
+    long maxDassRetrievalTime = 24 *3600 *1000;
 
     public CcsdsCompletenessGui(YamcsConnector yconnector) throws Exception {
         setTitle("CCSDS Index");
         this.yconnector = yconnector;
+        YConfiguration conf = YConfiguration.getConfiguration("yamcs-ui");
+        if(conf.containsKey("maxDassRetrievalTime")) {
+            maxDassRetrievalTime = conf.getInt("maxDassRetrievalTime") * 3600*1000;
+        }
+          
         indexReceiver = new YamcsArchiveIndexReceiver(yconnector);
         yconnector.addConnectionListener(this);
 
