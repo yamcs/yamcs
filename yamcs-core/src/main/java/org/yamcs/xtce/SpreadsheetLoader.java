@@ -311,30 +311,30 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	 * If there is a sheet with the Limits, load it now!
 	 */
 	private void loadLimitsSheet() {
-		 //read the calibrations
-		 Sheet cal_sheet = workbook.getSheet("Limits");
-		 if(cal_sheet==null)return;
+		 //read the limits
+		 Sheet lim_sheet = workbook.getSheet("Limits");
+		 if(lim_sheet==null)return;
 		 
 		 // start at 1 to not use the first line (= title line)
 		 int start = 1;
 		 while(true) {
-			 // we first search for a row containing (= starting) a new calibration
-			 while (start < cal_sheet.getRows()) {
-				 Cell[] cells = cal_sheet.getRow(start);
+			 // we first search for a row containing (= starting) a new limit
+			 while (start < lim_sheet.getRows()) {
+				 Cell[] cells = lim_sheet.getRow(start);
 				 if ((cells.length > 0) && (cells[0].getContents().length() > 0)) {
 					 break;
 				 }
 				 start++;
 			 }
-			 if (start >= cal_sheet.getRows()) {
+			 if (start >= lim_sheet.getRows()) {
 				 break;
 			 }
-			 Cell[] cells = cal_sheet.getRow(start);
+			 Cell[] cells = lim_sheet.getRow(start);
 			 String name = cells[0].getContents();
 			 // now we search for the matching last row of the limit
 			 int end = start + 1;
-			 while (end < cal_sheet.getRows()) {
-				 cells = cal_sheet.getRow(end);
+			 while (end < lim_sheet.getRows()) {
+				 cells = lim_sheet.getRow(end);
 				 if (isRowEmpty(cells) || (cells[0].getContents().length() != 0)) {
 					 break;
 				 }
@@ -343,7 +343,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 			for (int j = start; j < end; j++) {
 				try {
-					cells = cal_sheet.getRow(j);
+					cells = lim_sheet.getRow(j);
 					String condition=cells[1].getContents();
 					if(condition.length()==0) condition=null;
 					String mins=(cells.length>2)?cells[2].getContents():"";
@@ -1023,7 +1023,15 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 if ("in".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);
                     if (param != null) {
-                        ParameterInstanceRef parameterInstance = new ParameterInstanceRef(param);
+                        final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
+                        NameReference nr=new NameReference(paraRef, Type.PARAMETER, new ResolvedAction() {
+                            @Override
+                            public boolean resolved(NameDescription nd) {
+                                parameterInstance.setParameter((Parameter) nd); 
+                                return true;
+                            }
+                        });
+                        spaceSystem.addUnresolvedReference(nr);
                         if (cells.length > IDX_ALGO_PARA_INSTANCE) {
                             if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
                                 int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
