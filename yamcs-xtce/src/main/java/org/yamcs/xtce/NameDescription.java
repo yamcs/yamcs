@@ -18,7 +18,13 @@ public class NameDescription implements Serializable {
     protected String name = null;
     
     /**
-     * fully qualified name (i.e. systemname+"/"+name
+     * path separator used in the fully qualified names
+     */
+    public static char PATH_SEPARATOR = '/';
+    
+    
+    /**
+     * fully qualified name (i.e. space system name+"/"+name
      */
     protected String qualifiedName=null;
     /**
@@ -33,6 +39,7 @@ public class NameDescription implements Serializable {
     NameDescription(String name) {
         this.name = name;
     }
+    
     public void setName(String newName) {
         this.name = newName;
     }
@@ -93,11 +100,11 @@ public class NameDescription implements Serializable {
         return xtceAliasSet;
     }
     
-    public void addAlias(String namespace, String name) {
+    public void addAlias(String namespace, String alias) {
         if(xtceAliasSet==null) {
             xtceAliasSet=new XtceAliasSet();
         }
-        xtceAliasSet.addAlias(namespace, name);
+        xtceAliasSet.addAlias(namespace, alias);
     }
     /**
      * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
@@ -113,5 +120,30 @@ public class NameDescription implements Serializable {
             }
         }
         return name;
+    }
+    
+    
+    /**
+     * returns the last component of the fully qualified name
+     * 
+     * @param fqname
+     * @return
+     */
+    public static String getName(String fqname) {
+        int index = fqname.lastIndexOf(PATH_SEPARATOR);
+        if (index < 0) return fqname;
+        return fqname.substring(index + 1);
+    }
+    
+    /**
+     * returns the subsystem fully qualified name where this name is valid (i.e. the full path of the directory name if it were a filesystem)
+     * 
+     * @param fqname
+     * @return
+     */
+    public static String getSubsystemName(String fqname) {
+        int index = fqname.lastIndexOf(PATH_SEPARATOR);
+        if (index < 0) return fqname;
+        return fqname.substring(0, index);
     }
 }
