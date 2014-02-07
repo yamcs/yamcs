@@ -4,8 +4,6 @@ import static org.yamcs.api.Protocol.*;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +57,8 @@ public class YamcsServer {
 	Logger log;
 	static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class.getName());
 	 
-	YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
+	@SuppressWarnings("unchecked")
+    YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 	  
 	    this.instance=instance;
 	    log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
@@ -113,6 +112,7 @@ public class YamcsServer {
 	public static boolean hasInstance(String instance) {
 	    return instances.contains(instance);
 	}
+    @SuppressWarnings("unchecked")
     public static void setupYamcsServer() throws Exception  {
         
         YConfiguration c=YConfiguration.getConfiguration("yamcs");
@@ -224,7 +224,6 @@ public class YamcsServer {
 	  public static void configureNonBlocking(SimpleString dataAddress) {
 	      //TODO
 	      Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
-	      System.out.println("------------o: "+o);
 	  }
 	  
 	/**
