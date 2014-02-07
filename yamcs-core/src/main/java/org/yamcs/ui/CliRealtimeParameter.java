@@ -123,19 +123,7 @@ public class CliRealtimeParameter {
         }
         
         final NamedObjectList subscriptionList = nol;
-      //System.out.println("adding shutdown hook");
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    yclient.executeRpc(rpcAddr, "unsubscribe", subscriptionList, null);
-                    yclient.close();
-                    ysession.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }));
+    
         final BufferedWriter writer = new BufferedWriter(new PrintWriter(System.out));
         final ParameterFormatter pf=new ParameterFormatter(writer, subscriptionList.getListList());
         pf.setPrintRaw(printRaw);
@@ -151,11 +139,25 @@ public class CliRealtimeParameter {
         } catch (YamcsException e) {
             if("InvalidIdentification".equals(e.getType())) {
                 NamedObjectList nol1=(NamedObjectList)e.decodeExtra(NamedObjectList.newBuilder());
-                System.out.println("got invalid identification params: "+nol1);
+                System.err.println("got invalid identification for the following parameters: "+nol1.getListList());
             }
-            throw e;
-        }
             
+            System.exit(1);
+        }
+        
+        //System.out.println("adding shutdown hook");
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    yclient.executeRpc(rpcAddr, "unsubscribe", subscriptionList, null);
+                    yclient.close();
+                    ysession.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
 
         final Semaphore semaphore=new Semaphore(0);
         yclient.dataConsumer.setMessageHandler(new MessageHandler() {
