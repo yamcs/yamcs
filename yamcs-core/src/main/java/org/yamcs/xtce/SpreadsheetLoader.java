@@ -1032,6 +1032,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                             }
                         });
                         spaceSystem.addUnresolvedReference(nr);
+                    } else {
+                        parameterInstance.setParameter(param);
                     }
 
 

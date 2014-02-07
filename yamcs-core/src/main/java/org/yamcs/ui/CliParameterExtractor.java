@@ -49,7 +49,7 @@ public class CliParameterExtractor {
         System.err.println("OPTIONS:");
         System.err.println("         \t-a      print only those lines where all parameters are set");
         System.err.println("         \t-h      print this help");
-        System.err.println("         \t-i      ignore invalid parameters");
+        //System.err.println("         \t-i      ignore invalid parameters");
         System.err.println("         \t-k      keep previous parameters");
         System.err.println("         \t-r      print raw values in addition to engineering values");
         System.err.println("         \t-t      print the generation time on the first column");

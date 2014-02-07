@@ -14,7 +14,7 @@ public class DummyTmProvider extends AbstractService implements TmPacketProvider
 	private TmProcessor tmProcessor;
 	
 	
-	public DummyTmProvider(String instance, String name, String spec) {
+	public DummyTmProvider(String instance, String spec) {
 	}
 
 	@Override
