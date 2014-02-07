@@ -112,7 +112,8 @@ public class RealtimeParameterService implements ParameterConsumer {
             }
             yclient.sendReply(replyto, "OK",null);
         } catch (InvalidIdentification e) {
-            yclient.sendErrorReply(replyto, e.toString());
+            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            yclient.sendErrorReply(replyto, new YamcsException("InvalidIdentification", "Invalid Identification", nol));
         } catch (InvalidRequestIdentification e) {
             log.error("got invalid subscription id", e);
             yclient.sendErrorReply(replyto, "internal error: "+e.toString());
