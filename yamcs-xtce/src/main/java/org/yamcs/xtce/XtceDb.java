@@ -22,7 +22,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 30L;
+    private static final long  serialVersionUID   = 41L;
     SpaceSystem rootSystem;
     
     public XtceDb(SpaceSystem spaceSystem) {
@@ -37,7 +37,7 @@ public class XtceDb implements Serializable {
     private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>();
     private HashMap<String, Algorithm> algorithms = new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
-
+    
     @SuppressWarnings("rawtypes")
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<Class<?>, NonStandardData>();
 
@@ -48,6 +48,10 @@ public class XtceDb implements Serializable {
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<Algorithm>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<MetaCommand>();
     
+    
+    //this is the sequence container where the xtce processors start processing
+    //we should perhaps have possibility to specify different ones for different streams
+    SequenceContainer rootSequenceContainer;
     /**
      * Maps the Parameter to a list of ParameterEntry such that we know from
      * which container we can extract this parameter
@@ -99,7 +103,11 @@ public class XtceDb implements Serializable {
     }
 
     public SequenceContainer getRootSequenceContainer() {
-        return rootSystem.getRootSequenceContainer();
+        return rootSequenceContainer;
+    }
+    
+    public void setRootSequenceContainer(SequenceContainer sc) {
+        this.rootSequenceContainer=sc;
     }
 
     public Algorithm getAlgorithm(String qualifiedName) {
@@ -381,6 +389,22 @@ public class XtceDb implements Serializable {
         Arrays.sort(mca, comparator);
         for (MetaCommand mc : mca) {
             mc.print(out);
+        }
+
+        //print the list of system variables if any (because those will not be part of the sequence containers)
+        List<SystemVariable> systemVariables = new ArrayList<SystemVariable>();
+        for(Parameter p: ss.getParameters()) {
+            if(p instanceof SystemVariable) {
+                systemVariables.add((SystemVariable)p);
+            }
+        }
+        if(!systemVariables.isEmpty()) {
+            out.println("System Variables: ");
+            SystemVariable[] sva=systemVariables.toArray(new SystemVariable[0]);
+            Arrays.sort(sva, comparator);
+            for (SystemVariable sv : sva) {
+                out.println("\t"+sv.getName());
+            }
         }
         
         
