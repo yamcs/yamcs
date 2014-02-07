@@ -19,7 +19,7 @@ public class NameReference {
     public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE};
     public interface ResolvedAction {
         /**
-         * pushes the NameDescription throguh and returns true of the name reference is resolved and false otherwise
+         * pushes the NameDescription throguh and returns true if the name reference is resolved and false otherwise
          * 
          * false can be returned in case the NameDescription refers to something which is not itself fully resolved
          */

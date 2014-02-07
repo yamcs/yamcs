@@ -1022,8 +1022,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 String paraInout = cells[IDX_ALGO_PARA_INOUT].getContents();
                 if ("in".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);
-                    if (param != null) {
-                        final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
+                    final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
+                    if(param==null) {
                         NameReference nr=new NameReference(paraRef, Type.PARAMETER, new ResolvedAction() {
                             @Override
                             public boolean resolved(NameDescription nd) {
@@ -1032,26 +1032,26 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                             }
                         });
                         spaceSystem.addUnresolvedReference(nr);
-                        if (cells.length > IDX_ALGO_PARA_INSTANCE) {
-                            if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
-                                int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
-                                if (instance > 0) {
-                                    error("Algorithm:"+(j+1)+" instance '"+instance+"' not supported. Can only go back in time. Use values <= 0.");
-                                }
-                                parameterInstance.setInstance(instance);
-                            }
-                        }
-                        
-                        InputParameter inputParameter = new InputParameter(parameterInstance);
-                        if (cells.length > IDX_ALGO_PARA_NAME) {
-                            if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
-                                inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
-                            }
-                        }
-                        algorithm.addInput(inputParameter);
-                    } else {
-                        throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraRef + "' was not found on the parameters sheet");
                     }
+
+
+                    if (cells.length > IDX_ALGO_PARA_INSTANCE) {
+                        if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
+                            int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
+                            if (instance > 0) {
+                                error("Algorithm:"+(j+1)+" instance '"+instance+"' not supported. Can only go back in time. Use values <= 0.");
+                            }
+                            parameterInstance.setInstance(instance);
+                        }
+                    }
+
+                    InputParameter inputParameter = new InputParameter(parameterInstance);
+                    if (cells.length > IDX_ALGO_PARA_NAME) {
+                        if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
+                            inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
+                        }
+                    }
+                    algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);
                     if (param == null) {

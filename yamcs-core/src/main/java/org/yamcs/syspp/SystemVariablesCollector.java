@@ -18,7 +18,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.archive.PpProviderAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -52,7 +54,7 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
     final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
     final private String namespace;
     final private String serverId;
-    public static String YAMCS_NAMESPACE = "/YAMCS";
+
     final String instance;
     
     
@@ -90,7 +92,7 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
                 id = InetAddress.getLocalHost().getHostName();
             }
             serverId = id;
-            namespace = YAMCS_NAMESPACE+"/"+serverId;
+            namespace = XtceDbFactory.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
             log.info("Using {} as serverId, and {} as namespace for system variables", serverId, namespace);
         } catch (ConfigurationException e) {
             throw new RuntimeException(e);

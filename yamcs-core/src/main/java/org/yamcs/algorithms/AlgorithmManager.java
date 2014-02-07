@@ -17,7 +17,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.ParameterConsumer;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
