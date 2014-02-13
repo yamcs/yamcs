@@ -19,7 +19,7 @@ import org.yamcs.xtce.XtceDb;
  * <p>
  * The java method <tt>AlgorithmUtils.[method]</tt> is available in scripts as <tt>Yamcs.[method]</tt>
  */
-class AlgorithmUtils {
+public class AlgorithmUtils {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmUtils.class);
     private XtceDb xtcedb;
     private ScriptEngine engine;
