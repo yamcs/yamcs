@@ -153,7 +153,6 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
 
     @Override
     protected void doStop() {
-        // TODO Auto-generated method stub
-        
+        notifyStopped();        
     }
 }

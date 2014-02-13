@@ -1,4 +1,7 @@
 Version 0.24.0
+- Allow the SpreadsheetLoader to support sing-magnitude integer representation
+- Added possibility to have extra columns in the Event Viewer
+- Moved YConfiguration and ConfigurationException in the yamcs-api package to allow usage by external clients (e.g. TYNA)
 - Slightly modified the structure of different types of ReplayRequests to be more consistent
 - Added XTCE support for extraction of 64-bit integers
 - Fixed a bug with the extraction of some 3-byte integers

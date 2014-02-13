@@ -15,7 +15,7 @@ public class ErrorInCommand extends YamcsException {
         super(_errorMessage);
         errorSource = _errorSource;
         errorLine = _errorLine;
-        errorColumn = _errorColumn;  // TODO Auto-generated constructor stub
+        errorColumn = _errorColumn; 
     }
 
 }

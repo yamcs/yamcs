@@ -51,7 +51,6 @@ class MergeExpression implements StreamExpression {
   
     @Override
     public TupleDefinition getOutputDefinition() {
-        // TODO Auto-generated method stub
         return null;
     }
 
