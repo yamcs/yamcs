@@ -1,14 +1,19 @@
 package org.yamcs.algorithms;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +27,7 @@ import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
@@ -67,6 +73,32 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         // Load only JavaScript engine (included by default in JDK)
 		scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
 		scriptEngine.put("Yamcs", new AlgorithmUtils(chan.getInstance(), xtcedb, scriptEngine));
+        
+        // Load custom .js
+        YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getName());
+        String mdbConfig=yconf.getString("mdb");
+        yconf=YConfiguration.getConfiguration("mdb");
+        if(yconf.containsKey(mdbConfig, "libraries")) {
+            try {
+                @SuppressWarnings("unchecked")
+                List<Map<String,String>> l=yconf.getList(mdbConfig, "libraries");
+                for(Map<String,String> m : l) {
+                    if(m.containsKey("spec")) {
+                        File f=new File(m.get("spec"));
+                        scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improve error msgs
+                        if (f.getName().endsWith(".js")) { 
+                            scriptEngine.eval(new FileReader(new File(m.get("spec"))));
+                        } else {
+                            throw new ConfigurationException("Only libraries with .js extension can be defined");
+                        }
+                    }
+                }
+            } catch(IOException e) { // Force exit. User should fix this before continuing
+                throw new ConfigurationException("Cannot read from library file", e);
+            } catch(ScriptException e) { // Force exit. User should fix this before continuing
+                throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
+            }
+        }
 		 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
             loadAlgorithm(algo);

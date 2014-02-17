@@ -195,6 +195,23 @@ public class AlgorithmManagerTest {
         assertEquals("high", evt.getMessage());
         assertEquals(EventSeverity.ERROR, evt.getSeverity());
     }
+    
+    @Test
+    public void testExternalLibrary() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/Division").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId,   ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getDoubleValue()*3, 0.001);
+    }
 
     static class MyTcTmService extends AbstractService implements TcTmService {
         TmPacketProvider tm;

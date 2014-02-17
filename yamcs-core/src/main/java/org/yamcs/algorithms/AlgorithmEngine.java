@@ -109,9 +109,10 @@ public class AlgorithmEngine {
 	public List<ParameterValue> runAlgorithm() {
         scriptEngine.put(AlgorithmManager.KEY_ALGO_NAME, def.getName());
 	    try {
+	        scriptEngine.put(ScriptEngine.FILENAME, def.getAlgorithmText()); // Improve error msgs
             scriptEngine.eval(def.getAlgorithmText());
         } catch (ScriptException e) {
-            log.warn("script error for "+def.getName()+": "+e.getMessage());
+            log.warn("Error while executing script: "+e.getMessage(), e);
             return Collections.emptyList();
         }
         
