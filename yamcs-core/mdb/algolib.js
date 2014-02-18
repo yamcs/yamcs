@@ -1,5 +1,5 @@
-function multiplyByTwo(number) {
-    return number*2;
+function multiplyByThree(number) {
+    return number*3;
 }
 
 function divideByThree(number) {

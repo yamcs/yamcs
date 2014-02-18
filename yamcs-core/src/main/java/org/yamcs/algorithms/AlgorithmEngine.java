@@ -107,9 +107,10 @@ public class AlgorithmEngine {
 	 * @return the outputted parameters, if any
 	 */
 	public List<ParameterValue> runAlgorithm() {
+	    log.trace("Running algorithm '{}'",def.getName());
         scriptEngine.put(AlgorithmManager.KEY_ALGO_NAME, def.getName());
+        scriptEngine.put(ScriptEngine.FILENAME, def.getQualifiedName()); // Improves error msg
 	    try {
-	        scriptEngine.put(ScriptEngine.FILENAME, def.getAlgorithmText()); // Improve error msgs
             scriptEngine.eval(def.getAlgorithmText());
         } catch (ScriptException e) {
             log.warn("Error while executing script: "+e.getMessage(), e);
@@ -147,5 +148,10 @@ public class AlgorithmEngine {
 
 	public boolean isUpdated() {
 		return updated;
+	}
+	
+	@Override
+	public String toString() {
+	    return def.getName();
 	}
 }
