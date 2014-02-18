@@ -68,37 +68,42 @@ public class AlgorithmEngine {
                 if(scriptName==null) {
                     scriptName=inputParameter.getParameterInstance().getParameter().getName();
                 }
-                
-                Value v = newValue.getEngValue();
-                switch(v.getType()) {
-                    case BINARY:
-                        scriptEngine.put(scriptName, v.getBinaryValue().toByteArray());
-                        break;
-                    case DOUBLE:
-                        scriptEngine.put(scriptName, v.getDoubleValue());
-                        break;
-                    case FLOAT:
-                        scriptEngine.put(scriptName, v.getFloatValue());
-                        break;
-                    case SINT32:
-                        scriptEngine.put(scriptName, v.getSint32Value());
-                        break;
-                    case SINT64:
-                        scriptEngine.put(scriptName, v.getSint64Value());
-                        break;
-                    case STRING:
-                        scriptEngine.put(scriptName, v.getStringValue());
-                        break;
-                    case UINT32:
-                        scriptEngine.put(scriptName, v.getUint32Value()&0xFFFFFFFFL);
-                        break;
-                    case UINT64:
-                        scriptEngine.put(scriptName, v.getUint64Value()&0xFFFFFFFFFFFFFFFFL);
-                        break;
-                    default:
-                        log.warn("Ignoring update of unexpected value type {}", v.getType());
+                putValue(scriptName, newValue.getEngValue());
+                if(newValue.getRawValue() != null) {
+                    putValue(scriptName+"_raw", newValue.getRawValue());
                 }
             }
+        }
+    }
+        
+    private void putValue(String scriptName, Value v) {
+        switch(v.getType()) {
+        case BINARY:
+            scriptEngine.put(scriptName, v.getBinaryValue().toByteArray());
+            break;
+        case DOUBLE:
+            scriptEngine.put(scriptName, v.getDoubleValue());
+            break;
+        case FLOAT:
+            scriptEngine.put(scriptName, v.getFloatValue());
+            break;
+        case SINT32:
+            scriptEngine.put(scriptName, v.getSint32Value());
+            break;
+        case SINT64:
+            scriptEngine.put(scriptName, v.getSint64Value());
+            break;
+        case STRING:
+            scriptEngine.put(scriptName, v.getStringValue());
+            break;
+        case UINT32:
+            scriptEngine.put(scriptName, v.getUint32Value()&0xFFFFFFFFL);
+            break;
+        case UINT64:
+            scriptEngine.put(scriptName, v.getUint64Value()&0xFFFFFFFFFFFFFFFFL);
+            break;
+        default:
+            throw new IllegalArgumentException("Unexpected value of type "+v.getType());
         }
     }
 	
