@@ -11,7 +11,7 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YamcsServer;
+import org.yamcs.HornetQAuthManager;
 
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
@@ -23,12 +23,15 @@ public class TestProducerKiller {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer = new EmbeddedHornetQ();
+        hornetServer.setConfigResourcePath("hornetq-configuration-tpk.xml");
+        hornetServer.setSecurityManager( new HornetQAuthManager() );
+        hornetServer.start();
     }
 
     @Test
     public void testProducerKiller() throws Exception{
-        final YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("localhost", 5445).build();
+        final YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("localhost", 15445).build();
         final YamcsClient dataClient=ys.newClientBuilder().setDataConsumer(null,null).build();
         dataClient.dataConsumer.setMessageHandler(new MessageHandler() {
             @Override
@@ -50,7 +53,7 @@ public class TestProducerKiller {
                 try {
                     int i=0;
                     while(true) {
-                        System.out.println("sending message "+i);
+                      //  System.out.println("sending message "+i);
                         ClientMessage msg=ys.session.createMessage(false);
                         msg.getBodyBuffer().writeBytes(new byte[1500]);
                         yclient1.dataProducer.send(dataClient.dataAddress, msg);

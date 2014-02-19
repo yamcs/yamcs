@@ -51,6 +51,8 @@ public class TestEventProducer extends YarchTestCase {
         
         
         Event ev=(Event)yc.receiveData(Event.newBuilder());
+        
+        System.out.println("got event: "+ev);
         assertEquals("type1", ev.getType());
         assertEquals("msgError", ev.getMessage());
         assertEquals(0, ev.getSeqNumber());
