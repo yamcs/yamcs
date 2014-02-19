@@ -37,7 +37,7 @@ public class TestEventProducer extends YarchTestCase {
     
     @Test
     public void testEventProducer() throws HornetQException, YamcsException, IOException, URISyntaxException, YamcsApiException {
-        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("yamcs://localhost/").build();
+        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("yamcs:///").build();
         EventProducer ep=EventProducerFactory.getEventProducer(ydb.getName());
      //   System.out.println("ep: "+ep.getClass());
         ep.setSource("testing");

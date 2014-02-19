@@ -1,0 +1,5 @@
+instances:
+ - ChannelsTest0
+ - ChannelsTest1
+
+incomingDir: /tmp/yamcs-incoming

@@ -2,6 +2,7 @@ package org.yamcs.ui.datepicker;
 
 import javax.swing.JFrame;
 
+import org.junit.Ignore;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -9,6 +10,7 @@ import org.yamcs.utils.TimeEncoding;
  * @author es
  *
  */
+@Ignore
 public final class DatePickerTest {
     /**
      * Schedule a job for the event-dispatching thread:

@@ -153,5 +153,22 @@
     </repository>
   </repositories>
 
+  <distributionManagement>
+  <!-- use the following if you're not using a snapshot version. -->
+  <repository>
+    <id>github-releases</id>
+    <name>GitHub Yamcs Repo releases</name>
+    <url>file:///home/nm/git/yamcs-mvn-repo/releases</url>
+  </repository>
+  <!-- use the following if you ARE using a snapshot version. -->
+  <snapshotRepository>
+    <id>github-snapshot</id>
+    <name>Github Yamcs repo snapshots</name>
+    <url>file:///home/nm/git/yamcs-mvn-repo/snapshots</url>
+    <uniqueVersion>false</uniqueVersion>
+  </snapshotRepository>
+  </distributionManagement>
+
+
 
 </project>

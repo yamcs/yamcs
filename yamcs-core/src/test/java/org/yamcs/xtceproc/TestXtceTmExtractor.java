@@ -32,7 +32,7 @@ public class TestXtceTmExtractor {
     public void testPKT11() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -40,7 +40,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT11();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         // System.out.println("received: "+received);
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         ParameterValue pv=received.get(3);
@@ -68,7 +68,7 @@ public class TestXtceTmExtractor {
     public void testPKT13StringStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -76,7 +76,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT13();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         assertEquals( 13, received.size() );
         
@@ -104,7 +104,7 @@ public class TestXtceTmExtractor {
     public void testPKT13StringValues() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -112,7 +112,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT13();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         assertEquals( 13, received.size() );
         // Fixed size strings
@@ -140,7 +140,7 @@ public class TestXtceTmExtractor {
     public void testPKT14StringFloatStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -148,7 +148,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT14();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         
         // Check all the parameters have been parsed
@@ -172,7 +172,7 @@ public class TestXtceTmExtractor {
     public void testPKT14StringFloatValues() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -180,7 +180,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT14();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 12, received.size() );
@@ -203,7 +203,7 @@ public class TestXtceTmExtractor {
     public void testPKT15StringIntStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -211,7 +211,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT15();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
@@ -233,7 +233,7 @@ public class TestXtceTmExtractor {
     public void testPKT15StringIntValues() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -241,7 +241,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT15();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
@@ -296,7 +296,7 @@ public class TestXtceTmExtractor {
     public void testPKT17FloatStructure() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        xtcedb.print(System.out);
+        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -304,7 +304,7 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT17();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        System.out.println("PKT17 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        //System.out.println("PKT17 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
 
         assertEquals(11, received.size());

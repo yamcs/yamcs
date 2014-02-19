@@ -62,12 +62,19 @@ public class AlgorithmManagerTest {
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
-        c=ChannelFactory.create("refmdb", "refmdb", "refmdb", "refmdb", new MyTcTmService(tmGenerator), "refmdb", null);
+        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
+        try {
+            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", "refmdb", new MyTcTmService(tmGenerator), "refmdb", null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after creating chanel c:"+c);
         prm=c.getParameterRequestManager();
     }
     
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
+        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after eachtest c:"+c);
         c.quit();
     }
 

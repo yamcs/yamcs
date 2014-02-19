@@ -118,24 +118,24 @@ public class YamcsSession {
         }
         
         public Builder setConnectionParams(String host, int port, String username, String password) {
-            result.invm=false;
-            result.ycd=new YamcsConnectData();
-            result.ycd.host=host;
-            result.ycd.port=port;
+            result.invm = false;
+            result.ycd = new YamcsConnectData();
+            result.ycd.host = host;
+            result.ycd.port = port;
             result.ycd.username = username;
             result.ycd.password = password;
             return this;
         }
         
         public Builder setConnectionParams(String url) throws URISyntaxException {
-            result.invm=false;
-            result.ycd=YamcsConnectData.parse(url);
+            result.ycd = YamcsConnectData.parse(url);
+            result.invm = (result.ycd.host == null);
             return this;
         }
         
         public Builder setConnectionParams(YamcsConnectData ycd) {
-            result.invm=(ycd.host == null); // TODO: Fix workaround for EventProducerFactory connections
-            result.ycd=ycd;
+            result.invm = (ycd.host == null);
+            result.ycd = ycd;
             return this;
         }
         
@@ -146,7 +146,7 @@ public class YamcsSession {
          * @return
          */
         public Builder setPreAcknowledge (boolean preack) {
-            result.preAcknowledge=preack;
+            result.preAcknowledge = preack;
             return this;
         }
         

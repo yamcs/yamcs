@@ -31,7 +31,7 @@ public class ContainerRequestManagerTest {
     @Test
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
-        Channel c = ChannelFactory.create("refmdb", "refmdb", "refmdb", "refmdb",
+        Channel c = ChannelFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", "refmdb",
                         new MyTcTmService(packetGenerator), "refmdb", null);
         ContainerRequestManager rm = c.getContainerRequestManager();
 

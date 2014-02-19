@@ -35,7 +35,7 @@ public class ChannelsTest {
    static EmbeddedHornetQ hornetServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
-        YConfiguration.setup("YamcsServer");
+        YConfiguration.setup("ChannelsTest");
         hornetServer=YamcsServer.setupHornet();
         ManagementService.setup(true,true);
     }
@@ -49,11 +49,11 @@ public class ChannelsTest {
     public void createChannelWithoutClient() throws Exception {
         YamcsConnector yconnector=new YamcsConnector();
         ChannelControlClient ccc=new ChannelControlClient(yconnector);
-        ccc.setChannelListener(new MyListener("instance0"));
-        yconnector.connect(YamcsConnectData.parse("yamcs://localhost:5445/")).get(5,TimeUnit.SECONDS);
+        ccc.setChannelListener(new MyListener("ChannelsTest"));
+        yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
 
         try {
-            ccc.createChannel("instance0", "test1", "lounge", "test", false, new int[]{10,14});
+            ccc.createChannel("ChannelsTest0", "test1", "lounge", "test", false, new int[]{10,14});
             assertTrue("YamcsException was expected", false);
         } catch(YamcsException e) {
             assertEquals("createChannel invoked with a list full of invalid client ids", e.getMessage());
@@ -66,26 +66,26 @@ public class ChannelsTest {
     public void createAndSwitchChannel() throws Exception {
         YamcsConnector yconnector=new YamcsConnector();
         ChannelControlClient ccc=new ChannelControlClient(yconnector);
-        MyListener ml=new MyListener("instance1");
+        MyListener ml=new MyListener("ChannelsTest1");
         ccc.setChannelListener(ml);
-        Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs://localhost:5445/"));
+        Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
         f.get(5, TimeUnit.SECONDS);
         
-        ccc.createChannel("instance1", "channel1", "lounge", "", true, new int[0]);
+        ccc.createChannel("ChannelsTest1", "channel1", "lounge", "", true, new int[0]);
         
         MyChannelClient client=new MyChannelClient();
-        Channel chan=Channel.getInstance("instance1", "channel1");
+        Channel chan=Channel.getInstance("ChannelsTest1", "channel1");
         assertNotNull(chan);
         
         chan.connect(client);
         client.channel=chan;
         
-        ManagementService.getInstance().registerClient("instance1", "channel1", client);
+        ManagementService.getInstance().registerClient("ChannelsTest1", "channel1", client);
         
-        ccc.createChannel("instance1", "channel2", "lounge", "", false, new int[]{1});
+        ccc.createChannel("ChannelsTest1", "channel2", "lounge", "", false, new int[]{1});
         
-        Thread.sleep(3000); //to make sure that this event will not overwrite the previous instance1,channel1 one 
-        ccc.connectToChannel("instance1", "channel1", new int[]{1}); //this one should trigger the closing of non permanent channel2 because no more client connected
+        Thread.sleep(3000); //to make sure that this event will not overwrite the previous ChannelsTest1,channel1 one 
+        ccc.connectToChannel("ChannelsTest1", "channel1", new int[]{1}); //this one should trigger the closing of non permanent channel2 because no more client connected
         chan.disconnect(client);
         ManagementService.getInstance().unregisterClient(1);
         chan.quit();
@@ -96,13 +96,13 @@ public class ChannelsTest {
         
         assertEquals(2, ml.channelUpdated.size());
         ChannelInfo ci=ml.channelUpdated.get("channel1");
-        assertEquals("instance1",ci.getInstance());
+        assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel1",ci.getName());
         assertEquals("lounge",ci.getType());
         assertEquals(ServiceState.RUNNING, ci.getState());
         
         ci=ml.channelUpdated.get("channel2");
-        assertEquals("instance1",ci.getInstance());
+        assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel2",ci.getName());
         assertEquals("lounge",ci.getType());
         assertEquals("",ci.getSpec());
@@ -111,11 +111,11 @@ public class ChannelsTest {
         
         assertEquals(2, ml.channelClosedList.size());
         ci=ml.channelClosedList.get(0);
-        assertEquals("instance1",ci.getInstance());
+        assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel2",ci.getName());
         
         ci=ml.channelClosedList.get(1);
-        assertEquals("instance1",ci.getInstance());
+        assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel1",ci.getName());
         
         
@@ -123,25 +123,25 @@ public class ChannelsTest {
         assertEquals(3, ml.clientUpdatedList.size());
         
         ClientInfo cli=ml.clientUpdatedList.get(0);
-        assertEquals("instance1",cli.getInstance());
+        assertEquals("ChannelsTest1",cli.getInstance());
         assertEquals("channel1",cli.getChannelName());
         assertEquals(1,cli.getId());
         assertEquals("random-test-user",cli.getUsername());
         assertEquals("random-app-name",cli.getApplicationName());
         
         cli=ml.clientUpdatedList.get(1);
-        assertEquals("instance1",cli.getInstance());
+        assertEquals("ChannelsTest1",cli.getInstance());
         assertEquals("channel2",cli.getChannelName());
         assertEquals(1,cli.getId());
         
         cli=ml.clientUpdatedList.get(2);
-        assertEquals("instance1",cli.getInstance());
+        assertEquals("ChannelsTest1",cli.getInstance());
         assertEquals("channel1",cli.getChannelName());
         assertEquals(1,cli.getId());
         
         assertEquals(1,ml.clientDisconnectedList.size());
         cli=ml.clientDisconnectedList.get(0);
-        assertEquals("instance1",cli.getInstance());
+        assertEquals("ChannelsTest1",cli.getInstance());
         assertEquals("channel1",cli.getChannelName());
         assertEquals(1,cli.getId());
        
