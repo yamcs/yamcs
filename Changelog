@@ -1,4 +1,4 @@
-Version 0.24.0
+Version 0.24.0 Released 19-Feb-2014
 - Allow the SpreadsheetLoader to support sing-magnitude integer representation
 - Added possibility to have extra columns in the Event Viewer
 - Moved YConfiguration and ConfigurationException in the yamcs-api package to allow usage by external clients (e.g. TYNA)
