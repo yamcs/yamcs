@@ -12,8 +12,3 @@ refmdb:
     ppLoaders: 
         - type: sheet
           spec: "mdb/refmdb-subsys1.xls"
-
-    # Custom algorithm functions available to XTCE algorithms
-    # files must end with .js
-    #libraries:
-    #   - spec: "mdb/algolib.js

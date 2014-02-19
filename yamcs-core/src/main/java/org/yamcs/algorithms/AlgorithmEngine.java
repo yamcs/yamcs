@@ -1,5 +1,6 @@
 package org.yamcs.algorithms;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -142,6 +143,9 @@ public class AlgorithmEngine {
                     pval.setStringValue((String) res);
                 } else if(res instanceof Boolean) {
                     pval.setBinaryValue((((Boolean)res).booleanValue() ? "YES" : "NO").getBytes());
+                } else if(res instanceof BigInteger) {
+                    BigInteger bint=(BigInteger) res;
+                    pval.setUnsignedIntegerValue(bint.intValue()); // TODO support more data types
                 } else {
                     pval.setBinaryValue(res.toString().getBytes());
                 }

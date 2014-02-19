@@ -11,13 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.yamcs.algorithms.AlgorithmManager;
-import org.yamcs.tctm.TmPacketProvider;
-import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
  * @author mache
@@ -76,8 +75,15 @@ public class ParameterRequestManager implements ParameterListener {
             List<Map<String, String>> providers=yconf.getList("parameterProviders");
             for(Map<String,String> provider:providers) {
                 String className=provider.get("class");
+                Object args=provider.get("args");
                 try {
-                    ParameterProvider p=new YObjectLoader<ParameterProvider>().loadObject(className, this, chan);
+                    YObjectLoader<ParameterProvider> objLoader=new YObjectLoader<ParameterProvider>();
+                    ParameterProvider p;
+                    if(args == null) {
+                        p = objLoader.loadObject(className, this, chan);
+                    } else {
+                        p = objLoader.loadObject(className, this, chan, args);
+                    }
                     addParameterProvider(p);
                 } catch (IOException e) {
                     throw new ConfigurationException("Cannot load parameter provider from class "+className, e);

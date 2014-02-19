@@ -27,7 +27,6 @@ import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
-import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
@@ -42,6 +41,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
 	private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
+	private static final String DEFAULT_LANGUAGE="JavaScript"; // included by default in JDK
     static final String KEY_ALGO_NAME="algoName";
     
     XtceDb xtcedb;
@@ -62,6 +62,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
 	
 	public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
+	    this(parameterRequestManager, chan, null);
+	}
+	
+	public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan, Object args) throws ConfigurationException {
 		this.xtcedb=chan.xtcedb;
 	    this.parameterRequestManager=parameterRequestManager;
 		try {
@@ -70,34 +74,36 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 			log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
 		}
 		
-        // Load only JavaScript engine (included by default in JDK)
-		scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
+		String scriptLanguage=DEFAULT_LANGUAGE;
+		List<String> libraries=new ArrayList<String>();
+		if(args!=null) {
+		    Map<String,Object> m=(Map<String,Object>) args;
+		    if(m.containsKey("scriptLanguage")) {
+		        scriptLanguage=(String)m.get("scriptLanguage");
+		    }
+		    if(m.containsKey("libraries")) {
+		        libraries=(List<String>)m.get("libraries");
+		    }
+		}
+		
+		scriptEngine = new ScriptEngineManager().getEngineByName(scriptLanguage);
 		scriptEngine.put("Yamcs", new AlgorithmUtils(chan.getInstance(), xtcedb, scriptEngine));
         
-        // Load custom .js
-        YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getName());
-        String mdbConfig=yconf.getString("mdb");
-        yconf=YConfiguration.getConfiguration("mdb");
-        if(yconf.containsKey(mdbConfig, "libraries")) {
-            try {
-                @SuppressWarnings("unchecked")
-                List<Map<String,String>> l=yconf.getList(mdbConfig, "libraries");
-                for(Map<String,String> m : l) {
-                    if(m.containsKey("spec")) {
-                        File f=new File(m.get("spec"));
-                        scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improve error msgs
-                        if (f.getName().endsWith(".js")) { 
-                            scriptEngine.eval(new FileReader(new File(m.get("spec"))));
-                        } else {
-                            throw new ConfigurationException("Only libraries with .js extension can be defined");
-                        }
-                    }
+        // Load custom algorithm libraries
+        try {
+            for(String lib:libraries) {
+                File f=new File(lib);
+                scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
+                if (f.isFile()) {
+                    scriptEngine.eval(new FileReader(f));
+                } else {
+                    throw new ConfigurationException("Specified library is not a file: "+f);
                 }
-            } catch(IOException e) { // Force exit. User should fix this before continuing
-                throw new ConfigurationException("Cannot read from library file", e);
-            } catch(ScriptException e) { // Force exit. User should fix this before continuing
-                throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
             }
+        } catch(IOException e) { // Force exit. User should fix this before continuing
+            throw new ConfigurationException("Cannot read from library file", e);
+        } catch(ScriptException e) { // Force exit. User should fix this before continuing
+            throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
         }
 		 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
