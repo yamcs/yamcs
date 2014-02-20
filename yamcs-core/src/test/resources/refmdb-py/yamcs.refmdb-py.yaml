@@ -1,0 +1,9 @@
+parameterProviders:
+    - class: org.yamcs.algorithms.AlgorithmManager
+      args:
+          # defaults to JavaScript, other options depend on available ScriptEngine implementations on classpath
+          scriptLanguage: python
+          libraries:
+              - mdb/algolib.py
+        
+mdb: refmdb-py
