@@ -39,6 +39,23 @@ import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
+/**
+ * Manages the provision of requested parameters that require the execution of
+ * one or more XTCE algorithms.
+ * <p>
+ * Upon initialization it will scan all algorithms, and activate any that don't
+ * require subscription. OutputParameters of all algorithms will be indexed, so
+ * that AlgorithmManager knows what parameters it can provide to the
+ * ParameterRequestManager.
+ * <p>
+ * Algorithms and any needed algorithms that require earlier execution, will be
+ * activated as soon as a request for one of its output parameters is
+ * registered.
+ * <p>
+ * Algorithms default to JavaScript, but this can be overridden to other
+ * scripting languages as long as they are included in the classpath. As a design
+ * choice all algorithms within the same AlgorithmManager, share the same language.
+ */
 public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
 	private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
 	private static final String DEFAULT_LANGUAGE="JavaScript"; // included by default in JDK
@@ -112,30 +129,26 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
 	
     private void loadAlgorithm(Algorithm algo) {
-        if("JavaScript".equals(algo.getLanguage())) {
-            for(OutputParameter oParam:algo.getOutputSet()) {
-                outParamIndex.add(oParam.getParameter());
-            }
-            // Activate the algorithm if requested
-            if(algo.getAutoActivate()!=null && !engineByAlgorithm.containsKey(algo)) {
-                switch (algo.getAutoActivate()) {
-                case ALWAYS:
+        for(OutputParameter oParam:algo.getOutputSet()) {
+            outParamIndex.add(oParam.getParameter());
+        }
+        // Activate the algorithm if requested
+        if(algo.getAutoActivate()!=null && !engineByAlgorithm.containsKey(algo)) {
+            switch (algo.getAutoActivate()) {
+            case ALWAYS:
+                activateAlgorithm(algo);
+                break;
+            case REALTIME_ONLY:
+                if(!parameterRequestManager.channel.isReplay()) {
                     activateAlgorithm(algo);
-                    break;
-                case REALTIME_ONLY:
-                    if(!parameterRequestManager.channel.isReplay()) {
-                        activateAlgorithm(algo);
-                    }
-                    break;
-                case REPLAY_ONLY:
-                    if(parameterRequestManager.channel.isReplay()) {
-                        activateAlgorithm(algo);
-                    }
-                    break;
                 }
+                break;
+            case REPLAY_ONLY:
+                if(parameterRequestManager.channel.isReplay()) {
+                    activateAlgorithm(algo);
+                }
+                break;
             }
-        } else {
-            log.warn(String.format("Algorithm %s: unsupported language \"%s\"", algo.getName(), algo.getLanguage()));
         }
     }
 	

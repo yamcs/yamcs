@@ -2,7 +2,7 @@ parameterProviders:
     - class: org.yamcs.algorithms.AlgorithmManager
       args:
           # defaults to JavaScript, other options depend on available ScriptEngine implementations on classpath
-          # scriptLanguage: javascript
+          #scriptLanguage: python
           libraries:
               - mdb/algolib.js
         
