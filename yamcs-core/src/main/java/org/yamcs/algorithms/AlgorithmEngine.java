@@ -192,8 +192,9 @@ public class AlgorithmEngine {
 	        StringBuilder source=new StringBuilder();
 	        source.append("package org.yamcs.algorithms;\n");
 	        source.append("import "+ParameterValue.class.getName()+";\n")
-	            .append("public class " + className + " implements ValueBinding {\n");
-	        StringBuilder updateValueSource=new StringBuilder("  public void updateValue(ParameterValue v) {\n");
+	            .append("public class " + className + " extends ValueBinding {\n");
+	        StringBuilder updateValueSource=new StringBuilder("  public void updateValue(ParameterValue v) {\n")
+	            .append("    super.updateValue(v);\n");
 	        if(pval.getRawValue() != null) {
 	            updateValueSource.append(addValueType(source, pval.getRawValue(), true));
 	        }
