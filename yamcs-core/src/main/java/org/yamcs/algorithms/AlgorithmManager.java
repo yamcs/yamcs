@@ -1,14 +1,19 @@
 package org.yamcs.algorithms;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +39,26 @@ import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
+/**
+ * Manages the provision of requested parameters that require the execution of
+ * one or more XTCE algorithms.
+ * <p>
+ * Upon initialization it will scan all algorithms, and activate any that don't
+ * require subscription. OutputParameters of all algorithms will be indexed, so
+ * that AlgorithmManager knows what parameters it can provide to the
+ * ParameterRequestManager.
+ * <p>
+ * Algorithms and any needed algorithms that require earlier execution, will be
+ * activated as soon as a request for one of its output parameters is
+ * registered.
+ * <p>
+ * Algorithms default to JavaScript, but this can be overridden to other
+ * scripting languages as long as they are included in the classpath. As a design
+ * choice all algorithms within the same AlgorithmManager, share the same language.
+ */
 public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
 	private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
+	private static final String DEFAULT_LANGUAGE="JavaScript"; // included by default in JDK
     static final String KEY_ALGO_NAME="algoName";
     
     XtceDb xtcedb;
@@ -56,6 +79,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
 	
 	public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
+	    this(parameterRequestManager, chan, null);
+	}
+	
+	public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan, Object args) throws ConfigurationException {
 		this.xtcedb=chan.xtcedb;
 	    this.parameterRequestManager=parameterRequestManager;
 		try {
@@ -64,9 +91,37 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 			log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
 		}
 		
-        // Load only JavaScript engine (included by default in JDK)
-		scriptEngine = new ScriptEngineManager().getEngineByName("JavaScript");
+		String scriptLanguage=DEFAULT_LANGUAGE;
+		List<String> libraries=new ArrayList<String>();
+		if(args!=null) {
+		    Map<String,Object> m=(Map<String,Object>) args;
+		    if(m.containsKey("scriptLanguage")) {
+		        scriptLanguage=(String)m.get("scriptLanguage");
+		    }
+		    if(m.containsKey("libraries")) {
+		        libraries=(List<String>)m.get("libraries");
+		    }
+		}
+		
+		scriptEngine = new ScriptEngineManager().getEngineByName(scriptLanguage);
 		scriptEngine.put("Yamcs", new AlgorithmUtils(chan.getInstance(), xtcedb, scriptEngine));
+        
+        // Load custom algorithm libraries
+        try {
+            for(String lib:libraries) {
+                File f=new File(lib);
+                scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
+                if (f.isFile()) {
+                    scriptEngine.eval(new FileReader(f));
+                } else {
+                    throw new ConfigurationException("Specified library is not a file: "+f);
+                }
+            }
+        } catch(IOException e) { // Force exit. User should fix this before continuing
+            throw new ConfigurationException("Cannot read from library file", e);
+        } catch(ScriptException e) { // Force exit. User should fix this before continuing
+            throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
+        }
 		 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
             loadAlgorithm(algo);
@@ -74,30 +129,26 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
 	
     private void loadAlgorithm(Algorithm algo) {
-        if("JavaScript".equals(algo.getLanguage())) {
-            for(OutputParameter oParam:algo.getOutputSet()) {
-                outParamIndex.add(oParam.getParameter());
-            }
-            // Activate the algorithm if requested
-            if(algo.getAutoActivate()!=null && !engineByAlgorithm.containsKey(algo)) {
-                switch (algo.getAutoActivate()) {
-                case ALWAYS:
+        for(OutputParameter oParam:algo.getOutputSet()) {
+            outParamIndex.add(oParam.getParameter());
+        }
+        // Activate the algorithm if requested
+        if(algo.getAutoActivate()!=null && !engineByAlgorithm.containsKey(algo)) {
+            switch (algo.getAutoActivate()) {
+            case ALWAYS:
+                activateAlgorithm(algo);
+                break;
+            case REALTIME_ONLY:
+                if(!parameterRequestManager.channel.isReplay()) {
                     activateAlgorithm(algo);
-                    break;
-                case REALTIME_ONLY:
-                    if(!parameterRequestManager.channel.isReplay()) {
-                        activateAlgorithm(algo);
-                    }
-                    break;
-                case REPLAY_ONLY:
-                    if(parameterRequestManager.channel.isReplay()) {
-                        activateAlgorithm(algo);
-                    }
-                    break;
                 }
+                break;
+            case REPLAY_ONLY:
+                if(parameterRequestManager.channel.isReplay()) {
+                    activateAlgorithm(algo);
+                }
+                break;
             }
-        } else {
-            log.warn(String.format("Algorithm %s: unsupported language \"%s\"", algo.getName(), algo.getLanguage()));
         }
     }
 	
@@ -114,7 +165,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 		for(Algorithm algo:xtcedb.getAlgorithms()) {
 			for(OutputParameter oParam:algo.getOutputSet()) {
 			    if(oParam.getParameter()==paramDef) {
-			        loadAlgorithm(algo);
 			        activateAlgorithm(algo);
 			        requestedOutParams.add(paramDef);
 			        return; // There shouldn't be more ...
@@ -125,17 +175,35 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	
 	private void activateAlgorithm(Algorithm algorithm) {
         AlgorithmEngine engine=engineByAlgorithm.get(algorithm);
-        if(engine==null) {
-            engine=new AlgorithmEngine(algorithm, scriptEngine);
-            engineByAlgorithm.put(algorithm, engine);
+        if(engine!=null) {
+            log.trace("Already activated algorithm {}", algorithm.getQualifiedName());
+            return;
         }
+        log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
+        engine=new AlgorithmEngine(algorithm, scriptEngine);
+        engineByAlgorithm.put(algorithm, engine);
         try {
             ArrayList<NamedObjectId> newItems=new ArrayList<NamedObjectId>();
             for(Parameter param:engine.getRequiredParameters()) {
                 if(!requiredInParams.contains(param)) {
-                    newItems.add(NamedObjectId.newBuilder().setName(param.getQualifiedName()).build());
+                    NamedObjectId noid=NamedObjectId.newBuilder().setName(param.getQualifiedName()).build();
+                    newItems.add(noid);
                     requiredInParams.add(param);
+                    
+                    // Recursively activate other algorithms on which this algorithm depends
+                    if(canProvide(noid)) {
+                        for(Algorithm algo:xtcedb.getAlgorithms()) {
+                            if(algorithm != algo) {
+                                for(OutputParameter oParam:algo.getOutputSet()) {
+                                    if(oParam.getParameter()==param) {
+                                        activateAlgorithm(algo);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+                
                 // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires
                 // going back in time
                 int lookbackSize=engine.getLookbackSize(param);
@@ -159,7 +227,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm "
                             + engine.getAlgorithm().getName(), e);
         }
-	}
+    }
 	
 	@Override
 	public void startProvidingAll() {
@@ -185,7 +253,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	@Override
     public boolean canProvide(NamedObjectId itemId) {
 		try {
-			getParameter(itemId) ;
+			getParameter(itemId);
 		} catch (InvalidIdentification e) {
 			return false;
 		}
@@ -209,29 +277,41 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
 
 	@Override
-	public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValueWithId> items) { 
-        // Update history window for the parameters that need it
-        for(ParameterValueWithId pvwi:items) {
-            if(buffersByParam.containsKey(pvwi.getParameterValue().def)) {
-                buffersByParam.get(pvwi.getParameterValue().def).update(pvwi.getParameterValue());
-            }
-        }
-        
+	public ArrayList<ParameterValue> updateParameters(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+	    ArrayList<ParameterValue> pvals=new ArrayList<ParameterValue>();
+	    for(ParameterValueWithId pvwi:items) {
+	        pvals.add(pvwi.getParameterValue());
+	    }
+	    
+	    updateHistoryWindows(pvals);
+	    return doUpdateParameters(pvals, new HashSet<AlgorithmEngine>());
+	}
+	
+	private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items, HashSet<AlgorithmEngine> hasRun) {
         // Set the correct arguments for every Algorithm involved
         HashSet<AlgorithmEngine> needsRun=new HashSet<AlgorithmEngine>();
         HashSet<AlgorithmEngine> invalid=new HashSet<AlgorithmEngine>();
-        for(ParameterValueWithId pvwi:items) {
-            for(Entry<Algorithm,AlgorithmEngine> entry:engineByAlgorithm.entrySet()) {
-                Algorithm def=entry.getKey();
-                AlgorithmEngine engine=entry.getValue();
-                for(InputParameter inputParameter:def.getInputSet()) {
-                    ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
-                    if(pInstance.getParameter().equals(pvwi.getParameterValue().def)) {
+        for(Entry<Algorithm,AlgorithmEngine> entry:engineByAlgorithm.entrySet()) {
+            Algorithm def=entry.getKey();
+            AlgorithmEngine engine=entry.getValue();
+
+            // Prevent multiple runs when cascading
+            if(hasRun.contains(engine)) {
+                continue;
+            }
+
+            // Set algorithm arguments based on incoming values
+            for(InputParameter inputParameter:def.getInputSet()) {
+                ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
+                boolean matchFound=false;
+                for(ParameterValue pval:items) {
+                    if(pInstance.getParameter().equals(pval.def)) {
+                        matchFound=true;
                         if(engine.getLookbackSize(pInstance.getParameter())==0) {
-                            engine.updateInput(inputParameter, pvwi.getParameterValue());
+                            engine.updateInput(inputParameter, pval);
                             needsRun.add(engine);
                         } else {
-                            ParameterValue historicValue=buffersByParam.get(pvwi.getParameterValue().def)
+                            ParameterValue historicValue=buffersByParam.get(pval.def)
                                             .getHistoricValue(pInstance.getInstance());
                             if(historicValue!=null) {
                                 engine.updateInput(inputParameter, historicValue);
@@ -242,17 +322,26 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                         }
                     }
                 }
+                // Exclude algorithms with missing arguments (for example, because it depends on another algorithm which needs to be run first)
+                if(!matchFound) {
+                    invalid.add(engine);
+                    break; // No need to evaluate other input parameters
+                }
             }
         }
         
         // Finally, run the algorithm
-        if(!needsRun.isEmpty()) {
+        if(needsRun.isEmpty()) {
+            return null;
+        } else {
             long acqTime=TimeEncoding.currentInstant();
             ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
             for(AlgorithmEngine engine:needsRun) {
                 if(!invalid.contains(engine)) {
                     try {
-                        r.addAll(engine.runAlgorithm());
+                        List<ParameterValue> pvals=engine.runAlgorithm();
+                        r.addAll(pvals);
+                        hasRun.add(engine);
                     } catch (Exception e) {
                         log.warn("Exception while updating algorithm "+engine.def, e);
                     }
@@ -261,13 +350,29 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     
             for(ParameterValue pval:r) {
                 pval.setAcquisitionTime(acqTime);
-                pval.setGenerationTime(items.get(0).getParameterValue().getGenerationTime());
+                pval.setGenerationTime(items.get(0).getGenerationTime());
+            }
+            
+            // Cascade
+            if(!r.isEmpty()) {
+                updateHistoryWindows(r); 
+                items.addAll(r);
+                ArrayList<ParameterValue> cascadedPvals=doUpdateParameters(items, hasRun);
+                if(cascadedPvals!=null) {
+                    r.addAll(cascadedPvals);
+                }
             }
             return r;
-        } else {
-            return null;
         }
 	}
+	
+    private void updateHistoryWindows(ArrayList<ParameterValue> pvals) {
+        for(ParameterValue pval:pvals) {
+            if(buffersByParam.containsKey(pval.def)) {
+                buffersByParam.get(pval.def).update(pval);
+            }
+        }
+    }
 
     @Override
     public void setParameterListener(ParameterListener parameterRequestManager) {

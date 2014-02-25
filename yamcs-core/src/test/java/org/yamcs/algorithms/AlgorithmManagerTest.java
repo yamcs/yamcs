@@ -195,6 +195,63 @@ public class AlgorithmManagerTest {
         assertEquals("high", evt.getMessage());
         assertEquals(EventSeverity.ERROR, evt.getSeverity());
     }
+    
+    @Test
+    public void testExternalLibrary() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatDivision").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getDoubleValue()*3, 0.001);
+    }
+    
+    @Test
+    public void testAlgorithmChaining() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatMultiplication").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+    }
+    
+    @Test
+    public void testAlgorithmChainingWithWindowing() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatAverage").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_1").build()
+        ), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+        
+        params.clear();
+        tmGenerator.generate_PKT11();
+        assertEquals(2, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+        assertEquals((20 + 20 + 20 + (20 / 3.0)) / 4.0, params.get(1).getParameterValue().getEngValue().getDoubleValue(), 0.001);
+    }
 
     static class MyTcTmService extends AbstractService implements TcTmService {
         TmPacketProvider tm;
