@@ -1,3 +1,12 @@
+Version 0.24.1 Released
+- Algorithms: support externally defined (shared) functions
+- Algorithms: support interdependent algorithms
+- Algorithms: expose implicit _raw value to engine
+- Algorithms: support libraries and other languages
+- Algorithms: put dictionary-like object in scriptengine
+- Algorithms: Add data quality indicators to ValueBinding
+
+
 Version 0.24.0 Released 19-Feb-2014
 - Allow the SpreadsheetLoader to support sing-magnitude integer representation
 - Added possibility to have extra columns in the Event Viewer
