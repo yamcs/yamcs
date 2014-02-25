@@ -9,6 +9,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
@@ -41,6 +42,17 @@ public class DataEncodingProcessor {
     }
 
     private Object extractRawAndCalibrateInteger(IntegerDataEncoding ide, ParameterValue pv) {
+        // Integer encoded as string, don't even try reading it as int
+        if(ide.getEncoding() == Encoding.string) {
+            String s=(String)extractRawAndCalibrate(ide.getStringEncoding(), pv);
+            long l = Long.valueOf( s );
+            if( ide.getDefaultCalibrator()==null ) {
+                return Long.valueOf(s); 
+            } else {
+                return ide.getDefaultCalibrator().calibrate( (double)l );
+            }
+        }
+        
         int byteOffset=(pcontext.bitPosition)/8;
         int byteSize=(pcontext.bitPosition+ide.getSizeInBits()-1)/8-byteOffset+1;
         int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
@@ -101,14 +113,11 @@ public class DataEncodingProcessor {
             rv = pcontext.bb.getLong(byteOffset);
             break;
         default:
-        	if( ide.getEncoding() != IntegerDataEncoding.Encoding.string ) {
-        		log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
-        	}
+        	log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
         }
-        //pcontext.bitPosition+=ide.getSizeInBits();
+        pcontext.bitPosition+=ide.getSizeInBits();
         switch(ide.getEncoding()) {
         case twosCompliment:
-        	pcontext.bitPosition+=ide.getSizeInBits();
             //we shift it to the left first such that the sign bit arrives on the first position
             rv= (rv&mask)<<(64-ide.getSizeInBits()-bitsToShift);
             rv=rv>>(64-ide.getSizeInBits());
@@ -121,7 +130,6 @@ public class DataEncodingProcessor {
                 return Long.valueOf(rv);
             else return ide.getDefaultCalibrator().calibrate((double)rv);
         case unsigned:
-        	pcontext.bitPosition+=ide.getSizeInBits();
             //we use the ">>>" such that the sign bit is not carried
             rv=(rv&mask)>>>bitsToShift;
             //System.out.println("extracted rv="+rv+" from byteOffset="+byteOffset+" using mask="+mask+" and bitsToShift="+bitsToShift);
@@ -134,7 +142,6 @@ public class DataEncodingProcessor {
                 return Long.valueOf(rv);
             else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
         case signMagnitude:
-        	pcontext.bitPosition+=ide.getSizeInBits();
         	boolean negative = ((rv>>>(ide.getSizeInBits()-1) & 1L) == 1L);
         	mask >>>= 1; // Don't include sign in mask
             rv=(rv&(mask))>>>bitsToShift;
@@ -147,14 +154,6 @@ public class DataEncodingProcessor {
             if(ide.getDefaultCalibrator()==null)
                 return Long.valueOf(rv);
             else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
-        case string:
-        	String s=(String)extractRawAndCalibrate(ide.getStringEncoding(), pv);
-        	long l = Long.valueOf( s );
-        	if( ide.getDefaultCalibrator()==null ) {
-        		return new Long( l ); 
-        	} else {
-        		return ide.getDefaultCalibrator().calibrate( (double)l );
-        	}
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");
         }
