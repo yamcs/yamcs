@@ -332,12 +332,13 @@ public class ParameterRequestManager implements ParameterListener {
 	}
 
 	private ParameterProvider getProvider(NamedObjectId itemId) {
-		if(tmProcessor.canProvide(itemId)) return tmProcessor;
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
 		    }
 		}
+		// First give a chance to other providers (e.g. AlgorithmManager), default to tmProcessor
+		if(tmProcessor.canProvide(itemId)) return tmProcessor;
 		return null;
 	}
 
