@@ -30,7 +30,6 @@ public class ParameterTypeProcessor {
 
     /**
      *  Extracts the parameter from the packet.
-     * @param bitb
      * @return value of the parameter after extraction
      */
     public ParameterValue extract(ParameterType ptype) {
@@ -56,22 +55,7 @@ public class ParameterTypeProcessor {
         ParameterValue pv=new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(fpt.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(fpt.getEncoding(), pv);
-        double doubleCalValue=0;
-        if(calValue instanceof Integer) {
-            doubleCalValue=(Integer) calValue;
-        } if(calValue instanceof Long) {
-            doubleCalValue=(Long) calValue;
-        } else if(calValue instanceof Double) {
-            doubleCalValue=(Double)calValue;
-        } else if(calValue instanceof Float) {
-            doubleCalValue=(Float)calValue;
-        }
-        if(fpt.getSizeInBits()==32) {
-            pv.setFloatValue((float)doubleCalValue);
-        } else {
-            pv.setDoubleValue(doubleCalValue);
-        }
+        pcontext.dataEncodingProcessor.extractRaw(fpt.getEncoding(), pv);
         return pv;
     }
 
@@ -79,21 +63,7 @@ public class ParameterTypeProcessor {
         ParameterValue pv = new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(bpt.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(bpt.getEncoding(), pv);
-
-        long longCalValue=0;
-        if(calValue instanceof Integer) {
-            longCalValue=(Integer) calValue;
-        } else if(calValue instanceof Long) {
-            longCalValue=(Long) calValue;
-        } else if(calValue instanceof Double) {
-            longCalValue=(long)((Double)calValue).doubleValue();
-        } else if(calValue instanceof Float) {
-            longCalValue=(long)((Float)calValue).floatValue();
-        }
-
-
-        pv.setSignedIntegerValue((int)longCalValue);
+        pcontext.dataEncodingProcessor.extractRaw(bpt.getEncoding(), pv);
 
         //check if it out of range
         return pv;
@@ -103,8 +73,7 @@ public class ParameterTypeProcessor {
         ParameterValue pv=new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(bpt.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(bpt.getEncoding(), pv);
-        pv.setBinaryValue((byte[])calValue);
+        pcontext.dataEncodingProcessor.extractRaw(bpt.getEncoding(), pv);
         return pv;
     }
 
@@ -112,8 +81,7 @@ public class ParameterTypeProcessor {
         ParameterValue pv=new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(spt.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(spt.getEncoding(), pv);
-        pv.setStringValue((String)calValue);
+        pcontext.dataEncodingProcessor.extractRaw(spt.getEncoding(), pv);
         return pv;
     }
     
@@ -121,55 +89,21 @@ public class ParameterTypeProcessor {
         ParameterValue pv=new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(ept.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(ept.getEncoding(), pv);
-
-        long longCalValue=0;
-        if(calValue instanceof Integer) {
-            longCalValue=(Integer) calValue;
-        } else if(calValue instanceof Double) {
-            longCalValue=(long)((Double)calValue).doubleValue();
-        } else if(calValue instanceof Float) {
-            longCalValue=(long)((Float)calValue).floatValue();
-        } else if(calValue instanceof Long) {
-            longCalValue = (Long) /*-(Integer)*/ calValue;
-        }
-        pv.setStringValue(ept.calibrate(longCalValue));
+        pcontext.dataEncodingProcessor.extractRaw(ept.getEncoding(), pv);
         return pv;
     }
-
-
 
     private ParameterValue extractInteger(IntegerParameterType ipt) {
         ParameterValue pv=new ParameterValue(null,true);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(ipt.getEncoding().getSizeInBits());
-        Object calValue=pcontext.dataEncodingProcessor.extractRawAndCalibrate(ipt.getEncoding(), pv);
-
-        long longCalValue=0;
-        if(calValue instanceof Integer) {
-            longCalValue=(Integer) calValue;
-        } else if(calValue instanceof Long) {
-            longCalValue=(Long) calValue;
-        } else if(calValue instanceof Double) {
-            longCalValue=(long)((Double)calValue).doubleValue();
-        } else if(calValue instanceof Float) {
-            longCalValue=(long)((Float)calValue).floatValue();
-        }
-        if (ipt.getEncoding().getSizeInBits() <= 32) {
-            if(ipt.isSigned())
-                pv.setSignedIntegerValue((int)longCalValue);
-            else
-                pv.setUnsignedIntegerValue((int)longCalValue);
-        } else {
-            if(ipt.isSigned())
-                pv.setSignedLongValue(longCalValue);
-            else
-                pv.setUnsignedLongValue(longCalValue);
-        }
+        pcontext.dataEncodingProcessor.extractRaw(ipt.getEncoding(), pv);
 
         //check if it out of range
         return pv;
     }
+    
+    
 
     /**
      * Updates the ParameterValue with monitoring (out of limits) information

@@ -14,7 +14,6 @@ import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -314,19 +313,19 @@ public class TestXtceTmExtractor {
         assertEquals(-14.928, pv.getEngValue().getFloatValue(), 1e-5);
         
         pv=received.get(7);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_2", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_2", pv.getParameter().getQualifiedName());
         assertEquals(6, pv.getEngValue().getSint32Value());
         
         pv=received.get(8);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_3", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_3", pv.getParameter().getQualifiedName());
         assertEquals(-6, pv.getEngValue().getSint32Value());
         
         pv=received.get(9);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_4", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_4", pv.getParameter().getQualifiedName());
         assertEquals(6, pv.getEngValue().getSint32Value());
         
         pv=received.get(10);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_5", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_5", pv.getParameter().getQualifiedName());
         assertEquals(-6, pv.getEngValue().getSint32Value());
     }
     

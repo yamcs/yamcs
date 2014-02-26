@@ -275,7 +275,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
     private void putTerminatedStringParam( ByteBuffer bb, String value, byte terminator ) {
     	byte[] ba=new byte[ value.getBytes().length+1];
-    	System.out.println("WRITING "+StringConvertors.arrayToHexString(value.getBytes()));
         System.arraycopy(value.getBytes(), 0, ba, 0, value.getBytes().length);
         ba[ba.length-1] = terminator;
         bb.put( ba );

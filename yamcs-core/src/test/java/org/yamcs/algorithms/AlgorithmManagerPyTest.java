@@ -76,7 +76,7 @@ public class AlgorithmManagerPyTest {
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatDivision").build()), new ParameterConsumer() {
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build()), new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
                 params.addAll(items);
@@ -86,7 +86,7 @@ public class AlgorithmManagerPyTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getDoubleValue()*3, 0.001);
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue()*3, 0.001);
     }
     
     static class MyTcTmService extends AbstractService implements TcTmService {

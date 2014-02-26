@@ -206,6 +206,11 @@ public class ParameterValue {
             .setDoubleValue(d).build();
     }
     
+    public void setRawValue(String s) {
+        rawValue=Value.newBuilder().setType(Value.Type.STRING)
+                .setStringValue(s).build();
+    }
+    
     public void setRawSignedInteger(int x) {
         rawValue=Value.newBuilder().setType(Value.Type.SINT32)
             .setSint32Value(x).build();

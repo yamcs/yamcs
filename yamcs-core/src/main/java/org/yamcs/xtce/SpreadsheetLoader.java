@@ -459,7 +459,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			    if(bitlength==-1) error("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory");
 				encoding = new IntegerDataEncoding(name, bitlength);
 				if (rawtype.toLowerCase().startsWith("int")) {
-					encoding = new IntegerDataEncoding(name, bitlength);encoding = new IntegerDataEncoding(name, bitlength);
 					if ("int".equals(rawtype)) {
 						((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
 					} else {
