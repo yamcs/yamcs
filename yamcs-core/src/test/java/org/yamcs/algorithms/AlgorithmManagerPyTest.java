@@ -35,6 +35,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Just a small sanity check to verify python/jython still works.
+ * Uses algorithms in the spreadsheet that are interpreted the same in javascript and python
  */
 public class AlgorithmManagerPyTest {
     @BeforeClass
@@ -71,6 +72,46 @@ public class AlgorithmManagerPyTest {
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after eachtest c:"+c);
         c.quit();
+    }
+    
+    @Test
+    public void testFloats() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(2.1672918, params.get(0).getParameterValue().getEngValue().getFloatValue(), 0.001);
+    }
+    
+    @Test
+    public void testSignedIntegers() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome1").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome2").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome3").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome4").build()
+        ), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT18(2,-2);
+        assertEquals(4, params.size());
+        assertEquals(2, params.get(0).getParameterValue().getEngValue().getSint32Value());
+        assertEquals(-2, params.get(1).getParameterValue().getEngValue().getSint32Value());
+        assertEquals(-2, params.get(2).getParameterValue().getEngValue().getSint32Value());
+        assertEquals(2, params.get(3).getParameterValue().getEngValue().getSint32Value());
     }
 
     @Test

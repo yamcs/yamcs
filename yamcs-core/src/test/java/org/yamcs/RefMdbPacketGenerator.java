@@ -34,6 +34,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt15Length=pkt1Length+50;
     public final int pkt16Length=pkt1Length+4;
     public final int pkt17Length=pkt1Length+6;
+    public final int pkt18Length=pkt1Length+6;
     public final int pkt2Length=8;
     
     //raw values of parameters 
@@ -130,6 +131,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public ByteBuffer generate_PKT17() {
         ByteBuffer bb=ByteBuffer.allocate(pkt17Length);
         fill_PKT17(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
+    public ByteBuffer generate_PKT18(int pIntegerPara18_1, int pIntegerPara18_2) {
+        ByteBuffer bb=ByteBuffer.allocate(pkt18Length);
+        fill_PKT18(bb, pIntegerPara18_1, pIntegerPara18_2);
         sendToTmProcessor(bb);
         return bb;
     }
@@ -261,6 +269,15 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put(StringConvertors.hexStringToArray("1846"));
         // 6 (000110), filler (000), -6 (111010) (2's complement)
         bb.put(StringConvertors.hexStringToArray("187A"));
+    }
+    
+    private void fill_PKT18(ByteBuffer bb, int pIntegerPara18_1, int pIntegerPara18_2) {
+        fill_PKT1(bb, 8);
+        int offset=pkt1Length;
+        bb.position(offset);
+        
+        bb.putShort((short)(pIntegerPara18_1&0xFFFF));
+        bb.putInt(pIntegerPara18_2);
     }
     
     private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {
