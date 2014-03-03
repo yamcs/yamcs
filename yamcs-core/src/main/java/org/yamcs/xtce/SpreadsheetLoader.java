@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
 	protected HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
 	protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
+	protected HashSet<Parameter> outputParameters = new HashSet<Parameter>(); // Outputs to algorithms
+	protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<PotentialExtractionError>();
 	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
@@ -127,6 +130,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		} catch (IOException e) {
 			throw new DatabaseLoadException(e);
 		}
+
+		// Check errors after all sheets have been read
+		for(PotentialExtractionError e : potentialErrors) {
+		    e.recheck();
+		}
+		
 		return spaceSystem;
 	}
 
@@ -395,7 +404,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				continue;
 			}
 			
-			Parameter param = new Parameter(name);
+			final Parameter param = new Parameter(name);
             parameters.put(param.getName(), param);
 
             XtceAliasSet xas=new XtceAliasSet();
@@ -456,7 +465,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			//calibrations
 			DataEncoding encoding = null;
 			if (("uint".equalsIgnoreCase(rawtype)) || rawtype.toLowerCase().startsWith("int")) {
-			    if(bitlength==-1) error("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory");
+			    if(bitlength==-1) {
+			        potentialErrors.add(new PotentialExtractionError("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+			        });
+			    }
 				encoding = new IntegerDataEncoding(name, bitlength);
 				if (rawtype.toLowerCase().startsWith("int")) {
 					if ("int".equals(rawtype)) {
@@ -476,7 +492,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 								}
 							}
 						}
-					}	
+					}
 				}
 				if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
 					Calibrator c = calibrators.get(calib);
@@ -539,7 +555,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					}
 				}
 			} else if ("float".equalsIgnoreCase(rawtype)) {
-			    if(bitlength==-1) error("Parameters:"+(i+1)+" for float parameters bitlength is mandatory");
+			    if(bitlength==-1) {
+    			    potentialErrors.add(new PotentialExtractionError("Parameters:"+(i+1)+" for float parameters bitlength is mandatory") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+                    });
+			    }
 				encoding=new FloatDataEncoding(name, bitlength);
 				if(calib!=null) {
 					Calibrator c = calibrators.get(calib);
@@ -589,14 +612,22 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					((FloatParameterType)ptype).encoding = encoding;
 				}
 			} else if (ptype instanceof EnumeratedParameterType) {
-				// Enumerations encoded as string integers
-				if( encoding instanceof StringDataEncoding ) {
-					IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-					// Don't set calibrator, already done when making ptype
-					((EnumeratedParameterType)ptype).encoding = intStringEncoding;
-				} else {
-					((EnumeratedParameterType)ptype).encoding = encoding;
-				}
+			    if(((EnumeratedParameterType) ptype).getEncoding() != null) {
+			        // Some other param has already lead to setting the encoding of this shared ptype.
+			        // Do some basic consistency checks
+			        if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+			            error("Multiple parameters are sharing calib '"+calib+"' with different bit sizes.");
+			        }
+			    }
+			    
+			    // Enumerations encoded as string integers
+                if( encoding instanceof StringDataEncoding ) {
+                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                    // Don't set calibrator, already done when making ptype
+                    ((EnumeratedParameterType) ptype).encoding = intStringEncoding;
+                } else {
+                    ((EnumeratedParameterType) ptype).encoding = encoding;
+                }
 			} else if (ptype instanceof StringParameterType) {
 			    ((StringParameterType)ptype).encoding = encoding;
 			}     
@@ -1058,6 +1089,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                     if (param == null) {
                         throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraRef + "' was not found on the parameters sheet");
                     }
+                    outputParameters.add(param);
                     OutputParameter outputParameter = new OutputParameter(param);
                     if (cells.length > IDX_ALGO_PARA_NAME) {
                         outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
@@ -1140,5 +1172,23 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 		String condition;
 		AlarmRanges ranges;
+	}
+	
+	/**
+	 * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read. 
+	 */
+	private abstract class PotentialExtractionError {
+	    String error;
+	    PotentialExtractionError(String error) {
+	        this.error=error;
+	    }
+
+	    abstract boolean errorPersists();
+	    
+	    public void recheck() {
+	        if(errorPersists()) {
+	            error(error);
+	        }
+	    }
 	}
 }
