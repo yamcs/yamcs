@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
 import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -31,6 +32,8 @@ public class DataEncodingProcessor {
             extractRawFloat((FloatDataEncoding) de, pv);
         } else if(de instanceof StringDataEncoding) {
             extractRawString((StringDataEncoding) de, pv);
+        } else if(de instanceof BooleanDataEncoding) {
+            extractRawBoolean((BooleanDataEncoding) de, pv);
         } else if(de instanceof BinaryDataEncoding) {
             extractRawBinary((BinaryDataEncoding) de, pv);
         } else {
@@ -210,6 +213,17 @@ public class DataEncodingProcessor {
         } else {
             pv.setRawValue(pcontext.bb.getDouble(byteOffset));
         }
+    }
+    
+    private void extractRawBoolean(BooleanDataEncoding bde, ParameterValue pv) {
+        int byteOffset=(pcontext.bitPosition)/8;
+        int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
+        int bitsToShift=8-bitOffsetInsideMask-1;
+        int mask=(-1<<(32-1))>>>(32-1-bitsToShift);
+        int rv=pcontext.bb.get(byteOffset)&0xFF;
+        rv=(rv&mask)>>>bitsToShift;
+        pcontext.bitPosition+=1;
+        pv.setRawValue(rv!=0);
     }
 
     private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {

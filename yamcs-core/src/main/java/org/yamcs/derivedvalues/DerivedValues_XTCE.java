@@ -78,7 +78,8 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 					currentXtceDir = new File(dir, "xtce");
 					if (currentXtceDir.isDirectory() && currentXtceDir.exists()) {
 						for (File f:currentXtceDir.listFiles(new FilenameFilter() {
-							public boolean accept(File f, String name) {
+							@Override
+                            public boolean accept(File f, String name) {
 								return name.toLowerCase().endsWith(".xml");
 							}
 						})) {
@@ -101,7 +102,8 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 		}
 	}
 
-	public Collection<DerivedValue> getDerivedValues() {
+	@Override
+    public Collection<DerivedValue> getDerivedValues() {
 		return derivedValues;
 	}
 
@@ -271,6 +273,8 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 				    case UINT64:
 				        engine.put(pname, v.getUint64Value()&0xFFFFFFFFFFFFFFFFL);
 				        break;
+				    case BOOLEAN:
+				        engine.put(pname, v.getBooleanValue());
 				    default:
 				        log.warn("Ignoring update of unexpected value type {}", v.getType());
 				}

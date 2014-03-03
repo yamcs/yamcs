@@ -457,6 +457,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 			} else	if ("string".equalsIgnoreCase(engtype)) {
 				ptype = new StringParameterType(name);
+			} else if ("boolean".equalsIgnoreCase(engtype)) {
+			    ptype = new BooleanParameterType(name);
 			} else	if ("binary".equalsIgnoreCase(engtype)) {
 				ptype = new BinaryParameterType(name);
 			} else {
@@ -514,6 +516,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			} else if ("bytestream".equalsIgnoreCase(rawtype)) {
 			    if(bitlength==-1) error("Parameters:"+(i+1)+" for bytestream parameters bitlength is mandatory");
 				encoding=new BinaryDataEncoding(name, bitlength);
+            } else if ("boolean".equalsIgnoreCase(rawtype)) {
+                if(bitlength!=-1) error("Parameters:"+(i+1)+" for boolean parameters bitlength is not allowed (defaults to 1). Use any other raw type if you want to specify the bitlength");
+                encoding=new BooleanDataEncoding(name);
 			} else if ("string".equalsIgnoreCase(rawtype)) {
 				// Version <= 1.6 String type
 				// STRING
@@ -626,7 +631,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			        // Some other param has already lead to setting the encoding of this shared ptype.
 			        // Do some basic consistency checks
 			        if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
-			            error("Multiple parameters are sharing calib '"+calib+"' with different bit sizes.");
+			            error("Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
 			        }
 			    }
 			    
@@ -640,7 +645,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 }
 			} else if (ptype instanceof StringParameterType) {
 			    ((StringParameterType)ptype).encoding = encoding;
-			}     
+			} else if (ptype instanceof BooleanParameterType) {
+			    ((BooleanParameterType)ptype).encoding = encoding;
+			}
 
 			param.setParameterType(ptype);
 		}
@@ -1138,6 +1145,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				return de.sizeInBits;
 			} else	if (de instanceof StringDataEncoding) {
 				return -1;
+			} else if (de instanceof BooleanDataEncoding) {
+			    return de.sizeInBits;
 			} else {
 				error("no known size for data encoding : " + de);
 			}

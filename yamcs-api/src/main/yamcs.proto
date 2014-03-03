@@ -44,6 +44,7 @@ message Value {
         TIMESTAMP = 6;
         UINT64 = 7;
         SINT64 = 8;
+        BOOLEAN = 9;
     };
     required Type type=1;
     optional float         floatValue=2;
@@ -55,6 +56,7 @@ message Value {
     optional int64         timestampValue=8;
     optional uint64        uint64Value=9;
     optional sint64        sint64Value=10;
+    optional bool          booleanValue=11;
 }
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both

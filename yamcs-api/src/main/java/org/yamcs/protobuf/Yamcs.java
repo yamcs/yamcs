@@ -2433,6 +2433,7 @@ public final class Yamcs {
       TIMESTAMP(6, 6),
       UINT64(7, 7),
       SINT64(8, 8),
+      BOOLEAN(9, 9),
       ;
       
       
@@ -2449,6 +2450,7 @@ public final class Yamcs {
           case 6: return TIMESTAMP;
           case 7: return UINT64;
           case 8: return SINT64;
+          case 9: return BOOLEAN;
           default: return null;
         }
       }
@@ -2479,7 +2481,7 @@ public final class Yamcs {
       }
       
       private static final Type[] VALUES = {
-        FLOAT, DOUBLE, UINT32, SINT32, BINARY, STRING, TIMESTAMP, UINT64, SINT64, 
+        FLOAT, DOUBLE, UINT32, SINT32, BINARY, STRING, TIMESTAMP, UINT64, SINT64, BOOLEAN, 
       };
       public static Type valueOf(
           com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -2573,6 +2575,13 @@ public final class Yamcs {
     public boolean hasSint64Value() { return hasSint64Value; }
     public long getSint64Value() { return sint64Value_; }
     
+    // optional bool booleanValue = 11;
+    public static final int BOOLEANVALUE_FIELD_NUMBER = 11;
+    private boolean hasBooleanValue;
+    private boolean booleanValue_ = false;
+    public boolean hasBooleanValue() { return hasBooleanValue; }
+    public boolean getBooleanValue() { return booleanValue_; }
+    
     private void initFields() {
       type_ = org.yamcs.protobuf.Yamcs.Value.Type.FLOAT;
     }
@@ -2613,6 +2622,9 @@ public final class Yamcs {
       }
       if (hasSint64Value()) {
         output.writeSInt64(10, getSint64Value());
+      }
+      if (hasBooleanValue()) {
+        output.writeBool(11, getBooleanValue());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2662,6 +2674,10 @@ public final class Yamcs {
       if (hasSint64Value()) {
         size += com.google.protobuf.CodedOutputStream
           .computeSInt64Size(10, getSint64Value());
+      }
+      if (hasBooleanValue()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, getBooleanValue());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2851,6 +2867,9 @@ public final class Yamcs {
         if (other.hasSint64Value()) {
           setSint64Value(other.getSint64Value());
         }
+        if (other.hasBooleanValue()) {
+          setBooleanValue(other.getBooleanValue());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -2920,6 +2939,10 @@ public final class Yamcs {
             }
             case 80: {
               setSint64Value(input.readSInt64());
+              break;
+            }
+            case 88: {
+              setBooleanValue(input.readBool());
               break;
             }
           }
@@ -3113,6 +3136,24 @@ public final class Yamcs {
       public Builder clearSint64Value() {
         result.hasSint64Value = false;
         result.sint64Value_ = 0L;
+        return this;
+      }
+      
+      // optional bool booleanValue = 11;
+      public boolean hasBooleanValue() {
+        return result.hasBooleanValue();
+      }
+      public boolean getBooleanValue() {
+        return result.getBooleanValue();
+      }
+      public Builder setBooleanValue(boolean value) {
+        result.hasBooleanValue = true;
+        result.booleanValue_ = value;
+        return this;
+      }
+      public Builder clearBooleanValue() {
+        result.hasBooleanValue = false;
+        result.booleanValue_ = false;
         return this;
       }
       
@@ -13795,119 +13836,119 @@ public final class Yamcs {
       "(\t\022<\n\017missionDatabase\030\003 \001(\0132#.org.yamcs." +
       "protobuf.MissionDatabase\"D\n\017MissionDatab" +
       "ase\022\022\n\nconfigName\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\017\n" +
-      "\007version\030\003 \001(\t\"\352\002\n\005Value\022,\n\004type\030\001 \002(\0162\036",
+      "\007version\030\003 \001(\t\"\216\003\n\005Value\022,\n\004type\030\001 \002(\0162\036",
       ".org.yamcs.protobuf.Value.Type\022\022\n\nfloatV" +
       "alue\030\002 \001(\002\022\023\n\013doubleValue\030\003 \001(\001\022\023\n\013sint3" +
       "2Value\030\004 \001(\021\022\023\n\013uint32Value\030\005 \001(\r\022\023\n\013bin" +
       "aryValue\030\006 \001(\014\022\023\n\013stringValue\030\007 \001(\t\022\026\n\016t" +
       "imestampValue\030\010 \001(\003\022\023\n\013uint64Value\030\t \001(\004" +
-      "\022\023\n\013sint64Value\030\n \001(\022\"t\n\004Type\022\t\n\005FLOAT\020\000" +
-      "\022\n\n\006DOUBLE\020\001\022\n\n\006UINT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006" +
-      "BINARY\020\004\022\n\n\006STRING\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006U" +
-      "INT64\020\007\022\n\n\006SINT64\020\010\"@\n\026MissionDatabaseRe" +
-      "quest\022\024\n\014dbConfigName\030\001 \001(\t\022\020\n\010instance\030",
-      "\002 \001(\t\"0\n\rNamedObjectId\022\014\n\004name\030\001 \002(\t\022\021\n\t" +
-      "namespace\030\002 \001(\t\"B\n\017NamedObjectList\022/\n\004li" +
-      "st\030\001 \003(\0132!.org.yamcs.protobuf.NamedObjec" +
-      "tId\"\341\003\n\014IndexRequest\022\020\n\010instance\030\001 \002(\t\022\r" +
-      "\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010utcStart\030" +
-      "\016 \001(\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defaultNamespa" +
-      "ce\030\004 \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005false\0223\n\010tm" +
-      "Packet\030\006 \003(\0132!.org.yamcs.protobuf.NamedO" +
-      "bjectId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\0222\n\007ppG" +
-      "roup\030\010 \003(\0132!.org.yamcs.protobuf.NamedObj",
-      "ectId\022$\n\025sendCompletenessIndex\030\t \001(\010:\005fa" +
-      "lse\022\031\n\nsendAllCmd\030\n \001(\010:\005false\0222\n\007cmdNam" +
-      "e\030\013 \003(\0132!.org.yamcs.protobuf.NamedObject" +
-      "Id\022\033\n\014sendAllEvent\030\014 \001(\010:\005false\0226\n\013event" +
-      "Source\030\r \003(\0132!.org.yamcs.protobuf.NamedO" +
-      "bjectId\"v\n\rArchiveRecord\022-\n\002id\030\001 \002(\0132!.o" +
-      "rg.yamcs.protobuf.NamedObjectId\022\r\n\005first" +
-      "\030\002 \002(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004inf" +
-      "o\030\005 \001(\t\"t\n\013IndexResult\022\020\n\010instance\030\001 \002(\t" +
-      "\0222\n\007records\030\002 \003(\0132!.org.yamcs.protobuf.A",
-      "rchiveRecord\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030" +
-      "\004 \001(\t\";\n\nTagRequest\022\020\n\010instance\030\001 \002(\t\022\r\n" +
-      "\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag" +
-      "\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(" +
-      "\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005" +
-      "color\030\006 \001(\t\"J\n\tTagResult\022\020\n\010instance\030\001 \002" +
-      "(\t\022+\n\003tag\030\002 \003(\0132\036.org.yamcs.protobuf.Arc" +
-      "hiveTag\"r\n\020UpsertTagRequest\022.\n\006oldTag\030\001 " +
-      "\001(\0132\036.org.yamcs.protobuf.ArchiveTag\022.\n\006n" +
-      "ewTag\030\002 \002(\0132\036.org.yamcs.protobuf.Archive",
-      "Tag\"?\n\020DeleteTagRequest\022+\n\003tag\030\003 \002(\0132\036.o" +
-      "rg.yamcs.protobuf.ArchiveTag\"O\n\013ReplaySp" +
-      "eed\0221\n\004type\030\001 \002(\0162#.org.yamcs.protobuf.R" +
-      "eplaySpeedType\022\r\n\005param\030\002 \001(\002\"\357\004\n\rReplay" +
-      "Request\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\0226\n\t" +
-      "endAction\030\003 \001(\0162\035.org.yamcs.protobuf.End" +
-      "Action:\004QUIT\022.\n\005speed\030\004 \001(\0132\037.org.yamcs." +
-      "protobuf.ReplaySpeed\0223\n\004type\030\005 \003(\0162!.org" +
-      ".yamcs.protobuf.ProtoDataTypeB\002\030\001\022=\n\016tmP" +
-      "acketFilter\030\006 \003(\0132!.org.yamcs.protobuf.N",
-      "amedObjectIdB\002\030\001\022\031\n\rppGroupFilter\030\007 \003(\tB" +
-      "\002\030\001\022D\n\020parameterRequest\030\010 \001(\0132*.org.yamc" +
-      "s.protobuf.ParameterReplayRequest\022>\n\rpac" +
-      "ketRequest\030\t \001(\0132\'.org.yamcs.protobuf.Pa" +
-      "cketReplayRequest\022<\n\014eventRequest\030\n \001(\0132" +
-      "&.org.yamcs.protobuf.EventReplayRequest\022" +
-      "N\n\025commandHistoryRequest\030\013 \001(\0132/.org.yam" +
-      "cs.protobuf.CommandHistoryReplayRequest\022" +
-      "6\n\tppRequest\030\014 \001(\0132#.org.yamcs.protobuf." +
-      "PpReplayRequest\"\211\001\n\026ParameterReplayReque",
-      "st\0225\n\nnameFilter\030\001 \003(\0132!.org.yamcs.proto" +
-      "buf.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005fals" +
-      "e\022 \n\021performMonitoring\030\003 \001(\010:\005false\"L\n\023P" +
-      "acketReplayRequest\0225\n\nnameFilter\030\001 \003(\0132!" +
-      ".org.yamcs.protobuf.NamedObjectId\"\024\n\022Eve" +
-      "ntReplayRequest\"\035\n\033CommandHistoryReplayR" +
-      "equest\"*\n\017PpReplayRequest\022\027\n\017groupNameFi" +
-      "lter\030\001 \003(\t\"\365\001\n\014ReplayStatus\022;\n\005state\030\001 \002" +
-      "(\0162,.org.yamcs.protobuf.ReplayStatus.Rep" +
-      "layState\0222\n\007request\030\002 \001(\0132!.org.yamcs.pr",
-      "otobuf.ReplayRequest\022\024\n\014errorMessage\030\003 \001" +
-      "(\t\"^\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n" +
-      "\007RUNNING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PA" +
-      "USED\020\004\022\n\n\006CLOSED\020\005\"\224\001\n\014TmPacketData\022\025\n\rr" +
-      "eceptionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016ge" +
-      "nerationTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001" +
-      "(\005\022-\n\002id\030\005 \001(\0132!.org.yamcs.protobuf.Name" +
-      "dObjectId\"\363\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016g" +
-      "enerationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002" +
-      "(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007m",
-      "essage\030\006 \002(\t\022?\n\010severity\030\007 \001(\0162\'.org.yam" +
-      "cs.protobuf.Event.EventSeverity:\004INFO\"1\n" +
-      "\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n" +
-      "\005ERROR\020\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010" +
-      "\n\004QUIT\020\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n" +
-      "\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225" +
-      "\001\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_" +
-      "CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT" +
-      "\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r" +
-      "\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t2\275\001\n\014Yamcs",
-      "Control\022Q\n\021GetYamcsInstances\022\030.org.yamcs" +
-      ".protobuf.Void\032\".org.yamcs.protobuf.Yamc" +
-      "sInstances\022Z\n\022GetMissionDatabase\022*.org.y" +
-      "amcs.protobuf.MissionDatabaseRequest\032\030.o" +
-      "rg.yamcs.protobuf.Void2\307\002\n\030RealtimeParam" +
-      "eterService\022J\n\tSubscribe\022#.org.yamcs.pro" +
-      "tobuf.NamedObjectList\032\030.org.yamcs.protob" +
-      "uf.Void\022K\n\014SubscribeAll\022!.org.yamcs.prot" +
-      "obuf.StringMessage\032\030.org.yamcs.protobuf." +
-      "Void\022L\n\013Unsubscribe\022#.org.yamcs.protobuf",
-      ".NamedObjectList\032\030.org.yamcs.protobuf.Vo" +
-      "id\022D\n\016UnsubscribeAll\022\030.org.yamcs.protobu" +
-      "f.Void\032\030.org.yamcs.protobuf.Void2\310\002\n\014Arc" +
-      "hiveIndex\022M\n\010GetIndex\022 .org.yamcs.protob" +
-      "uf.IndexRequest\032\037.org.yamcs.protobuf.Ind" +
-      "exResult\022I\n\006GetTag\022 .org.yamcs.protobuf." +
-      "IndexRequest\032\035.org.yamcs.protobuf.TagRes" +
-      "ult\022Q\n\tUpsertTag\022$.org.yamcs.protobuf.Up" +
-      "sertTagRequest\032\036.org.yamcs.protobuf.Arch" +
-      "iveTag\022K\n\tDeleteTag\022$.org.yamcs.protobuf",
-      ".DeleteTagRequest\032\030.org.yamcs.protobuf.V" +
-      "oid"
+      "\022\023\n\013sint64Value\030\n \001(\022\022\024\n\014booleanValue\030\013 " +
+      "\001(\010\"\201\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006DOUBLE\020\001\022\n\n\006U" +
+      "INT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006BINARY\020\004\022\n\n\006STRIN" +
+      "G\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006UINT64\020\007\022\n\n\006SINT64" +
+      "\020\010\022\013\n\007BOOLEAN\020\t\"@\n\026MissionDatabaseReques",
+      "t\022\024\n\014dbConfigName\030\001 \001(\t\022\020\n\010instance\030\002 \001(" +
+      "\t\"0\n\rNamedObjectId\022\014\n\004name\030\001 \002(\t\022\021\n\tname" +
+      "space\030\002 \001(\t\"B\n\017NamedObjectList\022/\n\004list\030\001" +
+      " \003(\0132!.org.yamcs.protobuf.NamedObjectId\"" +
+      "\341\003\n\014IndexRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005st" +
+      "art\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010utcStart\030\016 \001(" +
+      "\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defaultNamespace\030\004" +
+      " \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005false\0223\n\010tmPack" +
+      "et\030\006 \003(\0132!.org.yamcs.protobuf.NamedObjec" +
+      "tId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\0222\n\007ppGroup",
+      "\030\010 \003(\0132!.org.yamcs.protobuf.NamedObjectI" +
+      "d\022$\n\025sendCompletenessIndex\030\t \001(\010:\005false\022" +
+      "\031\n\nsendAllCmd\030\n \001(\010:\005false\0222\n\007cmdName\030\013 " +
+      "\003(\0132!.org.yamcs.protobuf.NamedObjectId\022\033" +
+      "\n\014sendAllEvent\030\014 \001(\010:\005false\0226\n\013eventSour" +
+      "ce\030\r \003(\0132!.org.yamcs.protobuf.NamedObjec" +
+      "tId\"v\n\rArchiveRecord\022-\n\002id\030\001 \002(\0132!.org.y" +
+      "amcs.protobuf.NamedObjectId\022\r\n\005first\030\002 \002" +
+      "(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 " +
+      "\001(\t\"t\n\013IndexResult\022\020\n\010instance\030\001 \002(\t\0222\n\007",
+      "records\030\002 \003(\0132!.org.yamcs.protobuf.Archi" +
+      "veRecord\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 \001(" +
+      "\t\";\n\nTagRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005sta" +
+      "rt\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag\022\n\n\002" +
+      "id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(\003\022\014\n" +
+      "\004stop\030\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005colo" +
+      "r\030\006 \001(\t\"J\n\tTagResult\022\020\n\010instance\030\001 \002(\t\022+" +
+      "\n\003tag\030\002 \003(\0132\036.org.yamcs.protobuf.Archive" +
+      "Tag\"r\n\020UpsertTagRequest\022.\n\006oldTag\030\001 \001(\0132" +
+      "\036.org.yamcs.protobuf.ArchiveTag\022.\n\006newTa",
+      "g\030\002 \002(\0132\036.org.yamcs.protobuf.ArchiveTag\"" +
+      "?\n\020DeleteTagRequest\022+\n\003tag\030\003 \002(\0132\036.org.y" +
+      "amcs.protobuf.ArchiveTag\"O\n\013ReplaySpeed\022" +
+      "1\n\004type\030\001 \002(\0162#.org.yamcs.protobuf.Repla" +
+      "ySpeedType\022\r\n\005param\030\002 \001(\002\"\357\004\n\rReplayRequ" +
+      "est\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\0226\n\tendA" +
+      "ction\030\003 \001(\0162\035.org.yamcs.protobuf.EndActi" +
+      "on:\004QUIT\022.\n\005speed\030\004 \001(\0132\037.org.yamcs.prot" +
+      "obuf.ReplaySpeed\0223\n\004type\030\005 \003(\0162!.org.yam" +
+      "cs.protobuf.ProtoDataTypeB\002\030\001\022=\n\016tmPacke",
+      "tFilter\030\006 \003(\0132!.org.yamcs.protobuf.Named" +
+      "ObjectIdB\002\030\001\022\031\n\rppGroupFilter\030\007 \003(\tB\002\030\001\022" +
+      "D\n\020parameterRequest\030\010 \001(\0132*.org.yamcs.pr" +
+      "otobuf.ParameterReplayRequest\022>\n\rpacketR" +
+      "equest\030\t \001(\0132\'.org.yamcs.protobuf.Packet" +
+      "ReplayRequest\022<\n\014eventRequest\030\n \001(\0132&.or" +
+      "g.yamcs.protobuf.EventReplayRequest\022N\n\025c" +
+      "ommandHistoryRequest\030\013 \001(\0132/.org.yamcs.p" +
+      "rotobuf.CommandHistoryReplayRequest\0226\n\tp" +
+      "pRequest\030\014 \001(\0132#.org.yamcs.protobuf.PpRe",
+      "playRequest\"\211\001\n\026ParameterReplayRequest\0225" +
+      "\n\nnameFilter\030\001 \003(\0132!.org.yamcs.protobuf." +
+      "NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n" +
+      "\021performMonitoring\030\003 \001(\010:\005false\"L\n\023Packe" +
+      "tReplayRequest\0225\n\nnameFilter\030\001 \003(\0132!.org" +
+      ".yamcs.protobuf.NamedObjectId\"\024\n\022EventRe" +
+      "playRequest\"\035\n\033CommandHistoryReplayReque" +
+      "st\"*\n\017PpReplayRequest\022\027\n\017groupNameFilter" +
+      "\030\001 \003(\t\"\365\001\n\014ReplayStatus\022;\n\005state\030\001 \002(\0162," +
+      ".org.yamcs.protobuf.ReplayStatus.ReplayS",
+      "tate\0222\n\007request\030\002 \001(\0132!.org.yamcs.protob" +
+      "uf.ReplayRequest\022\024\n\014errorMessage\030\003 \001(\t\"^" +
+      "\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUN" +
+      "NING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED" +
+      "\020\004\022\n\n\006CLOSED\020\005\"\224\001\n\014TmPacketData\022\025\n\rrecep" +
+      "tionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016genera" +
+      "tionTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022-" +
+      "\n\002id\030\005 \001(\0132!.org.yamcs.protobuf.NamedObj" +
+      "ectId\"\363\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016gener" +
+      "ationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021",
+      "\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messa" +
+      "ge\030\006 \002(\t\022?\n\010severity\030\007 \001(\0162\'.org.yamcs.p" +
+      "rotobuf.Event.EventSeverity:\004INFO\"1\n\rEve" +
+      "ntSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERR" +
+      "OR\020\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QU" +
+      "IT\020\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFA" +
+      "P\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rP" +
+      "rotoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHAN" +
+      "GE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021" +
+      "\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPA",
+      "RAMETER\020\010\022\017\n\013CMD_HISTORY\020\t2\275\001\n\014YamcsCont" +
+      "rol\022Q\n\021GetYamcsInstances\022\030.org.yamcs.pro" +
+      "tobuf.Void\032\".org.yamcs.protobuf.YamcsIns" +
+      "tances\022Z\n\022GetMissionDatabase\022*.org.yamcs" +
+      ".protobuf.MissionDatabaseRequest\032\030.org.y" +
+      "amcs.protobuf.Void2\307\002\n\030RealtimeParameter" +
+      "Service\022J\n\tSubscribe\022#.org.yamcs.protobu" +
+      "f.NamedObjectList\032\030.org.yamcs.protobuf.V" +
+      "oid\022K\n\014SubscribeAll\022!.org.yamcs.protobuf" +
+      ".StringMessage\032\030.org.yamcs.protobuf.Void",
+      "\022L\n\013Unsubscribe\022#.org.yamcs.protobuf.Nam" +
+      "edObjectList\032\030.org.yamcs.protobuf.Void\022D" +
+      "\n\016UnsubscribeAll\022\030.org.yamcs.protobuf.Vo" +
+      "id\032\030.org.yamcs.protobuf.Void2\310\002\n\014Archive" +
+      "Index\022M\n\010GetIndex\022 .org.yamcs.protobuf.I" +
+      "ndexRequest\032\037.org.yamcs.protobuf.IndexRe" +
+      "sult\022I\n\006GetTag\022 .org.yamcs.protobuf.Inde" +
+      "xRequest\032\035.org.yamcs.protobuf.TagResult\022" +
+      "Q\n\tUpsertTag\022$.org.yamcs.protobuf.Upsert" +
+      "TagRequest\032\036.org.yamcs.protobuf.ArchiveT",
+      "ag\022K\n\tDeleteTag\022$.org.yamcs.protobuf.Del" +
+      "eteTagRequest\032\030.org.yamcs.protobuf.Void"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -13975,7 +14016,7 @@ public final class Yamcs {
           internal_static_org_yamcs_protobuf_Value_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_Value_descriptor,
-              new java.lang.String[] { "Type", "FloatValue", "DoubleValue", "Sint32Value", "Uint32Value", "BinaryValue", "StringValue", "TimestampValue", "Uint64Value", "Sint64Value", },
+              new java.lang.String[] { "Type", "FloatValue", "DoubleValue", "Sint32Value", "Uint32Value", "BinaryValue", "StringValue", "TimestampValue", "Uint64Value", "Sint64Value", "BooleanValue", },
               org.yamcs.protobuf.Yamcs.Value.class,
               org.yamcs.protobuf.Yamcs.Value.Builder.class);
           internal_static_org_yamcs_protobuf_MissionDatabaseRequest_descriptor =

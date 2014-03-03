@@ -193,7 +193,6 @@ public class ParameterValue {
     public void setRawValue(byte[] b) {
        rawValue=Value.newBuilder().setType(Value.Type.BINARY)
            .setBinaryValue(ByteString.copyFrom(b)).build();
-        
     }
     
     public void setRawValue(float f) {
@@ -204,6 +203,11 @@ public class ParameterValue {
     public void setRawValue(double d) {
         rawValue=Value.newBuilder().setType(Value.Type.DOUBLE)
             .setDoubleValue(d).build();
+    }
+    
+    public void setRawValue(boolean b) {
+        rawValue=Value.newBuilder().setType(Value.Type.BOOLEAN)
+                .setBooleanValue(b).build();
     }
     
     public void setRawValue(String s) {
@@ -235,9 +239,15 @@ public class ParameterValue {
         engValue=Value.newBuilder().setType(Value.Type.STRING)
             .setStringValue(s).build();
     }
+
     public void setBinaryValue(byte[] v) {
         engValue = Value.newBuilder().setType(Value.Type.BINARY)
             .setBinaryValue(ByteString.copyFrom(v)).build();
+    }
+    
+    public void setBooleanValue(boolean b) {
+        engValue = Value.newBuilder().setType(Value.Type.BOOLEAN)
+            .setBooleanValue(b).build();
     }
     
     public void setDoubleValue(double v) {

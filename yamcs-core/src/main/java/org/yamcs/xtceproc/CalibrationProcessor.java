@@ -1,5 +1,7 @@
 package org.yamcs.xtceproc;
 
+import java.nio.ByteBuffer;
+
 import org.yamcs.ParameterValue;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -57,13 +59,30 @@ public class CalibrationProcessor {
     private static void calibrateBoolean(BooleanParameterType bpt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if (rawValue.getType() == Type.UINT32) {
-            pval.setSignedIntegerValue(rawValue.getUint32Value());
+            pval.setBooleanValue(rawValue.getUint32Value() != 0);
         } else if (rawValue.getType() == Type.UINT64) {
-            pval.setSignedIntegerValue((int) rawValue.getUint64Value());
+            pval.setBooleanValue(rawValue.getUint64Value() != 0);
         } else if (rawValue.getType() == Type.SINT32) {
-            pval.setSignedIntegerValue(rawValue.getSint32Value());
+            pval.setBooleanValue(rawValue.getSint32Value() != 0);
         } else if (rawValue.getType() == Type.SINT64) {
-            pval.setSignedIntegerValue((int) rawValue.getSint64Value());
+            pval.setBooleanValue(rawValue.getSint64Value() != 0);
+        } else if (rawValue.getType() == Type.FLOAT) {
+            pval.setBooleanValue(rawValue.getFloatValue() != 0);
+        } else if (rawValue.getType() == Type.DOUBLE) {
+            pval.setBooleanValue(rawValue.getDoubleValue() != 0);
+        } else if (rawValue.getType() == Type.STRING) {
+            pval.setBooleanValue(rawValue.getStringValue() != null && !rawValue.getStringValue().isEmpty());
+        } else if (rawValue.getType() == Type.BOOLEAN) {
+            pval.setBooleanValue(rawValue.getBooleanValue());
+        } else if (rawValue.getType() == Type.BINARY) {
+            ByteBuffer buf=rawValue.getBinaryValue().asReadOnlyByteBuffer();
+            pval.setBooleanValue(false);
+            while(buf.hasRemaining()) {
+                if(buf.get()!=0xFF) {
+                    pval.setBooleanValue(true);
+                    break;
+                }
+            }
         } else {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be calibrated as a boolean");
         }

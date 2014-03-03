@@ -270,6 +270,29 @@ public class AlgorithmManagerTest {
         assertEquals(1, params.get(0).getParameterValue().getRawValue().getUint32Value());
         assertEquals("one_why not", params.get(0).getParameterValue().getEngValue().getStringValue());
     }
+
+    @Test
+    public void testBooleanAlgorithms() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoBooleanTrueOutcome").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoBooleanFalseOutcome").build()
+        ), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT19();
+        assertEquals(2, params.size());
+        assertEquals(true, params.get(0).getParameterValue().getRawValue().getBooleanValue());
+        assertEquals(true, params.get(0).getParameterValue().getEngValue().getBooleanValue());
+        
+        assertEquals(false, params.get(1).getParameterValue().getRawValue().getBooleanValue());
+        assertEquals(false, params.get(1).getParameterValue().getEngValue().getBooleanValue());
+    }
     
     @Test
     public void testFloatCalibration() throws InvalidIdentification {

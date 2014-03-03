@@ -22,6 +22,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -182,6 +183,12 @@ public class AlgorithmEngine {
             setRawFloatValue((FloatDataEncoding) de, pval, outputValue);
         } else if(de instanceof StringDataEncoding) {
             pval.setRawValue(outputValue.toString());
+        } else if(de instanceof BooleanDataEncoding) {
+            if(outputValue instanceof Boolean) {
+                pval.setRawValue((Boolean)outputValue);
+            } else {
+                log.error("Could not set boolean value of parameter "+pval.getParameter().getName()+". Algorithm returned wrong type: "+outputValue.getClass());
+            }
         } else {
             log.error("DataEncoding "+de+" not implemented as a raw return type for algorithms");
             throw new RuntimeException("DataEncoding "+de+" not implemented as a raw return type for algorithms");
@@ -356,6 +363,14 @@ public class AlgorithmEngine {
             } else {
                 source.append("  public String value;\n");
                 return "    value=v.getEngValue().getStringValue();\n";
+            }
+        } else if(v.getType() == Type.BOOLEAN) {
+            if(raw) {
+                source.append("  public boolean rawValue;\n");
+                return "    rawValue=v.getRawValue().getBooleanValue();\n";
+            } else {
+                source.append("  public boolean value;\n");
+                return "    value=v.getEngValue().getBooleanValue();\n";
             }
         } else {
             throw new IllegalArgumentException("Unexpected value of type "+v.getType());
