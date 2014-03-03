@@ -21,4 +21,7 @@ public class IntegerDataType extends NumericDataType {
 		return sizeInBits;
 	}
 
+	public void setSizeInBits(int sizeInBits) {
+	    this.sizeInBits=sizeInBits;
+	}
 }

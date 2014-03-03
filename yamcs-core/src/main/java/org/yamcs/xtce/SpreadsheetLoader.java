@@ -433,10 +433,20 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			if ("uint".equalsIgnoreCase(engtype)) {
 				ptype = new IntegerParameterType(name);
 				((IntegerParameterType)ptype).signed = false;
+			} else if ("uint64".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+                ((IntegerParameterType)ptype).signed = false;
+                ((IntegerParameterType)ptype).setSizeInBits(64);
 			} else if ("int".equalsIgnoreCase(engtype)) {
 				ptype = new IntegerParameterType(name);
+			} else if("int64".equalsIgnoreCase(engtype)) {
+			    ptype = new IntegerParameterType(name);
+			    ((IntegerParameterType)ptype).setSizeInBits(64);
 			} else if ("float".equalsIgnoreCase(engtype)) {
 				ptype = new FloatParameterType(name);
+			} else if ("double".equalsIgnoreCase(engtype)) {
+			    ptype = new FloatParameterType(name);
+			    ((FloatParameterType)ptype).setSizeInBits(64);
 			} else if ("enumerated".equalsIgnoreCase(engtype)) {
 				if(calib==null) {
 					error("parameter " + name + " has to have an enumeration");

@@ -101,7 +101,7 @@ public class CalibrationProcessor {
         
         long longCalValue = (calibrator == null) ? longValue:calibrator.calibrate(longValue).longValue(); 
         
-        if (ipt.getEncoding().getSizeInBits() <= 32) {
+        if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned())
                 pval.setSignedIntegerValue((int) longCalValue);
             else
