@@ -12,8 +12,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 public class PetParameterFormatter extends ParameterFormatter {
 
     public PetParameterFormatter(BufferedWriter writer, Collection<NamedObjectId> paramList) {
-        super(writer, paramList);
-        this.columnSeparator=";";
+        super(writer, paramList, ';');
     }
 
     public void writeHeader() throws IOException {
@@ -57,21 +56,21 @@ public class PetParameterFormatter extends ParameterFormatter {
                     System.err.println("got parameter without an engineering value for "+entry.getKey());
                     //skip=true;
                 }
-                sb.append(columnSeparator);
+                sb.append(';');
                 if(printRaw) {
                     Value rv=pv.getRawValue();
                     if(rv!=null) {
                         sb.append('"').append(StringConvertors.toString(rv, false)).append('"');
                     }
-                    sb.append(columnSeparator);
+                    sb.append(';');
                 }
             } else {
                 if (allParametersPresent) {
                     skip = true;
                     break;
                 }
-                sb.append(columnSeparator);
-                if(printRaw) sb.append(columnSeparator);
+                sb.append(';');
+                if(printRaw) sb.append(';');
             }
         }
 
@@ -80,7 +79,7 @@ public class PetParameterFormatter extends ParameterFormatter {
             if(!printUnique || !line.equals(previousLine)) {
                 if(printTime) {
                     writer.write('"'+TimeEncoding.toString(lastLineInstant)+'"');
-                    writer.write(columnSeparator);
+                    writer.write(';');
                 }
                 writer.write(line);
                 writer.newLine();
