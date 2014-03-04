@@ -293,10 +293,11 @@ message ReplayStatus {
 
 
 message TmPacketData {
-    required int64 receptionTime=1;
-    required bytes packet=2;
-    optional int64 generationTime=3;
-    optional int32 sequenceNumber=4;
+    required int64 receptionTime = 1;
+    required bytes packet = 2;
+    optional int64 generationTime = 3;
+    optional int32 sequenceNumber = 4;
+    optional NamedObjectId id = 5;
 }
 
 message Event {
