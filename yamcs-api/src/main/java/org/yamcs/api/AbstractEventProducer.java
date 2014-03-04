@@ -1,7 +1,5 @@
 package org.yamcs.api;
 
-import java.io.InputStream;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,16 +9,12 @@ import org.hornetq.api.core.SimpleString;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.utils.TimeEncoding;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Default implementation of an EventProducer that provides shortcut methods for
- * sending message of different severity types. By default, repeated message are
- * detected and reduced, resulting in pseudo events with a message like 'last event
- * repeated X times'. This behaviour can be turned off.
+ * sending message of different severity types.
  */
 public abstract class AbstractEventProducer implements EventProducer {
-    private static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
     
     SimpleString address;
     String source;
@@ -33,24 +27,6 @@ public abstract class AbstractEventProducer implements EventProducer {
     
     // Flushes the Event Buffer about each minute
     private Timer flusher;
-    
-    public AbstractEventProducer() {
-        String configFile = "/event-producer.yaml";
-        InputStream is=EventProducerFactory.class.getResourceAsStream(configFile);
-        
-        Object o = new Yaml().load(is);
-        if(!(o instanceof Map<?,?>)) throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
-
-        @SuppressWarnings("unchecked")
-        Map<String,Object> m = (Map<String, Object>) o;
-
-        if (m.containsKey(CONF_REPEATED_EVENT_REDUCTION)) {
-            repeatedEventReduction = (Boolean) m.get(CONF_REPEATED_EVENT_REDUCTION);
-        } else {
-            repeatedEventReduction = true;
-        }
-        if (repeatedEventReduction) setRepeatedEventReduction(true);
-    }
     
     /* (non-Javadoc)
      * @see org.yamcs.api.EventProducer#setSource(java.lang.String)

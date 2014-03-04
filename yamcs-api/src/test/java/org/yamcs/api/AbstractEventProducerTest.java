@@ -3,7 +3,6 @@ package org.yamcs.api;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
 
 import org.junit.Before;
@@ -19,8 +18,10 @@ public class AbstractEventProducerTest {
     @Before
     public void beforeTest() {
         TimeEncoding.setUp();
-        q = new LinkedList<Event>();
-        producer = new ConsoleEventProducer(q);
+        EventProducerFactory.setMockup(true);
+        q=EventProducerFactory.getMockupQueue();
+        producer = (AbstractEventProducer) EventProducerFactory.getEventProducer();
+        producer.setRepeatedEventReduction(true);
         producer.setSource("test-source");
     }
     

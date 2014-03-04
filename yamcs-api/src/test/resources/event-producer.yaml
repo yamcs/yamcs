@@ -1,6 +1,0 @@
-#this is the config file for the EventProducer (injecting events into yamcs)
-#it is used by all the internal yamcs services (and therefore it uses inVM hornetq connector)
-yamcsURL: "yamcs:///"
-
-# Whether or not repeated messages should be reduced. If set to false, every event is sent
-repeatedEventReduction: true
