@@ -5,6 +5,8 @@ Version 0.24.1 Released
 - Algorithms: support libraries and other languages
 - Algorithms: put dictionary-like object in scriptengine
 - Algorithms: Add data quality indicators to ValueBinding
+- Added the packet(container) name in the packet replay
+- made the column separator configurable in the ParameterFormatter and CommandHistoryFormatter
 
 
 Version 0.24.0 Released 19-Feb-2014
