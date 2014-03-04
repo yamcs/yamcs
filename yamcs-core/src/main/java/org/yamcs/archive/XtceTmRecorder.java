@@ -51,6 +51,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
     static public final String REALTIME_TM_STREAM_NAME="tm_realtime";
     static public final String DUMP_TM_STREAM_NAME="tm_dump";
     static public final String TABLE_NAME="tm";
+    static public final String PNAME_COLUMN="pname";
     
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION=new TupleDefinition();
     static {
@@ -58,7 +59,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.SEQNUM_COLUMN, DataType.INT);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.RECTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.PACKET_COLUMN, DataType.BINARY);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn("pname", DataType.ENUM); //packet name 
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //packet name 
     }
     
     
