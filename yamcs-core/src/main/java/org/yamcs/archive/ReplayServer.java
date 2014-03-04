@@ -145,7 +145,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
                     throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
                 }
     
-                // Even when no filter is specified, limit request to authorised packets only
+                // Even when no filter is specified, limit request to authorized packets only
                 if (replayRequest.getPacketRequest().getNameFilterList().isEmpty()) {
                     PacketReplayRequest.Builder prr = PacketReplayRequest.newBuilder(replayRequest.getPacketRequest());
                     for (String allowedPacket : allowedPackets) {
