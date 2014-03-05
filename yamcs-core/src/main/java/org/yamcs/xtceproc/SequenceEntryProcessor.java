@@ -56,7 +56,6 @@ public class SequenceEntryProcessor {
         pv.setAcquisitionTime(pcontext.acquisitionTime);
         pv.setGenerationTime(pcontext.generationTime);
         pv.setParameterEntry(pe);
-        CalibrationProcessor.calibrate(pv);
         
         pcontext.paramResult.add(pv);
     }

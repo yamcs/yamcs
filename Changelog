@@ -1,7 +1,12 @@
+Version 0.24.2 TO BE RELEASED
+- Add support for booleans in spreadsheet
+- Fix support for longs and doubles in spreadsheet
+- Improve type safety of XTCE algorithms
+- Enable calibration for output parameters
+
 Version 0.24.1 Released
 - Algorithms: support externally defined (shared) functions
 - Algorithms: support interdependent algorithms
-- Algorithms: expose implicit _raw value to engine
 - Algorithms: support libraries and other languages
 - Algorithms: put dictionary-like object in scriptengine
 - Algorithms: Add data quality indicators to ValueBinding

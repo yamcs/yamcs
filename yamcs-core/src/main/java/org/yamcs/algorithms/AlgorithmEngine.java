@@ -38,7 +38,7 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringParameterType;
-import org.yamcs.xtceproc.CalibrationProcessor;
+import org.yamcs.xtceproc.ParameterTypeProcessor;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmEngine is reused
@@ -172,7 +172,7 @@ public class AlgorithmEngine {
             throw new IllegalArgumentException("Unsupported parameter type "+ptype);
         }
         
-        CalibrationProcessor.calibrate(pval);
+        ParameterTypeProcessor.calibrate(pval);
         return pval;
 	}
 	
