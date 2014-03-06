@@ -1,5 +1,7 @@
 package org.yamcs.api;
 
+import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.hornetq.api.core.HornetQException;
@@ -8,9 +10,19 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yaml.snakeyaml.Yaml;
 
 
+/**
+ * An EventProducer that publishes events over HornetQ
+ * <p>
+ * By default, repeated message are detected and reduced, resulting in pseudo
+ * events with a message like 'last event repeated X times'. This behaviour can
+ * be turned off.
+ */
 public class HornetQEventProducer extends AbstractEventProducer implements ConnectionListener {
+    static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
+    
     YamcsConnector yconnector;
     YamcsClient yclient;
     static Logger logger=LoggerFactory.getLogger(HornetQEventProducer.class);
@@ -23,6 +35,21 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
         address=Protocol.getEventRealtimeAddress(ycd.instance);
+        
+        InputStream is=HornetQEventProducer.class.getResourceAsStream("/event-producer.yaml");
+        boolean repeatedEventReduction = true;
+        if(is!=null) {
+            Object o = new Yaml().load(is);
+            if(!(o instanceof Map<?,?>)) throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+    
+            @SuppressWarnings("unchecked")
+            Map<String,Object> m = (Map<String, Object>) o;
+    
+            if (m.containsKey(CONF_REPEATED_EVENT_REDUCTION)) {
+                repeatedEventReduction = (Boolean) m.get(CONF_REPEATED_EVENT_REDUCTION);
+            }
+        }
+        if (repeatedEventReduction) setRepeatedEventReduction(true);
     }
     
     
