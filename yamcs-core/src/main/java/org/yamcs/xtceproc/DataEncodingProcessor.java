@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
 import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
@@ -21,26 +23,32 @@ public class DataEncodingProcessor {
     }
 
     /**
-     *  Extracts the parameter from the packet.
-     * @param bitb
-     * @return value of the parameter after extraction
+     *  Extracts the raw uncalibrated parameter value from the packet.
      */
-    Object extractRawAndCalibrate(DataEncoding de, ParameterValue pv){
+    void extractRaw(DataEncoding de, ParameterValue pv){
         if(de instanceof IntegerDataEncoding) {
-            return extractRawAndCalibrateInteger((IntegerDataEncoding) de, pv);
+            extractRawInteger((IntegerDataEncoding) de, pv);
         } else if(de instanceof FloatDataEncoding) {
-            return extractRawAndCalibrateFloat((FloatDataEncoding) de, pv);
+            extractRawFloat((FloatDataEncoding) de, pv);
         } else if(de instanceof StringDataEncoding) {
-            return extractRawAndCalibrateString((StringDataEncoding) de, pv);
+            extractRawString((StringDataEncoding) de, pv);
+        } else if(de instanceof BooleanDataEncoding) {
+            extractRawBoolean((BooleanDataEncoding) de, pv);
         } else if(de instanceof BinaryDataEncoding) {
-            return extractRawAndCalibrateBinary((BinaryDataEncoding) de, pv);
+            extractRawBinary((BinaryDataEncoding) de, pv);
+        } else {
+            log.error("DataEncoding "+de+" not implemented");
+            throw new RuntimeException("DataEncoding "+de+" not implemented");
         }
-
-        log.error("DataEncoding "+de+" not implemented");
-        throw new RuntimeException("DataEncoding "+de+" not implemented");
     }
 
-    private Object extractRawAndCalibrateInteger(IntegerDataEncoding ide, ParameterValue pv) {
+    private void extractRawInteger(IntegerDataEncoding ide, ParameterValue pv) {
+        // Integer encoded as string, don't even try reading it as int
+        if(ide.getEncoding() == Encoding.string) {
+            extractRaw(ide.getStringEncoding(), pv);
+            return;
+        }
+        
         int byteOffset=(pcontext.bitPosition)/8;
         int byteSize=(pcontext.bitPosition+ide.getSizeInBits()-1)/8-byteOffset+1;
         int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
@@ -101,14 +109,11 @@ public class DataEncodingProcessor {
             rv = pcontext.bb.getLong(byteOffset);
             break;
         default:
-        	if( ide.getEncoding() != IntegerDataEncoding.Encoding.string ) {
-        		log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
-        	}
+        	log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
         }
-        //pcontext.bitPosition+=ide.getSizeInBits();
+        pcontext.bitPosition+=ide.getSizeInBits();
         switch(ide.getEncoding()) {
         case twosCompliment:
-        	pcontext.bitPosition+=ide.getSizeInBits();
             //we shift it to the left first such that the sign bit arrives on the first position
             rv= (rv&mask)<<(64-ide.getSizeInBits()-bitsToShift);
             rv=rv>>(64-ide.getSizeInBits());
@@ -116,51 +121,41 @@ public class DataEncodingProcessor {
                 pv.setRawSignedInteger((int)rv);
             else
                 pv.setRawSignedLong(rv);
-            
-            if(ide.getDefaultCalibrator()==null)
-                return Long.valueOf(rv);
-            else return ide.getDefaultCalibrator().calibrate((double)rv);
+            break;
         case unsigned:
-        	pcontext.bitPosition+=ide.getSizeInBits();
             //we use the ">>>" such that the sign bit is not carried
             rv=(rv&mask)>>>bitsToShift;
             //System.out.println("extracted rv="+rv+" from byteOffset="+byteOffset+" using mask="+mask+" and bitsToShift="+bitsToShift);
-            if (ide.getSizeInBits() <= 32)
-                pv.setRawUnsignedInteger((int)rv);
-            else
-                pv.setRawUnsignedLong(rv);
-            
-            if(ide.getDefaultCalibrator()==null)
-                return Long.valueOf(rv);
-            else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
+            break;
         case signMagnitude:
-        	pcontext.bitPosition+=ide.getSizeInBits();
         	boolean negative = ((rv>>>(ide.getSizeInBits()-1) & 1L) == 1L);
         	mask >>>= 1; // Don't include sign in mask
             rv=(rv&(mask))>>>bitsToShift;
             if (negative) rv = -rv;
-            if (ide.getSizeInBits() <= 32)
-            	pv.setRawSignedInteger((int) rv);
-            else
-            	pv.setRawSignedLong(rv);
-
-            if(ide.getDefaultCalibrator()==null)
-                return Long.valueOf(rv);
-            else return ide.getDefaultCalibrator().calibrate((double)(rv&0xFFFFFFFFFFFFFFFFL));
-        case string:
-        	String s=(String)extractRawAndCalibrate(ide.getStringEncoding(), pv);
-        	long l = Long.valueOf( s );
-        	if( ide.getDefaultCalibrator()==null ) {
-        		return new Long( l ); 
-        	} else {
-        		return ide.getDefaultCalibrator().calibrate( (double)l );
-        	}
+            break;
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");
         }
+        setRawValue(ide, pv, rv);
+    }
+    
+    private static void setRawValue(IntegerDataEncoding ide, ParameterValue pv, long longValue) {
+        if(ide.getSizeInBits() <= 32) {
+            if(ide.getEncoding() == Encoding.unsigned) {
+                pv.setRawUnsignedInteger((int)longValue);
+            } else {
+                pv.setRawSignedInteger((int)longValue);
+            }
+        } else {
+            if(ide.getEncoding() == Encoding.unsigned) {
+                pv.setRawUnsignedLong(longValue);
+            } else {
+                pv.setRawSignedLong(longValue);
+            }
+        }
     }
 
-    private Object extractRawAndCalibrateString(StringDataEncoding sde, ParameterValue pv) {
+    private void extractRawString(StringDataEncoding sde, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) log.warn("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
         int sizeInBytes=0;
         switch(sde.getSizeType()) {
@@ -185,68 +180,58 @@ public class DataEncodingProcessor {
         //System.out.println(sde.getName()+" Extracting string of size "+sizeInBytes+" para sizeInBytes of size tag="+sde.getSizeInBitsOfSizeTag()+" bitposition: "+pcontext.bitPosition);
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.get(b);
-        pv.setRawValue(b);
+        pv.setRawValue(new String(b));
         pv.setBitSize(8*sizeInBytes);
         pcontext.bitPosition+=8*sizeInBytes;
         if(sde.getSizeType()==SizeType.TerminationChar) {
             pcontext.bitPosition+=8;//the termination char
         }
-        
-        return new String(b);
     }
 
-    private Object extractRawAndCalibrateFloat(FloatDataEncoding de, ParameterValue pv) {
+    private void extractRawFloat(FloatDataEncoding de, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
         pcontext.bb.order(de.getByteOrder());
         switch(de.getEncoding()) {
         case IEEE754_1985:
-            return extractRawAndCalibrateIEEE754_1985(de, pv);
+            extractRawIEEE754_1985(de, pv);
+            break;
         case STRING:
-            String s=(String) extractRawAndCalibrate(de.getStringDataEncoding(), pv);
-            double d=Double.valueOf(s);
-            if(de.getDefaultCalibrator()==null) {
-                return new Double(d);
-            } else {
-                return de.getDefaultCalibrator().calibrate(d);
-            }
+            extractRaw(de.getStringDataEncoding(), pv);
+            break;
         default:
             throw new RuntimeException("Float Encoding "+de.getEncoding()+" not implemented");
         }
     }
 
-    private Object extractRawAndCalibrateIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
+    private void extractRawIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
         pcontext.bb.order(de.getByteOrder());
         int byteOffset=pcontext.bitPosition/8;
         pcontext.bitPosition+=de.getSizeInBits();
         if(de.getSizeInBits()==32) {
-            float f=pcontext.bb.getFloat(byteOffset);
-            pv.setRawValue(f);
-            if(de.getDefaultCalibrator()==null) {
-                return new Float(f);
-            } else {
-                return de.getDefaultCalibrator().calibrate(f);
-            }
+            pv.setRawValue(pcontext.bb.getFloat(byteOffset));
         } else {
-            double d=pcontext.bb.getDouble(byteOffset);
-            pv.setRawValue(d);
-            if(de.getDefaultCalibrator()==null) {
-                return new Double(d);
-            } else {
-                return de.getDefaultCalibrator().calibrate(d);
-            }
+            pv.setRawValue(pcontext.bb.getDouble(byteOffset));
         }
     }
+    
+    private void extractRawBoolean(BooleanDataEncoding bde, ParameterValue pv) {
+        int byteOffset=(pcontext.bitPosition)/8;
+        int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
+        int bitsToShift=8-bitOffsetInsideMask-1;
+        int mask=(-1<<(32-1))>>>(32-1-bitsToShift);
+        int rv=pcontext.bb.get(byteOffset)&0xFF;
+        rv=(rv&mask)>>>bitsToShift;
+        pcontext.bitPosition+=1;
+        pv.setRawValue(rv!=0);
+    }
 
-
-    private Object extractRawAndCalibrateBinary(BinaryDataEncoding bde, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
-
+    private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {
+        if(pcontext.bitPosition%8!=0) log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
         byte[] b=new byte[bde.getSizeInBits()/8];
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.get(b);
         pv.setRawValue(b);
         pcontext.bitPosition+=bde.getSizeInBits();
-        return b;
     }
 }

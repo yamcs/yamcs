@@ -33,6 +33,8 @@ public class StringConvertors {
 	        return "(UNSIGNED_INTEGER)"+rv.getUint64Value();
 	    case STRING:
 	        return "(STRING)"+rv.getStringValue();
+	    case BOOLEAN:
+	        return "(BOOLEAN)"+rv.getBooleanValue();
 	    case TIMESTAMP:
 	        return "(TIMESTAMP)"+TimeEncoding.toOrdinalDateTime(rv.getTimestampValue());
 	    }
@@ -61,6 +63,8 @@ public class StringConvertors {
 	                return BigInteger.valueOf(rv.getUint64Value()).add(B64).toString();
 	        case STRING:
 	            return rv.getStringValue();
+	        case BOOLEAN:
+	            return Boolean.toString(rv.getBooleanValue());
 	        case TIMESTAMP:
 	            return TimeEncoding.toOrdinalDateTime(rv.getTimestampValue());
 	       

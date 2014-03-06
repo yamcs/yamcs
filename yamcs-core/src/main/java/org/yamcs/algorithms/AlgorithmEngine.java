@@ -1,7 +1,6 @@
 package org.yamcs.algorithms;
 
 import java.lang.reflect.Constructor;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,10 +21,24 @@ import org.yamcs.ParameterValue;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerDataEncoding.Encoding;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtceproc.ParameterTypeProcessor;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmEngine is reused
@@ -134,28 +147,90 @@ public class AlgorithmEngine {
             }
             Object res = bindings.get(scriptName);
             if(res != null) {
-                ParameterValue pval=new ParameterValue(outputParameter.getParameter(), false);
-                if(res instanceof Double) {
-                    Double dres=(Double)res;
-                    if(dres.longValue()==dres.doubleValue()) {
-                        pval.setUnsignedIntegerValue(dres.intValue());
-                    } else {
-                        pval.setDoubleValue(dres.doubleValue());
-                    }
-                } else if(res instanceof String) {
-                    pval.setStringValue((String) res);
-                } else if(res instanceof Boolean) {
-                    pval.setBinaryValue((((Boolean)res).booleanValue() ? "YES" : "NO").getBytes());
-                } else if(res instanceof BigInteger) {
-                    BigInteger bint=(BigInteger) res;
-                    pval.setUnsignedIntegerValue(bint.intValue()); // TODO support more data types
-                } else {
-                    pval.setBinaryValue(res.toString().getBytes());
-                }
-                outputValues.add(pval);
+                outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
             }
         }
         return outputValues; 
+	}
+	
+	private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, Object outputValue) {
+        ParameterValue pval=new ParameterValue(parameter, true);
+        ParameterType ptype=parameter.getParameterType();
+        if(ptype instanceof EnumeratedParameterType) {
+            setRawValue(((EnumeratedParameterType) ptype).getEncoding(), pval, outputValue);
+        } else if(ptype instanceof IntegerParameterType) {
+            setRawValue(((IntegerParameterType) ptype).getEncoding(), pval, outputValue);
+        } else if(ptype instanceof FloatParameterType) {
+            setRawValue(((FloatParameterType) ptype).getEncoding(), pval, outputValue);
+        } else if(ptype instanceof BinaryParameterType) {
+            setRawValue(((BinaryParameterType) ptype).getEncoding(), pval, outputValue);
+        } else if(ptype instanceof StringParameterType) {
+            setRawValue(((StringParameterType) ptype).getEncoding(), pval, outputValue);
+        } else if(ptype instanceof BooleanParameterType) {
+            setRawValue(((BooleanParameterType) ptype).getEncoding(), pval, outputValue);
+        } else {
+            throw new IllegalArgumentException("Unsupported parameter type "+ptype);
+        }
+        
+        ParameterTypeProcessor.calibrate(pval);
+        return pval;
+	}
+	
+	private void setRawValue(DataEncoding de, ParameterValue pval, Object outputValue) {
+        if(de instanceof IntegerDataEncoding) {
+            setRawIntegerValue((IntegerDataEncoding) de, pval, outputValue);
+        } else if(de instanceof FloatDataEncoding) {
+            setRawFloatValue((FloatDataEncoding) de, pval, outputValue);
+        } else if(de instanceof StringDataEncoding) {
+            pval.setRawValue(outputValue.toString());
+        } else if(de instanceof BooleanDataEncoding) {
+            if(outputValue instanceof Boolean) {
+                pval.setRawValue((Boolean)outputValue);
+            } else {
+                log.error("Could not set boolean value of parameter "+pval.getParameter().getName()+". Algorithm returned wrong type: "+outputValue.getClass());
+            }
+        } else {
+            log.error("DataEncoding "+de+" not implemented as a raw return type for algorithms");
+            throw new RuntimeException("DataEncoding "+de+" not implemented as a raw return type for algorithms");
+        }
+	}
+	
+	private void setRawIntegerValue(IntegerDataEncoding ide, ParameterValue pv, Object outputValue) {
+	    long longValue;
+	    if(outputValue instanceof Number) {
+	        longValue=((Number)outputValue).longValue();
+	    } else {
+	        log.warn("Unexpected script return type for "+pv.getParameter().getName()+". Was expecting a number, but got: "+outputValue.getClass());
+	        return; // TODO make exc, and catch to send to ev
+	    }
+        if(ide.getSizeInBits() <= 32) {
+            if(ide.getEncoding() == Encoding.unsigned) {
+                pv.setRawUnsignedInteger((int)longValue);
+            } else {
+                pv.setRawSignedInteger((int)longValue);
+            }
+        } else {
+            if(ide.getEncoding() == Encoding.unsigned) {
+                pv.setRawUnsignedLong(longValue);
+            } else {
+                pv.setRawSignedLong(longValue);
+            }
+        }
+	}
+	
+	private void setRawFloatValue(FloatDataEncoding fde, ParameterValue pv, Object outputValue) {
+	    double doubleValue;
+	    if(outputValue instanceof Number) {
+	        doubleValue=((Number)outputValue).doubleValue();
+	    } else {
+	        log.warn("Unexpected script return type for "+pv.getParameter().getName()+". Was expecting a number, but got: "+outputValue.getClass());
+	        return; // TODO make exc, and catch to send to ev
+	    }
+        if(fde.getSizeInBits() <= 32) {
+            pv.setRawValue((float) doubleValue);
+        } else {
+            pv.setRawValue(doubleValue);
+        }
 	}
 	
     public boolean isUpdated() {
@@ -288,6 +363,14 @@ public class AlgorithmEngine {
             } else {
                 source.append("  public String value;\n");
                 return "    value=v.getEngValue().getStringValue();\n";
+            }
+        } else if(v.getType() == Type.BOOLEAN) {
+            if(raw) {
+                source.append("  public boolean rawValue;\n");
+                return "    rawValue=v.getRawValue().getBooleanValue();\n";
+            } else {
+                source.append("  public boolean value;\n");
+                return "    value=v.getEngValue().getBooleanValue();\n";
             }
         } else {
             throw new IllegalArgumentException("Unexpected value of type "+v.getType());

@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
 	protected HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
 	protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
+	protected HashSet<Parameter> outputParameters = new HashSet<Parameter>(); // Outputs to algorithms
+	protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<PotentialExtractionError>();
 	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
@@ -127,6 +130,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		} catch (IOException e) {
 			throw new DatabaseLoadException(e);
 		}
+
+		// Check errors after all sheets have been read
+		for(PotentialExtractionError e : potentialErrors) {
+		    e.recheck();
+		}
+		
 		return spaceSystem;
 	}
 
@@ -395,7 +404,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				continue;
 			}
 			
-			Parameter param = new Parameter(name);
+			final Parameter param = new Parameter(name);
             parameters.put(param.getName(), param);
 
             XtceAliasSet xas=new XtceAliasSet();
@@ -424,10 +433,20 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			if ("uint".equalsIgnoreCase(engtype)) {
 				ptype = new IntegerParameterType(name);
 				((IntegerParameterType)ptype).signed = false;
+			} else if ("uint64".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+                ((IntegerParameterType)ptype).signed = false;
+                ((IntegerParameterType)ptype).setSizeInBits(64);
 			} else if ("int".equalsIgnoreCase(engtype)) {
 				ptype = new IntegerParameterType(name);
+			} else if("int64".equalsIgnoreCase(engtype)) {
+			    ptype = new IntegerParameterType(name);
+			    ((IntegerParameterType)ptype).setSizeInBits(64);
 			} else if ("float".equalsIgnoreCase(engtype)) {
 				ptype = new FloatParameterType(name);
+			} else if ("double".equalsIgnoreCase(engtype)) {
+			    ptype = new FloatParameterType(name);
+			    ((FloatParameterType)ptype).setSizeInBits(64);
 			} else if ("enumerated".equalsIgnoreCase(engtype)) {
 				if(calib==null) {
 					error("parameter " + name + " has to have an enumeration");
@@ -438,6 +457,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 			} else	if ("string".equalsIgnoreCase(engtype)) {
 				ptype = new StringParameterType(name);
+			} else if ("boolean".equalsIgnoreCase(engtype)) {
+			    ptype = new BooleanParameterType(name);
 			} else	if ("binary".equalsIgnoreCase(engtype)) {
 				ptype = new BinaryParameterType(name);
 			} else {
@@ -456,10 +477,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			//calibrations
 			DataEncoding encoding = null;
 			if (("uint".equalsIgnoreCase(rawtype)) || rawtype.toLowerCase().startsWith("int")) {
-			    if(bitlength==-1) error("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory");
+			    if(bitlength==-1) {
+			        potentialErrors.add(new PotentialExtractionError("Parameters:"+(i+1)+" for integer parameters bitlength is mandatory") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+			        });
+			    }
 				encoding = new IntegerDataEncoding(name, bitlength);
 				if (rawtype.toLowerCase().startsWith("int")) {
-					encoding = new IntegerDataEncoding(name, bitlength);encoding = new IntegerDataEncoding(name, bitlength);
 					if ("int".equals(rawtype)) {
 						((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
 					} else {
@@ -477,7 +504,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 								}
 							}
 						}
-					}	
+					}
 				}
 				if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
 					Calibrator c = calibrators.get(calib);
@@ -489,6 +516,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			} else if ("bytestream".equalsIgnoreCase(rawtype)) {
 			    if(bitlength==-1) error("Parameters:"+(i+1)+" for bytestream parameters bitlength is mandatory");
 				encoding=new BinaryDataEncoding(name, bitlength);
+            } else if ("boolean".equalsIgnoreCase(rawtype)) {
+                if(bitlength!=-1) error("Parameters:"+(i+1)+" for boolean parameters bitlength is not allowed (defaults to 1). Use any other raw type if you want to specify the bitlength");
+                encoding=new BooleanDataEncoding(name);
 			} else if ("string".equalsIgnoreCase(rawtype)) {
 				// Version <= 1.6 String type
 				// STRING
@@ -540,7 +570,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					}
 				}
 			} else if ("float".equalsIgnoreCase(rawtype)) {
-			    if(bitlength==-1) error("Parameters:"+(i+1)+" for float parameters bitlength is mandatory");
+			    if(bitlength==-1) {
+    			    potentialErrors.add(new PotentialExtractionError("Parameters:"+(i+1)+" for float parameters bitlength is mandatory") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+                    });
+			    }
 				encoding=new FloatDataEncoding(name, bitlength);
 				if(calib!=null) {
 					Calibrator c = calibrators.get(calib);
@@ -590,17 +627,27 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					((FloatParameterType)ptype).encoding = encoding;
 				}
 			} else if (ptype instanceof EnumeratedParameterType) {
-				// Enumerations encoded as string integers
-				if( encoding instanceof StringDataEncoding ) {
-					IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-					// Don't set calibrator, already done when making ptype
-					((EnumeratedParameterType)ptype).encoding = intStringEncoding;
-				} else {
-					((EnumeratedParameterType)ptype).encoding = encoding;
-				}
+			    if(((EnumeratedParameterType) ptype).getEncoding() != null) {
+			        // Some other param has already lead to setting the encoding of this shared ptype.
+			        // Do some basic consistency checks
+			        if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+			            error("Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
+			        }
+			    }
+			    
+			    // Enumerations encoded as string integers
+                if( encoding instanceof StringDataEncoding ) {
+                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                    // Don't set calibrator, already done when making ptype
+                    ((EnumeratedParameterType) ptype).encoding = intStringEncoding;
+                } else {
+                    ((EnumeratedParameterType) ptype).encoding = encoding;
+                }
 			} else if (ptype instanceof StringParameterType) {
 			    ((StringParameterType)ptype).encoding = encoding;
-			}     
+			} else if (ptype instanceof BooleanParameterType) {
+			    ((BooleanParameterType)ptype).encoding = encoding;
+			}
 
 			param.setParameterType(ptype);
 		}
@@ -1059,6 +1106,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                     if (param == null) {
                         throw new DatabaseLoadException("error on line "+(j+1)+" of the Algorithms sheet: the measurement '" + paraRef + "' was not found on the parameters sheet");
                     }
+                    outputParameters.add(param);
                     OutputParameter outputParameter = new OutputParameter(param);
                     if (cells.length > IDX_ALGO_PARA_NAME) {
                         outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
@@ -1097,6 +1145,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				return de.sizeInBits;
 			} else	if (de instanceof StringDataEncoding) {
 				return -1;
+			} else if (de instanceof BooleanDataEncoding) {
+			    return de.sizeInBits;
 			} else {
 				error("no known size for data encoding : " + de);
 			}
@@ -1141,5 +1191,23 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 		String condition;
 		AlarmRanges ranges;
+	}
+	
+	/**
+	 * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read. 
+	 */
+	private abstract class PotentialExtractionError {
+	    String error;
+	    PotentialExtractionError(String error) {
+	        this.error=error;
+	    }
+
+	    abstract boolean errorPersists();
+	    
+	    public void recheck() {
+	        if(errorPersists()) {
+	            error(error);
+	        }
+	    }
 	}
 }

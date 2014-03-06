@@ -14,7 +14,6 @@ import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -258,6 +257,36 @@ public class TestXtceTmExtractor {
         pv=received.get( 10 );
         assertEquals( Integer.parseInt( tmGenerator.pStringIntStrPara15_5 ), pv.getEngValue().getUint32Value() );
     }
+    
+    
+    @Test
+    public void testPKT19BooleanValues() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        //xtcedb.print(System.out);
+
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb=tmGenerator.generate_PKT19();
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
+        
+        //System.out.println("PKT19 buffer: "+StringConvertors.arrayToHexString(bb.array()));
+        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+
+        assertEquals(10, received.size());
+        assertEquals(true, received.get(6).getRawValue().getBooleanValue());
+        assertEquals(true, received.get(6).getEngValue().getBooleanValue());
+
+        assertEquals(false, received.get(7).getRawValue().getBooleanValue());
+        assertEquals(false, received.get(7).getEngValue().getBooleanValue());
+        
+        assertEquals(true, received.get(8).getRawValue().getBooleanValue());
+        assertEquals(true, received.get(8).getEngValue().getBooleanValue());
+        
+        assertEquals(1, received.get(9).getRawValue().getUint32Value());
+        assertEquals(true, received.get(9).getEngValue().getBooleanValue());
+    }
 
     @Test
     public void testContainerSubscriptionPKT11() throws ConfigurationException {
@@ -314,19 +343,19 @@ public class TestXtceTmExtractor {
         assertEquals(-14.928, pv.getEngValue().getFloatValue(), 1e-5);
         
         pv=received.get(7);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_2", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_2", pv.getParameter().getQualifiedName());
         assertEquals(6, pv.getEngValue().getSint32Value());
         
         pv=received.get(8);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_3", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_3", pv.getParameter().getQualifiedName());
         assertEquals(-6, pv.getEngValue().getSint32Value());
         
         pv=received.get(9);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_4", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_4", pv.getParameter().getQualifiedName());
         assertEquals(6, pv.getEngValue().getSint32Value());
         
         pv=received.get(10);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_5", pv.getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_5", pv.getParameter().getQualifiedName());
         assertEquals(-6, pv.getEngValue().getSint32Value());
     }
     

@@ -81,7 +81,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testFloatAdd() throws InvalidIdentification {
         NamedObjectId floatParaId=NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build();
-        NamedObjectId floatAddition=NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatAddition").build();
+        NamedObjectId floatAddition=NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition").build();
 
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
         prm.addRequest(Arrays.asList(floatParaId, floatAddition), new ParameterConsumer() {
@@ -98,7 +98,8 @@ public class AlgorithmManagerTest {
             if(pvwi.getId().equals(floatParaId)) {
                 assertEquals(0.1672918, pvwi.getParameterValue().getEngValue().getFloatValue(), 0.001);
             } else if(pvwi.getId().equals(floatAddition)) {
-                assertEquals(2.1672918, pvwi.getParameterValue().getEngValue().getDoubleValue(), 0.001);
+                assertEquals(2.1672918, pvwi.getParameterValue().getRawValue().getFloatValue(), 0.001);
+                assertEquals(2.1672918, pvwi.getParameterValue().getEngValue().getFloatValue(), 0.001);
             } else {
                 fail("Unexpected id "+pvwi.getId());
             }
@@ -111,7 +112,7 @@ public class AlgorithmManagerTest {
     //OpenJDK 7 is very fast.
     public void testJavascriptPerformanceFloatAdd() throws InvalidIdentification {
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
-        paraList.add(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/YprFloat").build());
+        paraList.add(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoYprFloat").build());
         paraList.add(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara11_2").build());
 
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
@@ -135,7 +136,7 @@ public class AlgorithmManagerTest {
     
     @Test
     public void testSlidingWindow() throws InvalidIdentification {
-        List<NamedObjectId> subList = Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/WindowResult").build());
+        List<NamedObjectId> subList = Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoWindowResult").build());
         final List<ParameterValueWithId> params = new ArrayList<ParameterValueWithId>();
         prm.addRequest(subList, new ParameterConsumer() {
             @Override
@@ -199,7 +200,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatDivision").build()), new ParameterConsumer() {
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build()), new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
                 params.addAll(items);
@@ -209,13 +210,13 @@ public class AlgorithmManagerTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getDoubleValue()*3, 0.001);
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue()*3, 0.001);
     }
     
     @Test
     public void testAlgorithmChaining() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatMultiplication").build()), new ParameterConsumer() {
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build()), new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
                 params.addAll(items);
@@ -225,14 +226,14 @@ public class AlgorithmManagerTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue(), 0.001);
     }
     
     @Test
     public void testAlgorithmChainingWithWindowing() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
         prm.addRequest(Arrays.asList(
-                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatAverage").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAverage").build(),
                 NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_1").build()
         ), new ParameterConsumer() {
             @Override
@@ -250,7 +251,64 @@ public class AlgorithmManagerTest {
         tmGenerator.generate_PKT11();
         assertEquals(2, params.size());
         assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
-        assertEquals((20 + 20 + 20 + (20 / 3.0)) / 4.0, params.get(1).getParameterValue().getEngValue().getDoubleValue(), 0.001);
+        assertEquals((20 + 20 + 20 + (20 / 3.0)) / 4.0, params.get(1).getParameterValue().getEngValue().getFloatValue(), 0.001);
+    }
+    
+    @Test
+    public void testEnumCalibration() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoCalibrationEnum").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT16(1, 1);
+        assertEquals(1, params.size());
+        assertEquals(1, params.get(0).getParameterValue().getRawValue().getUint32Value());
+        assertEquals("one_why not", params.get(0).getParameterValue().getEngValue().getStringValue());
+    }
+
+    @Test
+    public void testBooleanAlgorithms() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoBooleanTrueOutcome").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoBooleanFalseOutcome").build()
+        ), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT19();
+        assertEquals(2, params.size());
+        assertEquals(true, params.get(0).getParameterValue().getRawValue().getBooleanValue());
+        assertEquals(true, params.get(0).getParameterValue().getEngValue().getBooleanValue());
+        
+        assertEquals(false, params.get(1).getParameterValue().getRawValue().getBooleanValue());
+        assertEquals(false, params.get(1).getParameterValue().getEngValue().getBooleanValue());
+    }
+    
+    @Test
+    public void testFloatCalibration() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoCalibrationFloat").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT16(1, 1);
+        assertEquals(1, params.size());
+        assertEquals(1, params.get(0).getParameterValue().getRawValue().getUint32Value());
+        assertEquals(0.0001672918, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-8);
     }
 
     static class MyTcTmService extends AbstractService implements TcTmService {
@@ -290,3 +348,4 @@ public class AlgorithmManagerTest {
         }
     }
 }
+
