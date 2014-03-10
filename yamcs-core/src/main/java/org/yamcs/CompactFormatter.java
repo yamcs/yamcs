@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -28,6 +27,14 @@ public class CompactFormatter extends Formatter {
 		    sb.append(t.toString()).append("\n");
 		    for(StackTraceElement ste:t.getStackTrace()) {
 		        sb.append("\t").append(ste.toString()).append("\n");
+		    }
+		    Throwable cause=t.getCause();
+		    while(cause!=null && cause!=t) {
+		        sb.append("Caused by: ").append(t.getCause().toString()).append("\n");
+		        for(StackTraceElement ste:cause.getStackTrace()) {
+		            sb.append("\t").append(ste.toString()).append("\n");
+		        }
+		        cause=cause.getCause();
 		    }
 		}
 		sb.append("\n");
