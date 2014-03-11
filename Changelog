@@ -1,4 +1,4 @@
-Version 0.24.2 TO BE RELEASED
+Version 0.24.2 Released 11-Mar-2014
 - Add support for booleans in spreadsheet
 - Fix support for longs and doubles in spreadsheet
 - Improve type safety of XTCE algorithms
