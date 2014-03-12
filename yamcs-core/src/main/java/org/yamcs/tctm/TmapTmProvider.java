@@ -15,7 +15,7 @@ import org.yamcs.utils.TimeEncoding;
  * 
  */
 public class TmapTmProvider extends TcpTmProvider {
-	public TmapTmProvider(String spec) throws ConfigurationException {
+	public TmapTmProvider(String spec, String name) throws ConfigurationException {
 		YConfiguration c=YConfiguration.getConfiguration("tmaptcap");
 		host=c.getString(spec, "tmHost");
 		port=c.getInt(spec, "tmPort");
