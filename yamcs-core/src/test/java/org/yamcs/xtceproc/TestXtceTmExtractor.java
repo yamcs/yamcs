@@ -360,6 +360,21 @@ public class TestXtceTmExtractor {
     }
     
     @Test
+    public void testPKT1_11_longuint32() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb=tmGenerator.generate_PKT1_11();
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
+        
+        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValue pv=received.get(6);
+        assertEquals(tmGenerator.pIntegerPara1_11_1_unsigned_value/2, pv.getEngValue().getUint32Value()&0xFFFFFFFFL);
+    }
+    
+    @Test
     public void testProcessPacket_startContainer() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
         XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");

@@ -118,7 +118,7 @@ public class ParameterTypeProcessor {
     private static void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if (rawValue.getType() == Type.UINT32) {
-            doIntegerCalibration(ipt, pval, rawValue.getUint32Value());
+            doIntegerCalibration(ipt, pval, rawValue.getUint32Value()&0xFFFFFFFFL);
         } else if (rawValue.getType() == Type.UINT64) {
             doIntegerCalibration(ipt, pval, rawValue.getUint64Value());
         } else if (rawValue.getType() == Type.SINT32) {
