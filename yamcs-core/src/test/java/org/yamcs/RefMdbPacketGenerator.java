@@ -36,6 +36,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt17Length=pkt1Length+6;
     public final int pkt18Length=pkt1Length+6;
     public final int pkt19Length=pkt1Length+1;
+    public final int pkt1_10Length=pkt1Length+8;
     public final int pkt2Length=8;
     
     //raw values of parameters 
@@ -149,6 +150,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb;
     }
+    
+    public ByteBuffer generate_PKT1_10(int pIntegerPara1_10_1, int pEnumerationPara1_10_2, float pFloatPara1_10_3) {
+        ByteBuffer bb=ByteBuffer.allocate(pkt1_10Length);
+        fill_PKT1_10(bb, pIntegerPara1_10_1, pEnumerationPara1_10_2, pFloatPara1_10_3);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
     private void fill_CcsdsHeader(ByteBuffer bb, int apid, int packetId) {
         short xs;
         //Primary header:
@@ -292,7 +301,16 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         int offset=pkt1Length;
         bb.position(offset);
         bb.put((byte) 0xA1);
-        
+    }
+    
+    private void fill_PKT1_10(ByteBuffer bb, int pIntegerPara1_10_1, int pEnumerationPara1_10_2, float pFloatPara1_10_3) {
+        fill_PKT1(bb, 10);
+        int offset=pkt1Length;
+        bb.position(offset);
+        bb.putShort((short) pIntegerPara1_10_1);
+        bb.put((byte) pEnumerationPara1_10_2);
+        bb.put((byte) 0);
+        bb.putFloat(pFloatPara1_10_3);
     }
     
     private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {

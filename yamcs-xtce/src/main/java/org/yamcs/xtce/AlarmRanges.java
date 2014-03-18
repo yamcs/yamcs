@@ -15,18 +15,67 @@ import java.io.Serializable;
 public class AlarmRanges implements Serializable {
 	private static final long serialVersionUID = 200706052351L;
 	
-	//FloatRange watchRange=null;
+	FloatRange watchRange=null;
 	FloatRange warningRange=null;
-	//FloatRange distressRange=null;
+	FloatRange distressRange=null;
 	FloatRange criticalRange=null;
-	//FloatRange severeRange=null;
+	FloatRange severeRange=null;
 	
+	public void addWatchRange(FloatRange watchRange) {
+       if(this.watchRange == null) {
+           this.watchRange = watchRange;
+       } else {
+           this.watchRange = this.watchRange.intersectWith(watchRange);
+       }
+	}
+	
+    public void addWarningRange(FloatRange warningRange) {
+        if(this.warningRange == null) {
+            this.warningRange = warningRange;
+        } else {
+            this.warningRange = this.warningRange.intersectWith(warningRange);
+        }
+    }
+    
+    public void addDistressRange(FloatRange distressRange) {
+        if(this.distressRange == null) {
+            this.distressRange = distressRange;
+        } else {
+            this.distressRange = this.distressRange.intersectWith(distressRange);
+        }
+    }
+    
+    public void addCriticalRange(FloatRange criticalRange) {
+        if(this.criticalRange == null) {
+            this.criticalRange = criticalRange;
+        } else {
+            this.criticalRange = this.criticalRange.intersectWith(criticalRange);
+        }
+    }
+    
+    public void addSevereRange(FloatRange severeRange) {
+        if(this.severeRange == null) {
+            this.severeRange = severeRange;
+        } else {
+            this.severeRange = this.severeRange.intersectWith(severeRange);
+        }
+    }
+	
+	public FloatRange getWatchRange() {
+	    return watchRange;
+	}
+    public FloatRange getWarningRange() {
+        return warningRange;
+    }
+    public FloatRange getDistressRange() {
+        return distressRange;
+    }
 	public FloatRange getCriticalRange() {
 		return criticalRange;
 	}
-	public FloatRange getWarningRange() {
-		return warningRange;
-	}
+    public FloatRange getSevereRange() {
+        return severeRange;
+    }
 
     public void setWarningRange(FloatRange warningRange) {
         this.warningRange=warningRange;
@@ -34,7 +83,10 @@ public class AlarmRanges implements Serializable {
     
 	@Override
     public String toString() {
-        return ((warningRange!=null)?"warningRange"+warningRange:"")+((criticalRange!=null)?" criticalRange"+criticalRange:"");
+        return ((watchRange!=null)?"watchRange"+watchRange:"")+
+               ((warningRange!=null)?"warningRange"+warningRange:"")+
+               ((distressRange!=null)?"distressRange"+distressRange:"")+
+               ((criticalRange!=null)?"criticalRange"+criticalRange:"")+
+               ((severeRange!=null)?" severeRange"+severeRange:"");
     }
-
 }

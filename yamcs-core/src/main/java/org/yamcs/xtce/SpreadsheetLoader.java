@@ -83,6 +83,20 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static int IDX_ALGO_PARA_INSTANCE=5;
 	final static int IDX_ALGO_PARA_NAME=6;
 	
+	//columns in the alarms sheet
+	final static int IDX_ALARM_PARAM_NAME=0;
+	final static int IDX_ALARM_CONTEXT=1;
+	final static int IDX_ALARM_WATCH_TRIGGER=2;
+	final static int IDX_ALARM_WATCH_VALUE=3;
+	final static int IDX_ALARM_WARNING_TRIGGER=4;
+	final static int IDX_ALARM_WARNING_VALUE=5;
+	final static int IDX_ALARM_DISTRESS_TRIGGER=6;
+	final static int IDX_ALARM_DISTRESS_VALUE=7;
+	final static int IDX_ALARM_CRITICAL_TRIGGER=8;
+	final static int IDX_ALARM_CRITICAL_VALUE=9;
+	final static int IDX_ALARM_SEVERE_TRIGGER=10;
+	final static int IDX_ALARM_SEVERE_VALUE=11;
+	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
 	// Explicitly support these versions (i.e. load without warning)
@@ -125,6 +139,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			loadContainers();
 			loadNonStandardSheets(); // Extension point
 			loadAlgorithms();
+			loadAlarms();
 		} catch (BiffException e) {
 			throw new DatabaseLoadException(e);
 		} catch (IOException e) {
@@ -1119,7 +1134,272 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             spaceSystem.addAlgorithm(algorithm);
             start = end;
         }
-   }
+    }
+    
+    private void loadAlarms() throws DatabaseLoadException {
+        Sheet alarm_sheet = workbook.getSheet("Alarms");
+        if (alarm_sheet == null) {
+            return;
+        }
+
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new alarm
+            while (start < alarm_sheet.getRows()) {
+                Cell[] cells = alarm_sheet.getRow(start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= alarm_sheet.getRows()) {
+               break;
+            }
+
+            Cell[] cells = alarm_sheet.getRow(start);
+            if(!hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
+                error("Alarms:"+(start+1)+" alarms must be attached to a parameter name");
+            }
+            String paramName = cells[IDX_ALARM_PARAM_NAME].getContents();
+            Parameter para = spaceSystem.getParameter(paramName);
+            if(para == null) {
+                error("Could not find a parameter named "+paramName);
+            }
+            
+            // now we search for the matching last row of the alarms for this parameter
+            int paramEnd = start + 1;
+            while (paramEnd < alarm_sheet.getRows()) {
+                cells = alarm_sheet.getRow(paramEnd);
+                if (hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
+                    break;
+                }
+                paramEnd++;
+            }
+            
+            // Iterate over all rows for this parameter
+            MatchCriteria previousContext=null;
+            for (int j = start; j < paramEnd; j++) {
+                cells = alarm_sheet.getRow(j);
+                MatchCriteria context=previousContext;
+                if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
+                    String contextString = cells[IDX_ALARM_CONTEXT].getContents();
+                    context=toComparison(contextString);
+                }
+                
+                if(hasColumn(cells, IDX_ALARM_WATCH_TRIGGER) && hasColumn(cells, IDX_ALARM_WATCH_VALUE)) {
+                    String trigger=cells[IDX_ALARM_WATCH_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_WATCH_VALUE].getContents();
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            ipt.addWatchAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            ipt.addWatchAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            fpt.addWatchAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            fpt.addWatchAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        if("state".equals(trigger)) {
+                            ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                            if(enumValue==null) {
+                                error("Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                            } else {
+                                ept.addAlarm(context, enumValue, AlarmLevels.watch);
+                            }
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                        }
+                    }
+                }
+                if(hasColumn(cells, IDX_ALARM_WARNING_TRIGGER) && hasColumn(cells, IDX_ALARM_WARNING_VALUE)) {
+                    String trigger=cells[IDX_ALARM_WARNING_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_WARNING_VALUE].getContents();
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            ipt.addWarningAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            ipt.addWarningAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            fpt.addWarningAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            fpt.addWarningAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        if("state".equals(trigger)) {
+                            ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                            if(enumValue==null) {
+                                error("Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                            } else {
+                                ept.addAlarm(context, enumValue, AlarmLevels.warning);
+                            }
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                        }
+                    }
+                }
+                if(hasColumn(cells, IDX_ALARM_DISTRESS_TRIGGER) && hasColumn(cells, IDX_ALARM_DISTRESS_VALUE)) {
+                    String trigger=cells[IDX_ALARM_DISTRESS_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_DISTRESS_VALUE].getContents();
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            ipt.addDistressAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            ipt.addDistressAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            fpt.addDistressAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            fpt.addDistressAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        if("state".equals(trigger)) {
+                            ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                            if(enumValue==null) {
+                                error("Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                            } else {
+                                ept.addAlarm(context, enumValue, AlarmLevels.distress);
+                            }
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                        }
+                    }
+                }
+                if(hasColumn(cells, IDX_ALARM_CRITICAL_TRIGGER) && hasColumn(cells, IDX_ALARM_CRITICAL_VALUE)) {
+                    String trigger=cells[IDX_ALARM_CRITICAL_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_CRITICAL_VALUE].getContents();
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            ipt.addCriticalAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            ipt.addCriticalAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            fpt.addCriticalAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            fpt.addCriticalAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        if("state".equals(trigger)) {
+                            ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                            if(enumValue==null) {
+                                error("Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                            } else {
+                                ept.addAlarm(context, enumValue, AlarmLevels.critical);
+                            }
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                        }
+                    }
+                }
+                if(hasColumn(cells, IDX_ALARM_SEVERE_TRIGGER) && hasColumn(cells, IDX_ALARM_SEVERE_VALUE)) {
+                    String trigger=cells[IDX_ALARM_SEVERE_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_SEVERE_VALUE].getContents();
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            ipt.addSevereAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            ipt.addSevereAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        if("low".equals(trigger)) {
+                            fpt.addSevereAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY));
+                        } else if("high".equals(trigger)) {
+                            fpt.addSevereAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)));
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                        }
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        if("state".equals(trigger)) {
+                            ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                            if(enumValue==null) {
+                                error("Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                            } else {
+                                ept.addAlarm(context, enumValue, AlarmLevels.severe);
+                            }
+                        } else {
+                            error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                        }
+                    }
+                }
+                
+                previousContext=context;
+            }
+            
+            start = paramEnd;
+        }
+    }
+    
+    private Comparison toComparison(String contextString) {
+        Pattern p=Pattern.compile("(.*?)(=|!=|>=|<=|>|<)(.*)");
+        Matcher m=p.matcher(contextString);
+        if((!m.matches()) || (m.groupCount()!=3)) {
+            return null;
+        }
+        String pname=m.group(1).trim();
+        String value=m.group(3).trim();
+        String op=m.group(2);
+        Parameter compareParam=spaceSystem.getParameter(pname);
+        
+        if(compareParam==null) {
+            error("Parameter not found"); // TODO no support for future-resolved parameters yet. We need the type to set the right Comparison
+        }
+        
+        ParameterInstanceRef parameterInstance=new ParameterInstanceRef(compareParam);
+        
+        if("=".equals(op)) {
+            op = "==";
+        }
+        if(compareParam.parameterType instanceof IntegerParameterType) {
+            long longValue=Long.parseLong(value);
+            return new Comparison(parameterInstance,longValue,Comparison.stringToOperator(op));
+        } else if(compareParam.parameterType instanceof EnumeratedParameterType) {
+            return new Comparison(parameterInstance, value, Comparison.stringToOperator(op));
+        } else {
+            error("Conditions not supported for parameter of type "+compareParam.parameterType);
+            return null;
+        }
+    }
 
 	private boolean hasColumn(Cell[] cells, int idx) {
 	    return (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
@@ -1182,8 +1462,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 	
-	
-	   
 	class LimitDef {
 		public LimitDef(String condition, AlarmRanges ranges) {
 			this.condition=condition;

@@ -89,10 +89,6 @@ public class XtceTmExtractor {
                 long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
                 ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
                 pcontext.sequenceContainerProcessor.extract(startContainer);
-
-                for(ParameterValue pv:paramResult) {
-                    pcontext.parameterTypeProcessor.performLimitChecking(pv.getParameter().getParameterType(), pv);
-                }
             }
         } catch (Exception e) {
             log.error("got exception in tmextractor ", e);

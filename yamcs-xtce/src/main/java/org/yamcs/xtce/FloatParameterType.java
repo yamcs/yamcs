@@ -14,22 +14,70 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 	public FloatParameterType(String name){
 		super(name);
 	}
-
-	public void setDefaultCriticalAlarmRange(FloatRange criticalRange) {
-		if(getDefaultAlarm()==null)
-			setDefaultAlarm(new NumericAlarm());
-		getDefaultAlarm().getStaticAlarmRanges().criticalRange=criticalRange;
-	}
- 
-	public void setDefaultWarningAlarmRange(FloatRange warningRange) {
-		if(getDefaultAlarm()==null)
-			setDefaultAlarm(new NumericAlarm());
-		getDefaultAlarm().getStaticAlarmRanges().warningRange=warningRange;
-	}
+    
+    public void setDefaultWatchAlarmRange(FloatRange watchRange) {
+        getAlarmRanges(null).watchRange=watchRange;
+    }
+    
+    public void setDefaultWarningAlarmRange(FloatRange warningRange) {
+        getAlarmRanges(null).warningRange=warningRange;
+    }
+    
+    public void setDefaultDistressAlarmRange(FloatRange distressRange) {
+        getAlarmRanges(null).distressRange=distressRange;
+    }
+    
+    public void setDefaultCriticalAlarmRange(FloatRange criticalRange) {
+        getAlarmRanges(null).criticalRange=criticalRange;
+    }
+    
+    public void setDefaultSevereAlarmRange(FloatRange severeRange) {
+        getAlarmRanges(null).severeRange=severeRange;
+    }
 
 	public NumericAlarm getDefaultAlarm() {
 		return defaultAlarm;
 	}
+	
+    /**
+     * Adds a new, or unions with an existing watch range for the specified context
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addWatchAlarmRange(MatchCriteria contextMatch, FloatRange watchRange) {
+        getAlarmRanges(contextMatch).addWatchRange(watchRange);
+    }
+    
+    /**
+     * Adds a new, or unions with an existing warning range for the specified context
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addWarningAlarmRange(MatchCriteria contextMatch, FloatRange warningRange) {
+        getAlarmRanges(contextMatch).addWarningRange(warningRange);
+    }
+    
+    /**
+     * Adds a new, or unions with an existing distress range for the specified context
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addDistressAlarmRange(MatchCriteria contextMatch, FloatRange distressRange) {
+        getAlarmRanges(contextMatch).addDistressRange(distressRange);
+    }
+    
+    /**
+     * Adds a new, or unions with an existing critical range for the specified context
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addCriticalAlarmRange(MatchCriteria contextMatch, FloatRange criticalRange) {
+        getAlarmRanges(contextMatch).addCriticalRange(criticalRange);
+    }
+    
+    /**
+     * Adds a new, or unions with an existing severe range for the specified context
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addSevereAlarmRange(MatchCriteria contextMatch, FloatRange severeRange) {
+        getAlarmRanges(contextMatch).addSevereRange(severeRange);
+    }
 
 	public void addContextAlarm(NumericContextAlarm nca) {
 		if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
@@ -50,25 +98,49 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 			dependentParameters.addAll(nca.getContextMatch().getDependentParameters());
 		return dependentParameters;
 	}
-
+	
+    public NumericContextAlarm getNumericContextAlarm(MatchCriteria context) {
+        if(contextAlarmList==null) return null;
+        for(NumericContextAlarm nca:contextAlarmList) {
+            if(nca.getContextMatch().equals(context)) {
+                return nca;
+            }
+        }
+        return null;
+    }
 
     public ArrayList<NumericContextAlarm> getContextAlarmList() {
         return contextAlarmList;
     }
+
     public void setDefaultAlarm(NumericAlarm defaultAlarm) {
         this.defaultAlarm = defaultAlarm;
     }
+    
+    private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
+        if(contextMatch==null) {
+            if(defaultAlarm==null)
+                defaultAlarm=new NumericAlarm();
+            return defaultAlarm.getStaticAlarmRanges();
+        } else {
+            NumericContextAlarm nca=getNumericContextAlarm(contextMatch);
+            if(nca==null) {
+                nca=new NumericContextAlarm();
+                nca.setContextMatch(contextMatch);
+                addContextAlarm(nca);
+            }
+            return nca.getStaticAlarmRanges();
+        }
+    }
+
     @Override
     public String getTypeAsString() {
         return "float";
     }
-
 
     @Override
     public String toString() {
         return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding+((getDefaultAlarm()!=null)?"defaultAlarm:"+getDefaultAlarm():"")
         +((contextAlarmList!=null)?"contextAlarmList:"+contextAlarmList:"");
     }
-
-
 }

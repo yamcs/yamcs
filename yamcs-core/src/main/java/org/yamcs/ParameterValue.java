@@ -28,16 +28,17 @@ public class ParameterValue {
 	private boolean processingStatus;
 	public MonitoringResult monitoringResult;
 
+	public FloatRange watchRange=null;
 	public FloatRange warningRange=null;
+	public FloatRange distressRange=null;
 	public FloatRange criticalRange=null;
+	public FloatRange severeRange=null;
 	
 	
 	/**
 	 * Creates a parameter value for a parameter which has critical or warning range associated
 	 * @param def the parameter definition
 	 * @param withRawValue if the parameter contains a raw value or not
-	 * @param criticalRange the critical range associated to the parameter. Can be null.
-	 * @param warningRange the critical range associated to the parameter. Can be null.
 	 */
 	public ParameterValue(Parameter def, boolean withRawValue) {
 		this.def=def;
@@ -129,6 +130,14 @@ public class ParameterValue {
 	public Value getRawValue() {
 		return rawValue;
 	}
+	
+	public void setWatchRange(FloatRange range) {
+	    watchRange=range;
+	}
+	
+	public FloatRange getWatchRange() {
+	    return watchRange;
+	}
 
 	public void setWarningRange(FloatRange range) {
 	    warningRange=range;
@@ -136,6 +145,14 @@ public class ParameterValue {
 
 	public FloatRange getWarningRange() {
 		return warningRange;
+	}
+	
+	public void setDistressRange(FloatRange range) {
+	    distressRange=range;
+	}
+	
+	public FloatRange getDistressRange() {
+	    return distressRange;
 	}
 
 	public void setCriticalRange(FloatRange range) {
@@ -146,6 +163,13 @@ public class ParameterValue {
 		return criticalRange;
 	}
 	
+	public void setSevereRange(FloatRange range) {
+	    severeRange=range;
+	}
+	
+	public FloatRange getSevereRange() {
+	    return severeRange;
+	}
 	
 	public void setMonitoringResult(MonitoringResult m) {
 		monitoringResult=m;
