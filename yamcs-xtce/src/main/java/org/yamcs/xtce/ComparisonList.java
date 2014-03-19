@@ -10,7 +10,7 @@ import java.util.Set;
  * @author nm
  *
  */
-public class ComparisonList extends MatchCriteria {
+public class ComparisonList implements MatchCriteria {
 	private static final long serialVersionUID = 200805131551L;
 	ArrayList<Comparison> comparisons=new ArrayList<Comparison>();
 	

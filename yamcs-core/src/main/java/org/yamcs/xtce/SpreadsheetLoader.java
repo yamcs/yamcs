@@ -977,11 +977,23 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				        try {
 				            if (param != null) {
 				                ParameterInstanceRef pref=new ParameterInstanceRef(param, false);
-				                cl.comparisons.add(new Comparison(pref, Integer.decode(m.group(3)), coperator));
+				                try {
+				                    cl.comparisons.add(new Comparison(pref, Integer.decode(m.group(3)), coperator));
+				                } catch(NumberFormatException e) {
+				                    cl.comparisons.add(new Comparison(pref, m.group(3), coperator));
+				                    pref.setUseCalibratedValue(true);
+				                    
+				                }
 				            } else {
 				                final ParameterInstanceRef pref=new ParameterInstanceRef(false);
-				                final Comparison ucomp=new Comparison(pref, Integer.decode(m.group(3)), coperator);
-				                cl.comparisons.add(ucomp);
+				                Comparison c;
+				                try {
+				                    c=new Comparison(pref, Integer.decode(m.group(3)), coperator);
+				                } catch(NumberFormatException e) {
+				                    c=new Comparison(pref, m.group(3), coperator);
+				                    pref.setUseCalibratedValue(true);
+				                }
+				                cl.comparisons.add(c);
 				                
 				                NameReference nr=new NameReference(paramName, Type.PARAMETER, 
 				                        new ResolvedAction() {
