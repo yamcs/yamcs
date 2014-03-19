@@ -10,6 +10,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
+import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
@@ -25,7 +26,7 @@ import org.yamcs.xtce.ParameterType;
 public class AlarmChecker {
     
     private EventProducer eventProducer;
-    private Map<Parameter, MonitoringResult> activeAlarms=new HashMap<Parameter, MonitoringResult>();
+    private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     
     public AlarmChecker(String instance) {
         eventProducer=EventProducerFactory.getEventProducer(instance);
@@ -75,19 +76,25 @@ public class AlarmChecker {
         
         // Determine applicable ranges based on context
         boolean mon=false;
+        AlarmType alarmType=null;
         AlarmRanges staticAlarmRanges=null;
+        int minViolations=1;
         if(ipt.getContextAlarmList()!=null) {
             for(NumericContextAlarm nca:ipt.getContextAlarmList()) {
                 if(comparisonProcessor.matches(nca.getContextMatch())) {
                     mon=true;
+                    alarmType=nca;
                     staticAlarmRanges=nca.getStaticAlarmRanges();
+                    minViolations=nca.getMinViolations();
                     break;
                 }
             }
         }
         NumericAlarm defaultAlarm=ipt.getDefaultAlarm();
-        if((!mon) && (defaultAlarm!=null)) {
+        if(!mon && defaultAlarm!=null) {
+            alarmType=defaultAlarm;
             staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
+            minViolations=defaultAlarm.getMinViolations();
         }
         
         // Set MonitoringResult
@@ -100,7 +107,7 @@ public class AlarmChecker {
         }
         
         // Notify when severity changes
-        sendNumericParameterEvent(pv);
+        sendNumericParameterEvent(pv, alarmType, minViolations);
     }
 
     private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
@@ -113,21 +120,27 @@ public class AlarmChecker {
             throw new IllegalStateException("Unexpected float value");
         }
 
-        // Determine applicable ranges based on context
+        // Determine applicable AlarmType based on context
         boolean mon=false;
+        AlarmType alarmType=null;
         AlarmRanges staticAlarmRanges=null;
+        int minViolations=1;
         if(fpt.getContextAlarmList()!=null) {
             for(NumericContextAlarm nca:fpt.getContextAlarmList()) {
                 if(comparisonProcessor.matches(nca.getContextMatch())) {
                     mon=true;
+                    alarmType=nca;
                     staticAlarmRanges=nca.getStaticAlarmRanges();
+                    minViolations=nca.getMinViolations();
                     break;
                 }
             }
         }
         NumericAlarm defaultAlarm=fpt.getDefaultAlarm();
-        if((!mon) && (defaultAlarm!=null)) {
+        if(!mon && defaultAlarm!=null) {
+            alarmType=defaultAlarm;
             staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
+            minViolations=defaultAlarm.getMinViolations();
         }
         
         // Set MonitoringResult
@@ -140,12 +153,11 @@ public class AlarmChecker {
         }
         
         // Notify when severity changes
-        sendNumericParameterEvent(pv);
+        sendNumericParameterEvent(pv, alarmType, minViolations);
     }
     
     /**
      * Verify limits, giving priority to highest severity
-     * @return the severity level
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
         FloatRange watchRange=staticAlarmRanges.getWatchRange();
@@ -196,15 +208,30 @@ public class AlarmChecker {
         pv.setSevereRange(severeRange);
     }
     
-    private void sendNumericParameterEvent(ParameterValue pv) {
+    /**
+     * Sends an event if an alarm condition for the active context has been
+     * triggered <tt>minViolations</tt> times. This configuration does not
+     * affect events for parameters that go back to normal, or that change
+     * severity levels while the alarm is already active.
+     */
+    private void sendNumericParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to normal");
                 activeAlarms.remove(pv.getParameter());
             }
         } else { // out of limits
-            MonitoringResult previousMonitoringResult=activeAlarms.get(pv.getParameter());
-            if(!activeAlarms.containsKey(pv.getParameter()) || previousMonitoringResult != pv.getMonitoringResult()) {
+            MonitoringResult previousMonitoringResult=null;
+            ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
+            if(activeAlarm==null || activeAlarm.alarmType!=alarmType) {
+                activeAlarm=new ActiveAlarm(alarmType, pv.getMonitoringResult());
+            } else {
+                previousMonitoringResult=activeAlarm.monitoringResult;
+                activeAlarm.monitoringResult=pv.getMonitoringResult();
+                activeAlarm.violations++;
+            }
+            
+            if(activeAlarm.violations==minViolations || (activeAlarm.violations>minViolations && previousMonitoringResult!=activeAlarm.monitoringResult)) {
                 switch(pv.getMonitoringResult()) {
                 case WATCH_LOW:
                 case WARNING_LOW:
@@ -229,19 +256,28 @@ public class AlarmChecker {
                 }
             }
             
-            activeAlarms.put(pv.getParameter(), pv.getMonitoringResult());
+            activeAlarms.put(pv.getParameter(), activeAlarm);
         }
     }
     
-    private void sendEnumeratedParameterEvent(ParameterValue pv) {
+    private void sendEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to a normal state ("+pv.getEngValue().getStringValue()+")");
                 activeAlarms.remove(pv.getParameter());
             }
         } else { // out of limits
-            MonitoringResult previousMonitoringResult=activeAlarms.get(pv.getParameter());
-            if(!activeAlarms.containsKey(pv.getParameter()) || previousMonitoringResult != pv.getMonitoringResult()) {
+            MonitoringResult previousMonitoringResult=null;
+            ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
+            if(activeAlarm==null || activeAlarm.alarmType!=alarmType) {
+                activeAlarm=new ActiveAlarm(alarmType, pv.getMonitoringResult());
+            } else {
+                previousMonitoringResult=activeAlarm.monitoringResult;
+                activeAlarm.monitoringResult=pv.getMonitoringResult();
+                activeAlarm.violations++;
+            }
+            
+            if(activeAlarm.violations==minViolations || (activeAlarm.violations>minViolations&& previousMonitoringResult!=activeAlarm.monitoringResult)) {
                 switch(pv.getMonitoringResult()) {
                 case WATCH:
                 case WARNING:
@@ -257,7 +293,7 @@ public class AlarmChecker {
                 }
             }
             
-            activeAlarms.put(pv.getParameter(), pv.getMonitoringResult());
+            activeAlarms.put(pv.getParameter(), activeAlarm);
         }
     }
     
@@ -266,10 +302,12 @@ public class AlarmChecker {
         String s=pv.getEngValue().getStringValue();
         
         EnumerationAlarm alarm=ept.getDefaultAlarm();
+        int minViolations=(alarm==null)?1:alarm.getMinViolations();
         if(ept.getContextAlarmList()!=null) {
             for(EnumerationContextAlarm nca:ept.getContextAlarmList()) {
                 if(comparisonProcessor.matches(nca.getContextMatch())) {
                     alarm=nca;
+                    minViolations=nca.getMinViolations();
                     break;
                 }
             }
@@ -301,6 +339,16 @@ public class AlarmChecker {
                 break;
             }
         }
-        sendEnumeratedParameterEvent(pv);
+        sendEnumeratedParameterEvent(pv, alarm, minViolations);
+    }
+    
+    private static class ActiveAlarm {
+        AlarmType alarmType;
+        MonitoringResult monitoringResult;
+        int violations=1;
+        ActiveAlarm(AlarmType alarmType, MonitoringResult monitoringResult) {
+            this.alarmType=alarmType;
+            this.monitoringResult=monitoringResult;
+        }
     }
 }

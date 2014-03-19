@@ -117,6 +117,19 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(71, 0 /* ! */, 0);
         assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(7).getParameterValue().getMonitoringResult());
         assertEquals(6, q.size()); // Message for changed MonitoringResult
+        
+        // Test minViolations of 3 under context 6
+        tmGenerator.generate_PKT1_10(40, 6, 0);
+        assertEquals(MonitoringResult.WARNING_HIGH, params.get(8).getParameterValue().getMonitoringResult());
+        assertEquals(6, q.size()); // No message, violations=1
+        
+        tmGenerator.generate_PKT1_10(40, 6, 0);
+        assertEquals(MonitoringResult.WARNING_HIGH, params.get(9).getParameterValue().getMonitoringResult());
+        assertEquals(6, q.size()); // No message, violations=2
+        
+        tmGenerator.generate_PKT1_10(40, 6, 0);
+        assertEquals(MonitoringResult.WARNING_HIGH, params.get(10).getParameterValue().getMonitoringResult());
+        assertEquals(7, q.size()); // Message because violations=3
     }
     
     @Test

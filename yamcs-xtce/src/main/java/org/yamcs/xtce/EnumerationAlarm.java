@@ -11,7 +11,7 @@ import java.util.List;
  * @author nm
  *
  */
-public class EnumerationAlarm implements Serializable{
+public class EnumerationAlarm extends AlarmType implements Serializable{
 	private static final long serialVersionUID=200707121420L;
 	
 	private List<EnumerationAlarmItem> alarmList=new ArrayList<EnumerationAlarmItem>();

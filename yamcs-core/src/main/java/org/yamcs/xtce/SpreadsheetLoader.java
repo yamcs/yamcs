@@ -86,16 +86,17 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	//columns in the alarms sheet
 	final static int IDX_ALARM_PARAM_NAME=0;
 	final static int IDX_ALARM_CONTEXT=1;
-	final static int IDX_ALARM_WATCH_TRIGGER=2;
-	final static int IDX_ALARM_WATCH_VALUE=3;
-	final static int IDX_ALARM_WARNING_TRIGGER=4;
-	final static int IDX_ALARM_WARNING_VALUE=5;
-	final static int IDX_ALARM_DISTRESS_TRIGGER=6;
-	final static int IDX_ALARM_DISTRESS_VALUE=7;
-	final static int IDX_ALARM_CRITICAL_TRIGGER=8;
-	final static int IDX_ALARM_CRITICAL_VALUE=9;
-	final static int IDX_ALARM_SEVERE_TRIGGER=10;
-	final static int IDX_ALARM_SEVERE_VALUE=11;
+	final static int IDX_ALARM_MIN_VIOLATIONS=2;
+	final static int IDX_ALARM_WATCH_TRIGGER=3;
+	final static int IDX_ALARM_WATCH_VALUE=4;
+	final static int IDX_ALARM_WARNING_TRIGGER=5;
+	final static int IDX_ALARM_WARNING_VALUE=6;
+	final static int IDX_ALARM_DISTRESS_TRIGGER=7;
+	final static int IDX_ALARM_DISTRESS_VALUE=8;
+	final static int IDX_ALARM_CRITICAL_TRIGGER=9;
+	final static int IDX_ALARM_CRITICAL_VALUE=10;
+	final static int IDX_ALARM_SEVERE_TRIGGER=11;
+	final static int IDX_ALARM_SEVERE_VALUE=12;
 	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
@@ -1179,12 +1180,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             
             // Iterate over all rows for this parameter
             MatchCriteria previousContext=null;
+            int minViolations=1;
             for (int j = start; j < paramEnd; j++) {
                 cells = alarm_sheet.getRow(j);
                 MatchCriteria context=previousContext;
                 if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
                     String contextString = cells[IDX_ALARM_CONTEXT].getContents();
                     context=toComparison(contextString);
+                    if(hasColumn(cells, IDX_ALARM_MIN_VIOLATIONS)) {
+                        minViolations=Integer.parseInt(cells[IDX_ALARM_MIN_VIOLATIONS].getContents());
+                    } else {
+                        minViolations=1;
+                    }
                 }
                 
                 if(hasColumn(cells, IDX_ALARM_WATCH_TRIGGER) && hasColumn(cells, IDX_ALARM_WATCH_VALUE)) {
@@ -1360,6 +1367,23 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                         } else {
                             error("Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
                         }
+                    }
+                }
+                
+                if(minViolations!=1) {
+                    AlarmType alarm=null;
+                    if(para.getParameterType() instanceof IntegerParameterType) {
+                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                        alarm=(context==null)?ipt.getDefaultAlarm():ipt.getNumericContextAlarm(context);
+                    } else if(para.getParameterType() instanceof FloatParameterType) {
+                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                        alarm=(context==null)?fpt.getDefaultAlarm():fpt.getNumericContextAlarm(context);
+                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                        alarm=(context==null)?ept.getDefaultAlarm():ept.getContextAlarm(context);
+                    }
+                    if(alarm!=null) { // It's possible that this gets called multiple times per alarm, but doesn't matter
+                        alarm.setMinViolations(minViolations);
                     }
                 }
                 
