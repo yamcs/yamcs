@@ -37,6 +37,7 @@ import javax.swing.table.TableRowSorter;
 import org.yamcs.ui.PacketListener;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.MdbMappings;
 
 public class PacketsTable extends JTable implements ListSelectionListener, PacketListener {
 
@@ -469,6 +470,10 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     @Override
     public void packetReceived(CcsdsPacket c) {
         final ListPacket ccsds = new ListPacket(c.getByteBuffer());
+        String opsname = packetViewer.xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+        if(opsname == null) opsname = packetViewer.xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
+        if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
+        ccsds.setOpsname(opsname);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
