@@ -53,7 +53,7 @@ public class XtceDbFactory {
     /**
      * Creates a new instance of the database in memory.
      * configSection is the top heading under which this appears in the mdb.yaml
-     * @throws ConfigurationException
+     * @throws ConfigurationException 
      */
     private static synchronized XtceDb createInstance(String configSection) throws ConfigurationException {
         YConfiguration c = null;
@@ -87,9 +87,6 @@ public class XtceDbFactory {
                     log.warn("can't check the consistency date of the serialized database: ", e);
                 }
                 loadSerialized = false;
-            } catch (ConfigurationException e) {
-                log.error("Cannot check the consistency date of the serialized database: ", e);
-                System.exit(-1);
             }
         } else {
             loadSerialized = false;
@@ -106,30 +103,23 @@ public class XtceDbFactory {
         }
 
         if (db == null) {
-            try {
-                //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
-                SpaceSystem rootSs = new SpaceSystem("");
+            //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
+            SpaceSystem rootSs = new SpaceSystem("");
                 rootSs.setParent(rootSs);
-                SpaceSystem xss = loaderTree.load();
-                rootSs.addSpaceSystem(xss);
-                rootSs.addSpaceSystem(new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1)));
-                rootSs.setHeader(xss.getHeader());
-
-                int n;
-                while((n=resolveReferences(rootSs, rootSs))>0 ){};
-                StringBuffer sb=new StringBuffer();
-                collectUnresolvedReferences(rootSs, sb);
-                if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
-                setQualifiedNames(rootSs, "");
-                db = new XtceDb(rootSs);
-                db.setRootSequenceContainer(xss.getRootSequenceContainer());
-                db.buildIndexMaps();
-
-            } catch (Exception e) {
-                log.error("Cannot load the database: ", e);
-                System.exit(-1);// if we can not read the database we are out of
-                // the game
-            }
+            SpaceSystem xss = loaderTree.load();
+            rootSs.addSpaceSystem(xss);
+            rootSs.addSpaceSystem(new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1)));
+            rootSs.setHeader(xss.getHeader());
+            
+            int n;
+            while((n=resolveReferences(rootSs, rootSs))>0 ){};
+            StringBuffer sb=new StringBuffer();
+            collectUnresolvedReferences(rootSs, sb);
+            if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
+            setQualifiedNames(rootSs, "");
+            db = new XtceDb(rootSs);
+            db.setRootSequenceContainer(xss.getRootSequenceContainer());
+            db.buildIndexMaps();
         }
         // log.info("Loaded database with "+instance.sid2TcPacketMap.size()+" TC, "+instance.sid2SequenceContainertMap.size()+" TM containers, "+instance.sid2ParameterMap.size()+" TM parameters and "+instance.upcOpsname2PpMap.size()+" processed parameters");
 
@@ -431,6 +421,7 @@ public class XtceDbFactory {
      * @param yamcsInstance
      * @return
      * @throws ConfigurationException
+     * @throws DatabaseLoadException 
      */
     static public synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db=instance2Db.get(yamcsInstance);
@@ -518,7 +509,7 @@ public class XtceDbFactory {
             return false;
         }
 
-        public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
+        public SpaceSystem load() throws ConfigurationException {
             try {
                 SpaceSystem rss=root.load();
                 if(children!=null) {
@@ -531,10 +522,6 @@ public class XtceDbFactory {
                 return rss;
             } catch (ConfigurationException e) {
                 throw e;
-            } catch (DatabaseLoadException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new DatabaseLoadException(e);
             }
         }
 

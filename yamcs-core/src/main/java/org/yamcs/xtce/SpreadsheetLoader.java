@@ -128,7 +128,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	}
 
 	@Override
-    public SpaceSystem load() throws DatabaseLoadException {
+    public SpaceSystem load() {
 		log.info("Loading spreadsheet " + path);
 		
 		try {
@@ -137,9 +137,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			if( !ssFile.exists() ) throw new FileNotFoundException( ssFile.getAbsolutePath() );
 			workbook = Workbook.getWorkbook( ssFile );
 		} catch (BiffException e) {
-			throw new DatabaseLoadException(e);
+			throw new SpreadsheetLoadException(ctx, e);
 		} catch (IOException e) {
-			throw new DatabaseLoadException(e);
+			throw new SpreadsheetLoadException(ctx, e);
 		}
 		
 		try {
@@ -151,6 +151,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             loadNonStandardSheets(); // Extension point
             loadAlgorithms();
             loadAlarms();
+		} catch(SpreadsheetLoadException e) {
+		    throw e;
 		} catch (Exception e) {
 		    throw new SpreadsheetLoadException(ctx, e);
 		}
@@ -197,7 +199,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	}
 
 	
-	private void loadGeneral() throws SpreadsheetLoadException {
+	private void loadGeneral() {
 		Sheet gen_sheet=switchToSheet("General", true);
 		Cell[] cells=jumpToRow(gen_sheet, 1);
 		
@@ -251,7 +253,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 
-	private void loadCalibrators() throws SpreadsheetLoadException {
+	private void loadCalibrators() {
 		 //read the calibrations
 	     Sheet cal_sheet=switchToSheet("Calibration", false);
 		 if(cal_sheet==null) return;
@@ -336,7 +338,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	/**
 	 * If there is a sheet with the Limits, load it now! 
 	 */
-	private void loadLimitsSheet() throws SpreadsheetLoadException {
+	private void loadLimitsSheet() {
 	     Sheet lim_sheet = switchToSheet("Limits", false);
 		 if(lim_sheet==null)return;
 		 
@@ -401,7 +403,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		return true;
 	}
 	
-	private void loadParameters() throws SpreadsheetLoadException {
+	private void loadParameters() {
 		Sheet para_sheet = switchToSheet("Parameters", true);
 		for (int i = 1; i < para_sheet.getRows(); i++) {
 			Cell[] cells = jumpToRow(para_sheet, i);
@@ -763,7 +765,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 	
-	private void loadContainers() throws DatabaseLoadException {
+	private void loadContainers() {
 		Sheet tm_sheet = switchToSheet("Containers", true);
 		HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
 		
@@ -970,11 +972,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	 * called after all Parameters and Containers definitions are loaded, and just before
 	 * loading the Algorithms.
 	 */
-	protected void loadNonStandardSheets() throws SpreadsheetLoadException {
+	protected void loadNonStandardSheets() {
 	    // By default do nothing
 	}
 	
-    private void loadAlgorithms() throws SpreadsheetLoadException {
+    private void loadAlgorithms() {
         Sheet algo_sheet = switchToSheet("Algorithms", false);
         if (algo_sheet == null) return;
 
@@ -1090,7 +1092,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
     }
     
-    private void loadAlarms() throws DatabaseLoadException {
+    private void loadAlarms() {
         Sheet alarm_sheet = switchToSheet("Alarms", false);
         if (alarm_sheet == null) return;
 
@@ -1345,7 +1347,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
     }
     
-    private MatchCriteria toMatchCriteria(String criteriaString) throws SpreadsheetLoadException {
+    private MatchCriteria toMatchCriteria(String criteriaString) {
         if(criteriaString.contains(";")) {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
@@ -1358,7 +1360,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
     }
     
-    private Comparison toComparison(String comparisonString) throws SpreadsheetLoadException {
+    private Comparison toComparison(String comparisonString) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
         String pname=m.group(1).trim();
@@ -1407,7 +1409,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    return (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
 	}
 	
-	private int getSize(Parameter param, SequenceContainer sc) throws SpreadsheetLoadException {
+	private int getSize(Parameter param, SequenceContainer sc) {
 		// either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
 		if (param != null) {
 			DataEncoding de = ((BaseDataType)param.getParameterType()).getEncoding();
@@ -1433,7 +1435,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	/** If repeat != "", decodes it to either an integer or a parameter and adds it to the SequenceEntry
 	 * If repeat is an integer, this integer is returned 
 	 */
-	private int addRepeat(SequenceEntry se, String repeat) throws SpreadsheetLoadException {
+	private int addRepeat(SequenceEntry se, String repeat) {
 		if (!repeat.equals("")) {
 			se.repeatEntry = new Repeat();
 			try {
@@ -1455,7 +1457,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 	
-	protected Sheet switchToSheet(String sheetName, boolean required) throws SpreadsheetLoadException {
+	protected Sheet switchToSheet(String sheetName, boolean required) {
         Sheet sheet = workbook.getSheet(sheetName);
         ctx.sheet=sheetName;
         ctx.row=0;
@@ -1470,7 +1472,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    return sheet.getRow(row);
 	}
 	
-	protected String requireString(Cell[] cells, int column) throws SpreadsheetLoadException {
+	protected String requireString(Cell[] cells, int column) {
         String contents = cells[column].getContents();
         if("".equals(contents)) {
             char col=(char) ('A'+(char)column);
@@ -1499,7 +1501,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 	    abstract boolean errorPersists();
 	    
-	    public void recheck() throws SpreadsheetLoadException {
+	    public void recheck() {
 	        if(errorPersists()) {
 	            throw exc;
 	        }

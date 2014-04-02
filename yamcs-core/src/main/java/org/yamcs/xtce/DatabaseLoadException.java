@@ -1,6 +1,6 @@
 package org.yamcs.xtce;
 
-public class DatabaseLoadException extends Exception {
+public class DatabaseLoadException extends RuntimeException {
     private static final long serialVersionUID = 4340483863669012865L;
 
     public DatabaseLoadException(Exception originalException) {
