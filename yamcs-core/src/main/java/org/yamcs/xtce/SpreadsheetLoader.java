@@ -949,64 +949,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			    }
 
 			    // 2) extract the condition and create the restrictioncriteria
-			    ComparisonList cl = new ComparisonList();
-			    // If conditions have been specified...
-			    if( !"".equals( condition ) ) {
-			    	// 2.2) if there are multiple conditions, we get them all by splitting according to the ';' between the condition
-			    	String splitted[] = condition.split(";");
-			    	for (String sp: splitted) {
-				        // 2.3) in each splitted part, we search for either =, !=, <=, >=, < or > and add this as a Comparison
-				        Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(sp);
-				        if(!m.matches()) throw new DatabaseLoadException("error on line "+(start+1)+" of the Containers sheet: cannot parse inheritance condition '"+sp+"'");
-				        Parameter param=null;
-				        String paramName=m.group(1);
-				        
-				        param = spaceSystem.getParameter(paramName);
-				        // we now get the actual comparison operator (and we change '=' to '==')
-				        String operation = m.group(2);
-				        if (operation.equals("="))
-				            operation="==";
-				        Comparison.OperatorType coperator=Comparison.stringToOperator(operation);
-
-				        // create the Comparison and add it
-				        try {
-				            if (param != null) {
-				                ParameterInstanceRef pref=new ParameterInstanceRef(param, false);
-				                try {
-				                    cl.comparisons.add(new Comparison(pref, Integer.decode(m.group(3)), coperator));
-				                } catch(NumberFormatException e) {
-				                    cl.comparisons.add(new Comparison(pref, m.group(3), coperator));
-				                    pref.setUseCalibratedValue(true);
-				                    
-				                }
-				            } else {
-				                final ParameterInstanceRef pref=new ParameterInstanceRef(false);
-				                Comparison c;
-				                try {
-				                    c=new Comparison(pref, Integer.decode(m.group(3)), coperator);
-				                } catch(NumberFormatException e) {
-				                    c=new Comparison(pref, m.group(3), coperator);
-				                    pref.setUseCalibratedValue(true);
-				                }
-				                cl.comparisons.add(c);
-				                
-				                NameReference nr=new NameReference(paramName, Type.PARAMETER, 
-				                        new ResolvedAction() {
-	                                        @Override
-	                                        public boolean resolved(NameDescription nd) {
-	                                            pref.setParameter((Parameter)nd);
-	                                            return true;
-	                                        }
-	                                    });
-				                spaceSystem.addUnresolvedReference(nr);
-				            }
-				        } catch (IllegalArgumentException e) {
-				            throw new SpreadsheetLoadException(ctx, "Non-existing comparison found: " + m.group(2));
-				        }		
-				    }
+			    if(!"".equals(condition)) {
+			        container.restrictionCriteria=toMatchCriteria(condition);
 			    }
-			    // 3) add the restrictioncriteria
-			    container.restrictionCriteria = cl;
 			} else {
 			    if(spaceSystem.getRootSequenceContainer()==null) {
 			        spaceSystem.setRootSequenceContainer(container);
