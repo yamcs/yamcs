@@ -1402,14 +1402,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     
     private MatchCriteria toMatchCriteria(String criteriaString) throws SpreadsheetLoadException {
         if(criteriaString.contains(";")) {
-            return toComparison(criteriaString);
-        } else {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part: splitted) {
                 cl.comparisons.add(toComparison(part));
             }
             return cl;
+        } else {
+            return toComparison(criteriaString);
         }
     }
     
@@ -1433,7 +1433,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             ParameterInstanceRef pref=new ParameterInstanceRef(compareParam, false);
             try {
                 return new Comparison(pref, Integer.decode(value), opType);
-            }catch(NumberFormatException e) {
+            } catch(NumberFormatException e) {
+                pref.setUseCalibratedValue(true);
                 return new Comparison(pref, value, opType);
             }
         } else {
@@ -1442,6 +1443,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             try {
                 ucomp=new Comparison(pref, Integer.decode(value), opType);
             } catch(NumberFormatException e) {
+                pref.setUseCalibratedValue(true);
                 ucomp=new Comparison(pref, value, opType);
             }
             spaceSystem.addUnresolvedReference(new NameReference(pname,
