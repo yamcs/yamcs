@@ -1068,7 +1068,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             int end = start + 1;
             while (end < algo_sheet.getRows()) {
                 cells = jumpToRow(algo_sheet, end);
-                if (!hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
+                if (!hasColumn(cells, IDX_ALGO_PARA_REF)) {
                     break;
                 }
                 end++;
@@ -1083,10 +1083,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             algorithm.setAutoActivate(autoActivate);
             
             // In/out params
+            String paraInout=null;
             for (int j = start+1; j < end; j++) {
                 cells = jumpToRow(algo_sheet, j);
                 String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
-                String paraInout = cells[IDX_ALGO_PARA_INOUT].getContents();
+                if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
+                    paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
+                }
+                if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
