@@ -29,6 +29,7 @@ import org.yamcs.ParameterValueWithId;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.AutoActivateType;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.OutputParameter;
@@ -235,18 +236,35 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	    }
 	}
 	
-	//TODO 2.0 unsubscribe from the requested values
 	@Override
     public void stopProviding(Parameter paramDef) {
-		for(Iterator<Algorithm> it=engineByAlgorithm.keySet().iterator();it.hasNext(); ) {
-		    Algorithm algo=it.next();
-		    for(OutputParameter oParameter:algo.getOutputSet()) {
-		        if(oParameter.getParameter().equals(paramDef)) {
-		            it.remove();
-		            return; // There shouldn't be more..
-		        }
-		    }
-		}
+	    if(requestedOutParams.remove(paramDef)) {
+	        // Remove algorithm engine
+	        for(Iterator<Algorithm> it=engineByAlgorithm.keySet().iterator();it.hasNext(); ) {
+	            Algorithm algo=it.next();
+	            boolean doRemove=true;
+	            
+	            // Don't remove if always 'on' for this channel
+                if(algo.getAutoActivate()==AutoActivateType.ALWAYS
+                        || algo.getAutoActivate()==AutoActivateType.REALTIME_ONLY && !parameterRequestManager.channel.isReplay()
+                        || algo.getAutoActivate()==AutoActivateType.REPLAY_ONLY && parameterRequestManager.channel.isReplay()) {
+                    doRemove=false;
+                }
+
+	            // Don't remove if any other output parameters are still subscribed to
+                for(OutputParameter oParameter:algo.getOutputSet()) {
+	                if(requestedOutParams.contains(oParameter.getParameter())) {
+	                    doRemove=false;
+	                    break;
+	                }
+	            }
+                
+	            if(doRemove) {
+	                it.remove();
+	            }
+	            return; // There shouldn't be more..
+	        }
+	    }
 	}
 
 	@Override
