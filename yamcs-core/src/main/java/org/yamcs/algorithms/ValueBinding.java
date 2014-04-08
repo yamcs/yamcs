@@ -15,7 +15,9 @@ import org.yamcs.utils.TimeEncoding;
 public abstract class ValueBinding {
     
     public Date acquisitionTime;
+    public long acquisitionTimeMs;
     public Date generationTime;
+    public long generationTimeMs;
     public AcquisitionStatus acquisitionStatus;
     public MonitoringResult monitoringResult;
 
@@ -23,6 +25,8 @@ public abstract class ValueBinding {
         acquisitionStatus = newValue.getAcquisitionStatus();
         monitoringResult = newValue.getMonitoringResult();
         acquisitionTime = TimeEncoding.toCalendar(newValue.getAcquisitionTime()).getTime();
+        acquisitionTimeMs = newValue.getAcquisitionTime();
         generationTime = TimeEncoding.toCalendar(newValue.getGenerationTime()).getTime();
+        generationTimeMs = newValue.getGenerationTime();
     }
 }
