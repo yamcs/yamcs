@@ -49,6 +49,7 @@ public class HornetChannelManagement implements ChannelListener {
     public HornetChannelManagement(ManagementService mservice, ScheduledThreadPoolExecutor timer) throws YamcsApiException, HornetQException {
         this.mservice=mservice;
         timer.scheduleAtFixedRate(new Runnable() {
+            @Override
             public void run() {updateStatistics();}
         }, 1, 1, TimeUnit.SECONDS);
 
