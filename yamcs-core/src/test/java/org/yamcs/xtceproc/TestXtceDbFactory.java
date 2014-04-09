@@ -29,7 +29,11 @@ public class TestXtceDbFactory {
     
     @Test
     public void testResolveReference() {
+        SpaceSystem root=new SpaceSystem("");
+        
         SpaceSystem a=new SpaceSystem("a");
+        root.addSpaceSystem(a);
+        
         SpaceSystem a_b1=new SpaceSystem("b1");
         a.addSpaceSystem(a_b1);
         SpaceSystem a_b2=new SpaceSystem("b2");
@@ -49,48 +53,52 @@ public class TestXtceDbFactory {
         a_b1.addParameter(a_b1_p1);
         
         Parameter a_b2_c1_p1=new Parameter("p1");
-        a_b2_c1_p1.addAlias("MDB:OPS Name", "a_b2_c1_p1");
         a_b2_c1.addParameter(a_b2_c1_p1);
         
         NameDescription nd;
         
-        nd=XtceDbFactory.findReference(a, new NameReference("p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("/a/b2/c1/p1", Type.PARAMETER, null), a_b1);
+        assertEquals(a_b2_c1_p1, nd);
+        
+        
+        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(nd, a_b2_c1_p1);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b2);
         assertEquals(a_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("p1", Type.PARAMETER, null), a_b1);
+        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b1);
         assertEquals(a_b1_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(a_b2_c1_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("b2/.//../b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("b2/.//../b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(a_b2_c1_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("../p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("../p1", Type.PARAMETER, null), a_b2_c1);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("../../p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("../../p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(a_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("../../p1", Type.PARAMETER, null), a_b3);
+        nd=XtceDbFactory.findReference(root, new NameReference("../../p1", Type.PARAMETER, null), a_b3);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("./p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new NameReference("./p1", Type.PARAMETER, null), a_b2_c1);
         assertEquals(nd, a_b2_c1_p1);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("./p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new NameReference("./p1", Type.PARAMETER, null), a_b2);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("/a/b2/c1/.//p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new NameReference("/a/b2/c1/.//p1", Type.PARAMETER, null), a_b2);
         assertEquals(a_b2_c1_p1, nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("/a/..", Type.PARAMETER, null), a_b2);
+       
+        nd=XtceDbFactory.findReference(root, new NameReference("/a/..", Type.PARAMETER, null), a_b2);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(a, new NameReference("p2", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new NameReference("p2", Type.PARAMETER, null), a_b2);
         assertNull(nd);
     }
     
@@ -114,5 +122,14 @@ public class TestXtceDbFactory {
         SpaceSystem ss = db.getSpaceSystem("/REFMDB/SUBSYS1");
         assertNotNull(ss);
         assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
+        
+        
+        NameDescription nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        assertNotNull(nd);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
+        
+        nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        assertNotNull(nd);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
     }
 }

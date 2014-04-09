@@ -48,8 +48,8 @@ public class XtceDbFactory {
     static transient Map<String,XtceDb> instance2Db = new HashMap<String,XtceDb>();
     static transient Map<String,XtceDb> config2Db = new HashMap<String,XtceDb>();
     static LoaderTree loaderTree;
-    
-    
+
+
     /**
      * Creates a new instance of the database in memory.
      * configSection is the top heading under which this appears in the mdb.yaml
@@ -68,7 +68,7 @@ public class XtceDbFactory {
         // create MDB/spreadsheet/XTCE loaders according to configuration
         // settings
         //
-        
+
         Map<String,Object> m = c.getMap(configSection, "xtceLoader");
         loaderTree=getLoaderTree(c, m);
 
@@ -109,11 +109,12 @@ public class XtceDbFactory {
             try {
                 //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
                 SpaceSystem rootSs = new SpaceSystem("");
+                rootSs.setParent(rootSs);
                 SpaceSystem xss = loaderTree.load();
                 rootSs.addSpaceSystem(xss);
                 rootSs.addSpaceSystem(new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1)));
                 rootSs.setHeader(xss.getHeader());
-                
+
                 int n;
                 while((n=resolveReferences(rootSs, rootSs))>0 ){};
                 StringBuffer sb=new StringBuffer();
@@ -123,11 +124,11 @@ public class XtceDbFactory {
                 db = new XtceDb(rootSs);
                 db.setRootSequenceContainer(xss.getRootSequenceContainer());
                 db.buildIndexMaps();
-                
+
             } catch (Exception e) {
                 log.error("Cannot load the database: ", e);
                 System.exit(-1);// if we can not read the database we are out of
-                                // the game
+                // the game
             }
         }
         // log.info("Loaded database with "+instance.sid2TcPacketMap.size()+" TC, "+instance.sid2SequenceContainertMap.size()+" TM containers, "+instance.sid2ParameterMap.size()+" TM parameters and "+instance.upcOpsname2PpMap.size()+" processed parameters");
@@ -142,7 +143,7 @@ public class XtceDbFactory {
         }
         return db;
     }
-    
+
     /*collects a description for all unresolved references into the StringBuffer to raise an error*/
     private static void collectUnresolvedReferences(SpaceSystem ss, StringBuffer sb) {
         for(NameReference nr: ss.getUnresolvedReferences()) {
@@ -162,11 +163,11 @@ public class XtceDbFactory {
     private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws ConfigurationException {
         List<NameReference> refs=ss.getUnresolvedReferences();
         int n= (refs.size()==0)?-1:0;
-            
+
         Iterator<NameReference> it=refs.iterator();
         while (it.hasNext()) {
             NameReference nr=it.next();
-           
+
             //Special case for system variables: they are created on the fly
             NameDescription nd;
             if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(YAMCS_SPACESYSTEM_NAME)) {
@@ -190,7 +191,7 @@ public class XtceDbFactory {
         }
         return n;
     }
-    
+
     /**
      * Create if not already existing the systemvariables and the enclosing space systems
      * 
@@ -200,7 +201,7 @@ public class XtceDbFactory {
      */
     private static SystemVariable getSystemVariable(SpaceSystem yamcsSs, String fqname) {
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
-        
+
         SpaceSystem ss = yamcsSs;
         for(int i=1; i<a.length-1;i++) {
             SpaceSystem sss = ss.getSubsystem(a[i]);
@@ -211,13 +212,13 @@ public class XtceDbFactory {
             ss=sss;
         }
         SystemVariable sv = (SystemVariable)ss.getParameter(a[a.length-1]);
-        
+
         if(sv==null) {
             sv = SystemVariable.getForFullyQualifiedName(fqname);
             log.debug("adding new system variable for "+fqname+" in system "+ss);
             ss.addParameter(sv);
         }
-        
+
         return sv;
     }
 
@@ -233,7 +234,7 @@ public class XtceDbFactory {
         String ref=nr.getReference();
         boolean absolute=false;
         SpaceSystem startSs=null;
-        
+
         if(ref.startsWith("/")) {
             absolute=true;
             startSs=rootSs;
@@ -241,7 +242,7 @@ public class XtceDbFactory {
             absolute=true;
             startSs=ss;
         }
-        
+
         if(absolute) {
             return findReference(startSs, nr);
         } else {
@@ -254,9 +255,9 @@ public class XtceDbFactory {
                 if(startSs==rootSs) break;
                 startSs=startSs.getParent();
             } 
-         return nd;   
+            return nd;   
         }
-        
+
     }
     /**
      * find reference sarting at startSs and looking through the SpaceSystem path
@@ -267,48 +268,24 @@ public class XtceDbFactory {
     private static NameDescription findReference(SpaceSystem startSs, NameReference nr) {
         String[] path=nr.getReference().split("/");
         SpaceSystem ss=startSs;
-       
-        int i=0;
-        while(i<path.length-1) {
-            for(;i<path.length-1;i++) {
-                if(".".equals(path[i]) || "".equals(path[i])) {
-                    continue;
-                } else if("..".equals(path[i])) {
-                    ss=ss.getParent();
-                    if(ss==null)break;
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            
-           if(i==path.length-1) break;           
-           if(ss==null)break;
-           
-           if(!path[i].equals(ss.getName())) {
-               ss=null;
-               break;
-           }
-           for(i=i+1;i<path.length-1;i++) {
-               if(".".equals(path[i]) || "".equals(path[i])) {
-                   continue;
-               } else if("..".equals(path[i])) {
-                   ss=ss.getParent();
-                   if(ss==null)break;
-                   continue;
-               } else {
-                   break;
-               }
-           }
-           if(i==path.length-1) break;
-           if(ss==null)break;
-           
-           ss=ss.getSubsystem(path[i]);
-           if(ss==null) break;
+
+        for(int i=0; i<path.length-1; i++) {
+            if(".".equals(path[i]) || "".equals(path[i])) {
+                continue;
+            } else if("..".equals(path[i])) {
+                ss=ss.getParent();
+                if(ss==null) break; //this can only happen if the root has no parent (normally it's its own parent)
+                continue;
+            } 
+
+            if(i==path.length-1) break;
+
+            ss = ss.getSubsystem(path[i]);
+
+            if(ss==null) break;
         }
-        
         if(ss==null) return null;
-        
+
         String name=path[path.length-1];
         switch(nr.getType()) {
         case PARAMETER:
@@ -321,8 +298,8 @@ public class XtceDbFactory {
         //shouldn't arrive here
         return null;
     }
-    
-    
+
+
     @SuppressWarnings({ "unchecked", "static-access" })
     private static LoaderTree getLoaderTree(YConfiguration c, Map<String,Object> m) throws ConfigurationException {
         String type=YConfiguration.getString(m, "type");
@@ -335,7 +312,7 @@ public class XtceDbFactory {
 
         SpaceSystemLoader l;
         LoaderTree ltree;
-        
+
         if (type.equals("xtce")) {
             l= new XtceLoader((String)args);
         } else if (type.equals("sheet")) {
@@ -350,9 +327,9 @@ public class XtceDbFactory {
                 throw new ConfigurationException("Invalid database loader class: " + type, e);
             }
         }
-        
+
         ltree=new LoaderTree(l);
-        
+
         if(m.containsKey("subLoaders")) {
             List<Object> list=c.getList(m, "subLoaders");
             for(Object o: list) {
@@ -363,10 +340,10 @@ public class XtceDbFactory {
                 }
             }
         }
-        
+
         return ltree;
     }
-    
+
     /**
      * Propagates qualified name to enclosing objects including subsystems. Also
      * registers aliases under each subsystem.
@@ -378,9 +355,9 @@ public class XtceDbFactory {
         } else {
             ssqname = parentqname+NameDescription.PATH_SEPARATOR+ss.getName();
         }
-        
+
         ss.setQualifiedName(ssqname);
-        
+
         if (!"".equals(parentqname)) {
             ss.addAlias(parentqname, ss.getName());
         }
@@ -393,26 +370,26 @@ public class XtceDbFactory {
             nd.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+nd.getName());
             nd.addAlias(ss.getQualifiedName(), nd.getName());
         }
-        
+
         for(SequenceContainer c: ss.getSequenceContainers()) {
             c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
             c.addAlias(ss.getQualifiedName(), c.getName());
         }
-        
+
         for(MetaCommand c: ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
             c.addAlias(ss.getQualifiedName(), c.getName());
         }
-        
+
         for(Algorithm a: ss.getAlgorithms()) {
             a.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+a.getName());
             a.addAlias(ss.getQualifiedName(), a.getName());
         }
-        
+
         for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
             nonStandardData.setSpaceSystemQualifiedName(ss.getQualifiedName());
         }
-        
+
         for(SpaceSystem ss1:ss.getSubSystems()) {
             setQualifiedNames(ss1, ss.getQualifiedName());
         }
@@ -479,7 +456,7 @@ public class XtceDbFactory {
         instance2Db.clear();
         config2Db.clear();
     }
-    
+
     public static void main(String argv[]) throws Exception {
         if(argv.length!=1) {
             System.out.println("Usage: print-mdb config-name");
@@ -490,11 +467,11 @@ public class XtceDbFactory {
         xtcedb.print(System.out);
     }
 
-    
+
     static class LoaderTree {
         SpaceSystemLoader root;
         List<LoaderTree> children;  
-   
+
         LoaderTree(SpaceSystemLoader root) {
             this.root=root;
         }
@@ -504,7 +481,7 @@ public class XtceDbFactory {
             if(children==null) children=new ArrayList<LoaderTree>();
             children.add(c);
         }
-        
+
         /**
          * 
          * @return a concatenation of all configs
