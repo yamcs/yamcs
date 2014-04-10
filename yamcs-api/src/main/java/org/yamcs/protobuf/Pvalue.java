@@ -960,6 +960,13 @@ public final class Pvalue {
       return parameter_.get(index);
     }
     
+    // optional string group = 2;
+    public static final int GROUP_FIELD_NUMBER = 2;
+    private boolean hasGroup;
+    private java.lang.String group_ = "";
+    public boolean hasGroup() { return hasGroup; }
+    public java.lang.String getGroup() { return group_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -975,6 +982,9 @@ public final class Pvalue {
       for (org.yamcs.protobuf.Pvalue.ParameterValue element : getParameterList()) {
         output.writeMessage(1, element);
       }
+      if (hasGroup()) {
+        output.writeString(2, getGroup());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -987,6 +997,10 @@ public final class Pvalue {
       for (org.yamcs.protobuf.Pvalue.ParameterValue element : getParameterList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, element);
+      }
+      if (hasGroup()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(2, getGroup());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1156,6 +1170,9 @@ public final class Pvalue {
           }
           result.parameter_.addAll(other.parameter_);
         }
+        if (other.hasGroup()) {
+          setGroup(other.getGroup());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1185,6 +1202,10 @@ public final class Pvalue {
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addParameter(subBuilder.buildPartial());
+              break;
+            }
+            case 18: {
+              setGroup(input.readString());
               break;
             }
           }
@@ -1243,6 +1264,27 @@ public final class Pvalue {
         return this;
       }
       
+      // optional string group = 2;
+      public boolean hasGroup() {
+        return result.hasGroup();
+      }
+      public java.lang.String getGroup() {
+        return result.getGroup();
+      }
+      public Builder setGroup(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasGroup = true;
+        result.group_ = value;
+        return this;
+      }
+      public Builder clearGroup() {
+        result.hasGroup = false;
+        result.group_ = getDefaultInstance().getGroup();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ParameterData)
     }
     
@@ -1285,18 +1327,18 @@ public final class Pvalue {
       "\n\020processingStatus\030\007 \001(\010\022>\n\020monitoringRe" +
       "sult\030\010 \001(\0162$.org.yamcs.protobuf.Monitori",
       "ngResult\022\032\n\022acquisitionTimeUTC\030\013 \001(\t\022\031\n\021" +
-      "generationTimeUTC\030\014 \001(\t\"F\n\rParameterData" +
+      "generationTimeUTC\030\014 \001(\t\"U\n\rParameterData" +
       "\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.protobuf" +
-      ".ParameterValue*M\n\021AcquisitionStatus\022\014\n\010" +
-      "ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020" +
-      "\002\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010D" +
-      "ISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tW" +
-      "ATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022" +
-      "\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DI" +
-      "STRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_H",
-      "IGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n" +
-      "\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_L" +
-      "OW\020\024\022\017\n\013SEVERE_HIGH\020\025"
+      ".ParameterValue\022\r\n\005group\030\002 \001(\t*M\n\021Acquis" +
+      "itionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVE" +
+      "D\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Monito" +
+      "ringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022" +
+      "\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020" +
+      "\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNI" +
+      "NG_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020",
+      "\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CR" +
+      "ITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVER" +
+      "E\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1316,7 +1358,7 @@ public final class Pvalue {
           internal_static_org_yamcs_protobuf_ParameterData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ParameterData_descriptor,
-              new java.lang.String[] { "Parameter", },
+              new java.lang.String[] { "Parameter", "Group", },
               org.yamcs.protobuf.Pvalue.ParameterData.class,
               org.yamcs.protobuf.Pvalue.ParameterData.Builder.class);
           return null;

@@ -58,4 +58,9 @@ message ParameterValue {
 
 message ParameterData {
     repeated ParameterValue parameter=1;
+    
+
+    // the group is used by the recorder to group parameters in "rows" and also by the components that provide parameters from external sources
+    // in the future we may get rid of it and record based on xtce system/subsystem hierarchy
+    optional string group = 2; 
 }
