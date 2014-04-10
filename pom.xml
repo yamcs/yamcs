@@ -6,7 +6,7 @@
   <packaging>pom</packaging>
   <name>Yamcs</name>
   <description>Yet Another Mission Control System.</description>
-  <version>0.24.3-SNAPSHOT</version>
+  <version>0.25.0</version>
 
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
@@ -22,7 +22,7 @@
   <properties>
     <RESTLET_VERSION>2.0.5</RESTLET_VERSION>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hornetQVersion>2.2.24.Snapshot</hornetQVersion>
+    <hornetQVersion>2.2.28.Final</hornetQVersion>
   </properties>
 
   <build>

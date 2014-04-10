@@ -1,3 +1,10 @@
+Version 0.25.0 Released 10-Apr-2014
+- Fix bug with name referencing in xtce tree
+- Expose time in ms to algorithm
+- split the StreamAdapter into HornetQTmProvider and HornetQTmService and same for PP
+- various XTCE compatibility improvements
+
+
 Version 0.24.2 Released 11-Mar-2014
 - Add support for booleans in spreadsheet
 - Fix support for longs and doubles in spreadsheet
