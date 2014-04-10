@@ -58,9 +58,11 @@ message ParameterValue {
 
 message ParameterData {
     repeated ParameterValue parameter=1;
-    
 
-    // the group is used by the recorder to group parameters in "rows" and also by the components that provide parameters from external sources
-    // in the future we may get rid of it and record based on xtce system/subsystem hierarchy
-    optional string group = 2; 
+    // the next three fields are used by the recorder as unique key to store parameters in "rows" 
+    // and also by the components that provide parameters from external sources
+    // the time should roughly correspond to the parameter time but can be rounded for better efficiency
+    optional string group = 2;
+    optional int64  generationTime = 3;
+    optional int32 seqNum = 4;
 }

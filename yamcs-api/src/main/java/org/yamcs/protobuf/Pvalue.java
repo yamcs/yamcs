@@ -967,6 +967,20 @@ public final class Pvalue {
     public boolean hasGroup() { return hasGroup; }
     public java.lang.String getGroup() { return group_; }
     
+    // optional int64 generationTime = 3;
+    public static final int GENERATIONTIME_FIELD_NUMBER = 3;
+    private boolean hasGenerationTime;
+    private long generationTime_ = 0L;
+    public boolean hasGenerationTime() { return hasGenerationTime; }
+    public long getGenerationTime() { return generationTime_; }
+    
+    // optional int32 seqNum = 4;
+    public static final int SEQNUM_FIELD_NUMBER = 4;
+    private boolean hasSeqNum;
+    private int seqNum_ = 0;
+    public boolean hasSeqNum() { return hasSeqNum; }
+    public int getSeqNum() { return seqNum_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -985,6 +999,12 @@ public final class Pvalue {
       if (hasGroup()) {
         output.writeString(2, getGroup());
       }
+      if (hasGenerationTime()) {
+        output.writeInt64(3, getGenerationTime());
+      }
+      if (hasSeqNum()) {
+        output.writeInt32(4, getSeqNum());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -1001,6 +1021,14 @@ public final class Pvalue {
       if (hasGroup()) {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(2, getGroup());
+      }
+      if (hasGenerationTime()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, getGenerationTime());
+      }
+      if (hasSeqNum()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, getSeqNum());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1173,6 +1201,12 @@ public final class Pvalue {
         if (other.hasGroup()) {
           setGroup(other.getGroup());
         }
+        if (other.hasGenerationTime()) {
+          setGenerationTime(other.getGenerationTime());
+        }
+        if (other.hasSeqNum()) {
+          setSeqNum(other.getSeqNum());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1206,6 +1240,14 @@ public final class Pvalue {
             }
             case 18: {
               setGroup(input.readString());
+              break;
+            }
+            case 24: {
+              setGenerationTime(input.readInt64());
+              break;
+            }
+            case 32: {
+              setSeqNum(input.readInt32());
               break;
             }
           }
@@ -1285,6 +1327,42 @@ public final class Pvalue {
         return this;
       }
       
+      // optional int64 generationTime = 3;
+      public boolean hasGenerationTime() {
+        return result.hasGenerationTime();
+      }
+      public long getGenerationTime() {
+        return result.getGenerationTime();
+      }
+      public Builder setGenerationTime(long value) {
+        result.hasGenerationTime = true;
+        result.generationTime_ = value;
+        return this;
+      }
+      public Builder clearGenerationTime() {
+        result.hasGenerationTime = false;
+        result.generationTime_ = 0L;
+        return this;
+      }
+      
+      // optional int32 seqNum = 4;
+      public boolean hasSeqNum() {
+        return result.hasSeqNum();
+      }
+      public int getSeqNum() {
+        return result.getSeqNum();
+      }
+      public Builder setSeqNum(int value) {
+        result.hasSeqNum = true;
+        result.seqNum_ = value;
+        return this;
+      }
+      public Builder clearSeqNum() {
+        result.hasSeqNum = false;
+        result.seqNum_ = 0;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ParameterData)
     }
     
@@ -1327,15 +1405,16 @@ public final class Pvalue {
       "\n\020processingStatus\030\007 \001(\010\022>\n\020monitoringRe" +
       "sult\030\010 \001(\0162$.org.yamcs.protobuf.Monitori",
       "ngResult\022\032\n\022acquisitionTimeUTC\030\013 \001(\t\022\031\n\021" +
-      "generationTimeUTC\030\014 \001(\t\"U\n\rParameterData" +
+      "generationTimeUTC\030\014 \001(\t\"}\n\rParameterData" +
       "\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.protobuf" +
-      ".ParameterValue\022\r\n\005group\030\002 \001(\t*M\n\021Acquis" +
+      ".ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016genera" +
+      "tionTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acquis" +
       "itionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVE" +
       "D\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Monito" +
       "ringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022" +
       "\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020" +
-      "\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNI" +
-      "NG_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020",
+      "\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNI",
+      "NG_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020" +
       "\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CR" +
       "ITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVER" +
       "E\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025"
@@ -1358,7 +1437,7 @@ public final class Pvalue {
           internal_static_org_yamcs_protobuf_ParameterData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ParameterData_descriptor,
-              new java.lang.String[] { "Parameter", "Group", },
+              new java.lang.String[] { "Parameter", "Group", "GenerationTime", "SeqNum", },
               org.yamcs.protobuf.Pvalue.ParameterData.class,
               org.yamcs.protobuf.Pvalue.ParameterData.Builder.class);
           return null;
