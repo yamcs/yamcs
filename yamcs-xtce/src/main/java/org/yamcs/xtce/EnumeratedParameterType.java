@@ -25,6 +25,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 			dependentParameters.addAll(eca.getContextMatch().getDependentParameters());
 		return dependentParameters;
 	}
+	
 	public EnumerationAlarm getDefaultAlarm() {
 	    return defaultAlarm;
 	}
@@ -38,16 +39,43 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 		contextAlarmList.add(nca);
 	}
 	
+	public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
+        if(contextAlarmList==null) return null;
+        for(EnumerationContextAlarm eca:contextAlarmList) {
+            if(eca.getContextMatch().equals(contextMatch)) {
+                return eca;
+            }
+        }
+        return null;
+	}
+	
+    /**
+     * Adds a new contextual alarm for the specified value
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addAlarm(MatchCriteria contextMatch, ValueEnumeration enumValue, AlarmLevels level) {
+        getEnumerationAlarm(contextMatch).addAlarm(enumValue, level);
+    }
+    
+    private EnumerationAlarm getEnumerationAlarm(MatchCriteria contextMatch) {
+        if(contextMatch==null) {
+            if(defaultAlarm==null)
+                defaultAlarm=new EnumerationAlarm();
+            return defaultAlarm;
+        } else {
+            EnumerationContextAlarm eca=getContextAlarm(contextMatch);
+            if(eca==null) {
+                eca=new EnumerationContextAlarm();
+                eca.setContextMatch(contextMatch);
+                addContextAlarm(eca);
+            }
+            return eca;
+        }
+    }
+	
 	public List<EnumerationContextAlarm> getContextAlarmList() {
 	    return contextAlarmList;
-	}
-	/**
-	 * Extracts an enumerated value
-	 * @param bb 
-	 * @param locationInContainerInBits 
-	 * @return the parameter value has the stateCodeValue set
-	 */
-	
+	}	
 
 	public String calibrate(long raw) {
 		ValueEnumeration v = enumeration.get(raw);
@@ -57,7 +85,6 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 	public String getCalibrationDescription() {
 		return "EnumeratedParameterType: "+enumeration;
 	}
-	
 
     @Override
     public String getTypeAsString() {

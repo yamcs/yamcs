@@ -83,11 +83,21 @@ public final class Pvalue {
       implements com.google.protobuf.ProtocolMessageEnum {
     DISABLED(0, 0),
     IN_LIMITS(1, 1),
-    NOMINAL_LIMIT_VIOLATION(2, 2),
-    NOMINAL_LOW_LIMIT_VIOLATION(3, 3),
-    NOMINAL_HIGH_LIMIT_VIOLATION(4, 4),
-    DANGER_LOW_LIMIT_VIOLATION(5, 5),
-    DANGER_HIGH_LIMIT_VIOLATION(6, 6),
+    WATCH(2, 7),
+    WATCH_LOW(3, 8),
+    WATCH_HIGH(4, 9),
+    WARNING(5, 10),
+    WARNING_LOW(6, 11),
+    WARNING_HIGH(7, 12),
+    DISTRESS(8, 13),
+    DISTRESS_LOW(9, 14),
+    DISTRESS_HIGH(10, 15),
+    CRITICAL(11, 16),
+    CRITICAL_LOW(12, 17),
+    CRITICAL_HIGH(13, 18),
+    SEVERE(14, 19),
+    SEVERE_LOW(15, 20),
+    SEVERE_HIGH(16, 21),
     ;
     
     
@@ -97,11 +107,21 @@ public final class Pvalue {
       switch (value) {
         case 0: return DISABLED;
         case 1: return IN_LIMITS;
-        case 2: return NOMINAL_LIMIT_VIOLATION;
-        case 3: return NOMINAL_LOW_LIMIT_VIOLATION;
-        case 4: return NOMINAL_HIGH_LIMIT_VIOLATION;
-        case 5: return DANGER_LOW_LIMIT_VIOLATION;
-        case 6: return DANGER_HIGH_LIMIT_VIOLATION;
+        case 7: return WATCH;
+        case 8: return WATCH_LOW;
+        case 9: return WATCH_HIGH;
+        case 10: return WARNING;
+        case 11: return WARNING_LOW;
+        case 12: return WARNING_HIGH;
+        case 13: return DISTRESS;
+        case 14: return DISTRESS_LOW;
+        case 15: return DISTRESS_HIGH;
+        case 16: return CRITICAL;
+        case 17: return CRITICAL_LOW;
+        case 18: return CRITICAL_HIGH;
+        case 19: return SEVERE;
+        case 20: return SEVERE_LOW;
+        case 21: return SEVERE_HIGH;
         default: return null;
       }
     }
@@ -132,7 +152,7 @@ public final class Pvalue {
     }
     
     private static final MonitoringResult[] VALUES = {
-      DISABLED, IN_LIMITS, NOMINAL_LIMIT_VIOLATION, NOMINAL_LOW_LIMIT_VIOLATION, NOMINAL_HIGH_LIMIT_VIOLATION, DANGER_LOW_LIMIT_VIOLATION, DANGER_HIGH_LIMIT_VIOLATION, 
+      DISABLED, IN_LIMITS, WATCH, WATCH_LOW, WATCH_HIGH, WARNING, WARNING_LOW, WARNING_HIGH, DISTRESS, DISTRESS_LOW, DISTRESS_HIGH, CRITICAL, CRITICAL_LOW, CRITICAL_HIGH, SEVERE, SEVERE_LOW, SEVERE_HIGH, 
     };
     public static MonitoringResult valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -1269,12 +1289,14 @@ public final class Pvalue {
       "\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.protobuf" +
       ".ParameterValue*M\n\021AcquisitionStatus\022\014\n\010" +
       "ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020" +
-      "\002\022\013\n\007EXPIRED\020\003*\320\001\n\020MonitoringResult\022\014\n\010D" +
-      "ISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\033\n\027NOMINAL_LIMI" +
-      "T_VIOLATION\020\002\022\037\n\033NOMINAL_LOW_LIMIT_VIOLA" +
-      "TION\020\003\022 \n\034NOMINAL_HIGH_LIMIT_VIOLATION\020\004" +
-      "\022\036\n\032DANGER_LOW_LIMIT_VIOLATION\020\005\022\037\n\033DANG",
-      "ER_HIGH_LIMIT_VIOLATION\020\006"
+      "\002\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010D" +
+      "ISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tW" +
+      "ATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022" +
+      "\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DI" +
+      "STRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_H",
+      "IGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n" +
+      "\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_L" +
+      "OW\020\024\022\017\n\013SEVERE_HIGH\020\025"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

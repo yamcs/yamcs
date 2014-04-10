@@ -69,6 +69,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterValue;
@@ -92,6 +94,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -104,6 +107,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterListener, ConnectionListener {
     private static final long serialVersionUID = 1L;
+    private static final Logger log=LoggerFactory.getLogger(PacketViewer.class);
     static PacketViewer theApp;
     static int maxLines = -1;
     XtceDb xtcedb;
@@ -493,6 +497,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         try {
             xtcedb=XtceDbFactory.getInstanceByConfig(configName);
         } catch (ConfigurationException e) {
+            log.error(e.toString(), e);
+            showError(e.getMessage());
+            return false;
+        } catch (DatabaseLoadException e) {
+            log.error(e.toString(), e);
             showError(e.getMessage());
             return false;
         }

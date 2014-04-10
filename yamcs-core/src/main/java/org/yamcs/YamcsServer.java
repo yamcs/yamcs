@@ -1,6 +1,8 @@
 package org.yamcs;
 
-import static org.yamcs.api.Protocol.*;
+import static org.yamcs.api.Protocol.DATA_TO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,10 +11,27 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.jboss.netty.buffer.ChannelBufferOutputStream;
+import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
+import org.omg.PortableServer.POAPackage.ServantNotActive;
+import org.omg.PortableServer.POAPackage.WrongPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.Protocol;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsClient;
+import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.MissionDatabase;
+import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
+import org.yamcs.protobuf.Yamcs.YamcsInstance;
+import org.yamcs.protobuf.Yamcs.YamcsInstances;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
@@ -20,22 +39,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
-
 import com.google.common.util.concurrent.Service;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Yamcs.MissionDatabase;
-import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
-import org.yamcs.protobuf.Yamcs.YamcsInstance;
-import org.yamcs.protobuf.Yamcs.YamcsInstances;
 
 /**
  * 
@@ -248,9 +252,11 @@ public class YamcsServer {
             setupYamcsServer();
             
 	    } catch (ConfigurationException e) {
+	        staticlog.error("Could not start Yamcs Server: "+e.toString(), e);
 	    	System.err.println(e.toString());
 	    	System.exit(-1);
 	    } catch (Throwable e) {
+	        staticlog.error("Could not start Yamcs Server: "+e.toString(), e);
             e.printStackTrace();
             System.exit(-1);
         }

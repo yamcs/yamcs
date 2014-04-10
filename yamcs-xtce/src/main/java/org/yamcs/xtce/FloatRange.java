@@ -25,6 +25,15 @@ public class FloatRange implements Serializable {
 		return minInclusive;
 	}
 	
+    /**
+     * E.g. a low limit of ]-Infinity, -22] and a high limit of [40, +Infinity[ 
+     * intersect to [-22, 40] (which for practical purposes is actually the range
+     * inside of which pvals are _not_ out of limits)
+     */
+	public FloatRange intersectWith(FloatRange other) {
+        return new FloatRange(Math.max(minInclusive, other.minInclusive), Math.min(maxInclusive, other.maxInclusive));
+    }
+	
 	@Override
     public String toString() {
         return "["+minInclusive+","+maxInclusive+"]";

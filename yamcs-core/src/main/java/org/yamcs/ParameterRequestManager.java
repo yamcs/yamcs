@@ -16,6 +16,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
@@ -37,7 +38,7 @@ public class ParameterRequestManager implements ParameterListener {
 	//Maps the request (subscription id) to an object that is consuming the results who has requested it
 	private Map<Integer,ParameterConsumer> request2ParameterConsumerMap = new HashMap<Integer,ParameterConsumer>();
 	
-	//these are the consumers that may update the list of parmaeters
+	//these are the consumers that may update the list of parameters
 	private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
 	
 	//contains the subscribeAll ids -> namespace mapping
@@ -45,6 +46,7 @@ public class ParameterRequestManager implements ParameterListener {
 	
 	
 	private XtceTmProcessor tmProcessor=null;
+	private AlarmChecker alarmChecker;
 	private Map<Class<?>,ParameterProvider> parameterProviders=new HashMap<Class<?>,ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
@@ -68,6 +70,7 @@ public class ParameterRequestManager implements ParameterListener {
         this.tmProcessor=tmProcessor;
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
+		alarmChecker=new AlarmChecker(chan.getInstance());
 		
         YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
         if(yconf.containsKey("parameterProviders")) {
@@ -401,6 +404,8 @@ public class ParameterRequestManager implements ParameterListener {
 	 */
 	private void updateDelivery(HashMap<Integer, ArrayList<ParameterValueWithId>> delivery, Collection<ParameterValue> params) {
 	    if(params==null) return;
+        //first check alarms for these new params
+        alarmChecker.performAlarmChecking(params);
 	    
 		for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 			ParameterValue pv=it.next();

@@ -32,7 +32,7 @@ public class ProcessingContext {
 	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
 	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
-	public ComparisonProcessor comparisonProcessor=new ComparisonProcessor(this);
+	public ComparisonProcessor comparisonProcessor;
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
 	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
@@ -46,5 +46,6 @@ public class ProcessingContext {
 		this.acquisitionTime = acquisitionTime;
 		this.generationTime = generationTime;
 		this.stats = stats;
+		this.comparisonProcessor=new ComparisonProcessor(paramResult);
 	}
 }

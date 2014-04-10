@@ -40,6 +40,15 @@ public class EnumeratedDataType extends BaseDataType {
 	    return null;
 	}
 	
+	public ValueEnumeration enumValue(String label) {
+	    for(ValueEnumeration enumeration:enumerationList) {
+	        if(enumeration.getLabel().equals(label)) {
+	            return enumeration;
+	        }
+	    }
+	    return null;
+	}
+	
 	/**
      * Set default value
      * @param initialValue

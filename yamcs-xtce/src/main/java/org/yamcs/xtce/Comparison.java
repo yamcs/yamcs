@@ -2,17 +2,19 @@ package org.yamcs.xtce;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A simple ParameterInstanceRef to value comparison.  
- * DIFFERS_FROM_XTCE in xtce the value is stored as a string and it's not very clear how it's compared with an integer
+ * DIFFERS_FROM_XTCE:
+ * 1) in xtce the value is stored as a string and it's not very clear how it's compared with an integer
+ * 2) in xtce Comparison extends ParameterInstanceRef, and MatchCriteria is a choice of Comparison, ComparisonList, ...
  */
-public class Comparison extends MatchCriteria {
+public class Comparison implements MatchCriteria {
 	private static final long serialVersionUID = 200805131551L;
 	ParameterInstanceRef instanceRef;
-	boolean useCalibratedValue;
 	
 	OperatorType comparisonOperator;
 	public enum OperatorType { EQUALITY, INEQUALITY, LARGERTHAN, LARGEROREQUALTHAN, SMALLERTHAN, SMALLEROREQUALTHAN };

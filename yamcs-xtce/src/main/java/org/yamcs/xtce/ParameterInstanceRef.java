@@ -41,6 +41,10 @@ public class ParameterInstanceRef implements Serializable {
 	public boolean useCalibratedValue() {
 		return useCalibratedValue;
 	}
+	
+	public void setUseCalibratedValue(boolean useCalibratedValue) {
+	    this.useCalibratedValue=useCalibratedValue;
+	}
 
 	public void setInstance(int instance) {
 	    this.instance = instance;

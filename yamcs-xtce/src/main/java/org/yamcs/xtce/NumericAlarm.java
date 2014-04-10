@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author nm
  *
  */
-public class NumericAlarm implements Serializable {
+public class NumericAlarm extends AlarmType implements Serializable {
 	private static final long serialVersionUID = 200706052351L;
 	
 	/**

@@ -26,7 +26,7 @@ public class StringConvertors {
 	    case SINT32:
 	        return "(SIGNED_INTEGER)"+rv.getSint32Value();
 	    case UINT32:
-	        return "(UNSIGNED_INTEGER)"+rv.getUint32Value();
+	        return "(UNSIGNED_INTEGER)"+Long.toString(rv.getUint32Value()&0xFFFFFFFFL);
 	    case SINT64:
 	        return "(SIGNED_INTEGER)"+rv.getSint64Value();
 	    case UINT64:

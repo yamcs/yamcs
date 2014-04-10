@@ -1,26 +1,36 @@
 package org.yamcs.xtceproc;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.ListIterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
-
-import com.google.common.primitives.UnsignedBytes;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.ParameterInstanceRef;
 
+import com.google.common.primitives.UnsignedBytes;
+
 
 public class ComparisonProcessor {
-    ProcessingContext pcontext;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-
-    public ComparisonProcessor(ProcessingContext pcontext) {
-        this.pcontext=pcontext;
+    ArrayList<ParameterValue> params;
+    
+    /**
+     * @param params pvals within 'scope'. Identifier resolution is performed against these pvals
+     */
+    public ComparisonProcessor(Collection<ParameterValue> params) {
+        // We need a list because of the backwards iteration
+        if(params instanceof ArrayList) {
+            this.params=(ArrayList<ParameterValue>)params;
+        } else {
+            this.params=new ArrayList<ParameterValue>(params);
+        }
     }
     
     public boolean matches(MatchCriteria mc) {
@@ -46,7 +56,6 @@ public class ComparisonProcessor {
         // in case of multiple values present, traverse the list in reverse order to get the value of the most recently 
         // extracted parameter first.
         ParameterInstanceRef paraRef=ic.getParameterRef();
-        ArrayList<ParameterValue> params=pcontext.paramResult;
         long value=ic.getLongValue();
         if(paraRef.useCalibratedValue()) {
             for(ListIterator<ParameterValue>it=params.listIterator(params.size());it.hasPrevious();) {
@@ -107,7 +116,6 @@ public class ComparisonProcessor {
         
         double value=fc.getDoubleValue();
         
-        ArrayList<ParameterValue> params=pcontext.paramResult;
         if(fc.getParameterRef().useCalibratedValue()) {
             for(ListIterator<ParameterValue>it=params.listIterator(params.size());it.hasPrevious();) {
                 ParameterValue pv=it.previous();
@@ -161,8 +169,6 @@ public class ComparisonProcessor {
         // extracted parameter first.
         
         ParameterInstanceRef paraRef=sc.getParameterRef();
-        ArrayList<ParameterValue> params=pcontext.paramResult;
-        
         if(paraRef.useCalibratedValue()) {
             String value=sc.getStringValue();
             for(ListIterator<ParameterValue>it=params.listIterator(params.size());it.hasPrevious();) {

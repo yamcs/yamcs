@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Alarm conditions for Enumerations</documentation
-   An additional check needs to be performed to ensure that the enumeration values in the alarms are legal 
-   enumeration values for the Parameter
+ * Alarm conditions for Enumerations
+ * An additional check needs to be performed to ensure that the enumeration values in the alarms are legal 
+ * enumeration values for the Parameter
  * @author nm
  *
  */
-public class EnumerationAlarm implements Serializable{
+public class EnumerationAlarm extends AlarmType implements Serializable{
 	private static final long serialVersionUID=200707121420L;
 	
 	private List<EnumerationAlarmItem> alarmList=new ArrayList<EnumerationAlarmItem>();
@@ -22,8 +22,8 @@ public class EnumerationAlarm implements Serializable{
 	
 	
 
-	public void addAlarm(String value, AlarmLevels level) {
-		alarmList.add(new EnumerationAlarmItem(value,level));	
+	public void addAlarm(ValueEnumeration enumValue, AlarmLevels level) {
+		alarmList.add(new EnumerationAlarmItem(enumValue,level));	
 	}
 	
 	public AlarmLevels getDefaultAlarmLevel() {
@@ -44,18 +44,18 @@ public class EnumerationAlarm implements Serializable{
 	
 	static public class EnumerationAlarmItem implements Serializable {
         private static final long serialVersionUID = 200707121420L;
-        EnumerationAlarmItem(String value, AlarmLevels level) {
-            this.enumerationValue=value;
+        EnumerationAlarmItem(ValueEnumeration enumValue, AlarmLevels level) {
+            this.enumerationValue=enumValue;
             this.alarmLevel=level;
         }
         AlarmLevels alarmLevel;
-        String enumerationValue;
+        ValueEnumeration enumerationValue;
         @Override
         public String toString() {
-            return "("+enumerationValue+"->"+alarmLevel+")";
+            return "("+enumerationValue.getLabel()+"->"+alarmLevel+")";
         }
         
-        public String getEnumerationValue() {
+        public ValueEnumeration getEnumerationValue() {
             return enumerationValue;
         }
         
