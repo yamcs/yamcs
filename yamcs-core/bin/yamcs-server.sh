@@ -23,6 +23,11 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 #set library path (for tokyocabinet)
 . "$YAMCS_HOME"/bin/setlibrarypath.sh
 
+#To allow remote JMX (jconsole) connections, attach this to the java command
+#Only temporarily for debugging!!!
+JMX_REMOTE="-Dcom.sun.management.jmxremote.port=9999  -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+
+
 # run the program
 exec "$_RUNJAVA" $JAVA_LIBRARY_PATH\
     -Djxl.nowarnings=true \
