@@ -310,6 +310,32 @@ public class AlgorithmManagerTest {
         assertEquals(1, params.get(0).getParameterValue().getRawValue().getUint32Value());
         assertEquals(0.0001672918, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-8);
     }
+    
+    @Test
+    public void testSeparateUpdate() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoSeparateUpdateOutcome").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(0.1672918, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-8);
+        
+        params.clear();
+        tmGenerator.generate_PKT16(5, 6);
+        assertEquals(1, params.size());
+        assertEquals(5.167291, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-6);
+        
+        params.clear();
+        tmGenerator.generate_PKT16(4, 6);
+        assertEquals(1, params.size());
+        assertEquals(4.167291, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-6);
+    }
 
     static class MyTcTmService extends AbstractService implements TcTmService {
         TmPacketProvider tm;

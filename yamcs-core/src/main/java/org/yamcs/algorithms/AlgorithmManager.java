@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -70,7 +69,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	// Index of all available out params
 	NamedDescriptionIndex<Parameter> outParamIndex=new NamedDescriptionIndex<Parameter>();
 	
-	Map<Algorithm,AlgorithmEngine> engineByAlgorithm=new HashMap<Algorithm,AlgorithmEngine>();
+	HashMap<Algorithm,AlgorithmEngine> engineByAlgorithm=new HashMap<Algorithm,AlgorithmEngine>();
+	ArrayList<Algorithm> executionOrder=new ArrayList<Algorithm>();
 	HashSet<Parameter> requiredInParams=new HashSet<Parameter>(); // required by this class
 	ArrayList<Parameter> requestedOutParams=new ArrayList<Parameter>(); // requested by clients
 	ParameterRequestManager parameterRequestManager;
@@ -174,13 +174,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
 	
 	private void activateAlgorithm(Algorithm algorithm) {
-        AlgorithmEngine engine=engineByAlgorithm.get(algorithm);
-        if(engine!=null) {
+        if(engineByAlgorithm.containsKey(algorithm)) {
             log.trace("Already activated algorithm {}", algorithm.getQualifiedName());
             return;
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
-        engine=new AlgorithmEngine(algorithm, scriptEngine);
+        AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
         engineByAlgorithm.put(algorithm, engine);
         try {
             ArrayList<NamedObjectId> newItems=new ArrayList<NamedObjectId>();
@@ -204,8 +203,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     }
                 }
                 
-                // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires
-                // going back in time
+                // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires going back in time
                 int lookbackSize=engine.getLookbackSize(param);
                 if(lookbackSize>0) {
                     if(buffersByParam.containsKey(param)) {
@@ -219,6 +217,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             if(!newItems.isEmpty()) {
                 parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
             }
+            executionOrder.add(algorithm); // Add at the back (dependent algorithms will come in front)
         } catch (InvalidIdentification e) {
             log.error(String.format("InvalidIdentification caught when subscribing to the items "
                             + "required for the algorithm %s\n\t The invalid items are: %s"
@@ -284,86 +283,63 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	    }
 	    
 	    updateHistoryWindows(pvals);
-	    return doUpdateParameters(pvals, new HashSet<AlgorithmEngine>());
+	    return doUpdateParameters(pvals);
 	}
 	
-	private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items, HashSet<AlgorithmEngine> hasRun) {
-        // Set the correct arguments for every Algorithm involved
-        HashSet<AlgorithmEngine> needsRun=new HashSet<AlgorithmEngine>();
-        HashSet<AlgorithmEngine> invalid=new HashSet<AlgorithmEngine>();
-        for(Entry<Algorithm,AlgorithmEngine> entry:engineByAlgorithm.entrySet()) {
-            Algorithm def=entry.getKey();
-            AlgorithmEngine engine=entry.getValue();
-
-            // Prevent multiple runs when cascading
-            if(hasRun.contains(engine)) {
-                continue;
-            }
+	private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items) {
+	    ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
+	    ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
+        for(Algorithm algorithm:executionOrder) {
+            AlgorithmEngine engine=engineByAlgorithm.get(algorithm);
+            boolean skipRun=false;
 
             // Set algorithm arguments based on incoming values
-            for(InputParameter inputParameter:def.getInputSet()) {
+            for(InputParameter inputParameter:algorithm.getInputSet()) {
+                if(skipRun) break;
                 ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
-                boolean matchFound=false;
-                for(ParameterValue pval:items) {
+                for(ParameterValue pval:allItems) {
                     if(pInstance.getParameter().equals(pval.def)) {
-                        matchFound=true;
                         if(engine.getLookbackSize(pInstance.getParameter())==0) {
                             engine.updateInput(inputParameter, pval);
-                            needsRun.add(engine);
                         } else {
                             ParameterValue historicValue=buffersByParam.get(pval.def)
                                             .getHistoricValue(pInstance.getInstance());
                             if(historicValue!=null) {
                                 engine.updateInput(inputParameter, historicValue);
-                                needsRun.add(engine);
-                            } else {
-                                invalid.add(engine); // Exclude algo as soon as one param is not available
+                            } else { // Exclude algo as soon as one param is not available
+                                skipRun=true;
                             }
                         }
                     }
                 }
-                // Exclude algorithms with missing arguments (for example, because it depends on another algorithm which needs to be run first)
-                if(!matchFound) {
-                    invalid.add(engine);
-                    break; // No need to evaluate other input parameters
-                }
-            }
-        }
-        
-        // Finally, run the algorithm
-        if(needsRun.isEmpty()) {
-            return null;
-        } else {
-            long acqTime=TimeEncoding.currentInstant();
-            ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
-            for(AlgorithmEngine engine:needsRun) {
-                if(!invalid.contains(engine)) {
-                    try {
-                        List<ParameterValue> pvals=engine.runAlgorithm();
-                        r.addAll(pvals);
-                        hasRun.add(engine);
-                    } catch (Exception e) {
-                        log.warn("Exception while updating algorithm "+engine.def, e);
-                    }
-                }
-            }
-    
-            for(ParameterValue pval:r) {
-                pval.setAcquisitionTime(acqTime);
-                pval.setGenerationTime(items.get(0).getGenerationTime());
             }
             
-            // Cascade
-            if(!r.isEmpty()) {
-                updateHistoryWindows(r); 
-                items.addAll(r);
-                ArrayList<ParameterValue> cascadedPvals=doUpdateParameters(items, hasRun);
-                if(cascadedPvals!=null) {
-                    r.addAll(cascadedPvals);
-                }
+            if(!skipRun) {
+                ArrayList<ParameterValue> r=runEngine(engine, items.get(0).getGenerationTime());
+                newItems.addAll(r);
+                allItems.addAll(r);
             }
-            return r;
         }
+        return newItems;
+	}
+	
+	private ArrayList<ParameterValue> runEngine(AlgorithmEngine engine, long genTime) {
+        long acqTime=TimeEncoding.currentInstant();
+        ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
+        try {
+            List<ParameterValue> pvals=engine.runAlgorithm();
+            r.addAll(pvals);
+        } catch (Exception e) {
+            log.warn("Exception while updating algorithm "+engine.def, e);
+        }
+
+        for(ParameterValue pval:r) {
+            pval.setAcquisitionTime(acqTime);
+            pval.setGenerationTime(genTime);
+        }
+        
+        updateHistoryWindows(r);
+        return r;
 	}
 	
     private void updateHistoryWindows(ArrayList<ParameterValue> pvals) {
