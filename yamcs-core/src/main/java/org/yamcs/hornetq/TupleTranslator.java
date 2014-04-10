@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.hornetq;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.yamcs.yarch.Tuple;

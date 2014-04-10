@@ -1,4 +1,4 @@
-package org.yamcs.archive;
+package org.yamcs.hornetq;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import org.hornetq.api.core.client.ClientMessage;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.archive.PpProviderAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.hornet.TupleTranslator;
 
 /**
  * Translates between Processed Parameter tuples and HornetQ messages.

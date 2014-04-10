@@ -1,13 +1,13 @@
-package org.yamcs.archive;
+package org.yamcs.hornetq;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.hornet.TupleTranslator;
 
 import com.google.protobuf.ByteString;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.archive.TmProviderAdapter;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 
 /**

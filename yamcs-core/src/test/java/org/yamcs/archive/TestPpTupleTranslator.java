@@ -23,6 +23,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.YamcsClient.ClientBuilder;
+import org.yamcs.hornetq.PpTupleTranslator;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
@@ -37,7 +38,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.yarch.hornet.StreamAdapter;
+import org.yamcs.hornetq.StreamAdapter;
 
 public class TestPpTupleTranslator extends YarchTestCase {
 	static EmbeddedHornetQ hornetServer;
@@ -125,7 +126,7 @@ public class TestPpTupleTranslator extends YarchTestCase {
 		
 		// Add the adapter under test
 		SimpleString address = new SimpleString( PpRecorder.REALTIME_PP_STREAM_NAME );
-		StreamAdapter streamAdapter = new StreamAdapter( rtstream, address, new PpTupleTranslator() );
+		new StreamAdapter( rtstream, address, new PpTupleTranslator() );
 		
 		// Create a client to generate messages with
 		YamcsSession ys = YamcsSession.newBuilder().build();

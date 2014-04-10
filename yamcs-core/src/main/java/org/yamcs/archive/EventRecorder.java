@@ -7,12 +7,13 @@ import org.hornetq.api.core.SimpleString;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.hornet.StreamAdapter;
+import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.AbstractService;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.hornetq.EventTupleTranslator;
 
 /**
  * Sets up the archiving of the events coming on events_realtime and events_dump streams

@@ -404,11 +404,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public String getTmMode() {
-        return null;
-    }
-
-    @Override
     public boolean isArchiveReplay() {
         return false;
     }

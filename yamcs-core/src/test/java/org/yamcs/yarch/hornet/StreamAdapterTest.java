@@ -18,8 +18,8 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.hornet.StreamAdapter;
-import org.yamcs.yarch.hornet.TupleTranslator;
+import org.yamcs.hornetq.StreamAdapter;
+import org.yamcs.hornetq.TupleTranslator;
 
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;

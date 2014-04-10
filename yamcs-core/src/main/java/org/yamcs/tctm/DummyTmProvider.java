@@ -42,11 +42,6 @@ public class DummyTmProvider extends AbstractService implements TmPacketProvider
 	}
 
 	@Override
-    public String getTmMode() {
-		return "RT_NORM";
-	}
-
-	@Override
     public boolean isDisabled() {
 		return disabled;
 	}

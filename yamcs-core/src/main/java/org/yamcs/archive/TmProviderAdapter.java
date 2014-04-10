@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
@@ -18,7 +17,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.hornet.StreamAdapter;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -117,7 +115,6 @@ public class TmProviderAdapter extends AbstractService {
 	static Stream createTmStream(YarchDatabase ydb, String streamName) throws HornetQException, YamcsApiException, StreamSqlException, ParseException {
         ydb.execute("create stream "+streamName+TM_TUPLE_DEFINITION.getStringDefinition());
         Stream s=ydb.getStream(streamName);
-        new StreamAdapter(s, new SimpleString(ydb.getName()+"."+streamName), new TmTupleTranslator());
         return s;
 	}
 	

@@ -33,7 +33,8 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.yarch.hornet.StreamAdapter;
+import org.yamcs.hornetq.EventTupleTranslator;
+import org.yamcs.hornetq.StreamAdapter;
 
 /**
  * Generates and saves some some events and then it performs a replay via HornetQ

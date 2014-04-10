@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.hornetq;
 
 import java.util.Random;
 
@@ -32,7 +32,9 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
     final private YamcsClient msgClient;
     final private Stream stream;
     static final public String UNIQUEID_HDR_NAME="_y_uniqueid";
-    final private int uniqueId = new Random().nextInt();
+    static final public int UNIQUEID = new Random().nextInt();
+    
+    
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     ThreadLocal<Tuple> currentProcessingTuple=new ThreadLocal<Tuple>();
     
@@ -44,7 +46,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         
         yamcsSession=YamcsSession.newBuilder().build();
         msgClient=yamcsSession.newClientBuilder().setDataProducer(true).setDataConsumer(hornetAddress, queue).
-            setFilter(new SimpleString(UNIQUEID_HDR_NAME+"<>"+uniqueId)).
+            setFilter(new SimpleString(UNIQUEID_HDR_NAME+"<>"+UNIQUEID)).
             build();
         
         msgClient.dataConsumer.setMessageHandler(this);
@@ -57,7 +59,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         if(tuple==currentProcessingTuple.get())return;
         try {
             ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
-            msg.putIntProperty(UNIQUEID_HDR_NAME, uniqueId);
+            msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);
             msgClient.dataProducer.send(hornetAddress,msg);
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
