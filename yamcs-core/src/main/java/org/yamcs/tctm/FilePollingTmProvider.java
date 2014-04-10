@@ -108,11 +108,6 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
 	}
 
 	@Override
-	public String getTmMode() {
-		return "ARC_PB";
-	}
-
-	@Override
 	public void setTmProcessor(TmProcessor tmProcessor) {
 		this.tmProcessor=tmProcessor;
 	}

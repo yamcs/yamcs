@@ -156,11 +156,6 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 		return disabled?"DISABLED":"OK";
 	}
 
-	@Override
-    public String getTmMode() {
-		return "RT_NORM";
-	}
-	
 	/**
 	 * returns statistics with the number of datagram received and the number of invalid datagrams
 	 */

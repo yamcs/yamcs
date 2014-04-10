@@ -142,11 +142,6 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 	}
 	
 	@Override
-    public String getTmMode() {
-		return "RT_NORM";
-	}
-
-	@Override
     public void triggerShutdown() {
 		if(tmSocket!=null) {
 			try {

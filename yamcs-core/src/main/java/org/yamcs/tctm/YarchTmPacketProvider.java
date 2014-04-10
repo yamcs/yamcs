@@ -44,11 +44,6 @@ public class YarchTmPacketProvider extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public String getTmMode() {
-        return "RT_NORM";
-    }
-
-    @Override
     public void disable() {
         disabled=true;
         if(isRunning()) {
@@ -95,7 +90,7 @@ public class YarchTmPacketProvider extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public void streamClosed(Stream stream) {
+    public void streamClosed(Stream s) {
        notifyStopped();
         
     }

@@ -281,12 +281,6 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             return null;
         }
 
-        @Override
-        public String getTmMode() {
-            return null;
-        }
-
-
 
         @Override
         public void disable() {

@@ -119,11 +119,6 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 	}
 
 	@Override
-    public String getTmMode() {
-		return "ARC_PB";
-	}
-
-	@Override
     public void triggerShutdown() {
 		try {
 			tmFileReader.close();
