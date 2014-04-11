@@ -1,6 +1,5 @@
 package org.yamcs.archive;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -189,8 +188,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             byte[]pbody=(byte[]) t.getColumn("packet");
             
             ///this will cause derived values to be computed and updateItems to be called
-            ByteBuffer bb=ByteBuffer.wrap(pbody);
-            tmProcessor.processPacket(new PacketWithTime(recTime, genTime, bb));
+            tmProcessor.processPacket(new PacketWithTime(recTime, genTime, pbody));
         }
         
         if(isPp) { //definition is in {@link org.yamcs.archive.PpProviderAdapter}

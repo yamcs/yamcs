@@ -366,7 +366,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
     
     private void sendToTmProcessor(ByteBuffer bb) {
-        if(tmProcessor!=null) tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), TimeEncoding.currentInstant(), bb));
+        if(tmProcessor!=null) tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), TimeEncoding.currentInstant(), bb.array()));
     }
     
     
@@ -421,7 +421,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 			@Override
 			public void processPacket(PacketWithTime pwrt) {
 				try {
-					os.write(pwrt.bb.array());
+					os.write(pwrt.getPacket());
 					count.incrementAndGet();
 					os.close();
 				} catch (IOException e) {

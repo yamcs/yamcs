@@ -115,7 +115,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public void processPacket(PacketWithTime pwrt){
 
 	    try {
-	        ByteBuffer bb=pwrt.bb;
+	        ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
 	        tmExtractor.processPacket(bb, pwrt.getGenerationTime());
 	        
 	        ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();

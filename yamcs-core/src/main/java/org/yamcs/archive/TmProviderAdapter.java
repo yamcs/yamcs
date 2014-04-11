@@ -1,6 +1,7 @@
 package org.yamcs.archive;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +24,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -95,9 +95,10 @@ public class TmProviderAdapter extends AbstractService {
 			prov.setTmProcessor(new TmProcessor() {
 				@Override
 				public void processPacket(PacketWithTime pwrt) {
-					long time=CcsdsPacket.getInstant(pwrt.bb);
-					int apidSeqCount=pwrt.bb.getInt(0);
-					Tuple t=new Tuple(TM_TUPLE_DEFINITION, new Object[] {time, apidSeqCount, pwrt.rectime, pwrt.bb.array() });
+					long time= pwrt.getGenerationTime();
+					byte[] pkt = pwrt.getPacket();
+					int apidSeqCount = ByteBuffer.wrap(pkt).getInt(0);
+					Tuple t=new Tuple(TM_TUPLE_DEFINITION, new Object[] {time, apidSeqCount, pwrt.rectime, pkt });
 					stream.emitTuple(t);
 				}
 

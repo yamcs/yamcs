@@ -1,7 +1,5 @@
 package org.yamcs.tctm;
 
-import java.nio.ByteBuffer;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
@@ -85,7 +83,7 @@ public class YarchTmPacketProvider extends AbstractService implements TmPacketPr
         long rectime = (Long)tuple.getColumn("rectime");
         long gentime = (Long)tuple.getColumn("gentime");
         byte[] packet=(byte[])tuple.getColumn("packet");
-        PacketWithTime pwrt=new PacketWithTime(rectime,  gentime, ByteBuffer.wrap(packet));
+        PacketWithTime pwrt=new PacketWithTime(rectime,  gentime, packet);
         tmProcessor.processPacket(pwrt);
     }
 

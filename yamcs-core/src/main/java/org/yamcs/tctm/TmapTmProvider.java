@@ -21,7 +21,8 @@ public class TmapTmProvider extends TcpTmProvider {
 		port=c.getInt(spec, "tmPort");
 	}
 
-	@Override
+	@SuppressWarnings("null")
+    @Override
     public PacketWithTime getNextPacket() {
 		while(disabled) {
 			try {
@@ -59,6 +60,6 @@ public class TmapTmProvider extends TcpTmProvider {
 				}
 			}
 		}
-		return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb);
+		return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb.array());
 	}
 }

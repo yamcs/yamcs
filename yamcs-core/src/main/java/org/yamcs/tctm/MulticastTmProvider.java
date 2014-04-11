@@ -148,7 +148,12 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 				log.warn("exception '"+e.toString()+"' thrown when reading from the multicast socket"+group+":"+port);
 			}
 		}
-		return new PacketWithTime(rectime, CcsdsPacket.getInstant(bb), bb);
+		if(bb!=null) {
+		    return new PacketWithTime(rectime, CcsdsPacket.getInstant(bb), bb.array());
+		} else {
+		    return null;
+		}
+		
 	}
 	
 	@Override
@@ -194,7 +199,7 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 		MulticastTmProvider tm=new MulticastTmProvider("239.192.0.1",31002);
 		PacketWithTime pwrt=null;
 		while((pwrt=tm.getNextPacket())!=null) {
-			System.out.println("got new packet:\n"+StringConvertors.byteBufferToHexString(pwrt.bb));
+			System.out.println("got new packet:\n"+StringConvertors.arrayToHexString(pwrt.getPacket()));
 		}
 	}
 

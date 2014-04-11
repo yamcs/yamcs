@@ -147,10 +147,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 		return ((int)bb.get(16))&0xFF;
 	}
 
-	/*comparison based on time*/
-	public int compareTo(CcsdsPacket p) {
-		return Long.signum(this.getInstant()-p.getInstant());
-	}
 
 	public static CcsdsPacket getPacketFromStream(InputStream input) throws IOException {
 		byte[] b=new byte[6];
@@ -171,7 +167,26 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 		return new CcsdsPacket(bb);
 	}
 	
-	public String toString() {
+	
+	public static long getInstant(byte[] pkt) {
+        return getInstant(ByteBuffer.wrap(pkt));
+    }
+	
+	
+	
+	public static short getAPID(byte[] packet) {
+	    return getAPID(ByteBuffer.wrap(packet));
+	}
+	
+
+    /*comparison based on time*/
+    @Override
+    public int compareTo(CcsdsPacket p) {
+        return Long.signum(this.getInstant()-p.getInstant());
+    }
+	
+	@Override
+    public String toString() {
 		StringBuffer sb=new StringBuffer();
 		StringBuffer text = new StringBuffer();
 		byte c;
@@ -207,4 +222,8 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
         }
 		return sb.toString();
 	}
+
+   
+
+    
 }

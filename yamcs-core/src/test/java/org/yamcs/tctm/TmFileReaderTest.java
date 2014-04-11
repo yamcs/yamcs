@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,16 +25,19 @@ public class TmFileReaderTest {
 	public void testRawCcsdsReader() throws InterruptedException, IOException {
 		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-rawccsds");
 		PacketWithTime pwrt=tfr.readPacket();
+		
 		assertNotNull(pwrt);
-		assertEquals(148, pwrt.bb.capacity());
-		assertEquals(0x1be5d9a0, pwrt.bb.getInt(0));
+		ByteBuffer bb = ByteBuffer.wrap(pwrt.getPacket());
+		assertEquals(148, bb.capacity());
+		assertEquals(0x1be5d9a0, bb.getInt(0));
 		
 		
 		pwrt=tfr.readPacket();
 		assertNotNull(pwrt);
-		assertEquals(528, pwrt.bb.capacity());
-		assertEquals(0x1bdff44c, pwrt.bb.getInt(0));
-		assertEquals(0x1, pwrt.bb.getInt(520));
+		bb = ByteBuffer.wrap(pwrt.getPacket());
+		assertEquals(528, bb.capacity());
+		assertEquals(0x1bdff44c, bb.getInt(0));
+		assertEquals(0x1, bb.getInt(520));
 		
 		pwrt=tfr.readPacket();
 		assertNull(pwrt);
@@ -45,15 +49,17 @@ public class TmFileReaderTest {
 		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-hrdp-corrupted");
 		PacketWithTime pwrt=tfr.readPacket();
 		assertNotNull(pwrt);
-		assertEquals(148, pwrt.bb.capacity());
-		assertEquals(0x1be5d9a0, pwrt.bb.getInt(0));
+		ByteBuffer bb = ByteBuffer.wrap(pwrt.getPacket());
+		assertEquals(148, bb.capacity());
+		assertEquals(0x1be5d9a0, bb.getInt(0));
 		
 		
 		pwrt=tfr.readPacket();
 		assertNotNull(pwrt);
-		assertEquals(528, pwrt.bb.capacity());
-		assertEquals(0x1bdff44c, pwrt.bb.getInt(0));
-		assertEquals(0x1, pwrt.bb.getInt(520));
+		bb = ByteBuffer.wrap(pwrt.getPacket());
+		assertEquals(528, bb.capacity());
+		assertEquals(0x1bdff44c, bb.getInt(0));
+		assertEquals(0x1, bb.getInt(520));
 		
 		pwrt=tfr.readPacket();
 	}

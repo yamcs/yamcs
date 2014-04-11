@@ -108,7 +108,7 @@ public class HornetQTmProvider extends  AbstractService implements TmPacketProvi
             TmPacketData tm=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
             //System.out.println("mark 1: message received: "+msg);
-            PacketWithTime pwt =  new PacketWithTime(TimeEncoding.currentInstant(), tm.getGenerationTime(), tm.getPacket().asReadOnlyByteBuffer());
+            PacketWithTime pwt =  new PacketWithTime(TimeEncoding.currentInstant(), tm.getGenerationTime(), tm.getPacket().toByteArray());
             tmProcessor.processPacket(pwt);
         } catch(YamcsApiException e){
             log.warn( "{} for message: {}", e.getMessage(), msg);

@@ -852,7 +852,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         try {
             currentPacket.load(lastFile);
             ByteBuffer bb=currentPacket.getByteBuffer();
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), currentPacket.getByteBuffer()));
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), currentPacket.getByteBuffer().array()));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);

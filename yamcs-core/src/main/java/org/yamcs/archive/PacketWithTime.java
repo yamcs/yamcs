@@ -1,19 +1,21 @@
 package org.yamcs.archive;
 
-import java.nio.ByteBuffer;
-
 public class PacketWithTime {
     public long rectime;//reception time
     private long gentime; //generation time
-    public ByteBuffer bb;
+    private byte[] pkt;
 
-    public PacketWithTime(long rectime, long gentime, ByteBuffer bb) {
+    public PacketWithTime(long rectime, long gentime, byte[] pkt) {
         this.rectime = rectime;
         this.gentime = gentime;
-        this.bb = bb;
+        this.pkt = pkt;
     }
 
     public long getGenerationTime() {
         return gentime;
+    }
+    
+    public byte[] getPacket() {
+        return pkt;
     }
 }

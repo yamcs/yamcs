@@ -122,8 +122,7 @@ public class TmFileReader  {
 				throw new IOException("no new line at the end of the PaCTS packet");
 			}
 		}
-		ByteBuffer bb= ByteBuffer.wrap(buffer);
-		return new PacketWithTime(rectime, CcsdsPacket.getInstant(bb), bb);		
+		return new PacketWithTime(rectime, CcsdsPacket.getInstant(buffer), buffer);		
 	}
 
 	public void close() throws IOException {
@@ -137,7 +136,7 @@ public class TmFileReader  {
 	
 		while((pwrt=tfr.readPacket())!=null) {
 			//System.out.println("packet received at "+TimeEncoding.toCombinedFormat(pwrt.rectime));
-			CcsdsPacket c=new CcsdsPacket(pwrt.bb);
+			CcsdsPacket c=new CcsdsPacket(pwrt.getPacket());
 			//System.out.println(c.toString());
 			System.out.println("rectime: "+TimeEncoding.toString(pwrt.rectime)+" apid:" +c.getAPID()+" seq: "+c.getSequenceCount()+" coarse: "+c.getCoarseTime()+" fine: "+c.getFineTime()+
 					" time: "+ TimeEncoding.toCombinedFormat(c.getInstant())+" received: "+TimeEncoding.toCombinedFormat(pwrt.rectime)+" delta: "+(pwrt.rectime-c.getInstant()));

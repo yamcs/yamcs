@@ -98,7 +98,10 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 				}
 			}
 		}
-		return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb);
+		if(bb!=null) {
+		    return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb.array());
+		} 
+		return null;
 	}
 	@Override
     public boolean isArchiveReplay() {

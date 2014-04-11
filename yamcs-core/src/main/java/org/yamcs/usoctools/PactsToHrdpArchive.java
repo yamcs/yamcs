@@ -99,7 +99,7 @@ public class PactsToHrdpArchive {
 		TmFileReader p=new TmFileReader(f.toString());
 		PacketWithTime  pwrt;
 		while((pwrt=p.readPacket())!=null) {
-			processPacket(new CcsdsPacket(pwrt.bb));
+			processPacket(new CcsdsPacket(pwrt.getPacket()));
 		}
 	}
 
