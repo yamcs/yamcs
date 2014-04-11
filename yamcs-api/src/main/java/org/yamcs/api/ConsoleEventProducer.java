@@ -23,4 +23,9 @@ public class ConsoleEventProducer extends AbstractEventProducer {
         System.out.println(event);
     }
 
+
+    @Override
+    public void close() {
+    }
+
 }

@@ -80,6 +80,14 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
     public void log(String message) {
     }
 
+    @Override
+    public void close() {
+        try {
+            yconnector.close();
+        } catch (HornetQException e) {
+            e.printStackTrace();
+        }
+    }
     /* (non-Javadoc)
      * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
      */

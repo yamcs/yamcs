@@ -22,4 +22,9 @@ public interface EventProducer {
      * seqNo, receptionTime, generationTime
      */
     public abstract Event.Builder newEvent();
+    
+    /**
+     * Closes the connection to the server; the producer is unusable after this is called
+     */
+    public void close();
 }

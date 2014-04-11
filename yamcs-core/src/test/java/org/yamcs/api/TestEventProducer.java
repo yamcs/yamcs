@@ -1,22 +1,16 @@
-package org.yamcs.client;
+package org.yamcs.api;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YamcsServer;
 
-import org.yamcs.YamcsException;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.HornetQEventProducer;
 import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -36,10 +30,11 @@ public class TestEventProducer extends YarchTestCase {
     }
     
     @Test
-    public void testEventProducer() throws HornetQException, YamcsException, IOException, URISyntaxException, YamcsApiException {
-        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("yamcs:///").build();
-        EventProducer ep=EventProducerFactory.getEventProducer(ydb.getName());
-     //   System.out.println("ep: "+ep.getClass());
+    public void testEventProducer() throws Exception {
+        String url = "yamcs:///"+ydb.getName();
+        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(url).build();
+        HornetQEventProducer ep= new HornetQEventProducer(YamcsConnectData.parse(url));
+        System.out.println("testing with ep: "+ep);
         ep.setSource("testing");
         
         YamcsClient yc=ys.newClientBuilder().setDataConsumer(Protocol.getEventRealtimeAddress(ydb.getName()),null).build();
@@ -67,5 +62,9 @@ public class TestEventProducer extends YarchTestCase {
         assertEquals("type2", ev.getType());
         assertEquals("msgInfo", ev.getMessage());
         assertEquals(2, ev.getSeqNumber());
+        
+        ((HornetQEventProducer) ep).close();
+        
+        ys.close();
     }
 }
