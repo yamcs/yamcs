@@ -117,6 +117,8 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
                 if( processedParameterName == null || "".equals( processedParameterName ) ) {
                     throw new InvalidParameterException( "Processed Parameter must have a name." );
                 }
+                ParameterValue pv = ParameterValue.fromGpb(ppdef, gpv);
+                params.add(pv);
             }
             
             
