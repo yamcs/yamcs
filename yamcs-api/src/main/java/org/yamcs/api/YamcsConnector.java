@@ -115,9 +115,9 @@ public class YamcsConnector implements SessionFailureListener {
 							}
 							// For anything other than a security exception, re-try
                             for(ConnectionListener cl:connectionListeners) {
-                                cl.log("Connection failed: "+e.getMessage());
+                                cl.log("Connection to "+url+" failed: "+e.getMessage());
                             }
-                            log.warn("Connection failed: ", e);
+                            log.warn("Connection to "+url+" failed: ", e);
                             Thread.sleep(5000);
                         }
                     }
