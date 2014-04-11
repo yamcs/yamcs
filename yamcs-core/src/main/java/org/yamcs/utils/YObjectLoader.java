@@ -42,9 +42,9 @@ public class YObjectLoader<T> {
                 sb.append("Cannot find a constructor for class '"+className+"' and arguments (");
                 boolean first=true;
                 for(Object o: args) {
-                    sb.append(o.getClass().getName());
                     if(!first)sb.append(", ");
                     else first = false;
+                    sb.append(o.getClass().getName());
                 }
                 sb.append(")");
                 throw new ConfigurationException(sb.toString());
