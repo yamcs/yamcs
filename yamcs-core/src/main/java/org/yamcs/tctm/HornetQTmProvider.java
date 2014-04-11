@@ -37,8 +37,7 @@ public class HornetQTmProvider extends  AbstractService implements TmPacketProvi
     final private YamcsClient msgClient;
     
     
-	public HornetQTmProvider(String instance, String name, String streamName) throws ConfigurationException  {
-	    String hornetAddress = instance+"."+streamName;
+	public HornetQTmProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
         SimpleString queue=new SimpleString(hornetAddress+"-HornetQTmProvider");
         
         try {

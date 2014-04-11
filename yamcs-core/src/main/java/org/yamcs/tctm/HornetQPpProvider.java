@@ -42,8 +42,7 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
     final private YamcsClient msgClient;
     final PpDefDb ppdb;
     
-	public HornetQPpProvider(String instance, String name, String streamName) throws ConfigurationException  {
-	    String hornetAddress = instance+"."+streamName;
+	public HornetQPpProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
         SimpleString queue=new SimpleString(hornetAddress+"-HornetQTmProvider");
         ppdb=PpDbFactory.getInstance(instance);
         
