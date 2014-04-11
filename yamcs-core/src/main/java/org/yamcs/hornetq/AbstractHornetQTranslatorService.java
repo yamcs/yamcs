@@ -23,9 +23,6 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * takes data from yarch streams and publishes it to hornetq address (reverse of HornetQTmProvider)
  * 
- * To avoid a ping-pong effect:
- *  - it creates a queue with a filter on hornet side
- *  - it remembers a thread local version of the tuple in transition on yarch side
  *
  */
 public class AbstractHornetQTranslatorService extends AbstractService implements StreamSubscriber {
@@ -63,7 +60,7 @@ public class AbstractHornetQTranslatorService extends AbstractService implements
     public void onTuple(Stream s, Tuple tuple) {
         if(tuple==currentProcessingTuple.get())return;
         try {
-            SimpleString hornetAddress = new SimpleString(instance+s.getName());
+            SimpleString hornetAddress = new SimpleString(instance+"."+s.getName());
             ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
             msg.putIntProperty(StreamAdapter.UNIQUEID_HDR_NAME, StreamAdapter.UNIQUEID);
             msgClient.dataProducer.send(hornetAddress, msg);
