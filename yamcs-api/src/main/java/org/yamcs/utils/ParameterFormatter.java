@@ -144,12 +144,19 @@ public class ParameterFormatter {
                     if(rv!=null) {
                         sb.append(StringConvertors.toString(rv, false));
                         l.add(StringConvertors.toString(rv, false));
+                    } else {
+                        l.add("");
                     }
                 }
             } else {
                 if (allParametersPresent) {
                     skip = true;
                     break;
+                } else {
+                    l.add("");
+                    if(printRaw) {
+                        l.add("");
+                    }
                 }
             }
         }
