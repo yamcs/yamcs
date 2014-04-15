@@ -13,7 +13,7 @@ public class Algorithm extends NameDescription {
     private ArrayList<InputParameter> inputSet = new ArrayList<InputParameter>();
     private ArrayList<OutputParameter> outputSet = new ArrayList<OutputParameter>();
     
-    // Contrary to XTCE, no support for multiple algorithms at this level
+    // Contrary to XTCE, no support for multiple languages per algorithm
     // private String algorithmLocation;
 
     public Algorithm(String name) {
@@ -63,7 +63,12 @@ public class Algorithm extends NameDescription {
     public void print(PrintStream out) {
         out.print("Algorithm name: "+name);
         if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-        out.println(".");
+        for(InputParameter p:inputSet) {
+            out.println("\t\tInputParameter "+p);
+        }
+        for(OutputParameter p:outputSet) {
+            out.println("\t\tOutputParameter "+p);
+        }
     }
     
     public enum AutoActivateType {

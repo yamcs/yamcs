@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,7 @@ public class XtceDb implements Serializable {
      * which container we can extract this parameter
      */
     private HashMap<Parameter, ArrayList<ParameterEntry>> parameter2ParameterEntryMap;
-
+    
     /**
      * maps the SequenceContainer to a list of other EntryContainers in case of
      * aggregation
@@ -363,7 +364,7 @@ public class XtceDb implements Serializable {
         return sequenceContainer2InheritingContainerMap.get(container);
     }
 
-    public static void print(SpaceSystem ss, PrintStream out) {
+    private void print(SpaceSystem ss, PrintStream out) {
     	if( ss.getHeader() != null ) {
     		out.println("=========SpaceSystem "+ss.getQualifiedName()+" version: "+ss.getHeader().getVersion()+" date: "+ss.getHeader().getDate()+"=========");
     	} else {
@@ -411,6 +412,29 @@ public class XtceDb implements Serializable {
             }
         }
         
+        //print parameters that are not linked to containers or algorithms
+        List<Parameter> algoParams=new ArrayList<Parameter>(); // On-the-fly index, don't need it for anything else
+        for(Algorithm a:ss.getAlgorithms()) {
+            for(InputParameter p:a.getInputSet()) {
+                algoParams.add(p.getParameterInstance().getParameter());
+            }
+            for(OutputParameter p:a.getOutputSet()) {
+                algoParams.add(p.getParameter());
+            }
+        }        
+        List<Parameter> orphanedParameters = new ArrayList<Parameter>();
+        for(Parameter p:ss.getParameters()) {
+            if(!parameter2ParameterEntryMap.containsKey(p) && !algoParams.contains(p)) {
+                orphanedParameters.add(p);
+            }
+        }
+        if(!orphanedParameters.isEmpty()) {
+            out.println("Orphaned parameters:");
+            Collections.sort(orphanedParameters, comparator);
+            for(Parameter p:orphanedParameters) {
+                out.println(p);
+            }
+        }
         
         SpaceSystem[] ssa=ss.getSubSystems().toArray(new SpaceSystem[0]);
         Arrays.sort(ssa, comparator);

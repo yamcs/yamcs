@@ -32,4 +32,10 @@ public class InputParameter implements Serializable {
     public void setInputName(String inputName) {
         this.inputName = inputName;
     }
+
+    @Override
+    public String toString() {
+        if(inputName==null) return parameterInstance.toString();
+        else return parameterInstance+" inputName:"+inputName;
+    }
 }

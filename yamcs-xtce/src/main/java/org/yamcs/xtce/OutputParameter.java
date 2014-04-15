@@ -32,4 +32,10 @@ public class OutputParameter implements Serializable {
     public void setOutputName(String outputName) {
         this.outputName = outputName;
     }
+    
+    @Override
+    public String toString() {
+        if(outputName==null) return parameter.toString();
+        else return parameter+" outputName:"+outputName;
+    }
 }
