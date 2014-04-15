@@ -40,6 +40,8 @@ import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 
+import com.google.protobuf.ByteString;
+
 /**
  * Represents the execution context of one algorithm. An AlgorithmEngine is reused
  * upon each update of one or more of its InputParameters.
@@ -266,6 +268,7 @@ public class AlgorithmEngine {
 	        String className="ValueBinding"+key;
 	        StringBuilder source=new StringBuilder();
 	        source.append("package org.yamcs.algorithms;\n");
+	        source.append("import "+ByteString.class.getName()+";\n");
 	        source.append("import "+ParameterValue.class.getName()+";\n")
 	            .append("public class " + className + " extends ValueBinding {\n");
 	        StringBuilder updateValueSource=new StringBuilder("  public void updateValue(ParameterValue v) {\n")
@@ -302,10 +305,10 @@ public class AlgorithmEngine {
 	private static String addValueType(StringBuilder source, Value v, boolean raw) {
         if(v.getType() == Type.BINARY) {
             if(raw) {
-                source.append("  public byte[] rawValue;\n");
+                source.append("  public ByteString rawValue;\n");
                 return "    rawValue=v.getRawValue().getBinaryValue();\n";
             } else {
-                source.append("  public byte[] value;\n");
+                source.append("  public ByteString value;\n");
                 return "    value=v.getEngValue().getBinaryValue();\n";
             }
         } else if(v.getType() == Type.DOUBLE) {
