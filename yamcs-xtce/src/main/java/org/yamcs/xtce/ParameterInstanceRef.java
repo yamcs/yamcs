@@ -53,4 +53,9 @@ public class ParameterInstanceRef implements Serializable {
 	public int getInstance() {
 	    return instance;
 	}
+	
+	@Override
+	public String toString() {
+	    return parameter+" instance:"+instance;
+	}
 }

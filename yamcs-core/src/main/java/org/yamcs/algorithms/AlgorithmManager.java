@@ -37,6 +37,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.XtceDb;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
@@ -238,12 +239,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     public void stopProviding(Parameter paramDef) {
-        if(requestedOutParams.remove(paramDef)) {
-            // Remove algorithm engine
-            for(Iterator<Algorithm> it=engineByAlgorithm.keySet().iterator();it.hasNext(); ) {
-                Algorithm algo=it.next();
+	    if(requestedOutParams.remove(paramDef)) {
+	        // Remove algorithm engine (and any that are no longer needed as a consequence)
+	        for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
+	            Algorithm algo=it.next();
                 boolean doRemove=true;
-
+                
                 // Don't remove if always 'on' for this channel
                 if(algo.getAutoActivate()==AutoActivateType.ALWAYS
                         || algo.getAutoActivate()==AutoActivateType.REALTIME_ONLY && !parameterRequestManager.channel.isReplay()
@@ -258,16 +259,20 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                         break;
                     }
                 }
-
+                
+	            if(!algo.canProvide(paramDef)) { // Clean-up unused engines
+	                // TODO
+	            }
+	            
                 if(doRemove) {
                     it.remove();
+                    engineByAlgorithm.remove(algo);
                 }
-                return; // There shouldn't be more..
-            }
-        }
-    }
+	        }
+	    }
+	}
 
-    @Override
+	@Override
     public boolean canProvide(NamedObjectId itemId) {
         try {
             getParameter(itemId);
