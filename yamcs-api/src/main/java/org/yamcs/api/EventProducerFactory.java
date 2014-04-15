@@ -20,7 +20,7 @@ public class EventProducerFactory {
     
     static Logger log = LoggerFactory.getLogger(EventProducerFactory.class);
     /**
-     * Configure the factory to produce mockup objects, optionally queing the events in a queue
+     * Configure the factory to produce mockup objects, optionally queuing the events in a queue
      */
     static public void setMockup(boolean queue) {
         mockup=true;

@@ -122,6 +122,13 @@ public class NameDescription implements Serializable {
         return name;
     }
     
+    /**
+     * 
+     * @return fully qualified name of the subsystem of which this name is part of
+     */
+    public String getSubsystemName() {
+        return getSubsystemName(qualifiedName);
+    }
     
     /**
      * returns the last component of the fully qualified name

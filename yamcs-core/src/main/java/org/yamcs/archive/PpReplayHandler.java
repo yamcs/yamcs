@@ -5,23 +5,23 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.MessageLite;
 
 public class PpReplayHandler implements ReplayHandler {
     Set<String>currentGroups=new HashSet<String>();
-    final PpDefDb ppdb;
+    final XtceDb ppdb;
     ReplayRequest request;
     final static Logger log=LoggerFactory.getLogger(PpReplayHandler.class);
     
-    public PpReplayHandler(PpDefDb ppdb) {
+    public PpReplayHandler(XtceDb ppdb) {
         this.ppdb=ppdb;
     }
 

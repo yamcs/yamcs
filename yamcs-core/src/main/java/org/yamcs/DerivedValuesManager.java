@@ -50,8 +50,8 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 		YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
 		String mdbconfig=yconf.getString("mdb");
 		YConfiguration conf=YConfiguration.getConfiguration("mdb");
-		if(conf.containsKey(mdbconfig, "derivedValuesProviders")) {
-		    List<String> providers=conf.getList(mdbconfig, "derivedValuesProviders");
+		if(conf.containsKey(mdbconfig+"_derivedValuesProviders")) {
+		    List<String> providers=conf.getList(mdbconfig+"_derivedValuesProviders");
 		    for(String p:providers) {
 		        Class<DerivedValuesProvider> c;
 		        try {

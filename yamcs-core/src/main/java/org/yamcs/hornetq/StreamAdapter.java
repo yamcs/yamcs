@@ -60,7 +60,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         try {
             ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
             msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);
-            msgClient.dataProducer.send(hornetAddress,msg);
+            msgClient.dataProducer.send(hornetAddress, msg);
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
         } catch (HornetQException e) {

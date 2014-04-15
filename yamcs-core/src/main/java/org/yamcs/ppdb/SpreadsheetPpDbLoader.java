@@ -17,16 +17,18 @@ import jxl.read.biff.BiffException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ProcessedParameterDefinition;
 import org.yamcs.xtce.DatabaseLoadException;
-import org.yamcs.xtce.PpDatabaseLoader;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
-public class SpreadsheetPpDbLoader implements PpDatabaseLoader {
+public class SpreadsheetPpDbLoader implements SpaceSystemLoader {
 	
 	static Logger log=LoggerFactory.getLogger(SpreadsheetPpDbLoader.class.getName());
 	String path;
 	String configName;
+	SpaceSystem spaceSystem;
 
 	public SpreadsheetPpDbLoader(String path) throws ConfigurationException {
         this.path = path;
@@ -34,14 +36,15 @@ public class SpreadsheetPpDbLoader implements PpDatabaseLoader {
     }
 	
 	@Override
-	public void loadDatabase( PpDefDb ppdb ) throws ConfigurationException,
-			DatabaseLoadException {
+	public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
 		// Given path may be relative, so use absolute path to report issues
+	   
 		File ssFile = new File( path );
 		if( ! ssFile.exists() ) {
 			throw new DatabaseLoadException( new FileNotFoundException( ssFile.getAbsolutePath() ) );
 		}
 		log.info( "Reading PP from {}", ssFile.getAbsolutePath() );
+		spaceSystem = new SpaceSystem(ssFile.getName());
 		Workbook workbook;
 		try {
 			workbook = Workbook.getWorkbook( ssFile );
@@ -95,12 +98,15 @@ public class SpreadsheetPpDbLoader implements PpDatabaseLoader {
 				}
 			}
 			
-			ProcessedParameterDefinition ppDef=new ProcessedParameterDefinition( umi, group );
+			Parameter ppDef=new Parameter(umi);
+			ppDef.setRecordingGroup(group);
 			ppDef.setAliasSet( xtceAlias );
 
 			log.debug( "Adding PP definition '{}'", ppDef.getName() );
-			ppdb.add( ppDef );
+			spaceSystem.addParameter( ppDef );
 		}
+		
+		return spaceSystem;
 	}
 	
 	@Override

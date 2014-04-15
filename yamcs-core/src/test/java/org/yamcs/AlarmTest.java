@@ -16,14 +16,8 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.DummyPpProvider;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import com.google.common.util.concurrent.AbstractService;
 
 public class AlarmTest {
     @BeforeClass
@@ -48,7 +42,7 @@ public class AlarmTest {
 
         tmGenerator=new RefMdbPacketGenerator();
         try {
-            c=ChannelFactory.create("refmdb", "AlarmTest", "refmdb", "refmdb", new MyTcTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create("refmdb", "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -226,42 +220,5 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(0, 0, 0);
         assertEquals(MonitoringResult.IN_LIMITS, params.get(5).getParameterValue().getMonitoringResult());
         assertEquals(4, q.size()); // Message for back to normal
-    }
-    
-    static class MyTcTmService extends AbstractService implements TcTmService {
-        TmPacketProvider tm;
-        ParameterProvider pp;
-
-        public MyTcTmService(RefMdbPacketGenerator tmGenerator) throws ConfigurationException {
-            this.tm=tmGenerator;
-            pp=new DummyPpProvider("refmdb", "refmdb");
-        }
-
-        @Override
-        public TmPacketProvider getTmPacketProvider() {
-            return tm;
-        }
-
-        @Override
-        public TcUplinker getTcUplinker() {
-            return null;
-        }
-
-        @Override
-        public ParameterProvider getParameterProvider() {
-            return pp;
-        }
-
-        @Override
-        protected void doStart() {
-            tm.start();
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            tm.stop();
-            notifyStopped();
-        }
     }
 }

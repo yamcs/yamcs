@@ -18,16 +18,15 @@ import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
-import org.yamcs.ProcessedParameterDefinition;
 import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.tctm.AbstractTcTmService;
+import org.yamcs.tctm.TcTmService;
+import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -41,7 +40,6 @@ import com.google.protobuf.MessageLite;
 
 public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer {
     final XtceDb xtcedb;
-    final PpDefDb ppdb;
     static Logger log=LoggerFactory.getLogger(ParameterReplayHandler.class.getName());
     ReplayRequest request;
     static AtomicInteger counter=new AtomicInteger(); 
@@ -50,7 +48,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
     ArrayList<ParameterValueWithId> paramList=new ArrayList<ParameterValueWithId>();
     final Set<String> tmPartitions=new HashSet<String>();
     Set<String>ppGroups=new HashSet<String>();
-    Set<ProcessedParameterDefinition> ppSet=new HashSet<ProcessedParameterDefinition>();
+    Set<Parameter> ppSet=new HashSet<Parameter>();
 
     Channel channel;
     String instance;
@@ -64,10 +62,9 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
      * @param xtcedb
      * @param ppdb
      */
-    public ParameterReplayHandler(String instance, XtceDb xtcedb, PpDefDb ppdb) {
+    public ParameterReplayHandler(String instance, XtceDb xtcedb) {
         this.instance=instance;
         this.xtcedb=xtcedb;
-        this.ppdb=ppdb;
     }
 
     @Override
@@ -122,11 +119,9 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             }
         }
         
-        if(ppdb!=null) {
-            MyPpProvider mpp= (MyPpProvider) tctms.getParameterProvider();
-            ppGroups=mpp.ppgroups;
-            ppSet=mpp.subscribedParams;
-        }
+        MyPpProvider mpp= (MyPpProvider) tctms.pp;
+        ppGroups=mpp.ppgroups;
+        ppSet=mpp.subscribedParams;
         hasTm=!tmPartitions.isEmpty();
         hasPp=!ppGroups.isEmpty();
 
@@ -194,7 +189,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         if(isPp) { //definition is in {@link org.yamcs.archive.PpProviderAdapter}
             ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(t.size());
             for(int i=3; i<t.size(); i++) {
-                ProcessedParameterDefinition ppDef=ppdb.getProcessedParameter(t.getColumnDefinition(i).getName());
+                Parameter ppDef=xtcedb.getParameter(t.getColumnDefinition(i).getName());
                 if (!ppSet.contains(ppDef)) continue;
                 org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue) t.getColumn(i);
                 ParameterValue pv=ParameterValue.fromGpb(ppDef, gpv);
@@ -235,10 +230,14 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
     }
 
 
-    class MyTcTmService extends AbstractTcTmService {
+    class MyTcTmService extends AbstractService implements TcTmService {
+        MyTmPacketProvider tm;
+        MyPpProvider pp;
+        
+        
         public MyTcTmService() {
             if(xtcedb!=null) tm=new MyTmPacketProvider();
-            if(ppdb!=null) pp=new MyPpProvider();
+            if(xtcedb!=null) pp=new MyPpProvider();
         }
 
         @Override
@@ -250,6 +249,23 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         @Override
         protected void doStop() {
             notifyStopped();
+        }
+
+        @Override
+        public TmPacketProvider getTmPacketProvider() {
+            return tm;
+        }
+
+        @Override
+        public TcUplinker getTcUplinker() {
+            return null;
+        }
+
+        @Override
+        public List<ParameterProvider> getParameterProviders() {
+            ArrayList<ParameterProvider> a = new ArrayList<ParameterProvider>();
+            a.add(pp);
+            return a;
         }
     }
 
@@ -312,7 +328,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
     public class MyPpProvider extends AbstractService implements ParameterProvider {
         private volatile boolean disabled=false;
         Set<String> ppgroups=new HashSet<String>();
-        Set<ProcessedParameterDefinition> subscribedParams = new HashSet<ProcessedParameterDefinition>();
+        Set<Parameter> subscribedParams = new HashSet<Parameter>();
         
         @Override
         public void setParameterListener(ParameterListener parameterRequestManager) {
@@ -320,9 +336,8 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
 
         @Override
         public void startProviding(Parameter paramDef) {
-            ProcessedParameterDefinition ppdef=(ProcessedParameterDefinition)paramDef;
-            ppgroups.add(ppdef.getGroup());
-            subscribedParams.add(ppdef);
+            ppgroups.add(paramDef.getRecordingGroup());
+            subscribedParams.add(paramDef);
         }
         
         @Override
@@ -334,7 +349,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         
         @Override
         public boolean canProvide(NamedObjectId id) {
-            if(ppdb.getProcessedParameter(id)!=null) return true;
+            if(xtcedb.getParameter(id)!=null) return true;
             else return false;
         }
 
@@ -344,7 +359,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         
         @Override
         public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-            Parameter p=ppdb.getProcessedParameter(id);
+            Parameter p=xtcedb.getParameter(id);
             if(p==null) throw new InvalidIdentification();
             else return p;
         }

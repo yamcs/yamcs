@@ -130,6 +130,10 @@ public class XtceDb implements Serializable {
         return algorithms.values();
     }
     
+    public Collection<Parameter> getParameters() {
+        return parameters.values();
+    }
+    
     public MetaCommand getMetaCommand(String qualifiedName) {
         return commandAliases.get(qualifiedName);
     }

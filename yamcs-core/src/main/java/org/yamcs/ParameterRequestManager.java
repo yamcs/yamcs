@@ -335,14 +335,16 @@ public class ParameterRequestManager implements ParameterListener {
 	}
 
 	private ParameterProvider getProvider(NamedObjectId itemId) {
-		for(ParameterProvider provider:parameterProviders.values()) {
+	    
+	    // First TmProcessor - DO NOT CHANGE YET - during the replay, the ParameterReplayHandler.MyPpProvider says that can provide everything - it does not yet look at what is recorded  
+        if(tmProcessor.canProvide(itemId)) return tmProcessor;
+        
+	    for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
 		    }
 		}
-		// First give a chance to other providers (e.g. AlgorithmManager), default to tmProcessor
-		if(tmProcessor.canProvide(itemId)) return tmProcessor;
-		return null;
+	return null;
 	}
 
 	/**

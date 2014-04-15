@@ -10,17 +10,13 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.DummyPpProvider;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.common.util.concurrent.AbstractService;
 
 public class DerivedValuesTest {
     @BeforeClass
@@ -28,6 +24,7 @@ public class DerivedValuesTest {
         YConfiguration.setup("dvtest");
         ManagementService.setup(false,false);
         XtceDbFactory.reset();
+        EventProducerFactory.setMockup(false);
     }
 
     @Test
@@ -37,7 +34,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new MyTcTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_add").build());
@@ -82,7 +79,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new MyTcTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_add_js").build());
@@ -123,7 +120,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new MyTcTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_ypr_js").build());
@@ -160,43 +157,6 @@ public class DerivedValuesTest {
         c.quit();
     }
     
-    static class MyTcTmService extends AbstractService implements TcTmService {
-        TmPacketProvider tm;
-        ParameterProvider pp;
-
-        public MyTcTmService(RefMdbPacketGenerator tmGenerator) throws ConfigurationException {
-            this.tm=tmGenerator;
-            pp=new DummyPpProvider("dvtest", "dvtest");
-        }
-
-        @Override
-        public TmPacketProvider getTmPacketProvider() {
-            return tm;
-        }
-
-        @Override
-        public TcUplinker getTcUplinker() {
-            return null;
-        }
-
-        @Override
-        public ParameterProvider getParameterProvider() {
-            return pp;
-        }
-
-        @Override
-        protected void doStart() {
-            tm.start();
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            tm.stop();
-            notifyStopped();
-        }
-    }
-
     static public class MyDerivedValuesProvider implements DerivedValuesProvider {
         Collection<DerivedValue> dvalues=new ArrayList<DerivedValue>(1);
 

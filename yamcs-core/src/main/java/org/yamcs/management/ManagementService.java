@@ -231,6 +231,7 @@ public class ManagementService {
         } catch (ChannelException e) {
             throw new YamcsException(e.getMessage(), e.getCause());
         } catch (ConfigurationException e) {
+            e.printStackTrace();
             throw new YamcsException(e.getMessage(), e.getCause());
         }
     }

@@ -1,5 +1,9 @@
 package org.yamcs.tctm;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.yamcs.ParameterProvider;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -23,8 +27,12 @@ public class SimpleTcTmService extends AbstractService implements TcTmService {
         return tc;
     }
     @Override
-    public ParameterProvider getParameterProvider() {
-        return param;
+    public List<ParameterProvider> getParameterProviders() {
+        if(param!=null) {
+            return Arrays.asList(param);
+        } else {
+            return new ArrayList<ParameterProvider>();
+        }
     }
     @Override
     protected void doStart() {

@@ -115,7 +115,7 @@ public class PpProviderAdapter extends AbstractService {
                     cols.add(TimeEncoding.currentInstant());
                     for(ParameterValue pv:params) {
                     	String qualifiedName = pv.def.getQualifiedName();
-                    	if( qualifiedName == null || "".equals( qualifiedName ) ) {
+                    	if( qualifiedName == null || qualifiedName.isEmpty() ) {
                     		qualifiedName = pv.def.getName();
                     		log.trace( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
                     	}
@@ -124,7 +124,7 @@ public class PpProviderAdapter extends AbstractService {
                             log.warn("duplicate value for "+pv.def+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
                             continue;
                         }
-                        tdef.addColumn(pv.def.getName(), paraDataType);
+                        tdef.addColumn(qualifiedName, paraDataType);
                         cols.add(pv.toGpb( NamedObjectId.newBuilder().setName( qualifiedName ).build() ));
                     }
                     Tuple t=new Tuple(tdef, cols);

@@ -17,14 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.HornetQAuthPrivilege;
 import org.yamcs.Privilege;
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.ppdb.PpDbFactory;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -158,14 +155,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
         }
 
         try {
-            YConfiguration c=YConfiguration.getConfiguration("yamcs."+instance);
-            String mdbsection=c.getString("mdb");
-            YConfiguration mdbc = YConfiguration.getConfiguration("mdb");
-            PpDefDb ppdb=null;
-            if(mdbc.containsKey(mdbsection, "ppLoaders")) {
-                ppdb=PpDbFactory.getInstance(instance);
-            }
-            YarchReplay yr=new YarchReplay(this, replayRequest, dataAddress, ppdb, XtceDbFactory.getInstance(instance));
+            YarchReplay yr=new YarchReplay(this, replayRequest, dataAddress, XtceDbFactory.getInstance(instance));
             replayCount.incrementAndGet();
             (new Thread(yr)).start();
             StringMessage addr=StringMessage.newBuilder().setMessage(yr.yclient.rpcAddress.toString()).build();

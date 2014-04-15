@@ -43,7 +43,7 @@ public class YarchChannel extends AbstractService {
         
         tctm=new SimpleTcTmService(tm, param, tc);
         CommandHistory cmdHist=new YarchCommandHistoryAdapter(archiveInstance);
-        channel=ChannelFactory.create(archiveInstance, "realtime", "yarch","realtime", tctm, "system", cmdHist);
+        channel=ChannelFactory.create(archiveInstance, "realtime", "yarch", "realtime", tctm, "system", cmdHist);
         channel.setPersistent(true);
         new RealtimeParameterService(channel);
     }

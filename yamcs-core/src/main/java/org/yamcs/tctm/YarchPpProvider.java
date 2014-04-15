@@ -8,11 +8,10 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterValue;
-import org.yamcs.ProcessedParameterDefinition;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.ppdb.PpDbFactory;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -30,13 +29,13 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     Stream stream;
     PpListener ppListener;
     ParameterListener paraListener;
-    final PpDefDb ppdb;
+    final XtceDb xtceDb;
     
     public YarchPpProvider(String archiveInstance, String streamName) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
         stream=ydb.getStream(streamName);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
-        ppdb=PpDbFactory.getInstance(archiveInstance);
+        xtceDb=XtceDbFactory.getInstance(archiveInstance);
     }
     
 
@@ -65,7 +64,7 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
         for(int i=4;i<tuple.size();i++) {
             org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
             String name=tuple.getColumnDefinition(i).getName();
-            ProcessedParameterDefinition ppdef=ppdb.getProcessedParameter(name);
+            Parameter ppdef=xtceDb.getParameter(name);
             if(ppdef==null) continue;
             ParameterValue pv=ParameterValue.fromGpb(ppdef, gpv);
             params.add(pv);
@@ -91,13 +90,13 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     
     @Override
     public boolean canProvide(NamedObjectId id) {
-        if(ppdb.getProcessedParameter(id)!=null) return true;
+        if(xtceDb.getParameter(id)!=null) return true;
         else return false;
     }
     
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-        Parameter p=ppdb.getProcessedParameter(id);
+        Parameter p=xtceDb.getParameter(id);
         if(p==null) throw new InvalidIdentification();
         else return p;
     }
@@ -106,13 +105,11 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     @Override
     public void startProviding(Parameter paramDef) {
         // TODO Auto-generated method stub
-        
     }
 
 
     @Override
     public void startProvidingAll() {
         // TODO Auto-generated method stub
-        
     }
 }

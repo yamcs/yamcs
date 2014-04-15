@@ -10,8 +10,9 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ProcessedParameterDefinition;
-import org.yamcs.xtce.PpDatabaseLoader;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 import com.csvreader.CsvReader;
@@ -34,26 +35,24 @@ import com.csvreader.CsvReader;
  * @author nm
  *
  */
-public class FlatFilePpDbLoader implements PpDatabaseLoader {
-	String prefix;
+public class FlatFilePpDbLoader implements SpaceSystemLoader {
 	String configName, path;
-	PpDefDb ppdb;
+	SpaceSystem spaceSystem;
+	
 	static Logger log=LoggerFactory.getLogger(FlatFilePpDbLoader.class.getName());
+	
 	
 	public FlatFilePpDbLoader(String path) throws ConfigurationException {
         this.path = path;
         this.configName=new File(path).getName()+"-"+path.hashCode();
     }
 	
-	@Override
-    public String getConfigName(){
-		return configName;
-	}
 
 	@Override
-    public void loadDatabase(PpDefDb db) throws ConfigurationException {
-		this.ppdb=db;
+    public SpaceSystem load() throws ConfigurationException {
 		log.info("Loading flatfile " + path);
+		spaceSystem = new SpaceSystem("PP_"+new File(path).getName());
+		
 		int linenum=0;
 		try {
 		    CsvReader csvReader = new CsvReader(path);
@@ -81,7 +80,9 @@ public class FlatFilePpDbLoader implements PpDatabaseLoader {
 			    if(a.length<2) {
 			    	throw new ConfigurationException("invalid entry '"+csvReader.getRawRecord()+"' in file "+path);
 			    }
-			    ProcessedParameterDefinition ppDef=new ProcessedParameterDefinition(a[0], a[1]);
+			    Parameter ppDef=new Parameter(a[0]);
+			    ppDef.setRecordingGroup(a[1]);
+			    
 			    if(a.length>2) {
 		                if(a.length>header.length) throw new ConfigurationException("Line "+linenum+" contains more namespaces than specified in the header");
 		                XtceAliasSet xtceAlias=new XtceAliasSet();
@@ -91,12 +92,14 @@ public class FlatFilePpDbLoader implements PpDatabaseLoader {
 		                }
 		                ppDef.setAliasSet(xtceAlias);
 		            }
-	                ppdb.add(ppDef);
+	                spaceSystem.addParameter(ppDef);
 		        }
 		    csvReader.close();  
 		} catch (IOException e) {
 			throw new ConfigurationException("Cannot read file "+path, e);
 		} 
+		
+		return spaceSystem;
 	}
 
 	@Override
@@ -130,5 +133,11 @@ public class FlatFilePpDbLoader implements PpDatabaseLoader {
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
 		File f=new File(path);
 		consistencyDateFile.write(configName+" "+(new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified())+"\n");
-	}	
+	}
+
+
+    @Override
+    public String getConfigName() throws ConfigurationException {
+        return configName;
+    }	
 }

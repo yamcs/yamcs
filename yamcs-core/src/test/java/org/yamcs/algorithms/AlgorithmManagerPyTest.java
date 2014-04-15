@@ -16,22 +16,18 @@ import org.yamcs.ChannelFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.RefMdbPacketGenerator;
+import org.yamcs.RefMdbTmService;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.DummyPpProvider;
+import org.yamcs.tctm.AbstractTcTmService;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Just a small sanity check to verify python/jython still works.
@@ -60,7 +56,7 @@ public class AlgorithmManagerPyTest {
         tmGenerator=new RefMdbPacketGenerator();
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
         try {
-            c=ChannelFactory.create("refmdb-py", "AlgorithmManagerPyTest", "refmdb-py", "refmdb-py", new MyTcTmService(tmGenerator), "refmdb-py", null);
+            c=ChannelFactory.create("refmdb-py", "AlgorithmManagerPyTest", "refmdb-py", "refmdb-py", new RefMdbTmService(tmGenerator), "refmdb-py", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,42 +124,5 @@ public class AlgorithmManagerPyTest {
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue()*3, 0.001);
-    }
-    
-    static class MyTcTmService extends AbstractService implements TcTmService {
-        TmPacketProvider tm;
-        ParameterProvider pp;
-
-        public MyTcTmService(RefMdbPacketGenerator tmGenerator) throws ConfigurationException {
-            this.tm=tmGenerator;
-            pp=new DummyPpProvider("refmdb-py", "refmdb-py");
-        }
-
-        @Override
-        public TmPacketProvider getTmPacketProvider() {
-            return tm;
-        }
-
-        @Override
-        public TcUplinker getTcUplinker() {
-            return null;
-        }
-
-        @Override
-        public ParameterProvider getParameterProvider() {
-            return pp;
-        }
-
-        @Override
-        protected void doStart() {
-            tm.start();
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            tm.stop();
-            notifyStopped();
-        }
     }
 }

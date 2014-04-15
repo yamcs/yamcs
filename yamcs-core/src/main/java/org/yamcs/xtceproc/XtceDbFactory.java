@@ -55,6 +55,7 @@ public class XtceDbFactory {
      * configSection is the top heading under which this appears in the mdb.yaml
      * @throws ConfigurationException 
      */
+    @SuppressWarnings("unchecked")
     private static synchronized XtceDb createInstance(String configSection) throws ConfigurationException {
         YConfiguration c = null;
         c = YConfiguration.getConfiguration("mdb");
@@ -68,9 +69,16 @@ public class XtceDbFactory {
         // create MDB/spreadsheet/XTCE loaders according to configuration
         // settings
         //
-
-        Map<String,Object> m = c.getMap(configSection, "xtceLoader");
-        loaderTree=getLoaderTree(c, m);
+        loaderTree= new LoaderTree(new RootSpaceSystemLoader());
+        
+        List<Object> list=c.getList(configSection);
+        for(Object o: list) {
+            if(o instanceof Map) {
+                loaderTree.addChild(getLoaderTree(c, (Map<String, Object>) o));
+            } else {
+                throw new ConfigurationException("expected of type Map instead of "+o.getClass());
+            }
+        }
 
         boolean serializedLoaded = false;
         boolean loadSerialized = true;
@@ -104,12 +112,10 @@ public class XtceDbFactory {
 
         if (db == null) {
             //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
-            SpaceSystem rootSs = new SpaceSystem("");
-                rootSs.setParent(rootSs);
-            SpaceSystem xss = loaderTree.load();
-            rootSs.addSpaceSystem(xss);
+            SpaceSystem rootSs = loaderTree.load();
+            //rootSs.addSpaceSystem(xss);
             rootSs.addSpaceSystem(new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1)));
-            rootSs.setHeader(xss.getHeader());
+            //rootSs.setHeader(xss.getHeader());
             
             int n;
             while((n=resolveReferences(rootSs, rootSs))>0 ){};
@@ -118,7 +124,15 @@ public class XtceDbFactory {
             if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
-            db.setRootSequenceContainer(xss.getRootSequenceContainer());
+            
+            //set the root sequence container as the first root sequence container found in the sub-systems. 
+            for(SpaceSystem ss: rootSs.getSubSystems()) {
+                SequenceContainer seqc = ss.getRootSequenceContainer();
+                if(seqc!=null){
+                    db.setRootSequenceContainer(seqc);
+                }
+            }
+            
             db.buildIndexMaps();
         }
         // log.info("Loaded database with "+instance.sid2TcPacketMap.size()+" TC, "+instance.sid2SequenceContainertMap.size()+" TM containers, "+instance.sid2ParameterMap.size()+" TM parameters and "+instance.upcOpsname2PpMap.size()+" processed parameters");
@@ -534,5 +548,30 @@ public class XtceDbFactory {
                 }
             }
         }
-    } 
+    }
+    
+    //fake loader for the root (empty) space system
+    static class RootSpaceSystemLoader implements SpaceSystemLoader {
+        @Override
+        public boolean needsUpdate(RandomAccessFile consistencyDateFile)   throws IOException, ConfigurationException {
+            return false;
+        }
+
+        @Override
+        public String getConfigName() throws ConfigurationException {
+            return "";
+        }
+
+        @Override
+        public void writeConsistencyDate(FileWriter consistencyDateFile)  throws IOException {
+        }
+
+        @Override
+        public SpaceSystem load() throws ConfigurationException,  DatabaseLoadException {
+            SpaceSystem rootSs = new SpaceSystem("");
+            rootSs.setParent(rootSs);
+            return rootSs;
+        }
+        
+    }
 }

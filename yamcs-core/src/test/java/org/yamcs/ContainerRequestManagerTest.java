@@ -9,15 +9,11 @@ import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import com.google.common.util.concurrent.AbstractService;
 
 public class ContainerRequestManagerTest {
 
@@ -26,13 +22,14 @@ public class ContainerRequestManagerTest {
         YConfiguration.setup("refmdb");
         ManagementService.setup(false, false);
         XtceDbFactory.reset();
+        EventProducerFactory.setMockup(false);
     }
 
     @Test
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
         Channel c = ChannelFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", "refmdb",
-                        new MyTcTmService(packetGenerator), "refmdb", null);
+                        new RefMdbTmService(packetGenerator), "refmdb", null);
         ContainerRequestManager rm = c.getContainerRequestManager();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();
@@ -93,42 +90,6 @@ public class ContainerRequestManagerTest {
 
         assertEquals(6, consumer2.received.size());
     }
-
-    static class MyTcTmService extends AbstractService implements TcTmService {
-        private TmPacketProvider tm;
-
-        public MyTcTmService(RefMdbPacketGenerator tm) {
-            this.tm = tm;
-        }
-
-        @Override
-        public TmPacketProvider getTmPacketProvider() {
-            return tm;
-        }
-
-        @Override
-        public TcUplinker getTcUplinker() {
-            return null;
-        }
-
-        @Override
-        public ParameterProvider getParameterProvider() {
-            return null;
-        }
-
-        @Override
-        protected void doStart() {
-            tm.start();
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            tm.stop();
-            notifyStopped();
-        }
-    }
-
     /**
      * PacketConsumer that stores whatever it consumes for later retrieval
      */

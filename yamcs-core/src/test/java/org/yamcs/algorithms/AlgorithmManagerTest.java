@@ -24,13 +24,14 @@ import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.RefMdbPacketGenerator;
+import org.yamcs.RefMdbTmService;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.DummyPpProvider;
+import org.yamcs.tctm.AbstractTcTmService;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
@@ -64,7 +65,7 @@ public class AlgorithmManagerTest {
         tmGenerator=new RefMdbPacketGenerator();
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
         try {
-            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", "refmdb", new MyTcTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -335,43 +336,6 @@ public class AlgorithmManagerTest {
         tmGenerator.generate_PKT16(4, 6);
         assertEquals(1, params.size());
         assertEquals(4.167291, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-6);
-    }
-
-    static class MyTcTmService extends AbstractService implements TcTmService {
-        TmPacketProvider tm;
-        ParameterProvider pp;
-
-        public MyTcTmService(RefMdbPacketGenerator tmGenerator) throws ConfigurationException {
-            this.tm=tmGenerator;
-            pp=new DummyPpProvider("refmdb", "refmdb");
-        }
-
-        @Override
-        public TmPacketProvider getTmPacketProvider() {
-            return tm;
-        }
-
-        @Override
-        public TcUplinker getTcUplinker() {
-            return null;
-        }
-
-        @Override
-        public ParameterProvider getParameterProvider() {
-            return pp;
-        }
-
-        @Override
-        protected void doStart() {
-            tm.start();
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            tm.stop();
-            notifyStopped();
-        }
     }
 }
 

@@ -21,7 +21,6 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Instant;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -60,7 +59,6 @@ class YarchReplay implements StreamSubscriber, Runnable {
     int numPacketsSent;
     final String instance;
     static AtomicInteger counter=new AtomicInteger();
-    PpDefDb ppdb;
     XtceDb xtceDb;
     
     YamcsSession ysession;
@@ -73,10 +71,9 @@ class YarchReplay implements StreamSubscriber, Runnable {
     boolean dropTuple=false; //set to true when jumping to a different time
     volatile boolean ignoreClose;
     
-    public YarchReplay(ReplayServer replayServer, ReplayRequest rr,  SimpleString dataAddress, PpDefDb ppdb, XtceDb xtceDb) throws IOException, ConfigurationException, HornetQException, YamcsException, YamcsApiException {
+    public YarchReplay(ReplayServer replayServer, ReplayRequest rr,  SimpleString dataAddress, XtceDb xtceDb) throws IOException, ConfigurationException, HornetQException, YamcsException, YamcsApiException {
         this.replayServer=replayServer;
         this.dataAddress=dataAddress;
-        this.ppdb=ppdb;
         this.xtceDb=xtceDb;
         this.instance=replayServer.instance;
 
@@ -171,7 +168,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
                 handlers.put(rdp, new XtceTmReplayHandler(xtceDb));
                 break;
             case PP:
-                handlers.put(rdp, new PpReplayHandler(ppdb));
+                handlers.put(rdp, new PpReplayHandler(xtceDb));
                 break;
 // Covered by new API
 //            case PARAMETER:
@@ -187,9 +184,9 @@ class YarchReplay implements StreamSubscriber, Runnable {
         if (currentRequest.hasPacketRequest())
             handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(xtceDb));
         if (currentRequest.hasPpRequest())
-            handlers.put(ProtoDataType.PP, new PpReplayHandler(ppdb));
+            handlers.put(ProtoDataType.PP, new PpReplayHandler(xtceDb));
         if (currentRequest.hasParameterRequest())
-            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb, ppdb));
+            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb));
         if (currentRequest.hasCommandHistoryRequest())
             handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
         

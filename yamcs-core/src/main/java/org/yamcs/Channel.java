@@ -1,5 +1,6 @@
 package org.yamcs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class Channel {
 	private CommandingManager commandingManager;
 	private TmPacketProvider tmPacketProvider;
 	private TcUplinker tcUplinker;
-	private ParameterProvider ppProvider;
+	private List<ParameterProvider> parameterProviders = new ArrayList<ParameterProvider>();
 	
 	public XtceDb xtcedb;
 	
@@ -96,7 +97,7 @@ public class Channel {
            
             this.tmPacketProvider=tctms.getTmPacketProvider();
             this.tcUplinker=tctms.getTcUplinker();
-            this.ppProvider=tctms.getParameterProvider();
+            this.parameterProviders.addAll(tctms.getParameterProviders());
             this.commandHistoryListener=cmdHistListener;
             
             if(tmPacketProvider instanceof ArchiveTmPacketProvider) {
@@ -106,7 +107,9 @@ public class Channel {
             
             parameterRequestManager=new ParameterRequestManager(this);
             parameterRequestManager.setPacketProvider(tmPacketProvider);
-            if(ppProvider!=null) parameterRequestManager.addParameterProvider(ppProvider);
+            for(ParameterProvider pprov: parameterProviders) {
+                parameterRequestManager.addParameterProvider(pprov);
+            }
             
             containerRequestManager=new ContainerRequestManager(this, parameterRequestManager.getTmProcessor());
             containerRequestManager.setPacketProvider(tmPacketProvider);
@@ -142,7 +145,7 @@ public class Channel {
 			commandingManager=null;
 		}
 		tmPacketProvider = null;
-		ppProvider=null;
+		parameterProviders=new ArrayList<ParameterProvider>();
 		tcUplinker=null;
 		parameterRequestManager=null;
 		containerRequestManager=null;
@@ -167,10 +170,6 @@ public class Channel {
 	}
 
 	
-	public ParameterProvider getParameterProvider() {
-		return ppProvider;
-	}
-	
 	/**
 	 * starts processing by invoking the start method for all the associated processors
 	 *
@@ -178,7 +177,9 @@ public class Channel {
 	public void start() {
 	    Future<State> f=tmPacketProvider.start();
 	    if(tcUplinker!=null)tcUplinker.start();
-	    if(ppProvider!=null) ppProvider.start();
+	    for(ParameterProvider pprov: parameterProviders) {
+	        pprov.start();
+	    }
 		if(parameterRequestManager!=null) parameterRequestManager.start();
 		if(containerRequestManager!=null) containerRequestManager.start();
 		try {

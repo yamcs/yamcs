@@ -11,8 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ppdb.PpDbFactory;
-import org.yamcs.ppdb.PpDefDb;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -55,7 +53,9 @@ class IndexRequestProcessor implements Runnable{
 
     //these maps contains the names with which the records will be sent to the client
     final Map<String, NamedObjectId> tmpackets=new HashMap<String,NamedObjectId>();
-    final Map<String, NamedObjectId> ppgroups=new HashMap<String,NamedObjectId>();
+  //  final Map<String, NamedObjectId> ppgroups=new HashMap<String,NamedObjectId>();
+    
+    boolean sendParams;
 
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, SimpleString replyto) throws YarchException, IOException, ConfigurationException, YamcsApiException {
         log.debug("new index request: "+req);
@@ -86,8 +86,12 @@ class IndexRequestProcessor implements Runnable{
                 }
             }
         }
+        
         //pp groups do not support namespaces yet
         if(req.getSendAllPp() || req.getPpGroupCount()>0) {
+            sendParams = true; //TODO: fix; currently always send all
+        }
+        /*
             PpDefDb ppdb=PpDbFactory.getInstance(archiveInstance);
             if(req.getSendAllPp()) {
                 for(String s:ppdb.getGroups()) {
@@ -98,7 +102,7 @@ class IndexRequestProcessor implements Runnable{
                     ppgroups.put(id.getName(), id);
                 }
             }
-        }
+        }*/
     }
 
     @Override
@@ -112,7 +116,7 @@ class IndexRequestProcessor implements Runnable{
 
             boolean ok=true;
             if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
-            if(ok && ppgroups.size()>0) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, ppgroups); //use 20 sec for the PP to avoid millions of records
+            if(ok && sendParams) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
             
             if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, "cmdName", 2000, null);
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
