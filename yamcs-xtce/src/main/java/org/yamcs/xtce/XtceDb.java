@@ -194,7 +194,7 @@ public class XtceDb implements Serializable {
 
     /**
      * @param itemID
-     * @return list of ParameterEntry coresponding to a given parameter.
+     * @return list of ParameterEntry corresponding to a given parameter.
      * @throws InvalidIdentification
      */
     public List<ParameterEntry> getParameterEntries(Parameter p) {
@@ -203,7 +203,7 @@ public class XtceDb implements Serializable {
 
     /**
      * @param itemID
-     * @return list of ContainerEntry coresponding to a given sequence
+     * @return list of ContainerEntry corresponding to a given sequence
      *         container.
      * @throws InvalidIdentification
      */
