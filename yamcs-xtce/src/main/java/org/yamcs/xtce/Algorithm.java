@@ -60,6 +60,15 @@ public class Algorithm extends NameDescription {
         return autoActivate;
     }
     
+    public boolean canProvide(Parameter parameter) {
+        for(OutputParameter p:outputSet) {
+            if(p.getParameter()==parameter) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void print(PrintStream out) {
         out.print("Algorithm name: "+name);
         if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());

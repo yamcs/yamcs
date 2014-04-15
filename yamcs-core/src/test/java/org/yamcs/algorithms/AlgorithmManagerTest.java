@@ -2,6 +2,7 @@ package org.yamcs.algorithms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -217,7 +218,8 @@ public class AlgorithmManagerTest {
     @Test
     public void testAlgorithmChaining() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build()), new ParameterConsumer() {
+        List<NamedObjectId> sublist=Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build());
+        int subscriptionId=prm.addRequest(sublist, new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
                 params.addAll(items);
@@ -225,6 +227,19 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue(), 0.001);
+        
+        // Test unsubscribe
+        params.clear();
+        prm.removeItemsFromRequest(subscriptionId, sublist);
+        tmGenerator.generate_PKT11();
+        assertTrue(params.isEmpty());
+        
+        // Subscribe again
+        params.clear();
+        prm.addItemsToRequest(subscriptionId, sublist);
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue(), 0.001);
