@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +48,7 @@ public class ParameterRequestManager implements ParameterListener {
 	
 	private XtceTmProcessor tmProcessor=null;
 	private AlarmChecker alarmChecker;
-	private Map<Class<?>,ParameterProvider> parameterProviders=new HashMap<Class<?>,ParameterProvider>();
+	private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
@@ -180,8 +181,8 @@ public class ParameterRequestManager implements ParameterListener {
 	public synchronized void addRequest(int id, List<NamedObjectId> paraList, ParameterConsumer tpc) throws InvalidIdentification {
 		List<ParameterProvider> providers=getProviders(paraList);
 		for(int i=0;i<paraList.size();i++) {
-			log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
-			addItemToRequest(id,paraList.get(i), providers.get(i));
+			log.trace("creating subscriptionID:{} with item:{}",id, paraList.get(i));
+			addItemToRequest(id, paraList.get(i), providers.get(i));
 			//log.info("afterwards the subscription looks like: "+toString());
 		}
 		request2ParameterConsumerMap.put(id, tpc);
@@ -195,6 +196,7 @@ public class ParameterRequestManager implements ParameterListener {
 	 * @throws InvalidIdentification
 	 */
 	public synchronized void addItemsToRequest(int subscriptionId, List<NamedObjectId> paraList) throws InvalidIdentification, InvalidRequestIdentification {
+	    log.trace("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
 		if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
 			log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 			throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
@@ -241,7 +243,7 @@ public class ParameterRequestManager implements ParameterListener {
 	public synchronized void removeItemsFromRequest(int subscriptionID, List<NamedObjectId> paraList) throws InvalidIdentification {
 		List<ParameterProvider> providers=getProviders(paraList);
 		for(int i=0;i<paraList.size();i++) {
-			removeItemFromRequest(subscriptionID,paraList.get(i), providers.get(i));
+			removeItemFromRequest(subscriptionID, paraList.get(i), providers.get(i));
 		}
 	}
 
@@ -394,7 +396,7 @@ public class ParameterRequestManager implements ParameterListener {
 			if(consumer==null) {
 				log.error("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
 			} else {
-				consumer.updateItems(subscriptionId,al);
+				consumer.updateItems(subscriptionId, al);
 			}
 		}
 	}
