@@ -726,7 +726,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     			}
     		}
 		}
-		
 		String warnMaxs=null;
 	    if(hasColumn(cells, IDX_PARAM_HIGHWARNILIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
             warnMaxs=cells[IDX_PARAM_HIGHWARNILIMIT].getContents();		        
@@ -743,7 +742,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
 	    
 	    if(warnMins!=null || warnMaxs!=null) {
-		    double min=(warnMins!=null)?Double.parseDouble(warnMins):Double.NEGATIVE_INFINITY;
+		    double min=(warnMins!=null&&!limits.containsKey(warnMins))?Double.parseDouble(warnMins):Double.NEGATIVE_INFINITY;
 		    double max=(warnMaxs!=null)?Double.parseDouble(warnMaxs):Double.POSITIVE_INFINITY;
 		    setDefaultWarningAlarmRange(ptype,new FloatRange(min,max));
 		}
