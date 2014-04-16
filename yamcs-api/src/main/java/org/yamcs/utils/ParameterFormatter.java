@@ -98,7 +98,7 @@ public class ParameterFormatter {
      */
     public void writeParameters(List<ParameterValue> parameterList) throws IOException {
         long t=parameterList.get(0).getGenerationTime();
-        if ( t - lastLineInstant > timewindow ) {
+        if((timewindow==-1) || (t - lastLineInstant > timewindow)) {
             writeParameters();
             lastLineInstant = t;
 
