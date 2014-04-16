@@ -186,11 +186,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         try {
             ArrayList<NamedObjectId> newItems=new ArrayList<NamedObjectId>();
             for(Parameter param:engine.getRequiredParameters()) {
+                NamedObjectId noid=NamedObjectId.newBuilder().setName(param.getQualifiedName()).build();
                 if(!requiredInParams.contains(param)) {
-                    NamedObjectId noid=NamedObjectId.newBuilder().setName(param.getQualifiedName()).build();
-                    newItems.add(noid);
                     requiredInParams.add(param);
-
                     // Recursively activate other algorithms on which this algorithm depends
                     if(canProvide(noid)) {
                         for(Algorithm algo:xtcedb.getAlgorithms()) {
@@ -202,6 +200,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                                 }
                             }
                         }
+                    } else { // Don't ask items to PRM that we can provide ourselves
+                        newItems.add(noid);
                     }
                 }
 
@@ -241,6 +241,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     public void stopProviding(Parameter paramDef) {
 	    if(requestedOutParams.remove(paramDef)) {
 	        // Remove algorithm engine (and any that are no longer needed as a consequence)
+	        // We need to clean-up three more internal structures: requiredInParams, executionOrder and engineByAlgorithm
+	        HashSet<Parameter> stillRequired=new HashSet<Parameter>(); // parameters still required by any other algorithm
 	        for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
 	            Algorithm algo=it.next();
                 boolean doRemove=true;
@@ -261,14 +263,34 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 }
                 
 	            if(!algo.canProvide(paramDef)) { // Clean-up unused engines
-	                // TODO
+	                // For any of its outputs, check if it's still used by any algorithm
+	                for(OutputParameter op:algo.getOutputSet()) {
+	                    if(requestedOutParams.contains(op.getParameter())) {
+	                        doRemove=false;
+	                        break;
+	                    }
+	                    for(Algorithm otherAlgo:engineByAlgorithm.keySet()) {
+	                        for(InputParameter ip:otherAlgo.getInputSet()) {
+	                            if(ip.getParameterInstance().getParameter()==op.getParameter()) {
+	                                doRemove=false;
+	                                break;
+	                            }
+	                        }
+                            if(!doRemove) break;
+                        }
+                    }
 	            }
 	            
                 if(doRemove) {
                     it.remove();
                     engineByAlgorithm.remove(algo);
+                } else {
+                    for(InputParameter p:algo.getInputSet()) {
+                        stillRequired.add(p.getParameterInstance().getParameter());
+                    }
                 }
 	        }
+	        requiredInParams.retainAll(stillRequired);
 	    }
 	}
 

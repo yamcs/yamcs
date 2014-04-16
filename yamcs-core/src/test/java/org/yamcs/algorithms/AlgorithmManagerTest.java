@@ -21,7 +21,6 @@ import org.yamcs.ChannelFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.RefMdbPacketGenerator;
@@ -32,14 +31,8 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.AbstractTcTmService;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import com.google.common.util.concurrent.AbstractService;
 
 public class AlgorithmManagerTest {
     @BeforeClass
@@ -248,7 +241,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testAlgorithmChainingWithWindowing() throws InvalidIdentification {
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(
+        int subscriptionId=prm.addRequest(Arrays.asList(
                 NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAverage").build(),
                 NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_1").build()
         ), new ParameterConsumer() {
@@ -268,6 +261,28 @@ public class AlgorithmManagerTest {
         assertEquals(2, params.size());
         assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
         assertEquals((20 + 20 + 20 + (20 / 3.0)) / 4.0, params.get(1).getParameterValue().getEngValue().getFloatValue(), 0.001);
+        
+        // Unsubscribe
+        params.clear();
+        prm.removeItemsFromRequest(subscriptionId, Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAverage").build()));
+
+        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT11();
+        assertEquals(2, params.size());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(1).getParameterValue().getEngValue().getUint32Value());
+        
+        // Unsubscribe after subscribing to dependent algorithm's output as well
+        params.clear();
+        prm.addItemsToRequest(subscriptionId, Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAverage").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build()));
+        prm.removeItemsFromRequest(subscriptionId, Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAverage").build()));
+        tmGenerator.generate_PKT11();
+        // We should still get AlgoFloatMultiplication
+        assertEquals(2, params.size());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_1", params.get(0).getParameterValue().getParameter().getQualifiedName());
+        assertEquals("/REFMDB/SUBSYS1/AlgoFloatMultiplication", params.get(1).getParameterValue().getParameter().getQualifiedName());
     }
     
     @Test
