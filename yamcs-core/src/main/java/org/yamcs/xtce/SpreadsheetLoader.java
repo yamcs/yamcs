@@ -671,81 +671,89 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 	
 	private void loadParameterLimits(ParameterType ptype, Cell[] cells) {
-		if (cells.length<=IDX_PARAM_LOWWARNILIMIT) return;
-		
-		String mins=cells[IDX_PARAM_LOWWARNILIMIT].getContents();
-		//System.out.println("limits.length="+limits.size()+"limits: "+limits.keySet() +"mins="+mins);
-		if(limits.containsKey(mins)) { //limit is specified on the separate sheet
-			for(LimitDef ld:limits.get(mins)) {
-				Pattern p=Pattern.compile("(\\w+)(==|!=|>|<|>=|<=)(\\w+)");
-				if(ld.condition.length()>0) {
-					Matcher m=p.matcher(ld.condition);
-					if((!m.matches()) ||(m.groupCount()!=3)) {
-						log.warn("Cannot parse alarm condition '"+ld.condition+"'");
-						continue;
-					}
-					String pname=m.group(1);
-					String values=m.group(3);
-					String op=m.group(2);
-					Parameter para=parameters.get(pname);
-					if(para!=null) {
-
-					    ParameterInstanceRef paraRef=new ParameterInstanceRef(para);
-					    Comparison c;
-					    if(para.parameterType instanceof IntegerParameterType) {
-					        try {
-					            long value=Long.parseLong(values);
-					            c=new Comparison(paraRef,value,Comparison.stringToOperator(op));
-					        } catch (NumberFormatException e) {
-					            log.warn("Cannot parse alarm condition '"+ld.condition+"': "+e.getMessage());
-					            continue;
-					        }
-					    } else if(para.parameterType instanceof EnumeratedParameterType) {
-					        c=new Comparison(paraRef, values, Comparison.stringToOperator(op));
-					    } else {
-					        log.warn("Conditions not supported for parameter of type "+para.parameterType);
-					        continue;
-					    }
-					    NumericContextAlarm nca=new NumericContextAlarm();
-					    nca.setContextMatch(c);
-					    nca.setStaticAlarmRanges(ld.ranges);
-					    if(ptype instanceof IntegerParameterType){
-					        ((IntegerParameterType)ptype).addContextAlarm(nca);
-					    } else {
-					        ((FloatParameterType)ptype).addContextAlarm(nca);
-					    }
-					} else {  //TODO
-				//	    ParameterInstanceRef paraRef=new ParameterInstanceRef(new NameReference(pname));
-				//	    Comparison c=new Comparison(paraRef, Comparison.stringToOperator(op));
-					  
-					}
-				} else {
-					setDefaultWarningAlarmRange(ptype, ld.ranges.warningRange);
-					setDefaultCriticalAlarmRange(ptype, ld.ranges.criticalRange);
-				}
-			}
-		} else if((cells.length>IDX_PARAM_HIGHWARNILIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
-			String maxs=cells[IDX_PARAM_HIGHWARNILIMIT].getContents();
-			if((mins.length()>0) && (maxs.length()>0)) {
-			    double min=(mins.length()>0)?Double.parseDouble(mins):Double.NEGATIVE_INFINITY;
-			    double max=(maxs.length()>0)?Double.parseDouble(maxs):Double.POSITIVE_INFINITY;
-			    setDefaultWarningAlarmRange(ptype,new FloatRange(min,max));
-			}
+	    String warnMins=null;
+		if(hasColumn(cells, IDX_PARAM_LOWWARNILIMIT)) {
+    		warnMins=cells[IDX_PARAM_LOWWARNILIMIT].getContents();
+    		//System.out.println("limits.length="+limits.size()+"limits: "+limits.keySet() +"mins="+mins);
+    		if(limits.containsKey(warnMins)) { //limit is specified on the separate sheet
+    			for(LimitDef ld:limits.get(warnMins)) {
+    				Pattern p=Pattern.compile("(\\w+)(==|!=|>|<|>=|<=)(\\w+)");
+    				if(ld.condition.length()>0) {
+    					Matcher m=p.matcher(ld.condition);
+    					if((!m.matches()) ||(m.groupCount()!=3)) {
+    						log.warn("Cannot parse alarm condition '"+ld.condition+"'");
+    						continue;
+    					}
+    					String pname=m.group(1);
+    					String values=m.group(3);
+    					String op=m.group(2);
+    					Parameter para=parameters.get(pname);
+    					if(para!=null) {
+    
+    					    ParameterInstanceRef paraRef=new ParameterInstanceRef(para);
+    					    Comparison c;
+    					    if(para.parameterType instanceof IntegerParameterType) {
+    					        try {
+    					            long value=Long.parseLong(values);
+    					            c=new Comparison(paraRef,value,Comparison.stringToOperator(op));
+    					        } catch (NumberFormatException e) {
+    					            log.warn("Cannot parse alarm condition '"+ld.condition+"': "+e.getMessage());
+    					            continue;
+    					        }
+    					    } else if(para.parameterType instanceof EnumeratedParameterType) {
+    					        c=new Comparison(paraRef, values, Comparison.stringToOperator(op));
+    					    } else {
+    					        log.warn("Conditions not supported for parameter of type "+para.parameterType);
+    					        continue;
+    					    }
+    					    NumericContextAlarm nca=new NumericContextAlarm();
+    					    nca.setContextMatch(c);
+    					    nca.setStaticAlarmRanges(ld.ranges);
+    					    if(ptype instanceof IntegerParameterType){
+    					        ((IntegerParameterType)ptype).addContextAlarm(nca);
+    					    } else {
+    					        ((FloatParameterType)ptype).addContextAlarm(nca);
+    					    }
+    					} else {  //TODO
+    				//	    ParameterInstanceRef paraRef=new ParameterInstanceRef(new NameReference(pname));
+    				//	    Comparison c=new Comparison(paraRef, Comparison.stringToOperator(op));
+    					  
+    					}
+    				} else {
+    					setDefaultWarningAlarmRange(ptype, ld.ranges.warningRange);
+    					setDefaultCriticalAlarmRange(ptype, ld.ranges.criticalRange);
+    				}
+    			}
+    		}
 		}
 		
-//		danger limits
-		if((cells.length>IDX_PARAM_HIGHCRITICALLIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
-			mins=cells[IDX_PARAM_LOWCRITICALLIMIT].getContents();
-			String maxs=cells[IDX_PARAM_HIGHCRITICALLIMIT].getContents();
-			if((mins.length()>0) && (maxs.length()>0)) {
-				double min=Double.parseDouble(mins);
-				double max=Double.parseDouble(maxs);
-				setDefaultCriticalAlarmRange(ptype, new FloatRange(min,max));
-			}
+		String warnMaxs=null;
+	    if(hasColumn(cells, IDX_PARAM_HIGHWARNILIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
+            warnMaxs=cells[IDX_PARAM_HIGHWARNILIMIT].getContents();		        
+		}
+		
+		String criticalMins=null;
+	    if(hasColumn(cells, IDX_PARAM_LOWCRITICALLIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
+	        criticalMins=cells[IDX_PARAM_LOWCRITICALLIMIT].getContents();
+	    }
+	    
+	    String criticalMaxs=null;
+        if(hasColumn(cells, IDX_PARAM_HIGHCRITICALLIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
+            criticalMaxs=cells[IDX_PARAM_HIGHCRITICALLIMIT].getContents();
+        }
+	    
+	    if(warnMins!=null || warnMaxs!=null) {
+		    double min=(warnMins!=null)?Double.parseDouble(warnMins):Double.NEGATIVE_INFINITY;
+		    double max=(warnMaxs!=null)?Double.parseDouble(warnMaxs):Double.POSITIVE_INFINITY;
+		    setDefaultWarningAlarmRange(ptype,new FloatRange(min,max));
+		}
+		
+		if(criticalMins!=null || criticalMaxs!=null) {
+            double min=(criticalMins!=null)?Double.parseDouble(criticalMins):Double.NEGATIVE_INFINITY;
+            double max=(criticalMaxs!=null)?Double.parseDouble(criticalMaxs):Double.POSITIVE_INFINITY;
+			setDefaultCriticalAlarmRange(ptype, new FloatRange(min,max));
 		}
 	}
-	
-	
 
 	private void setDefaultCriticalAlarmRange(ParameterType ptype, FloatRange range) {
 		if(range==null)return;
