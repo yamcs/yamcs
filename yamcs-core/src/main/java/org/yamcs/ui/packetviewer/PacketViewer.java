@@ -251,7 +251,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(fileMenu);
-        
+
         // Ctrl on win/linux, Command on mac
         int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
@@ -530,6 +530,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
             yc.close();
+            ois.close();
         } catch (Exception e) {
             showError(e.getMessage());
             return false;
@@ -603,14 +604,14 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
-            
+
             ccsds = new ListPacket(buf, offset);
-            
+
             String opsname = xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
             if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
             if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
             ccsds.setOpsname(opsname);
-            
+
             len = ccsds.getCccsdsPacketLength() + 7;
             r = reader.skip(len - 16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
@@ -851,8 +852,15 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         currentPacket = listPacket;
         try {
             currentPacket.load(lastFile);
-            ByteBuffer bb=currentPacket.getByteBuffer();
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), currentPacket.getByteBuffer().array()));
+            ByteBuffer bb = currentPacket.getByteBuffer();
+            byte[] b;
+            if(bb.hasArray()) {
+                b = bb.array();
+            } else {
+                b = new byte[bb.capacity()];
+                bb.get(b);
+            }
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -939,11 +947,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
      */
     @SuppressWarnings("unchecked")
     public List<String[]> getRecentFiles() {
-    	List<String[]> recentFiles = null;
-    	Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
-    	if(obj instanceof ArrayList)
-    		recentFiles = (ArrayList<String[]>)obj;
-    	return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
+        List<String[]> recentFiles = null;
+        Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
+        if(obj instanceof ArrayList)
+            recentFiles = (ArrayList<String[]>)obj;
+        return (recentFiles != null) ? recentFiles : new ArrayList<String[]>();
     }
 
     private void updateRecentFiles(File file, String xtceDb) {
