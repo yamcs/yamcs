@@ -6,6 +6,12 @@
     <security-enabled>false</security-enabled>
     <journal-type>NIO</journal-type>
 
+    <bindings-directory>/storage/hornetq/bindings</bindings-directory>
+    <journal-directory>/storage/hornetq/journal</journal-directory>
+    <large-messages-directory>/storage/hornetq/large-messages</large-messages-directory>
+    <paging-directory>/storage/hornetq/paging</paging-directory>
+
+
     <management-notification-address>hornetq.notifications</management-notification-address>
     <!-- set these even when no clustering is activated to avoid warnings about security settings -->
     <cluster-user>HORNETQ.CLUSTER.ADMIN.USER</cluster-user>
