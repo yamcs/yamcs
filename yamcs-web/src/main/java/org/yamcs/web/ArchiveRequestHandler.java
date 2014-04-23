@@ -76,13 +76,14 @@ public class ArchiveRequestHandler extends AbstractRequestHandler {
         }
         if(qParams.containsKey("profile")) {
             if(qParams.get("profile").contains("/")) { // No funny business
+                log.warn("Sending BAD_REQUEST because profile contains a /");
                 sendError(ctx, BAD_REQUEST);
                 return;
             }
             YConfiguration c=YConfiguration.getConfiguration("mdb");
             String dir=c.getGlobalProperty("cacheDirectory");
             File profileDir=new File(dir, "profiles");
-            File profile=new File(profileDir,qParams.get("profile").get(0));
+            File profile=new File(profileDir, qParams.get("profile").get(0));
             if (profile.exists()) {
                 List<String> lines=Files.readLines(profile, CharsetUtil.UTF_8);
                 if(decoder.getPath().equals("parameters")) {
@@ -108,10 +109,12 @@ public class ArchiveRequestHandler extends AbstractRequestHandler {
                     }
                     rrb.setPacketRequest(prrb.build());
                 } else {
+                    log.warn("Sending BAD_REQUEST because neither parameter nor packets are requested");
                     sendError(ctx, BAD_REQUEST);
                     return;
-                }                
+                }
             } else {
+                log.warn("Sending BAD_REQUEST because neither parameter nor packets are requested");
                 sendError(ctx, BAD_REQUEST);
                 return;
             }
