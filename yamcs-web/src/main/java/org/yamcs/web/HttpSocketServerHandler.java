@@ -1,14 +1,15 @@
 package org.yamcs.web;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
-import static org.jboss.netty.handler.codec.http.HttpMethod.*;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.*;
-import static org.jboss.netty.handler.codec.http.HttpVersion.*;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.regex.Pattern;
-
 
 import org.codehaus.jackson.JsonFactory;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -35,6 +36,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
+    public static final String ARCHIVE_PATH = "archive";
     
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
@@ -48,6 +50,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     ParameterClient paraClient;
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
+    static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
    
     
@@ -76,7 +79,6 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             return;
         }
         String uri;
-        
         try {
             uri = URLDecoder.decode(req.getUri(), "UTF-8");
         } catch (UnsupportedEncodingException e1) {
@@ -116,15 +118,13 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
         String handler=rpath[0];
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
             webSocketHandler.handleHttpRequest(ctx, req, e, yamcsInstance);
-            return;
-        }
-        
-        if(DISPLAYS_PATH.equals(handler)) {
+        } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+        } else if(ARCHIVE_PATH.equals(handler)) {
+            archiveRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
-            return;
         }
     }
     
