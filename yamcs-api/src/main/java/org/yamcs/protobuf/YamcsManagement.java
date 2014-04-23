@@ -764,6 +764,7 @@ public final class YamcsManagement {
       return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_descriptor;
     }
     
+    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_fieldAccessorTable;

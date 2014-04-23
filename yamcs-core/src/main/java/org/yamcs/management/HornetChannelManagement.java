@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
 import org.yamcs.ChannelListener;
+import org.yamcs.HornetQAuthPrivilege;
+import org.yamcs.Privilege;
 import org.yamcs.xtceproc.ProcessingStatistics;
 
 import org.hornetq.api.core.HornetQException;
@@ -79,6 +81,8 @@ public class HornetChannelManagement implements ChannelListener {
     
     
     private void processChannelControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
+        Privilege priv = HornetQAuthPrivilege.getInstance(msg);
+        
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
         if(replyto==null) {
             log.warn("Did not receive a replyto header. Ignoring the request");
@@ -89,15 +93,15 @@ public class HornetChannelManagement implements ChannelListener {
             log.debug("Received a new request: "+req);
             if("createChannel".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
-                mservice.createChannel(cr);
+                mservice.createChannel(cr, priv);
                 channelControlServer.sendReply(replyto, "OK", null);
             } else if("connectToChannel".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
-                mservice.connectToChannel(cr);
+                mservice.connectToChannel(cr, priv);
                 channelControlServer.sendReply(replyto, "OK", null);
             } else if("pauseReplay".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
-                mservice.connectToChannel(cr);
+                mservice.connectToChannel(cr, priv);
                 Channel c=Channel.getInstance(cr.getInstance(), cr.getName());
                 c.pause();
                 channelControlServer.sendReply(replyto, "OK", null);
@@ -122,6 +126,7 @@ public class HornetChannelManagement implements ChannelListener {
         } 
     }
 
+   
     @Override
     public void channelAdded(Channel channel) {
         try {

@@ -318,7 +318,8 @@ public abstract class Privilege {
 			Future<User> f = cache.get(dn);
 			if (f == null) {
 				Callable<User> eval = new Callable<User>() {
-					public User call() throws NamingException {
+					@Override
+                    public User call() throws NamingException {
 						return loadUserFromLdap(dn);
 					}
 				};
@@ -559,7 +560,7 @@ public abstract class Privilege {
 							System.out.println(priv.getUser(dn));
 					}
 				} else {
-					String dn = "uid=" + args[0] + "," + priv.userPath;
+					String dn = "uid=" + args[0] + "," + Privilege.userPath;
 					System.out.println(priv.getUser(dn));
 				}
 			} catch (NamingException e) {
@@ -587,7 +588,8 @@ class User {
 	Set<String> tcPrivileges;
 	Set<String> systemPrivileges;
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return "dn:" + dn + "\n can assert identities: " + assertedIdentities
 				+ "\n roles: " + rolesDn + "\n   tm parameter privileges:"
 				+ tmParaPrivileges + "\n   tm packet privileges:"

@@ -13,6 +13,7 @@ import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
 import org.yamcs.ChannelFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Privilege;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.tctm.Link;
@@ -35,32 +36,32 @@ public class ManagementService {
     HornetManagement hornetMgr;
     HornetChannelManagement hornetChannelMgr;
     HornetCommandQueueManagement hornetCmdQueueMgr;
-    
+
     final boolean jmxEnabled, hornetEnabled;
     static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
     final String tld="yamcs";
     static ManagementService managementService;
-    
+
     Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
-    
+
     static public void setup(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         managementService=new ManagementService(hornetEnabled, jmxEnabled);
     }
-    
+
     static public ManagementService getInstance() {
         return managementService;
     }
-    
+
     private ManagementService(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         this.hornetEnabled=hornetEnabled;
         this.jmxEnabled=jmxEnabled;
-        
+
         if(jmxEnabled)
             mbeanServer=ManagementFactory.getPlatformMBeanServer();
         else 
             mbeanServer=null;
-    
+
         if(hornetEnabled) {
             try {
                 ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
@@ -75,7 +76,7 @@ public class ManagementService {
             }
         }
     }
-    
+
     public void registerService(String instance, String serviceName, Service service) {
         if(jmxEnabled) {
             ServiceControlImpl sci;
@@ -87,7 +88,7 @@ public class ManagementService {
             }
         }
     }
-    
+
     public void unregisterService(String instance, String serviceName) {
         if(jmxEnabled) {
             try {
@@ -97,8 +98,8 @@ public class ManagementService {
             }
         }
     }
- 
-    
+
+
     public void registerLink(String instance, String name, String streamName, String spec, Link link) {
         try {
             LinkControlImpl lci = new LinkControlImpl(instance, name, streamName, spec, link);
@@ -112,7 +113,7 @@ public class ManagementService {
             log.warn("Got exception when registering a link: "+e, e);
         }
     }
-    
+
     public void unregisterLink(String instance, String name) {
         if(jmxEnabled) {
             try {
@@ -121,13 +122,13 @@ public class ManagementService {
                 log.warn("Got exception when unregistering a link", e);
             }
         }
-        
+
         if(hornetEnabled) {
             hornetMgr.unRegisterLink(instance, name);
         }
     }
-    
-    
+
+
     public void registerChannel(Channel channel) {
         try {
             ChannelControlImpl cci = new ChannelControlImpl(channel);
@@ -138,7 +139,7 @@ public class ManagementService {
             log.warn("Got exception when registering a channel", e);
         }
     }
-    
+
     public void unregisterChannel(Channel channel) {
         if(jmxEnabled) {
             try {
@@ -148,7 +149,7 @@ public class ManagementService {
             }
         }
     }
-    
+
     public int registerClient(String instance, String channelName,  ChannelClient client) {
         int id=clientId.incrementAndGet();
         try {
@@ -168,8 +169,8 @@ public class ManagementService {
         return id;
     }
 
-    
-    
+
+
     public void unregisterClient(int id ) {
         ClientControlImpl cci=clients.remove(id);
         if(cci==null) return;
@@ -190,7 +191,7 @@ public class ManagementService {
         ClientInfo oldci=cci.getClientInfo();
         cci.switchChannel(chan);
         ClientInfo ci=cci.getClientInfo();
-        
+
         try {
             if(jmxEnabled) {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,channel="+oldci.getChannelName()+",id="+ci.getId()));
@@ -202,11 +203,34 @@ public class ManagementService {
         } catch (Exception e) {
             log.warn("Got exception when registering a channel", e);
         }
-        
+
     }
-    
-    public void createChannel(ChannelRequest cr) throws YamcsException{
+
+    public void createChannel(ChannelRequest cr, Privilege priv) throws YamcsException{
         log.info("Creating a new channel instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
+        String currentUser=priv.getCurrentUser();
+        if(currentUser==null) currentUser="unknown";
+
+        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlChannel")) {
+            if(cr.getPersistent()) { 
+                log.warn("User "+currentUser+" is not allowed to create persistent channels");
+                throw new YamcsException("permission denied");
+            }
+            if(!"Archive".equals(cr.getType())) {
+                //without MayControlChannel privilege, only hrdp archive and pacts files are allowed
+                log.warn("User "+currentUser+" is not allowed to create channels of type "+cr.getType());
+                throw new YamcsException("permission denied");
+            }
+            for(int i=0;i<cr.getClientIdCount();i++) {
+                ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
+                if(!currentUser.equals(si.getUsername())) {
+                    log.warn("User "+currentUser+" is not allowed to connect "+si.getUsername()+" to a new channel "+cr.getName() );
+                    throw new YamcsException("permission denied");
+                }
+            }
+        }
+
+
         try {
             int n=0;
             Channel chan;
@@ -235,11 +259,34 @@ public class ManagementService {
             throw new YamcsException(e.getMessage(), e.getCause());
         }
     }
-    
-    
-    public void connectToChannel(ChannelRequest cr) throws YamcsException {
+
+
+    public void connectToChannel(ChannelRequest cr, Privilege priv) throws YamcsException {
         Channel chan=Channel.getInstance(cr.getInstance(), cr.getName());
         if(chan==null) throw new YamcsException("Unexisting channel ("+cr.getInstance()+", "+cr.getName()+") specified");
+
+
+        String currentUser=priv.getCurrentUser();
+        if(currentUser==null) currentUser="unknown";
+
+        log.debug("User "+ currentUser+" wants to connect clients "+cr.getClientIdList()+" to channel "+cr.getName());
+        
+        
+        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlChannel") &&
+                !((chan.isPersistent() || chan.getCreator().equals(currentUser)))) {
+            log.warn("User "+currentUser+" is not allowed to connect users to channel "+cr.getName() );
+            throw new YamcsException("permission denied");
+        }
+        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlChannel")) {
+            for(int i=0; i<cr.getClientIdCount(); i++) {
+                ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
+                if(!currentUser.equals(si.getUsername())) {
+                    log.warn("User "+currentUser+" is not allowed to connect "+si.getUsername()+" to channel "+cr.getName());
+                    throw new YamcsException("permission denied");
+                }
+            }
+        }
+
         try {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 int id=cr.getClientId(i);
@@ -250,7 +297,7 @@ public class ManagementService {
             throw new YamcsException(e.toString());
         }
     }
-    
+
     public void registerCommandQueueManager(String instance, String channelName, CommandQueueManager cqm) {
         try {
             for(CommandQueue cq:cqm.getQueues()) {

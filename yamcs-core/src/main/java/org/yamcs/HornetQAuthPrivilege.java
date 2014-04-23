@@ -10,7 +10,6 @@ import javax.naming.directory.InitialDirContext;
 
 import org.hornetq.api.core.client.ClientMessage;
 
-import com.sun.security.auth.UserPrincipal;
 
 /**
  * Messaging authz is checked per message, not per connection, so this object
