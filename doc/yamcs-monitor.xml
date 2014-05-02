@@ -47,10 +47,10 @@
 			</mediaobject>
 		</figure>
 		</para>
-		<para>The command line option <option>-url</option> can be used to connect directly after the startup without calling the connect from the menu:
+		<para>A URL can be provided on the command line to connect directly after the startup, without needint to connect from the menu:
 	        <screen>yamcs-monitor.sh yamcs://localhost:5445/</screen>
 		</para>
-		<para>An additional command line option <option>-na</option> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
+		<para>The command line option <option>-na</option> causes the Yamcs Monitor to run in the so-called no-admin mode. In this mode a series of options and buttons are hidden from the GUI in order to not confuse the unaware user. These options are useful only for a user having admin privileges. The rest of this chapter presents the Yamcs Monitor when the admin options are enabled.</para>
 	</section>
 
 
@@ -71,45 +71,55 @@
             </itemizedlist>
     </para>
     
-    <guilabel>Data Links</guilabel>
-    This box displays a list of data links. Each element in the list contains these items:
-        <itemizedlist>
-            <listitem> Name - has to be unique and can be specified in the <filename>yamcs.instance.yaml</filename> configuration file. If not specified, it is chosen automatically by the Yamcs Server. </listitem>
-            <listitem> Type  - represents the Java class name of the implementor of the data link. </listitem>
-            <listitem> Spec - represents the configuration of the data link. It can contain different information depending on the data link type</listitem>
-            <listitem> Stream - represents the stream name used by the data link to write (in case of TM and PP) or read (in case of TC) data.</listitem>
-            <listitem> status - can be one of OK, ERROR or DISABLED</listitem>
-            <listitem>Data Count - contains the list of items (e.g. TM packets) that have transited through the link</listitem>
-        </itemizedlist>
-    <para>
-        In addition, each line is color coded as follows:
+    <section>
+        <title>Data Links</title>
+        <para>
+            This box displays a list of data links. Each element in the list contains these items:
+            <itemizedlist>
+                <listitem> Name - has to be unique and can be specified in the <filename>yamcs.instance.yaml</filename> configuration file. If not specified, it is chosen automatically by the Yamcs Server. </listitem>
+                <listitem> Type - represents the Java class name of the implementor of the data link. </listitem>
+                <listitem> Spec - represents the configuration of the data link. It can contain different information depending on the data link type</listitem>
+                <listitem> Stream - represents the stream name used by the data link to write (in case of TM and PP) or read (in case of TC) data.</listitem>
+                <listitem> Status - can be one of OK, ERROR or DISABLED</listitem>
+                <listitem>Data Count - contains the list of items (e.g. TM packets) that have transited through the link</listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            In addition, each line is color coded as follows:
             <itemizedlist>
                 <listitem> white - means the link is connected</listitem>
                 <listitem> green - means the link is connected and data has been flowing in the last two seconds</listitem>
                 <listitem> gray - means the link is disabled</listitem>
                 <listitem> red - means the link is enabled but not connected</listitem>
             </itemizedlist>
-    </para>
-    <para>
-        The data links provide a more detailed status when hovering the mouse on top of them. Note that the OK/ERROR status depends on the specific implementation of the Data link. For example the DaSS TM and PP provider will report the status as OK even though some of the requests have failed (we should perhaps introduce a WARNING=yellow status for this). The detailed report shows exactly which requests have succeeded and which ones have failed. 
-    </para>
-    <guilabel>Channels</guilabel> 
+        </para>
+        <para>
+            The data links provide a more detailed status when hovering the mouse on top of them. Note that the OK/ERROR status depends on the specific implementation of the Data link. For example the DaSS TM and PP provider will report the status as OK even though some of the requests have failed (we should perhaps introduce a WARNING=yellow status for this). The detailed report shows exactly which requests have succeeded and which ones have failed. 
+        </para>
+    </section>
+    
+    <section>
+        <title>Channels</title>
         <para>
             This box displays a list of channels currently available. The Name column indicates a unique channel name. It should describe the channel data briefly. The Creator column shows the user who created the channel.
         </para>
         <para>
             At server startup there is one realtime channel automatically created.
         </para>
+    </section>
     
-    <guilabel>Channel Information</guilabel> box 
+    <section>
+        <title>Channel Information</title>
         <para>
             This box displays current information about PathTM ("TM Status"), Processed Parameters ("PP Status"), and telecommands. Each of these parts can be temporarily disabled using the Disable buttons. To enable a part again, the Disable button is pressed again.
         </para>
         <para>
             The table shows one row per packet type received via PathTM. Over time, this table may accumulate payload HK packets, TC response packets, science packets, and SSL event packets. All packets defined in the MDB can be listed here, if they appear in the PathTM stream.
         </para>
+    </section>
 
-    <guilabel>Connected Clients</guilabel>
+    <section>
+        <title>Connected Clients</title>
         <para>
             This box shows all connected channel clients. The ChannelName column tells the name of the channel the client is currently connected to.
         </para>
@@ -119,18 +129,21 @@
         <para>
             New clients are automatically connected to the "realtime" channel. The "realtime" channel will never be removed, even if there are no clients connected.
         </para>
+    </section>
 
-   <guilabel>New Channel</guilabel> box
+    <section>
+        <title>New Channel</title>
         <para>
-            In this box replay channels are created. The Name field contains the name of the new channel. The start time, stop time, and the packets to be received are shown. To populate these fields, the Archive Browser window is used. To open it, the button "Open Archive Selector" is pressed.
+            In this box, replay channels are created. The Name field contains the name of the new channel. The start time, stop time, and the packets to be received are shown. To populate these fields, the Archive Browser window is used. To open it, the button "Open Archive Selector" is pressed.
             Packets can be removed from the given list by selecting them and pressing the Del key.
             Realtime speed indicates that data is replayed at the same speed it was recorded. Fixed speed will play the data at one packet per second, no matter how 
             fast they were recorded.
         </para>
         <para>
             When the "Loop Replay" box is checked, the replay will wrap around and automatically restart from the beginning. Otherwise, the replay stops when it ends at the stop time. 
-            </para>
-    <para>To create the channel, the Create button is pressed. One or more client must be selected which will then be assigned to the new channel.</para>
+        </para>
+        <para>To create the channel, the Create button is pressed. One or more client must be selected which will then be assigned to the new channel.</para>
+    </section>
 </section>
 
 
@@ -153,7 +166,7 @@
 		</listitem>
 		<listitem> The bottom panel contains the list of commands currently present in the queue selected in the upper panel. For each command the queue name, the command id, the user that has sent the command and the command string are display 
 			The list is of course empty if the selected queue is not in the state blocked.
-		<para>Right-clicking on a command gives the possibility to Sent or Reject the command.</para>
+		<para>Right-clicking on a command gives the possibility to Send or Reject the command.</para>
 		</listitem>
 	</itemizedlist>
 </section>
