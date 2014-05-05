@@ -159,7 +159,7 @@ public class AlgorithmEngine {
             }
             if(bindings.get(scriptName) instanceof OutputValueBinding) {
                 OutputValueBinding res = (OutputValueBinding) bindings.get(scriptName);
-                if(res != null) {
+                if(res != null && res.updated) {
                     outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
                 }
             } else {
