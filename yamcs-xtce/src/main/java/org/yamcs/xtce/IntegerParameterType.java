@@ -17,11 +17,12 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
 		super(name);
 	}
 	
-	private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
+	public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
         if(contextMatch==null) {
-            if(defaultAlarm==null)
+            if(defaultAlarm==null) {
                 defaultAlarm=new NumericAlarm();
-            return defaultAlarm.getStaticAlarmRanges();
+            }
+            return defaultAlarm;
         } else {
             NumericContextAlarm nca=getNumericContextAlarm(contextMatch);
             if(nca==null) {
@@ -29,8 +30,13 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
                 nca.setContextMatch(contextMatch);
                 addContextAlarm(nca);
             }
-            return nca.getStaticAlarmRanges();
+            return nca;
         }
+	}
+	
+	private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
+	    NumericAlarm alarm=createOrGetAlarm(contextMatch);
+	    return alarm.getStaticAlarmRanges();
 	}
 	
 	public void setDefaultWatchAlarmRange(FloatRange watchRange) {

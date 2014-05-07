@@ -122,11 +122,12 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
         this.defaultAlarm = defaultAlarm;
     }
     
-    private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
+    public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
         if(contextMatch==null) {
-            if(defaultAlarm==null)
+            if(defaultAlarm==null) {
                 defaultAlarm=new NumericAlarm();
-            return defaultAlarm.getStaticAlarmRanges();
+            }
+            return defaultAlarm;
         } else {
             NumericContextAlarm nca=getNumericContextAlarm(contextMatch);
             if(nca==null) {
@@ -134,8 +135,13 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
                 nca.setContextMatch(contextMatch);
                 addContextAlarm(nca);
             }
-            return nca.getStaticAlarmRanges();
+            return nca;
         }
+    }
+    
+    private AlarmRanges getAlarmRanges(MatchCriteria contextMatch) {
+        NumericAlarm alarm=createOrGetAlarm(contextMatch);
+        return alarm.getStaticAlarmRanges();
     }
 
     @Override

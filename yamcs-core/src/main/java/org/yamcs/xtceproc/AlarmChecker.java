@@ -36,7 +36,9 @@ public class AlarmChecker {
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
         ComparisonProcessor comparisonProcessor=new ComparisonProcessor(pvals);
         for(ParameterValue pval:pvals) {
-            performAlarmChecking(pval, comparisonProcessor);
+            if(pval.getParameter().getParameterType().hasAlarm()) {
+                performAlarmChecking(pval, comparisonProcessor);
+            }
         }
     }
     
@@ -106,7 +108,7 @@ public class AlarmChecker {
         
         // Notify when severity changes
         if(alarmReporter!=null) {
-            alarmReporter.sendNumericParameterEvent(pv, alarmType, minViolations);
+            alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
     }
 
@@ -154,7 +156,7 @@ public class AlarmChecker {
         
         // Notify when severity changes
         if(alarmReporter!=null) {
-            alarmReporter.sendNumericParameterEvent(pv, alarmType, minViolations);
+            alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
     }
     
@@ -252,9 +254,9 @@ public class AlarmChecker {
                 break;
             }
         }
-        
+
         if(alarmReporter!=null) {
-            alarmReporter.sendEnumeratedParameterEvent(pv, alarm, minViolations);
+            alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
         }
     }
 }

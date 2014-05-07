@@ -234,4 +234,24 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(42, 1, 0);
         assertEquals(1, q.size()); // Message for changed MonitoringResult
     }
+    
+    @Test
+    public void testOnValueChangeReport() {
+        c.start();
+        
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(0, q.size());
+
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(0, q.size()); // No change
+        
+        tmGenerator.generate_PKT1_10(21, 1, 0);
+        assertEquals(1, q.size()); // Change
+        
+        tmGenerator.generate_PKT1_10(21, 1, 0);
+        assertEquals(1, q.size()); // No Change
+        
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(2, q.size()); // Change
+    }
 }

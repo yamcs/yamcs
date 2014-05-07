@@ -11,6 +11,8 @@ import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.StringConvertors;
+import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -29,6 +31,8 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
+    // Last value of each param (for detecting changes in value)
+    private Map<Parameter, ParameterValue> lastValuePerParameter=new HashMap<Parameter, ParameterValue>();
     
     public AlarmReporter(String yamcsInstance) {
         this(yamcsInstance, "realtime");
@@ -96,7 +100,17 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
      * affect events for parameters that go back to normal, or that change
      * severity levels while the alarm is already active.
      */
-    public void sendNumericParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
+    public void reportNumericParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
+        boolean sendUpdateEvent=false;
+        
+        if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
+            ParameterValue oldPv=lastValuePerParameter.get(pv.def);
+            if(oldPv!=null && hasChanged(oldPv, pv)) {
+                sendUpdateEvent=true;
+            }
+            lastValuePerParameter.put(pv.def, pv);
+        }
+        
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to normal");
@@ -114,35 +128,19 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             }
             
             if(activeAlarm.violations==minViolations || (activeAlarm.violations>minViolations && previousMonitoringResult!=activeAlarm.monitoringResult)) {
-                switch(pv.getMonitoringResult()) {
-                case WATCH_LOW:
-                case WARNING_LOW:
-                    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-                    break;
-                case WATCH_HIGH:
-                case WARNING_HIGH:
-                    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-                    break;
-                case DISTRESS_LOW:
-                case CRITICAL_LOW:
-                case SEVERE_LOW:
-                    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-                    break;
-                case DISTRESS_HIGH:
-                case CRITICAL_HIGH:
-                case SEVERE_HIGH:
-                    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
-                }
+                sendUpdateEvent=true;
             }
             
             activeAlarms.put(pv.getParameter(), activeAlarm);
         }
+        
+        if(sendUpdateEvent) {
+            sendValueChangeEvent(pv);
+        }
     }
     
-    public void sendEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
+    public void reportEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
+        boolean sendUpdateEvent=(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE);
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to a normal state ("+pv.getEngValue().getStringValue()+")");
@@ -160,29 +158,76 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             }
             
             if(activeAlarm.violations==minViolations || (activeAlarm.violations>minViolations&& previousMonitoringResult!=activeAlarm.monitoringResult)) {
-                switch(pv.getMonitoringResult()) {
-                case WATCH:
-                case WARNING:
-                    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
-                    break;
-                case DISTRESS:
-                case CRITICAL:
-                case SEVERE:
-                    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
-                }
+                sendUpdateEvent=true;
             }
             
             activeAlarms.put(pv.getParameter(), activeAlarm);
         }
+        
+        if(sendUpdateEvent) {
+            sendStateChangeEvent(pv);
+        }
+    }
+    
+    private void sendValueChangeEvent(ParameterValue pv) {
+        switch(pv.getMonitoringResult()) {
+        case WATCH_LOW:
+        case WARNING_LOW:
+            eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
+            break;
+        case WATCH_HIGH:
+        case WARNING_HIGH:
+            eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
+            break;
+        case DISTRESS_LOW:
+        case CRITICAL_LOW:
+        case SEVERE_LOW:
+            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
+            break;
+        case DISTRESS_HIGH:
+        case CRITICAL_HIGH:
+        case SEVERE_HIGH:
+            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
+            break;
+        case IN_LIMITS:
+            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
+            break;
+        default:
+            throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
+        }
+    }
+    
+    private void sendStateChangeEvent(ParameterValue pv) {
+        switch(pv.getMonitoringResult()) {
+        case WATCH:
+        case WARNING:
+            eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
+            break;
+        case DISTRESS:
+        case CRITICAL:
+        case SEVERE:
+            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
+            break;
+        case IN_LIMITS:
+            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to state ("+pv.getEngValue().getStringValue()+")");
+            break;
+        default:
+            throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
+        }
+    }
+    
+    private boolean hasChanged(ParameterValue pvOld, ParameterValue pvNew) {
+        // Crude string value comparison.
+        return !StringConvertors.toString(pvOld.getEngValue(), false)
+                .equals(StringConvertors.toString(pvNew.getEngValue(), false));
     }
     
     private static class ActiveAlarm {
         MonitoringResult monitoringResult;
         AlarmType alarmType;
         int violations=1;
+        ParameterValue lastValue;
+        
         ActiveAlarm(AlarmType alarmType, MonitoringResult monitoringResult) {
             this.alarmType=alarmType;
             this.monitoringResult=monitoringResult;

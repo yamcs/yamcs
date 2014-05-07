@@ -59,13 +59,14 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
      * @param contextMatch use <tt>null</tt> for the default context
      */
     public void addAlarm(MatchCriteria contextMatch, ValueEnumeration enumValue, AlarmLevels level) {
-        getEnumerationAlarm(contextMatch).addAlarm(enumValue, level);
+        createOrGetAlarm(contextMatch).addAlarm(enumValue, level);
     }
     
-    private EnumerationAlarm getEnumerationAlarm(MatchCriteria contextMatch) {
+    public EnumerationAlarm createOrGetAlarm(MatchCriteria contextMatch) {
         if(contextMatch==null) {
-            if(defaultAlarm==null)
+            if(defaultAlarm==null) {
                 defaultAlarm=new EnumerationAlarm();
+            }
             return defaultAlarm;
         } else {
             EnumerationContextAlarm eca=getContextAlarm(contextMatch);
