@@ -35,18 +35,20 @@ public class AlarmTest {
     
     @Before
     public void beforeEachTest() throws ConfigurationException, ChannelException {
+        String yamcsInstance="refmdb";
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
-        db=XtceDbFactory.getInstance("refmdb");
+        db=XtceDbFactory.getInstance(yamcsInstance);
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
         try {
-            c=ChannelFactory.create("refmdb", "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create(yamcsInstance, "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
         prm=c.getParameterRequestManager();
+        new AlarmReporter(yamcsInstance, "AlarmTest");
     }
     
     @After
