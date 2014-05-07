@@ -367,5 +367,25 @@ public class AlgorithmManagerTest {
         assertEquals(1, params.size());
         assertEquals(4.167291, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-6);
     }
+    
+    @Test
+    public void testMarkedNotUpdated() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoUpdatedOut").build(),
+                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoUnupdatedOut").build()), new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                params.addAll(items);
+            }
+        });
+
+        c.start();
+        int pIntegerPara16_1 = 5;
+        tmGenerator.generate_PKT16(pIntegerPara16_1, 0);
+        assertEquals(1, params.size());
+        assertEquals("/REFMDB/SUBSYS1/AlgoUpdatedOut", params.get(0).getParameterValue().getParameter().getQualifiedName());
+        assertEquals(pIntegerPara16_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+    }
 }
 

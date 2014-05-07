@@ -66,16 +66,15 @@ public class AlgorithmEngine {
     
     // Keep only unique arguments (for subscription purposes)
     private Set<Parameter> requiredParameters=new HashSet<Parameter>();
-    // Keeps one ValueBinding instance per InputParameter, recycled on each pval update
+    // Keeps one ValueBinding instance per InputParameter, recycled on each algorithm run
     private Map<InputParameter,ValueBinding> bindingsByInput=new HashMap<InputParameter,ValueBinding>();
+    // Keeps one OutputValueBinding instance per OutputParameter, recycled on each algorithm run
+    private Map<OutputParameter,OutputValueBinding> bindingsByOutput=new HashMap<OutputParameter,OutputValueBinding>();
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
     private static Map<String, Class<ValueBinding>> valueBindingClasses=Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
     
     protected boolean updated=true;
 	
-	/**
-	 * Constructs a derived value for the given parameter and argument ids
-	 */
 	public AlgorithmEngine(Algorithm algorithmDef, ScriptEngine scriptEngine) {
 	    this.def=algorithmDef;
 	    this.scriptEngine=scriptEngine;
@@ -84,6 +83,17 @@ public class AlgorithmEngine {
 
 	    for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             requiredParameters.add(inputParameter.getParameterInstance().getParameter());
+	    }
+	    
+	    // Set empty output bindings so that algorithms can write their attributes
+	    for(OutputParameter outputParameter:algorithmDef.getOutputSet()) {
+	        OutputValueBinding valueBinding=new OutputValueBinding();
+	        bindingsByOutput.put(outputParameter, valueBinding);
+	        String scriptName=outputParameter.getOutputName();
+	        if(scriptName==null) {
+	            scriptName=outputParameter.getParameter().getName();
+	        }
+	        bindings.put(scriptName, valueBinding);
 	    }
 	}
 	
@@ -137,7 +147,7 @@ public class AlgorithmEngine {
 	    try {
             scriptEngine.eval(def.getAlgorithmText(), bindings);
         } catch (ScriptException e) {
-            log.warn("Error while executing script: "+e.getMessage(), e);
+            log.warn("Error while executing algorithm: "+e.getMessage(), e);
             return Collections.emptyList();
         }
         
@@ -147,29 +157,35 @@ public class AlgorithmEngine {
             if(scriptName==null) {
                 scriptName=outputParameter.getParameter().getName();
             }
-            Object res = bindings.get(scriptName);
-            if(res != null) {
-                outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
+            if(bindings.get(scriptName) instanceof OutputValueBinding) {
+                OutputValueBinding res = (OutputValueBinding) bindings.get(scriptName);
+                if(res != null && res.updated) {
+                    outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
+                }
+            } else {
+                log.warn("Error while executing algorithm {}. Wrong type of output parameter. Ensure you assign to '{}.value' and not directly to '{}'",
+                        def.getQualifiedName(), scriptName, scriptName);
             }
+            
         }
         return outputValues; 
 	}
 	
-	private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, Object outputValue) {
+	private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
         ParameterValue pval=new ParameterValue(parameter, true);
         ParameterType ptype=parameter.getParameterType();
         if(ptype instanceof EnumeratedParameterType) {
-            setRawValue(((EnumeratedParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((EnumeratedParameterType) ptype).getEncoding(), pval, binding.value);
         } else if(ptype instanceof IntegerParameterType) {
-            setRawValue(((IntegerParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((IntegerParameterType) ptype).getEncoding(), pval, binding.value);
         } else if(ptype instanceof FloatParameterType) {
-            setRawValue(((FloatParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((FloatParameterType) ptype).getEncoding(), pval, binding.value);
         } else if(ptype instanceof BinaryParameterType) {
-            setRawValue(((BinaryParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((BinaryParameterType) ptype).getEncoding(), pval, binding.value);
         } else if(ptype instanceof StringParameterType) {
-            setRawValue(((StringParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((StringParameterType) ptype).getEncoding(), pval, binding.value);
         } else if(ptype instanceof BooleanParameterType) {
-            setRawValue(((BooleanParameterType) ptype).getEncoding(), pval, outputValue);
+            setRawValue(((BooleanParameterType) ptype).getEncoding(), pval, binding.value);
         } else {
             throw new IllegalArgumentException("Unsupported parameter type "+ptype);
         }
