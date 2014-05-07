@@ -15,6 +15,11 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 	public EnumeratedParameterType(String name){
 		super(name);
 	}
+	
+    @Override
+    public boolean hasAlarm() {
+        return defaultAlarm!=null || (contextAlarmList!=null && !contextAlarmList.isEmpty());
+    }
 
 	@Override
     public Set<Parameter> getDependentParameters() {

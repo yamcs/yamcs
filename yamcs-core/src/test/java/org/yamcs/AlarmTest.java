@@ -221,4 +221,15 @@ public class AlarmTest {
         assertEquals(MonitoringResult.IN_LIMITS, params.get(5).getParameterValue().getMonitoringResult());
         assertEquals(4, q.size()); // Message for back to normal
     }
+    
+    @Test
+    public void testAlarmReportingWithoutSubscription() {
+        c.start();
+        
+        tmGenerator.generate_PKT1_10(30, 1, 0);
+        assertEquals(0, q.size());
+        
+        tmGenerator.generate_PKT1_10(42, 1, 0);
+        assertEquals(1, q.size()); // Message for changed MonitoringResult
+    }
 }

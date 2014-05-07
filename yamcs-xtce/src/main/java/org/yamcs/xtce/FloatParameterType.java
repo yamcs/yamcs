@@ -88,6 +88,11 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 		if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
 		contextAlarmList.addAll(ncas);
 	}
+
+    @Override
+    public boolean hasAlarm() {
+        return defaultAlarm!=null || (contextAlarmList!=null && !contextAlarmList.isEmpty());
+    }
 	
 	@Override
     public Set<Parameter> getDependentParameters() {

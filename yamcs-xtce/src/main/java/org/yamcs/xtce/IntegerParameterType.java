@@ -120,6 +120,11 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
 	public List<NumericContextAlarm> getContextAlarmList() {
 	    return contextAlarmList;
 	}
+	
+	@Override
+	public boolean hasAlarm() {
+	    return defaultAlarm!=null || (contextAlarmList!=null && !contextAlarmList.isEmpty());
+	}
     
 	@Override
     public Set<Parameter> getDependentParameters() {

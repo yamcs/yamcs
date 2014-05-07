@@ -1,13 +1,23 @@
 package org.yamcs.xtceproc;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.ParameterConsumer;
+import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
+import org.yamcs.ParameterValueWithId;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
@@ -22,17 +32,61 @@ import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.XtceDb;
 
-public class AlarmChecker {
+/**
+ * Is called upon by the ParameterRequestManager whenever a new parameter value
+ * may need alarms published together with it.
+ * <p>
+ * Also generates alarm events automatically, by subscribing to all relevant
+ * parameters.
+ */
+public class AlarmChecker implements ParameterConsumer {
     
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     
-    public AlarmChecker(String instance) {
-        eventProducer=EventProducerFactory.getEventProducer(instance);
+    public AlarmChecker(ParameterRequestManager prm, String yamcsInstance) {
+        eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("AlarmChecker");
+        
+        Set<Parameter> requiredParameters=new HashSet<Parameter>();
+        try {
+            XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
+            for (Parameter parameter:xtcedb.getParameters()) {
+                ParameterType ptype=parameter.getParameterType();
+                if(ptype.hasAlarm()) {
+                    requiredParameters.add(parameter);
+                    Set<Parameter> dependentParameters = ptype.getDependentParameters();
+                    if(dependentParameters!=null) {
+                        requiredParameters.addAll(dependentParameters);
+                    }
+                }
+            }
+        } catch(ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+        
+        if(!requiredParameters.isEmpty()) {
+            List<NamedObjectId> paramNames=new ArrayList<NamedObjectId>(); // Now that we have uniques..
+            for(Parameter p:requiredParameters) {
+                paramNames.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+            }
+            try {
+                prm.addRequest(paramNames, this);
+            } catch(InvalidIdentification e) {
+                throw new RuntimeException("Could not register dependencies for alarms", e);
+            }
+        }
     }
     
+    @Override
+    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+        // Nothing. The real business of sending events, happens while checking the alarms
+        // because that's where we have easy access to the XTCE definition of the active
+        // alarm. The PRM is only used to signal the parameter subscriptions.
+    }
+       
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
      * information. Any pvals that are required for performing comparison
@@ -47,9 +101,8 @@ public class AlarmChecker {
     
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
-     * 
      */
-    public void performAlarmChecking(ParameterValue pv, ComparisonProcessor comparisonProcessor) {
+    private void performAlarmChecking(ParameterValue pv, ComparisonProcessor comparisonProcessor) {
         ParameterType ptype=pv.getParameter().getParameterType();
         if(ptype instanceof FloatParameterType) {
             performAlarmCheckingFloat((FloatParameterType) ptype, pv, comparisonProcessor);
@@ -208,6 +261,52 @@ public class AlarmChecker {
         pv.setSevereRange(severeRange);
     }
     
+    private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
+        pv.setMonitoringResult(MonitoringResult.IN_LIMITS); // Default is DISABLED, but that doesn't seem fit when we are checking
+        String s=pv.getEngValue().getStringValue();
+        
+        EnumerationAlarm alarm=ept.getDefaultAlarm();
+        int minViolations=(alarm==null)?1:alarm.getMinViolations();
+        if(ept.getContextAlarmList()!=null) {
+            for(EnumerationContextAlarm nca:ept.getContextAlarmList()) {
+                if(comparisonProcessor.matches(nca.getContextMatch())) {
+                    alarm=nca;
+                    minViolations=nca.getMinViolations();
+                    break;
+                }
+            }
+        }
+        if(alarm != null) {
+            AlarmLevels level=alarm.getDefaultAlarmLevel();
+            for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
+                if(eai.getEnumerationValue().getLabel().equals(s)) level=eai.getAlarmLevel();
+            }
+
+            switch(level) {
+            case normal:
+                pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
+                break;
+            case watch:
+                pv.setMonitoringResult(MonitoringResult.WATCH);
+                break;
+            case warning:
+                pv.setMonitoringResult(MonitoringResult.WARNING);
+                break;
+            case distress:
+                pv.setMonitoringResult(MonitoringResult.DISTRESS);
+                break;
+            case critical:
+                pv.setMonitoringResult(MonitoringResult.CRITICAL);
+                break;
+            case severe:
+                pv.setMonitoringResult(MonitoringResult.SEVERE);
+                break;
+            }
+        }
+        
+        sendEnumeratedParameterEvent(pv, alarm, minViolations);
+    }
+
     /**
      * Sends an event if an alarm condition for the active context has been
      * triggered <tt>minViolations</tt> times. This configuration does not
@@ -297,54 +396,9 @@ public class AlarmChecker {
         }
     }
     
-    private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
-        pv.setMonitoringResult(MonitoringResult.IN_LIMITS); // Default is DISABLED, but that doesn't seem fit when we are checking
-        String s=pv.getEngValue().getStringValue();
-        
-        EnumerationAlarm alarm=ept.getDefaultAlarm();
-        int minViolations=(alarm==null)?1:alarm.getMinViolations();
-        if(ept.getContextAlarmList()!=null) {
-            for(EnumerationContextAlarm nca:ept.getContextAlarmList()) {
-                if(comparisonProcessor.matches(nca.getContextMatch())) {
-                    alarm=nca;
-                    minViolations=nca.getMinViolations();
-                    break;
-                }
-            }
-        }
-        if(alarm != null) {
-            AlarmLevels level=alarm.getDefaultAlarmLevel();
-            for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
-                if(eai.getEnumerationValue().getLabel().equals(s)) level=eai.getAlarmLevel();
-            }
-
-            switch(level) {
-            case normal:
-                pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
-                break;
-            case watch:
-                pv.setMonitoringResult(MonitoringResult.WATCH);
-                break;
-            case warning:
-                pv.setMonitoringResult(MonitoringResult.WARNING);
-                break;
-            case distress:
-                pv.setMonitoringResult(MonitoringResult.DISTRESS);
-                break;
-            case critical:
-                pv.setMonitoringResult(MonitoringResult.CRITICAL);
-                break;
-            case severe:
-                pv.setMonitoringResult(MonitoringResult.SEVERE);
-                break;
-            }
-        }
-        sendEnumeratedParameterEvent(pv, alarm, minViolations);
-    }
-    
     private static class ActiveAlarm {
-        AlarmType alarmType;
         MonitoringResult monitoringResult;
+        AlarmType alarmType;
         int violations=1;
         ActiveAlarm(AlarmType alarmType, MonitoringResult monitoringResult) {
             this.alarmType=alarmType;

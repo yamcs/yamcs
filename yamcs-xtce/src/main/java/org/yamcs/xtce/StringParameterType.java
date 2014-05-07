@@ -8,10 +8,14 @@ public class StringParameterType extends StringDataType implements ParameterType
     public StringParameterType(String name) {
         super(name);
     }
+    
+    @Override
+    public boolean hasAlarm() {
+        return false;
+    }
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        // TODO Auto-generated method stub
         return null;
     }
 

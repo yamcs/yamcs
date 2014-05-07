@@ -9,6 +9,11 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     public BooleanParameterType(String name) {
         super(name);
     }
+    
+    @Override
+    public boolean hasAlarm() {
+        return false;
+    }
 
     @Override
     public Set<Parameter> getDependentParameters() {
