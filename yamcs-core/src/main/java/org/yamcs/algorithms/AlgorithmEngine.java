@@ -78,6 +78,13 @@ public class AlgorithmEngine {
 
 	    for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             requiredParameters.add(inputParameter.getParameterInstance().getParameter());
+            
+            // Default-define all input values to null to prevent ugly runtime errors
+            String scriptName=inputParameter.getInputName();
+            if(scriptName==null) {
+                scriptName=inputParameter.getParameterInstance().getParameter().getName();
+            }
+            scriptEngine.put(scriptName, null);
 	    }
 	    
 	    // Improve error msgs
