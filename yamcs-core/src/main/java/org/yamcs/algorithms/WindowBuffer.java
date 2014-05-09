@@ -1,6 +1,7 @@
 package org.yamcs.algorithms;
 
 import org.yamcs.ParameterValue;
+import org.yamcs.utils.StringConvertors;
 
 /**
  * A history window is for looking up past values. Intentionally it
@@ -67,10 +68,15 @@ public class WindowBuffer {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder("[");
-        buf.append(genTimes[0]).append("->").append(historicValues[0]);
+        buf.append(genTimes[0]).append("->").append(toValue(historicValues[0]));
         for (int i=1;i<genTimes.length;i++) {
-            buf.append(", ").append(genTimes[i]).append("->").append(historicValues[i]);
+            buf.append(", ").append(genTimes[i]).append("->").append(toValue(historicValues[i]));
         }
         return buf.append("]").toString();
+    }
+    
+    private static String toValue(ParameterValue pval) {
+        if(pval==null) return null;
+        return StringConvertors.toString(pval.getEngValue(), false);
     }
 }

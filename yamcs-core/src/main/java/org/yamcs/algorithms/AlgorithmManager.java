@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -31,9 +34,10 @@ import org.yamcs.ParameterValueWithId;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.Algorithm.AutoActivateType;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.NamedDescriptionIndex;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
@@ -46,9 +50,9 @@ import com.google.common.util.concurrent.AbstractService;
  * Manages the provision of requested parameters that require the execution of
  * one or more XTCE algorithms.
  * <p>
- * Upon initialization it will scan all algorithms, and activate any that don't
- * require subscription. OutputParameters of all algorithms will be indexed, so
- * that AlgorithmManager knows what parameters it can provide to the
+ * Upon initialization it will scan all algorithms, and schedule any that are
+ * to be triggered periodically. OutputParameters of all algorithms will be
+ * indexed, so that AlgorithmManager knows what parameters it can provide to the
  * ParameterRequestManager.
  * <p>
  * Algorithms and any needed algorithms that require earlier execution, will be
@@ -83,6 +87,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     // For storing a window of previous parameter instances
     HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
+    
+    // For scheduling OnPeriodicRate algorithms
+    ScheduledExecutorService timer;
 
     public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
         this(parameterRequestManager, chan, null);
@@ -146,22 +153,25 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         for(OutputParameter oParam:algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
         }
-        // Activate the algorithm if requested
-        if(algo.getAutoActivate()!=null && !engineByAlgorithm.containsKey(algo)) {
-            switch (algo.getAutoActivate()) {
-            case ALWAYS:
-                activateAlgorithm(algo);
-                break;
-            case REALTIME_ONLY:
-                if(!parameterRequestManager.channel.isReplay()) {
-                    activateAlgorithm(algo);
-                }
-                break;
-            case REPLAY_ONLY:
-                if(parameterRequestManager.channel.isReplay()) {
-                    activateAlgorithm(algo);
-                }
-                break;
+        // Eagerly activate the algorithm if no outputs (with lazy activation,
+        // it would never trigger because there's nothing to subscribe to)
+        if(algo.getOutputSet().isEmpty() && !engineByAlgorithm.containsKey(algo)) {
+            activateAlgorithm(algo);
+        }
+        
+        List<OnPeriodicRateTrigger> timedTriggers = algo.getTriggerSet().getOnPeriodicRateTriggers();
+        if(!timedTriggers.isEmpty()) {
+            // acts as a fixed-size pool
+            timer = Executors.newScheduledThreadPool(Math.min(timedTriggers.size(), 10));
+            activateAlgorithm(algo);
+            final AlgorithmEngine engine = engineByAlgorithm.get(algo);
+            for(OnPeriodicRateTrigger trigger:timedTriggers) {
+                timer.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        runEngine(engine, TimeEncoding.currentInstant());
+                    }
+                }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
             }
         }
     }
@@ -262,13 +272,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	        for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
 	            Algorithm algo=it.next();
                 boolean doRemove=true;
-                
-                // Don't remove if always 'on' for this channel
-                if(algo.getAutoActivate()==AutoActivateType.ALWAYS
-                        || algo.getAutoActivate()==AutoActivateType.REALTIME_ONLY && !parameterRequestManager.channel.isReplay()
-                        || algo.getAutoActivate()==AutoActivateType.REPLAY_ONLY && parameterRequestManager.channel.isReplay()) {
-                    doRemove=false;
-                }
 
                 // Don't remove if any other output parameters are still subscribed to
                 for(OutputParameter oParameter:algo.getOutputSet()) {
@@ -352,7 +355,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
         for(Algorithm algorithm:executionOrder) {
             AlgorithmEngine engine=engineByAlgorithm.get(algorithm);
-            boolean updated=false; // Whether any of its input parameters is updated
             boolean skipRun=false;
 
             // Set algorithm arguments based on incoming values
@@ -372,12 +374,23 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                                 skipRun=true;
                             }
                         }
-                        updated=true;
+                    }
+                }
+            }
+            
+            // But run it only, if this satisfies an onParameterUpdate trigger
+            boolean triggered=false;
+            for(OnParameterUpdateTrigger trigger:algorithm.getTriggerSet().getOnParameterUpdateTriggers()) {
+                if(triggered) break;
+                for(ParameterValue pval:allItems) {
+                    if(pval.getParameter().equals(trigger.getParameter())) {
+                        triggered=true;
+                        break;
                     }
                 }
             }
 
-            if(!skipRun && updated) {
+            if(!skipRun && triggered) {
                 ArrayList<ParameterValue> r=runEngine(engine, items.get(0).getGenerationTime());
                 newItems.addAll(r);
                 allItems.addAll(r);
@@ -415,7 +428,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     public void setParameterListener(ParameterListener parameterRequestManager) {
-        // do nothing,  we're more interested in a ParameterRequestManager, which we're
+        // do nothing, we're more interested in a ParameterRequestManager, which we're
         // getting from the constructor
     }
 

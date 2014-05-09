@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +26,6 @@ import jxl.read.biff.BiffException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.xtce.Algorithm.AutoActivateType;
 import org.yamcs.xtce.Comparison.OperatorType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
@@ -80,7 +80,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	//columns in the algorithms sheet
 	final static int IDX_ALGO_NAME=0;
 	final static int IDX_ALGO_TEXT=1;
-	final static int IDX_ALGO_ACTIVATE=2;
+	final static int IDX_ALGO_TRIGGER=2;
 	final static int IDX_ALGO_PARA_INOUT=3;
 	final static int IDX_ALGO_PARA_REF=4;
 	final static int IDX_ALGO_PARA_INSTANCE=5;
@@ -1006,18 +1006,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             Cell[] cells = jumpToRow(algo_sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
-            AutoActivateType autoActivate = null;
-            if(cells.length>IDX_ALGO_ACTIVATE && !"".equals(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                if("Always".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.ALWAYS;
-                } else if("RealtimeOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.REALTIME_ONLY;
-                } else if("ReplayOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.REPLAY_ONLY;
-                } else {
-                    throw new SpreadsheetLoadException(ctx, "Auto-activate '"+cells[IDX_ALGO_ACTIVATE].getContents()+"' not supported. Can only go back in time. Use values <= 0.");
-                }
-            }
+            String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
             
             // now we search for the matching last row of that algorithm
             int end = start + 1;
@@ -1035,10 +1024,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
             
-            algorithm.setAutoActivate(autoActivate);
-            
             // In/out params
             String paraInout=null;
+            Set<String> inputParameterRefs=new HashSet<String>();
             for (int j = start+1; j < end; j++) {
                 cells = jumpToRow(algo_sheet, j);
                 String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
@@ -1047,6 +1035,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 }
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
+                    inputParameterRefs.add(paraRef);
                     Parameter param = spaceSystem.getParameter(paraRef);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
                     if(param==null) {
@@ -1095,6 +1084,70 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                     throw new SpreadsheetLoadException(ctx, "In/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
                 }
             }
+            
+            // Add trigger conditions
+            final TriggerSetType triggerSet = new TriggerSetType();
+            Pattern PARAMETER_PATTERN=Pattern.compile("OnParameterUpdate\\((.*)\\)");
+            Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
+            if(!"".equals(triggerText)) {
+                if(triggerText.startsWith("OnParameterUpdate")) {
+                    Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
+                    if(matcher.matches()) {
+                        for(String s:matcher.group(1).split(",")) {
+                            Parameter para = spaceSystem.getParameter(s.trim());
+                            if(para!=null) {
+                                OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
+                                triggerSet.addOnParameterUpdateTrigger(trigger);
+                            } else {
+                                NameReference nr=new NameReference(s.trim(), Type.PARAMETER,
+                                        new ResolvedAction() {
+                                            @Override
+                                            public boolean resolved(NameDescription nd) {
+                                                OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                                triggerSet.addOnParameterUpdateTrigger(trigger);
+                                                return true;
+                                            }
+                                        });
+                                spaceSystem.addUnresolvedReference(nr);
+                            }
+                        }
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnParameterUpdate trigger");
+                    }
+                } else if(triggerText.startsWith("OnPeriodicRate")) {
+                    Matcher matcher = FIRERATE_PATTERN.matcher(triggerText);
+                    if(matcher.matches()) {
+                        long fireRateMs = Long.parseLong(matcher.group(1), 10);
+                        OnPeriodicRateTrigger trigger=new OnPeriodicRateTrigger(fireRateMs);
+                        triggerSet.addOnPeriodicRateTrigger(trigger);
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
+                    }
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "Trigger '"+cells[IDX_ALGO_TRIGGER].getContents()+"' not supported.");
+                }
+            } else {
+                // default to all in parameters
+                for(String paraRef:inputParameterRefs) {
+                    Parameter para=spaceSystem.getParameter(paraRef);
+                    if(para!=null) {
+                        triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
+                    } else {
+                        NameReference nr=new NameReference(paraRef, Type.PARAMETER,
+                                new ResolvedAction() {
+                                    @Override
+                                    public boolean resolved(NameDescription nd) {
+                                        OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                        triggerSet.addOnParameterUpdateTrigger(trigger);
+                                        return true;
+                                    }
+                                });
+                        spaceSystem.addUnresolvedReference(nr);
+                    }
+                }
+            }
+            algorithm.setTriggerSet(triggerSet);
+            
             spaceSystem.addAlgorithm(algorithm);
             start = end;
         }

@@ -31,6 +31,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -130,7 +131,7 @@ public class AlgorithmManagerTest {
     }
     
     @Test
-    public void testSlidingWindow() throws InvalidIdentification {
+    public void testSlidingWindow() throws InvalidIdentification, InterruptedException {
         List<NamedObjectId> subList = Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoWindowResult").build());
         final List<ParameterValueWithId> params = new ArrayList<ParameterValueWithId>();
         prm.addRequest(subList, new ParameterConsumer() {
@@ -141,22 +142,23 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT16(1, 2);
+        long startTime=TimeEncoding.currentInstant();
+        tmGenerator.generate_PKT16(1, 2, startTime, startTime);
         assertEquals(0, params.size()); // Windows:  [*  *  *  1]  &&  [*  2]
         
-        tmGenerator.generate_PKT16(2, 4);
+        tmGenerator.generate_PKT16(2, 4, startTime+1, startTime+1);
         assertEquals(0, params.size()); // Windows:  [*  *  1  2]  &&  [2  4]
         
-        tmGenerator.generate_PKT16(3, 6);
+        tmGenerator.generate_PKT16(3, 6, startTime+2, startTime+2);
         assertEquals(0, params.size()); // Windows:  [*  1  2  3]  &&  [4  6]
         
         // Production starts only when all relevant values for the expression are present
-        tmGenerator.generate_PKT16(5, 8);
+        tmGenerator.generate_PKT16(5, 8, startTime+3, startTime+3);
         assertEquals(1, params.size()); // Windows:  [1  2  3  5]  &&  [6  8] => produce (1 + 5) * 6
         assertEquals(36, params.get(0).getParameterValue().getEngValue().getUint32Value());
         
         params.clear();
-        tmGenerator.generate_PKT16(8, 10);
+        tmGenerator.generate_PKT16(8, 10, startTime+4, startTime+4);
         assertEquals(1, params.size()); // Windows:  [2  3  5  8]  &&  [8 10] => produce (2 + 8) * 8
         assertEquals(80, params.get(0).getParameterValue().getEngValue().getUint32Value());
     }
@@ -164,7 +166,7 @@ public class AlgorithmManagerTest {
     @Test
     public void testEvents() throws Exception {
         // No need to subscribe. This algorithm doesn't have any outputs
-        // and is auto-activated for realtime
+        // and is therefore auto-activated (will only trigger if an input changes)
 
         c.start();
         tmGenerator.generate_PKT16(1, 0);
@@ -386,6 +388,34 @@ public class AlgorithmManagerTest {
         assertEquals(1, params.size());
         assertEquals("/REFMDB/SUBSYS1/AlgoUpdatedOut", params.get(0).getParameterValue().getParameter().getQualifiedName());
         assertEquals(pIntegerPara16_1, params.get(0).getParameterValue().getEngValue().getUint32Value());
+    }
+    
+    
+    @Test
+    public void testSelectiveRun() throws InvalidIdentification {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoSelectiveOut").build()), 
+                new ParameterConsumer() {
+                    @Override
+                    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                        params.addAll(items);
+                    }
+        });
+
+        c.start();
+        int pIntegerPara16_1 = 5;
+        tmGenerator.generate_PKT16(pIntegerPara16_1, 0);
+        assertEquals(1, params.size());
+        assertEquals("/REFMDB/SUBSYS1/AlgoSelectiveOut", params.get(0).getParameterValue().getParameter().getQualifiedName());
+        assertEquals(pIntegerPara16_1, params.get(0).getParameterValue().getEngValue().getFloatValue(), 1e-6);
+        
+        tmGenerator.generate_PKT11();
+        assertEquals(1, params.size()); // No change, not in OnParameterUpdate list
+        
+        pIntegerPara16_1 = 7;
+        tmGenerator.generate_PKT16(pIntegerPara16_1, 0);
+        assertEquals(2, params.size()); // Now change, also with updated float from PKT11
+        assertEquals(pIntegerPara16_1+tmGenerator.pFloatPara11_3, params.get(1).getParameterValue().getEngValue().getFloatValue(), 1e-6);
     }
 }
 

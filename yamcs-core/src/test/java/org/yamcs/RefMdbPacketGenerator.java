@@ -127,9 +127,16 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      * Generate a packet with configurable content
      */
     public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2) {
+        return generate_PKT16(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
+    }
+    
+    /**
+     * Generate a packet with configurable content
+     */
+    public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
         ByteBuffer bb=ByteBuffer.allocate(pkt16Length);
         fill_PKT16(bb, pIntegerPara16_1, pIntegerPara16_2);
-        sendToTmProcessor(bb);
+        sendToTmProcessor(bb, rectime, gentime);
         return bb;
     }
     
@@ -366,7 +373,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
     
     private void sendToTmProcessor(ByteBuffer bb) {
-        if(tmProcessor!=null) tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), TimeEncoding.currentInstant(), bb.array()));
+        sendToTmProcessor(bb, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
+    }
+    
+    private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
+        if(tmProcessor!=null) tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.array()));
     }
     
     
