@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -63,7 +65,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     static final String KEY_ALGO_NAME="algoName";
 
     XtceDb xtcedb;
-    ScriptEngine scriptEngine;
+    ScriptEngineManager scriptEngineManager;
+    String scriptLanguage;
+    String yamcsInstance;
 
     //the id used for subscribing to the parameterManager
     int subscriptionId;
@@ -92,8 +96,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         } catch (InvalidIdentification e) {
             log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
         }
+        
+        yamcsInstance=chan.getInstance();
 
-        String scriptLanguage=DEFAULT_LANGUAGE;
+        scriptLanguage=DEFAULT_LANGUAGE;
         List<String> libraries=new ArrayList<String>();
         if(args!=null) {
             Map<String,Object> m=(Map<String,Object>) args;
@@ -105,24 +111,30 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
         }
 
-        scriptEngine = new ScriptEngineManager().getEngineByName(scriptLanguage);
-        scriptEngine.put("Yamcs", new AlgorithmUtils(chan.getInstance(), xtcedb, scriptEngine));
-
-        // Load custom algorithm libraries
-        try {
-            for(String lib:libraries) {
-                File f=new File(lib);
-                scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
-                if (f.isFile()) {
-                    scriptEngine.eval(new FileReader(f));
-                } else {
-                    throw new ConfigurationException("Specified library is not a file: "+f);
+        scriptEngineManager = new ScriptEngineManager();
+        
+        if(!libraries.isEmpty()) {      
+            // Disposable ScriptEngine, just to eval libraries and put them in global scope
+            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
+            try {
+                for(String lib:libraries) {
+                    File f=new File(lib);
+                    scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
+                    if (f.isFile()) {
+                        scriptEngine.eval(new FileReader(f));
+                    } else {
+                        throw new ConfigurationException("Specified library is not a file: "+f);
+                    }
                 }
+            } catch(IOException e) { // Force exit. User should fix this before continuing
+                throw new ConfigurationException("Cannot read from library file", e);
+            } catch(ScriptException e) { // Force exit. User should fix this before continuing
+                throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
             }
-        } catch(IOException e) { // Force exit. User should fix this before continuing
-            throw new ConfigurationException("Cannot read from library file", e);
-        } catch(ScriptException e) { // Force exit. User should fix this before continuing
-            throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
+            
+            // Put engine bindings in shared global scope
+            Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+            scriptEngineManager.setBindings(commonBindings);
         }
 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
@@ -181,6 +193,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             return;
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
+        
+        ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(scriptLanguage);
+        scriptEngine.put("Yamcs", new AlgorithmUtils(yamcsInstance, xtcedb, algorithm.getName()));
+        
         AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
         engineByAlgorithm.put(algorithm, engine);
         try {
