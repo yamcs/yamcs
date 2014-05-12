@@ -20,4 +20,9 @@ public interface ParameterType {
 	 * @return
 	 */
 	String getTypeAsString();
+	
+	/**
+	 * Whether this ParameterType has any alarms associated
+	 */
+	boolean hasAlarm();
 }

@@ -1,7 +1,5 @@
 package org.yamcs.algorithms;
 
-import javax.script.ScriptEngine;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
@@ -22,14 +20,14 @@ import org.yamcs.xtce.XtceDb;
 public class AlgorithmUtils {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmUtils.class);
     private XtceDb xtcedb;
-    private ScriptEngine engine;
+    private String algorithmName;
     private EventProducer eventProducer;
 
-    public AlgorithmUtils(String yamcsInstance, XtceDb xtcedb, ScriptEngine engine) {
+    public AlgorithmUtils(String yamcsInstance, XtceDb xtcedb, String algorithmName) {
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("CustomAlgorithm");
         this.xtcedb = xtcedb;
-        this.engine = engine;
+        this.algorithmName = algorithmName;
     }
     
     /**
@@ -55,7 +53,7 @@ public class AlgorithmUtils {
     }
     
     public void info(String msg) {
-        info((String) engine.get(AlgorithmManager.KEY_ALGO_NAME), msg);
+        info(algorithmName, msg);
     }
     
     public void info(String type, String msg) {
@@ -63,7 +61,7 @@ public class AlgorithmUtils {
     }
     
     public void warning(String msg) {
-        warning((String) engine.get(AlgorithmManager.KEY_ALGO_NAME), msg);
+        warning(algorithmName, msg);
     }
     
     public void warning(String type, String msg) {
@@ -71,7 +69,7 @@ public class AlgorithmUtils {
     }
     
     public void error(String msg) {
-        error((String) engine.get(AlgorithmManager.KEY_ALGO_NAME), msg);
+        error(algorithmName, msg);
     }
     
     public void error(String type, String msg) {

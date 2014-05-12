@@ -35,18 +35,20 @@ public class AlarmTest {
     
     @Before
     public void beforeEachTest() throws ConfigurationException, ChannelException {
+        String yamcsInstance="refmdb";
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
-        db=XtceDbFactory.getInstance("refmdb");
+        db=XtceDbFactory.getInstance(yamcsInstance);
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
         try {
-            c=ChannelFactory.create("refmdb", "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create(yamcsInstance, "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
         } catch (Exception e) {
             e.printStackTrace();
         }
         prm=c.getParameterRequestManager();
+        new AlarmReporter(yamcsInstance, "AlarmTest");
     }
     
     @After
@@ -220,5 +222,36 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(0, 0, 0);
         assertEquals(MonitoringResult.IN_LIMITS, params.get(5).getParameterValue().getMonitoringResult());
         assertEquals(4, q.size()); // Message for back to normal
+    }
+    
+    @Test
+    public void testAlarmReportingWithoutSubscription() {
+        c.start();
+        
+        tmGenerator.generate_PKT1_10(30, 1, 0);
+        assertEquals(0, q.size());
+        
+        tmGenerator.generate_PKT1_10(42, 1, 0);
+        assertEquals(1, q.size()); // Message for changed MonitoringResult
+    }
+    
+    @Test
+    public void testOnValueChangeReport() {
+        c.start();
+        
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(0, q.size());
+
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(0, q.size()); // No change
+        
+        tmGenerator.generate_PKT1_10(21, 1, 0);
+        assertEquals(1, q.size()); // Change
+        
+        tmGenerator.generate_PKT1_10(21, 1, 0);
+        assertEquals(1, q.size()); // No Change
+        
+        tmGenerator.generate_PKT1_10(20, 1, 0);
+        assertEquals(2, q.size()); // Change
     }
 }

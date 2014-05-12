@@ -53,7 +53,7 @@ public class ParameterRequestManager implements ParameterListener {
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
 	TmPacketProvider tmPacketProvider;
-    
+	 
     /**
      * Creates a new ParameterRequestManager, configured to listen to a newly
      * created XtceTmProcessor.
@@ -71,7 +71,6 @@ public class ParameterRequestManager implements ParameterListener {
         this.tmProcessor=tmProcessor;
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
-		alarmChecker=new AlarmChecker(chan.getInstance());
 		
         YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
         if(yconf.containsKey("parameterProviders")) {
@@ -100,6 +99,8 @@ public class ParameterRequestManager implements ParameterListener {
             addParameterProvider(new AlgorithmManager(this, chan));
             addParameterProvider(new DerivedValuesManager(this, chan));
         }
+        
+        alarmChecker=new AlarmChecker();
 	}
 	
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -409,7 +410,9 @@ public class ParameterRequestManager implements ParameterListener {
 	private void updateDelivery(HashMap<Integer, ArrayList<ParameterValueWithId>> delivery, Collection<ParameterValue> params) {
 	    if(params==null) return;
         //first check alarms for these new params
-        alarmChecker.performAlarmChecking(params);
+        if(alarmChecker!=null) {
+            alarmChecker.performAlarmChecking(params);
+        }
 	    
 		for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 			ParameterValue pv=it.next();
@@ -460,6 +463,10 @@ public class ParameterRequestManager implements ParameterListener {
 	@SuppressWarnings("unchecked")
     public <T extends ParameterProvider> T getParameterProvider(Class<T> type) {
 	    return (T) parameterProviders.get(type);
+	}
+	
+	public AlarmChecker getAlarmChecker() {
+	    return alarmChecker;
 	}
 	
 	/**

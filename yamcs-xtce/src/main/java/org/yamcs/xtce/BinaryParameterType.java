@@ -7,6 +7,11 @@ public class BinaryParameterType extends BinaryDataType implements ParameterType
 	public BinaryParameterType(String name){
 		super(name);
 	}
+	
+	@Override
+	public boolean hasAlarm() {
+	    return false;
+	}
 
 	@Override
     public Set<Parameter> getDependentParameters() {

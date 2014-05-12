@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -60,8 +58,7 @@ import com.google.protobuf.ByteString;
 public class AlgorithmEngine {
     static final Logger log=LoggerFactory.getLogger(AlgorithmEngine.class);
     
-    ScriptEngine scriptEngine;
-    Bindings bindings; // Bindings applicable for this algorithm only 
+    ScriptEngine scriptEngine; // Not shared with other algorithm engines 
     Algorithm def;
     
     // Keep only unique arguments (for subscription purposes)
@@ -78,12 +75,20 @@ public class AlgorithmEngine {
 	public AlgorithmEngine(Algorithm algorithmDef, ScriptEngine scriptEngine) {
 	    this.def=algorithmDef;
 	    this.scriptEngine=scriptEngine;
-	    bindings=scriptEngine.createBindings();
-	    bindings.putAll(scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE));
 
 	    for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             requiredParameters.add(inputParameter.getParameterInstance().getParameter());
+            
+            // Default-define all input values to null to prevent ugly runtime errors
+            String scriptName=inputParameter.getInputName();
+            if(scriptName==null) {
+                scriptName=inputParameter.getParameterInstance().getParameter().getName();
+            }
+            scriptEngine.put(scriptName, null);
 	    }
+	    
+	    // Improve error msgs
+	    scriptEngine.put(ScriptEngine.FILENAME, def.getQualifiedName());
 	    
 	    // Set empty output bindings so that algorithms can write their attributes
 	    for(OutputParameter outputParameter:algorithmDef.getOutputSet()) {
@@ -93,7 +98,7 @@ public class AlgorithmEngine {
 	        if(scriptName==null) {
 	            scriptName=outputParameter.getParameter().getName();
 	        }
-	        bindings.put(scriptName, valueBinding);
+	        scriptEngine.put(scriptName, valueBinding);
 	    }
 	}
 	
@@ -129,7 +134,7 @@ public class AlgorithmEngine {
                     if(scriptName==null) {
                         scriptName=inputParameter.getParameterInstance().getParameter().getName();
                     }
-                    bindings.put(scriptName, valueBinding);
+                    scriptEngine.put(scriptName, valueBinding);
                 }
             }
         }
@@ -142,10 +147,8 @@ public class AlgorithmEngine {
 	 */
 	public List<ParameterValue> runAlgorithm() {
 	    log.trace("Running algorithm '{}'",def.getName());
-        scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).put(AlgorithmManager.KEY_ALGO_NAME, def.getName());
-        bindings.put(ScriptEngine.FILENAME, def.getQualifiedName()); // Improves error msg
 	    try {
-            scriptEngine.eval(def.getAlgorithmText(), bindings);
+            scriptEngine.eval(def.getAlgorithmText());
         } catch (ScriptException e) {
             log.warn("Error while executing algorithm: "+e.getMessage(), e);
             return Collections.emptyList();
@@ -157,8 +160,8 @@ public class AlgorithmEngine {
             if(scriptName==null) {
                 scriptName=outputParameter.getParameter().getName();
             }
-            if(bindings.get(scriptName) instanceof OutputValueBinding) {
-                OutputValueBinding res = (OutputValueBinding) bindings.get(scriptName);
+            if(scriptEngine.get(scriptName) instanceof OutputValueBinding) {
+                OutputValueBinding res = (OutputValueBinding) scriptEngine.get(scriptName);
                 if(res != null && res.updated) {
                     outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
                 }

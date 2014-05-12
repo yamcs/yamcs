@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +26,6 @@ import jxl.read.biff.BiffException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.xtce.Algorithm.AutoActivateType;
 import org.yamcs.xtce.Comparison.OperatorType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
@@ -80,7 +80,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	//columns in the algorithms sheet
 	final static int IDX_ALGO_NAME=0;
 	final static int IDX_ALGO_TEXT=1;
-	final static int IDX_ALGO_ACTIVATE=2;
+	final static int IDX_ALGO_TRIGGER=2;
 	final static int IDX_ALGO_PARA_INOUT=3;
 	final static int IDX_ALGO_PARA_REF=4;
 	final static int IDX_ALGO_PARA_INSTANCE=5;
@@ -89,17 +89,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	//columns in the alarms sheet
 	final static int IDX_ALARM_PARAM_NAME=0;
 	final static int IDX_ALARM_CONTEXT=1;
-	final static int IDX_ALARM_MIN_VIOLATIONS=2;
-	final static int IDX_ALARM_WATCH_TRIGGER=3;
-	final static int IDX_ALARM_WATCH_VALUE=4;
-	final static int IDX_ALARM_WARNING_TRIGGER=5;
-	final static int IDX_ALARM_WARNING_VALUE=6;
-	final static int IDX_ALARM_DISTRESS_TRIGGER=7;
-	final static int IDX_ALARM_DISTRESS_VALUE=8;
-	final static int IDX_ALARM_CRITICAL_TRIGGER=9;
-	final static int IDX_ALARM_CRITICAL_VALUE=10;
-	final static int IDX_ALARM_SEVERE_TRIGGER=11;
-	final static int IDX_ALARM_SEVERE_VALUE=12;
+	final static int IDX_ALARM_REPORT=2;
+	final static int IDX_ALARM_MIN_VIOLATIONS=3;
+	final static int IDX_ALARM_WATCH_TRIGGER=4;
+	final static int IDX_ALARM_WATCH_VALUE=5;
+	final static int IDX_ALARM_WARNING_TRIGGER=6;
+	final static int IDX_ALARM_WARNING_VALUE=7;
+	final static int IDX_ALARM_DISTRESS_TRIGGER=8;
+	final static int IDX_ALARM_DISTRESS_VALUE=9;
+	final static int IDX_ALARM_CRITICAL_TRIGGER=10;
+	final static int IDX_ALARM_CRITICAL_VALUE=11;
+	final static int IDX_ALARM_SEVERE_TRIGGER=12;
+	final static int IDX_ALARM_SEVERE_VALUE=13;
 	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
@@ -1005,18 +1006,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             Cell[] cells = jumpToRow(algo_sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
-            AutoActivateType autoActivate = null;
-            if(cells.length>IDX_ALGO_ACTIVATE && !"".equals(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                if("Always".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.ALWAYS;
-                } else if("RealtimeOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.REALTIME_ONLY;
-                } else if("ReplayOnly".equalsIgnoreCase(cells[IDX_ALGO_ACTIVATE].getContents())) {
-                    autoActivate = AutoActivateType.REPLAY_ONLY;
-                } else {
-                    throw new SpreadsheetLoadException(ctx, "Auto-activate '"+cells[IDX_ALGO_ACTIVATE].getContents()+"' not supported. Can only go back in time. Use values <= 0.");
-                }
-            }
+            String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
             
             // now we search for the matching last row of that algorithm
             int end = start + 1;
@@ -1034,10 +1024,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
             
-            algorithm.setAutoActivate(autoActivate);
-            
             // In/out params
             String paraInout=null;
+            Set<String> inputParameterRefs=new HashSet<String>();
             for (int j = start+1; j < end; j++) {
                 cells = jumpToRow(algo_sheet, j);
                 String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
@@ -1046,6 +1035,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 }
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
+                    inputParameterRefs.add(paraRef);
                     Parameter param = spaceSystem.getParameter(paraRef);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
                     if(param==null) {
@@ -1094,6 +1084,70 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                     throw new SpreadsheetLoadException(ctx, "In/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
                 }
             }
+            
+            // Add trigger conditions
+            final TriggerSetType triggerSet = new TriggerSetType();
+            Pattern PARAMETER_PATTERN=Pattern.compile("OnParameterUpdate\\((.*)\\)");
+            Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
+            if(!"".equals(triggerText)) {
+                if(triggerText.startsWith("OnParameterUpdate")) {
+                    Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
+                    if(matcher.matches()) {
+                        for(String s:matcher.group(1).split(",")) {
+                            Parameter para = spaceSystem.getParameter(s.trim());
+                            if(para!=null) {
+                                OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
+                                triggerSet.addOnParameterUpdateTrigger(trigger);
+                            } else {
+                                NameReference nr=new NameReference(s.trim(), Type.PARAMETER,
+                                        new ResolvedAction() {
+                                            @Override
+                                            public boolean resolved(NameDescription nd) {
+                                                OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                                triggerSet.addOnParameterUpdateTrigger(trigger);
+                                                return true;
+                                            }
+                                        });
+                                spaceSystem.addUnresolvedReference(nr);
+                            }
+                        }
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnParameterUpdate trigger");
+                    }
+                } else if(triggerText.startsWith("OnPeriodicRate")) {
+                    Matcher matcher = FIRERATE_PATTERN.matcher(triggerText);
+                    if(matcher.matches()) {
+                        long fireRateMs = Long.parseLong(matcher.group(1), 10);
+                        OnPeriodicRateTrigger trigger=new OnPeriodicRateTrigger(fireRateMs);
+                        triggerSet.addOnPeriodicRateTrigger(trigger);
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
+                    }
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "Trigger '"+cells[IDX_ALGO_TRIGGER].getContents()+"' not supported.");
+                }
+            } else {
+                // default to all in parameters
+                for(String paraRef:inputParameterRefs) {
+                    Parameter para=spaceSystem.getParameter(paraRef);
+                    if(para!=null) {
+                        triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
+                    } else {
+                        NameReference nr=new NameReference(paraRef, Type.PARAMETER,
+                                new ResolvedAction() {
+                                    @Override
+                                    public boolean resolved(NameDescription nd) {
+                                        OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                        triggerSet.addOnParameterUpdateTrigger(trigger);
+                                        return true;
+                                    }
+                                });
+                        spaceSystem.addUnresolvedReference(nr);
+                    }
+                }
+            }
+            algorithm.setTriggerSet(triggerSet);
+            
             spaceSystem.addAlgorithm(algorithm);
             start = end;
         }
@@ -1141,16 +1195,28 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             // Iterate over all rows for this parameter
             MatchCriteria previousContext=null;
             int minViolations=1;
+            AlarmReportType reportType=AlarmReportType.ON_SEVERITY_CHANGE;
             for (int j = start; j < paramEnd; j++) {
                 cells = jumpToRow(alarm_sheet, j);
                 MatchCriteria context=previousContext;
                 if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
                     String contextString = cells[IDX_ALARM_CONTEXT].getContents();
                     context=toMatchCriteria(contextString);
-                    if(hasColumn(cells, IDX_ALARM_MIN_VIOLATIONS)) {
-                        minViolations=Integer.parseInt(cells[IDX_ALARM_MIN_VIOLATIONS].getContents());
+                }
+                
+                if(hasColumn(cells, IDX_ALARM_MIN_VIOLATIONS)) {
+                    minViolations=Integer.parseInt(cells[IDX_ALARM_MIN_VIOLATIONS].getContents());
+                } else {
+                    minViolations=1;
+                }
+                
+                if(hasColumn(cells, IDX_ALARM_REPORT)) {
+                    if("OnSeverityChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
+                        reportType=AlarmReportType.ON_SEVERITY_CHANGE;
+                    } else if("OnValueChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
+                        reportType=AlarmReportType.ON_VALUE_CHANGE;
                     } else {
-                        minViolations=1;
+                        throw new SpreadsheetLoadException(ctx, "Unrecognized report type '"+cells[IDX_ALARM_REPORT].getContents()+"'");
                     }
                 }
                 
@@ -1330,21 +1396,30 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                     }
                 }
                 
-                if(minViolations!=1) {
-                    AlarmType alarm=null;
-                    if(para.getParameterType() instanceof IntegerParameterType) {
-                        IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
-                        alarm=(context==null)?ipt.getDefaultAlarm():ipt.getNumericContextAlarm(context);
-                    } else if(para.getParameterType() instanceof FloatParameterType) {
-                        FloatParameterType fpt=(FloatParameterType)para.getParameterType();
-                        alarm=(context==null)?fpt.getDefaultAlarm():fpt.getNumericContextAlarm(context);
-                    } else if(para.getParameterType() instanceof EnumeratedParameterType) {
-                        EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
-                        alarm=(context==null)?ept.getDefaultAlarm():ept.getContextAlarm(context);
+                // Set minviolations and alarmreporttype
+                AlarmType alarm=null;
+                if(para.getParameterType() instanceof IntegerParameterType) {
+                    IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                    alarm=(context==null)?ipt.getDefaultAlarm():ipt.getNumericContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                     }
-                    if(alarm!=null) { // It's possible that this gets called multiple times per alarm, but doesn't matter
-                        alarm.setMinViolations(minViolations);
+                } else if(para.getParameterType() instanceof FloatParameterType) {
+                    FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                    alarm=(context==null)?fpt.getDefaultAlarm():fpt.getNumericContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                     }
+                } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                    EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                    alarm=(context==null)?ept.getDefaultAlarm():ept.getContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        ept.createOrGetAlarm(context).setAlarmReportType(reportType);
+                    }
+                }
+                if(alarm!=null) { // It's possible that this gets called multiple times per alarm, but doesn't matter
+                    alarm.setMinViolations(minViolations);
+                    alarm.setAlarmReportType(reportType);
                 }
                 
                 previousContext=context;

@@ -3,13 +3,12 @@ package org.yamcs.xtce;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
-// No triggers yet
 public class Algorithm extends NameDescription {
     private static final long serialVersionUID = 201308201317L;
     
     private String language;
     private String algorithmText;
-    private AutoActivateType autoActivate; // This is not in XTCE
+    private TriggerSetType triggerSet;
     private ArrayList<InputParameter> inputSet = new ArrayList<InputParameter>();
     private ArrayList<OutputParameter> outputSet = new ArrayList<OutputParameter>();
     
@@ -36,6 +35,14 @@ public class Algorithm extends NameDescription {
         this.algorithmText = algorithmText;
     }
     
+    public TriggerSetType getTriggerSet() {
+        return triggerSet;
+    }
+    
+    public void setTriggerSet(TriggerSetType triggerSet) {
+        this.triggerSet = triggerSet;
+    }
+    
     public void addInput(InputParameter inputParameter) {
         inputSet.add(inputParameter);
     }
@@ -50,14 +57,6 @@ public class Algorithm extends NameDescription {
 
     public ArrayList<OutputParameter> getOutputSet() {
         return outputSet;
-    }
-    
-    public void setAutoActivate(AutoActivateType autoActivate) {
-        this.autoActivate=autoActivate;
-    }
-    
-    public AutoActivateType getAutoActivate() {
-        return autoActivate;
     }
     
     public boolean canProvide(Parameter parameter) {
@@ -78,11 +77,6 @@ public class Algorithm extends NameDescription {
         for(OutputParameter p:outputSet) {
             out.println("\t\tOutputParameter "+p);
         }
-    }
-    
-    public enum AutoActivateType {
-        ALWAYS,
-        REALTIME_ONLY,
-        REPLAY_ONLY
+        out.println("\t\tTriggers "+triggerSet);
     }
 }
