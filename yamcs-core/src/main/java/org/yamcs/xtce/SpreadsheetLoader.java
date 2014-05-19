@@ -640,7 +640,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 			} else if (ptype instanceof EnumeratedParameterType) {
 			    if(((EnumeratedParameterType) ptype).getEncoding() != null) {
-			        // Some other param has already lead to setting the encoding of this shared ptype.
+			        // Some other param has already led to setting the encoding of this shared ptype.
 			        // Do some basic consistency checks
 			        if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
 			            throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");

@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
@@ -19,6 +20,9 @@ import org.yamcs.ui.PrefsObject;
 
 public class EventTable extends JTable {
     private static final long serialVersionUID = 1L;
+    private static final ImageIcon INFO_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/blank.png"));
+    private static final ImageIcon WARNING_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/warn.png"));
+    private static final ImageIcon ERROR_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/error.png"));
     static final Color COLOR_ERROR_BG=new Color(255, 221, 221);
     static final Color COLOR_WARNING_BG=new Color(248, 238, 199);
     static final Color BORDER_COLOR = new Color(216, 216, 216);
@@ -49,7 +53,7 @@ public class EventTable extends JTable {
         if (!isRowSelected(row)) {
             c.setBackground(getBackground());
             int modelRow = convertRowIndexToModel(row);
-            Event event = (Event)getModel().getValueAt(modelRow, 4);
+            Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
             if(event.getSeverity()==EventSeverity.WARNING) {
                 c.setBackground(COLOR_WARNING_BG);
                 //setSelectedTextColor(COLOR_WARNING_BG);
@@ -64,18 +68,38 @@ public class EventTable extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (convertColumnIndexToModel(column) == 4) {
+        if (convertColumnIndexToModel(column) == EventTableModel.EVENT_TEXT_COL) {
             return renderer;
+        } else if (convertColumnIndexToModel(column) == EventTableModel.SOURCE_COL) {
+            return new DefaultTableCellRenderer() {
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
+                    int modelRow = convertRowIndexToModel(row);
+                    Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
+                    if(event.getSeverity()==EventSeverity.WARNING) {
+                        setIcon(WARNING_ICON);
+                    } else if(event.getSeverity()==EventSeverity.ERROR) {
+                        setIcon(ERROR_ICON);
+                    } else if(event.getSeverity()==EventSeverity.INFO) {
+                        setIcon(INFO_ICON);
+                    }
+                    return this;
+                }
+            };
+        } else {
+            // Disable blue focus border
+            return new DefaultTableCellRenderer() {
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
+                }
+            };
         }
-        // Disable blue focus border
-        return new DefaultTableCellRenderer() {
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
-            }
-        };
     }
     
     private void setColumnOrder(int[] indices) {
@@ -138,8 +162,7 @@ public class EventTable extends JTable {
         TableColumn resizingColumn = getTableHeader().getResizingColumn();
         // Need to do this here, before the parent's
         // layout manager calls getPreferredSize().
-        if (resizingColumn != null && autoResizeMode == AUTO_RESIZE_OFF
-                && !inLayout) {
+        if (resizingColumn != null && autoResizeMode == AUTO_RESIZE_OFF && !inLayout) {
             resizingColumn.setPreferredWidth(resizingColumn.getWidth());
         }
         resizeAndRepaint();

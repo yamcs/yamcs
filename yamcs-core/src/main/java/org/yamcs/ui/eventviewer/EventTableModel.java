@@ -49,8 +49,8 @@ class EventTableModel extends AbstractTableModel implements Observer {
         columnNames.add("Source");
         columnNames.add("Generation Time");
         columnNames.add("Reception Time");
-        columnNames.add("Event Type");
-        columnNames.add("Event Text");
+        columnNames.add("Type");
+        columnNames.add("Description");
         
         allEvents = new Vector<Event>();
         visibleEvents = new Vector<Event>();
