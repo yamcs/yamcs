@@ -6,17 +6,23 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRootPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.hornetq.api.core.HornetQException;
@@ -49,6 +55,7 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
 		super(parent, "Connect to Yamcs", true);
 		this.getInstance=getInstance;
 		this.authEnabled = enableAuth;
+		installActions();
 		
 		values = new YamcsConnectData();
 		values.load();
@@ -150,6 +157,18 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		pack();
 	}
+	
+    private void installActions() {
+        JRootPane root = getRootPane();
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeDialog");
+        root.getActionMap().put("closeDialog", new AbstractAction() {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispatchEvent(new WindowEvent(YamcsConnectDialog.this, WindowEvent.WINDOW_CLOSING));
+            }
+        });
+    }
 
 	@Override
     public void actionPerformed( ActionEvent e ) {
