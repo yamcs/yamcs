@@ -16,6 +16,12 @@ services:
     #- com.spaceapplications.yamcs.cis.CisServer
     #this one sets up the command history table
     - org.yamcs.cmdhistory.CommandHistoryRecorder
+    # send TM packets to hornetq address (required for external hornetq clients like packet viewer)
+    - class: org.yamcs.hornetq.HornetQTmService
+      args: [tm_realtime, tm_dump]
+    - class: org.yamcs.hornetq.HornetQPpService
+      args: [pp_realtime, pp_dump]
+
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
