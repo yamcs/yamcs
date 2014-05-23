@@ -80,7 +80,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     final boolean authenticationEnabled;
 	
 	ConnectDialog(JFrame parent, boolean authenticationEnabled, boolean getInstance, boolean getStreamName, boolean getDbConfig) {
-		super(parent, "Yamcs Connection", true);
+		super(parent, "Connect to Yamcs", true);
 		this.authenticationEnabled = authenticationEnabled;
 		this.getInstance=getInstance;
 		this.getMdbConfig=getDbConfig;
@@ -111,7 +111,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		lab.setHorizontalAlignment(SwingConstants.RIGHT);
 		ceast.gridy=1;		inputPanel.add(lab,ceast);
 		hostTextField = new JTextField(values.host);
-		hostTextField.setPreferredSize(new Dimension(80, hostTextField.getPreferredSize().height));
+		hostTextField.setPreferredSize(new Dimension(160, hostTextField.getPreferredSize().height));
 		cwest.gridy=1;inputPanel.add(hostTextField,cwest);
 
 		lab = new JLabel("Port: ");
@@ -133,7 +133,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		    lab.setHorizontalAlignment(SwingConstants.RIGHT);
 		    inputPanel.add(lab,ceast);
 		    usernameTextField = new JTextField(values.username);
-		    usernameTextField.setPreferredSize(new Dimension(80, usernameTextField.getPreferredSize().height));
+		    usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
 		    inputPanel.add(usernameTextField,cwest);
 
 		    ceast.gridy++;
@@ -142,7 +142,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		    lab.setHorizontalAlignment(SwingConstants.RIGHT);
 		    inputPanel.add(lab,ceast);
 		    passwordTextField = new JPasswordField();
-		    passwordTextField.setPreferredSize(new Dimension(80, passwordTextField.getPreferredSize().height));
+		    passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
 		    inputPanel.add(passwordTextField,cwest);
 		}
 		
@@ -159,7 +159,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		    instanceCombo.setEditable(true);
 		    
 		    inputPanel.add(instanceCombo,cwest);
-		    button = new JButton("get");
+		    button = new JButton("Update");
 	        button.setActionCommand("getInstances");
 	        button.addActionListener(this);
 	        inputPanel.add(button,ceast);
@@ -207,7 +207,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             inputPanel.add(serverMdbConfigCombo, cwest);
             if(!useServerMdb) serverMdbConfigCombo.setEnabled(false);
             
-            button = new JButton("get");
+            button = new JButton("Update");
             button.setActionCommand("getInstances");
             button.addActionListener(this);
             inputPanel.add(button,ceast);
@@ -265,8 +265,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		buttonPanel = new JPanel();
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
-		button = new JButton("OK");
-		button.setActionCommand("ok");
+		button = new JButton("Connect");
+		button.setActionCommand("connect");
 		button.addActionListener(this);
 		getRootPane().setDefaultButton(button);
 		buttonPanel.add(button);
@@ -302,7 +302,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     @Override
     public void actionPerformed( ActionEvent e ) {
 	    String cmd=e.getActionCommand();
-		if ( "ok".equals(cmd)) {
+		if ("connect".equals(cmd)) {
 				values.host = hostTextField.getText();
 				try {
 				    values.port = Integer.parseInt(portTextField.getText());

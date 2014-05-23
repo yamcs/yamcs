@@ -1,6 +1,6 @@
 <chapter id="eventviewer">
 <title>Event Viewer</title>
-<para>The Event Viewer displays events from the Yamcs Server. In the previous versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being another component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.</para>
+<para>The Event Viewer displays events from the Yamcs Server. In older versions of Yamcs, the Event Viewer was in fact decoding and displaying on-board events only. Now the Event Viewer is just a display, the decoder being another component that runs inside the Yamcs Server (thus the events are decoded and saved in the archive even if no viewer is running). In addition, more and more components of Yamcs generate events (for example the DaSS TM/PP/TC components) when significant things happen.</para>
 
 
 <section><title>Installing</title>
@@ -43,8 +43,8 @@
         <para>
             After the startup, the menu entry <guimenu>File->Connect</guimenu> has to be used to connect to the Yamcs server.
         </para>
-        <para>The command line option <emphasis>-url</emphasis> can be used to connect directly after the startup without calling connect from the menu:
-            <screen>yamcs-monitor.sh yamcs://localhost:5445/instance</screen>
+		<para>A URL can be provided on the command line to connect directly after the startup, without needint to connect from the menu:
+            <screen>event-viewer.sh yamcs://localhost:5445/instance</screen>
         </para>
 </section>
 <section><title>User interface</title>
