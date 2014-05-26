@@ -49,6 +49,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	
 	protected SpreadsheetLoadContext ctx=new SpreadsheetLoadContext();
 	
+	//sheet names
+	protected final static String SHEET_GENERAL="General";
+	protected final static String SHEET_CALIBRATION="Calibration";
+	protected final static String SHEET_PARAMETERS="Parameters";
+	protected final static String SHEET_CONTAINERS="Containers";
+	protected final static String SHEET_PROCESSED_PARAMETERS="ProcessedParameters";
+	protected final static String SHEET_ALGORITHMS="Algorithms";
+	protected final static String SHEET_LIMITS="Limits"; // Deprecated. Use alarms
+	protected final static String SHEET_ALARMS="Alarms";
+	
 	//columns in the parameters sheet
 	final static int IDX_PARAM_OPSNAME=0;
 	final static int IDX_PARAM_BITLENGTH=1;
@@ -102,6 +112,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	final static int IDX_ALARM_SEVERE_TRIGGER=12;
 	final static int IDX_ALARM_SEVERE_VALUE=13;
 	
+	//columns in the processed parameters sheet
+	protected final static int IDX_PP_UMI=0;
+	protected final static int IDX_PP_GROUP=1;
+	protected final static int IDX_PP_ALIAS=2;
+	
 	// Increment major when breaking backward compatibility, increment minor when making backward compatible changes
 	final static String FORMAT_VERSION="2.1";
 	// Explicitly support these versions (i.e. load without warning)
@@ -144,14 +159,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 		
 		try {
-            loadGeneral();
-            loadCalibrators();
-            loadLimitsSheet();
-            loadParameters();
-            loadContainers();
-            loadNonStandardSheets(); // Extension point
-            loadAlgorithms();
-            loadAlarms();
+            loadSheets();
 		} catch(SpreadsheetLoadException e) {
 		    throw e;
 		} catch (Exception e) {
@@ -164,6 +172,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 		
 		return spaceSystem;
+	}
+	
+	protected void loadSheets() throws SpreadsheetLoadException {
+	    loadGeneralSheet(true);
+        loadCalibrationSheet(false);
+        loadLimitsSheet(false);
+        loadParametersSheet(true);
+        loadContainersSheet(true);
+        loadProcessedParametersSheet(false);
+        loadNonStandardSheets(); // Extension point
+        loadAlgorithmsSheet(false);
+        loadAlarmsSheet(false);
 	}
 
 	@Override
@@ -200,9 +220,10 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	}
 
 	
-	private void loadGeneral() {
-		Sheet gen_sheet=switchToSheet("General", true);
-		Cell[] cells=jumpToRow(gen_sheet, 1);
+	protected void loadGeneralSheet(boolean required) {
+		Sheet sheet=switchToSheet(SHEET_GENERAL, required);
+		if(sheet==null)return;
+		Cell[] cells=jumpToRow(sheet, 1);
 		
 		// Version check
 		String version=cells[0].getContents();
@@ -253,11 +274,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			log.info( "No opsnamePrefix specified for {}", ctx.file );
 		}
 	}
-
-	private void loadCalibrators() {
+	
+	protected void loadCalibrationSheet(boolean required) {
 		 //read the calibrations
-	     Sheet cal_sheet=switchToSheet("Calibration", false);
-		 if(cal_sheet==null) return;
+	     Sheet sheet=switchToSheet(SHEET_CALIBRATION, required);
+		 if(sheet==null) return;
 		 
 		 double[] pol_coef = null;
 		 // SplinePoint = pointpair
@@ -267,24 +288,24 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		 int start = 1;
 		 while(true) {
 			 // we first search for a row containing (= starting) a new calibration
-			 while (start < cal_sheet.getRows()) {
-				 Cell[] cells = jumpToRow(cal_sheet, start);
+			 while (start < sheet.getRows()) {
+				 Cell[] cells = jumpToRow(sheet, start);
 				 if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
 					 break;
 				 }
 				 start++;
 			 }
-			 if (start >= cal_sheet.getRows()) {
+			 if (start >= sheet.getRows()) {
 				break;
 			 }
-			 Cell[] cells = jumpToRow(cal_sheet, start);
+			 Cell[] cells = jumpToRow(sheet, start);
 			 String name = cells[IDX_CALIB_NAME].getContents();
 			 String type = cells[IDX_CALIB_TYPE].getContents();
 			 
 			 // now we search for the matching last row of that calibration
 			 int end = start + 1;
-			 while (end < cal_sheet.getRows()) {
-				 cells = jumpToRow(cal_sheet, end);
+			 while (end < sheet.getRows()) {
+				 cells = jumpToRow(sheet, end);
 				 if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
 					 break;
 				 }
@@ -301,7 +322,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			 }
 			 
 			for (int j = start; j < end; j++) {
-				cells = jumpToRow(cal_sheet, j);
+				cells = jumpToRow(sheet, j);
 				if ("enumeration".equalsIgnoreCase(type)) {
 					try {
 						long raw=Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
@@ -339,30 +360,30 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	/**
 	 * If there is a sheet with the Limits, load it now! 
 	 */
-	private void loadLimitsSheet() {
-	     Sheet lim_sheet = switchToSheet("Limits", false);
-		 if(lim_sheet==null)return;
+	private void loadLimitsSheet(boolean required) {
+	     Sheet sheet = switchToSheet(SHEET_LIMITS, required);
+		 if(sheet==null)return;
 		 
 		 // start at 1 to not use the first line (= title line)
 		 int start = 1;
 		 while(true) {
 			 // we first search for a row containing (= starting) a new limit
-			 while (start < lim_sheet.getRows()) {
-				 Cell[] cells = jumpToRow(lim_sheet, start);
+			 while (start < sheet.getRows()) {
+				 Cell[] cells = jumpToRow(sheet, start);
 				 if ((cells.length > 0) && (cells[0].getContents().length() > 0)) {
 					 break;
 				 }
 				 start++;
 			 }
-			 if (start >= lim_sheet.getRows()) {
+			 if (start >= sheet.getRows()) {
 				 break;
 			 }
-			 Cell[] cells = jumpToRow(lim_sheet, start);
+			 Cell[] cells = jumpToRow(sheet, start);
 			 String name = cells[0].getContents();
 			 // now we search for the matching last row of the limit
 			 int end = start + 1;
-			 while (end < lim_sheet.getRows()) {
-				 cells = jumpToRow(lim_sheet, end);
+			 while (end < sheet.getRows()) {
+				 cells = jumpToRow(sheet, end);
 				 if (isRowEmpty(cells) || (cells[0].getContents().length() != 0)) {
 					 break;
 				 }
@@ -370,7 +391,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			 }
 
 			for (int j = start; j < end; j++) {
-				cells = jumpToRow(lim_sheet, j);
+				cells = jumpToRow(sheet, j);
 				String condition=cells[1].getContents();
 				if(condition.length()==0) condition=null;
 				String mins=(cells.length>2)?cells[2].getContents():"";
@@ -404,10 +425,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		return true;
 	}
 	
-	private void loadParameters() {
-		Sheet para_sheet = switchToSheet("Parameters", true);
-		for (int i = 1; i < para_sheet.getRows(); i++) {
-			Cell[] cells = jumpToRow(para_sheet, i);
+	protected void loadParametersSheet(boolean required) {
+		Sheet sheet = switchToSheet(SHEET_PARAMETERS, required);
+		if(sheet==null)return;
+		
+		for (int i = 1; i < sheet.getRows(); i++) {
+			Cell[] cells = jumpToRow(sheet, i);
 			if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
 				continue;
 			}
@@ -465,7 +488,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 				ptype = enumerations.get(calib);
 				if (ptype == null) {
-					throw new SpreadsheetLoadException(ctx, "parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
+					throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
 				}
 			} else if ("string".equalsIgnoreCase(engtype)) {
 				ptype = new StringParameterType(name);
@@ -773,14 +796,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 	
-	private void loadContainers() {
-		Sheet tm_sheet = switchToSheet("Containers", true);
+	protected void loadContainersSheet(boolean required) {
+		Sheet sheet = switchToSheet(SHEET_CONTAINERS, required);
+		if(sheet==null)return;
+		
 		HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
 		
-		for (int i = 1; i < tm_sheet.getRows(); i++) {
+		for (int i = 1; i < sheet.getRows(); i++) {
 			// search for a new packet definition, starting from row i 
 		    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
-			Cell[] cells = jumpToRow(tm_sheet, i);
+			Cell[] cells = jumpToRow(sheet, i);
 			if (cells == null || cells.length<1) {
 			    log.debug("Ignoring line {} because it's empty",ctx.row);
 			    continue;
@@ -844,10 +869,10 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			// now, we start processing the parameters (or references to aggregate containers)
 			boolean end = false;
 			int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
-			while (!end && (i < tm_sheet.getRows())) {
+			while (!end && (i < sheet.getRows())) {
 				
 				// get the next row, containing a measurement/aggregate reference
-				cells = jumpToRow(tm_sheet, i);
+				cells = jumpToRow(sheet, i);
 				// determine whether we have not reached the end of the packet definition.
 				if ((cells == null) || (cells.length <= IDX_CONT_RELPOS) || cells[IDX_CONT_RELPOS].getContents().equals("")) {
 					end = true; continue;
@@ -975,6 +1000,60 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 	}
 	
+	protected void loadProcessedParametersSheet(boolean required) {
+	    loadProcessedParametersSheet(required, IDX_PP_ALIAS);
+	}
+	
+	protected void loadProcessedParametersSheet(boolean required, int firstAliasColumnIndex) {
+        Sheet sheet = switchToSheet(SHEET_PROCESSED_PARAMETERS, required);
+        if(sheet==null)return;
+        
+        // Each row must specify a umi and an alias, with a group being optional
+        // The same umi may have many aliases, but a single alias value must
+        // be unique
+        
+        // Alias keys are the extra column names
+        Cell [] header_cells = jumpToRow(sheet, 0);
+        if( header_cells.length <= firstAliasColumnIndex ) {
+            throw new SpreadsheetLoadException(ctx, "No aliases defined in ProcessedParameters sheet: Must have at least three columns including umi and group columns.");
+        }
+        
+        log.info( "Spreadsheet has {} PP definition rows to be parsed", sheet.getRows() );
+        
+        for (int i = 1; i < sheet.getRows(); i++) {
+            Cell[] cells = jumpToRow(sheet, i);
+            if ((cells == null) || (cells.length < firstAliasColumnIndex) || cells[0].getContents().startsWith("#")) {
+                log.debug( "Ignoring line {} because it is empty, starts with #, or has < 3 cells populated", i );
+                continue;
+            }
+            String umi = cells[IDX_PP_UMI].getContents();
+            if (umi.length() == 0) {
+                log.debug( "Ignoring line {} because the UMI column is empty", i );
+                continue;
+            }
+            String group = cells[IDX_PP_GROUP].getContents();
+            
+            XtceAliasSet xtceAlias = new XtceAliasSet();
+            for( int alias_index = firstAliasColumnIndex; alias_index < cells.length; alias_index++ ) {
+                String alias = cells[ alias_index ].getContents();
+                if( ! "".equals( alias ) ) {
+                    if( alias_index > header_cells.length ) {
+                        throw new SpreadsheetLoadException(ctx, "Alias entry on line "+i+" does not have namespace specified in first row of column.");
+                    }
+                    log.debug( "Got alias '{}' with value '{}'", header_cells[ alias_index ].getContents(), alias );
+                    xtceAlias.addAlias( header_cells[ alias_index ].getContents(), alias );
+                }
+            }
+            
+            Parameter ppDef=new Parameter(umi);
+            ppDef.setRecordingGroup(group);
+            ppDef.setAliasSet( xtceAlias );
+
+            log.debug( "Adding PP definition '{}'", ppDef.getName() );
+            spaceSystem.addParameter( ppDef );
+        }
+	}
+	
 	/**
 	 * Extension point enabling processing additional non-standard sheets. This method is
 	 * called after all Parameters and Containers definitions are loaded, and just before
@@ -984,34 +1063,34 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    // By default do nothing
 	}
 	
-    private void loadAlgorithms() {
-        Sheet algo_sheet = switchToSheet("Algorithms", false);
-        if (algo_sheet == null) return;
+    protected void loadAlgorithmsSheet(boolean required) {
+        Sheet sheet = switchToSheet(SHEET_ALGORITHMS, required);
+        if (sheet == null) return;
 
         // start at 1 to not use the first line (= title line)
         int start = 1;
         while(true) {
             // we first search for a row containing (= starting) a new algorithm
-            while (start < algo_sheet.getRows()) {
-                Cell[] cells = jumpToRow(algo_sheet, start);
+            while (start < sheet.getRows()) {
+                Cell[] cells = jumpToRow(sheet, start);
                 if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
                     break;
                 }
                 start++;
             }
-            if (start >= algo_sheet.getRows()) {
+            if (start >= sheet.getRows()) {
                break;
             }
 
-            Cell[] cells = jumpToRow(algo_sheet, start);
+            Cell[] cells = jumpToRow(sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
             String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
             
             // now we search for the matching last row of that algorithm
             int end = start + 1;
-            while (end < algo_sheet.getRows()) {
-                cells = jumpToRow(algo_sheet, end);
+            while (end < sheet.getRows()) {
+                cells = jumpToRow(sheet, end);
                 if (!hasColumn(cells, IDX_ALGO_PARA_REF)) {
                     break;
                 }
@@ -1028,7 +1107,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             String paraInout=null;
             Set<String> inputParameterRefs=new HashSet<String>();
             for (int j = start+1; j < end; j++) {
-                cells = jumpToRow(algo_sheet, j);
+                cells = jumpToRow(sheet, j);
                 String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
                 if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
                     paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
@@ -1153,26 +1232,26 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
     }
     
-    private void loadAlarms() {
-        Sheet alarm_sheet = switchToSheet("Alarms", false);
-        if (alarm_sheet == null) return;
+    protected void loadAlarmsSheet(boolean required) {
+        Sheet sheet = switchToSheet(SHEET_ALARMS, required);
+        if (sheet == null) return;
 
         // start at 1 to not use the first line (= title line)
         int start = 1;
         while(true) {
             // we first search for a row containing (= starting) a new alarm
-            while (start < alarm_sheet.getRows()) {
-                Cell[] cells = jumpToRow(alarm_sheet, start);
+            while (start < sheet.getRows()) {
+                Cell[] cells = jumpToRow(sheet, start);
                 if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
                     break;
                 }
                 start++;
             }
-            if (start >= alarm_sheet.getRows()) {
+            if (start >= sheet.getRows()) {
                break;
             }
 
-            Cell[] cells = jumpToRow(alarm_sheet, start);
+            Cell[] cells = jumpToRow(sheet, start);
             if(!hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
                 throw new SpreadsheetLoadException(ctx, "Alarms must be attached to a parameter name");
             }
@@ -1184,8 +1263,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             
             // now we search for the matching last row of the alarms for this parameter
             int paramEnd = start + 1;
-            while (paramEnd < alarm_sheet.getRows()) {
-                cells = jumpToRow(alarm_sheet, paramEnd);
+            while (paramEnd < sheet.getRows()) {
+                cells = jumpToRow(sheet, paramEnd);
                 if (hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
                     break;
                 }
@@ -1197,7 +1276,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             int minViolations=1;
             AlarmReportType reportType=AlarmReportType.ON_SEVERITY_CHANGE;
             for (int j = start; j < paramEnd; j++) {
-                cells = jumpToRow(alarm_sheet, j);
+                cells = jumpToRow(sheet, j);
                 MatchCriteria context=previousContext;
                 if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
                     String contextString = cells[IDX_ALARM_CONTEXT].getContents();
@@ -1487,7 +1566,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         }
     }
 
-	private boolean hasColumn(Cell[] cells, int idx) {
+	protected boolean hasColumn(Cell[] cells, int idx) {
 	    return (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
 	}
 	
