@@ -4,7 +4,7 @@ cd `dirname $0`
 yamcshome=`pwd`
 version=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
 
-rev=`git rev-parse --short master`
+rev=`git rev-parse --short HEAD`
 
 dist=yamcs-${version}+r$rev
 
