@@ -1085,7 +1085,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             Cell[] cells = jumpToRow(sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
-            String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
             
             // now we search for the matching last row of that algorithm
             int end = start + 1;
@@ -1168,6 +1167,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
             final TriggerSetType triggerSet = new TriggerSetType();
             Pattern PARAMETER_PATTERN=Pattern.compile("OnParameterUpdate\\((.*)\\)");
             Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
+            cells = jumpToRow(sheet, start); // Jump back to algorithm row (for getting error msgs right)
+            String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
             if(!"".equals(triggerText)) {
                 if(triggerText.startsWith("OnParameterUpdate")) {
                     Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
@@ -1203,7 +1204,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                         throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
                     }
                 } else {
-                    throw new SpreadsheetLoadException(ctx, "Trigger '"+cells[IDX_ALGO_TRIGGER].getContents()+"' not supported.");
+                    throw new SpreadsheetLoadException(ctx, "Trigger '"+triggerText+"' not supported.");
                 }
             } else {
                 // default to all in parameters
