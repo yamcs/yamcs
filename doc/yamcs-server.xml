@@ -448,13 +448,18 @@
                     <listitem>Whenever a specified parameter is updated</listitem>
                     <listitem>Periodically (expressed in milliseconds)</listitem>
                 </itemizedlist>
+            </para>
+            <para>
                 Multiple triggers can be combined. In the typical example, an algorithm will trigger on updates for each of its input parameters. In other cases (for example because the algorithm doesn't have any inputs), it may be necessary to trigger on some other parameter. Or maybe a piece of logic just needs to be run at regular time intervals, rather than with each parameter update.
+            </para>
+            <para>
+                If an algorithm was triggered and not all of its input parameters were set, these parameters <emphasis>will</emphasis> be defined in the algorithm's scope, but with their value set to <code>null</code>.
             </para>
         </section>
 
         <section><title>User libraries</title>
             <para>The Yamcs algorithm engine can be configured to import a number of user libraries. Just like with algorithms, these libraries can contain any sort of logic and are written in the same scripting language. Yamcs will load user libraries <emphasis>one time only</emphasis> at start-up in their defined order. This will happen before running any algorithm. Anything that was defined in the user library, will be accessible by any algorithm. In other words, user libraries define a kind-of global scope. Common use cases for libraries are: sharing functions between algorithms, shortening user algorithms, easier outside testing of algorithm logic, ...</para>
-            <para>Being able to split the code in different user libraries is merely for user convenience. For all Yamcs cares, they could all be merged together in one big file.</para>
+            <para>Being able to split the code in different user libraries is merely a user convenience. For all Yamcs cares, they could all be merged together in one big file.</para>
         </section>
         
         <section><title>Algorithm scope</title>
@@ -463,13 +468,13 @@
         </section>
         
         <section><title>Sharing state</title>
-            <para>Note that if some kind of a shared state is required between multiple algorithms, the user libraries's shared scope could be (ab)used for this.</para>
+            <para>If some kind of a shared state is required between multiple algorithms, the user libraries's shared scope could be (ab)used for this.</para>
             <para>In many cases, the better solution would be to just output a parameter from one algorithm, and input it into another. Yamcs will automatically detect such dependencies, and will execute algorithms in the correct order.</para>
         </section>
         
         <section><title>Historic values</title>
-            <para>With what has been described so far, it would already be possible to store values in an algorithm's scope and perform windowing operations, such as averages. Yamcs goes a step further, though, by allowing you to input a particular <emphasis>instance</emphasis> of a parameter. By default instance <emphasis>0</emphasis> is inputted, which means the parameter's actual value. But you could also define instance <emphasis>-1</emphasis> for inputting the parameter's value as it was on the previous parameter update. If you define input parameters for, say, each of the instances <emphasis>-4</emphasis>, <emphasis>-3</emphasis>, <emphasis>-2</emphasis>, <emphasis>-1</emphasis> and <emphasis>0</emphasis>, your user algorithm could be just a simple oneliner, since Yamcs is taking care of the administration.</para>
-            <para>Algorithms with windowed parameters will only trigger as soon as all of those parameters have all instances defined (i.e. when the windows are full).</para>
+            <para>With what has been described so far, it would already be possible to store values in an algorithm's scope and perform windowing operations, such as averages. Yamcs goes a step further by allowing you to input a particular <emphasis>instance</emphasis> of a parameter. By default instance <emphasis>0</emphasis> is inputted, which means the parameter's actual value. But you could also define instance <emphasis>-1</emphasis> for inputting the parameter's value as it was on the previous parameter update. If you define input parameters for, say, each of the instances <emphasis>-4</emphasis>, <emphasis>-3</emphasis>, <emphasis>-2</emphasis>, <emphasis>-1</emphasis> and <emphasis>0</emphasis>, your user algorithm could be just a simple oneliner, since Yamcs is taking care of the administration.</para>
+            <para>Algorithms with windowed parameters will only trigger as soon as each of these parameters have all instances defined (i.e. when the windows are full).</para>
         </section>
     </section>
 <!--

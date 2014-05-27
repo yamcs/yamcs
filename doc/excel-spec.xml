@@ -599,8 +599,12 @@
                 </listitem>
             </varlistentry>
             
+            <varlistentry><term>report</term>
+                <listitem>When alarms under the given context should be reported. Should be one of <code>OnSeverityChange</code> or <code>OnValueChange</code>. With <code>OnSeverityChange</code> being the default. The condition <code>OnValueChange</code> will check value changes based on the engineering values. It can also be applied to a parameter without any defined severity levels, in which case an event will be generated with every change in value.</listitem>
+            </varlistentry>
+            
             <varlistentry><term>minimum violations</term>
-                <listitem>Number of successive instances that meet any of the alarm conditions under the give context before the alarm event triggers (defaults to 1). This field affects when an event is generated (i.e. only after X violations). It does not affect the monitoring result associated with each parameter. That would still be out of limits, even after a first violation.</listitem>
+                <listitem>Number of successive instances that meet any of the alarm conditions under the given context before the alarm event triggers (defaults to 1). This field affects when an event is generated (i.e. only after X violations). It does not affect the monitoring result associated with each parameter. That would still be out of limits, even after a first violation.</listitem>
             </varlistentry>
             
             <varlistentry><term>watch: trigger type</term>
@@ -650,11 +654,11 @@
     
     <section><title>Example definition</title>
         <table frame="all" orient="land">
-            <tgroup cols="13" align="left" colsep="1" rowsep="1">
+            <tgroup cols="14" align="left" colsep="1" rowsep="1">
                 <colspec colname="c1" colwidth="2*" />
                 <colspec colname="c2" colwidth="2*" />
-                <colspec colname="c3" colwidth="2*" />
-                <colspec colname="c4" colwidth="1*" />
+                <colspec colname="c3" colwidth="1*" />
+                <colspec colname="c4" colwidth="2*" />
                 <colspec colname="c5" colwidth="1*" />
                 <colspec colname="c6" colwidth="1*" />
                 <colspec colname="c7" colwidth="1*" />
@@ -664,19 +668,22 @@
                 <colspec colname="cb" colwidth="1*" />
                 <colspec colname="cc" colwidth="1*" />
                 <colspec colname="cd" colwidth="1*" />
+                <colspec colname="ce" colwidth="1*" />
 
                 <thead>
                     <row>
                         <entry>param name</entry>
                         <entry>context</entry>
+                        <entry>report</entry>
                         <entry>min violations</entry>
-                        <entry namest="c4" nameend="c5">watch</entry>
-                        <entry namest="c6" nameend="c7">warning</entry>
-                        <entry namest="c8" nameend="c9">distress</entry>
-                        <entry namest="ca" nameend="cb">critical</entry>
-                        <entry namest="cc" nameend="cd">severe</entry>
+                        <entry namest="c5" nameend="c6">watch</entry>
+                        <entry namest="c7" nameend="c8">warning</entry>
+                        <entry namest="c9" nameend="ca">distress</entry>
+                        <entry namest="cb" nameend="cc">critical</entry>
+                        <entry namest="cd" nameend="ce">severe</entry>
                     </row>
                     <row>
+                        <entry />
                         <entry />
                         <entry />
                         <entry />
@@ -697,6 +704,7 @@
                         <entry>my_int_para</entry>
                         <entry />
                         <entry />
+                        <entry />
                         <entry>low</entry>
                         <entry>-11</entry>
                         <entry>low</entry>
@@ -709,6 +717,7 @@
                         <entry />
                     </row>
                     <row>
+                        <entry />
                         <entry />
                         <entry />
                         <entry />
@@ -737,10 +746,12 @@
                         <entry />
                         <entry />
                         <entry />
+                        <entry />
                     </row>
                     <row>
                         <entry />
                         <entry>other_para = 4</entry>
+                        <entry />
                         <entry>3</entry>
                         <entry>high</entry>
                         <entry>40</entry>
@@ -767,9 +778,11 @@
                         <entry />
                         <entry />
                         <entry />
+                        <entry />
                     </row>
                     <row>
                         <entry>my_enum_para</entry>
+                        <entry />
                         <entry />
                         <entry />
                         <entry>state</entry>
@@ -784,6 +797,7 @@
                         <entry />
                     </row>
                     <row>
+                        <entry />
                         <entry />
                         <entry />
                         <entry />
