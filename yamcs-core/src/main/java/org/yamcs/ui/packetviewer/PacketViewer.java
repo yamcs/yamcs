@@ -3,7 +3,6 @@ package org.yamcs.ui.packetviewer;
 import static org.yamcs.api.Protocol.decode;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Toolkit;
@@ -201,6 +200,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         // hexdump panel
 
         hexText = new JTextPane() {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean getScrollableTracksViewportWidth() {
                 return false; // disable line wrap
@@ -211,7 +212,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         fixedStyle = hexDoc.addStyle("fixed", defStyle);
         StyleConstants.setFontFamily(fixedStyle, Font.MONOSPACED);
         highlightedStyle = hexDoc.addStyle("highlighted", fixedStyle);
-        StyleConstants.setBackground(highlightedStyle, Color.YELLOW.darker());
+        StyleConstants.setBackground(highlightedStyle, parametersTable.getSelectionBackground());
+        StyleConstants.setForeground(highlightedStyle, parametersTable.getSelectionForeground());
         hexText.setEditable(false);
 
         JScrollPane hexScrollpane = new JScrollPane(hexText);        
