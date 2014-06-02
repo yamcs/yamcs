@@ -2,7 +2,6 @@ package org.yamcs.ui.yamcsmonitor;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -59,14 +58,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.JTextComponent;
 
@@ -100,7 +96,6 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	LinkTableModel linkTableModel=new LinkTableModel(timer);
 	ClientTableModel clientTableModel;
 	DefaultTableModel statsTableModel;
-	LinkCellRenderer linkInfoRenderer = new LinkCellRenderer();
 	JFrame frame;
 	CommandQueueControlClient commandQueueControl;
 	
@@ -244,21 +239,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	
 	private Component buildLinkTable() {
 	    //build the table showing the links
-        linkTable=new JTable(linkTableModel) {
-            @Override
-            public String getToolTipText(MouseEvent e) {
-                int row = rowAtPoint(e.getPoint());
-                if (row == -1) return "";
-                row = convertRowIndexToModel(row);
-                return linkTableModel.getLinkInfo(row).getDetailedStatus();
-            }
-            @Override
-            public TableCellRenderer getCellRenderer(int row, int column) {
-                return linkInfoRenderer;
-           }
-        };
-        linkTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        linkTable.setAutoCreateRowSorter(true);
+        linkTable=new LinkTable(linkTableModel);
 
         if(hasAdminRights) {
             final JPopupMenu popupLinks = new JPopupMenu();
@@ -827,37 +808,6 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			}
 		});
 	}
-
-
-	class LinkCellRenderer extends DefaultTableCellRenderer {
-		final Border selectedBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
-		@Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			final int modelRow = linkTable.convertRowIndexToModel(row);
-			final LinkInfo info = linkTableModel.getLinkInfo(modelRow);
-			if (info != null) {
-				if (isSelected) {
-					setBorder(selectedBorder);
-				}
-				if(info.getDisabled()) {
-				    setBackground(Color.LIGHT_GRAY);
-				} else {
-				    if ("OK".equals(info.getStatus())) {
-				        if(linkTableModel.isDataCountIncreasing(modelRow)) {
-				            setBackground(Color.GREEN);
-				        } else {
-				            setBackground(Color.WHITE);
-				        }
-					}  else
-					    setBackground(Color.RED);
-				}
-			}
-			return this;
-		}
-	}
-
-
 
 	/**
 	 * Called when a row is selected in the channel table. 

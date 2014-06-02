@@ -7,6 +7,7 @@ import javax.swing.JTextArea;
 import javax.swing.table.TableCellRenderer;
 
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.ui.UiColors;
 
 /**
  * Event table renderer class. Its purpose is to highlight the events with
@@ -68,12 +69,12 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
             // This is a textarea, so does not follow the row layout set by prepareRenderer
             switch (event.getSeverity()) {
             case WARNING:
-            	setForeground(table.getForeground());
-            	setBackground(EventTable.COLOR_WARNING_BG);
+            	setForeground(UiColors.WARNING_FAINT_FG);
+            	setBackground(UiColors.WARNING_FAINT_BG);
                 break;
             case ERROR:
-            	setForeground(table.getForeground());
-                setBackground(EventTable.COLOR_ERROR_BG);
+            	setForeground(UiColors.ERROR_FAINT_FG);
+                setBackground(UiColors.ERROR_FAINT_BG);
                 break;
             default:
                 setForeground(table.getForeground());
