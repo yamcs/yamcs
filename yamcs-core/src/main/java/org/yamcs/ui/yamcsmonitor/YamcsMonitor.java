@@ -626,6 +626,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         channelTableModel.clear();
         channelControl.receiveInitialConfig();
         commandQueueDisplay.update();
+        setTitle("connected to "+yconnector.getUrl().replaceFirst("[^/]+$", selectedInstance));
         updateBorders();
 	}
     
