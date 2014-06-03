@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+ Example of scenario file:
+  - Simulation starts on 12-May-2014
+  - Parameters comes every 2 milliseconds (step length)
+  - This is a sequence of SOLAR parameters and Processed Parameters from Col-CC, repeated 4 times
+  - There is on the last sequence the parameter SOLAR_PH_Sequence_Count that is triggering the WARNING HIGH limit
+ 
+ Value expected for attributes:
+ - valueType (mandatory)should be one of: def, random
+ - monitoringResult (optional) should be one of: DISABLED, IN_LIMITS, WATCH, WATCH_LOW, WATCH_HIGH, WARNING, WARNING_LOW, WARNING_HIGH, DISTRESS, DISTRESS_LOW, DISTRESS_HIGH, CRITICAL, CRITICAL_LOW, CRITICAL_HIGH, SEVERE, SEVERE_LOW, SEVERE_HIGH
+
+-->
+<ppSimulation startDate="12-May-2014" stepLengthMs="2">
+  <description>
+    Test description of test simulation data.
+  </description>
+  <parameterSequence repeat="4" stepOffset="1">
+    <parameter spaceSystem="/APM/"     paraName="SOLAR_PH_Sequence_Count" valueType="def" value="1.1" generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da"       valueType="def" value="1.2" generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/APM/"     paraName="SOLAR_PH_Sequence_Count" valueType="def" value="2.1" generationStep="1" aquisitionStep="1"/>
+    <parameter spaceSystem="/APM/"     paraName="SOLAR_PH_Sequence_Count" valueType="def" value="3.5" generationStep="2" aquisitionStep="2"/>
+  </parameterSequence>
+  <parameterSequence>
+    <parameter spaceSystem="/APM/" paraName="SOLAR_PH_Sequence_Count" valueType="random"  generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da"   valueType="random"  generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/APM/" paraName="SOLAR_PH_Sequence_Count" valueType="random"  generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/APM/" paraName="SOLAR_PH_Sequence_Count" valueType="random"  generationStep="2" aquisitionStep="2"/>
+  </parameterSequence>
+  <parameterSequence stepOffset="3" >
+    <parameter spaceSystem="/APM/" paraName="SOLAR_PH_Sequence_Count" valueType="random"  generationStep="0" aquisitionStep="0" monitoringResult="WARNING_HIGH"/>
+  </parameterSequence>
+</ppSimulation>

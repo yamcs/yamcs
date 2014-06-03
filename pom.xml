@@ -105,6 +105,7 @@
     <module>yamcs-api</module>
     <module>yamcs-xtce</module>
     <module>yamcs-web</module>
+    <module>yamcs-simulation</module>
   </modules>
 
   <reporting>
