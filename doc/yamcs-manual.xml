@@ -15,7 +15,7 @@
     </inlinemediaobject>
   </corpauthor>
   
-  <copyright><year>2007-2013</year><holder>Space Applications Services</holder></copyright>
+  <copyright><year>2007-2014</year><holder>Space Applications Services</holder></copyright>
   <legalnotice>
     <para>
       Permission is granted to copy, distribute and/or modify this
@@ -24,10 +24,10 @@
      </para>
   </legalnotice>
 
-  <pubdate>31-May-2013</pubdate>
+  <pubdate>23-June-2014</pubdate>
   
   <releaseinfo>
-  	<para>This is Version 1.2.0 of the Yamcs Manual documenting version 0.24.1 of Yamcs.</para>
+  	<para>This is Version 1.3.0 of the Yamcs Manual documenting version 0.26.0 of Yamcs.</para>
    	<para>For help or further information, please contact <email>docs@yamcs.org</email></para>
    </releaseinfo>
   
