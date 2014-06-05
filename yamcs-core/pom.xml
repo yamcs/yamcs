@@ -167,6 +167,7 @@
             <configuration>
               <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
+              <includeScope>runtime</includeScope>
               <!-- <excludeGroupIds>com.spaceapplications.yamcs</excludeGroupIds> -->
             </configuration>
           </execution>

@@ -52,7 +52,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
             for (Parameter parameter:xtcedb.getParameters()) {
                 ParameterType ptype=parameter.getParameterType();
-                if(ptype.hasAlarm()) {
+                if(ptype!=null && ptype.hasAlarm()) {
                     requiredParameters.add(parameter);
                     Set<Parameter> dependentParameters = ptype.getDependentParameters();
                     if(dependentParameters!=null) {
