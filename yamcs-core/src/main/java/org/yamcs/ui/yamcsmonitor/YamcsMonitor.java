@@ -18,10 +18,12 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -79,6 +81,7 @@ import org.yamcs.ui.LinkListener;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 
 
 public class YamcsMonitor implements ChannelListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
@@ -515,10 +518,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	private Component buildCreateChannelPanel() {
 	 // "create channel" panel
         GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints  c = new GridBagConstraints();
+        GridBagConstraints c = new GridBagConstraints();
         JPanel createPanel = new JPanel(gridbag);
         createPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "New Channel"));
-        JLabel  label = new JLabel("Name:");
+        JLabel label = new JLabel("Name:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
@@ -534,11 +537,30 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
         
-         
+        ArrayList<ChannelWidget> widgets = new ArrayList<ChannelWidget>();
+        try {
+            YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
+            if(yconf.containsKey("channelWidgets")) {
+                @SuppressWarnings("rawtypes")
+                List ywidgets = yconf.getList("channelWidgets");
+                for(Object ywidget : ywidgets) {
+                    @SuppressWarnings("rawtypes")
+                    Map m = (Map) ywidget;
+                    String channelType = YConfiguration.getString(m, "type");
+                    String widgetClass = YConfiguration.getString(m, "class");
+                    ChannelWidget widget = new YObjectLoader<ChannelWidget>().loadObject(widgetClass, channelType);
+                    widgets.add(widget);
+                }
+            } else {
+                widgets.add(new ArchiveChannelWidget("Archive"));
+            }
+        } catch(ConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         
-        ArchiveChannelWidget archiveChannelWidget = new ArchiveChannelWidget("Archive"); // TODO from config
-        ChannelWidget[] widgetTypes = new ChannelWidget[] { archiveChannelWidget };
-        channelChooser = new JComboBox(widgetTypes);
+        channelChooser = new JComboBox(widgets.toArray());
         
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(channelChooser, c);
         createPanel.add(channelChooser);
@@ -556,7 +578,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH; gridbag.setConstraints(specPanel, c);
         createPanel.add(specPanel);
-        for (ChannelWidget widget:widgetTypes) {
+        for (ChannelWidget widget:widgets) {
             widget.setSuggestedNameComponent(newChannelName);
             specPanel.add(widget.createConfigurationPanel(), widget.channelType);
         }
