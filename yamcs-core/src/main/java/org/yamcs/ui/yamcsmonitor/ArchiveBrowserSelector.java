@@ -15,27 +15,27 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;
-
-import org.yamcs.api.YamcsConnector;
 
 
 /**
  * This is the archive browser that shows up in the yamcs monitor when pressing "Open Archive Selector" 
  *
  */
-public class ArchiveReplay extends ArchiveBrowser implements ActionListener {
-    public ArchiveChannel archiveChannel;
+public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionListener {
+    private static final long serialVersionUID = 1L;
+    
     boolean isHrdpPlaying;
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
     
     JButton applyButton;
     
-    public ArchiveReplay(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ChannelControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
+    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ChannelControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
 
@@ -134,12 +134,18 @@ public class ArchiveReplay extends ArchiveBrowser implements ActionListener {
         if (cmd.equals("apply") ) {
             Selection sel = archivePanel.getSelection();
             if ( sel == null ) {
-                showMessage("Select the range you want to apply.");
+                showError("Select the range you want to apply. Then try again");
             } else {
                 List<String> packets = archivePanel.getSelectedPackets("tm");
-                archiveChannel.apply(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
-                showMessage("A new HRDP selection was applied.\n" +
-                        "Look at the \"New Channel\" section in the YaMCS Monitor window to check.");
+                ChannelWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
+                if(widget instanceof ArchiveChannelWidget) {
+                    ((ArchiveChannelWidget) widget).apply(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
+                    showInfo("A new HRDP selection was applied.\n" +
+                            "Look at the \"New Channel\" section in the Yamcs Monitor window to check.");
+                } else {
+                    showError("Cannot apply selection for the currently selected channel type");
+                }
+
             }
 
             //} else if (cmd.equals("populate-from-current-channel")) {

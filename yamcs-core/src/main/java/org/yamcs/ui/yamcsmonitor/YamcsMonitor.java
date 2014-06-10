@@ -23,27 +23,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -52,11 +47,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -97,7 +90,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	JFrame frame;
 	CommandQueueControlClient commandQueueControl;
 	
-	ArchiveReplay archiveReplay;
+	ArchiveBrowserSelector archiveBrowserSelector;
 
 	private JTextArea logTextArea;
 	private JMenuItem miConnect, dcmi;//, queueControl;
@@ -106,9 +99,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	JTabbedPane channelStatusPanel;
 	private JMenu clientsPopupMenu;
 	private JTable linkTable, channelTable, clientsTable;
-	private JComboBox newChannelType;
+	private JComboBox channelChooser;
 	private JTextField newChannelName;
-	private ArchiveChannel archiveChannel;
 	CommandQueueDisplay commandQueueDisplay;
 	JScrollPane linkTableScroll, channelTableScroll;
 	private Set<String> allChannels=new HashSet<String>();//stores instance.channelName for all channels to populate the connectToChannel popup menu
@@ -155,8 +147,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		linkControl.setLinkListener(this);
 		
 		indexReceiver=new YamcsArchiveIndexReceiver(yconnector);
-		archiveReplay = new ArchiveReplay(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
-		indexReceiver.setIndexListener(archiveReplay);
+		archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
+		indexReceiver.setIndexListener(archiveBrowserSelector);
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -181,7 +173,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		menu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(menu);
 
-		miConnect = new JMenuItem("Connect");
+		miConnect = new JMenuItem("Connect to Yamcs...");
+        miConnect.setMnemonic(KeyEvent.VK_C);
+        miConnect.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
 		miConnect.addActionListener(this);
 		miConnect.setActionCommand("connect");
 		menu.add(miConnect);
@@ -362,7 +356,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                 int selectedRow = channelTable.getSelectedRow();
                 if (selectedRow == -1) {
                     commandQueueDisplay.setChannel(null, null);
-                    archiveReplay.archivePanel.replayPanel.clearReplayPanel();
+                    archiveBrowserSelector.archivePanel.replayPanel.clearReplayPanel();
                     if (dcmi != null) dcmi.setEnabled(false);
                 } else {
                     selectedRow = channelTable.convertRowIndexToModel(selectedRow);
@@ -372,9 +366,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
                     // show replay transport control if applicable
                     if (ci.hasReplayRequest()) {
-                        archiveReplay.archivePanel.replayPanel.setupReplayPanel(ci);
+                        archiveBrowserSelector.archivePanel.replayPanel.setupReplayPanel(ci);
                     } else {
-                        archiveReplay.archivePanel.replayPanel.clearReplayPanel();
+                        archiveBrowserSelector.archivePanel.replayPanel.clearReplayPanel();
                     }
                 }
             }
@@ -540,14 +534,14 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
         
-        archiveChannel = new ArchiveChannel(archiveReplay);
-
-        ChannelWidget[] widgetTypes = new ChannelWidget[] {archiveChannel};
+         
         
-        newChannelType = new JComboBox(widgetTypes);
+        ArchiveChannelWidget archiveChannelWidget = new ArchiveChannelWidget("Archive"); // TODO from config
+        ChannelWidget[] widgetTypes = new ChannelWidget[] { archiveChannelWidget };
+        channelChooser = new JComboBox(widgetTypes);
         
-        c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(newChannelType, c);
-        createPanel.add(newChannelType);
+        c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(channelChooser, c);
+        createPanel.add(channelChooser);
         
         label = new JLabel("Spec:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
@@ -564,14 +558,14 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         createPanel.add(specPanel);
         for (ChannelWidget widget:widgetTypes) {
             widget.setSuggestedNameComponent(newChannelName);
-            specPanel.add(widget, widget.toString());
+            specPanel.add(widget.createConfigurationPanel(), widget.channelType);
         }
         // when a channel type is selected, bring the appropriate widget to the front
-        newChannelType.addActionListener(new ActionListener() {
+        channelChooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent ae ) {
-                specLayout.show(specPanel, newChannelType.getSelectedItem().toString());
-                ChannelWidget widget = (ChannelWidget)newChannelType.getSelectedItem();
+                specLayout.show(specPanel, channelChooser.getSelectedItem().toString());
+                ChannelWidget widget = (ChannelWidget)channelChooser.getSelectedItem();
                 widget.activate();
             }
         });
@@ -642,6 +636,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			}
 		});
 	}
+	
+	void showArchiveBrowserSelector() {
+	    archiveBrowserSelector.setVisible(true);
+	}
 
 
 	void showMessage(String msg) {
@@ -669,7 +667,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			return;
 		}
 		String name=newChannelName.getText();
-		ChannelWidget type = (ChannelWidget)newChannelType.getSelectedItem();
+		ChannelWidget type = (ChannelWidget)channelChooser.getSelectedItem();
 		String spec = type.getSpec();
 		if(hasAdminRights) {
 			persistent=persistentCheckBox.isSelected();
@@ -784,7 +782,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		channelTableModel.clear();
 		clientTableModel.clear();
 		updateStatistics(null);
-		archiveReplay.archivePanel.disconnected();
+		archiveBrowserSelector.archivePanel.disconnected();
 	}
 
 
@@ -794,6 +792,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	}
 
 	//------------- end of interface ConnectionListener
+	
+    public ChannelWidget getActiveChannelWidget() {
+        return (ChannelWidget) channelChooser.getSelectedItem();
+    }
 
 	private void connect(final YamcsConnectData ycd)	{
 		yconnector.connect(ycd);
@@ -853,7 +855,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 						}
 						if (ci.hasReplayRequest()) {
 							if (modelSelectedRow < channelTableModel.getRowCount()) {
-								archiveReplay.archivePanel.replayPanel.updateStatistics(stats);
+								archiveBrowserSelector.archivePanel.replayPanel.updateStatistics(stats);
 							}
 						}
 					}
@@ -917,7 +919,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                 if(!ci.getInstance().equals(selectedInstance)) return;
                 boolean added=channelTableModel.upsertChannel(ci);
                 buildClientListPopup();
-                archiveReplay.archivePanel.replayPanel.updateChannelInfol(ci);
+                archiveBrowserSelector.archivePanel.replayPanel.updateChannelInfol(ci);
                 if(added && ci.getHasCommanding() && hasAdminRights) {
                     commandQueueDisplay.addChannel(ci.getInstance(), ci.getName());
                 }
@@ -1017,182 +1019,3 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		});
 	}
 }
-
-
-//===============================================================================================================
-
-
-
-
-
-
-//-------------------------------------------------------------------------------------------------------------------
-
-
-
-
-class ArchiveChannel extends ChannelWidget {
-    private static final long serialVersionUID = 1L;
-    String archiveInstance;
-	long start, stop;
-	JList packetList;
-	JLabel startLabel, stopLabel, instanceLabel;
-	JCheckBox loopButton;
-	JRadioButton speedRealtimeRadio, speedFixedRadio;
-
-	ArchiveChannel(final ArchiveReplay archiveWindow) {
-		super("Archive"); // TODO from config
-		archiveWindow.archiveChannel=this;
-		GridBagLayout gridbag = new GridBagLayout();
-		GridBagConstraints gbc = new GridBagConstraints();
-		setLayout(gridbag);
-
-		JButton button = new JButton("Open Archive Selector");
-		button.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed ( ActionEvent ae ) {
-				archiveWindow.setVisible(true);
-			}
-		});
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(button, gbc);
-		add(button);
-
-		JLabel label = new JLabel("Start:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		startLabel = new JLabel();
-		startLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, startLabel.getMaximumSize().height));
-		startLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(startLabel, gbc);
-		add(startLabel);
-
-		label = new JLabel("Stop:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		stopLabel = new JLabel();
-		stopLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, stopLabel.getMaximumSize().height));
-		stopLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(stopLabel, gbc);
-		add(stopLabel);
-
-		label = new JLabel("Instance:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		instanceLabel = new JLabel();
-		instanceLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(instanceLabel, gbc);
-		add(instanceLabel);
-
-		// TM packet list
-
-		packetList = new JList();
-		packetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		packetList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
-		packetList.getActionMap().put("delete", new AbstractAction() {
-			@Override
-            public void actionPerformed( ActionEvent ae ) {
-				Vector<Object> vec = new Vector<Object>();
-				ListModel lm = packetList.getModel();
-				for ( int i = 0; i < lm.getSize(); ++i ) {
-					if ( !packetList.isSelectedIndex(i) ) {
-						vec.add(lm.getElementAt(i));
-					}
-				}
-				packetList.setListData(vec);
-			}
-		});
-		JScrollPane scrollPane = new JScrollPane(packetList);
-		scrollPane.setPreferredSize(new Dimension(150, 80));
-		scrollPane.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		gbc.weightx = 1.0; gbc.weighty = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gridbag.setConstraints(scrollPane, gbc);
-		add(scrollPane);
-
-		// playback speed
-
-		Box hbox = Box.createHorizontalBox();
-		gbc.weightx = 0.0; gbc.weighty = 0.0;
-		gbc.fill = GridBagConstraints.NONE;
-		gridbag.setConstraints(hbox, gbc);
-		add(hbox);
-
-		label = new JLabel("Speed:");
-		hbox.add(label);
-		speedRealtimeRadio = new JRadioButton("Realtime");
-		speedRealtimeRadio.setToolTipText("Play telemetry at a speed according to their CCSDS timestamps.");
-		hbox.add(speedRealtimeRadio);
-		speedFixedRadio = new JRadioButton("Fixed");
-		speedFixedRadio.setToolTipText("Play telemetry at 1 packet per second, ignoring CCSDS timestamps.");
-		speedFixedRadio.setSelected(true);
-		hbox.add(speedFixedRadio);
-		ButtonGroup group = new ButtonGroup();
-		group.add(speedRealtimeRadio);
-		group.add(speedFixedRadio);
-
-		// loop replay
-
-		loopButton = new JCheckBox("Loop Replay");
-		loopButton.setToolTipText("When checked, replay restarts after it has ended. Otherwise it is stopped.");
-		gbc.weightx = 0.0; gbc.weighty = 0.0;
-		gbc.fill = GridBagConstraints.NONE;
-		gridbag.setConstraints(loopButton, gbc);
-		add(loopButton);
-
-		// for testing
-		//String[] packets = { "SOLAR_Tlm_Pkt_HK" };
-		//apply(new Date((long)1101855600 * 1000), new Date((long)1101942000 * 1000), packets);
-	}
-
-	void apply(String archiveInstance, long start, long stop, String[] packets) {
-		this.archiveInstance=archiveInstance;
-		this.start = start;
-		this.stop = stop;
-
-		startLabel.setText(TimeEncoding.toOrdinalDateTime(start));
-		stopLabel.setText(TimeEncoding.toOrdinalDateTime(stop));
-		instanceLabel.setText(archiveInstance);
-		packetList.setListData(packets);
-
-		nameComponent.setText("Archive"); // TODO use setter (?)
-	}
-
-	@Override
-    public void activate() {
-		// do nothing
-	}
-
-	@Override
-    public String getSpec()	{
-		if ( start < 0 ) {
-			YamcsMonitor.theApp.showMessage("Please specify a start date and a stop date first.");
-			return null;
-		}
-
-		StringBuffer spec = new StringBuffer(archiveInstance+" "+start + " " + stop + " ");
-		spec.append(loopButton.isSelected() ? "LOOP" : "STOP");
-		if ( speedRealtimeRadio.isSelected() ) { spec.append(" REALTIME 1"); }
-		else if ( speedFixedRadio.isSelected() ) { spec.append(" FIXED_DELAY 200"); }
-		else { spec.append(" AFAP"); } // should never happen
-		ListModel model = packetList.getModel();
-		for ( int i = 0; i < model.getSize(); ++i ) {
-			spec.append(" ");
-			spec.append(model.getElementAt(i));
-		}
-		return spec.toString();
-	}
-}
-

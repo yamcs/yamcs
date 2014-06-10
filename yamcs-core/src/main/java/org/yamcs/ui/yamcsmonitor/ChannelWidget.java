@@ -1,14 +1,13 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 
 /**
  * Component to be displayed when the matching channel type is selected from
  * within the Yamcs Monitor
  */
-public abstract class ChannelWidget extends JPanel {
-    private static final long serialVersionUID = 1L;
+public abstract class ChannelWidget {
     
     protected String channelType;
     protected JTextComponent nameComponent;
@@ -21,6 +20,8 @@ public abstract class ChannelWidget extends JPanel {
         this.nameComponent = nameComponent;
     }
     
+    public abstract JComponent createConfigurationPanel();
+    
     /**
      * Invoked when the channel panel is brought to the front
      */
@@ -30,6 +31,13 @@ public abstract class ChannelWidget extends JPanel {
      * Returns the spec string forwarded to createChannel()
      */
     public abstract String getSpec();
+    
+    /**
+     * Whether this channel type needs an archive browser
+     */
+    public boolean requiresArchiveBrowser() {
+        return false;
+    }
     
     @Override
     public String toString() {
