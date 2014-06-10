@@ -34,7 +34,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -64,7 +63,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.JTextComponent;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -227,8 +225,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
 		JSplitPane phoriz = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dsp, csp);
 		phoriz.setResizeWeight(0.5);
+		phoriz.setContinuousLayout(true);
 		JSplitPane pvert = new JSplitPane(JSplitPane.VERTICAL_SPLIT, phoriz, scroll);
 		pvert.setResizeWeight(1.0);
+		pvert.setContinuousLayout(true);
 		frame.getContentPane().add(pvert, BorderLayout.CENTER);
 
 		//Display the window.
@@ -542,10 +542,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         
         archiveChannel = new ArchiveChannel(archiveReplay);
 
-        ChannelType[] types;
-        types = new ChannelType[] {archiveChannel};
+        ChannelWidget[] widgetTypes = new ChannelWidget[] {archiveChannel};
         
-        newChannelType = new JComboBox(types);
+        newChannelType = new JComboBox(widgetTypes);
         
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(newChannelType, c);
         createPanel.add(newChannelType);
@@ -563,17 +562,17 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH; gridbag.setConstraints(specPanel, c);
         createPanel.add(specPanel);
-        for ( ChannelType type:types ) {
-            type.setSuggestedNameComponent(newChannelName);
-            specPanel.add(type.getDetailsComponent(), type.toString());
+        for (ChannelWidget widget:widgetTypes) {
+            widget.setSuggestedNameComponent(newChannelName);
+            specPanel.add(widget, widget.toString());
         }
-        // when a channel type is selected, bring the appropriate spec panel to front
+        // when a channel type is selected, bring the appropriate widget to the front
         newChannelType.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent ae ) {
                 specLayout.show(specPanel, newChannelType.getSelectedItem().toString());
-                ChannelType type = (ChannelType)newChannelType.getSelectedItem();
-                type.activate();
+                ChannelWidget widget = (ChannelWidget)newChannelType.getSelectedItem();
+                widget.activate();
             }
         });
 
@@ -670,7 +669,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			return;
 		}
 		String name=newChannelName.getText();
-		ChannelType type = (ChannelType)newChannelType.getSelectedItem();
+		ChannelWidget type = (ChannelWidget)newChannelType.getSelectedItem();
 		String spec = type.getSpec();
 		if(hasAdminRights) {
 			persistent=persistentCheckBox.isSelected();
@@ -1029,31 +1028,20 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
 //-------------------------------------------------------------------------------------------------------------------
 
-interface ChannelType {
-	public JComponent getDetailsComponent(); // returns the component to be displayed
-	public void setSuggestedNameComponent( JTextComponent nameComp );
-	public void activate(); // invoked when the channel panel is brought to the front
-	public String getSpec(); //returns the spec string forwarded to createChannel()
-}
 
 
-class ArchiveChannel extends JPanel implements ChannelType {
-	String archiveInstance;
+
+class ArchiveChannel extends ChannelWidget {
+    private static final long serialVersionUID = 1L;
+    String archiveInstance;
 	long start, stop;
 	JList packetList;
 	JLabel startLabel, stopLabel, instanceLabel;
 	JCheckBox loopButton;
 	JRadioButton speedRealtimeRadio, speedFixedRadio;
 
-	
-	protected JTextComponent nameComp;
-	@Override
-    public void setSuggestedNameComponent( JTextComponent nameComp ) { this.nameComp = nameComp; }
-	@Override
-    public String toString() { return "Archive"; }
-
 	ArchiveChannel(final ArchiveReplay archiveWindow) {
-		super();
+		super("Archive"); // TODO from config
 		archiveWindow.archiveChannel=this;
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -1169,11 +1157,6 @@ class ArchiveChannel extends JPanel implements ChannelType {
 		//apply(new Date((long)1101855600 * 1000), new Date((long)1101942000 * 1000), packets);
 	}
 
-	@Override
-    public JComponent getDetailsComponent()	{
-		return this;
-	}
-
 	void apply(String archiveInstance, long start, long stop, String[] packets) {
 		this.archiveInstance=archiveInstance;
 		this.start = start;
@@ -1184,7 +1167,7 @@ class ArchiveChannel extends JPanel implements ChannelType {
 		instanceLabel.setText(archiveInstance);
 		packetList.setListData(packets);
 
-		nameComp.setText("Archive");
+		nameComponent.setText("Archive"); // TODO use setter (?)
 	}
 
 	@Override
