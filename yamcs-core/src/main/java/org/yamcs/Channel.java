@@ -105,14 +105,17 @@ public class Channel {
                 if(speed.getType()==ReplaySpeedType.AFAP) synchronous=true;
             }
             
-            parameterRequestManager=new ParameterRequestManager(this);
+            // Shared between prm and crm
+            XtceTmProcessor tmProcessor = new XtceTmProcessor(this);
+            
+            containerRequestManager=new ContainerRequestManager(this, tmProcessor);
+            containerRequestManager.setPacketProvider(tmPacketProvider);
+            
+            parameterRequestManager=new ParameterRequestManager(this, tmProcessor);
             parameterRequestManager.setPacketProvider(tmPacketProvider);
             for(ParameterProvider pprov: parameterProviders) {
                 parameterRequestManager.addParameterProvider(pprov);
             }
-            
-            containerRequestManager=new ContainerRequestManager(this, parameterRequestManager.getTmProcessor());
-            containerRequestManager.setPacketProvider(tmPacketProvider);
             
             if(tcUplinker!=null) { 
                 commandingManager=new CommandingManager(this);
