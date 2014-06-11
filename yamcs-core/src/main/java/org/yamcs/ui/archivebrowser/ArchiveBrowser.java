@@ -70,7 +70,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 
         connectMenuItem=new JMenuItem();
         connectMenuItem=new JMenuItem();
-        connectMenuItem.setText("Connect");
+        connectMenuItem.setText("Connect to Yamcs...");
+        connectMenuItem.setMnemonic(KeyEvent.VK_C);
+        connectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         menu.add(connectMenuItem);
 
         menu.addSeparator();
@@ -155,6 +157,14 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     
     protected void showMessage(String msg) {
         JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.PLAIN_MESSAGE);
+    }
+    
+    protected void showInfo(String msg) {
+        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    protected void showError(String msg) {
+        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.ERROR_MESSAGE);
     }
 
 
