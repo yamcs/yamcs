@@ -21,7 +21,7 @@ public class SequenceContainerProcessor {
     public void extract(SequenceContainer seq) {
         //First add it to the result
         pcontext.containerResult.add(new ContainerExtractionResult(seq, pcontext.bb
-                        .asReadOnlyBuffer(), pcontext.bitPosition));
+                        .asReadOnlyBuffer(), pcontext.bitPosition, pcontext.acquisitionTime, pcontext.generationTime));
 
         int maxposition=pcontext.bitPosition;
         //then extract the entries
