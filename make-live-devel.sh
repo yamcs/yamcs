@@ -29,6 +29,9 @@ done
 for f in $YAMCS_HOME/yamcs-core/bin/* ; do
     cp -an $f $TARGET/bin/
 done
+for f in $YAMCS_HOME/yamcs-simulation/bin/* ; do
+    cp -an $f $TARGET/bin/
+done
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 

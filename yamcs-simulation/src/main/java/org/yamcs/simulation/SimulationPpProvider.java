@@ -223,6 +223,8 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 
 			// initialize step count for this sequence
 			List<ParameterSequence.Parameter> parameters = ps.getParameter();
+			if(parameters.size() == 0)
+				return;
 			int lastSequenceStep = parameters.get(parameters.size() - 1)
 					.getAquisitionStep();
 
