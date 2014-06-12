@@ -228,6 +228,12 @@
         <para>The MulticastPpProvider uses some classes from the DaSS API to decode these packets which are then made available to the clients using the same mechanism and the same DaSS to CIS mapping like the DassPpProvider. The parameters which are not defined in the UMI maps loaded from the MDB are discarded.</para>
         <para>Using the Yamcs Monitor the processing of packets can be enabled/disabled. In addition the MulticastPpProvider collects simple statistics with the number of UDP datagrams received and the number of processed parameters in the last datagram. These statistics can also be seen using the Yamcs Monitor.</para>
     </section>
+    <section><title>SimulationPpProvider</title>
+        <para>Some tests request data to be simulated. This can be achieved by using the SimulationPpprovider. This simulation pp provider uses in input scenarios that are defined in XML files. </para>
+	<para>The XML scenario file allows to describe the parameters sent, their generation time, acquisition time, engineering value and monitoring value. Parameters are organized in ‘sequence’ that can be repeated to allow more complex scenarios. The speed of the simulation can be defined, by setting the duration of a simulation step</para>
+	<para>The format of XML scenario file is defined in annex XXX</para>
+	<para>A user interface is available to visualize a library of scenario and select the scenario that YAMCS should play. This tool is documented in section XXX</para>
+    </section>
     </section>
     
     <section><title>TC Uplinkers</title>
