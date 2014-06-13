@@ -1,3 +1,10 @@
+Version 0.26.1 Released 13-June-2014
+- added REST API for data downloada
+- added a way to provide simulated parameters using xml scenario files
+
+Version 0.26.0 Released 16-Apr-2014
+- merged PP with the XTCE database
+
 Version 0.25.0 Released 10-Apr-2014
 - Fix bug with name referencing in xtce tree
 - Expose time in ms to algorithm
