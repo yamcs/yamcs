@@ -36,7 +36,7 @@ public class AlarmChecker {
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
         ComparisonProcessor comparisonProcessor=new ComparisonProcessor(pvals);
         for(ParameterValue pval:pvals) {
-            if(pval.getParameter().getParameterType().hasAlarm()) {
+            if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
                 performAlarmChecking(pval, comparisonProcessor);
             }
         }
