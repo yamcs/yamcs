@@ -107,12 +107,12 @@ public class Channel {
             
             // Shared between prm and crm
             XtceTmProcessor tmProcessor = new XtceTmProcessor(this);
-            
             containerRequestManager=new ContainerRequestManager(this, tmProcessor);
-            containerRequestManager.setPacketProvider(tmPacketProvider);
-            
             parameterRequestManager=new ParameterRequestManager(this, tmProcessor);
+            
+            containerRequestManager.setPacketProvider(tmPacketProvider);
             parameterRequestManager.setPacketProvider(tmPacketProvider);
+            
             for(ParameterProvider pprov: parameterProviders) {
                 parameterRequestManager.addParameterProvider(pprov);
             }
