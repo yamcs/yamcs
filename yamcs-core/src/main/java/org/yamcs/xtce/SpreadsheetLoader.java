@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +43,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 public class SpreadsheetLoader implements SpaceSystemLoader {
 	protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
 	protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
-	protected HashMap<String,EnumeratedParameterType> enumerations = new HashMap<String, EnumeratedParameterType>();
+	protected HashMap<String,EnumerationDefinition> enumerations = new HashMap<String, EnumerationDefinition>();
 	protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
 	protected HashSet<Parameter> outputParameters = new HashSet<Parameter>(); // Outputs to algorithms
 	protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<PotentialExtractionError>();
@@ -283,7 +284,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		 double[] pol_coef = null;
 		 // SplinePoint = pointpair
 		 ArrayList<SplinePoint>spline = null;
-		 EnumeratedParameterType enumeration = null;
+		 EnumerationDefinition enumeration = null;
 		 // start at 1 to not use the first line (= title line)
 		 int start = 1;
 		 while(true) {
@@ -312,7 +313,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				 end++;
 			 }
 			 if ("enumeration".equalsIgnoreCase(type)) {
-				 enumeration = new EnumeratedParameterType(name);
+				 enumeration = new EnumerationDefinition();
 			 } else if ("polynomial".equalsIgnoreCase(type)) {
 				 pol_coef = new double[end - start];
 			 } else if ("pointpair".equalsIgnoreCase(type)) {
@@ -326,7 +327,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				if ("enumeration".equalsIgnoreCase(type)) {
 					try {
 						long raw=Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
-						enumeration.addEnumerationValue(raw, cells[IDX_CALIB_CALIB2].getContents());
+						enumeration.valueMap.put(raw, cells[IDX_CALIB_CALIB2].getContents());
 					} catch(NumberFormatException e) {
 						throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"+cells[IDX_CALIB_CALIB1].getContents()+"'");
 					}
@@ -486,9 +487,13 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				if(calib==null) {
 					throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
 				}
-				ptype = enumerations.get(calib);
-				if (ptype == null) {
+				EnumerationDefinition enumeration = enumerations.get(calib);
+				if (enumeration == null) {
 					throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
+				}
+				ptype = new EnumeratedParameterType(calib);
+				for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
+				    ((EnumeratedParameterType) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
 				}
 			} else if ("string".equalsIgnoreCase(engtype)) {
 				ptype = new StringParameterType(name);
@@ -1643,7 +1648,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
         return contents;
 	}
 	
-	class LimitDef {
+	private static class LimitDef {
 		public LimitDef(String condition, AlarmRanges ranges) {
 			this.condition=condition;
 			this.ranges=ranges;
@@ -1651,6 +1656,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		String condition;
 		AlarmRanges ranges;
 	}
+	
+    /**
+     * Temporary value holder for the enumeration definition (because
+     * enumerations are read before parameters, and reading sharing the same EPT
+     * among all parameters is not a good approach (think different alarm
+     * definitions)
+     */
+    protected static class EnumerationDefinition {
+        public HashMap<Long,String> valueMap=new HashMap<Long,String>();
+    }
 	
 	/**
 	 * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read. 
