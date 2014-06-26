@@ -140,7 +140,16 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     }
     
     public void reportEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
-        boolean sendUpdateEvent=(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE);
+        boolean sendUpdateEvent=false;
+        
+        if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
+            ParameterValue oldPv=lastValuePerParameter.get(pv.def);
+            if(oldPv!=null && hasChanged(oldPv, pv)) {
+                sendUpdateEvent=true;
+            }
+            lastValuePerParameter.put(pv.def, pv);
+        }
+        
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to a normal state ("+pv.getEngValue().getStringValue()+")");
@@ -209,7 +218,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
             break;
         case IN_LIMITS:
-            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to state ("+pv.getEngValue().getStringValue()+")");
+            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
             break;
         default:
             throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());

@@ -27,6 +27,12 @@ public class ItemIdPacketConsumerStruct {
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
     }
+    
+    public ItemIdPacketConsumerStruct(PacketConsumer consumer, NamedObjectId id, SequenceContainer def) {
+        this.id = id;
+        this.consumer = consumer;
+        this.def = def;
+    }
 
     @Override
     public String toString() {

@@ -40,7 +40,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     private ParameterListener parameterRequestManager;
     private ContainerListener containerRequestManager;
 	
-	private final Channel channel;
+	public final Channel channel;
 	public final XtceDb xtcedb;
 	final XtceTmExtractor tmExtractor;
 	
