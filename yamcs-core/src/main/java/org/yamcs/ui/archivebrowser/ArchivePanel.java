@@ -3,6 +3,7 @@ package org.yamcs.ui.archivebrowser;
 import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -35,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
@@ -133,6 +135,7 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         buttonToolbar.add(showAllButton);
 
         setLayout(new BorderLayout());
+//        setBackground(Color.ORANGE);
         
         Box fixedTop = Box.createVerticalBox();
         fixedTop.add(buttonToolbar);
@@ -152,11 +155,14 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         add(getStatusBar(), BorderLayout.SOUTH);
 
         //TM and Tag box panel
-        scale = new TMScale();
-        scale.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+        JTabbedPane tabPane = new JTabbedPane();
+        
         tagBox=new TagBox(this);
         tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);       
+        
+        scale = new TMScale();
+        scale.setBackground(new Color(228, 228, 228)); // TODO TEMP
+        scale.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         IndexBox cindexBox = new IndexBox(this, "completeness index");
         cindexBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -164,6 +170,7 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         indexBoxes.put("completeness", cindexBox);
         
         scrolledPanel=Box.createVerticalBox();
+        scrolledPanel.setOpaque(false);
         scrolledPanel.add(tagBox);
         scrolledPanel.add(cindexBox);
         
@@ -181,16 +188,26 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         }
         
         tmscrollpane = new JScrollPane(scrolledPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        tmscrollpane.setBorder(BorderFactory.createEmptyBorder());
+        tmscrollpane.getViewport().setOpaque(false);
+        tmscrollpane.setOpaque(false);
         
         //put the scale in a box such that it is not resized above its maximum
-        Box scalebox=Box.createHorizontalBox();
+        Box scalebox=Box.createVerticalBox();
+        scalebox.add(tagBox);
         scalebox.add(scale);
         tmscrollpane.setColumnHeaderView(scalebox);
         
         tmscrollpane.setPreferredSize(new Dimension(850, 400));
         tmscrollpane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+        tabPane.addTab("Telemetry", tmscrollpane);
+        
+        JLabel bb = new JLabel("AHH");
+        bb.setFont(bb.getFont().deriveFont((float)(bb.getFont().getSize() - 6)));
+        tabPane.addTab("Processed Parameters", bb);
+        tabPane.addTab("Command History", new JLabel("TODO"));
 
-        add(tmscrollpane, BorderLayout.CENTER);
+        add(tabPane, BorderLayout.CENTER);
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
                 heapMemoryPoolBean = pool;

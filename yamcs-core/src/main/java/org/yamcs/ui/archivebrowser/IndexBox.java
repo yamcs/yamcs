@@ -108,6 +108,7 @@ public class IndexBox extends Box implements MouseInputListener {
         ttmgr.setInitialDelay(0);
         ttmgr.setReshowDelay(0);
         ttmgr.setDismissDelay(Integer.MAX_VALUE);
+        setOpaque(false);
 
         new java.util.Timer().schedule(new TimerTask() {
             @Override
@@ -144,9 +145,6 @@ public class IndexBox extends Box implements MouseInputListener {
 
     @Override
     public void paint(Graphics g) {
-        // move the scale component always to the start of the viewport,
-        // so it is always visible, even when scrolling vertically
-
         super.paint(g);
         // draw the selection rectangle over all the TM panels 
         if ( (getComponentCount() > 0) && zoom!=null ) {
@@ -806,6 +804,7 @@ public class IndexBox extends Box implements MouseInputListener {
     
     void redrawTmPanel(IndexLineSpec pkt) {
         JComponent pktpanel = pkt.assocTmPanel;
+        pktpanel.setBackground(getBackground());
         final int stopx = zoom.getPixels();
         final Insets in = pktpanel.getInsets();
         final int panelw = zoom.getPixels();

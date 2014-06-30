@@ -2,13 +2,12 @@ package org.yamcs.ui.archivebrowser;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.MouseInputListener;
 
 import org.yamcs.ui.archivebrowser.IndexBox.IndexLineSpec;
@@ -30,10 +29,12 @@ class IndexLine extends JPanel implements MouseInputListener {
         this.pkt = pkt;
         pkt.assocTmPanel = this;
         setAlignmentX(Component.LEFT_ALIGNMENT);
-        setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
-        setBackground(new Color(237, 237, 237)); // TODO should not be needed?
+        setBorder(BorderFactory.createEmptyBorder());
         addMouseMotionListener(this);
         addMouseListener(this);
+        
+        setBackground(Color.WHITE);
+        //setOpaque(false);
     }
 
     @Override
@@ -77,11 +78,17 @@ debugLog("tmpanel postTip");
 
     @Override
     public void mouseEntered(MouseEvent e) {
+        // Can't do this yet. Timeline is drawn on box instead of line, due to selection effect
+        // therefore border doesn't encapsulate the whole line
+        //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         tmBox.dispatchEvent(translateEvent(e));
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+        //setBorder(BorderFactory.createEmptyBorder());
+    }
+    
     @Override
     public void mouseClicked(MouseEvent e) {}
 

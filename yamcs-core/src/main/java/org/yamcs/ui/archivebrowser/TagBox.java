@@ -15,7 +15,6 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -25,14 +24,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.border.BevelBorder;
 
-
-
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.utils.TimeEncoding;
 
 public class TagBox extends Box implements MouseListener{
     private static final long serialVersionUID = 1L;
@@ -70,6 +65,7 @@ public class TagBox extends Box implements MouseListener{
 
         startLocator = stopLocator = currentLocator = DO_NOT_DRAW;
         drawPreviewLocator = false;
+        setOpaque(false);
 
         ToolTipManager ttmgr = ToolTipManager.sharedInstance();
         ttmgr.setInitialDelay(0);
@@ -128,6 +124,7 @@ public class TagBox extends Box implements MouseListener{
         editTagPopup.addSeparator();
         editTagMenuItem = new JMenuItem("Edit Tag");
         editTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 buildTagEditDialog();
                 ArchiveTag selectedTag=tags.get(selectedRow).get(selectedIndex);
@@ -142,6 +139,7 @@ public class TagBox extends Box implements MouseListener{
 
         removeTagMenuItem = new JMenuItem("Remove Tag");
         removeTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ArchiveTag selectedTag=tags.get(selectedRow).get(selectedIndex);
                 int answer=JOptionPane.showConfirmDialog(null, "Remove "+selectedTag.getName()+" ?", "Are you sure?", JOptionPane.YES_NO_OPTION);
@@ -155,6 +153,7 @@ public class TagBox extends Box implements MouseListener{
         newTagPopup = new JPopupMenu();
         JMenuItem newTagMenuItem = new JMenuItem("New Tag");
         newTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 buildTagEditDialog();
                 tagEditDialog.setVisible(true);
@@ -217,6 +216,7 @@ public class TagBox extends Box implements MouseListener{
      */
 
 
+    @Override
     public Point getToolTipLocation(MouseEvent event) {
         return new Point(event.getX() - 94, event.getY() + 20);
     }

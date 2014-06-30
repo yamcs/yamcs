@@ -21,11 +21,9 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
-
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.utils.TimeEncoding;
 
 public class TagTimeline extends JComponent implements MouseInputListener {
     private static final long serialVersionUID = 1L;
@@ -49,7 +47,7 @@ public class TagTimeline extends JComponent implements MouseInputListener {
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 2+l.getPreferredSize().height));
         addMouseMotionListener(this);
         addMouseListener(this);
-        
+        setOpaque(false);
     }
 
     @Override
@@ -61,21 +59,27 @@ public class TagTimeline extends JComponent implements MouseInputListener {
         return SwingUtilities.convertMouseEvent(e.getComponent(), e, dest);
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         long t=zoom.convertPixelToInstant(e.getX());
         int index=time2Tag(tags,t);
         tagBox.doMousePressed(translateEvent(e, tagBox), row, index);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         getParent().dispatchEvent(translateEvent(e, getParent()));
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {}
+    @Override
     public void mouseExited(MouseEvent e) {}
+    @Override
     public void mouseClicked(MouseEvent e) {}
 
     ArchiveTag lastMouseTag=null;
+    @Override
     public void mouseMoved(MouseEvent e) {
         long t=zoom.convertPixelToInstant(e.getX()+leftDelta);
         int index=time2Tag(tags, t);
@@ -123,6 +127,7 @@ public class TagTimeline extends JComponent implements MouseInputListener {
     }
     
     
+    @Override
     public void mouseDragged(MouseEvent e) {
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
@@ -131,11 +136,12 @@ public class TagTimeline extends JComponent implements MouseInputListener {
     
     @Override
     public void paint(Graphics g) {
+        super.paint(g);
         if(image==null) {
             image=(BufferedImage)createImage(getWidth(),getHeight());
             Graphics2D big=image.createGraphics();
-            big.setBackground(getBackground());
-            big.clearRect(0, 0, getWidth(),getHeight());
+            //big.setBackground(getBackground());
+            //big.clearRect(0, 0, getWidth(),getHeight());
             for(ArchiveTag at:tags) {
                 Color bgcolor,fgcolor;
                 if(at.hasColor()){

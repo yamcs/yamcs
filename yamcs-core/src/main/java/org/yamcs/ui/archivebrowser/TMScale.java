@@ -5,6 +5,7 @@ package org.yamcs.ui.archivebrowser;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -20,7 +21,6 @@ import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
@@ -53,12 +53,13 @@ public class TMScale extends JSlider {
 
     public TMScale() {
         super(JSlider.HORIZONTAL, 0, 100, 100);
+        setFont(new Font("Serif", Font.ITALIC, 15));
         setUI(new TMScaleUI(this));
         setPaintTicks(true);
         setPaintLabels(true);
         setPaintTrack(false);
         setFocusable(false);
-        //setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+//        setOpaque(false);
 
         /*final TMScale me = this;
             addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -247,14 +248,15 @@ public class TMScale extends JSlider {
     }
     
     static class TwoLineLabel extends JLabel {
+        private static final long serialVersionUID = 1L;
         int lineHeight;
         String[] textlines;
 
         TwoLineLabel( String text ) {
-            super(text);
+            super(text);           
 
             lineHeight = getPreferredSize().height;
-            textlines = text.split("\\n");
+            textlines = text.toUpperCase().split("\\n");
             if ( textlines.length > 1 ) {
                 setText(textlines[0]);
                 int w0 = getPreferredSize().width;
@@ -270,6 +272,7 @@ public class TMScale extends JSlider {
             setHorizontalAlignment(SwingConstants.CENTER);
         }
 
+        @Override
         public void paint( Graphics g ) {
             if ( textlines.length > 1 ) {
                 setText(textlines[0]);
@@ -346,7 +349,16 @@ public class TMScale extends JSlider {
 
         @Override
         protected int getTickLength() {
-            return 12;
+            return 8;
+        }
+        
+        @Override
+        protected int getHeightOfHighValueLabel() {
+            return super.getHeightOfHighValueLabel() - 3;
+        }
+         @Override
+        protected int getHeightOfLowValueLabel() {
+            return super.getHeightOfLowValueLabel() - 3;
         }
 
         @Override

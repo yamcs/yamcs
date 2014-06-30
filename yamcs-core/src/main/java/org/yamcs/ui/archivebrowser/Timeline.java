@@ -29,7 +29,7 @@ class Timeline extends JComponent implements MouseInputListener {
     ZoomSpec zoom;
     int leftDelta; //we have to move everything to the left with this amount (because this component is in a bordered parent)
     BufferedImage image=null;
-
+    
     Timeline(IndexBox tmBox, Color color, TreeSet<IndexChunkSpec> tmspec, ZoomSpec zoom, int leftDelta) {
         super();
         this.tmBox = tmBox;
@@ -37,8 +37,7 @@ class Timeline extends JComponent implements MouseInputListener {
         this.zoom=zoom;
         this.leftDelta=leftDelta;
         //	super(null, false);
-        //setBackground(color);
-        //setOpaque(true);
+        setBackground(Color.WHITE);
         addMouseMotionListener(this);
         addMouseListener(this);
 
@@ -122,7 +121,7 @@ class Timeline extends JComponent implements MouseInputListener {
 
     @Override
     public void paint(Graphics g) {
-
+        super.paint(g);
         if(image==null) {
             image=(BufferedImage)createImage(getWidth(),getHeight());
             Graphics2D big=image.createGraphics();
