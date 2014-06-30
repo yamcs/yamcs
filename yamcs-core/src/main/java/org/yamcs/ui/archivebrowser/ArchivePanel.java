@@ -107,7 +107,6 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         buttonToolbar = new JToolBar("Button Toolbar");
         buttonToolbar.setFloatable(false);
 
-
         reloadButton = new JButton("Reload View");
         reloadButton.setActionCommand("reload");
         reloadButton.setEnabled(false);

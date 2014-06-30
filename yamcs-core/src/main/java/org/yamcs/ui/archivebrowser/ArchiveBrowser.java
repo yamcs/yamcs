@@ -46,7 +46,10 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     ArchiveIndexReceiver indexReceiver;
     public ArchivePanel archivePanel;
     static boolean showDownload = false;
-    JButton packetRetrieval, parameterRetrieval, cmdHistRetrieval, newTagButton;
+    private JMenuItem packetRetrieval;
+    private JMenuItem parameterRetrieval;
+    private JMenuItem cmdHistRetrieval;
+    JButton newTagButton;
     PacketRetrievalGui packetGui;
     CommandHistoryRetrievalGui cmdHistGui;
     ParameterRetrievalGui parameterGui;
@@ -61,21 +64,25 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         this.yconnector=yconnector;
         this.indexReceiver = ir;
         
-        //menus and toolbar
+        setIconImage(ArchivePanel.getIcon("yamcs-32x32.png").getImage());
+        
+        /*
+         * MENU
+         */
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
-        setIconImage(ArchivePanel.getIcon("yamcs-32x32.png").getImage());
 
-        JMenu menu = new JMenu("File");
+        // File menu
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
 
-        connectMenuItem=new JMenuItem();
         connectMenuItem=new JMenuItem();
         connectMenuItem.setText("Connect to Yamcs...");
         connectMenuItem.setMnemonic(KeyEvent.VK_C);
         connectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        menu.add(connectMenuItem);
+        fileMenu.add(connectMenuItem);
 
-        menu.addSeparator();
+        fileMenu.addSeparator();
 
         JMenuItem closeMenuItem=new JMenuItem();
         closeMenuItem.setMnemonic(KeyEvent.VK_Q);
@@ -83,10 +90,36 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         closeMenuItem.setText("Quit");
         closeMenuItem.setActionCommand("exit");
         closeMenuItem.addActionListener(this);
-        menu.add(closeMenuItem);
-
-        menuBar.add(menu);
+        fileMenu.add(closeMenuItem);
+        
+        // Export menu
+        JMenu selectionMenu = new JMenu("Selection");
+        menuBar.add(selectionMenu);
+        
+        packetRetrieval = new JMenuItem("Export Packets...");
+        packetRetrieval.setEnabled(false);
+        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
+        packetRetrieval.addActionListener(this);
+        packetRetrieval.setActionCommand("start-packet-retrieval");
+        selectionMenu.add(packetRetrieval);
+        
+        parameterRetrieval = new JMenuItem("Export Parameters...");
+        parameterRetrieval.setEnabled(false);
+        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
+        parameterRetrieval.addActionListener(this);
+        parameterRetrieval.setActionCommand("start-parameter-retrieval");
+        selectionMenu.add(parameterRetrieval);
+        
+        cmdHistRetrieval = new JMenuItem("Export Command History...");
+        cmdHistRetrieval.setEnabled(false);
+        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
+        cmdHistRetrieval.addActionListener(this);
+        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
+        selectionMenu.add(cmdHistRetrieval);
    
+        /*
+         * BUTTONS
+         */
         archivePanel = new ArchivePanel(this, replayEnabled);
         archivePanel.reloadButton.addActionListener(this);
         archivePanel.addActionListener(this);
@@ -101,30 +134,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             archivePanel.buttonToolbar.add(newTagButton);
         }
         
-        packetRetrieval = new JButton("Packet Retrieval");
-        packetRetrieval.setEnabled(false);
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
-        packetRetrieval.addActionListener(this);
-        packetRetrieval.setActionCommand("start-packet-retrieval");
-        archivePanel.buttonToolbar.addSeparator();
-        archivePanel.buttonToolbar.add(packetRetrieval);
-
-        parameterRetrieval = new JButton("Parameter Retrieval");
-        parameterRetrieval.setEnabled(false);
-        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
-        parameterRetrieval.addActionListener(this);
-        parameterRetrieval.setActionCommand("start-parameter-retrieval");
-        archivePanel.buttonToolbar.add(parameterRetrieval);
-        
-        cmdHistRetrieval = new JButton("CmdHist Retrieval");
-        cmdHistRetrieval.setEnabled(false);
-        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
-        cmdHistRetrieval.addActionListener(this);
-        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
-        archivePanel.buttonToolbar.add(cmdHistRetrieval);
-        
         setContentPane(archivePanel);
-
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
     }
