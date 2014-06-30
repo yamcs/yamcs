@@ -18,7 +18,6 @@ import javax.swing.event.MouseInputListener;
 
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
 import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
@@ -114,7 +113,7 @@ class Timeline extends JComponent implements MouseInputListener {
     
         StringBuilder sb=new StringBuilder();
         sb.append("<html>").append(tt).append("<hr>Index Record: ").append(chunk.tmcount).append(" Packets");
-        if(chunk.tmcount>1) sb.append(" @ ").append(chunk.getFrequency());
+        if(chunk.tmcount>1) sb.append(" @ ").append(chunk.getFrequency()).append("Hz");
         sb.append("<br>").append(timestring);
         if(chunk.info!=null) sb.append("<br>").append(chunk.info);
         sb.append("</html>");

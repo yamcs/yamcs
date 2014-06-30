@@ -33,14 +33,13 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.event.MouseInputListener;
 
-import org.yamcs.ui.PrefsObject;
-import org.yamcs.ui.archivebrowser.ArchivePanel.SelectionImpl;
-import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
+import org.yamcs.ui.archivebrowser.ArchivePanel.SelectionImpl;
+import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Represents a collection of IndexLine shown vertically 
@@ -255,7 +254,7 @@ public class IndexBox extends Box implements MouseInputListener {
             JMenu packetmenu = new JMenu("Add Packets");
             packetPopup.add(packetmenu);
 
-            removePacketMenuItem = new JMenuItem("Remove This Packet");
+            removePacketMenuItem = new JMenuItem(); // text is set when showing the popup menu
             removePacketMenuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -264,7 +263,7 @@ public class IndexBox extends Box implements MouseInputListener {
             });
             packetPopup.add(removePacketMenuItem);
 
-            removeExceptPacketMenuItem = new JMenuItem("Remove All But This Packet");
+            removeExceptPacketMenuItem = new JMenuItem("Hide Other Packets");
             removeExceptPacketMenuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -273,8 +272,7 @@ public class IndexBox extends Box implements MouseInputListener {
             });
             packetPopup.add(removeExceptPacketMenuItem);
 
-            removePayloadMenuItem = new JMenuItem();
-            // text is set when showing the popup menu
+            removePayloadMenuItem = new JMenuItem(); // text is set when showing the popup menu
             removePayloadMenuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -507,7 +505,8 @@ public class IndexBox extends Box implements MouseInputListener {
                 changeColorMenuItem.setVisible(true);
 
                 popupLabelItem.setText(selectedPacket.lineName);
-                removePayloadMenuItem.setText(String.format("Remove All %s Packets", selectedPacket.grpName));
+                removePacketMenuItem.setText(String.format("Hide %s Packet", selectedPacket.lineName));
+                removePayloadMenuItem.setText(String.format("Hide All %s Packets", selectedPacket.grpName));
             } else {
                 popupLabelItem.setVisible(false);
                 removePayloadMenuItem.setVisible(false);
