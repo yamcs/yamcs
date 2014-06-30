@@ -1,27 +1,52 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.*;
-import java.awt.event.*;
+import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
+
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
-import javax.swing.*;
-import javax.swing.border.BevelBorder;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.JViewport;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 
 import org.yamcs.TimeInterval;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
-
-
-import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
+import org.yamcs.ui.UiColors;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Main panel of the ArchiveBrowser
@@ -33,13 +58,6 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
     static final SimpleDateFormat format_yyyymmdd    = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
     static final SimpleDateFormat format_yyyymmddT   = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    static final Color histoViewColor = new Color(0xbbbbbb);
-    static final Color tmLabelColor = histoViewColor.darker();
-    
-    static final Color cindexViewColor = new Color(0x4b4b4b);
-    static final Color cindexLabelColor = cindexViewColor.darker();
-    
-    
     private List<ActionListener> actionListeners=new ArrayList<ActionListener>();
 
     public ReplayPanel replayPanel;
@@ -50,7 +68,6 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
     protected PrefsToolbar prefs;
 
     ProgressMonitor progressMonitor;
-
 
     Stack<ZoomSpec> zoomStack;
     long dataStart, dataStop;
@@ -139,13 +156,14 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
 
         tagBox=new TagBox(this);
         tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tagBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //tagBox.setBorder(BorderFactory.createEmptyBorder());
+        //tagBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         
 
         IndexBox cindexBox = new IndexBox(this, "completeness index");
-    //    cindexBox.setBackground(cindexViewColor);
+//        cindexBox.setBackground(UiColors.DISABLED_FAINT_BG);
         cindexBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cindexBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        cindexBox.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
         indexBoxes.put("completeness", cindexBox);
         
         scrolledPanel=Box.createVerticalBox();
@@ -156,9 +174,9 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         for (String type: new String[] {"tm", "pp", "cmdhist"}) {
             IndexBox histoBox= new IndexBox(this, type+" histogram");
             histoBox.setMergeTime(1000);
-            histoBox.setBackground(histoViewColor);
+//            histoBox.setBackground(UiColors.DISABLED_FAINT_BG);
             histoBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-            histoBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+            histoBox.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
             scrolledPanel.add(histoBox);
             indexBoxes.put(type, histoBox);
         }
