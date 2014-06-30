@@ -2,6 +2,7 @@ package org.yamcs.ui.archivebrowser;
 
 import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -25,7 +26,6 @@ import java.util.Stack;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -133,35 +133,33 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         showAllButton.setEnabled(false);
         buttonToolbar.add(showAllButton);
 
-        buttonToolbar.setMaximumSize(new Dimension(Integer.MAX_VALUE, buttonToolbar.getPreferredSize().height));
-
-        BoxLayout blay=new BoxLayout(this, BoxLayout.Y_AXIS);
-        setLayout(blay);
-        add(buttonToolbar);
+        setLayout(new BorderLayout());
+        
+        Box fixedTop = Box.createVerticalBox();
+        fixedTop.add(buttonToolbar);
         buttonToolbar.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         prefs = new PrefsToolbar("Prefs Toolbar");
         prefs.setFloatable(false);
         prefs.setAlignmentX(Component.LEFT_ALIGNMENT);
-        add(prefs);
+        fixedTop.add(prefs);
 
         Box top=getTopBox();
         top.setAlignmentX(0);
-        add(top);
-        top.setMaximumSize(new Dimension(top.getMaximumSize().width, top.getPreferredSize().height));
+        fixedTop.add(top);
+        add(fixedTop, BorderLayout.NORTH);
+        
+        // Status Bar
+        add(getStatusBar(), BorderLayout.SOUTH);
 
         //TM and Tag box panel
         scale = new TMScale();
         scale.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         tagBox=new TagBox(this);
-        tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        //tagBox.setBorder(BorderFactory.createEmptyBorder());
-        //tagBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        
+        tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);       
 
         IndexBox cindexBox = new IndexBox(this, "completeness index");
-//        cindexBox.setBackground(UiColors.DISABLED_FAINT_BG);
         cindexBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         cindexBox.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
         indexBoxes.put("completeness", cindexBox);
@@ -170,18 +168,14 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         scrolledPanel.add(tagBox);
         scrolledPanel.add(cindexBox);
         
-        
         for (String type: new String[] {"tm", "pp", "cmdhist"}) {
             IndexBox histoBox= new IndexBox(this, type+" histogram");
             histoBox.setMergeTime(1000);
-//            histoBox.setBackground(UiColors.DISABLED_FAINT_BG);
             histoBox.setAlignmentX(Component.LEFT_ALIGNMENT);
             histoBox.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
             scrolledPanel.add(histoBox);
             indexBoxes.put(type, histoBox);
         }
-        
-        
         
         if (replayEnabled) {
             replayPanel.setTmBox(indexBoxes.get("tm"));
@@ -189,23 +183,36 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         
         tmscrollpane = new JScrollPane(scrolledPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
-        
         //put the scale in a box such that it is not resized above its maximum
         Box scalebox=Box.createHorizontalBox();
         scalebox.add(scale);
         tmscrollpane.setColumnHeaderView(scalebox);
         
-       // tmscrollpane.getViewport().setBackground(tmViewColor);
         tmscrollpane.setPreferredSize(new Dimension(850, 400));
         tmscrollpane.setAlignmentX(JComponent.LEFT_ALIGNMENT);
 
-        add(tmscrollpane);
+        add(tmscrollpane, BorderLayout.CENTER);
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
                 heapMemoryPoolBean = pool;
                 heapMemoryPoolBean.setCollectionUsageThreshold((int)Math.floor(heapMemoryPoolBean.getUsage().getMax()*0.95));
             }
         }
+    }
+    
+    Box getStatusBar() {
+        Box bar = Box.createHorizontalBox();
+        
+        bar.add(new JLabel(" Instance: ")); // Front space serves as left padding
+        instanceLabel = new JLabel();
+        bar.add(instanceLabel);
+        
+        bar.add(new JLabel(", Loaded: "));
+        totalRangeLabel = new JLabel();
+        bar.add(totalRangeLabel);
+
+        bar.add(Box.createHorizontalGlue());
+        return bar;
     }
 
     Box getTopBox() {
@@ -220,29 +227,7 @@ public class ArchivePanel extends JPanel implements ActionListener, PropertyChan
         top.add(archiveinfo);
         gbc.insets = new Insets(4, 4, 0, 1);
 
-        JLabel lab = new JLabel("Instance:");
-        gbc.fill = GridBagConstraints.NONE; gbc.gridwidth = 1; gbc.weightx = 0.0; gbc.anchor = GridBagConstraints.EAST;
-        lay.setConstraints(lab, gbc);
-        archiveinfo.add(lab);
-        instanceLabel = new JLabel();
-        instanceLabel.setPreferredSize(new Dimension(100, instanceLabel.getPreferredSize().height));
-        gbc.fill = GridBagConstraints.BOTH; gbc.gridwidth = GridBagConstraints.REMAINDER; gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.WEST;
-        lay.setConstraints(instanceLabel, gbc);
-        archiveinfo.add(instanceLabel);
-
-        lab = new JLabel("Total Range:");
-        gbc.fill = GridBagConstraints.NONE; gbc.gridwidth = 1; gbc.weightx = 0.0; gbc.anchor = GridBagConstraints.EAST;
-        lay.setConstraints(lab, gbc);
-        archiveinfo.add(lab);
-        totalRangeLabel = new JLabel();
-        totalRangeLabel.setPreferredSize(new Dimension(250, totalRangeLabel.getPreferredSize().height));
-        gbc.fill = GridBagConstraints.BOTH; gbc.gridwidth = GridBagConstraints.REMAINDER; gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.WEST;
-        lay.setConstraints(totalRangeLabel, gbc);
-        archiveinfo.add(totalRangeLabel);
-
-        lab = new JLabel("Selection:");
+        JLabel lab = new JLabel("Selection:");
         gbc.fill = GridBagConstraints.NONE; gbc.gridwidth = 1; gbc.weightx = 0.0; gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
         archiveinfo.add(lab);

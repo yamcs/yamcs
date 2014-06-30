@@ -66,7 +66,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         setJMenuBar(menuBar);
         setIconImage(ArchivePanel.getIcon("yamcs-32x32.png").getImage());
 
-        JMenu menu = new JMenu("Archive Browser");
+        JMenu menu = new JMenu("File");
 
         connectMenuItem=new JMenuItem();
         connectMenuItem=new JMenuItem();
