@@ -43,9 +43,13 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
     public EventTableRenderer() {
         super();
     }
-
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    
+    /**
+     * Calculates the height required for showing this row. Extracted outside of
+     * getTableCellRendererComponent, so that the height can be retrieved (and
+     * set!) without the row having been rendered yet.
+     */
+    public int updateCalculatedHeight(JTable table, Object value, int row) {
         Event event = (Event) value;
         String[] lines=event.getMessage().split("\n");
         if(lines.length>5) {
@@ -59,14 +63,22 @@ class EventTableRenderer extends JTextArea implements TableCellRenderer {
             setText(event.getMessage());
         }
         
-        int height_wanted = (int) getPreferredSize().getHeight() + table.getIntercellSpacing().height;
-        if (height_wanted != table.getRowHeight(row))
-            table.setRowHeight(row, height_wanted);
+        int wantedHeight = (int) getPreferredSize().getHeight() + table.getIntercellSpacing().height;
+        if (wantedHeight != table.getRowHeight(row)) {
+            table.setRowHeight(row, wantedHeight);
+        }
+        return wantedHeight;
+    }
+    
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        updateCalculatedHeight(table, value, row);
         if (isSelected) {
             setForeground(table.getSelectionForeground());
             setBackground(table.getSelectionBackground());
         } else {
             // This is a textarea, so does not follow the row layout set by prepareRenderer
+            Event event = (Event) value;
             switch (event.getSeverity()) {
             case WARNING:
             	setForeground(UiColors.WARNING_FAINT_FG);

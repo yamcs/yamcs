@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,6 +56,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
@@ -746,7 +749,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 eventTable.revalidate();
                 eventPane.validate();
                 if (miAutoScroll.isSelected()) {
-                    eventPane.getVerticalScrollBar().setValue(eventPane.getVerticalScrollBar().getMaximum());
+                    updateVerticalScrollPosition();
                 }
             }
         });
@@ -788,7 +791,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 eventPane.validate();
 
                 if (miAutoScroll.isSelected()) {
-                    eventPane.getVerticalScrollBar().setValue(eventPane.getVerticalScrollBar().getMaximum());
+                    updateVerticalScrollPosition();
                 }
 
                 // alert the user if necessary
@@ -801,6 +804,33 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 }
             }
         });
+    }
+    
+    /**
+     * Adjusts vertical scroll position
+     * (horizontal position remains unchanged)
+     */
+    private void updateVerticalScrollPosition() {
+        int row = eventTable.convertRowIndexToView(eventTable.getRowCount()-1);
+        int col = eventTable.convertColumnIndexToView(0);
+        Rectangle rect = eventTable.getCellRect(row, col, true);
+        
+        // Retain view's x position
+        int x = eventTable.getVisibleRect().x;
+        
+        // y should correctly show full contents of multiline text cells.
+        int y = rect.y;
+        int textViewColumn = eventTable.convertColumnIndexToView(EventTableModel.EVENT_TEXT_COL);
+        TableCellRenderer renderer = eventTable.getCellRenderer(row, textViewColumn);
+        if (renderer instanceof EventTableRenderer) {
+            Object value = eventTable.getValueAt(row, textViewColumn);
+            // Trigger an update of the row height
+            int actualHeight = ((EventTableRenderer)renderer).updateCalculatedHeight(eventTable, value, row);
+            y += (actualHeight - rect.height);
+        }
+        
+        rect.setLocation(new Point(x, y));
+        eventTable.scrollRectToVisible(rect);
     }
 
     /**
