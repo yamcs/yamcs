@@ -26,12 +26,11 @@ import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
 import org.yamcs.utils.TimeEncoding;
 
 public class TagBox extends Box implements MouseListener{
     private static final long serialVersionUID = 1L;
-    private final ArchivePanel archivePanel;
+    private DataView dataView;
     int startX, stopX, deltaX;
     boolean drawPreviewLocator;
     float previewLocatorAlpha;
@@ -59,9 +58,9 @@ public class TagBox extends Box implements MouseListener{
         }
     }
 
-    TagBox(ArchivePanel archivePanel) {
+    TagBox(DataView dataView) {
         super(BoxLayout.PAGE_AXIS);
-        this.archivePanel = archivePanel;
+        this.dataView = dataView;
 
         startLocator = stopLocator = currentLocator = DO_NOT_DRAW;
         drawPreviewLocator = false;
@@ -131,7 +130,7 @@ public class TagBox extends Box implements MouseListener{
                 tagEditDialog.fillFrom(selectedTag);
                 tagEditDialog.setVisible(true);
                 if(tagEditDialog.ok) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "update-tag", selectedTag, tagEditDialog.getTag()));
+                    dataView.emitActionEvent(new TagEvent(this, "update-tag", selectedTag, tagEditDialog.getTag()));
                 }
             }
         });
@@ -144,7 +143,7 @@ public class TagBox extends Box implements MouseListener{
                 ArchiveTag selectedTag=tags.get(selectedRow).get(selectedIndex);
                 int answer=JOptionPane.showConfirmDialog(null, "Remove "+selectedTag.getName()+" ?", "Are you sure?", JOptionPane.YES_NO_OPTION);
                 if(answer==JOptionPane.YES_OPTION) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "delete-tag", selectedTag, null));
+                    dataView.emitActionEvent(new TagEvent(this, "delete-tag", selectedTag, null));
                 }
             }
         });
@@ -158,7 +157,7 @@ public class TagBox extends Box implements MouseListener{
                 buildTagEditDialog();
                 tagEditDialog.setVisible(true);
                 if(tagEditDialog.ok) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
+                    dataView.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
                 }
             }
         });
@@ -172,7 +171,7 @@ public class TagBox extends Box implements MouseListener{
         tagEditDialog.setVisible(true);
 
         if(tagEditDialog.ok) {
-            archivePanel.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
+            dataView.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
         }
     }
     
@@ -182,7 +181,7 @@ public class TagBox extends Box implements MouseListener{
         if(e.isPopupTrigger()) {
             showPopup(e);
         } else if(e.getButton()==MouseEvent.BUTTON1 && selectedRow!=-1 && selectedIndex !=-1) {
-            archivePanel.selectedTag(tags.get(selectedRow).get(selectedIndex));
+            dataView.selectedTag(tags.get(selectedRow).get(selectedIndex));
         }
     }
 

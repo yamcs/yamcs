@@ -1,8 +1,6 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -16,16 +14,16 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.ui.UiColors;
 import org.yamcs.utils.TimeEncoding;
 
-public class TagTimeline extends JComponent implements MouseInputListener {
+public class TagTimeline extends JPanel implements MouseInputListener {
     private static final long serialVersionUID = 1L;
     private final TagBox tagBox;
     List<ArchiveTag> tags;
@@ -134,14 +132,19 @@ public class TagTimeline extends JComponent implements MouseInputListener {
                 e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
     
+    
+    
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         if(image==null) {
-            image=(BufferedImage)createImage(getWidth(),getHeight());
+            image=new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D big=image.createGraphics();
-            //big.setBackground(getBackground());
-            //big.clearRect(0, 0, getWidth(),getHeight());
+            
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            big.fillRect(0,0,getWidth(),getHeight());
+
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
             for(ArchiveTag at:tags) {
                 Color bgcolor,fgcolor;
                 if(at.hasColor()){
@@ -170,11 +173,12 @@ public class TagTimeline extends JComponent implements MouseInputListener {
                     LineMetrics lm=f.getLineMetrics(at.getName(), big.getFontRenderContext());
                     big.drawString(at.getName(), x1-leftDelta+1, (int)lm.getAscent()+1);
                 }
-                big.setColor(Color.black);
+                big.setColor(UiColors.BORDER_COLOR);
                 big.drawRect(x1-leftDelta, 0, width-1, getHeight()-1);
             }
           //  border.paintBorder(this, big, 0, 0, getWidth(),getHeight() );
         } 
+        
         
         g.drawImage(image,0,0,this);
         

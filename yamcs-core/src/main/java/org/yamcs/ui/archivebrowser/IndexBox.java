@@ -37,8 +37,7 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
-import org.yamcs.ui.archivebrowser.ArchivePanel.SelectionImpl;
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.ui.archivebrowser.DataView.SelectionImpl;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -48,7 +47,8 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class IndexBox extends Box implements MouseInputListener {
     private static final long serialVersionUID = 1L;
-    private final ArchivePanel archivePanel;
+    //private final ArchivePanel archivePanel;
+    private final DataView dataView;
     int startX, stopX, deltaX;
     boolean drawPreviewLocator;
     float previewLocatorAlpha;
@@ -88,14 +88,13 @@ public class IndexBox extends Box implements MouseInputListener {
     Preferences prefs;
 
     
-    IndexBox(ArchivePanel archivePanel, String name) {
+    IndexBox(DataView dataView, String name) {
         super(BoxLayout.PAGE_AXIS);
-        this.archivePanel = archivePanel;
+        this.dataView=dataView;
         this.name=name;
         addMouseMotionListener(this);
         addMouseListener(this);
         resetSelection();
-
         allPackets = new HashMap<String,IndexLineSpec>();
         groups = new HashMap<String,ArrayList<IndexLineSpec>>();
         tmData = new HashMap<String,TreeSet<IndexChunkSpec>>();
@@ -296,9 +295,9 @@ public class IndexBox extends Box implements MouseInputListener {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     selectedPacket.newColor();
-                    archivePanel.setBusyPointer();
+                    dataView.archivePanel.setBusyPointer();
                     redrawTmPanel(selectedPacket);
-                    archivePanel.setNormalPointer();
+                    dataView.archivePanel.setNormalPointer();
                 }
             });
             packetPopup.add(changeColorMenuItem);
@@ -321,7 +320,7 @@ public class IndexBox extends Box implements MouseInputListener {
                 Arrays.sort(tmarray);
 
                 for (final IndexLineSpec pkt:tmarray) {
-                    if (archivePanel.hideResponsePackets && pkt.lineName.contains("_Resp_")) continue;
+                    if (dataView.hideResponsePackets && pkt.lineName.contains("_Resp_")) continue;
                     menuItem = new JMenuItem(pkt.toString());
                     pkt.assocMenuItem = menuItem;
                     if (pkt.enabled) {
@@ -361,7 +360,7 @@ public class IndexBox extends Box implements MouseInputListener {
         startX = -1;
         currentSelection = null;
         repaint();
-        this.archivePanel.resetSelection();
+        dataView.resetSelection();
     }
 
     public SelectionImpl getSelection() {
@@ -370,7 +369,7 @@ public class IndexBox extends Box implements MouseInputListener {
 
     void updateSelection(long start, long stop) {
         if (currentSelection == null) {
-            currentSelection = this.archivePanel.new SelectionImpl(start, stop);
+            currentSelection = dataView.new SelectionImpl(start, stop);
         } else {
             currentSelection.set(start, stop);
         }
@@ -391,11 +390,11 @@ public class IndexBox extends Box implements MouseInputListener {
         if (zoom!=null) {
             dragButton = e.getButton();
             if (dragButton == MouseEvent.BUTTON1) {
-                if (this.archivePanel.replayEnabled && (e.getClickCount() == 2)) {
+                if (dataView.replayEnabled && (e.getClickCount() == 2)) {
                     drawPreviewLocator = true;
                     previewLocatorAlpha = 0.8f;
                     previewLocatorX = e.getX();
-                    this.archivePanel.seekReplay(previewLocator);
+                    dataView.archivePanel.seekReplay(previewLocator);
                     repaint();
                 } else {
                     if ((currentSelection != null) && (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap)) {
@@ -431,10 +430,10 @@ public class IndexBox extends Box implements MouseInputListener {
                     // if only one line was selected, the user wants to deselect
                     if (startX == stopX) {
                         resetSelection();
-                        archivePanel.updateSelectionFields(this);
+                        dataView.updateSelectionFields(this);
                     } else {
                         // selection finished
-                        archivePanel.selectionFinished(this);
+                        dataView.selectionFinished(this);
                     }
                 }
             }
@@ -478,7 +477,7 @@ public class IndexBox extends Box implements MouseInputListener {
                 stopX = e.getX() - deltaX;
                 if (startX == -1) startX = stopX;
                 if (currentSelection == null) {
-                    currentSelection = this.archivePanel.new SelectionImpl(startX, stopX);
+                    currentSelection = dataView.new SelectionImpl(startX, stopX);
                 } else {
                     currentSelection.set(startX, stopX);
                 }
@@ -487,7 +486,7 @@ public class IndexBox extends Box implements MouseInputListener {
                 repaint();
 
                 // this will trigger an update of selection start/stop text fields
-                archivePanel.updateSelectionFields(this);
+                dataView.updateSelectionFields(this);
             }
         }
     }
@@ -519,14 +518,14 @@ public class IndexBox extends Box implements MouseInputListener {
     }
 
     void setPointer(MouseEvent e) {
-        if (this.archivePanel.reloadButton.isEnabled()) {
-            this.archivePanel.setNormalPointer();
+        if (dataView.archivePanel.reloadButton.isEnabled()) {
+            dataView.archivePanel.setNormalPointer();
             if (currentSelection != null) {
                 if (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap) {
-                    this.archivePanel.setMoveLeftPointer();
+                    dataView.setMoveLeftPointer();
                 }
                 if (Math.abs(e.getX() - currentSelection.getStopX()) <= cursorSnap) {
-                    this.archivePanel.setMoveRightPointer();
+                    dataView.setMoveRightPointer();
                 }
             }
         }
@@ -549,7 +548,7 @@ public class IndexBox extends Box implements MouseInputListener {
                 }
             }
             updatePrefsVisiblePackets();
-            archivePanel.refreshTmDisplay();
+            dataView.refreshDisplay();
         }
     }
 
@@ -559,12 +558,12 @@ public class IndexBox extends Box implements MouseInputListener {
 
         // create entry in TM display
         pkt.enabled = true;
-        archivePanel.refreshTmDisplay();
+        dataView.refreshDisplay();
         updatePrefsVisiblePackets();
     }
 
     void removeSelectedPacket() {
-        archivePanel.setBusyPointer();
+        dataView.archivePanel.setBusyPointer();
         selectedPacket.assocMenuItem.setVisible(true);
         selectedPacket.enabled = false;
         remove(selectedPacket.assocTmPanel);
@@ -576,13 +575,13 @@ public class IndexBox extends Box implements MouseInputListener {
     
         revalidate();
         repaint();
-        archivePanel.setNormalPointer();
+        dataView.archivePanel.setNormalPointer();
     }
     
     void removeGroupLines() {
         ArrayList<IndexLineSpec> pltm = groups.get(selectedPacket.grpName);
         if (pltm != null) {
-            archivePanel.setBusyPointer();
+            dataView.archivePanel.setBusyPointer();
             for (IndexLineSpec pkt:pltm) {
                 if (pkt.assocMenuItem != null) {
                     pkt.assocMenuItem.setVisible(true);
@@ -599,12 +598,12 @@ public class IndexBox extends Box implements MouseInputListener {
             updatePrefsVisiblePackets();
             revalidate();
             repaint();
-            archivePanel.setNormalPointer();
+            dataView.archivePanel.setNormalPointer();
         }
     }
 
     void removeAllButThisLine() {
-        archivePanel.setBusyPointer();
+        dataView.archivePanel.setBusyPointer();
         for (ArrayList<IndexLineSpec> plvec:groups.values()) {
             for (IndexLineSpec pkt:plvec) {
                 if (selectedPacket != pkt) {
@@ -622,7 +621,7 @@ public class IndexBox extends Box implements MouseInputListener {
         updatePrefsVisiblePackets();
         revalidate();
         repaint();
-        archivePanel.setNormalPointer();
+        dataView.archivePanel.setNormalPointer();
     }
 
 

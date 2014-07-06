@@ -14,13 +14,14 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.TimeZone;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
+import org.yamcs.ui.UiColors;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
@@ -53,12 +54,15 @@ public class TMScale extends JSlider {
 
     public TMScale() {
         super(JSlider.HORIZONTAL, 0, 100, 100);
-        setFont(new Font("Serif", Font.ITALIC, 15));
+        //setBackground(new Color(228, 228, 228)); // TODO TEMP
         setUI(new TMScaleUI(this));
+        setBackground(Color.LIGHT_GRAY);
+        //setForeground(Color.WHITE);
         setPaintTicks(true);
         setPaintLabels(true);
         setPaintTrack(false);
         setFocusable(false);
+        setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
 //        setOpaque(false);
 
         /*final TMScale me = this;
@@ -69,7 +73,7 @@ public class TMScale extends JSlider {
             });*/
     }
     private void addLabel(long instant, String labelString) {
-        JComponent lab= new TwoLineLabel(labelString);
+        JComponent lab= new TwoLineLabel(this, labelString);
         labels.put(Integer.valueOf((int)((instant-zoom.startInstant) / div)), lab);
     }
     
@@ -231,6 +235,12 @@ public class TMScale extends JSlider {
         setLabelTable(labels);
         setMinimum(0);
         setMaximum((int)((zoom.stopInstant-zoom.startInstant) / div));
+        
+        updateFontSize();
+    }
+    
+    private Font getLabelFont() {
+        return getFont().deriveFont(getFont().getSize2D()-2);
     }
     
     /**
@@ -252,9 +262,10 @@ public class TMScale extends JSlider {
         int lineHeight;
         String[] textlines;
 
-        TwoLineLabel( String text ) {
-            super(text);           
-
+        TwoLineLabel(TMScale scale, String text ) {
+            super(text);
+            //setForeground(UiColors.BORDER_COLOR);
+            setFont(scale.getLabelFont());
             lineHeight = getPreferredSize().height;
             textlines = text.toUpperCase().split("\\n");
             if ( textlines.length > 1 ) {
@@ -290,12 +301,27 @@ public class TMScale extends JSlider {
         }
     }
     
+    /**
+     * Tricky to change JSlider font size
+     * See http://nadeausoftware.com/articles/2009/04/mac_java_tip_how_customize_aqua_sliders
+     */
+    public void updateFontSize() {
+        for(JComponent comp:labels.values()) {
+            JLabel lbl = (JLabel) comp;
+            Font smallerFont = getLabelFont();
+            lbl.setFont(smallerFont);
+            lbl.setSize(lbl.getPreferredSize());
+        }
+    }
+    
     static class TMScaleUI extends BasicSliderUI {
         // this UI class makes the thumb disappear, and it places the labels above the ticks
 
         TMScaleUI(JSlider slider) {
             super(slider);
         }
+        
+        
 
         @Override
         protected Dimension getThumbSize() {
@@ -326,7 +352,7 @@ public class TMScale extends JSlider {
         protected void calculateTrackBuffer() {
             trackBuffer = 0;
         }
-
+        
         @Override
         public void paintTicks(Graphics g){
             if ( slider.getOrientation() == JSlider.HORIZONTAL ) {
@@ -349,7 +375,7 @@ public class TMScale extends JSlider {
 
         @Override
         protected int getTickLength() {
-            return 8;
+            return 6;
         }
         
         @Override

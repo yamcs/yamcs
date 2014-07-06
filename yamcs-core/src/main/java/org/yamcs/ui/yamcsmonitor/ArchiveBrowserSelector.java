@@ -42,8 +42,8 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu menu = new JMenu("Archive Browser");
-        menu.setMnemonic(KeyEvent.VK_A);
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
         JMenuItem closeMenuItem = new JMenuItem("Close", KeyEvent.VK_W);
         closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
@@ -103,8 +103,8 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         applyButton.setToolTipText("Apply the selection to the replay");
         applyButton.addActionListener(this);
         applyButton.setActionCommand("apply");
-        archivePanel.buttonToolbar.addSeparator();
-        archivePanel.buttonToolbar.add(applyButton, 4);
+        archivePanel.archiveToolbar.addSeparator();
+        archivePanel.archiveToolbar.add(applyButton, 4);
         
         archivePanel.replayPanel.setChannelControlClient(channelControl);
         archivePanel.replayPanel.clearReplayPanel();

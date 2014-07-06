@@ -17,7 +17,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 

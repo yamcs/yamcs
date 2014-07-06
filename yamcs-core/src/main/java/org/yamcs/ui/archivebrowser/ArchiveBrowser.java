@@ -130,8 +130,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             newTagButton.setToolTipText("Define a new tag for the current selection");
             newTagButton.addActionListener(this);
             newTagButton.setActionCommand("new-tag-button");
-            archivePanel.buttonToolbar.addSeparator();
-            archivePanel.buttonToolbar.add(newTagButton);
+            archivePanel.archiveToolbar.addSeparator();
+            archivePanel.archiveToolbar.add(newTagButton);
         }
         
         setContentPane(archivePanel);
@@ -338,8 +338,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             cmdHistGui.setValues(archivePanel.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);
         } else if (cmd.equalsIgnoreCase("new-tag-button")) {
-            Selection sel = archivePanel.getSelection();
-            archivePanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
+            archivePanel.createNewTag(archivePanel.getSelection());
         } else if(cmd.equalsIgnoreCase("insert-tag")) {
             TagEvent te=(TagEvent)ae;
             indexReceiver.insertTag(archivePanel.getInstance(), te.newTag);
@@ -380,7 +379,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-			    archivePanel.tagBox.addTags(tagList);
+			    archivePanel.tagsAdded(tagList);
 			}
 		});
 	}
@@ -390,7 +389,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.addTag(ntag);
+                archivePanel.tagAdded(ntag);
             }
         });
     }
@@ -401,7 +400,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.removeTag(rtag);
+                archivePanel.tagRemoved(rtag);
             }
         });
     }
@@ -411,7 +410,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.updateTag(oldTag, newTag);
+                archivePanel.tagChanged(oldTag, newTag);
             }
         });
         
