@@ -50,7 +50,7 @@ public class DataView extends JPanel implements ActionListener {
     TagBox tagBox;
     TMScale scale;
     private boolean showTagBox = true;
-    private Stack<ZoomSpec> zoomStack = new Stack<ZoomSpec>();
+    Stack<ZoomSpec> zoomStack = new Stack<ZoomSpec>();
     private List<ActionListener> actionListeners=new ArrayList<ActionListener>();
     
     public JToolBar buttonToolbar;

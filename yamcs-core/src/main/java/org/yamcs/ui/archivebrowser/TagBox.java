@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
 
 import java.awt.Color;
@@ -237,6 +234,7 @@ public class TagBox extends Box implements MouseListener{
         currentLocator = position;
         repaint();
     }
+    
     void setToZoom(ZoomSpec zoom) {
         this.zoom=zoom;
         redrawTags();
@@ -302,6 +300,9 @@ public class TagBox extends Box implements MouseListener{
     public void addTags(List<ArchiveTag> tagList) {
        for(ArchiveTag tag:tagList) {
            insertTag(tag);
+       }
+       if (!dataView.zoomStack.empty()) {
+           redrawTags();
        }
     }
 

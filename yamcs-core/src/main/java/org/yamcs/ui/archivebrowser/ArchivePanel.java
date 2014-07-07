@@ -252,31 +252,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                 + "insets(" + in.top + "," + in.left + "," +in.bottom + "," +in.right + ")");
     }
 
-    void refreshDisplays()	{
-        setBusyPointer();
-        for(DataView dataView:dataViews) {
-            dataView.refreshDisplay();
-        }
-
-        if (progressMonitor != null) {
-            progressMonitor.setProgress(80);
-            progressMonitor.setNote("Repainting display");
-        }
-
-        // reset mouse pointer after everything is painted
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                setNormalPointer();
-                //debugLog("refreshTmDisplay() mark 99");
-                if (progressMonitor != null) {
-                    progressMonitor.close();
-                    progressMonitor = null;
-                }
-            }
-        });
-    }
-
     void playOrStopPressed() {
         // to be reimplemented by subclass ArchiveReplay in YamcsMonitor
     }
