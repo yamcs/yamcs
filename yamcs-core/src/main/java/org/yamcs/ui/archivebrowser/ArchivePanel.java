@@ -50,7 +50,10 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     ProgressMonitor progressMonitor;
     
     JFrame parentFrame;
-    JLabel totalRangeLabel, packetsLabel, instanceLabel;
+    JLabel totalRangeLabel;
+    JLabel statusInfoLabel;
+    JLabel packetsLabel;
+    JLabel instanceLabel;
     private List<DataView> dataViews = new ArrayList<DataView>();
     
     private List<ActionListener> actionListeners=new ArrayList<ActionListener>();
@@ -159,6 +162,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         bar.add(totalRangeLabel);
 
         bar.add(Box.createHorizontalGlue());
+        
+        statusInfoLabel = new JLabel();
+        bar.add(statusInfoLabel);
         return bar;
     }
     
@@ -169,20 +175,16 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     void updateStatusBar() {
         passiveUpdate = true;
 
-        /* TODO TODO use some label on DataView (?)
-        if (zoomStack.empty()) {
-            if (loadCount == 0) {
-                totalRangeLabel.setText("(no range displayed)");
-            } else {
-                totalRangeLabel.setText("Loading Data ... (" + loadCount + ")");
-                totalRangeLabel.repaint();
-            }
+        if (loadCount == 0) {
+            statusInfoLabel.setText("(no data loaded) ");
         } else {
-            final ZoomSpec zoom = zoomStack.peek();
-            totalRangeLabel.setText(TimeEncoding.toString(zoom.startInstant) + " - "
-                    + TimeEncoding.toString(zoom.stopInstant));
+            statusInfoLabel.setText("Loading Data ... " + loadCount + " ");
+            statusInfoLabel.repaint();
         }
-        */
+        
+        totalRangeLabel.setText(TimeEncoding.toString(dataStart) + " - "
+                + TimeEncoding.toString(dataStop));
+        totalRangeLabel.repaint();
         
         // TODO TODO use somehting on dataview
         StringBuilder sb = new StringBuilder();
@@ -250,9 +252,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                 + "insets(" + in.top + "," + in.left + "," +in.bottom + "," +in.right + ")");
     }
 
-    void refreshTmDisplay()	{
+    void refreshDisplays()	{
         setBusyPointer();
-        updateStatusBar();
         for(DataView dataView:dataViews) {
             dataView.refreshDisplay();
         }
@@ -452,6 +453,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                statusInfoLabel.setText("");
                 prefs.reloadButton.setEnabled(true);
             }
         });
