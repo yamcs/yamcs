@@ -21,7 +21,6 @@ import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import org.yamcs.ui.UiColors;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
@@ -60,7 +59,9 @@ public class TMScale extends JSlider {
         setPaintLabels(true);
         setPaintTrack(false);
         setFocusable(false);
-        setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
+        double wantedHeight = (new JLabel("x").getPreferredSize().getHeight()*2);
+        setPreferredSize(new Dimension(getPreferredSize().width, (int) wantedHeight));
+        setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
         /*final TMScale me = this;
             addComponentListener(new java.awt.event.ComponentAdapter() {
