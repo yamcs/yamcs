@@ -518,7 +518,7 @@ public class IndexBox extends Box implements MouseInputListener {
     }
 
     void setPointer(MouseEvent e) {
-        if (dataView.archivePanel.reloadButton.isEnabled()) {
+        if (dataView.archivePanel.prefs.reloadButton.isEnabled()) {
             dataView.archivePanel.setNormalPointer();
             if (currentSelection != null) {
                 if (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap) {

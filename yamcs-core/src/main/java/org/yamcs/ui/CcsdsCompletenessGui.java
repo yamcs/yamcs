@@ -84,12 +84,8 @@ public class CcsdsCompletenessGui extends JFrame implements ArchiveIndexListener
 
     private void buildGui() {
 
-        prefs = new PrefsToolbar("Prefs Toolbar");
-        prefs.setFloatable(false);
-        JButton refreshButton=new JButton("Refresh");
-        prefs.add(refreshButton);
-
-        refreshButton.addActionListener(new ActionListener() {
+        prefs = new PrefsToolbar();
+        prefs.reloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 refreshData();

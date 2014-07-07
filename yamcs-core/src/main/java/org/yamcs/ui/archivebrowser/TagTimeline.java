@@ -40,12 +40,17 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         this.row=row;
         this.leftDelta=leftDelta;
         JLabel l=new JLabel("X");
+        l.setFont(deriveFont(l.getFont()));
         setMinimumSize(new Dimension(0,2+l.getPreferredSize().height));
         setPreferredSize(getMinimumSize());
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 2+l.getPreferredSize().height));
         addMouseMotionListener(this);
         addMouseListener(this);
         setOpaque(false);
+    }
+    
+    public static Font deriveFont(Font f) {
+        return f.deriveFont(Font.PLAIN, f.getSize2D()-2);
     }
 
     @Override
@@ -167,7 +172,8 @@ public class TagTimeline extends JPanel implements MouseInputListener {
                 int width=(x2 - x1 <= 1) ? 1 : x2 - x1 - 1;
                 big.fillRect(x1-leftDelta, 0, width, getHeight());
                 big.setColor(fgcolor);
-                Font f=big.getFont();
+                Font f=deriveFont(big.getFont());
+                big.setFont(f);
                 Rectangle2D bounds=f.getStringBounds(at.getName(), big.getFontRenderContext());
                 if(width>bounds.getWidth()) {
                     LineMetrics lm=f.getLineMetrics(at.getName(), big.getFontRenderContext());

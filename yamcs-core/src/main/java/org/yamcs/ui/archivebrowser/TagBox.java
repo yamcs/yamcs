@@ -270,13 +270,13 @@ public class TagBox extends Box implements MouseListener{
         doMousePressed(e, -1, -1);
     }
     @Override
-    public void mouseReleased(MouseEvent e) {            }
+    public void mouseReleased(MouseEvent e) {}
     @Override
-    public void mouseExited(MouseEvent e) {             }
+    public void mouseExited(MouseEvent e) {}
     @Override
-    public void mouseEntered(MouseEvent e) {            }
+    public void mouseEntered(MouseEvent e) {}
     @Override
-    public void mouseClicked(MouseEvent e) {                }
+    public void mouseClicked(MouseEvent e) {}
     
     static public void main(String[] args) {
         TimeEncoding.setUp();

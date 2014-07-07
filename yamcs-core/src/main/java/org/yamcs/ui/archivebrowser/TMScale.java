@@ -54,16 +54,13 @@ public class TMScale extends JSlider {
 
     public TMScale() {
         super(JSlider.HORIZONTAL, 0, 100, 100);
-        //setBackground(new Color(228, 228, 228)); // TODO TEMP
         setUI(new TMScaleUI(this));
         setBackground(Color.LIGHT_GRAY);
-        //setForeground(Color.WHITE);
         setPaintTicks(true);
         setPaintLabels(true);
         setPaintTrack(false);
         setFocusable(false);
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
-//        setOpaque(false);
 
         /*final TMScale me = this;
             addComponentListener(new java.awt.event.ComponentAdapter() {

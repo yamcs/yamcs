@@ -121,7 +121,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
          * BUTTONS
          */
         archivePanel = new ArchivePanel(this, replayEnabled);
-        archivePanel.reloadButton.addActionListener(this);
+        archivePanel.prefs.reloadButton.addActionListener(this);
         archivePanel.addActionListener(this);
 
         if(ir==null || ir.supportsTags()) {

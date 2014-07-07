@@ -21,7 +21,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -51,7 +50,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     ProgressMonitor progressMonitor;
     
     JFrame parentFrame;
-    public JButton reloadButton;
     JLabel totalRangeLabel, packetsLabel, instanceLabel;
     private List<DataView> dataViews = new ArrayList<DataView>();
     
@@ -82,8 +80,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
          */
         Box fixedTop = Box.createVerticalBox();
         
-        prefs = new PrefsToolbar("Prefs Toolbar");
-        prefs.setFloatable(false);
+        prefs = new PrefsToolbar();
         prefs.setAlignmentX(Component.LEFT_ALIGNMENT);
         fixedTop.add(prefs);
         
@@ -91,10 +88,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         archiveToolbar.setFloatable(false);
         archiveToolbar.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        reloadButton = new JButton("Reload View");
-        reloadButton.setActionCommand("reload");
-        reloadButton.setEnabled(false);
-        archiveToolbar.add(reloadButton);
         fixedTop.add(archiveToolbar);
         
         packetsLabel = new JLabel();
@@ -138,11 +131,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         dataViews.add(cmdView);
         tabPane.addTab("Command History", cmdView);
         
-        System.out.println("Got bg "+tabPane.getBackgroundAt(0));
-        for(DataView dataView:dataViews) {
-            //dataView.setBackground(tabPane.getBackgroundAt(0));
-        }
-
         add(tabPane, BorderLayout.CENTER);
         
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
@@ -216,7 +204,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                reloadButton.setEnabled(false);
+                prefs.reloadButton.setEnabled(false);
                 //debugLog("requestData() mark 5 "+new Date());
                 for(DataView dataView:dataViews) {
                     dataView.zoomInButton.setEnabled(false);
@@ -365,11 +353,11 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public void connected() {
-        reloadButton.setEnabled(true);
+        prefs.reloadButton.setEnabled(true);
     }
 
     public void disconnected() {
-        reloadButton.setEnabled(false);
+        prefs.reloadButton.setEnabled(false);
     }
     
     public void setBusyPointer() {
@@ -443,7 +431,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             @Override
             public void run() {
                 JOptionPane.showMessageDialog(ArchivePanel.this, "Error when receiving archive records: "+errorMessage, "error receiving archive records", JOptionPane.ERROR_MESSAGE);
-                reloadButton.setEnabled(true);
+                prefs.reloadButton.setEnabled(true);
                 setNormalPointer();
             }
         });
@@ -464,7 +452,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                reloadButton.setEnabled(true);
+                prefs.reloadButton.setEnabled(true);
             }
         });
         loadCount = 0;
@@ -478,7 +466,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             prefs.savePreferences();
         }
         
-        reloadButton.setEnabled(true);
+        prefs.reloadButton.setEnabled(true);
         setNormalPointer();
     }
 
