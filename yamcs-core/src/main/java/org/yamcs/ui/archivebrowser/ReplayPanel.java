@@ -12,14 +12,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.yamcs.ui.ChannelControlClient;
-
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
+import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -70,6 +69,7 @@ public class ReplayPanel extends JPanel {
         replayStopIcon = ArchivePanel.getIcon("stop.gif");
         playStopButton = new JButton(replayStopIcon); // the Play/Stop button
         playStopButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed( ActionEvent ae ) {
                 playOrStopPressed();
             }

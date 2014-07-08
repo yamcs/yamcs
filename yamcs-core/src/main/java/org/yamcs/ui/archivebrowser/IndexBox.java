@@ -4,7 +4,6 @@
 package org.yamcs.ui.archivebrowser;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -23,6 +22,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -86,10 +86,23 @@ public class IndexBox extends Box implements MouseInputListener {
      */
     long mergeTime=-1;
     Preferences prefs;
-
+    
+    private Box topInfo;
+    private List<IndexLine> indexLines = new ArrayList<IndexLine>();
+    
+    private JLabel titleLabel;
     
     IndexBox(DataView dataView, String name) {
         super(BoxLayout.PAGE_AXIS);
+        
+        topInfo =  Box.createVerticalBox();
+        titleLabel = new JLabel(name);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 2, 0));
+        titleLabel.setForeground(Color.DARK_GRAY);
+        topInfo.add(titleLabel);
+        topInfo.setAlignmentX(0);
+        add(topInfo);
+        
         this.dataView=dataView;
         this.name=name;
         addMouseMotionListener(this);
@@ -137,8 +150,8 @@ public class IndexBox extends Box implements MouseInputListener {
     }
 
     void removeIndexLines() {
-        for(Component c:getComponents()) {
-            remove(c);
+        for(IndexLine indexLine : indexLines) {
+            remove(indexLine);
         }
     }
 
@@ -686,9 +699,8 @@ public class IndexBox extends Box implements MouseInputListener {
                 for (IndexLineSpec pkt: plvec) {
                     if (pkt.enabled) {
                         empty=false;
-                        // create panel that contains the TM blocks
-                        IndexLine panel = new IndexLine(this, pkt);
-                        add(panel);
+                        // create panel that contains the index blocks
+                        add(new IndexLine(this, pkt));
                         redrawTmPanel(pkt);
                     }
                 }
@@ -763,6 +775,7 @@ public class IndexBox extends Box implements MouseInputListener {
                     plvec.add(pkt);
                 }
             }
+            titleLabel.setText(name+" "+getPacketsStatus());
         }
     }
     

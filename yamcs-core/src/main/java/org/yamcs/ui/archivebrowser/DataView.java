@@ -3,7 +3,6 @@ package org.yamcs.ui.archivebrowser;
 import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -34,7 +33,6 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.ui.UiColors;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -83,13 +81,8 @@ public class DataView extends JPanel implements ActionListener {
         IndexBox indexBox = new IndexBox(this, name);
         indexBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         indexBox.setMergeTime(mergeTime);
-        indexBox.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR));
         
         indexBoxes.put(tableName, indexBox);
-        JLabel titleLabel = new JLabel(name);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 2, 0));
-        titleLabel.setForeground(Color.DARK_GRAY);
-        indexPanel.add(titleLabel);
         indexPanel.add(indexBox);
         if (replayEnabled && "tm".equals(tableName)) {
             archivePanel.replayPanel.setTmBox(indexBox);
@@ -277,12 +270,6 @@ public class DataView extends JPanel implements ActionListener {
                 updateSelection();
             }
         });
-
-        lab = new JLabel("Packets:");
-        gbc.fill = GridBagConstraints.NONE; gbc.gridwidth = 1; gbc.weightx = 0.0; gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.weighty = 1.0;
-        lay.setConstraints(lab, gbc);
-        archiveinfo.add(lab);
 
         return top;
     }

@@ -52,7 +52,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     JFrame parentFrame;
     JLabel totalRangeLabel;
     JLabel statusInfoLabel;
-    JLabel packetsLabel;
     JLabel instanceLabel;
     private List<DataView> dataViews = new ArrayList<DataView>();
     
@@ -92,9 +91,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         archiveToolbar.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         fixedTop.add(archiveToolbar);
-        
-        packetsLabel = new JLabel();
-        fixedTop.add(packetsLabel);
         
         //
         // transport control panel (only enabled when a HRDP data channel is selected)
@@ -186,14 +182,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                 + TimeEncoding.toString(dataStop));
         totalRangeLabel.repaint();
         
-        // TODO TODO use somehting on dataview
-        StringBuilder sb = new StringBuilder();
-        for(DataView dataView:dataViews) {
-            for(IndexBox ib: dataView.indexBoxes.values()) {
-                sb.append(ib.getPacketsStatus());
-            }
-        }
-        packetsLabel.setText(sb.toString());
    //     updateSelectionFields();
 
         passiveUpdate = false;
