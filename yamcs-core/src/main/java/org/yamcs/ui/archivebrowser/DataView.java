@@ -467,6 +467,14 @@ public class DataView extends JPanel implements ActionListener {
         setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
     }
     
+    public void setBusyPointer() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    public void setNormalPointer() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+    
     public void resetSelection() {
         emitActionEvent("selection_reset");
     }

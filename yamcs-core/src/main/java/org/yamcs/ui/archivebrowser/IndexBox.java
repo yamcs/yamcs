@@ -308,9 +308,9 @@ public class IndexBox extends Box implements MouseInputListener {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     selectedPacket.newColor();
-                    dataView.archivePanel.setBusyPointer();
+                    dataView.setBusyPointer();
                     redrawTmPanel(selectedPacket);
-                    dataView.archivePanel.setNormalPointer();
+                    dataView.setNormalPointer();
                 }
             });
             packetPopup.add(changeColorMenuItem);
@@ -532,7 +532,7 @@ public class IndexBox extends Box implements MouseInputListener {
 
     void setPointer(MouseEvent e) {
         if (dataView.archivePanel.prefs.reloadButton.isEnabled()) {
-            dataView.archivePanel.setNormalPointer();
+            dataView.setNormalPointer();
             if (currentSelection != null) {
                 if (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap) {
                     dataView.setMoveLeftPointer();
@@ -576,7 +576,7 @@ public class IndexBox extends Box implements MouseInputListener {
     }
 
     void removeSelectedPacket() {
-        dataView.archivePanel.setBusyPointer();
+        dataView.setBusyPointer();
         selectedPacket.assocMenuItem.setVisible(true);
         selectedPacket.enabled = false;
         remove(selectedPacket.assocTmPanel);
@@ -588,13 +588,13 @@ public class IndexBox extends Box implements MouseInputListener {
     
         revalidate();
         repaint();
-        dataView.archivePanel.setNormalPointer();
+        dataView.setNormalPointer();
     }
     
     void removeGroupLines() {
         ArrayList<IndexLineSpec> pltm = groups.get(selectedPacket.grpName);
         if (pltm != null) {
-            dataView.archivePanel.setBusyPointer();
+            dataView.setBusyPointer();
             for (IndexLineSpec pkt:pltm) {
                 if (pkt.assocMenuItem != null) {
                     pkt.assocMenuItem.setVisible(true);
@@ -611,12 +611,12 @@ public class IndexBox extends Box implements MouseInputListener {
             updatePrefsVisiblePackets();
             revalidate();
             repaint();
-            dataView.archivePanel.setNormalPointer();
+            dataView.setNormalPointer();
         }
     }
 
     void removeAllButThisLine() {
-        dataView.archivePanel.setBusyPointer();
+        dataView.setBusyPointer();
         for (ArrayList<IndexLineSpec> plvec:groups.values()) {
             for (IndexLineSpec pkt:plvec) {
                 if (selectedPacket != pkt) {
@@ -634,7 +634,7 @@ public class IndexBox extends Box implements MouseInputListener {
         updatePrefsVisiblePackets();
         revalidate();
         repaint();
-        dataView.archivePanel.setNormalPointer();
+        dataView.setNormalPointer();
     }
 
 
