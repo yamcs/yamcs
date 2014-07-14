@@ -722,12 +722,13 @@ public class IndexBox extends Box implements MouseInputListener {
 
     private void showEmptyLabel(String msg) {
         JLabel nodata=new JLabel(msg);
-        Font f=new Font("SansSerif", Font.ITALIC, 20);
-        nodata.setFont(f);
+        nodata.setFont(new Font("SansSerif", Font.ITALIC, 20));
         nodata.setForeground(Color.lightGray);
         Box b=Box.createHorizontalBox();
         b.add(nodata);
         b.add(Box.createHorizontalGlue());
+        centerPanel.setMaximumSize(centerPanel.getPreferredSize());
+        b.setMaximumSize(new Dimension(b.getMaximumSize().width, b.getPreferredSize().height));
         add(b);
         nodata.addMouseListener(this);
     
