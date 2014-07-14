@@ -3,24 +3,18 @@
  */
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.util.TreeSet;
-
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
-
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
-class Timeline extends JComponent implements MouseInputListener {
+import javax.swing.*;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.TreeSet;
+
+class Timeline extends JPanel implements MouseInputListener {
     private static final long serialVersionUID = 1L;
     private final IndexBox tmBox;
     TreeSet<IndexChunkSpec> tmspec;
@@ -36,9 +30,9 @@ class Timeline extends JComponent implements MouseInputListener {
         this.zoom=zoom;
         this.leftDelta=leftDelta;
         //	super(null, false);
-        setBackground(Color.WHITE);
         addMouseMotionListener(this);
         addMouseListener(this);
+        setOpaque(false);
 
         this.tmspec = tmspec;
     }
@@ -119,13 +113,16 @@ class Timeline extends JComponent implements MouseInputListener {
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         if(image==null) {
-            image=(BufferedImage)createImage(getWidth(),getHeight());
+            image=new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D big=image.createGraphics();
-            big.setBackground(getBackground());
-            big.clearRect(0, 0, getWidth(),getHeight());
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            big.fillRect(0,0,getWidth(),getHeight());
+
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+            //big.clearRect(0, 0, getWidth(),getHeight());
             big.setColor(color);
             for(IndexChunkSpec pkt:tmspec) {
                 int x1 = zoom.convertInstantToPixel(pkt.startInstant);

@@ -1,49 +1,27 @@
 package org.yamcs.ui.archivebrowser;
 
-import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
-
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.utils.TimeEncoding;
+import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
 /**
- * Shows a number of IndexBoxes together in a scrollable component, ready for
- * inclusion in a JTabbedPane or as standalone. A timeline and a tag bar is
- * shared among all included IndexBoxes
+ * Shows a number of IndexBoxes together in a scrollable component. A timeline
+ * and a tag bar is shared among all included IndexBoxes
  */
 public class DataView extends JPanel implements ActionListener {
 
     private static final long serialVersionUID = 1L;
-    private Box indexPanel = Box.createVerticalBox();
+    private Box indexPanel;
     Map<String,IndexBox> indexBoxes = new HashMap<String,IndexBox>();
     TagBox tagBox;
     TMScale scale;
@@ -68,7 +46,8 @@ public class DataView extends JPanel implements ActionListener {
         super(new BorderLayout());
         this.archivePanel = archivePanel;
         this.replayEnabled = replayEnabled;
-        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder());
+        setBackground(Color.WHITE);
         add(createFixedContent(), BorderLayout.NORTH);
         add(createScrollableContent(), BorderLayout.CENTER);
     }
@@ -87,6 +66,10 @@ public class DataView extends JPanel implements ActionListener {
         if (replayEnabled && "tm".equals(tableName)) {
             archivePanel.replayPanel.setTmBox(indexBox);
         }
+    }
+    
+    public void addVerticalGlue() {
+        indexPanel.add(Box.createVerticalGlue());
     }
     
     private Box createFixedContent() {
@@ -127,6 +110,8 @@ public class DataView extends JPanel implements ActionListener {
     }
     
     private JScrollPane createScrollableContent() {
+        indexPanel = Box.createVerticalBox();
+        indexPanel.setBackground(Color.BLUE);
         scrollableContent = new JScrollPane(indexPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollableContent.setBorder(BorderFactory.createEmptyBorder());
         scrollableContent.getViewport().setOpaque(false);
@@ -136,7 +121,6 @@ public class DataView extends JPanel implements ActionListener {
         
         Box scalebox = Box.createVerticalBox();
         scalebox.setOpaque(false);
-        //scalebox.setBackground(Color.ORANGE);
         
         tagBox=new TagBox(this);
         tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);

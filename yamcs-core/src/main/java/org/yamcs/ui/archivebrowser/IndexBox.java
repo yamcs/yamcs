@@ -1,44 +1,24 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TimerTask;
-import java.util.TreeSet;
-import java.util.prefs.Preferences;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
-import javax.swing.event.MouseInputListener;
 
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.UiColors;
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
 import org.yamcs.ui.archivebrowser.DataView.SelectionImpl;
 import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Represents a collection of IndexLine shown vertically 
@@ -87,21 +67,37 @@ public class IndexBox extends Box implements MouseInputListener {
     long mergeTime=-1;
     Preferences prefs;
     
-    private Box topInfo;
+    private JPanel topPanel;
+    private JPanel centerPanel;
     private List<IndexLine> indexLines = new ArrayList<IndexLine>();
     
     private JLabel titleLabel;
     
     IndexBox(DataView dataView, String name) {
-        super(BoxLayout.PAGE_AXIS);
+        super(BoxLayout.Y_AXIS);
+        topPanel = new JPanel(new GridBagLayout()); // In panel, so that border can fill width
+        Border outsideBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, UiColors.BORDER_COLOR);
+        Border insideBorder = BorderFactory.createEmptyBorder(10, 0, 2, 0);
+        topPanel.setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
+        topPanel.setBackground(Color.WHITE);
         
-        topInfo =  Box.createVerticalBox();
+        GridBagConstraints cons = new GridBagConstraints();
+        cons.fill = GridBagConstraints.HORIZONTAL;
+        cons.weightx = 1;
+        cons.gridx = 0;
         titleLabel = new JLabel(name);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 2, 0));
-        titleLabel.setForeground(Color.DARK_GRAY);
-        topInfo.add(titleLabel);
-        topInfo.setAlignmentX(0);
-        add(topInfo);
+        titleLabel.setBackground(Color.red);
+        titleLabel.setMaximumSize(new Dimension(titleLabel.getMaximumSize().width, titleLabel.getPreferredSize().height));
+        titleLabel.setForeground(new Color(51, 51, 51));
+        topPanel.setMaximumSize(new Dimension(topPanel.getMaximumSize().width, titleLabel.getPreferredSize().height+13));
+        topPanel.add(titleLabel, cons);
+        
+        add(topPanel);
+        
+        centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        
+        add(centerPanel);
         
         this.dataView=dataView;
         this.name=name;
@@ -150,14 +146,24 @@ public class IndexBox extends Box implements MouseInputListener {
     }
 
     void removeIndexLines() {
-        for(IndexLine indexLine : indexLines) {
-            remove(indexLine);
+        for(Iterator<IndexLine> it=indexLines.listIterator(); it.hasNext();) {
+            IndexLine line = it.next();
+            centerPanel.remove(line);
+            it.remove();
         }
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        g2d.setPaint(new GradientPaint(0, topPanel.getHeight(), new Color(251,251,251), 0, panelHeight, Color.WHITE));
+        g2d.fillRect(0, topPanel.getHeight(), panelWidth, panelHeight-topPanel.getHeight());
+        
         // draw the selection rectangle over all the TM panels 
         if ( (getComponentCount() > 0) && zoom!=null ) {
 
@@ -700,7 +706,9 @@ public class IndexBox extends Box implements MouseInputListener {
                     if (pkt.enabled) {
                         empty=false;
                         // create panel that contains the index blocks
-                        add(new IndexLine(this, pkt));
+                        IndexLine line = new IndexLine(this, pkt);
+                        line.setAlignmentX(Component.LEFT_ALIGNMENT);
+                        centerPanel.add(line);
                         redrawTmPanel(pkt);
                     }
                 }
@@ -816,7 +824,7 @@ public class IndexBox extends Box implements MouseInputListener {
     
     void redrawTmPanel(IndexLineSpec pkt) {
         JComponent pktpanel = pkt.assocTmPanel;
-        pktpanel.setBackground(getBackground());
+        pktpanel.setOpaque(false);
         final int stopx = zoom.getPixels();
         final Insets in = pktpanel.getInsets();
         final int panelw = zoom.getPixels();
@@ -856,8 +864,9 @@ public class IndexBox extends Box implements MouseInputListener {
             tmt.setBounds(in.left,y,stopx, tmRowHeight);
             pktpanel.add(tmt);
         }
+        
+        centerPanel.setMaximumSize(centerPanel.getPreferredSize());
      
-      //  pktpanel.setPreferredSize(new Dimension(zoom.getPixels(), pktpanel.getPreferredSize().height));
         pktpanel.revalidate();
         pktpanel.repaint();
 

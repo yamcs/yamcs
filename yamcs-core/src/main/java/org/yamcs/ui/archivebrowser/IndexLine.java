@@ -1,6 +1,5 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -32,9 +31,6 @@ class IndexLine extends JPanel implements MouseInputListener {
         setBorder(BorderFactory.createEmptyBorder());
         addMouseMotionListener(this);
         addMouseListener(this);
-        
-        setBackground(Color.WHITE);
-        //setOpaque(false);
     }
 
     @Override

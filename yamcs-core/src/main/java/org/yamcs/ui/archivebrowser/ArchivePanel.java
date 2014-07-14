@@ -1,12 +1,15 @@
 package org.yamcs.ui.archivebrowser;
 
-import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
+import org.yamcs.TimeInterval;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.ui.UiColors;
+import org.yamcs.utils.TimeEncoding;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -18,24 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingUtilities;
-
-import org.yamcs.TimeInterval;
-import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.utils.TimeEncoding;
+import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
 /**
  * Main panel of the ArchiveBrowser
@@ -60,6 +46,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     public JToolBar archiveToolbar;
     protected PrefsToolbar prefs;
     
+    JPanel dataViewPanel;
     public ReplayPanel replayPanel;
     
     int loadCount,recCount;
@@ -81,7 +68,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
          * Upper fixed content
          */
         Box fixedTop = Box.createVerticalBox();
-        
+        fixedTop.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, UiColors.BORDER_COLOR));
         prefs = new PrefsToolbar();
         prefs.setAlignmentX(Component.LEFT_ALIGNMENT);
         fixedTop.add(prefs);
@@ -101,37 +88,44 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             replayPanel.setToolTipText("Right-click between the start/stop locators to reposition the replay.");
             fixedTop.add(replayPanel);
         }
-        
-        add(fixedTop, BorderLayout.NORTH);
-        
-        /*
-         * Status bar
-         */
-        add(createStatusBar(), BorderLayout.SOUTH);
-        
-        /*
-         * VIEWS (TODO make configurable)
-         */
-        JTabbedPane tabPane = new JTabbedPane();
-        
+
+        DataView allView = new DataView(this, replayEnabled);
+        allView.addIndex("completeness", "completeness index");
+        allView.addIndex("tm", "tm histogram", 1000);
+        allView.addIndex("pp", "pp histogram", 1000);
+        allView.addIndex("cmdhist", "cmdhist histogram", 1000);
+        dataViews.add(allView);
+
         DataView tmView = new DataView(this, replayEnabled);
         tmView.addIndex("completeness", "completeness index");
         tmView.addIndex("tm", "tm histogram", 1000);
+        tmView.addVerticalGlue();
         dataViews.add(tmView);
-        tabPane.addTab("Telemetry", tmView);
-        
+
         DataView ppView = new DataView(this, replayEnabled);
         ppView.addIndex("pp", "pp histogram", 1000);
+        ppView.addVerticalGlue();
         dataViews.add(ppView);
-        tabPane.addTab("Processed Parameters", ppView);
-        
+
         DataView cmdView = new DataView(this, replayEnabled);
         cmdView.addIndex("cmdhist", "cmdhist histogram", 1000);
+        cmdView.addVerticalGlue();
         dataViews.add(cmdView);
-        tabPane.addTab("Command History", cmdView);
         
-        add(tabPane, BorderLayout.CENTER);
-        
+        add(fixedTop, BorderLayout.NORTH);
+        add(createStatusBar(), BorderLayout.SOUTH);
+
+        SideNavigator sideNavigator = new SideNavigator(this);
+        add(sideNavigator, BorderLayout.WEST);
+
+        dataViewPanel = new JPanel(new CardLayout());
+        add(dataViewPanel, BorderLayout.CENTER);
+
+        sideNavigator.addItem("Archive", 0, allView, true);
+        sideNavigator.addItem("Telemetry", 1, tmView);
+        sideNavigator.addItem("Processed Parameters", 1, ppView);
+        sideNavigator.addItem("Command History", 1, cmdView);
+                
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
                 heapMemoryPoolBean = pool;
@@ -149,19 +143,32 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     private Box createStatusBar() {
         Box bar = Box.createHorizontalBox();
         
-        bar.add(new JLabel(" Instance: ")); // Front space serves as left padding
-        instanceLabel = new JLabel();
+        Border outsideBorder = BorderFactory.createMatteBorder(2, 0, 0, 0, UiColors.BORDER_COLOR);
+        Border insideBorder = BorderFactory.createEmptyBorder(5, 10, 5, 10);
+        bar.setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
+        
+        bar.add(Box.createHorizontalGlue());
+        
+        bar.add(createLabelForStatusBar(" Instance: ")); // Front space serves as left padding
+        instanceLabel = createLabelForStatusBar(null);
         bar.add(instanceLabel);
         
-        bar.add(new JLabel(", Loaded: "));
-        totalRangeLabel = new JLabel();
+        bar.add(createLabelForStatusBar(", Loaded: "));
+        totalRangeLabel = createLabelForStatusBar(null);
         bar.add(totalRangeLabel);
 
         bar.add(Box.createHorizontalGlue());
         
-        statusInfoLabel = new JLabel();
+        statusInfoLabel = createLabelForStatusBar(null);
         bar.add(statusInfoLabel);
         return bar;
+    }
+    
+    private JLabel createLabelForStatusBar(String text) {
+        JLabel lbl = new JLabel();
+        if(text != null) lbl.setText(text);
+        lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN, lbl.getFont().getSize2D()-2));
+        return lbl;
     }
     
     public void addActionListener(ActionListener al) {
