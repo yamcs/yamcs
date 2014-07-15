@@ -1,17 +1,5 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
@@ -20,6 +8,11 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Panel containing the replay controls (start/stop, start/stop/current time)
@@ -34,7 +27,7 @@ public class ReplayPanel extends JPanel {
     int replayButtonFunction;
     static final int STOP = 0;
     static final int PLAY = 1;
-    IndexBox tmBox;
+    DataViewer dataViewer;
     
     ChannelControlClient channelControl;
     long currentInstant;
@@ -140,8 +133,8 @@ public class ReplayPanel extends JPanel {
         add(replaySpeedLabel);
         
     }
-    public void setTmBox(IndexBox tmBox) {
-        this.tmBox=tmBox;
+    public void setDataViewer(DataViewer dataViewer) {
+        this.dataViewer=dataViewer;
     }
     
     public void setChannelControlClient(ChannelControlClient cc) {
@@ -171,9 +164,9 @@ public class ReplayPanel extends JPanel {
         replayCurrentLabel.setText("");
         //replayStartLabel.setPreferredSize(new Dimension(150, replayStartLabel.getPreferredSize().height));
 
-        tmBox.setStartLocator(tmBox.DO_NOT_DRAW);
-        tmBox.setStopLocator(tmBox.DO_NOT_DRAW);
-        tmBox.setCurrentLocator(tmBox.DO_NOT_DRAW);
+        dataViewer.dataView.setStartLocator(dataViewer.dataView.DO_NOT_DRAW);
+        dataViewer.dataView.setStopLocator(dataViewer.dataView.DO_NOT_DRAW);
+        dataViewer.dataView.setCurrentLocator(dataViewer.dataView.DO_NOT_DRAW);
     }
     /**
      * called by the yamcs monitor when a channelinfo update is received from the server
@@ -198,7 +191,7 @@ public class ReplayPanel extends JPanel {
             if ( isVisible() ) {
                 playStopButton.setEnabled(false);
                 replayCurrentLabel.setText("");
-                tmBox.setCurrentLocator(tmBox.DO_NOT_DRAW);
+                dataViewer.dataView.setCurrentLocator(dataViewer.dataView.DO_NOT_DRAW);
                 for ( Component c:getComponents() ) {
                     c.setEnabled(true);
                 }
@@ -235,8 +228,8 @@ public class ReplayPanel extends JPanel {
         channelNameLabel.setText(currentChannelInfo.getName());
 
         // draw start/stop locators
-        tmBox.setStartLocator(rr.getStart());
-        tmBox.setStopLocator(rr.getStop());
+        dataViewer.dataView.setStartLocator(rr.getStart());
+        dataViewer.dataView.setStopLocator(rr.getStop());
     }
     
     private String getSpeedLabel(ReplaySpeed speed) {
@@ -267,7 +260,7 @@ public class ReplayPanel extends JPanel {
             currentInstant=pos;
 
             replayCurrentLabel.setText(TimeEncoding.toString(currentInstant));
-            tmBox.setCurrentLocator(currentInstant);
+            dataViewer.dataView.setCurrentLocator(currentInstant);
         }
     }
 

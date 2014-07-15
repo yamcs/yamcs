@@ -12,7 +12,7 @@ public class SideNavigator extends JPanel {
     private static final long serialVersionUID = 1L;
     private ArchivePanel archivePanel;
     private JPanel itemsPanel;
-    private Set<DataView> dataViews = new HashSet<DataView>();
+    private Set<DataViewer> dataViewers = new HashSet<DataViewer>();
 
     public SideNavigator(ArchivePanel archivePanel) {
         super(new BorderLayout());
@@ -31,19 +31,19 @@ public class SideNavigator extends JPanel {
         add(new JPanel(), BorderLayout.CENTER);
     }
 
-    public void addItem(String title, int indent, DataView dataView) {
-        addItem(title, indent, dataView, false);
+    public void addItem(String title, int indent, DataViewer dataViewer) {
+        addItem(title, indent, dataViewer, false);
     }
 
-    public void addItem(String title, int indent, DataView dataView, boolean selected) {
-        NavigatorItem item = new NavigatorItem(this, title, dataView, indent);
+    public void addItem(String title, int indent, DataViewer dataViewer, boolean selected) {
+        NavigatorItem item = new NavigatorItem(this, title, dataViewer, indent);
         GridBagConstraints cons = new GridBagConstraints();
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.weightx = 1;
         cons.gridx = 0;
         itemsPanel.add(item, cons);
-        dataViews.add(dataView);
-        archivePanel.dataViewPanel.add(dataView, title);
+        dataViewers.add(dataViewer);
+        archivePanel.dataViewerPanel.add(dataViewer, title);
         if(selected) {
             item.toggleState(true);
         }
@@ -59,7 +59,6 @@ public class SideNavigator extends JPanel {
     }
 
     public void openItem(NavigatorItem item) {
-        CardLayout cl = (CardLayout) archivePanel.dataViewPanel.getLayout();
-        cl.show(archivePanel.dataViewPanel, item.getText());
+        archivePanel.openItem(item.getText());
     }
 }

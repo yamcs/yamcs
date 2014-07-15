@@ -10,7 +10,9 @@ import org.yamcs.utils.TimeEncoding;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.management.ManagementFactory;
@@ -39,14 +41,13 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     JLabel totalRangeLabel;
     JLabel statusInfoLabel;
     JLabel instanceLabel;
-    private List<DataView> dataViews = new ArrayList<DataView>();
-    
-    private List<ActionListener> actionListeners=new ArrayList<ActionListener>();
-    
+    private List<DataViewer> dataViewers = new ArrayList<DataViewer>();
+
     public JToolBar archiveToolbar;
     protected PrefsToolbar prefs;
     
-    JPanel dataViewPanel;
+    JPanel dataViewerPanel;
+    private DataViewer activeDataViewer; // currently shown in cardlayout
     public ReplayPanel replayPanel;
     
     int loadCount,recCount;
@@ -89,28 +90,28 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             fixedTop.add(replayPanel);
         }
 
-        DataView allView = new DataView(this, replayEnabled);
-        allView.addIndex("completeness", "completeness index");
-        allView.addIndex("tm", "tm histogram", 1000);
-        allView.addIndex("pp", "pp histogram", 1000);
-        allView.addIndex("cmdhist", "cmdhist histogram", 1000);
-        dataViews.add(allView);
+        DataViewer allViewer = new DataViewer(this, replayEnabled);
+        allViewer.addIndex("completeness", "completeness index");
+        allViewer.addIndex("tm", "tm histogram", 1000);
+        allViewer.addIndex("pp", "pp histogram", 1000);
+        allViewer.addIndex("cmdhist", "cmdhist histogram", 1000);
+        dataViewers.add(allViewer);
 
-        DataView tmView = new DataView(this, replayEnabled);
-        tmView.addIndex("completeness", "completeness index");
-        tmView.addIndex("tm", "tm histogram", 1000);
-        tmView.addVerticalGlue();
-        dataViews.add(tmView);
+        DataViewer tmViewer = new DataViewer(this, replayEnabled);
+        tmViewer.addIndex("completeness", "completeness index");
+        tmViewer.addIndex("tm", "tm histogram", 1000);
+        tmViewer.addVerticalGlue();
+        dataViewers.add(tmViewer);
 
-        DataView ppView = new DataView(this, replayEnabled);
-        ppView.addIndex("pp", "pp histogram", 1000);
-        ppView.addVerticalGlue();
-        dataViews.add(ppView);
+        DataViewer ppViewer = new DataViewer(this, replayEnabled);
+        ppViewer.addIndex("pp", "pp histogram", 1000);
+        ppViewer.addVerticalGlue();
+        dataViewers.add(ppViewer);
 
-        DataView cmdView = new DataView(this, replayEnabled);
-        cmdView.addIndex("cmdhist", "cmdhist histogram", 1000);
-        cmdView.addVerticalGlue();
-        dataViews.add(cmdView);
+        DataViewer cmdViewer = new DataViewer(this, replayEnabled);
+        cmdViewer.addIndex("cmdhist", "cmdhist histogram", 1000);
+        cmdViewer.addVerticalGlue();
+        dataViewers.add(cmdViewer);
         
         add(fixedTop, BorderLayout.NORTH);
         add(createStatusBar(), BorderLayout.SOUTH);
@@ -118,13 +119,13 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         SideNavigator sideNavigator = new SideNavigator(this);
         add(sideNavigator, BorderLayout.WEST);
 
-        dataViewPanel = new JPanel(new CardLayout());
-        add(dataViewPanel, BorderLayout.CENTER);
+        dataViewerPanel = new JPanel(new CardLayout());
+        add(dataViewerPanel, BorderLayout.CENTER);
 
-        sideNavigator.addItem("Archive", 0, allView, true);
-        sideNavigator.addItem("Telemetry", 1, tmView);
-        sideNavigator.addItem("Processed Parameters", 1, ppView);
-        sideNavigator.addItem("Command History", 1, cmdView);
+        sideNavigator.addItem("Archive", 0, allViewer, true);
+        sideNavigator.addItem("Telemetry", 1, tmViewer);
+        sideNavigator.addItem("Processed Parameters", 1, ppViewer);
+        sideNavigator.addItem("Command History", 1, cmdViewer);
                 
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
@@ -132,11 +133,44 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                 heapMemoryPoolBean.setCollectionUsageThreshold((int)Math.floor(heapMemoryPoolBean.getUsage().getMax()*0.95));
             }
         }
+
+        // Catch mouse events globally, to deal more easily with events on child components
+        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
+            @Override
+            public void eventDispatched(AWTEvent event) { // EDT
+                DataView.IndexPanel indexPanel = (DataView.IndexPanel) getActiveDataViewer().dataView.indexPanel;
+                if (SwingUtilities.isDescendingFrom((Component)event.getSource(), indexPanel)) {
+                    MouseEvent me = SwingUtilities.convertMouseEvent((Component)event.getSource(), (MouseEvent) event, indexPanel);
+                    if(event.getID()==MouseEvent.MOUSE_DRAGGED) {
+                        indexPanel.doMouseDragged(me);
+                    } else if(event.getID()==MouseEvent.MOUSE_PRESSED) {
+                        indexPanel.doMousePressed(me);
+                    } else if(event.getID()==MouseEvent.MOUSE_RELEASED) {
+                        indexPanel.doMouseReleased(me);
+                    }
+                }
+            }
+        }, AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK);
+    }
+
+    private DataViewer getActiveDataViewer() {
+        return activeDataViewer;
+    }
+
+    public void openItem(String name) {
+        CardLayout cl = (CardLayout) dataViewerPanel.getLayout();
+        cl.show(dataViewerPanel, name);
+        for(Component component : dataViewerPanel.getComponents()) { // Why no API on cardlayout for this...
+            if (component.isVisible()) {
+                activeDataViewer = (DataViewer) component;
+                break;
+            }
+        }
     }
     
     public void updateScaleFonts() {
-        for (DataView dataView:dataViews) {
-            dataView.scale.updateFontSize();
+        for (DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.scale.updateFontSize();
         }
     }
     
@@ -172,7 +206,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
     
     public void addActionListener(ActionListener al) {
-        actionListeners.add(al);
+        for(DataViewer dataViewer : dataViewers) {
+            dataViewer.dataView.addActionListener(al);
+        }
     }
     
     void updateStatusBar() {
@@ -203,23 +239,23 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             public void run() {
                 prefs.reloadButton.setEnabled(false);
                 //debugLog("requestData() mark 5 "+new Date());
-                for(DataView dataView:dataViews) {
-                    dataView.zoomInButton.setEnabled(false);
-                    dataView.zoomOutButton.setEnabled(false);
-                    dataView.showAllButton.setEnabled(false);
-                    if (dataView.applyButton != null) {
-                        dataView.applyButton.setEnabled(false);
+                for(DataViewer dataViewer: dataViewers) {
+                    dataViewer.zoomInButton.setEnabled(false);
+                    dataViewer.zoomOutButton.setEnabled(false);
+                    dataViewer.showAllButton.setEnabled(false);
+                    if (dataViewer.applyButton != null) {
+                        dataViewer.applyButton.setEnabled(false);
                     }
                 }
             }
         });
         final String inst = prefs.getInstance();
         instanceLabel.setText(inst);
-        for(DataView dataView:dataViews) {
-            for(IndexBox ib:dataView.indexBoxes.values()) {
+        for(DataViewer dataViewer: dataViewers) {
+            for(IndexBox ib:dataViewer.dataView.indexBoxes.values()) {
                 ib.startReloading();
             }
-            dataView.tagBox.tags.clear();
+            dataViewer.dataView.tagBox.tags.clear();
         }
         
         if(lowOnMemoryReported) {
@@ -317,8 +353,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public void enableCompletenessIndex(boolean enabled) {
-        for(DataView dataView:dataViews) {
-            dataView.enableCompletenessIndex(enabled);
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.enableCompletenessIndex(enabled);
         }
         validate();
     }
@@ -361,16 +397,16 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         
         long start, stop;
         if("completeness".equals(ir.getType())) {
-            for(DataView dataView:dataViews) {
-                if(dataView.indexBoxes.containsKey("completeness")) {
-                    dataView.indexBoxes.get("completeness").receiveArchiveRecords(ir.getRecordsList());
+            for(DataViewer dataViewer: dataViewers) {
+                if(dataViewer.dataView.indexBoxes.containsKey("completeness")) {
+                    dataViewer.dataView.indexBoxes.get("completeness").receiveArchiveRecords(ir.getRecordsList());
                 }
             }
         } else if("histogram".equals(ir.getType())) {
             String tableName=ir.getTableName();
-            for(DataView dataView:dataViews) {
-                if(dataView.indexBoxes.containsKey(tableName)) {
-                    dataView.indexBoxes.get(tableName).receiveArchiveRecords(ir.getRecordsList());
+            for(DataViewer dataViewer: dataViewers) {
+                if(dataViewer.dataView.indexBoxes.containsKey(tableName)) {
+                    dataViewer.dataView.indexBoxes.get(tableName).receiveArchiveRecords(ir.getRecordsList());
                 }
             }
             /* TODO TODO else {
@@ -413,8 +449,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public synchronized void dataLoadFinished() {
-        for(DataView dataView:dataViews) {
-            for(IndexBox ib:dataView.indexBoxes.values()) {
+        for(DataViewer dataViewer: dataViewers) {
+            for(IndexBox ib:dataViewer.dataView.indexBoxes.values()) {
                 ib.dataLoadFinished();
             }
         }
@@ -432,8 +468,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         if ((dataStart == INVALID_INSTANT) || (dataStop == INVALID_INSTANT)) {
             setNormalPointer();
         } else {
-            for(DataView dataView:dataViews) {
-                dataView.dataLoadFinished();
+            for(DataViewer dataViewer: dataViewers) {
+                dataViewer.dataView.dataLoadFinished();
             }
             prefs.savePreferences();
         }
@@ -443,48 +479,48 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public void tagAdded(ArchiveTag ntag) {
-        for(DataView dataView:dataViews) {
-            dataView.tagBox.addTag(ntag);
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.tagBox.addTag(ntag);
         }
     }
     
     public void tagRemoved(ArchiveTag ntag) {
-        for(DataView dataView:dataViews) {
-            dataView.tagBox.removeTag(ntag);
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.tagBox.removeTag(ntag);
         }
     }
 
     public void tagChanged(ArchiveTag oldTag, ArchiveTag newTag) {
-        for(DataView dataView:dataViews) {
-            dataView.tagBox.updateTag(oldTag, newTag);
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.tagBox.updateTag(oldTag, newTag);
         }
     }
 
     public void tagsAdded(List<ArchiveTag> tagList) {
-        for(DataView dataView:dataViews) {
-            dataView.tagBox.addTags(tagList);
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.tagBox.addTags(tagList);
         }
     }
 
     public void createNewTag(Selection sel) {
-        for(DataView dataView:dataViews) {
-            dataView.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
+        for(DataViewer dataViewer: dataViewers) {
+            dataViewer.dataView.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
         }
     }
 
     public Selection getSelection() {
-        for(DataView dataView:dataViews) {
-            if(dataView.getSelection()!=null) {
-                return dataView.getSelection();
+        for(DataViewer dataViewer: dataViewers) {
+            if(dataViewer.dataView.getSelection()!=null) {
+                return dataViewer.dataView.getSelection();
             }
         }
         return null;
     }
 
     public List<String> getSelectedPackets(String tableName) {
-        for(DataView dataView:dataViews) {
-            if(dataView.indexBoxes.containsKey(tableName)) {
-                return dataView.getSelectedPackets("tm");
+        for(DataViewer dataViewer: dataViewers) {
+            if(dataViewer.dataView.indexBoxes.containsKey(tableName)) {
+                return dataViewer.dataView.getSelectedPackets("tm");
             }
         }
         return Collections.emptyList();

@@ -1,15 +1,11 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
-
 import org.yamcs.ui.archivebrowser.IndexBox.IndexLineSpec;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
+import java.awt.event.MouseEvent;
 
 
 /**
@@ -29,8 +25,8 @@ class IndexLine extends JPanel implements MouseInputListener {
         pkt.assocTmPanel = this;
         setAlignmentX(Component.LEFT_ALIGNMENT);
         setBorder(BorderFactory.createEmptyBorder());
-        addMouseMotionListener(this);
-        addMouseListener(this);
+        //addMouseMotionListener(this);
+        //addMouseListener(this);
     }
 
     @Override
@@ -51,7 +47,7 @@ class IndexLine extends JPanel implements MouseInputListener {
             tmBox.selectedPacket = pkt;
             tmBox.showPopup(translateEvent(e));    
         }        
-        tmBox.doMousePressed(translateEvent(e));
+        ///tmBox.dataView.doMousePressed(translateEvent(e));
         /*
             Action postTip = getActionMap().get("postTip");
 debugLog("tmpanel postTip src "+e.getSource()+" this "+this+" actionmap "+getActionMap().size()+" inputmap "+getInputMap(0).size());
@@ -91,13 +87,13 @@ debugLog("tmpanel postTip");
     @Override
     public void mouseMoved(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e);
-        setToolTipText(tmBox.getMouseText(transEvent));
-        tmBox.setPointer(transEvent);
+        setToolTipText(tmBox.dataView.getMouseText(transEvent));
+        tmBox.dataView.setPointer(transEvent);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        tmBox.doMouseDragged(translateEvent(e));
+        ///tmBox.dataView.doMouseDragged(translateEvent(e));
 
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),

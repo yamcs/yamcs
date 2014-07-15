@@ -1,23 +1,5 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
@@ -35,6 +17,16 @@ import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.TagBox.TagEvent;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Standalone Archive Browser (useful for browsing the index, retrieving telemetry packets and parameters).
@@ -262,6 +254,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
             if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
         } else if (cmd.toLowerCase().endsWith("selection_finished")) {
+            System.out.println("Got action.. sel ended");
             if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
             packetRetrieval.setEnabled(true);
             parameterRetrieval.setEnabled(true);

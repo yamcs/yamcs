@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
 
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
@@ -25,13 +22,14 @@ class Timeline extends JPanel implements MouseInputListener {
     
     Timeline(IndexBox tmBox, Color color, TreeSet<IndexChunkSpec> tmspec, ZoomSpec zoom, int leftDelta) {
         super();
+        setBorder(BorderFactory.createEmptyBorder());
         this.tmBox = tmBox;
         this.color=color;
         this.zoom=zoom;
         this.leftDelta=leftDelta;
         //	super(null, false);
-        addMouseMotionListener(this);
-        addMouseListener(this);
+        //addMouseMotionListener(this);
+        //addMouseListener(this);
         setOpaque(false);
 
         this.tmspec = tmspec;
@@ -69,13 +67,13 @@ class Timeline extends JPanel implements MouseInputListener {
     @Override
     public void mouseMoved(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e, tmBox);
-        setToolTipText(tmBox.getMouseText(transEvent));
-        tmBox.setPointer(transEvent);
+        setToolTipText(tmBox.dataView.getMouseText(transEvent));
+        tmBox.dataView.setPointer(transEvent);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        tmBox.doMouseDragged(translateEvent(e, tmBox));
+        ///tmBox.dataView.doMouseDragged(translateEvent(e, tmBox));
 
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
@@ -84,7 +82,7 @@ class Timeline extends JPanel implements MouseInputListener {
     
     @Override
     public String getToolTipText(MouseEvent e) {
-        String tt=tmBox.getMouseText(translateEvent(e, tmBox));
+        String tt=tmBox.dataView.getMouseText(translateEvent(e, tmBox));
 
         IndexChunkSpec c1=zoom.convertPixelToChunk(translateEvent(e, tmBox).getX());
         IndexChunkSpec chunk=tmspec.floor(c1);
