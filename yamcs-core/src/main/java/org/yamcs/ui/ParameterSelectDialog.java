@@ -1,8 +1,23 @@
 package org.yamcs.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientMessage;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.api.*;
+import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.XtceDb;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -11,37 +26,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.ToolTipManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Displays packets with their parameters in a hierarchical view, allowing the
@@ -66,10 +50,6 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	private JTextField searchField;
 	private List<ParameterSelectDialogListener> listeners;
 	ListIndexBar bar;
-	
-	private static int CANCEL_OPTION = 1;
-	private static int APPROVE_OPTION = 0;
-	private int returnValue = CANCEL_OPTION;
 	
 	public ParameterSelectDialog(JFrame parent, YamcsConnectData ycd) {
 		this( parent, ycd, null );
@@ -123,20 +103,14 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 		JPanel buttonPanel = new JPanel();
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
-		JButton button = new JButton("OK");
-		button.setActionCommand("ok");
-		button.addActionListener(this);
-		getRootPane().setDefaultButton(button);
-		buttonPanel.add(button);
-
-		button = new JButton("Add");
+		JButton button = new JButton("Add");
 		button.setActionCommand("add");
 		button.addActionListener(this);
 		getRootPane().setDefaultButton(button);
 		buttonPanel.add(button);
 		
-		button = new JButton("Cancel");
-		button.setActionCommand("cancel");
+		button = new JButton("Close");
+		button.setActionCommand("close");
 		button.addActionListener(this);
 		buttonPanel.add(button);
 
@@ -158,15 +132,11 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String cmd=e.getActionCommand();
-		if( "ok".equals(cmd)) {
-			returnValue = APPROVE_OPTION;
-			setVisible( false );
-		} else if ( "add".equals( cmd ) ) {
+        if ( "add".equals( cmd ) ) {
 			for( ParameterSelectDialogListener l : listeners ) {
 				l.parametersAdded( getSelectedParameterOpsNames() );
 			}
 		} else {
-			returnValue = CANCEL_OPTION;
 			setVisible( false );
 		}
 	}
@@ -327,9 +297,9 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	 */
 	public List<String> showDialog() {
         setVisible( true );
-        if( returnValue == APPROVE_OPTION ) {
+        /*if( returnValue == APPROVE_OPTION ) {
         	return getSelectedParameterOpsNames();
-        }
+        }*/
         return null;
     }
 
