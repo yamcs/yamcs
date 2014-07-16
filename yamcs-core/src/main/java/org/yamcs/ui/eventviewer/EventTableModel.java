@@ -1,25 +1,18 @@
 package org.yamcs.ui.eventviewer;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Vector;
-
-import javax.swing.table.AbstractTableModel;
-
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
+import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.GeneratedMessage.GeneratedExtension;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
-import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.GeneratedMessage.GeneratedExtension;
-import com.google.protobuf.InvalidProtocolBufferException;
+import javax.swing.table.AbstractTableModel;
+import java.lang.reflect.Field;
+import java.util.*;
 
 class EventTableModel extends AbstractTableModel implements Observer {
     private static final long serialVersionUID = 1L;
@@ -194,6 +187,7 @@ class EventTableModel extends AbstractTableModel implements Observer {
      */
     public void clear()
     {
+        fireTableRowsDeleted(0, getRowCount()-1);
         allEvents.clear();
         visibleEvents.clear();
     }
