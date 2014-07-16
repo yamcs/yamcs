@@ -120,13 +120,20 @@ public class DataView extends JScrollPane {
     public void addVerticalGlue() {
         indexPanel.add(Box.createVerticalGlue());
     }
-    
+
     public void refreshDisplay() {
+        refreshDisplay(false);
+    }
+
+    /**
+     * @param force whether it should also adapt its width when it's shrinking
+     */
+    public void refreshDisplay(boolean force) {
         int panelw = getViewport().getExtentSize().width;
         
         if ( !zoomStack.empty() ) {
             ZoomSpec zoom = zoomStack.peek();
-            if (panelw > zoom.getPixels()) {
+            if (panelw > zoom.getPixels() || force) {
                 zoom.setPixels(panelw);
             }
             panelw = zoom.getPixels();
@@ -285,7 +292,7 @@ public class DataView extends JScrollPane {
             zoomStack.pop();
         }
         resetSelection();
-        refreshDisplay();
+        refreshDisplay(true);
         setViewLocationFromZoomstack();
     }
 

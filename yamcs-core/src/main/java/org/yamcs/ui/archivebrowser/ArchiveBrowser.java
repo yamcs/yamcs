@@ -20,9 +20,7 @@ import org.yamcs.utils.YObjectLoader;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -127,6 +125,21 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             archivePanel.archiveToolbar.addSeparator();
             archivePanel.archiveToolbar.add(newTagButton);
         }
+
+        // While resizing, only update active dataviewer (slight performance gain)
+        // When done resizing, update all
+        getRootPane().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                archivePanel.refreshActiveDataViewer();
+            }
+        });
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                archivePanel.refreshAllDataViewers();
+            }
+        });
         
         setContentPane(archivePanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);

@@ -529,4 +529,24 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         }
         return Collections.emptyList();
     }
+
+    public void refreshAllDataViewers() {
+        for(DataViewer dataViewer : dataViewers) {
+            refreshDataViewer(dataViewer);
+        }
+    }
+
+    public void refreshActiveDataViewer() {
+        refreshDataViewer(activeDataViewer);
+    }
+
+    private void refreshDataViewer(DataViewer dataViewer) {
+        DataView dataView = dataViewer.dataView;
+        if(dataView.zoomStack.isEmpty() || dataView.zoomStack.size() == 1) {
+            dataView.refreshDisplay(true);
+            if(!dataView.zoomStack.isEmpty()) {
+                dataView.setViewLocationFromZoomstack();
+            }
+        }
+    }
 }
