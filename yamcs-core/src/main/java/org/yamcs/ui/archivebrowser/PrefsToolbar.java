@@ -1,20 +1,13 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
-
 import org.yamcs.TimeInterval;
 import org.yamcs.ui.datepicker.DatePicker;
 import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.prefs.Preferences;
 
 
 /*
