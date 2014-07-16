@@ -5,14 +5,11 @@ import org.yamcs.ui.UiColors;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
 
 public class SideNavigator extends JPanel {
     private static final long serialVersionUID = 1L;
     private ArchivePanel archivePanel;
     private JPanel itemsPanel;
-    private Set<DataViewer> dataViewers = new HashSet<DataViewer>();
 
     public SideNavigator(ArchivePanel archivePanel) {
         super(new BorderLayout());
@@ -42,7 +39,6 @@ public class SideNavigator extends JPanel {
         cons.weightx = 1;
         cons.gridx = 0;
         itemsPanel.add(item, cons);
-        dataViewers.add(dataViewer);
         archivePanel.dataViewerPanel.add(dataViewer, title);
         if(selected) {
             item.toggleState(true);

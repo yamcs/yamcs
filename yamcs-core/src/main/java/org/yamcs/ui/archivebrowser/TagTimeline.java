@@ -1,27 +1,16 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
-
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.ui.UiColors;
-import org.yamcs.utils.TimeEncoding;
 
 public class TagTimeline extends JPanel implements MouseInputListener {
     private static final long serialVersionUID = 1L;
@@ -31,6 +20,7 @@ public class TagTimeline extends JPanel implements MouseInputListener {
     int leftDelta;
     BufferedImage image=null;
     int row;
+    Font f;
     
     TagTimeline(TagBox tagBox, List<ArchiveTag> tags, ZoomSpec zoom, int row, int leftDelta) {
         super();
@@ -40,7 +30,8 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         this.row=row;
         this.leftDelta=leftDelta;
         JLabel l=new JLabel("X");
-        l.setFont(deriveFont(l.getFont()));
+        f = deriveFont(l.getFont());
+        l.setFont(f);
         setMinimumSize(new Dimension(0,2+l.getPreferredSize().height));
         setPreferredSize(getMinimumSize());
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 2+l.getPreferredSize().height));
@@ -49,7 +40,7 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         setOpaque(false);
     }
     
-    public static Font deriveFont(Font f) {
+    private static Font deriveFont(Font f) {
         return f.deriveFont(Font.PLAIN, f.getSize2D()-2);
     }
 
@@ -91,6 +82,7 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         if(at==lastMouseTag)return;
         lastMouseTag=at;
         if(at!=null) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             StringBuilder sb=new StringBuilder();
             sb.append("<html>").append(at.getName()).append("<hr>");
             if(at.hasStart()) {
@@ -105,6 +97,7 @@ public class TagTimeline extends JPanel implements MouseInputListener {
             sb.append("</html>");
             setToolTipText(sb.toString());
         } else {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             setToolTipText(null);
         }
     }
@@ -172,14 +165,13 @@ public class TagTimeline extends JPanel implements MouseInputListener {
                 int width=(x2 - x1 <= 1) ? 1 : x2 - x1 - 1;
                 big.fillRect(x1-leftDelta, 0, width, getHeight());
                 big.setColor(fgcolor);
-                Font f=deriveFont(big.getFont());
                 big.setFont(f);
                 Rectangle2D bounds=f.getStringBounds(at.getName(), big.getFontRenderContext());
                 if(width>bounds.getWidth()) {
                     LineMetrics lm=f.getLineMetrics(at.getName(), big.getFontRenderContext());
                     big.drawString(at.getName(), x1-leftDelta+1, (int)lm.getAscent()+1);
                 }
-                big.setColor(UiColors.BORDER_COLOR);
+                big.setColor(Color.DARK_GRAY);
                 big.drawRect(x1-leftDelta, 0, width-1, getHeight()-1);
             }
           //  border.paintBorder(this, big, 0, 0, getWidth(),getHeight() );

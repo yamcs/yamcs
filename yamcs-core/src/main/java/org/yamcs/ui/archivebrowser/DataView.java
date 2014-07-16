@@ -4,7 +4,6 @@ import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,13 +16,12 @@ import java.util.List;
  * among all included IndexBoxes.
  * Range selections can be made which visually span all included IndexBoxes
  */
-public class DataView extends JScrollPane implements MouseInputListener {
+public class DataView extends JScrollPane {
 
     private static final long serialVersionUID = 1L;
+    HeaderPanel headerPanel;
     IndexPanel indexPanel;
     Map<String,IndexBox> indexBoxes = new HashMap<String,IndexBox>();
-    TagBox tagBox;
-    TMScale scale;
     private boolean showTagBox = true;
     Stack<ZoomSpec> zoomStack = new Stack<ZoomSpec>();
     private List<ActionListener> actionListeners=new ArrayList<ActionListener>();
@@ -40,7 +38,7 @@ public class DataView extends JScrollPane implements MouseInputListener {
     int startX, stopX, deltaX;
     boolean drawPreviewLocator;
     float previewLocatorAlpha;
-    int dragButton, previewLocatorX;
+    int dragButton, previewLocatorX, mouseLocatorX;
     SelectionImpl currentSelection;
     long startLocator, stopLocator, currentLocator, previewLocator, seekLocator;
 
@@ -65,20 +63,10 @@ public class DataView extends JScrollPane implements MouseInputListener {
         setOpaque(false); // TODO maybe not
         setPreferredSize(new Dimension(850, 400));
 
+        headerPanel = new HeaderPanel();
         indexPanel = new IndexPanel();
 
-        Box scalebox = Box.createVerticalBox();
-        scalebox.setOpaque(false);
-
-        tagBox=new TagBox(this);
-        tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scalebox.add(tagBox);
-
-        scale = new TMScale();
-        scale.setAlignmentX(Component.LEFT_ALIGNMENT);
-        scalebox.add(scale);
-
-        setColumnHeaderView(scalebox);
+        setColumnHeaderView(headerPanel);
         setViewportView(indexPanel);
 
         getColumnHeader().setOpaque(false);
@@ -124,7 +112,7 @@ public class DataView extends JScrollPane implements MouseInputListener {
         IndexBox indexBox = new IndexBox(this, name);
         indexBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         indexBox.setMergeTime(mergeTime);
-        
+
         indexBoxes.put(tableName, indexBox);
         indexPanel.add(indexBox);
     }
@@ -133,14 +121,6 @@ public class DataView extends JScrollPane implements MouseInputListener {
         indexPanel.add(Box.createVerticalGlue());
     }
     
-    public void enableCompletenessIndex(boolean enabled) {
-        if(!enabled) {
-            indexPanel.remove(indexBoxes.get("completeness"));
-        } else {
-            indexPanel.add(indexBoxes.get("completeness"), 1);
-        }
-    }
-
     public void refreshDisplay() {
         int panelw = getViewport().getExtentSize().width;
         
@@ -150,21 +130,21 @@ public class DataView extends JScrollPane implements MouseInputListener {
                 zoom.setPixels(panelw);
             }
             panelw = zoom.getPixels();
-            scale.setToZoom(zoom);
+            headerPanel.scale.setToZoom(zoom);
             if(showTagBox) {
-                tagBox.setToZoom(zoom);
+                headerPanel.tagBox.setToZoom(zoom);
             } else {
-                tagBox.removeAll();
+                headerPanel.tagBox.removeAll();
             }
             
             for(IndexBox ib:indexBoxes.values()) {
                 ib.setToZoom(zoom);
             }
         }
-        scale.setMaximumSize(new Dimension(panelw, scale.getPreferredSize().height));
-        scale.setMinimumSize(scale.getMaximumSize());
-        scale.setPreferredSize(scale.getMaximumSize());
-        scale.setSize(scale.getMaximumSize());
+        headerPanel.scale.setMaximumSize(new Dimension(panelw, headerPanel.scale.getPreferredSize().height));
+        headerPanel.scale.setMinimumSize(headerPanel.scale.getMaximumSize());
+        headerPanel.scale.setPreferredSize(headerPanel.scale.getMaximumSize());
+        headerPanel.scale.setSize(headerPanel.scale.getMaximumSize());
     }
 
     void setPointer(MouseEvent e) {
@@ -231,10 +211,11 @@ public class DataView extends JScrollPane implements MouseInputListener {
         setViewLocationFromZoomstack();
     }
 
-    private void setViewLocationFromZoomstack() {
+    void setViewLocationFromZoomstack() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if(zoomStack.isEmpty()) return;
                 final ZoomSpec currentZoom = zoomStack.peek();
                 final JViewport vp = getViewport();
                 int x = (int)((currentZoom.viewLocation - currentZoom.startInstant) / currentZoom.pixelRatio);
@@ -325,42 +306,27 @@ public class DataView extends JScrollPane implements MouseInputListener {
         }
     }
 
-    //this happens when the mouse is pressed outside the telemetry bars
-    @Override
-    public void mousePressed(MouseEvent e) {
-        indexPanel.doMousePressed(e);
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        indexPanel.doMouseReleased(e);
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        setMouseLabel(e);
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {}
-    @Override
-    public void mouseClicked(MouseEvent e) {}
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        setMouseLabel(e);
-        setPointer(e);
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
+    public void doMouseDragged(MouseEvent e) {
         indexPanel.doMouseDragged(e);
-
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
                 e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
-    
+
+    public void doMouseMoved(MouseEvent e) {
+        headerPanel.doMouseMoved(e);
+        setMouseLabel(e);
+        setPointer(e);
+    }
+
+    public void doMousePressed(MouseEvent e) {
+        indexPanel.doMousePressed(e);
+    }
+
+    public void doMouseReleased(MouseEvent e) {
+        indexPanel.doMouseReleased(e);
+    }
+
     public void updateSelection() {
         if(!archivePanel.passiveUpdate) {
             Long sstart=(Long) dataViewer.selectionStart.getValue();
@@ -377,7 +343,6 @@ public class DataView extends JScrollPane implements MouseInputListener {
     }
 
     public void selectionFinished() {
-        System.out.println("do sel finish");
         for(Map.Entry<String, IndexBox>e: indexBoxes.entrySet()) {
             IndexBox ib=e.getValue();
             String name=e.getKey();
@@ -533,6 +498,44 @@ public class DataView extends JScrollPane implements MouseInputListener {
         }
     }
 
+    public class HeaderPanel extends Box {
+        private String mouseLocatorLabel;
+        TagBox tagBox;
+        TMScale scale;
+        public HeaderPanel() {
+            super(BoxLayout.Y_AXIS);
+            setBorder(BorderFactory.createEmptyBorder());
+            setOpaque(false);
+
+            tagBox=new TagBox(DataView.this);
+            tagBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+            add(tagBox);
+
+            scale = new TMScale();
+            scale.setAlignmentX(Component.LEFT_ALIGNMENT);
+            add(scale);
+        }
+
+        public void doMouseMoved(MouseEvent e) {
+            if(zoomStack.isEmpty()) return;
+            mouseLocatorX = e.getX();
+            mouseLocatorLabel=getMouseText(e);
+            repaint();
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            super.paint(g);
+            if(mouseLocatorX > 5) { // Just enough to make it possible to 'hide' the locator
+                // follow mouse for better timeline positioning
+                g.setColor(Color.RED);
+                int tagBoxHeight = tagBox.getHeight();
+                g.drawLine(mouseLocatorX, tagBoxHeight, mouseLocatorX, getHeight());
+                g.drawString(mouseLocatorLabel, mouseLocatorX, tagBoxHeight-2);
+            }
+        }
+    }
+
     public class IndexPanel extends Box {
 
         public IndexPanel() {
@@ -542,35 +545,34 @@ public class DataView extends JScrollPane implements MouseInputListener {
         }
 
         public void doMousePressed(MouseEvent e) {
-            if (zoomStack.peek()!=null) {
-                dragButton = e.getButton();
-                if (dragButton == MouseEvent.BUTTON1) {
-                    if (dataViewer.replayEnabled && (e.getClickCount() == 2)) {
-                        drawPreviewLocator = true;
-                        previewLocatorAlpha = 0.8f;
-                        previewLocatorX = e.getX();
-                        archivePanel.seekReplay(previewLocator);
-                        repaint();
+            if(zoomStack.isEmpty()) return;
+            dragButton = e.getButton();
+            if (dragButton == MouseEvent.BUTTON1) {
+                if (dataViewer.replayEnabled && (e.getClickCount() == 2)) {
+                    drawPreviewLocator = true;
+                    previewLocatorAlpha = 0.8f;
+                    previewLocatorX = e.getX();
+                    archivePanel.seekReplay(previewLocator);
+                    repaint();
+                } else {
+                    if ((currentSelection != null) && (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap)) {
+                        deltaX = e.getX() - currentSelection.getStartX();
+                        startX = currentSelection.getStopX();
+                        doMouseDragged(e);
+                    } else if ((currentSelection != null) && (Math.abs(e.getX() - currentSelection.getStopX()) <= cursorSnap)) {
+                        deltaX = e.getX() - currentSelection.getStopX();
+                        startX = currentSelection.getStartX();
+                        doMouseDragged(e);
                     } else {
-                        if ((currentSelection != null) && (Math.abs(e.getX() - currentSelection.getStartX()) <= cursorSnap)) {
-                            deltaX = e.getX() - currentSelection.getStartX();
-                            startX = currentSelection.getStopX();
-                            doMouseDragged(e);
-                        } else if ((currentSelection != null) && (Math.abs(e.getX() - currentSelection.getStopX()) <= cursorSnap)) {
-                            deltaX = e.getX() - currentSelection.getStopX();
-                            startX = currentSelection.getStartX();
-                            doMouseDragged(e);
-                        } else {
-                            resetSelection();
-                            doMouseDragged(e);
-                        }
+                        resetSelection();
+                        doMouseDragged(e);
                     }
                 }
             }
         }
 
         public void doMouseReleased(MouseEvent e) {
-            if (zoomStack.peek()!=null) {
+            if (!zoomStack.isEmpty()) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (currentSelection != null) {
                         // if only one line was selected, the user wants to deselect
@@ -587,7 +589,7 @@ public class DataView extends JScrollPane implements MouseInputListener {
         }
 
         void doMouseDragged(MouseEvent e) {
-            if (zoomStack.peek()!=null) {
+            if (!zoomStack.isEmpty()) {
                 if (dragButton == MouseEvent.BUTTON1) {
                     //final JViewport vp = tmscrollpane.getViewport();
                     //stopX = Math.max(e.getX(), vp.getViewPosition().x);
@@ -612,8 +614,8 @@ public class DataView extends JScrollPane implements MouseInputListener {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            // draw the selection rectangle over all the TM panels
 
+            // draw the selection rectangle over all the TM panels
             if ( (getComponentCount() > 0) && !zoomStack.isEmpty() ) {
                 ZoomSpec zoom = zoomStack.peek();
 

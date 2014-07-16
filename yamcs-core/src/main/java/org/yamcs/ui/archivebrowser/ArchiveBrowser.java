@@ -51,7 +51,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     
     private long lastErrorDialogTime = 0;
     
-    public ArchiveBrowser(YamcsConnector yconnector, ArchiveIndexReceiver ir, boolean replayEnabled)	{
+    public ArchiveBrowser(YamcsConnector yconnector, ArchiveIndexReceiver ir, boolean replayEnabled) throws IOException, ConfigurationException {
         super("Archive Browser");
         this.yconnector=yconnector;
         this.indexReceiver = ir;
@@ -108,6 +108,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         cmdHistRetrieval.addActionListener(this);
         cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
         selectionMenu.add(cmdHistRetrieval);
+
+        menuBar.add(getToolsMenu());
    
         /*
          * BUTTONS
@@ -254,7 +256,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
             if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
         } else if (cmd.toLowerCase().endsWith("selection_finished")) {
-            System.out.println("Got action.. sel ended");
             if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
             packetRetrieval.setEnabled(true);
             parameterRetrieval.setEnabled(true);
@@ -409,7 +410,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         
     }
 
-    public static void main(String[] args) throws URISyntaxException, ConfigurationException {
+    public static void main(String[] args) throws URISyntaxException, ConfigurationException, IOException {
         String initialUrl = null;
         YamcsConnectData params=null;
         for(int i=0;i<args.length;i++) {

@@ -5,13 +5,13 @@ import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.TreeSet;
 
-class Timeline extends JPanel implements MouseInputListener {
+class Timeline extends JPanel implements MouseListener {
     private static final long serialVersionUID = 1L;
     private final IndexBox tmBox;
     TreeSet<IndexChunkSpec> tmspec;
@@ -27,9 +27,7 @@ class Timeline extends JPanel implements MouseInputListener {
         this.color=color;
         this.zoom=zoom;
         this.leftDelta=leftDelta;
-        //	super(null, false);
-        //addMouseMotionListener(this);
-        //addMouseListener(this);
+        addMouseListener(this);
         setOpaque(false);
 
         this.tmspec = tmspec;
@@ -47,39 +45,19 @@ class Timeline extends JPanel implements MouseInputListener {
         return new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), me.getModifiers(), me.getX(), me.getY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), e.getButton());
     }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        getParent().dispatchEvent(translateEvent(e, getParent()));
-    }
+    @Override public void mousePressed(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-        getParent().dispatchEvent(translateEvent(e, getParent()));
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {}
-    @Override
-    public void mouseExited(MouseEvent e) {}
-    @Override
-    public void mouseClicked(MouseEvent e) {}
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseEntered(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e, tmBox);
         setToolTipText(tmBox.dataView.getMouseText(transEvent));
-        tmBox.dataView.setPointer(transEvent);
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        ///tmBox.dataView.doMouseDragged(translateEvent(e, tmBox));
+    public void mouseExited(MouseEvent e) {}
 
-        // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
-        dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
-                e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
-    }
-    
     @Override
     public String getToolTipText(MouseEvent e) {
         String tt=tmBox.dataView.getMouseText(translateEvent(e, tmBox));

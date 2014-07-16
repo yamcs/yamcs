@@ -1,87 +1,31 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.YamcsException;
+import org.yamcs.YamcsVersion;
+import org.yamcs.api.*;
+import org.yamcs.protobuf.YamcsManagement.*;
+import org.yamcs.ui.*;
+import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-import org.yamcs.YamcsException;
-import org.yamcs.YamcsVersion;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.ui.ChannelControlClient;
-import org.yamcs.ui.ChannelListener;
-import org.yamcs.ui.CommandQueueControlClient;
-import org.yamcs.ui.LinkControlClient;
-import org.yamcs.ui.LinkListener;
-import org.yamcs.ui.YamcsArchiveIndexReceiver;
-import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.YObjectLoader;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 public class YamcsMonitor implements ChannelListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
@@ -836,7 +780,6 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	/**
 	 * Called when a row is selected in the channel table. 
 	 *  Populates the tm statistics panel with information about the selected channel
-	 * @param selectedRow the number of the row containing the selected row
 	 */
 	@Override
     public void updateStatistics(final Statistics stats)	{

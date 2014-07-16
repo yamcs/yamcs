@@ -1,29 +1,16 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Point;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
-import javax.swing.WindowConstants;
-
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.utils.TimeEncoding;
 
 public class TagBox extends Box implements MouseListener{
     private static final long serialVersionUID = 1L;
@@ -217,7 +204,6 @@ public class TagBox extends Box implements MouseListener{
         return new Point(event.getX() - 94, event.getY() + 20);
     }
 
-
     void setMouseLabel(MouseEvent e) {
         setToolTipText("uhu");
     }
@@ -267,14 +253,11 @@ public class TagBox extends Box implements MouseListener{
     public void mousePressed(MouseEvent e) {
         doMousePressed(e, -1, -1);
     }
-    @Override
-    public void mouseReleased(MouseEvent e) {}
-    @Override
-    public void mouseExited(MouseEvent e) {}
-    @Override
-    public void mouseEntered(MouseEvent e) {}
-    @Override
-    public void mouseClicked(MouseEvent e) {}
+
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseClicked(MouseEvent e) {}
     
     static public void main(String[] args) {
         TimeEncoding.setUp();

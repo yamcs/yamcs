@@ -10,8 +10,6 @@ import java.awt.event.MouseEvent;
 
 /**
  * Represents a horizontal TM line composed of a label and a timeline
- * 
- *
  */
 class IndexLine extends JPanel implements MouseInputListener {
     private final IndexBox tmBox;
@@ -25,8 +23,7 @@ class IndexLine extends JPanel implements MouseInputListener {
         pkt.assocTmPanel = this;
         setAlignmentX(Component.LEFT_ALIGNMENT);
         setBorder(BorderFactory.createEmptyBorder());
-        //addMouseMotionListener(this);
-        //addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
     @Override
@@ -70,15 +67,11 @@ debugLog("tmpanel postTip");
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        // Can't do this yet. Timeline is drawn on box instead of line, due to selection effect
-        // therefore border doesn't encapsulate the whole line
-        //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         tmBox.dispatchEvent(translateEvent(e));
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        //setBorder(BorderFactory.createEmptyBorder());
     }
     
     @Override
@@ -92,11 +85,5 @@ debugLog("tmpanel postTip");
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        ///tmBox.dataView.doMouseDragged(translateEvent(e));
-
-        // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
-        dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
-                e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
-    }
+    public void mouseDragged(MouseEvent e) {}
 }

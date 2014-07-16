@@ -95,10 +95,15 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         allViewer.addIndex("tm", "tm histogram", 1000);
         allViewer.addIndex("pp", "pp histogram", 1000);
         allViewer.addIndex("cmdhist", "cmdhist histogram", 1000);
+        allViewer.addVerticalGlue();
         dataViewers.add(allViewer);
 
+        DataViewer completenessViewer = new DataViewer(this, replayEnabled);
+        completenessViewer.addIndex("completeness", "completeness index");
+        completenessViewer.addVerticalGlue();
+        dataViewers.add(completenessViewer);
+
         DataViewer tmViewer = new DataViewer(this, replayEnabled);
-        tmViewer.addIndex("completeness", "completeness index");
         tmViewer.addIndex("tm", "tm histogram", 1000);
         tmViewer.addVerticalGlue();
         dataViewers.add(tmViewer);
@@ -123,9 +128,12 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         add(dataViewerPanel, BorderLayout.CENTER);
 
         sideNavigator.addItem("Archive", 0, allViewer, true);
+        sideNavigator.addItem("Completeness", 1, completenessViewer);
         sideNavigator.addItem("Telemetry", 1, tmViewer);
         sideNavigator.addItem("Processed Parameters", 1, ppViewer);
         sideNavigator.addItem("Command History", 1, cmdViewer);
+
+        //sideNavigator.addItem("CCSDS Gap Retrieval", 0, null);
                 
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
             if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
@@ -138,15 +146,18 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
             @Override
             public void eventDispatched(AWTEvent event) { // EDT
-                DataView.IndexPanel indexPanel = (DataView.IndexPanel) getActiveDataViewer().dataView.indexPanel;
-                if (SwingUtilities.isDescendingFrom((Component)event.getSource(), indexPanel)) {
-                    MouseEvent me = SwingUtilities.convertMouseEvent((Component)event.getSource(), (MouseEvent) event, indexPanel);
+                DataView dataView = getActiveDataViewer().dataView;
+                if (!(event.getSource() instanceof JScrollBar)
+                        && SwingUtilities.isDescendingFrom((Component)event.getSource(), dataView)) {
+                    MouseEvent me = SwingUtilities.convertMouseEvent((Component)event.getSource(), (MouseEvent) event, dataView.indexPanel);
                     if(event.getID()==MouseEvent.MOUSE_DRAGGED) {
-                        indexPanel.doMouseDragged(me);
+                        dataView.doMouseDragged(me);
                     } else if(event.getID()==MouseEvent.MOUSE_PRESSED) {
-                        indexPanel.doMousePressed(me);
+                        dataView.doMousePressed(me);
                     } else if(event.getID()==MouseEvent.MOUSE_RELEASED) {
-                        indexPanel.doMouseReleased(me);
+                        dataView.doMouseReleased(me);
+                    } else if(event.getID()==MouseEvent.MOUSE_MOVED) {
+                        dataView.doMouseMoved(me);
                     }
                 }
             }
@@ -170,7 +181,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     
     public void updateScaleFonts() {
         for (DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.scale.updateFontSize();
+            dataViewer.dataView.headerPanel.scale.updateFontSize();
         }
     }
     
@@ -255,7 +266,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             for(IndexBox ib:dataViewer.dataView.indexBoxes.values()) {
                 ib.startReloading();
             }
-            dataViewer.dataView.tagBox.tags.clear();
+            dataViewer.dataView.headerPanel.tagBox.tags.clear();
         }
         
         if(lowOnMemoryReported) {
@@ -350,13 +361,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         public String toString() {
             return "start: "+startInstant+" stop: "+stopInstant+" count:"+tmcount;
         }
-    }
-
-    public void enableCompletenessIndex(boolean enabled) {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.enableCompletenessIndex(enabled);
-        }
-        validate();
     }
 
     public void connected() {
@@ -480,31 +484,31 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
     public void tagAdded(ArchiveTag ntag) {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.tagBox.addTag(ntag);
+            dataViewer.dataView.headerPanel.tagBox.addTag(ntag);
         }
     }
     
     public void tagRemoved(ArchiveTag ntag) {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.tagBox.removeTag(ntag);
+            dataViewer.dataView.headerPanel.tagBox.removeTag(ntag);
         }
     }
 
     public void tagChanged(ArchiveTag oldTag, ArchiveTag newTag) {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.tagBox.updateTag(oldTag, newTag);
+            dataViewer.dataView.headerPanel.tagBox.updateTag(oldTag, newTag);
         }
     }
 
     public void tagsAdded(List<ArchiveTag> tagList) {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.tagBox.addTags(tagList);
+            dataViewer.dataView.headerPanel.tagBox.addTags(tagList);
         }
     }
 
     public void createNewTag(Selection sel) {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
+            dataViewer.dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
         }
     }
 

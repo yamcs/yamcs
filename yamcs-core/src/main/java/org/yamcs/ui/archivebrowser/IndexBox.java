@@ -70,11 +70,14 @@ public class IndexBox extends Box implements MouseListener {
         titleLabel.setForeground(new Color(51, 51, 51));
         topPanel.setMaximumSize(new Dimension(topPanel.getMaximumSize().width, titleLabel.getPreferredSize().height+13));
         topPanel.add(titleLabel, cons);
+        topPanel.setAlignmentX(0);
         add(topPanel);
         
         centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         centerPanel.setBorder(BorderFactory.createEmptyBorder());
         centerPanel.setOpaque(false);
+        centerPanel.setAlignmentX(0);
+
         add(centerPanel);
         addMouseListener(this);
 
@@ -525,7 +528,6 @@ public class IndexBox extends Box implements MouseListener {
 
         //debugLog("redrawTmPanel() "+pkt.name+" mark 1");
         // set labels
-
         x1 = 10;
         do {
             pktlab = new JLabel(pkt.lineName);
@@ -553,9 +555,10 @@ public class IndexBox extends Box implements MouseListener {
             tmt.setBounds(in.left,y,stopx, tmRowHeight);
             pktpanel.add(tmt);
         }
-        
+
+        centerPanel.setPreferredSize(new Dimension(panelw, centerPanel.getPreferredSize().height));
         centerPanel.setMaximumSize(centerPanel.getPreferredSize());
-     
+
         pktpanel.revalidate();
         pktpanel.repaint();
 

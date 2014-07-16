@@ -1,25 +1,19 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -58,19 +52,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         
         menuBar.add(getToolsMenu());
      
-        
-/*      showHistoMenuItem = new JCheckBoxMenuItem("Show Histograms");
-        showHistoMenuItem.setSelected(true);
-        showHistoMenuItem.addActionListener(this);
-        showHistoMenuItem.setActionCommand("show_histo");
-        menu.add(showHistoMenuItem);
-*/
-        showCindexMenuItem = new JCheckBoxMenuItem("Show Completeness Index");
-        showCindexMenuItem.setSelected(true);
-        showCindexMenuItem.addActionListener(this);
-        showCindexMenuItem.setActionCommand("show_cindex");
-        viewMenu.add(showCindexMenuItem);
-        
         viewMenu.addSeparator();
 
         if (isAdmin) {
@@ -92,10 +73,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         rawPacketDumpCmdMenuItem.setActionCommand("show-raw-packet-dump");
         viewMenu.add(rawPacketDumpCmdMenuItem);
         
-        
-       
-        
-
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
         applyButton = new JButton("Apply Selection");
@@ -104,7 +81,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         applyButton.addActionListener(this);
         applyButton.setActionCommand("apply");
         archivePanel.archiveToolbar.addSeparator();
-        archivePanel.archiveToolbar.add(applyButton, 4);
+        archivePanel.archiveToolbar.add(applyButton/**, 4*/);
         
         archivePanel.replayPanel.setChannelControlClient(channelControl);
         archivePanel.replayPanel.clearReplayPanel();
@@ -145,7 +122,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 } else {
                     showError("Cannot apply selection for the currently selected channel type");
                 }
-
             }
 
             //} else if (cmd.equals("populate-from-current-channel")) {
@@ -159,8 +135,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
             applyButton.setEnabled(false);
         } else if (cmd.equals("histo_selection_finished") ) {
             applyButton.setEnabled(true);
-        } else if (cmd.equalsIgnoreCase("show_cindex")) {
-            archivePanel.enableCompletenessIndex(showCindexMenuItem.isSelected());
-        } 
+        }
     }
 }

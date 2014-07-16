@@ -28,11 +28,6 @@ public class DataViewer extends JPanel implements ActionListener {
         add(createFixedContent(), BorderLayout.NORTH);
 
         dataView = new DataView(archivePanel, this);
-
-        // Separated out of DataView, so that paint() does not paint over scrollbars
-        JScrollPane dataViewScroller = new JScrollPane(dataView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-
         add(dataView, BorderLayout.CENTER);
     }
 
@@ -116,7 +111,6 @@ public class DataViewer extends JPanel implements ActionListener {
 
         return top;
     }
-
 
     private JToolBar createButtonToolbar() {
         buttonToolbar = new JToolBar("Button Toolbar");
