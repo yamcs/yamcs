@@ -3,6 +3,7 @@ package org.yamcs.ui.archivebrowser;
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.ui.archivebrowser.IndexBox.IndexLineSpec;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,16 +16,18 @@ class Timeline extends JPanel implements MouseListener {
     private static final long serialVersionUID = 1L;
     private final IndexBox tmBox;
     TreeSet<IndexChunkSpec> tmspec;
+    IndexLineSpec pkt;
     Color color;
     ZoomSpec zoom;
     int leftDelta; //we have to move everything to the left with this amount (because this component is in a bordered parent)
     BufferedImage image=null;
     
-    Timeline(IndexBox tmBox, Color color, TreeSet<IndexChunkSpec> tmspec, ZoomSpec zoom, int leftDelta) {
+    Timeline(IndexBox tmBox, IndexLineSpec pkt, TreeSet<IndexChunkSpec> tmspec, ZoomSpec zoom, int leftDelta) {
         super();
         setBorder(BorderFactory.createEmptyBorder());
         this.tmBox = tmBox;
-        this.color=color;
+        this.pkt = pkt;
+        this.color=pkt.color;
         this.zoom=zoom;
         this.leftDelta=leftDelta;
         addMouseListener(this);
@@ -45,8 +48,20 @@ class Timeline extends JPanel implements MouseListener {
         return new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), me.getModifiers(), me.getX(), me.getY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), e.getButton());
     }
 
-    @Override public void mousePressed(MouseEvent e) {}
-    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mousePressed(MouseEvent e) {
+        if(e.isPopupTrigger()) {
+            tmBox.selectedPacket = pkt;
+            tmBox.showPopup(translateEvent(e, tmBox));
+        }
+    }
+
+    @Override public void mouseReleased(MouseEvent e) {
+        if(e.isPopupTrigger()) {
+            tmBox.selectedPacket = pkt;
+            tmBox.showPopup(translateEvent(e, tmBox));
+        }
+    }
+
     @Override public void mouseClicked(MouseEvent e) {}
 
     @Override

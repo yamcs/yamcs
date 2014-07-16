@@ -23,6 +23,7 @@ class IndexLine extends JPanel implements MouseInputListener {
         pkt.assocTmPanel = this;
         setAlignmentX(Component.LEFT_ALIGNMENT);
         setBorder(BorderFactory.createEmptyBorder());
+        addMouseListener(this);
         addMouseMotionListener(this);
     }
 

@@ -28,6 +28,7 @@ public class IndexBox extends Box implements MouseListener {
     DataView dataView;
     
     JLabel popupLabelItem;
+    JSeparator popupLabelSeparator;
     JPopupMenu packetPopup;
     JMenuItem removePacketMenuItem, removeExceptPacketMenuItem, removePayloadMenuItem, changeColorMenuItem, copyOpsnameMenuItem;
     IndexLineSpec selectedPacket;
@@ -113,9 +114,15 @@ public class IndexBox extends Box implements MouseListener {
             packetPopup = new JPopupMenu();
 
             popupLabelItem = new JLabel();
-            packetPopup.insert(popupLabelItem, 0);
+            popupLabelItem.setEnabled(false);
+            Box hbox = Box.createHorizontalBox();
+            hbox.add(Box.createHorizontalGlue());
+            hbox.add(popupLabelItem);
+            hbox.add(Box.createHorizontalGlue());
+            packetPopup.insert(hbox, 0);
 
-            packetPopup.addSeparator();
+            popupLabelSeparator = new JSeparator();
+            packetPopup.add(popupLabelSeparator);
 
             JMenu packetmenu = new JMenu("Add Packets");
             packetPopup.add(packetmenu);
@@ -252,6 +259,7 @@ public class IndexBox extends Box implements MouseListener {
         if (packetPopup != null) {
             if(selectedPacket!=null) {
                 popupLabelItem.setVisible(true);
+                popupLabelSeparator.setVisible(true);
                 removePayloadMenuItem.setVisible(true);
                 removeExceptPacketMenuItem.setVisible(true);
                 removePacketMenuItem.setVisible(true);
@@ -263,6 +271,7 @@ public class IndexBox extends Box implements MouseListener {
                 removePayloadMenuItem.setText(String.format("Hide All %s Packets", selectedPacket.grpName));
             } else {
                 popupLabelItem.setVisible(false);
+                popupLabelSeparator.setVisible(false);
                 removePayloadMenuItem.setVisible(false);
                 removePacketMenuItem.setVisible(false);
                 removeExceptPacketMenuItem.setVisible(false);
@@ -315,8 +324,7 @@ public class IndexBox extends Box implements MouseListener {
             showEmptyLabel("Right click for "+name+" data");
         }
     
-        revalidate();
-        repaint();
+        dataView.refreshDisplay();
         dataView.setNormalPointer();
     }
     
@@ -338,8 +346,7 @@ public class IndexBox extends Box implements MouseListener {
                 showEmptyLabel("Right click for "+name+" data");
             }
             updatePrefsVisiblePackets();
-            revalidate();
-            repaint();
+            dataView.refreshDisplay();
             dataView.setNormalPointer();
         }
     }
@@ -361,8 +368,7 @@ public class IndexBox extends Box implements MouseListener {
             }
         }
         updatePrefsVisiblePackets();
-        revalidate();
-        repaint();
+        dataView.refreshDisplay();
         dataView.setNormalPointer();
     }
 
@@ -424,6 +430,8 @@ public class IndexBox extends Box implements MouseListener {
         b.setMaximumSize(new Dimension(b.getMaximumSize().width, b.getPreferredSize().height));
         centerPanel.add(b);
         centerPanel.setMaximumSize(new Dimension(centerPanel.getMaximumSize().width, centerPanel.getPreferredSize().height));
+        b.revalidate();
+        b.repaint();
     }
 
     public void receiveArchiveRecords(List<ArchiveRecord> records) {
@@ -551,7 +559,7 @@ public class IndexBox extends Box implements MouseListener {
 
         TreeSet<IndexChunkSpec> ts=tmData.get(pkt.lineName);
         if(ts!=null) {
-            Timeline tmt=new Timeline(this, pkt.color, ts,zoom, in.left);
+            Timeline tmt=new Timeline(this, pkt, ts,zoom, in.left);
             tmt.setBounds(in.left,y,stopx, tmRowHeight);
             pktpanel.add(tmt);
         }

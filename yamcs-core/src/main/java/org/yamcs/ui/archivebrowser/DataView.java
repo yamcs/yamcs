@@ -506,7 +506,6 @@ public class DataView extends JScrollPane {
     }
 
     public class HeaderPanel extends Box {
-        private String mouseLocatorLabel;
         TagBox tagBox;
         TMScale scale;
         public HeaderPanel() {
@@ -526,7 +525,6 @@ public class DataView extends JScrollPane {
         public void doMouseMoved(MouseEvent e) {
             if(zoomStack.isEmpty()) return;
             mouseLocatorX = e.getX();
-            mouseLocatorLabel=getMouseText(e);
             repaint();
         }
 
@@ -535,10 +533,9 @@ public class DataView extends JScrollPane {
             super.paint(g);
             if(mouseLocatorX > 5) { // Just enough to make it possible to 'hide' the locator
                 // follow mouse for better timeline positioning
-                g.setColor(Color.RED);
+                g.setColor(Color.DARK_GRAY);
                 int tagBoxHeight = tagBox.getHeight();
                 g.drawLine(mouseLocatorX, tagBoxHeight, mouseLocatorX, getHeight());
-                g.drawString(mouseLocatorLabel, mouseLocatorX, tagBoxHeight-2);
             }
         }
     }
