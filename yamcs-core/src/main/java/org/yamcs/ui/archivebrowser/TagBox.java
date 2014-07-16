@@ -12,17 +12,13 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TagBox extends Box implements MouseListener{
+public class TagBox extends Box implements MouseListener {
     private static final long serialVersionUID = 1L;
     private DataView dataView;
-    int startX, stopX, deltaX;
     boolean drawPreviewLocator;
-    float previewLocatorAlpha;
-    int dragButton, previewLocatorX;
-    long startLocator, stopLocator, currentLocator, previewLocator;
+    long startLocator, stopLocator, currentLocator;
 
     final long DO_NOT_DRAW = Long.MIN_VALUE;
-
 
     JLabel tagLabelItem;
     JPopupMenu editTagPopup, newTagPopup;
@@ -103,7 +99,12 @@ public class TagBox extends Box implements MouseListener{
     protected void buildPopup() {
         editTagPopup = new JPopupMenu();
         tagLabelItem = new JLabel();
-        editTagPopup.insert(tagLabelItem, 0);
+        tagLabelItem.setEnabled(false);
+        Box hbox = Box.createHorizontalBox();
+        hbox.add(Box.createHorizontalGlue());
+        hbox.add(tagLabelItem);
+        hbox.add(Box.createHorizontalGlue());
+        editTagPopup.insert(hbox, 0);
         editTagPopup.addSeparator();
         editTagMenuItem = new JMenuItem("Edit Tag");
         editTagMenuItem.addActionListener(new ActionListener() {
@@ -203,23 +204,6 @@ public class TagBox extends Box implements MouseListener{
     public Point getToolTipLocation(MouseEvent event) {
         return new Point(event.getX() - 94, event.getY() + 20);
     }
-
-    void setMouseLabel(MouseEvent e) {
-        setToolTipText("uhu");
-    }
-
-    void setStartLocator(long position) {
-        startLocator = position;
-    }
-
-    void setStopLocator(long position) {
-        stopLocator = position;
-    }
-
-    void setCurrentLocator(long position) {
-        currentLocator = position;
-        repaint();
-    }
     
     void setToZoom(ZoomSpec zoom) {
         this.zoom=zoom;
@@ -228,17 +212,7 @@ public class TagBox extends Box implements MouseListener{
     
     void redrawTags() {
         removeAll();
-        if(tags.isEmpty()) {
-            JLabel notag=new JLabel("No tags defined");
-            Font f=new Font("SansSerif", Font.ITALIC, 20);
-            notag.setFont(f);
-            notag.setForeground(Color.lightGray);
-            Box b=Box.createHorizontalBox();
-            b.add(notag);
-            b.add(Box.createHorizontalGlue());
-            add(b);
-            notag.addMouseListener(this);
-        } else {
+        if(!tags.isEmpty()) {
             int row=0;
             Insets in=this.getInsets();
             for(List<ArchiveTag> lat:tags) {

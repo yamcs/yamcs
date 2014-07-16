@@ -60,7 +60,6 @@ public class DataView extends JScrollPane {
 
         setBorder(BorderFactory.createEmptyBorder());
         getViewport().setOpaque(false);
-        setOpaque(false); // TODO maybe not
         setPreferredSize(new Dimension(850, 400));
 
         headerPanel = new HeaderPanel();
