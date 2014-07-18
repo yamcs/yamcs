@@ -24,8 +24,8 @@ ln -s $yamcshome/yamcs-core/bin/packet-viewer.* bin/
 ln -s $yamcshome/yamcs-core/bin/setclasspath.sh bin/
 ln -s $yamcshome/yamcs-core/bin/lcp.bat bin/
 cp $yamcshome/yamcs-core/etc/UTC-TAI.history etc/orekit
-cp $yamcshome/yamcs-core/etc/yamcs-ui.yaml etc/
-cp $yamcshome/yamcs-core/etc/event-viewer.yaml etc/
+cp $yamcshome/yamcs-core/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
+cp $yamcshome/yamcs-core/etc/event-viewer.yaml.sample etc/event-viewer.yaml
 
 cd /tmp
 

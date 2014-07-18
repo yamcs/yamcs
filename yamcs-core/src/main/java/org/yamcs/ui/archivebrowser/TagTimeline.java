@@ -1,33 +1,18 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
-
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
-
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-
-public class TagTimeline extends JComponent implements MouseInputListener {
+public class TagTimeline extends JPanel implements MouseInputListener {
     private static final long serialVersionUID = 1L;
     private final TagBox tagBox;
     List<ArchiveTag> tags;
@@ -35,6 +20,7 @@ public class TagTimeline extends JComponent implements MouseInputListener {
     int leftDelta;
     BufferedImage image=null;
     int row;
+    Font f;
     
     TagTimeline(TagBox tagBox, List<ArchiveTag> tags, ZoomSpec zoom, int row, int leftDelta) {
         super();
@@ -44,12 +30,18 @@ public class TagTimeline extends JComponent implements MouseInputListener {
         this.row=row;
         this.leftDelta=leftDelta;
         JLabel l=new JLabel("X");
+        f = deriveFont(l.getFont());
+        l.setFont(f);
         setMinimumSize(new Dimension(0,2+l.getPreferredSize().height));
         setPreferredSize(getMinimumSize());
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 2+l.getPreferredSize().height));
         addMouseMotionListener(this);
         addMouseListener(this);
-        
+        setOpaque(false);
+    }
+    
+    private static Font deriveFont(Font f) {
+        return f.deriveFont(Font.PLAIN, f.getSize2D()-2);
     }
 
     @Override
@@ -61,21 +53,27 @@ public class TagTimeline extends JComponent implements MouseInputListener {
         return SwingUtilities.convertMouseEvent(e.getComponent(), e, dest);
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         long t=zoom.convertPixelToInstant(e.getX());
         int index=time2Tag(tags,t);
         tagBox.doMousePressed(translateEvent(e, tagBox), row, index);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         getParent().dispatchEvent(translateEvent(e, getParent()));
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {}
+    @Override
     public void mouseExited(MouseEvent e) {}
+    @Override
     public void mouseClicked(MouseEvent e) {}
 
     ArchiveTag lastMouseTag=null;
+    @Override
     public void mouseMoved(MouseEvent e) {
         long t=zoom.convertPixelToInstant(e.getX()+leftDelta);
         int index=time2Tag(tags, t);
@@ -84,6 +82,7 @@ public class TagTimeline extends JComponent implements MouseInputListener {
         if(at==lastMouseTag)return;
         lastMouseTag=at;
         if(at!=null) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             StringBuilder sb=new StringBuilder();
             sb.append("<html>").append(at.getName()).append("<hr>");
             if(at.hasStart()) {
@@ -98,6 +97,7 @@ public class TagTimeline extends JComponent implements MouseInputListener {
             sb.append("</html>");
             setToolTipText(sb.toString());
         } else {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             setToolTipText(null);
         }
     }
@@ -123,19 +123,26 @@ public class TagTimeline extends JComponent implements MouseInputListener {
     }
     
     
+    @Override
     public void mouseDragged(MouseEvent e) {
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
                 e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
     
+    
+    
     @Override
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         if(image==null) {
-            image=(BufferedImage)createImage(getWidth(),getHeight());
+            image=new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D big=image.createGraphics();
-            big.setBackground(getBackground());
-            big.clearRect(0, 0, getWidth(),getHeight());
+            
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+            big.fillRect(0,0,getWidth(),getHeight());
+
+            big.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
             for(ArchiveTag at:tags) {
                 Color bgcolor,fgcolor;
                 if(at.hasColor()){
@@ -158,17 +165,18 @@ public class TagTimeline extends JComponent implements MouseInputListener {
                 int width=(x2 - x1 <= 1) ? 1 : x2 - x1 - 1;
                 big.fillRect(x1-leftDelta, 0, width, getHeight());
                 big.setColor(fgcolor);
-                Font f=big.getFont();
+                big.setFont(f);
                 Rectangle2D bounds=f.getStringBounds(at.getName(), big.getFontRenderContext());
                 if(width>bounds.getWidth()) {
                     LineMetrics lm=f.getLineMetrics(at.getName(), big.getFontRenderContext());
                     big.drawString(at.getName(), x1-leftDelta+1, (int)lm.getAscent()+1);
                 }
-                big.setColor(Color.black);
+                big.setColor(Color.DARK_GRAY);
                 big.drawRect(x1-leftDelta, 0, width-1, getHeight()-1);
             }
           //  border.paintBorder(this, big, 0, 0, getWidth(),getHeight() );
         } 
+        
         
         g.drawImage(image,0,0,this);
         

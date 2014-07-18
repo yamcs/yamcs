@@ -1,19 +1,5 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.ui.ChannelControlClient;
@@ -21,9 +7,17 @@ import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.List;
+
 
 /**
- * This is the archive browser that shows up in the yamcs monitor when pressing "Open Archive Selector" 
+ * This is the archive browser that shows up in the yamcs monitor when pressing "Select Range From Archive"
  *
  */
 public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionListener {
@@ -32,9 +26,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
     boolean isHrdpPlaying;
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
-    
-    JButton applyButton;
-    
+
     public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ChannelControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
@@ -42,8 +34,8 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu menu = new JMenu("Archive Browser");
-        menu.setMnemonic(KeyEvent.VK_A);
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
         JMenuItem closeMenuItem = new JMenuItem("Close", KeyEvent.VK_W);
         closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
@@ -55,22 +47,34 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(viewMenu);
+
+        // Export menu
+        JMenu selectionMenu = new JMenu("Selection");
+        menuBar.add(selectionMenu);
+
+        packetRetrieval = new JMenuItem("Export Packets...");
+        packetRetrieval.setEnabled(false);
+        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
+        packetRetrieval.addActionListener(this);
+        packetRetrieval.setActionCommand("start-packet-retrieval");
+        selectionMenu.add(packetRetrieval);
+
+        parameterRetrieval = new JMenuItem("Export Parameters...");
+        parameterRetrieval.setEnabled(false);
+        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
+        parameterRetrieval.addActionListener(this);
+        parameterRetrieval.setActionCommand("start-parameter-retrieval");
+        selectionMenu.add(parameterRetrieval);
+
+        cmdHistRetrieval = new JMenuItem("Export Command History...");
+        cmdHistRetrieval.setEnabled(false);
+        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
+        cmdHistRetrieval.addActionListener(this);
+        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
+        selectionMenu.add(cmdHistRetrieval);
         
         menuBar.add(getToolsMenu());
      
-        
-/*      showHistoMenuItem = new JCheckBoxMenuItem("Show Histograms");
-        showHistoMenuItem.setSelected(true);
-        showHistoMenuItem.addActionListener(this);
-        showHistoMenuItem.setActionCommand("show_histo");
-        menu.add(showHistoMenuItem);
-*/
-        showCindexMenuItem = new JCheckBoxMenuItem("Show Completeness Index");
-        showCindexMenuItem.setSelected(true);
-        showCindexMenuItem.addActionListener(this);
-        showCindexMenuItem.setActionCommand("show_cindex");
-        viewMenu.add(showCindexMenuItem);
-        
         viewMenu.addSeparator();
 
         if (isAdmin) {
@@ -91,21 +95,12 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         rawPacketDumpCmdMenuItem.addActionListener(this);
         rawPacketDumpCmdMenuItem.setActionCommand("show-raw-packet-dump");
         viewMenu.add(rawPacketDumpCmdMenuItem);
-        
-        
-       
-        
 
+        archivePanel.openEntry("Telemetry");
+        
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
-        applyButton = new JButton("Apply Selection");
-        applyButton.setEnabled(false);
-        applyButton.setToolTipText("Apply the selection to the replay");
-        applyButton.addActionListener(this);
-        applyButton.setActionCommand("apply");
-        archivePanel.buttonToolbar.addSeparator();
-        archivePanel.buttonToolbar.add(applyButton, 4);
-        
+        archivePanel.replayPanel.applySelectionButton.addActionListener(this);
         archivePanel.replayPanel.setChannelControlClient(channelControl);
         archivePanel.replayPanel.clearReplayPanel();
         yconnector.addConnectionListener(this);
@@ -145,7 +140,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 } else {
                     showError("Cannot apply selection for the currently selected channel type");
                 }
-
             }
 
             //} else if (cmd.equals("populate-from-current-channel")) {
@@ -154,13 +148,11 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         } else if (cmd.equalsIgnoreCase("close")) {
             setVisible(false);
         } else if (cmd.toLowerCase().endsWith("selection_finished") ) {
-        	applyButton.setEnabled(true);
+        	archivePanel.replayPanel.applySelectionButton.setEnabled(true);
         } else if(cmd.equalsIgnoreCase("selection_reset")) {
-            applyButton.setEnabled(false);
+            archivePanel.replayPanel.applySelectionButton.setEnabled(false);
         } else if (cmd.equals("histo_selection_finished") ) {
-            applyButton.setEnabled(true);
-        } else if (cmd.equalsIgnoreCase("show_cindex")) {
-            archivePanel.enableCompletenessIndex(showCindexMenuItem.isSelected());
-        } 
+            archivePanel.replayPanel.applySelectionButton.setEnabled(true);
+        }
     }
 }

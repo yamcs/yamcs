@@ -1,26 +1,27 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Dimension;
-import java.util.List;
-import java.util.prefs.Preferences;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JToolBar;
-
 import org.yamcs.TimeInterval;
 import org.yamcs.ui.datepicker.DatePicker;
 import org.yamcs.utils.TimeEncoding;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.prefs.Preferences;
 
-public class PrefsToolbar extends JToolBar {
+
+/*
+ * Also used by CcsdsCompletessGui
+ */
+public class PrefsToolbar extends JPanel {
     private static final long serialVersionUID = 1L;
     private JComboBox instances;
     DatePicker datePicker;
     Preferences prefs;
+    public JButton reloadButton;
 
-    public PrefsToolbar(String name) {
-        super(name);
+    public PrefsToolbar() {
+        super(new FlowLayout(FlowLayout.LEFT));
         prefs = Preferences.userNodeForPackage(ArchivePanel.class);
 
         JLabel label;
@@ -34,7 +35,7 @@ public class PrefsToolbar extends JToolBar {
         instances.setMaximumSize(new Dimension(300, instances.getPreferredSize().height));
         add(instances);
 
-        addSeparator();
+        add(new JSeparator(SwingConstants.VERTICAL));
         label = new JLabel("Reload Range:");
         add(label);
         datePicker=new DatePicker();
@@ -42,7 +43,12 @@ public class PrefsToolbar extends JToolBar {
         
         add(datePicker);
         
-        addSeparator();
+        add(new JSeparator(SwingConstants.VERTICAL));
+        
+        reloadButton = new JButton("Reload");
+        reloadButton.setActionCommand("reload");
+        reloadButton.setEnabled(false);
+        add(reloadButton);
         
         loadFromPrefs();
     }
