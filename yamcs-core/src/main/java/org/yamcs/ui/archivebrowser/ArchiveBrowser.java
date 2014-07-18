@@ -14,7 +14,6 @@ import org.yamcs.ui.CommandHistoryRetrievalGui;
 import org.yamcs.ui.PacketRetrievalGui;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
-import org.yamcs.ui.archivebrowser.TagBox.TagEvent;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -36,10 +35,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     ArchiveIndexReceiver indexReceiver;
     public ArchivePanel archivePanel;
     static boolean showDownload = false;
-    private JMenuItem packetRetrieval;
-    private JMenuItem parameterRetrieval;
-    private JMenuItem cmdHistRetrieval;
-    JButton newTagButton;
+    JMenuItem packetRetrieval;
+    JMenuItem parameterRetrieval;
+    JMenuItem cmdHistRetrieval;
     PacketRetrievalGui packetGui;
     CommandHistoryRetrievalGui cmdHistGui;
     ParameterRetrievalGui parameterGui;
@@ -116,14 +114,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         archivePanel.prefs.reloadButton.addActionListener(this);
         archivePanel.addActionListener(this);
 
-        if(ir==null || ir.supportsTags()) {
-            newTagButton=new JButton("New Tag");
-            newTagButton.setEnabled(false);
-            newTagButton.setToolTipText("Define a new tag for the current selection");
-            newTagButton.addActionListener(this);
-            newTagButton.setActionCommand("new-tag-button");
-            archivePanel.archiveToolbar.addSeparator();
-            archivePanel.archiveToolbar.add(newTagButton);
+        if(ir!=null && ir.supportsTags()) {
+            archivePanel.enableNewTagButton();
         }
 
         // While resizing, only update active dataviewer (slight performance gain)
@@ -266,26 +258,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         final String cmd = ae.getActionCommand();
         if(cmd.equalsIgnoreCase("reload")) {
             requestData();
-        } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
-            if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
-        } else if (cmd.toLowerCase().endsWith("selection_finished")) {
-            if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
-            packetRetrieval.setEnabled(true);
-            parameterRetrieval.setEnabled(true);
-           if(cmd.startsWith("pp") | cmd.startsWith("tm")) { 
-               packetRetrieval.setEnabled(true);
-               parameterRetrieval.setEnabled(true);
-           } else if (cmd.startsWith("cmdhist")) {
-               cmdHistRetrieval.setEnabled(true);
-           }
-        } else  if(cmd.equalsIgnoreCase("selection_reset")) {
-            if(newTagButton!=null) newTagButton.setEnabled(false);
-            packetRetrieval.setEnabled(false);
-            parameterRetrieval.setEnabled(false);
-            cmdHistRetrieval.setEnabled(false);
         }  else if (cmd.equals("hide_resp")) {
             //  buildPopup();
-
         } else if (cmd.equals("show-dass-arc")) {
             /*
             Selection s = tmBox.getSelection();
@@ -337,24 +311,13 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             parameterGui.setValues(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant());
             parameterGui.setVisible(true);
         } else if (cmd.equals("start-cmdhist-retrieval")) {
-            
+
             Selection sel = archivePanel.getSelection();
-            if(cmdHistGui==null) {
-                cmdHistGui=new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), this);
+            if (cmdHistGui == null) {
+                cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), this);
             }
             cmdHistGui.setValues(archivePanel.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);
-        } else if (cmd.equalsIgnoreCase("new-tag-button")) {
-            archivePanel.createNewTag(archivePanel.getSelection());
-        } else if(cmd.equalsIgnoreCase("insert-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.insertTag(archivePanel.getInstance(), te.newTag);
-        } else if(cmd.equalsIgnoreCase("update-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.updateTag(archivePanel.getInstance(), te.oldTag, te.newTag);
-        } else if(cmd.equalsIgnoreCase("delete-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.deleteTag(archivePanel.getInstance(), te.oldTag);
         } else if(cmd.equalsIgnoreCase("exit")) {
             System.exit(0);
         }

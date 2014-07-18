@@ -37,7 +37,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
     ProgressMonitor progressMonitor;
     
-    JFrame parentFrame;
+    ArchiveBrowser archiveBrowser;
     JLabel totalRangeLabel;
     JLabel statusInfoLabel;
     JLabel instanceLabel;
@@ -61,9 +61,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     //used to check for out of memory errors that may happen when receiving too many archive records 
     MemoryPoolMXBean heapMemoryPoolBean = null;
         
-    public ArchivePanel(JFrame parentFrame,  boolean replayEnabled)	{
+    public ArchivePanel(ArchiveBrowser archiveBrowser,  boolean replayEnabled)	{
         super(new BorderLayout());
-        this.parentFrame=parentFrame;
+        this.archiveBrowser=archiveBrowser;
         
         /*
          * Upper fixed content
@@ -177,12 +177,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                 break;
             }
         }
-    }
-    
-    public void updateScaleFonts() {
-        for (DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.scale.updateFontSize();
-        }
+        activeDataViewer.updateMenuStates();
     }
     
     private Box createStatusBar() {
@@ -198,7 +193,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         instanceLabel = createLabelForStatusBar(null);
         bar.add(instanceLabel);
         
-        bar.add(createLabelForStatusBar(", Loaded: "));
+        bar.add(createLabelForStatusBar(", Data Range: "));
         totalRangeLabel = createLabelForStatusBar(null);
         bar.add(totalRangeLabel);
 
@@ -507,25 +502,22 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public void createNewTag(Selection sel) {
+        activeDataViewer.dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
+    }
+
+    public void enableNewTagButton() {
         for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
+            dataViewer.enableNewTagButton();
         }
     }
 
     public Selection getSelection() {
-        for(DataViewer dataViewer: dataViewers) {
-            if(dataViewer.dataView.getSelection()!=null) {
-                return dataViewer.dataView.getSelection();
-            }
-        }
-        return null;
+        return activeDataViewer.dataView.getSelection();
     }
 
     public List<String> getSelectedPackets(String tableName) {
-        for(DataViewer dataViewer: dataViewers) {
-            if(dataViewer.dataView.indexBoxes.containsKey(tableName)) {
-                return dataViewer.dataView.getSelectedPackets("tm");
-            }
+        if(activeDataViewer.dataView.indexBoxes.containsKey(tableName)) {
+            return activeDataViewer.dataView.getSelectedPackets("tm");
         }
         return Collections.emptyList();
     }

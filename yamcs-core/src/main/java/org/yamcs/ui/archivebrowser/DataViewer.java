@@ -15,9 +15,14 @@ public class DataViewer extends JPanel implements ActionListener {
     DataView dataView;
     public JToolBar buttonToolbar;
 
-    JButton zoomInButton, zoomOutButton, showAllButton, applyButton;
+    JButton zoomInButton, zoomOutButton, showAllButton, applyButton, newTagButton;
     JFormattedTextField selectionStart, selectionStop;
     boolean replayEnabled;
+
+    // Remember menu states for when changing back to this tab
+    private boolean packetRetrievalEnabled;
+    private boolean parameterRetrievalEnabled;
+    private boolean cmdhistRetrievalEnabled;
 
     public DataViewer(ArchivePanel archivePanel, boolean replayEnabled) {
         super(new BorderLayout());
@@ -29,6 +34,8 @@ public class DataViewer extends JPanel implements ActionListener {
 
         dataView = new DataView(archivePanel, this);
         add(dataView, BorderLayout.CENTER);
+
+        dataView.addActionListener(this);
     }
 
     public void addIndex(String tableName, String name) {
@@ -135,6 +142,14 @@ public class DataViewer extends JPanel implements ActionListener {
         showAllButton.addActionListener(this);
         showAllButton.setEnabled(false);
         buttonToolbar.add(showAllButton);
+
+        newTagButton=new JButton("New Tag");
+        newTagButton.setEnabled(false);
+        newTagButton.setToolTipText("Define a new tag for the current selection");
+        newTagButton.addActionListener(this);
+        newTagButton.setActionCommand("new-tag-button");
+        newTagButton.setVisible(false);
+        buttonToolbar.add(newTagButton);
         return buttonToolbar;
     }
 
@@ -147,6 +162,45 @@ public class DataViewer extends JPanel implements ActionListener {
             dataView.zoomOut();
         } else if (cmd.equals("zoomin")) {
             dataView.zoomIn();
+        } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
+            if(archivePanel.archiveBrowser.indexReceiver.supportsTags()) newTagButton.setEnabled(true);
+        } else if (cmd.toLowerCase().endsWith("selection_finished")) {
+            if(archivePanel.archiveBrowser.indexReceiver.supportsTags()) newTagButton.setEnabled(true);
+            packetRetrievalEnabled = true;
+            parameterRetrievalEnabled = true;
+            if(cmd.startsWith("pp") | cmd.startsWith("tm")) {
+                packetRetrievalEnabled = true;
+                parameterRetrievalEnabled = true;
+            } else if (cmd.startsWith("cmdhist")) {
+                cmdhistRetrievalEnabled = true;
+            }
+        } else  if(cmd.equalsIgnoreCase("selection_reset")) {
+            if (newTagButton != null) newTagButton.setEnabled(false);
+            packetRetrievalEnabled = false;
+            parameterRetrievalEnabled = false;
+            cmdhistRetrievalEnabled = false;
+        } else if (cmd.equalsIgnoreCase("new-tag-button")) {
+            archivePanel.createNewTag(archivePanel.getSelection());
+        } else if(cmd.equalsIgnoreCase("insert-tag")) {
+            TagBox.TagEvent te=(TagBox.TagEvent)e;
+            archivePanel.archiveBrowser.indexReceiver.insertTag(archivePanel.getInstance(), te.newTag);
+        } else if(cmd.equalsIgnoreCase("update-tag")) {
+            TagBox.TagEvent te=(TagBox.TagEvent)e;
+            archivePanel.archiveBrowser.indexReceiver.updateTag(archivePanel.getInstance(), te.oldTag, te.newTag);
+        } else if(cmd.equalsIgnoreCase("delete-tag")) {
+            TagBox.TagEvent te=(TagBox.TagEvent)e;
+            archivePanel.archiveBrowser.indexReceiver.deleteTag(archivePanel.getInstance(), te.oldTag);
         }
+        updateMenuStates();
+    }
+
+    public void updateMenuStates() {
+        archivePanel.archiveBrowser.packetRetrieval.setEnabled(packetRetrievalEnabled);
+        archivePanel.archiveBrowser.parameterRetrieval.setEnabled(parameterRetrievalEnabled);
+        archivePanel.archiveBrowser.cmdHistRetrieval.setEnabled(cmdhistRetrievalEnabled);
+    }
+
+    public void enableNewTagButton() {
+        newTagButton.setVisible(true);
     }
 }
