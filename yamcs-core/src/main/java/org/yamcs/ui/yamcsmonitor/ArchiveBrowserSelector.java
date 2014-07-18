@@ -17,7 +17,7 @@ import java.util.List;
 
 
 /**
- * This is the archive browser that shows up in the yamcs monitor when pressing "Open Archive Selector" 
+ * This is the archive browser that shows up in the yamcs monitor when pressing "Select Range From Archive"
  *
  */
 public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionListener {
@@ -26,9 +26,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
     boolean isHrdpPlaying;
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
-    
-    JButton applyButton;
-    
+
     public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ChannelControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
@@ -49,6 +47,31 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(viewMenu);
+
+        // Export menu
+        JMenu selectionMenu = new JMenu("Selection");
+        menuBar.add(selectionMenu);
+
+        packetRetrieval = new JMenuItem("Export Packets...");
+        packetRetrieval.setEnabled(false);
+        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
+        packetRetrieval.addActionListener(this);
+        packetRetrieval.setActionCommand("start-packet-retrieval");
+        selectionMenu.add(packetRetrieval);
+
+        parameterRetrieval = new JMenuItem("Export Parameters...");
+        parameterRetrieval.setEnabled(false);
+        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
+        parameterRetrieval.addActionListener(this);
+        parameterRetrieval.setActionCommand("start-parameter-retrieval");
+        selectionMenu.add(parameterRetrieval);
+
+        cmdHistRetrieval = new JMenuItem("Export Command History...");
+        cmdHistRetrieval.setEnabled(false);
+        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
+        cmdHistRetrieval.addActionListener(this);
+        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
+        selectionMenu.add(cmdHistRetrieval);
         
         menuBar.add(getToolsMenu());
      
@@ -72,17 +95,12 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         rawPacketDumpCmdMenuItem.addActionListener(this);
         rawPacketDumpCmdMenuItem.setActionCommand("show-raw-packet-dump");
         viewMenu.add(rawPacketDumpCmdMenuItem);
+
+        archivePanel.openEntry("Telemetry");
         
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
-        applyButton = new JButton("Apply Selection");
-        applyButton.setEnabled(false);
-        applyButton.setToolTipText("Apply the selection to the replay");
-        applyButton.addActionListener(this);
-        applyButton.setActionCommand("apply");
-        archivePanel.archiveToolbar.addSeparator();
-        archivePanel.archiveToolbar.add(applyButton/**, 4*/);
-        
+        archivePanel.replayPanel.applySelectionButton.addActionListener(this);
         archivePanel.replayPanel.setChannelControlClient(channelControl);
         archivePanel.replayPanel.clearReplayPanel();
         yconnector.addConnectionListener(this);
@@ -130,11 +148,11 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         } else if (cmd.equalsIgnoreCase("close")) {
             setVisible(false);
         } else if (cmd.toLowerCase().endsWith("selection_finished") ) {
-        	applyButton.setEnabled(true);
+        	archivePanel.replayPanel.applySelectionButton.setEnabled(true);
         } else if(cmd.equalsIgnoreCase("selection_reset")) {
-            applyButton.setEnabled(false);
+            archivePanel.replayPanel.applySelectionButton.setEnabled(false);
         } else if (cmd.equals("histo_selection_finished") ) {
-            applyButton.setEnabled(true);
+            archivePanel.replayPanel.applySelectionButton.setEnabled(true);
         }
     }
 }

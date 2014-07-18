@@ -43,6 +43,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     JLabel instanceLabel;
     private List<DataViewer> dataViewers = new ArrayList<DataViewer>();
 
+    SideNavigator sideNavigator;
     public JToolBar archiveToolbar;
     protected PrefsToolbar prefs;
     
@@ -84,7 +85,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         // transport control panel (only enabled when a HRDP data channel is selected)
         //
         if (replayEnabled) {
-            replayPanel = new ReplayPanel(new GridBagLayout());
+            replayPanel = new ReplayPanel();
             replayPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Replay Control"));
             replayPanel.setToolTipText("Right-click between the start/stop locators to reposition the replay.");
             fixedTop.add(replayPanel);
@@ -121,7 +122,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         add(fixedTop, BorderLayout.NORTH);
         add(createStatusBar(), BorderLayout.SOUTH);
 
-        SideNavigator sideNavigator = new SideNavigator(this);
+        sideNavigator = new SideNavigator(this);
         add(sideNavigator, BorderLayout.WEST);
 
         dataViewerPanel = new JPanel(new CardLayout());
@@ -166,6 +167,11 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
     private DataViewer getActiveDataViewer() {
         return activeDataViewer;
+    }
+
+    // TODO Remove unnecessary ambiguity with openItem method. this class should be the centerpiece, not the SideNav
+    public void openEntry(String name) {
+        sideNavigator.openItem(name);
     }
 
     public void openItem(String name) {

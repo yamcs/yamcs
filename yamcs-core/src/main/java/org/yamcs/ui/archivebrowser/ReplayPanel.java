@@ -23,6 +23,7 @@ public class ReplayPanel extends JPanel {
     protected JLabel replayStartLabel, replayCurrentLabel, replayStopLabel, channelNameLabel, replayStatusLabel, replaySpeedLabel;
     protected ImageIcon replayStartIcon, replayStopIcon;
     protected JButton playStopButton;
+    public JButton applySelectionButton;
     protected ChannelInfo currentChannelInfo;
     int replayButtonFunction;
     static final int STOP = 0;
@@ -32,14 +33,18 @@ public class ReplayPanel extends JPanel {
     ChannelControlClient channelControl;
     long currentInstant;
     
-    public ReplayPanel(GridBagLayout lay) {
-        super(lay);
+    public ReplayPanel() {
+        super(new BorderLayout());
+
+        GridBagLayout lay = new GridBagLayout();
+        JPanel centerPanel = new JPanel(lay);
+
      // playing/stopped status
         GridBagConstraints gbc=new GridBagConstraints();
         replayStatusLabel = new JLabel();
         gbc.weightx = 1.0; gbc.gridwidth = 1;
         lay.setConstraints(replayStatusLabel, gbc);
-        add(replayStatusLabel);
+        centerPanel.add(replayStatusLabel);
 
         // replay: channel name
 
@@ -47,14 +52,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         channelNameLabel = new JLabel();
         channelNameLabel.setPreferredSize(new Dimension(150, channelNameLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(channelNameLabel, gbc);
-        add(channelNameLabel);
+        centerPanel.add(channelNameLabel);
 
         // play/stop button
 
@@ -70,7 +75,7 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.weighty = 1.0; gbc.gridwidth = 1; gbc.gridheight = 4; gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.NONE;
         lay.setConstraints(playStopButton, gbc);
-        add(playStopButton);
+        centerPanel.add(playStopButton);
 
         // replay: start time
 
@@ -78,14 +83,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayStartLabel = new JLabel();
         replayStartLabel.setPreferredSize(new Dimension(150, replayStartLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayStartLabel, gbc);
-        add(replayStartLabel);
+        centerPanel.add(replayStartLabel);
 
         // replay: current time
 
@@ -93,14 +98,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayCurrentLabel = new JLabel();
         replayCurrentLabel.setPreferredSize(new Dimension(150, replayCurrentLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayCurrentLabel, gbc);
-        add(replayCurrentLabel);
+        centerPanel.add(replayCurrentLabel);
 
         // replay: stop time
 
@@ -108,14 +113,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayStopLabel = new JLabel();
         replayStopLabel.setPreferredSize(new Dimension(150, replayStopLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayStopLabel, gbc);
-        add(replayStopLabel);
+        centerPanel.add(replayStopLabel);
 
         // replay: speed
 
@@ -123,16 +128,32 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replaySpeedLabel = new JLabel();
         replaySpeedLabel.setPreferredSize(new Dimension(150, replaySpeedLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replaySpeedLabel, gbc);
-        add(replaySpeedLabel);
-        
+        centerPanel.add(replaySpeedLabel);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        Box buttonPanel = Box.createVerticalBox();
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
+        applySelectionButton = new JButton("Apply Selection");
+        applySelectionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        applySelectionButton.setEnabled(false);
+        applySelectionButton.setToolTipText("Apply the selection to the replay");
+        applySelectionButton.setActionCommand("apply");
+
+        buttonPanel.add(Box.createVerticalGlue());
+        buttonPanel.add(applySelectionButton);
+        buttonPanel.add(Box.createVerticalGlue());
+
+        add(buttonPanel, BorderLayout.EAST);
     }
+
     public void setDataViewer(DataViewer dataViewer) {
         this.dataViewer=dataViewer;
     }
@@ -150,7 +171,6 @@ public class ReplayPanel extends JPanel {
             }
         }
     }
-    
     
     public void clearReplayPanel() {
         currentChannelInfo = null;

@@ -35,9 +35,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     ArchiveIndexReceiver indexReceiver;
     public ArchivePanel archivePanel;
     static boolean showDownload = false;
-    JMenuItem packetRetrieval;
-    JMenuItem parameterRetrieval;
-    JMenuItem cmdHistRetrieval;
+    public JMenuItem packetRetrieval;
+    public JMenuItem parameterRetrieval;
+    public JMenuItem cmdHistRetrieval;
     PacketRetrievalGui packetGui;
     CommandHistoryRetrievalGui cmdHistGui;
     ParameterRetrievalGui parameterGui;
@@ -138,8 +138,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         pack();
     }
 
-
-
     protected JMenu getToolsMenu() throws ConfigurationException, IOException {
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         List<Map<String, String>> tools=config.getList("archiveBrowserTools");
@@ -163,7 +161,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         return toolsMenu;
     }
     
-    
     protected void showMessage(String msg) {
         JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.PLAIN_MESSAGE);
     }
@@ -175,7 +172,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     protected void showError(String msg) {
         JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.ERROR_MESSAGE);
     }
-
 
     @Override
     public void connecting(String url) {

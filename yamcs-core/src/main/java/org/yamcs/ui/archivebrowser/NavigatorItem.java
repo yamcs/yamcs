@@ -1,7 +1,5 @@
 package org.yamcs.ui.archivebrowser;
 
-import org.yamcs.ui.UiColors;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -17,19 +15,17 @@ public class NavigatorItem extends JLabel implements MouseListener {
     private final Color defaultBackground;
     private boolean on = false;
     private SideNavigator navigator;
-    private DataViewer dataViewer;
 
-    public NavigatorItem(SideNavigator navigator, String label, DataViewer dataViewer) {
-        this(navigator, label, dataViewer, 0);
+    public NavigatorItem(SideNavigator navigator, String label) {
+        this(navigator, label, 0);
     }
 
     /**
      * @param indent multiplier for left indentation
      */
-    public NavigatorItem(SideNavigator navigator, String label, DataViewer dataViewer, int indent) {
+    public NavigatorItem(SideNavigator navigator, String label, int indent) {
         super(label);
         this.navigator = navigator;
-        this.dataViewer = dataViewer;
         int lpad = 10 + indent*10;
         setBorder(BorderFactory.createEmptyBorder(3, lpad, 3, 10));
         defaultBackground = getBackground();
@@ -49,17 +45,13 @@ public class NavigatorItem extends JLabel implements MouseListener {
 
     public void toggleState(boolean on) {
         if(on && !this.on) {
-            navigator.deactivateAll();
-            setBackground(UiColors.BORDER_COLOR);
-            navigator.openItem(this);
+            navigator.openItem(getText());
             on = true;
-        } else if (!on && this.on) {
-            setBackground(defaultBackground);
         }
         this.on = on;
     }
 
-    public DataViewer getDataViewer() {
-        return dataViewer;
+    public void setDefaultBackground() {
+        setBackground(defaultBackground);
     }
 }

@@ -33,7 +33,7 @@ public class SideNavigator extends JPanel {
     }
 
     public void addItem(String title, int indent, DataViewer dataViewer, boolean selected) {
-        NavigatorItem item = new NavigatorItem(this, title, dataViewer, indent);
+        NavigatorItem item = new NavigatorItem(this, title, indent);
         GridBagConstraints cons = new GridBagConstraints();
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.weightx = 1;
@@ -54,7 +54,19 @@ public class SideNavigator extends JPanel {
         }
     }
 
-    public void openItem(NavigatorItem item) {
-        archivePanel.openItem(item.getText());
+    public void openItem(String name) {
+        deactivateAll();
+        for(int i=0;i<itemsPanel.getComponentCount();i++) {
+            Component component = itemsPanel.getComponent(i);
+            if (component instanceof NavigatorItem) {
+                NavigatorItem item = ((NavigatorItem) component);
+                if (item.getText().equals(name)) {
+                    item.setBackground(UiColors.BORDER_COLOR);
+                    archivePanel.openItem(name);
+                } else {
+                    item.setDefaultBackground();
+                }
+            }
+        }
     }
 }

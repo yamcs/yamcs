@@ -1,32 +1,14 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-
-import org.yamcs.utils.TimeEncoding;
 
 public class ArchiveChannelWidget extends ChannelWidget {
     String archiveInstance;
@@ -47,7 +29,7 @@ public class ArchiveChannelWidget extends ChannelWidget {
         GridBagConstraints gbc = new GridBagConstraints();
         configurationPanel.setLayout(gridbag);
         
-        JButton button = new JButton("Open Archive Selector");
+        JButton button = new JButton("Select Range From Archive...");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
