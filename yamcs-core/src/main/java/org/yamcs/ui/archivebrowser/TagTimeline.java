@@ -181,5 +181,4 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         g.drawImage(image,0,0,this);
         
     }
-
 }

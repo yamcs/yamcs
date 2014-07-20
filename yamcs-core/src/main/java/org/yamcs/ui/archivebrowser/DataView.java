@@ -376,24 +376,24 @@ public class DataView extends JScrollPane {
     
     public List<String> getSelectedPackets(String type) {
         return indexBoxes.get(type).getPacketsForSelection(getSelection());
-     }
+    }
 
-     /**caled from the tagBox when a tag is selected. Update tmBox selection to this*/
-     public void selectedTag(ArchiveTag tag) {
-         archivePanel.passiveUpdate=true;
-         if(tag.hasStart())  {
-             archivePanel.sideNavigator.signalSelectionStartChange(tag.getStart());
-         } else {
-             archivePanel.sideNavigator.signalSelectionStartChange(archivePanel.dataStart);
-         }
-         archivePanel.passiveUpdate=false;
+    /**called from the tagBox when a tag is selected. Update tmBox selection to this*/
+    public void selectedTag(ArchiveTag tag) {
+        archivePanel.passiveUpdate=true;
+        if(tag.hasStart())  {
+            archivePanel.sideNavigator.signalSelectionStartChange(tag.getStart());
+        } else {
+            archivePanel.sideNavigator.signalSelectionStartChange(archivePanel.dataStart);
+        }
+        archivePanel.passiveUpdate=false;
          
-         if(tag.hasStop()) {
-             archivePanel.sideNavigator.signalSelectionStartChange(tag.getStop());
-         } else {
-             archivePanel.sideNavigator.signalSelectionStopChange(archivePanel.dataStop);
-         }
-     }
+        if(tag.hasStop()) {
+            archivePanel.sideNavigator.signalSelectionStopChange(tag.getStop());
+        } else {
+            archivePanel.sideNavigator.signalSelectionStopChange(archivePanel.dataStop);
+        }
+    }
 
     public void setMoveLeftPointer() {
         setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));

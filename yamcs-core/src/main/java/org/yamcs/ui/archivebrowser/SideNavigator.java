@@ -6,8 +6,11 @@ import org.yamcs.utils.TimeEncoding;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 
 /**
  * For navigating between DataViewers. Also includes a date range
@@ -15,11 +18,12 @@ import java.beans.PropertyChangeListener;
  * mouse position (similar to TT, but without day of the year
  * formatting.)
  */
-public class SideNavigator extends JPanel {
+public class SideNavigator extends JPanel implements MouseListener {
     private static final long serialVersionUID = 1L;
     private static final Color DEFAULT_LABEL_COLOR = Color.GRAY;
     private ArchivePanel archivePanel;
     private JPanel itemsPanel;
+    private HashMap<String,NavigatorItem> itemsByName=new HashMap<String, NavigatorItem>();
 
     private JFormattedTextField mouseLocator;
     private JFormattedTextField selectionStart;
@@ -87,7 +91,7 @@ public class SideNavigator extends JPanel {
         selectionStart.addPropertyChangeListener("value", new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                // TODO dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
+                archivePanel.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
             }
         });
 
@@ -103,7 +107,7 @@ public class SideNavigator extends JPanel {
         selectionStop.addPropertyChangeListener("value", new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                // TODO dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
+                archivePanel.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
             }
         });
 
@@ -117,44 +121,27 @@ public class SideNavigator extends JPanel {
         return vbox;
     }
 
-    public void addItem(String title, int indent, DataViewer dataViewer) {
-        addItem(title, indent, dataViewer, false);
-    }
-
-    public void addItem(String title, int indent, DataViewer dataViewer, boolean selected) {
-        NavigatorItem item = new NavigatorItem(this, title, indent);
+    public void addItem(String name, int indent, DataViewer dataViewer) {
+        NavigatorItem item = new NavigatorItem(name, dataViewer, indent);
+        item.addMouseListener(this);
         GridBagConstraints cons = new GridBagConstraints();
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.weightx = 1;
         cons.gridx = 0;
         itemsPanel.add(item, cons);
-        archivePanel.dataViewerPanel.add(dataViewer, title);
-        if(selected) {
-            item.toggleState(true);
-        }
-    }
-    
-    public void deactivateAll() {
-        for(int i=0;i<itemsPanel.getComponentCount();i++) {
-            Component component = itemsPanel.getComponent(i);
-            if (component instanceof NavigatorItem) {
-                ((NavigatorItem) component).toggleState(false);
-            }
-        }
+        itemsByName.put(name, item);
     }
 
-    public void openItem(String name) {
-        deactivateAll();
+    public NavigatorItem getItemByName(String name) {
+        return itemsByName.get(name);
+    }
+
+    public void updateActiveItem(NavigatorItem targetItem) {
         for(int i=0;i<itemsPanel.getComponentCount();i++) {
             Component component = itemsPanel.getComponent(i);
             if (component instanceof NavigatorItem) {
                 NavigatorItem item = ((NavigatorItem) component);
-                if (item.getText().equals(name)) {
-                    item.setBackground(UiColors.BORDER_COLOR);
-                    archivePanel.openItem(name);
-                } else {
-                    item.setDefaultBackground();
-                }
+                item.toggleState(item.equals(targetItem));
             }
         }
     }
@@ -190,4 +177,16 @@ public class SideNavigator extends JPanel {
         selectionStop.setEditable((stopInstant!=TimeEncoding.INVALID_INSTANT));
         selectionStop.setValue(stopInstant);
     }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if(e.getSource() instanceof NavigatorItem) {
+            archivePanel.fireIntentionToSwitchActiveItem((NavigatorItem) e.getSource());
+        }
+    }
+
+    @Override public void mouseClicked(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
 }

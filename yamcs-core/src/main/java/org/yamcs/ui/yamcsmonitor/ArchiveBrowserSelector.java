@@ -96,7 +96,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         rawPacketDumpCmdMenuItem.setActionCommand("show-raw-packet-dump");
         viewMenu.add(rawPacketDumpCmdMenuItem);
 
-        archivePanel.openEntry("Telemetry");
+        archivePanel.openItem("Telemetry");
         
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
