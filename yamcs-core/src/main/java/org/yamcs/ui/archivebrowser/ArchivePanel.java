@@ -159,6 +159,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
                         dataView.doMouseReleased(me);
                     } else if(event.getID()==MouseEvent.MOUSE_MOVED) {
                         dataView.doMouseMoved(me);
+                    } else if(event.getID()==MouseEvent.MOUSE_EXITED) {
+                        dataView.doMouseExited(me);
                     }
                 }
             }

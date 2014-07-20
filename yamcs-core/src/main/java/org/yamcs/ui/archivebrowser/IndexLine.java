@@ -1,6 +1,7 @@
 package org.yamcs.ui.archivebrowser;
 
 import org.yamcs.ui.archivebrowser.IndexBox.IndexLineSpec;
+import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputListener;
@@ -81,7 +82,7 @@ debugLog("tmpanel postTip");
     @Override
     public void mouseMoved(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e);
-        setToolTipText(tmBox.dataView.getMouseText(transEvent));
+        setToolTipText(TimeEncoding.toCombinedFormat(tmBox.dataView.getMouseInstant(transEvent)));
         tmBox.dataView.setPointer(transEvent);
     }
 

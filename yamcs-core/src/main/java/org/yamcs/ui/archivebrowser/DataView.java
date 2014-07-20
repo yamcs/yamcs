@@ -172,16 +172,22 @@ public class DataView extends JScrollPane {
         return new Point(event.getX() - 94, event.getY() + 20);
     }
 
-    String getMouseText(MouseEvent e) {
+    long getMouseInstant(MouseEvent e) {
         if (zoomStack.isEmpty()) {
-            return null;
+            return TimeEncoding.INVALID_INSTANT;
         }
         previewLocator = zoomStack.peek().convertPixelToInstant(e.getX());
-        return TimeEncoding.toCombinedFormat(previewLocator);
+        return previewLocator;
     }
 
     void setMouseLabel(MouseEvent e) {
-        setToolTipText(getMouseText(e));
+        long instant = getMouseInstant(e);
+        if (instant==TimeEncoding.INVALID_INSTANT) {
+            setToolTipText(null);
+        } else {
+            setToolTipText(TimeEncoding.toCombinedFormat(instant));
+        }
+        archivePanel.sideNavigator.signalMousePosition(instant);
     }
     
     private void zoomIn(Selection sel)  {
@@ -333,13 +339,17 @@ public class DataView extends JScrollPane {
         indexPanel.doMouseReleased(e);
     }
 
-    public void updateSelection() {
+    public void doMouseExited(MouseEvent e) {
+        archivePanel.sideNavigator.signalMousePosition(TimeEncoding.INVALID_INSTANT);
+        mouseLocatorX = -1;
+        repaint(); // Force removal of needle in paint()
+    }
+
+    public void updateSelection(Long selectionStart, Long selectionStop) {
         if(!archivePanel.passiveUpdate) {
-            Long sstart=(Long) dataViewer.selectionStart.getValue();
-            Long sstop=(Long) dataViewer.selectionStop.getValue();
-            if ((sstart!=null) && (sstop!=null)) {
-                long start =sstart;
-                long stop =sstop;
+            if ((selectionStart!=null) && (selectionStop!=null)) {
+                long start = selectionStart;
+                long stop = selectionStop;
                 if ((start != TimeEncoding.INVALID_INSTANT) && (stop != TimeEncoding.INVALID_INSTANT)) {
                     updateSelection(start, stop);
                     emitActionEvent("histo_selection_finished");
@@ -349,9 +359,7 @@ public class DataView extends JScrollPane {
     }
 
     public void selectionFinished() {
-        for(Map.Entry<String, IndexBox>e: indexBoxes.entrySet()) {
-            IndexBox ib=e.getValue();
-            String name=e.getKey();
+        for(String name : indexBoxes.keySet()) {
             emitActionEvent(name+"_selection_finished");
         }
     }
@@ -362,14 +370,7 @@ public class DataView extends JScrollPane {
      */
     void updateSelectionFields() {
         archivePanel.passiveUpdate=true;
-        Selection s = getSelection();
-        if (s != null) {
-            dataViewer.selectionStart.setValue(s.getStartInstant());
-            dataViewer.selectionStop.setValue(s.getStopInstant());
-        } else {
-            dataViewer.selectionStart.setValue(TimeEncoding.INVALID_INSTANT);
-            dataViewer.selectionStop.setValue(TimeEncoding.INVALID_INSTANT);
-        }
+        archivePanel.sideNavigator.signalSelectionChange(currentSelection);
         archivePanel.passiveUpdate=false;
     }
     
@@ -381,16 +382,16 @@ public class DataView extends JScrollPane {
      public void selectedTag(ArchiveTag tag) {
          archivePanel.passiveUpdate=true;
          if(tag.hasStart())  {
-             dataViewer.selectionStart.setValue(tag.getStart());
+             archivePanel.sideNavigator.signalSelectionStartChange(tag.getStart());
          } else {
-             dataViewer.selectionStart.setValue(archivePanel.dataStart);
+             archivePanel.sideNavigator.signalSelectionStartChange(archivePanel.dataStart);
          }
          archivePanel.passiveUpdate=false;
          
          if(tag.hasStop()) {
-             dataViewer.selectionStop.setValue(tag.getStop());
+             archivePanel.sideNavigator.signalSelectionStartChange(tag.getStop());
          } else {
-             dataViewer.selectionStop.setValue(archivePanel.dataStop);
+             archivePanel.sideNavigator.signalSelectionStopChange(archivePanel.dataStop);
          }
      }
 
@@ -530,7 +531,7 @@ public class DataView extends JScrollPane {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            if(mouseLocatorX > 5) { // Just enough to make it possible to 'hide' the locator
+            if(mouseLocatorX > 0) {
                 // follow mouse for better timeline positioning
                 g.setColor(Color.DARK_GRAY);
                 int tagBoxHeight = tagBox.getHeight();

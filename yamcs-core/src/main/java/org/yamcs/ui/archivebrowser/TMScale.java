@@ -1,28 +1,13 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.TimeZone;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JSlider;
-import javax.swing.SwingConstants;
-import javax.swing.plaf.basic.BasicSliderUI;
 
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicSliderUI;
+import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class TMScale extends JSlider {
     private static final long serialVersionUID = 1L;
