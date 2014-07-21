@@ -11,16 +11,13 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
@@ -32,8 +29,6 @@ import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
  */
 public class ArchivePanel extends JPanel implements PropertyChangeListener {
     private static final long serialVersionUID = 1L;
-    static final SimpleDateFormat format_yyyymmdd    = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-    static final SimpleDateFormat format_yyyymmddT   = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     ProgressMonitor progressMonitor;
     
@@ -41,13 +36,15 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     JLabel totalRangeLabel;
     JLabel statusInfoLabel;
     JLabel instanceLabel;
-    private List<DataViewer> dataViewers = new ArrayList<DataViewer>();
+
+    private LinkedHashMap<String,NavigatorItem> itemsByName=new LinkedHashMap<String, NavigatorItem>();
 
     SideNavigator sideNavigator;
     public JToolBar archiveToolbar;
     protected PrefsToolbar prefs;
     
-    private JPanel dataViewerPanel;
+    private JPanel insetPanel; // Contains switchable navigator insets (depends on open item)
+    private JPanel navigatorItemPanel; // Contains switchable items
     private NavigatorItem activeItem; // Currently opened item from SideNav
     public ReplayPanel replayPanel;
     
@@ -91,33 +88,110 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             fixedTop.add(replayPanel);
         }
 
-        DataViewer allViewer = new DataViewer(this, replayEnabled);
-        allViewer.addIndex("completeness", "completeness index");
-        allViewer.addIndex("tm", "tm histogram", 1000);
-        allViewer.addIndex("pp", "pp histogram", 1000);
-        allViewer.addIndex("cmdhist", "cmdhist histogram", 1000);
-        allViewer.addVerticalGlue();
-        dataViewers.add(allViewer);
+        // This is a bit clumsy right now with the inner classes, but will make more
+        // sense once we add custom components to different DataViewers.
+        DataViewer allViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, replayEnabled) {
+            @Override
+            public String getLabelName() {
+                return "Archive";
+            }
 
-        DataViewer completenessViewer = new DataViewer(this, replayEnabled);
-        completenessViewer.addIndex("completeness", "completeness index");
-        completenessViewer.addVerticalGlue();
-        dataViewers.add(completenessViewer);
+            @Override
+            public JComponent createContentPanel() {
+                JComponent component = super.createContentPanel();
+                addIndex("completeness", "completeness index");
+                addIndex("tm", "tm histogram", 1000);
+                addIndex("pp", "pp histogram", 1000);
+                addIndex("cmdhist", "cmdhist histogram", 1000);
+                addVerticalGlue();
+                return component;
+            }
+        };
+        itemsByName.put(allViewer.getLabelName(), allViewer);
 
-        DataViewer tmViewer = new DataViewer(this, replayEnabled);
-        tmViewer.addIndex("tm", "tm histogram", 1000);
-        tmViewer.addVerticalGlue();
-        dataViewers.add(tmViewer);
+        DataViewer completenessViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, false) {
+            @Override
+            public String getLabelName() {
+                return "Completeness";
+            }
 
-        DataViewer ppViewer = new DataViewer(this, replayEnabled);
-        ppViewer.addIndex("pp", "pp histogram", 1000);
-        ppViewer.addVerticalGlue();
-        dataViewers.add(ppViewer);
+            @Override
+            public int getIndent() {
+                return 1;
+            }
 
-        DataViewer cmdViewer = new DataViewer(this, replayEnabled);
-        cmdViewer.addIndex("cmdhist", "cmdhist histogram", 1000);
-        cmdViewer.addVerticalGlue();
-        dataViewers.add(cmdViewer);
+            @Override
+            public JComponent createContentPanel() {
+                JComponent component = super.createContentPanel();
+                addIndex("completeness", "completeness index");
+                addVerticalGlue();
+                return component;
+            }
+        };
+        itemsByName.put(completenessViewer.getLabelName(), completenessViewer);
+
+        DataViewer tmViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, replayEnabled) {
+            @Override
+            public String getLabelName() {
+                return "Telemetry";
+            }
+
+            @Override
+            public int getIndent() {
+                return 1;
+            }
+
+            @Override
+            public JComponent createContentPanel() {
+                JComponent component = super.createContentPanel();
+                addIndex("tm", "tm histogram", 1000);
+                addVerticalGlue();
+                return component;
+            }
+        };
+        itemsByName.put(tmViewer.getLabelName(), tmViewer);
+
+        DataViewer ppViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, false) {
+            @Override
+            public String getLabelName() {
+                return "Processed Parameters";
+            }
+
+            @Override
+            public int getIndent() {
+                return 1;
+            }
+
+            @Override
+            public JComponent createContentPanel() {
+                JComponent component = super.createContentPanel();
+                addIndex("pp", "pp histogram", 1000);
+                addVerticalGlue();
+                return component;
+            }
+        };
+        itemsByName.put(ppViewer.getLabelName(), ppViewer);
+
+        DataViewer cmdViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, false) {
+            @Override
+            public String getLabelName() {
+                return "Command History";
+            }
+
+            @Override
+            public int getIndent() {
+                return 1;
+            }
+
+            @Override
+            public JComponent createContentPanel() {
+                JComponent component = super.createContentPanel();
+                addIndex("cmdhist", "cmdhist histogram", 1000);
+                addVerticalGlue();
+                return component;
+            }
+        };
+        itemsByName.put(cmdViewer.getLabelName(), cmdViewer);
         
         add(fixedTop, BorderLayout.NORTH);
         add(createStatusBar(), BorderLayout.SOUTH);
@@ -125,25 +199,23 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         sideNavigator = new SideNavigator(this);
         add(sideNavigator, BorderLayout.WEST);
 
-        dataViewerPanel = new JPanel(new CardLayout());
-        add(dataViewerPanel, BorderLayout.CENTER);
+        navigatorItemPanel = new JPanel(new CardLayout());
+        add(navigatorItemPanel, BorderLayout.CENTER);
 
-        dataViewerPanel.add(allViewer, "Archive");
-        sideNavigator.addItem("Archive", 0, allViewer);
+        insetPanel = new JPanel(new CardLayout());
+        insetPanel.setVisible(false);
+        sideNavigator.add(insetPanel, BorderLayout.SOUTH);
 
-        dataViewerPanel.add(completenessViewer, "Completeness");
-        sideNavigator.addItem("Completeness", 1, completenessViewer);
-
-        dataViewerPanel.add(tmViewer, "Telemetry");
-        sideNavigator.addItem("Telemetry", 1, tmViewer);
-
-        dataViewerPanel.add(ppViewer, "Processed Parameters");
-        sideNavigator.addItem("Processed Parameters", 1, ppViewer);
-
-        dataViewerPanel.add(cmdViewer, "Command History");
-        sideNavigator.addItem("Command History", 1, cmdViewer);
-
-        //sideNavigator.addItem("CCSDS Gap Retrieval", 0, null);
+        for(Map.Entry<String, NavigatorItem> entry:itemsByName.entrySet()) {
+            String name = entry.getKey();
+            NavigatorItem navigatorItem = entry.getValue();
+            navigatorItemPanel.add(navigatorItem.getContentPanel(), name);
+            sideNavigator.addItem(name, navigatorItem.getIndent(), navigatorItem);
+            JComponent navInset = navigatorItem.getNavigatorInset();
+            if(navInset!=null) {
+                insetPanel.add(navInset, name);
+            }
+        }
 
         openItem("Archive");
                 
@@ -158,8 +230,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
             @Override
             public void eventDispatched(AWTEvent event) { // EDT
-                if(activeItem.getMatchingContentPanel() instanceof DataViewer) {
-                    DataView dataView = ((DataViewer)activeItem.getMatchingContentPanel()).dataView;
+                if(activeItem instanceof DataViewer) {
+                    DataView dataView = ((DataViewer)activeItem).getDataView();
                     if (!(event.getSource() instanceof JScrollBar)
                             && !(event.getSource() instanceof TagTimeline)
                             && SwingUtilities.isDescendingFrom((Component)event.getSource(), dataView)) {
@@ -182,21 +254,32 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public void openItem(String name) {
-        NavigatorItem item=sideNavigator.getItemByName(name);
+        NavigatorItem item=getItemByName(name);
         fireIntentionToSwitchActiveItem(item);
+    }
+
+    public NavigatorItem getItemByName(String name) {
+        return itemsByName.get(name);
     }
 
     void fireIntentionToSwitchActiveItem(NavigatorItem sourceItem) {
         if(activeItem == sourceItem) return;
-        activeItem = sourceItem;
         sideNavigator.updateActiveItem(sourceItem); // UI-only
 
-        CardLayout cl = (CardLayout) dataViewerPanel.getLayout();
-        cl.show(dataViewerPanel, sourceItem.getText());
+        CardLayout ncl = (CardLayout) navigatorItemPanel.getLayout();
+        ncl.show(navigatorItemPanel, sourceItem.getLabelName());
 
-        if(sourceItem.getMatchingContentPanel() instanceof DataViewer) { // TODO Rework
-            ((DataViewer) sourceItem.getMatchingContentPanel()).updateMenuStates();
+        if(sourceItem.getNavigatorInset()!=null) {
+            CardLayout icl = (CardLayout) insetPanel.getLayout();
+            icl.show(insetPanel, sourceItem.getLabelName());
+            insetPanel.setVisible(true);
+        } else {
+            insetPanel.setVisible(false);
         }
+
+        if(activeItem!=null) activeItem.onClose();
+        sourceItem.onOpen();
+        activeItem = sourceItem;
     }
     
     private Box createStatusBar() {
@@ -230,12 +313,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         return lbl;
     }
     
-    public void addActionListener(ActionListener al) {
-        for(DataViewer dataViewer : dataViewers) {
-            dataViewer.dataView.addActionListener(al);
-        }
-    }
-    
     void updateStatusBar() {
         passiveUpdate = true;
 
@@ -264,25 +341,14 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             public void run() {
                 prefs.reloadButton.setEnabled(false);
                 //debugLog("requestData() mark 5 "+new Date());
-                for(DataViewer dataViewer: dataViewers) {
-                    dataViewer.zoomInButton.setEnabled(false);
-                    dataViewer.zoomOutButton.setEnabled(false);
-                    dataViewer.showAllButton.setEnabled(false);
-                    if (dataViewer.applyButton != null) {
-                        dataViewer.applyButton.setEnabled(false);
-                    }
-                }
+                instanceLabel.setText(prefs.getInstance());
             }
         });
-        final String inst = prefs.getInstance();
-        instanceLabel.setText(inst);
-        for(DataViewer dataViewer: dataViewers) {
-            for(IndexBox ib:dataViewer.dataView.indexBoxes.values()) {
-                ib.startReloading();
-            }
-            dataViewer.dataView.headerPanel.tagBox.tags.clear();
+
+        for(NavigatorItem item:itemsByName.values()) {
+            item.startReloading();
         }
-        
+
         if(lowOnMemoryReported) {
             System.gc();
             lowOnMemoryReported=false;
@@ -404,10 +470,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         return prefs.getStartTimestamp();
     }
 
-    public void updateSelection(Long start, Long stop) {
-        ((DataViewer) activeItem.getMatchingContentPanel()).dataView.updateSelection(start, stop);
-    }
-
     public synchronized void receiveArchiveRecords(IndexResult ir) {
         if((heapMemoryPoolBean!=null) && (heapMemoryPoolBean.isCollectionUsageThresholdExceeded())) {
             if(!lowOnMemoryReported) {
@@ -416,31 +478,15 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             }
             return;
         }
-        
-        long start, stop;
-        if("completeness".equals(ir.getType())) {
-            for(DataViewer dataViewer: dataViewers) {
-                if(dataViewer.dataView.indexBoxes.containsKey("completeness")) {
-                    dataViewer.dataView.indexBoxes.get("completeness").receiveArchiveRecords(ir.getRecordsList());
-                }
-            }
-        } else if("histogram".equals(ir.getType())) {
-            String tableName=ir.getTableName();
-            for(DataViewer dataViewer: dataViewers) {
-                if(dataViewer.dataView.indexBoxes.containsKey(tableName)) {
-                    dataViewer.dataView.indexBoxes.get(tableName).receiveArchiveRecords(ir.getRecordsList());
-                }
-            }
-            /* TODO TODO else {
-                debugLog("Received histogram records for unknown table '"+tableName+"': "+ir);
-            }*/
-        } else {
-            debugLog("Received archive records of type "+ir.getType()+" don't know what to do with them");
-            return;
+
+        for(NavigatorItem navigatorItem:itemsByName.values()) {
+            navigatorItem.receiveArchiveRecords(ir);
         }
+
         //progressMonitor.setProgress(30);
         //progressMonitor.setNote("Receiving data");
-        
+
+        long start, stop;
         for (ArchiveRecord r:ir.getRecordsList()) {
             //debugLog(r.packet+"\t"+r.num+"\t"+new Date(r.first)+"\t"+new Date(r.last));
             start = r.getFirst();
@@ -450,7 +496,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             if ((dataStop == INVALID_INSTANT) || (stop>dataStop)) dataStop = stop;
 
             recCount++;
-            ++loadCount;
+            loadCount++;
             updateStatusBar();
         }
     }
@@ -459,6 +505,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
          SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                for(NavigatorItem navigatorItem:itemsByName.values()) {
+                    navigatorItem.receiveArchiveRecordsError(errorMessage);
+                }
                 JOptionPane.showMessageDialog(ArchivePanel.this, "Error when receiving archive records: "+errorMessage, "error receiving archive records", JOptionPane.ERROR_MESSAGE);
                 prefs.reloadButton.setEnabled(true);
                 setNormalPointer();
@@ -470,102 +519,71 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         replayPanel.seekReplay(newPosition);
     }
 
-    public synchronized void dataLoadFinished() {
-        for(DataViewer dataViewer: dataViewers) {
-            for(IndexBox ib:dataViewer.dataView.indexBoxes.values()) {
-                ib.dataLoadFinished();
+    public synchronized void archiveLoadFinished() {
+        loadCount = 0;
+        if ((dataStart != INVALID_INSTANT) && (dataStop != INVALID_INSTANT)) {
+            for(NavigatorItem item:itemsByName.values()) {
+                item.archiveLoadFinished();
             }
+            prefs.savePreferences();
         }
-   //     debugLog("loaded " + recCount + " records, " + histoBox.groups.size() + 
-     //           " PLs, " + histoBox.allPackets.size() + " packets, start \"" + dataStart + "\" stop \"" + dataStop + "\"");
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 statusInfoLabel.setText("");
                 prefs.reloadButton.setEnabled(true);
+                setNormalPointer();
             }
         });
-        loadCount = 0;
-        
-        if ((dataStart == INVALID_INSTANT) || (dataStop == INVALID_INSTANT)) {
-            setNormalPointer();
-        } else {
-            for(DataViewer dataViewer: dataViewers) {
-                dataViewer.dataView.dataLoadFinished();
-            }
-            prefs.savePreferences();
-        }
-        
-        prefs.reloadButton.setEnabled(true);
-        setNormalPointer();
     }
 
     public void tagAdded(ArchiveTag ntag) {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.tagBox.addTag(ntag);
+        for(NavigatorItem navigatorItem:itemsByName.values()) {
+            navigatorItem.tagAdded(ntag);
         }
     }
     
-    public void tagRemoved(ArchiveTag ntag) {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.tagBox.removeTag(ntag);
+    public void tagRemoved(ArchiveTag rtag) {
+        for(NavigatorItem navigatorItem:itemsByName.values()) {
+            navigatorItem.tagRemoved(rtag);
         }
     }
 
     public void tagChanged(ArchiveTag oldTag, ArchiveTag newTag) {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.tagBox.updateTag(oldTag, newTag);
+        for(NavigatorItem navigatorItem:itemsByName.values()) {
+            navigatorItem.tagChanged(oldTag, newTag);
         }
     }
 
     public void tagsAdded(List<ArchiveTag> tagList) {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.dataView.headerPanel.tagBox.addTags(tagList);
+        for(NavigatorItem navigatorItem:itemsByName.values()) {
+            navigatorItem.receiveTags(tagList);
         }
     }
 
-    public void createNewTag(Selection sel) {
-        DataViewer dataViewer = ((DataViewer) activeItem.getMatchingContentPanel());
-        dataViewer.dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
-    }
-
-    public void enableNewTagButton() {
-        for(DataViewer dataViewer: dataViewers) {
-            dataViewer.enableNewTagButton();
-        }
-    }
-
+    // TODO only used by selector. Rework maybe in custom replay launcher
     public Selection getSelection() {
-        DataViewer dataViewer = ((DataViewer) activeItem.getMatchingContentPanel());
-        return dataViewer.dataView.getSelection();
+        DataViewer dataViewer = (DataViewer) activeItem;
+        return dataViewer.getDataView().getSelection();
     }
 
+    // TODO only used by selector. Rework maybe in custom replay launcher
     public List<String> getSelectedPackets(String tableName) {
-        DataViewer dataViewer = ((DataViewer) activeItem.getMatchingContentPanel());
-        if(dataViewer.dataView.indexBoxes.containsKey(tableName)) {
-            return dataViewer.dataView.getSelectedPackets("tm");
+        DataViewer dataViewer = (DataViewer) activeItem;
+        if(dataViewer.getDataView().indexBoxes.containsKey(tableName)) {
+            return dataViewer.getDataView().getSelectedPackets("tm");
         }
         return Collections.emptyList();
     }
 
-    public void refreshAllDataViewers() {
-        for(DataViewer dataViewer : dataViewers) {
-            refreshDataViewer(dataViewer);
-        }
+    public void onWindowResizing() {
+        activeItem.windowResized();
     }
 
-    public void refreshActiveDataViewer() {
-        DataViewer dataViewer = ((DataViewer) activeItem.getMatchingContentPanel());
-        refreshDataViewer(dataViewer);
-    }
-
-    private void refreshDataViewer(DataViewer dataViewer) {
-        DataView dataView = dataViewer.dataView;
-        if(dataView.zoomStack.isEmpty() || dataView.zoomStack.size() == 1) {
-            dataView.refreshDisplay(true);
-            if(!dataView.zoomStack.isEmpty()) {
-                dataView.setViewLocationFromZoomstack();
-            }
+    public void onWindowResized() {
+        for (NavigatorItem navigatorItem : itemsByName.values()) {
+            navigatorItem.windowResized();
         }
     }
 }

@@ -187,7 +187,7 @@ public class DataView extends JScrollPane {
         } else {
             setToolTipText(TimeEncoding.toCombinedFormat(instant));
         }
-        archivePanel.sideNavigator.signalMousePosition(instant);
+        dataViewer.signalMousePosition(instant);
     }
     
     private void zoomIn(Selection sel)  {
@@ -237,7 +237,10 @@ public class DataView extends JScrollPane {
         });
     }
     
-    public void dataLoadFinished() {
+    public void archiveLoadFinished() {
+        for(IndexBox ib:indexBoxes.values()) {
+            ib.dataLoadFinished();
+        }
         if (zoomStack.isEmpty() ||
                 ((archivePanel.prefs.getStartTimestamp() != lastStartTimestamp) ||
                         (archivePanel.prefs.getEndTimestamp() != lastEndTimestamp)
@@ -340,7 +343,7 @@ public class DataView extends JScrollPane {
     }
 
     public void doMouseExited(MouseEvent e) {
-        archivePanel.sideNavigator.signalMousePosition(TimeEncoding.INVALID_INSTANT);
+        dataViewer.signalMousePosition(TimeEncoding.INVALID_INSTANT);
         mouseLocatorX = -1;
         repaint(); // Force removal of needle in paint()
     }
@@ -370,7 +373,7 @@ public class DataView extends JScrollPane {
      */
     void updateSelectionFields() {
         archivePanel.passiveUpdate=true;
-        archivePanel.sideNavigator.signalSelectionChange(currentSelection);
+        dataViewer.signalSelectionChange(currentSelection);
         archivePanel.passiveUpdate=false;
     }
     
@@ -382,16 +385,16 @@ public class DataView extends JScrollPane {
     public void selectedTag(ArchiveTag tag) {
         archivePanel.passiveUpdate=true;
         if(tag.hasStart())  {
-            archivePanel.sideNavigator.signalSelectionStartChange(tag.getStart());
+            dataViewer.signalSelectionStartChange(tag.getStart());
         } else {
-            archivePanel.sideNavigator.signalSelectionStartChange(archivePanel.dataStart);
+            dataViewer.signalSelectionStartChange(archivePanel.dataStart);
         }
         archivePanel.passiveUpdate=false;
          
         if(tag.hasStop()) {
-            archivePanel.sideNavigator.signalSelectionStopChange(tag.getStop());
+            dataViewer.signalSelectionStopChange(tag.getStop());
         } else {
-            archivePanel.sideNavigator.signalSelectionStopChange(archivePanel.dataStop);
+            dataViewer.signalSelectionStopChange(archivePanel.dataStop);
         }
     }
 

@@ -31,7 +31,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         super(yconnector, indexReceiver, true);
         // create menus
 
-        JMenuBar menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
         JMenu menu = new JMenu("File");
@@ -48,31 +48,6 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         viewMenu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(viewMenu);
 
-        // Export menu
-        JMenu selectionMenu = new JMenu("Selection");
-        menuBar.add(selectionMenu);
-
-        packetRetrieval = new JMenuItem("Export Packets...");
-        packetRetrieval.setEnabled(false);
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
-        packetRetrieval.addActionListener(this);
-        packetRetrieval.setActionCommand("start-packet-retrieval");
-        selectionMenu.add(packetRetrieval);
-
-        parameterRetrieval = new JMenuItem("Export Parameters...");
-        parameterRetrieval.setEnabled(false);
-        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
-        parameterRetrieval.addActionListener(this);
-        parameterRetrieval.setActionCommand("start-parameter-retrieval");
-        selectionMenu.add(parameterRetrieval);
-
-        cmdHistRetrieval = new JMenuItem("Export Command History...");
-        cmdHistRetrieval.setEnabled(false);
-        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
-        cmdHistRetrieval.addActionListener(this);
-        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
-        selectionMenu.add(cmdHistRetrieval);
-        
         menuBar.add(getToolsMenu());
      
         viewMenu.addSeparator();
