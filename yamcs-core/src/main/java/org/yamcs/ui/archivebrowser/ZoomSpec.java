@@ -1,9 +1,11 @@
 package org.yamcs.ui.archivebrowser;
 
 import org.yamcs.ui.archivebrowser.ArchivePanel.IndexChunkSpec;
+import org.yamcs.utils.TimeEncoding;
 
 public class ZoomSpec {
     long startInstant, stopInstant; //the start and stop of all the visible data (i.e. scrolling to the left and right)
+    long selectionStart, selectionStop; //optional start/stop of the selection before next zoom in (to restore on zoomout)
     long viewLocation;
     long viewTimeWindow; //the total time visible at one time(i.e. if the scroll is not used)
     double pixelRatio; // ms per pixel
@@ -14,6 +16,13 @@ public class ZoomSpec {
         this.viewTimeWindow = viewTimeWindow;
         viewLocation = start;
         setPixels(pixelwidth);
+        selectionStart = TimeEncoding.INVALID_INSTANT;
+        selectionStop = TimeEncoding.INVALID_INSTANT;
+    }
+
+    void setSelectedRange(long selectionStart, long selectionStop) {
+        this.selectionStart = selectionStart;
+        this.selectionStop = selectionStop;
     }
 
     void setPixels(int pixelwidth) {

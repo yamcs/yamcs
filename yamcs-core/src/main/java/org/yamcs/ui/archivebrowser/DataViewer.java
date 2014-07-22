@@ -191,18 +191,24 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         } else {
             signalSelectionStartChange(TimeEncoding.INVALID_INSTANT);
             signalSelectionStopChange(TimeEncoding.INVALID_INSTANT);
-            dottedSquare.setForeground(Color.GRAY);
+            if(dottedSquare!=null) { // FIXME gui set-up should not need resetSelection() call
+                dottedSquare.setForeground(Color.GRAY);
+            }
         }
     }
 
     public void signalSelectionStartChange(long startInstant) {
-        selectionStart.setEditable((startInstant!=TimeEncoding.INVALID_INSTANT));
-        selectionStart.setValue(startInstant);
+        if(selectionStart!=null) { // FIXME Can be null during gui set-up.
+            selectionStart.setEditable((startInstant != TimeEncoding.INVALID_INSTANT));
+            selectionStart.setValue(startInstant);
+        }
     }
 
     public void signalSelectionStopChange(long stopInstant) {
-        selectionStop.setEditable((stopInstant!=TimeEncoding.INVALID_INSTANT));
-        selectionStop.setValue(stopInstant);
+        if(selectionStop!=null) { // FIXME Can be null during gui set-up.
+            selectionStop.setEditable((stopInstant != TimeEncoding.INVALID_INSTANT));
+            selectionStop.setValue(stopInstant);
+        }
     }
 
     private void updateMenuStates() {
@@ -266,10 +272,13 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         String cmd = e.getActionCommand();
         if (cmd.equals("showall")) {
             dataView.showAll();
+            zoomOutButton.setEnabled(false);
         } else if (cmd.equals("zoomout")) {
             dataView.zoomOut();
+            zoomOutButton.setEnabled(dataView.zoomStack.size()>1);
         } else if (cmd.equals("zoomin")) {
             dataView.zoomIn();
+            zoomOutButton.setEnabled(true);
         } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
             if(indexReceiver.supportsTags()) newTagButton.setEnabled(true);
         } else if (cmd.toLowerCase().endsWith("selection_finished")) {

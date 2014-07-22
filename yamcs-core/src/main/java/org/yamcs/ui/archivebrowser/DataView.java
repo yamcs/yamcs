@@ -190,7 +190,7 @@ public class DataView extends JScrollPane {
         dataViewer.signalMousePosition(instant);
     }
     
-    private void zoomIn(Selection sel)  {
+    public void zoomIn()  {
         ZoomSpec zoom = zoomStack.peek();
         final JViewport vp = getViewport();
 
@@ -198,8 +198,22 @@ public class DataView extends JScrollPane {
         zoom.viewLocation = zoom.convertPixelToInstant(vp.getViewPosition().x);
 
         // create new zoom spec and add it to the stack
-        long startInstant = sel.getStartInstant();
-        long stopInstant = sel.getStopInstant();
+        long startInstant;
+        long stopInstant;
+        if(currentSelection==null) {
+            // Zoom in on center 3rd of current view extent
+            int extentWidth=vp.getExtentSize().width;
+            int nextStartX = vp.getViewPosition().x + (extentWidth/3);
+            int nextStopX = nextStartX + (extentWidth/3);
+            startInstant=zoom.convertPixelToInstant(nextStartX);
+            stopInstant=zoom.convertPixelToInstant(nextStopX);
+            zoom.setSelectedRange(TimeEncoding.INVALID_INSTANT, TimeEncoding.INVALID_INSTANT);
+        } else {
+            startInstant = currentSelection.getStartInstant();
+            stopInstant = currentSelection.getStopInstant();
+            zoom.setSelectedRange(startInstant, stopInstant);
+        }
+
         long range = stopInstant - startInstant;
         
         long reqStart=archivePanel.getRequestedDataStart();
@@ -213,7 +227,7 @@ public class DataView extends JScrollPane {
             zstop=Math.min(zstop, reqStop);
         }
         zoom = new ZoomSpec(zstart, zstop, vp.getExtentSize().width, range);
-        zoom.viewLocation = sel.getStartInstant();
+        zoom.viewLocation = startInstant;
         zoomStack.push(zoom);
 
         resetSelection();
@@ -274,7 +288,7 @@ public class DataView extends JScrollPane {
             public void run() {
                 //debugLog("receiveHrdpRecords() mark 1");
                 dataViewer.zoomInButton.setEnabled(true);
-                dataViewer.zoomOutButton.setEnabled(true);
+                dataViewer.zoomOutButton.setEnabled(false);
                 dataViewer.showAllButton.setEnabled(true);
                 if (dataViewer.applyButton != null) dataViewer.applyButton.setEnabled(true);
             }
@@ -307,17 +321,16 @@ public class DataView extends JScrollPane {
     void zoomOut() {
         if (zoomStack.size() > 1) {
             zoomStack.pop();
+            ZoomSpec zoom = zoomStack.peek();
+            if(zoom.selectionStart!=TimeEncoding.INVALID_INSTANT && zoom.selectionStop!=TimeEncoding.INVALID_INSTANT) {
+                // Restore selection as it was made before zoom in (to make it easier to go back and forth between zoom in/out)
+                updateSelection(zoom.selectionStart, zoom.selectionStop);
+                dataViewer.signalSelectionChange(currentSelection);
+            }
             refreshDisplay();
 
             // place the view where it was
             setViewLocationFromZoomstack();
-        }
-    }
-
-    void zoomIn() {
-        Selection s = getSelection();
-        if (s != null) {
-            zoomIn(s);
         }
     }
 
@@ -434,6 +447,7 @@ public class DataView extends JScrollPane {
     public void resetSelection() {
         startX = -1;
         currentSelection = null;
+        dataViewer.signalSelectionChange(null);
         repaint();
         emitActionEvent("selection_reset");
     }
