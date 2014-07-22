@@ -71,15 +71,15 @@ public class IndexBox extends Box implements MouseListener {
         titleLabel.setForeground(new Color(51, 51, 51));
         topPanel.setMaximumSize(new Dimension(topPanel.getMaximumSize().width, titleLabel.getPreferredSize().height+13));
         topPanel.add(titleLabel, cons);
-        topPanel.setAlignmentX(0);
+        topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(topPanel);
         
-        centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         centerPanel.setBorder(BorderFactory.createEmptyBorder());
         centerPanel.setOpaque(false);
-        centerPanel.setAlignmentX(0);
-
+        centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(centerPanel);
+
         addMouseListener(this);
 
         this.dataView=dataView;
