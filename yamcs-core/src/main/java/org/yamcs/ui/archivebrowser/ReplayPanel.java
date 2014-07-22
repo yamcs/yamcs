@@ -66,6 +66,7 @@ public class ReplayPanel extends JPanel {
         replayStartIcon = ArchivePanel.getIcon("start.gif");
         replayStopIcon = ArchivePanel.getIcon("stop.gif");
         playStopButton = new JButton(replayStopIcon); // the Play/Stop button
+        playStopButton.setEnabled(false);
         playStopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent ae ) {
@@ -209,7 +210,7 @@ public class ReplayPanel extends JPanel {
         if(ci.hasReplayRequest()) {
             currentChannelInfo = ci;
             if ( isVisible() ) {
-                playStopButton.setEnabled(false);
+                playStopButton.setEnabled(true);
                 replayCurrentLabel.setText("");
                 dataViewer.getDataView().setCurrentLocator(dataViewer.getDataView().DO_NOT_DRAW);
                 for ( Component c:getComponents() ) {
