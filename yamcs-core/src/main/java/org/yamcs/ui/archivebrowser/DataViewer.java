@@ -299,13 +299,13 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
         } else if(cmd.equalsIgnoreCase("insert-tag")) {
             TagBox.TagEvent te=(TagBox.TagEvent)e;
-            indexReceiver.insertTag(archivePanel.getInstance(), te.newTag);
+            indexReceiver.insertTag(archivePanel.archiveBrowser.getInstance(), te.newTag);
         } else if(cmd.equalsIgnoreCase("update-tag")) {
             TagBox.TagEvent te=(TagBox.TagEvent)e;
-            indexReceiver.updateTag(archivePanel.getInstance(), te.oldTag, te.newTag);
+            indexReceiver.updateTag(archivePanel.archiveBrowser.getInstance(), te.oldTag, te.newTag);
         } else if(cmd.equalsIgnoreCase("delete-tag")) {
             TagBox.TagEvent te=(TagBox.TagEvent)e;
-            indexReceiver.deleteTag(archivePanel.getInstance(), te.oldTag);
+            indexReceiver.deleteTag(archivePanel.archiveBrowser.getInstance(), te.oldTag);
         }  else if (cmd.equals("start-packet-retrieval")) {
             List<String> packets = Collections.emptyList();
             if(dataView.indexBoxes.containsKey("tm")) {
@@ -315,7 +315,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             if(packetGui==null) {
                 packetGui=new PacketRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            packetGui.setValues(archivePanel.getInstance(), packets, sel.getStartInstant(), sel.getStopInstant());
+            packetGui.setValues(archivePanel.archiveBrowser.getInstance(), packets, sel.getStartInstant(), sel.getStopInstant());
             packetGui.setVisible(true);
 
         } else if (cmd.equals("start-parameter-retrieval")) {
@@ -323,7 +323,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             if(parameterGui==null) {
                 parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            parameterGui.setValues(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant());
+            parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(), sel.getStopInstant());
             parameterGui.setVisible(true);
         } else if (cmd.equals("start-cmdhist-retrieval")) {
 
@@ -331,7 +331,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             if (cmdHistGui == null) {
                 cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            cmdHistGui.setValues(archivePanel.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
+            cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);
         }
         updateMenuStates();

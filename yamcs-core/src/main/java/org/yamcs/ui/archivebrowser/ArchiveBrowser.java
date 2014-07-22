@@ -36,6 +36,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     JMenuItem connectMenuItem;
     
     YamcsConnector yconnector;
+
+    private String instance;
     
     private long lastErrorDialogTime = 0;
     
@@ -192,7 +194,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     @Override
     public void receiveArchiveRecordsFinished() {
         if(indexReceiver.supportsTags()) {
-            String instance=archivePanel.getInstance();
             TimeInterval interval = archivePanel.getRequestedDataInterval();
             indexReceiver.getTag(instance, interval);
         } else {
@@ -255,7 +256,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         //debugLog("requestData() mark 1 "+new Date());
         archivePanel.startReloading();
         TimeInterval interval = archivePanel.getRequestedDataInterval();
-        String instance=archivePanel.getInstance();
         indexReceiver.getIndex(instance, interval);
     }
 
@@ -308,6 +308,14 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             }
         });
         
+    }
+
+    public String getInstance() {
+        return instance;
+    }
+
+    public void setInstance(String instance) {
+        this.instance=instance;
     }
 
     public static void main(String[] args) throws URISyntaxException, ConfigurationException, IOException {

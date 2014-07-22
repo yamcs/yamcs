@@ -109,7 +109,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 List<String> packets = archivePanel.getSelectedPackets("tm");
                 ChannelWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
                 if(widget instanceof ArchiveChannelWidget) {
-                    ((ArchiveChannelWidget) widget).apply(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
+                    ((ArchiveChannelWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
                     showInfo("A new HRDP selection was applied.\n" +
                             "Look at the \"New Channel\" section in the Yamcs Monitor window to check.");
                 } else {

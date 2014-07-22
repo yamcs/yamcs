@@ -334,6 +334,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     
     public void startReloading() {
         recCount=0;
+        archiveBrowser.setInstance(prefs.getInstance());
         
         setBusyPointer();
         SwingUtilities.invokeLater(new Runnable() {
@@ -341,7 +342,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             public void run() {
                 prefs.reloadButton.setEnabled(false);
                 //debugLog("requestData() mark 5 "+new Date());
-                instanceLabel.setText(prefs.getInstance());
+                instanceLabel.setText(archiveBrowser.getInstance());
             }
         });
 
@@ -383,10 +384,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         debugLog(e.getPropertyName()+"/"+e.getOldValue()+"/"+e.getNewValue());
     }
 
-    public String getInstance() {
-        return instanceLabel.getText();
-    }
-    
     /**
      * Called when the connection to yamcs is (re)established, (re)populates the list of hrdp instances
      * @param archiveInstances
