@@ -75,7 +75,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         archiveToolbar = new JToolBar();
         archiveToolbar.setFloatable(false);
         archiveToolbar.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         fixedTop.add(archiveToolbar);
         
         //
@@ -84,7 +83,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         if (replayEnabled) {
             replayPanel = new ReplayPanel();
             replayPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Replay Control"));
-            replayPanel.setToolTipText("Right-click between the start/stop locators to reposition the replay.");
+            replayPanel.setToolTipText("Doubleclick between the start/stop locators to reposition the replay.");
+            replayPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
             fixedTop.add(replayPanel);
         }
 

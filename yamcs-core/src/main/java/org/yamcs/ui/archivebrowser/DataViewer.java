@@ -32,7 +32,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     private JMenu selectionMenu;
     private JMenuItem packetRetrieval, parameterRetrieval, cmdHistRetrieval;
 
-    JButton zoomInButton, zoomOutButton, showAllButton, applyButton, newTagButton;
+    JButton zoomInButton, zoomOutButton, showAllButton, newTagButton;
     boolean replayEnabled;
 
     private JFormattedTextField mouseLocator;
@@ -62,18 +62,21 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
         packetRetrieval.addActionListener(this);
         packetRetrieval.setActionCommand("start-packet-retrieval");
+        packetRetrieval.setEnabled(false);
         selectionMenu.add(packetRetrieval);
 
         parameterRetrieval = new JMenuItem("Export Parameters...");
         parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
         parameterRetrieval.addActionListener(this);
         parameterRetrieval.setActionCommand("start-parameter-retrieval");
+        parameterRetrieval.setEnabled(false);
         selectionMenu.add(parameterRetrieval);
 
         cmdHistRetrieval = new JMenuItem("Export Command History...");
         cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
         cmdHistRetrieval.addActionListener(this);
         cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
+        cmdHistRetrieval.setEnabled(false);
         selectionMenu.add(cmdHistRetrieval);
     }
 
@@ -188,11 +191,17 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             } else {
                 dottedSquare.setForeground(Color.GRAY);
             }
+            if(replayEnabled) {
+                archivePanel.replayPanel.applySelectionButton.setEnabled(true);
+            }
         } else {
             signalSelectionStartChange(TimeEncoding.INVALID_INSTANT);
             signalSelectionStopChange(TimeEncoding.INVALID_INSTANT);
             if(dottedSquare!=null) { // FIXME gui set-up should not need resetSelection() call
                 dottedSquare.setForeground(Color.GRAY);
+            }
+            if(replayEnabled) {
+                archivePanel.replayPanel.applySelectionButton.setEnabled(false);
             }
         }
     }
@@ -209,10 +218,6 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             selectionStop.setEditable((stopInstant != TimeEncoding.INVALID_INSTANT));
             selectionStop.setValue(stopInstant);
         }
-    }
-
-    private void updateMenuStates() {
-        selectionMenu.setEnabled(packetRetrieval.isEnabled() || parameterRetrieval.isEnabled() || cmdHistRetrieval.isEnabled());
     }
 
     public void addIndex(String tableName, String name) {
@@ -275,7 +280,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             zoomOutButton.setEnabled(false);
         } else if (cmd.equals("zoomout")) {
             dataView.zoomOut();
-            zoomOutButton.setEnabled(dataView.zoomStack.size()>1);
+            zoomOutButton.setEnabled(dataView.zoomStack.size() > 1);
         } else if (cmd.equals("zoomin")) {
             dataView.zoomIn();
             zoomOutButton.setEnabled(true);
@@ -334,7 +339,6 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);
         }
-        updateMenuStates();
     }
 
     public DataView getDataView() {
@@ -350,8 +354,8 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
                 zoomInButton.setEnabled(false);
                 zoomOutButton.setEnabled(false);
                 showAllButton.setEnabled(false);
-                if (applyButton != null) {
-                    applyButton.setEnabled(false);
+                if (replayEnabled) {
+                    archivePanel.replayPanel.applySelectionButton.setEnabled(false);
                 }
             }
         });

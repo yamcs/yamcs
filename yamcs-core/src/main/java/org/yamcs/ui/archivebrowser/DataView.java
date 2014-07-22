@@ -290,7 +290,6 @@ public class DataView extends JScrollPane {
                 dataViewer.zoomInButton.setEnabled(true);
                 dataViewer.zoomOutButton.setEnabled(false);
                 dataViewer.showAllButton.setEnabled(true);
-                if (dataViewer.applyButton != null) dataViewer.applyButton.setEnabled(true);
             }
         });
         refreshDisplay();
