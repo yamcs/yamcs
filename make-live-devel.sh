@@ -6,7 +6,7 @@
 
 
 
-#set this to where you want to live "installation" to be performed
+#set this to where you want the live "installation" to be performed
 TARGET="live"
 #Allow overriding default from the command line
 if [ -n "$1" ] ; then
@@ -24,13 +24,21 @@ mkdir -p $TARGET/lib/ext
 
 
 for f in $YAMCS_HOME/yamcs-core/etc/* ; do
-    cp -an $f $TARGET/etc/
+    case "$f" in
+        *.sample)
+            FILENAME=$(basename "$f")
+            cp -an "$f" $TARGET/etc/${FILENAME%.*}
+            ;;
+        *)
+            cp -an "$f" $TARGET/etc/
+            ;;
+    esac
 done
 for f in $YAMCS_HOME/yamcs-core/bin/* ; do
-    cp -an $f $TARGET/bin/
+    cp -an "$f" $TARGET/bin/
 done
 for f in $YAMCS_HOME/yamcs-simulation/bin/* ; do
-    cp -an $f $TARGET/bin/
+    cp -an "$f" $TARGET/bin/
 done
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib

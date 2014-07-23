@@ -5,11 +5,16 @@ import org.yamcs.ui.UiColors;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-public class SideNavigator extends JPanel {
+/**
+ * For switching between NavigatorItems.
+ */
+public class SideNavigator extends JPanel implements MouseListener {
     private static final long serialVersionUID = 1L;
     private ArchivePanel archivePanel;
-    private JPanel itemsPanel;
+    private JPanel itemLabelsPanel;
 
     public SideNavigator(ArchivePanel archivePanel) {
         super(new BorderLayout());
@@ -21,52 +26,84 @@ public class SideNavigator extends JPanel {
         setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
         
         // Container for Navigation items
-        itemsPanel = new JPanel(new GridBagLayout());
-        
+        itemLabelsPanel = new JPanel(new GridBagLayout());
+
         // Put items on top and fill with emptiness
-        add(itemsPanel, BorderLayout.NORTH);
+        add(itemLabelsPanel, BorderLayout.NORTH);
         add(new JPanel(), BorderLayout.CENTER);
     }
 
-    public void addItem(String title, int indent, DataViewer dataViewer) {
-        addItem(title, indent, dataViewer, false);
-    }
-
-    public void addItem(String title, int indent, DataViewer dataViewer, boolean selected) {
-        NavigatorItem item = new NavigatorItem(this, title, indent);
+    public void addItem(String name, int indent, NavigatorItem navigatorItem) {
+        NavigatorItemLabel item = new NavigatorItemLabel(name, navigatorItem, indent);
+        item.addMouseListener(this);
         GridBagConstraints cons = new GridBagConstraints();
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.weightx = 1;
         cons.gridx = 0;
-        itemsPanel.add(item, cons);
-        archivePanel.dataViewerPanel.add(dataViewer, title);
-        if(selected) {
-            item.toggleState(true);
-        }
+        itemLabelsPanel.add(item, cons);
     }
-    
-    public void deactivateAll() {
-        for(int i=0;i<itemsPanel.getComponentCount();i++) {
-            Component component = itemsPanel.getComponent(i);
-            if (component instanceof NavigatorItem) {
-                ((NavigatorItem) component).toggleState(false);
+
+    public void updateActiveItem(NavigatorItem targetItem) {
+        for(int i=0;i< itemLabelsPanel.getComponentCount();i++) {
+            Component component = itemLabelsPanel.getComponent(i);
+            if (component instanceof NavigatorItemLabel) {
+                NavigatorItemLabel label = ((NavigatorItemLabel) component);
+                label.toggleState(label.getText().equals(targetItem.getLabelName()));
             }
         }
     }
 
-    public void openItem(String name) {
-        deactivateAll();
-        for(int i=0;i<itemsPanel.getComponentCount();i++) {
-            Component component = itemsPanel.getComponent(i);
-            if (component instanceof NavigatorItem) {
-                NavigatorItem item = ((NavigatorItem) component);
-                if (item.getText().equals(name)) {
-                    item.setBackground(UiColors.BORDER_COLOR);
-                    archivePanel.openItem(name);
-                } else {
-                    item.setDefaultBackground();
-                }
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if(e.getSource() instanceof NavigatorItemLabel) {
+            NavigatorItemLabel lbl = (NavigatorItemLabel) e.getSource();
+            archivePanel.fireIntentionToSwitchActiveItem(lbl.getNavigatorItem());
+        }
+    }
+
+    @Override public void mouseClicked(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
+
+    /**
+     * A button-like JLabel for inclusion in the side-navigator
+     * Can be toggled on and off.
+     */
+    private static class NavigatorItemLabel extends JLabel {
+        private static final long serialVersionUID = 1L;
+        private final Color defaultBackground;
+        private boolean on = false;
+        private final NavigatorItem navigatorItem; // To be opened when on-click
+
+        /**
+         * @param indent multiplier for left indentation
+         */
+        public NavigatorItemLabel(String label, NavigatorItem navigatorItem, int indent) {
+            super(label);
+            this.navigatorItem = navigatorItem;
+            int lpad = 10 + indent * 10;
+            setBorder(BorderFactory.createEmptyBorder(3, lpad, 3, 10));
+            defaultBackground = getBackground();
+            setOpaque(true);
+            setBackground(defaultBackground);
+        }
+
+        public NavigatorItem getNavigatorItem() {
+            return navigatorItem;
+        }
+
+        public void toggleState(boolean on) {
+            if (on && !this.on) {
+                setBackground(UiColors.BORDER_COLOR);
+            } else if (!on && this.on) {
+                setDefaultBackground();
             }
+            this.on = on;
+        }
+
+        public void setDefaultBackground() {
+            setBackground(defaultBackground);
         }
     }
 }

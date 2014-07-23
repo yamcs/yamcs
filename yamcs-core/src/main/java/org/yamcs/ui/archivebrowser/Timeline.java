@@ -67,7 +67,7 @@ class Timeline extends JPanel implements MouseListener {
     @Override
     public void mouseEntered(MouseEvent e) {
         MouseEvent transEvent = translateEvent(e, tmBox);
-        setToolTipText(tmBox.dataView.getMouseText(transEvent));
+        setToolTipText(TimeEncoding.toCombinedFormat(tmBox.dataView.getMouseInstant(transEvent)));
     }
 
     @Override
@@ -75,7 +75,7 @@ class Timeline extends JPanel implements MouseListener {
 
     @Override
     public String getToolTipText(MouseEvent e) {
-        String tt=tmBox.dataView.getMouseText(translateEvent(e, tmBox));
+        String tt=TimeEncoding.toCombinedFormat(tmBox.dataView.getMouseInstant(translateEvent(e, tmBox)));
 
         IndexChunkSpec c1=zoom.convertPixelToChunk(translateEvent(e, tmBox).getX());
         IndexChunkSpec chunk=tmspec.floor(c1);

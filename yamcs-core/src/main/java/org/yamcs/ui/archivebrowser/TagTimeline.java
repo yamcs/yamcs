@@ -122,16 +122,13 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         return -1;
     }
     
-    
     @Override
     public void mouseDragged(MouseEvent e) {
         // TTM does not show the tooltip in mouseDragged() so we send a MOUSE_MOVED event
         dispatchEvent(new MouseEvent(e.getComponent(), MouseEvent.MOUSE_MOVED, e.getWhen(), e.getModifiers(),
                 e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton()));
     }
-    
-    
-    
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -181,5 +178,4 @@ public class TagTimeline extends JPanel implements MouseInputListener {
         g.drawImage(image,0,0,this);
         
     }
-
 }

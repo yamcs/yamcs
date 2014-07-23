@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,14 +32,22 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         super(yconnector, indexReceiver, true);
         // create menus
 
-        JMenuBar menuBar = new JMenuBar();
+        // FIXME temporary hack. Because this class replaces the super() menubar
+        List<JMenu> customMenus=new ArrayList<JMenu>();
+        for(int i=0; i<menuBar.getMenuCount();i++) {
+            JMenu menu=menuBar.getMenu(i);
+            if(menu.getText().equals("Selection"))
+            customMenus.add(menu);
+        }
+
+        menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
         JMenuItem closeMenuItem = new JMenuItem("Close", KeyEvent.VK_W);
-        closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
+        closeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         closeMenuItem.getAccessibleContext().setAccessibleDescription("Close the window");
         closeMenuItem.addActionListener(this);
         closeMenuItem.setActionCommand("close");
@@ -48,39 +57,18 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         viewMenu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(viewMenu);
 
-        // Export menu
-        JMenu selectionMenu = new JMenu("Selection");
-        menuBar.add(selectionMenu);
-
-        packetRetrieval = new JMenuItem("Export Packets...");
-        packetRetrieval.setEnabled(false);
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
-        packetRetrieval.addActionListener(this);
-        packetRetrieval.setActionCommand("start-packet-retrieval");
-        selectionMenu.add(packetRetrieval);
-
-        parameterRetrieval = new JMenuItem("Export Parameters...");
-        parameterRetrieval.setEnabled(false);
-        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
-        parameterRetrieval.addActionListener(this);
-        parameterRetrieval.setActionCommand("start-parameter-retrieval");
-        selectionMenu.add(parameterRetrieval);
-
-        cmdHistRetrieval = new JMenuItem("Export Command History...");
-        cmdHistRetrieval.setEnabled(false);
-        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
-        cmdHistRetrieval.addActionListener(this);
-        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
-        selectionMenu.add(cmdHistRetrieval);
-        
         menuBar.add(getToolsMenu());
+
+        for(JMenu customMenu:customMenus) {
+            menuBar.add(customMenu);
+        }
      
         viewMenu.addSeparator();
 
         if (isAdmin) {
             JMenuItem  dassArcReplayMenuItem = new JMenuItem("Show DaSS Archive Replay Command for Current Selection", KeyEvent.VK_D);
             dassArcReplayMenuItem.setEnabled(false);
-            dassArcReplayMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK));
+            dassArcReplayMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             dassArcReplayMenuItem.getAccessibleContext().setAccessibleDescription(
             "Show the HLCL command for a Col-CC DaSS archive replay to copy it to the clipboard.");
             dassArcReplayMenuItem.addActionListener(this);
@@ -89,14 +77,14 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         }
         JMenuItem  rawPacketDumpCmdMenuItem = new JMenuItem("Show Raw Packet Dump Command for Current Selection", KeyEvent.VK_R);
         rawPacketDumpCmdMenuItem.setEnabled(false);
-        rawPacketDumpCmdMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+        rawPacketDumpCmdMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         rawPacketDumpCmdMenuItem.getAccessibleContext().setAccessibleDescription(
         "Show the command line of a raw packet dump to copy it to the clipboard.");
         rawPacketDumpCmdMenuItem.addActionListener(this);
         rawPacketDumpCmdMenuItem.setActionCommand("show-raw-packet-dump");
         viewMenu.add(rawPacketDumpCmdMenuItem);
 
-        archivePanel.openEntry("Telemetry");
+        archivePanel.openItem("Telemetry");
         
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
@@ -134,7 +122,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 List<String> packets = archivePanel.getSelectedPackets("tm");
                 ChannelWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
                 if(widget instanceof ArchiveChannelWidget) {
-                    ((ArchiveChannelWidget) widget).apply(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
+                    ((ArchiveChannelWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
                     showInfo("A new HRDP selection was applied.\n" +
                             "Look at the \"New Channel\" section in the Yamcs Monitor window to check.");
                 } else {

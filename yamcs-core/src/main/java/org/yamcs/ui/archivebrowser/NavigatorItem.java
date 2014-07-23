@@ -1,57 +1,100 @@
 package org.yamcs.ui.archivebrowser;
 
+import org.yamcs.api.YamcsConnector;
+import org.yamcs.protobuf.Yamcs;
+
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.List;
 
 /**
- * A button-like JLabel for inclusion in the side-navigator
- * Can be toggled on and off.
- *
+ * Defines a ContentPanel to be included in the SideNavigator.
+ * Optionally includes an inset JComponent as well for display in the lower region of the side navigator.
+ * Provides access to an API similar to {@link org.yamcs.ui.archivebrowser.ArchiveIndexListener} but
+ * with a finished event that only triggers when *both* tags and regular records are received.
  */
-public class NavigatorItem extends JLabel implements MouseListener {
-    private static final long serialVersionUID = 1L;
-    private final Color defaultBackground;
-    private boolean on = false;
-    private SideNavigator navigator;
+public abstract class NavigatorItem {
+    protected YamcsConnector yconnector;
+    protected ArchiveIndexReceiver indexReceiver;
 
-    public NavigatorItem(SideNavigator navigator, String label) {
-        this(navigator, label, 0);
+    protected JComponent contentPanel;
+    protected JComponent navigatorInset;
+
+    public NavigatorItem(YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver) {
+        this.yconnector = yconnector;
+        this.indexReceiver = indexReceiver;
     }
 
     /**
-     * @param indent multiplier for left indentation
+     * @return the label name of this item in the SideNavigator
      */
-    public NavigatorItem(SideNavigator navigator, String label, int indent) {
-        super(label);
-        this.navigator = navigator;
-        int lpad = 10 + indent*10;
-        setBorder(BorderFactory.createEmptyBorder(3, lpad, 3, 10));
-        defaultBackground = getBackground();
-        setOpaque(true);
-        setBackground(defaultBackground);
-        addMouseListener(this);
+    public abstract String getLabelName();
+
+    /**
+     * @return a multiplier indicating the indent level of
+     * the label name in the SideNavigator (defaults to 0)
+     */
+    public int getIndent() {
+        return 0;
     }
 
-    @Override public void mouseClicked(MouseEvent me) {}
-    @Override public void mouseEntered(MouseEvent me) {}
-    @Override public void mouseExited(MouseEvent me) {}
-    @Override public void mouseReleased(MouseEvent me) {}
+    /**
+     * Build the GUI component for the content panel (called only once)
+     * @return the content pane to be visualized when the item is selected from the SideNavigator
+     */
+    public abstract JComponent createContentPanel();
 
-    @Override public void mousePressed(MouseEvent me) {
-        toggleState(true);
+    /**
+     * Build the GUI component for the navigator inset (called only once)
+     * @return optional panel to be put in the lower part of the SideNavigator
+     * when this NavigatorItem is active
+     */
+    public JComponent createNavigatorInset() {
+        return null;
     }
 
-    public void toggleState(boolean on) {
-        if(on && !this.on) {
-            navigator.openItem(getText());
-            on = true;
+    /**
+     * Called when this item is opened
+     * Defaults to NOP.
+     */
+    public void onOpen() {
+    }
+
+    /**
+     * Called when this item is closed
+     * Defaults to NOP.
+     */
+    public void onClose() {
+    }
+
+    public void windowResized() {}
+
+    public void startReloading() {}
+
+    public void receiveArchiveRecords(Yamcs.IndexResult ir) {}
+    public void receiveArchiveRecordsError(String errorMessage) {}
+    public void receiveTags(List<Yamcs.ArchiveTag> tagList) {}
+
+    /**
+     * Triggered when *both* tags and archive records have been
+     * received.
+     */
+    public void archiveLoadFinished() {}
+
+    public void tagAdded(Yamcs.ArchiveTag ntag) {}
+    public void tagRemoved(Yamcs.ArchiveTag rtag) {}
+    public void tagChanged(Yamcs.ArchiveTag oldTag, Yamcs.ArchiveTag newTag) {}
+
+    JComponent getContentPanel() {
+        if(contentPanel==null) {
+            contentPanel = createContentPanel();
         }
-        this.on = on;
+        return contentPanel;
     }
 
-    public void setDefaultBackground() {
-        setBackground(defaultBackground);
+    JComponent getNavigatorInset() {
+        if(navigatorInset==null) {
+            navigatorInset = createNavigatorInset();
+        }
+        return navigatorInset;
     }
 }

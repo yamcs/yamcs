@@ -66,6 +66,7 @@ public class ReplayPanel extends JPanel {
         replayStartIcon = ArchivePanel.getIcon("start.gif");
         replayStopIcon = ArchivePanel.getIcon("stop.gif");
         playStopButton = new JButton(replayStopIcon); // the Play/Stop button
+        playStopButton.setEnabled(false);
         playStopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent ae ) {
@@ -184,9 +185,9 @@ public class ReplayPanel extends JPanel {
         replayCurrentLabel.setText("");
         //replayStartLabel.setPreferredSize(new Dimension(150, replayStartLabel.getPreferredSize().height));
 
-        dataViewer.dataView.setStartLocator(dataViewer.dataView.DO_NOT_DRAW);
-        dataViewer.dataView.setStopLocator(dataViewer.dataView.DO_NOT_DRAW);
-        dataViewer.dataView.setCurrentLocator(dataViewer.dataView.DO_NOT_DRAW);
+        dataViewer.getDataView().setStartLocator(dataViewer.getDataView().DO_NOT_DRAW);
+        dataViewer.getDataView().setStopLocator(dataViewer.getDataView().DO_NOT_DRAW);
+        dataViewer.getDataView().setCurrentLocator(dataViewer.getDataView().DO_NOT_DRAW);
     }
     /**
      * called by the yamcs monitor when a channelinfo update is received from the server
@@ -209,9 +210,9 @@ public class ReplayPanel extends JPanel {
         if(ci.hasReplayRequest()) {
             currentChannelInfo = ci;
             if ( isVisible() ) {
-                playStopButton.setEnabled(false);
+                playStopButton.setEnabled(true);
                 replayCurrentLabel.setText("");
-                dataViewer.dataView.setCurrentLocator(dataViewer.dataView.DO_NOT_DRAW);
+                dataViewer.getDataView().setCurrentLocator(dataViewer.getDataView().DO_NOT_DRAW);
                 for ( Component c:getComponents() ) {
                     c.setEnabled(true);
                 }
@@ -248,8 +249,8 @@ public class ReplayPanel extends JPanel {
         channelNameLabel.setText(currentChannelInfo.getName());
 
         // draw start/stop locators
-        dataViewer.dataView.setStartLocator(rr.getStart());
-        dataViewer.dataView.setStopLocator(rr.getStop());
+        dataViewer.getDataView().setStartLocator(rr.getStart());
+        dataViewer.getDataView().setStopLocator(rr.getStop());
     }
     
     private String getSpeedLabel(ReplaySpeed speed) {
@@ -280,7 +281,7 @@ public class ReplayPanel extends JPanel {
             currentInstant=pos;
 
             replayCurrentLabel.setText(TimeEncoding.toString(currentInstant));
-            dataViewer.dataView.setCurrentLocator(currentInstant);
+            dataViewer.getDataView().setCurrentLocator(currentInstant);
         }
     }
 

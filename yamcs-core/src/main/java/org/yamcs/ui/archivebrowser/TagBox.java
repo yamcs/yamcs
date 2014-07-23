@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class TagBox extends Box implements MouseListener {
     private static final long serialVersionUID = 1L;
@@ -210,13 +211,14 @@ public class TagBox extends Box implements MouseListener {
         redrawTags();
     }
     
-    void redrawTags() {
+    void redrawTags() { // Draw reverse, so that 'most' tags stick to scale
         removeAll();
         if(!tags.isEmpty()) {
-            int row=0;
+            int row=tags.size()-1;
             Insets in=this.getInsets();
-            for(List<ArchiveTag> lat:tags) {
-                TagTimeline tt=new TagTimeline(this, lat, zoom, row++, in.left);
+            for(ListIterator<List<ArchiveTag>> it=tags.listIterator(tags.size()); it.hasPrevious();) {
+                List<ArchiveTag> lat=it.previous();
+                TagTimeline tt=new TagTimeline(this, lat, zoom, row--, in.left);
                 add(tt);
             }
         }
