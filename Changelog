@@ -1,3 +1,9 @@
+Version 0.26.2 Released 14-Aug-2014
+- Fix data count on HornetQPpProvider
+- Fix OnValueChange update of enum params
+- Fix bug where alarms were shared between params
+- Fix auto-scroll in Event Viewer when sorting columns
+
 Version 0.26.1 Released 13-June-2014
 - added REST API for data downloada
 - added a way to provide simulated parameters using xml scenario files
