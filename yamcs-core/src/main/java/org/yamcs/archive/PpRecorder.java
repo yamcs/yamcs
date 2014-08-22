@@ -14,7 +14,7 @@ import static org.yamcs.archive.PpProviderAdapter.PP_TUPLE_DEFINITION;
 
 /**
  * PpRecorder
- * Records External Processed Parameters 
+ * Records Parameters 
  * 
  * The base table definition is {@link PpProviderAdapter}
  * @author nm
