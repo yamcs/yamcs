@@ -1,3 +1,6 @@
+Version 0.26.3 Released 22-Aug-2014
+- Fixed the parameters passing through hornetq
+
 Version 0.26.2 Released 14-Aug-2014
 - Fix data count on HornetQPpProvider
 - Fix OnValueChange update of enum params
