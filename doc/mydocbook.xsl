@@ -120,11 +120,11 @@
                     </fo:table-row>
                     <fo:table-row>
                         <fo:table-cell text-align='left'> <fo:block>Date:</fo:block> </fo:table-cell>
-                        <fo:table-cell text-align='left'> <fo:block>19-Feb-2013</fo:block> </fo:table-cell>
+                        <fo:table-cell text-align='left'> <fo:block>14-Aug-2014</fo:block> </fo:table-cell>
                     </fo:table-row>
                     <fo:table-row>
                         <fo:table-cell text-align='left'> <fo:block>Version:</fo:block> </fo:table-cell>
-                        <fo:table-cell text-align='left'> <fo:block>1.1.0</fo:block> </fo:table-cell>
+                        <fo:table-cell text-align='left'> <fo:block>1.4.0</fo:block> </fo:table-cell>
                     </fo:table-row>
                 </fo:table-body>
 
