@@ -1,29 +1,7 @@
 package org.yamcs.xtce;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteOrder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import jxl.Cell;
-import jxl.CellType;
-import jxl.NumberCell;
-import jxl.Sheet;
-import jxl.Workbook;
+import jxl.*;
 import jxl.read.biff.BiffException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -32,6 +10,15 @@ import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
+
+import java.io.*;
+import java.nio.ByteOrder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class loads database from excel spreadsheets. Used for the Solar instruments for which the TM 
@@ -1664,7 +1651,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
      * definitions)
      */
     protected static class EnumerationDefinition {
-        public HashMap<Long,String> valueMap=new HashMap<Long,String>();
+        public LinkedHashMap<Long,String> valueMap=new LinkedHashMap<Long,String>();
     }
 	
 	/**
