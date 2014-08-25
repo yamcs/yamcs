@@ -30,7 +30,7 @@ public class CompactFormatter extends Formatter {
 		    }
 		    Throwable cause=t.getCause();
 		    while(cause!=null && cause!=t) {
-		        sb.append("Caused by: ").append(t.getCause().toString()).append("\n");
+		        sb.append("Caused by: ").append(cause.toString()).append("\n");
 		        for(StackTraceElement ste:cause.getStackTrace()) {
 		            sb.append("\t").append(ste.toString()).append("\n");
 		        }
