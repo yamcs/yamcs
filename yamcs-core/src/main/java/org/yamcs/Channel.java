@@ -15,15 +15,18 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
+import org.yamcs.sysparameter.SystemParametersCollector;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -38,7 +41,7 @@ import com.google.common.util.concurrent.Service.State;
  *  asynchronous - In this mode the parameters are put into a queue in order to not block the processing thread. The queue
  *                is flushed by the deliver method called from the sessionImpl own thread. This is the mode normally used 
  *                for realtime and playbacks at close to realtime speed.
- *  synchronous -  In this mode the paraemter are delivered in the processing queue, blocking thus the extraction if the client
+ *  synchronous -  In this mode the parameter are delivered in the processing queue, blocking thus the extraction if the client
  *                is slow. This is the mode used in the as fast as possible retrievals. 
  *
  *  The synchronous/asynchronous logic is implemented in the TelemetryImpl and TelemetryPacketImpl classes
@@ -77,6 +80,8 @@ public class Channel {
 	@GuardedBy("this")
 	HashSet<ChannelClient> connectedClients= new HashSet<ChannelClient>();
 
+	
+	
 	
 	public Channel(String yamcsInstance, String name, String type, String spec, String creator) throws ChannelException {
 	    if((name==null) || "".equals(name)) 
@@ -131,6 +136,8 @@ public class Channel {
             ManagementService.getInstance().registerChannel(this);
         }
     }
+	
+	
 	
 	private static String key(String instance, String name) {
 	    return instance+"."+name;
