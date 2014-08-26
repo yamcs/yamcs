@@ -417,5 +417,23 @@ public class AlgorithmManagerTest {
         assertEquals(2, params.size()); // Now change, also with updated float from PKT11
         assertEquals(pIntegerPara16_1+tmGenerator.pFloatPara11_3, params.get(1).getParameterValue().getEngValue().getFloatValue(), 1e-6);
     }
+    
+    
+    @Test
+    public void testOnPeriodicRate() throws InvalidIdentification, InterruptedException {
+        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/OnPeriodicRateOut").build()), 
+                new ParameterConsumer() {
+                    @Override
+                    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+                        System.out.println("received items: "+items);
+                        params.addAll(items);
+                    }
+        });
+
+        c.start();
+        Thread.sleep(10000);
+       
+    }
 }
 

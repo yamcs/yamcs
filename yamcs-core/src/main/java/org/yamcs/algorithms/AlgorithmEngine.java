@@ -162,7 +162,7 @@ public class AlgorithmEngine {
             }
             if(scriptEngine.get(scriptName) instanceof OutputValueBinding) {
                 OutputValueBinding res = (OutputValueBinding) scriptEngine.get(scriptName);
-                if(res != null && res.updated) {
+                if(res.updated && res.value != null) {
                     outputValues.add(convertScriptOutputToParameterValue(outputParameter.getParameter(), res));
                 }
             } else {
@@ -306,6 +306,7 @@ public class AlgorithmEngine {
 	            if(log.isTraceEnabled()) {
 	                log.trace("Compiling this:\n"+source.toString());
 	            }
+	            
 	            compiler.cook(source.toString());
 	            @SuppressWarnings("unchecked")
                 Class<ValueBinding> clazz=(Class<ValueBinding>) compiler.getClassLoader().loadClass("org.yamcs.algorithms."+className);
