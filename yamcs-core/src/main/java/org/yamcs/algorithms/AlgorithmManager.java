@@ -90,13 +90,15 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer;
+    final Channel chan;
 
     public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
         this(parameterRequestManager, chan, null);
     }
 
     public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan, Object args) throws ConfigurationException {
-        this.xtcedb=chan.xtcedb;
+        this.xtcedb = chan.xtcedb;
+        this.chan = chan;
         this.parameterRequestManager=parameterRequestManager;
         try {
             subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
@@ -123,9 +125,14 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         if(!libraries.isEmpty()) {      
             // Disposable ScriptEngine, just to eval libraries and put them in global scope
             ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
+            if(scriptEngine==null) {
+                throw new ConfigurationException("Cannot get a script engine for language "+scriptLanguage);
+            }
             try {
                 for(String lib:libraries) {
                     File f=new File(lib);
+                    if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
+                    
                     scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
                     if (f.isFile()) {
                         scriptEngine.eval(new FileReader(f));
@@ -169,7 +176,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 timer.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
-                        runEngine(engine, TimeEncoding.currentInstant());
+                        ArrayList<ParameterValue> params = runEngine(engine, TimeEncoding.currentInstant());
+                        parameterRequestManager.update(params);
                     }
                 }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
             }
@@ -205,13 +213,14 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
         
         ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(scriptLanguage);
-        scriptEngine.put("Yamcs", new AlgorithmUtils(yamcsInstance, xtcedb, algorithm.getName()));
+        scriptEngine.put("Yamcs", new AlgorithmUtils(chan, xtcedb, algorithm.getName()));
         
         AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
         engineByAlgorithm.put(algorithm, engine);
         try {
             ArrayList<NamedObjectId> newItems=new ArrayList<NamedObjectId>();
             for(Parameter param:engine.getRequiredParameters()) {
+
                 NamedObjectId noid=NamedObjectId.newBuilder().setName(param.getQualifiedName()).build();
                 if(!requiredInParams.contains(param)) {
                     requiredInParams.add(param);
@@ -351,6 +360,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items) {
+        
         ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
         ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
         for(Algorithm algorithm:executionOrder) {
@@ -415,6 +425,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
         updateHistoryWindows(r);
+        
         return r;
     }
 

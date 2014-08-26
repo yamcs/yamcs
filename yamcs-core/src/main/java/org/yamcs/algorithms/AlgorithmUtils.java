@@ -2,6 +2,7 @@ package org.yamcs.algorithms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Channel;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.xtce.BaseDataType;
@@ -22,8 +23,13 @@ public class AlgorithmUtils {
     private XtceDb xtcedb;
     private String algorithmName;
     private EventProducer eventProducer;
-
-    public AlgorithmUtils(String yamcsInstance, XtceDb xtcedb, String algorithmName) {
+    private final String yamcsInstance;
+    private final Channel channel;
+    
+    public AlgorithmUtils(Channel channel, XtceDb xtcedb, String algorithmName) {
+        this.yamcsInstance = channel.getInstance();
+        this.channel = channel;
+        
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("CustomAlgorithm");
         this.xtcedb = xtcedb;
@@ -52,6 +58,10 @@ public class AlgorithmUtils {
         return null;
     }
     
+    public String instance() {
+        return yamcsInstance;
+    }
+    
     public void info(String msg) {
         info(algorithmName, msg);
     }
@@ -76,6 +86,14 @@ public class AlgorithmUtils {
         eventProducer.sendError(type, msg);
     }
 
+    public String channelName() {
+        return channel.getName();
+    }
+    
+    public boolean isReplayChannel() {
+        return channel.isReplay();
+    }
+    
     /**
      * Little endian to host long
      */
