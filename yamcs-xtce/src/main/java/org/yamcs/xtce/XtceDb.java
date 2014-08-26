@@ -8,7 +8,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 46L;
+    private static final long  serialVersionUID   = 48L;
     SpaceSystem rootSystem;
     
     public XtceDb(SpaceSystem spaceSystem) {
@@ -34,8 +36,8 @@ public class XtceDb implements Serializable {
 
     //map from the fully qualified names to the objects
     private HashMap<String, SpaceSystem> spaceSystems = new HashMap<String, SpaceSystem>();
-    private HashMap<String, SequenceContainer> sequenceContainers = new HashMap<String, SequenceContainer>();
-    private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>();
+    private Map<String, SequenceContainer> sequenceContainers = new LinkedHashMap<String, SequenceContainer>();
+    private Map<String, Parameter> parameters = new LinkedHashMap<String, Parameter>();
     private HashMap<String, Algorithm> algorithms = new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
     

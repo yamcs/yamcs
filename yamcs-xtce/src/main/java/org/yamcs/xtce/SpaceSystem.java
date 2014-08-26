@@ -3,7 +3,9 @@ package org.yamcs.xtce;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +31,8 @@ public class SpaceSystem extends NameDescription {
     }
 
     Header header;
-    private HashMap<String, SequenceContainer> containers=new HashMap<String, SequenceContainer>();
-    private HashMap<String, Parameter> parameters = new HashMap<String, Parameter>(); 
+    private Map<String, SequenceContainer> containers=new LinkedHashMap<String, SequenceContainer>();
+    private Map<String, Parameter> parameters = new LinkedHashMap<String, Parameter>(); 
     private HashMap<String, ParameterType> parameterTypes=new HashMap<String, ParameterType>();
     private HashMap<String, Algorithm> algorithms=new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands=new HashMap<String, MetaCommand>();
