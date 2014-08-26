@@ -34,7 +34,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SpreadsheetLoader;
-import org.yamcs.xtce.SystemVariable;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.XtceLoader;
 
@@ -203,7 +203,7 @@ public class XtceDbFactory {
      * @param fqname
      * @return
      */
-    private static SystemVariable getSystemVariable(SpaceSystem yamcsSs, String fqname) {
+    private static SystemParameter getSystemVariable(SpaceSystem yamcsSs, String fqname) {
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
 
         SpaceSystem ss = yamcsSs;
@@ -215,10 +215,10 @@ public class XtceDbFactory {
             }
             ss=sss;
         }
-        SystemVariable sv = (SystemVariable)ss.getParameter(a[a.length-1]);
+        SystemParameter sv = (SystemParameter)ss.getParameter(a[a.length-1]);
 
         if(sv==null) {
-            sv = SystemVariable.getForFullyQualifiedName(fqname);
+            sv = SystemParameter.getForFullyQualifiedName(fqname);
             log.debug("adding new system variable for "+fqname+" in system "+ss);
             ss.addParameter(sv);
         }

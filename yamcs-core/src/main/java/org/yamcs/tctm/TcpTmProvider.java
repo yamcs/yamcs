@@ -6,6 +6,11 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -15,11 +20,15 @@ import org.yamcs.archive.PacketWithTime;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
+import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.sysparameter.SystemParametersCollector;
+import org.yamcs.sysparameter.SystemParametersProvider;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 
 
-public class TcpTmProvider extends AbstractExecutionThreadService implements TmPacketProvider {
+public class TcpTmProvider extends AbstractExecutionThreadService implements TmPacketProvider,  SystemParametersProvider {
 	protected volatile long packetcount = 0;
 	protected Socket tmSocket;
 	protected String host="localhost";
@@ -29,12 +38,27 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 	protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private TmProcessor tmProcessor;
 
-	protected TcpTmProvider() {} // dummy constructor which is automatically invoked by subclass constructors
-
-	public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
-		YConfiguration c=YConfiguration.getConfiguration("tcp");
+	
+	private SystemParametersCollector sysParamCollector;
+	ParameterValue svConnectionStatus;
+    List<ParameterValue> sysVariables= new ArrayList<ParameterValue>();
+    private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
+    final String yamcsInstance;
+    final String name;
+    
+    protected TcpTmProvider(String instance, String name) {// dummy constructor needed by subclass constructors
+        this.yamcsInstance = instance;
+        this.name = name;
+    }
+    
+    public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
+        this.yamcsInstance = instance;
+        this.name = name;
+        
+        YConfiguration c=YConfiguration.getConfiguration("tcp");
 		host=c.getString(spec, "tmHost");
-		port=c.getInt(spec, "tmPort"); 
+		port=c.getInt(spec, "tmPort");
+		
 	}
 	
 	protected void openSocket() throws IOException {
@@ -194,6 +218,29 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     @Override
     public long getDataCount() {
         return packetcount;
+    }
+    
+    protected void setupSysVariables() {
+        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
+        if(sysParamCollector!=null) {
+            sysParamCollector.registerProvider(this, null);
+            sv_linkStatus_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/linkStatus").build();
+            sp_dataCount_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/dataCount").build();
+           
+            
+        } else {
+            log.info("System variables collector not defined for instance {} ", yamcsInstance);
+        }
+        
+    }
+    
+    
+    @Override
+    public Collection<ParameterValue> getSystemParameters() {
+        long time = TimeEncoding.currentInstant();
+        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
+        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
+        return Arrays.asList(linkStatus, dataCount);
     }
 }
 

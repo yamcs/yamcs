@@ -7,16 +7,16 @@ package org.yamcs.xtce;
  * @author nm
  * 
  */
-public class SystemVariable extends Parameter {
+public class SystemParameter extends Parameter {
 
    
-    public SystemVariable(String spaceSystemName, String name) {
+    public SystemParameter(String spaceSystemName, String name) {
         super(name);
         setQualifiedName(spaceSystemName+"/"+name);
     }
     
-    public static SystemVariable getForFullyQualifiedName(String fqname) {
-       return new SystemVariable(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname));
+    public static SystemParameter getForFullyQualifiedName(String fqname) {
+       return new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname));
     }
     
     @Override

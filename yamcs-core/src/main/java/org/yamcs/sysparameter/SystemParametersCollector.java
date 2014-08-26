@@ -1,4 +1,4 @@
-package org.yamcs.syspp;
+package org.yamcs.sysparameter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -16,7 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PpProviderAdapter;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -37,12 +41,12 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class SystemVariablesCollector extends AbstractService implements Runnable {
-    static Map<String,SystemVariablesCollector> instances=new HashMap<String,SystemVariablesCollector>();
+public class SystemParametersCollector extends AbstractService implements Runnable {
+    static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
     static long frequencyMillisec=1000;
-    List<SystemVariablesProvider> providers = new CopyOnWriteArrayList<SystemVariablesProvider>();
+    List<SystemParametersProvider> providers = new CopyOnWriteArrayList<SystemParametersProvider>();
     final static String PP_GROUP =  "yamcs";
-    final static String STREAM_NAME="sys_pp";
+    final static String STREAM_NAME="sys_param";
     final static public String SERVER_ID_KEY="serverId";
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
@@ -58,14 +62,14 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
     final String instance;
     
     
-    static public SystemVariablesCollector getInstance(String instance) {
+    static public SystemParametersCollector getInstance(String instance) {
         synchronized(instances) {
             return instances.get(instance);    
         }
     }
 
 
-    public SystemVariablesCollector(String instance) {
+    public SystemParametersCollector(String instance) {
         this.instance = instance;
        
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
@@ -121,9 +125,9 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
     @Override
     public void run() {
         Collection<ParameterValue> params = new ArrayList<ParameterValue>();
-        for(SystemVariablesProvider p: providers) {
+        for(SystemParametersProvider p: providers) {
             try {
-                Collection<ParameterValue> pvc =p.getParameters();
+                Collection<ParameterValue> pvc =p.getSystemParameters();
                 params.addAll(pvc);
             } catch (Exception e) {
                 log.warn("Error getting parameters from provider "+p, e);
@@ -152,7 +156,7 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
         stream.emitTuple(t);
     }
 
-    public void registerProvider(SystemVariablesProvider p, Collection<Parameter> params) {
+    public void registerProvider(SystemParametersProvider p, Collection<Parameter> params) {
         log.debug("Registering system variables provider {}", p);
         providers.add(p);
     }
@@ -163,5 +167,28 @@ public class SystemVariablesCollector extends AbstractService implements Runnabl
      */
     public String getNamespace() {
         return namespace;
+    }
+    
+    
+    public static ParameterValue getPV(NamedObjectId id, long time, String v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.STRING).setStringValue(v).build())
+                .build();
+    }
+    
+    
+
+    public static ParameterValue getPV(NamedObjectId id, long time, long v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.SINT64).setSint64Value(v).build())
+                .build();
     }
 }
