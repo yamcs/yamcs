@@ -397,17 +397,17 @@ public class XtceDb implements Serializable {
         }
 
         //print the list of system variables if any (because those will not be part of the sequence containers)
-        List<SystemVariable> systemVariables = new ArrayList<SystemVariable>();
+        List<SystemParameter> systemVariables = new ArrayList<SystemParameter>();
         for(Parameter p: ss.getParameters()) {
-            if(p instanceof SystemVariable) {
-                systemVariables.add((SystemVariable)p);
+            if(p instanceof SystemParameter) {
+                systemVariables.add((SystemParameter)p);
             }
         }
         if(!systemVariables.isEmpty()) {
             out.println("System Variables: ");
-            SystemVariable[] sva=systemVariables.toArray(new SystemVariable[0]);
+            SystemParameter[] sva=systemVariables.toArray(new SystemParameter[0]);
             Arrays.sort(sva, comparator);
-            for (SystemVariable sv : sva) {
+            for (SystemParameter sv : sva) {
                 out.println("\t"+sv.getName());
             }
         }
