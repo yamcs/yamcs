@@ -10,4 +10,5 @@ public interface TcTmService extends Service {
     public TmPacketProvider getTmPacketProvider();
     public TcUplinker getTcUplinker();
     public List<ParameterProvider> getParameterProviders();
+    boolean isSynchronous();
 }

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.ParameterProvider;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -42,5 +44,15 @@ public abstract class AbstractTcTmService extends AbstractService implements TcT
     protected void doStop() {
         tm.stop();
         notifyStopped();
+    }
+    
+    @Override
+    public boolean isSynchronous() {
+        boolean s = false;
+        if(tm instanceof ArchiveTmPacketProvider) {
+            ReplaySpeed speed=((ArchiveTmPacketProvider)tm).getSpeed();
+            if(speed.getType()==ReplaySpeedType.AFAP) s = true;
+        }
+        return s;
     }
 }

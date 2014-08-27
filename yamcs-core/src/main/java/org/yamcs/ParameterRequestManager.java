@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
@@ -46,21 +45,12 @@ public class ParameterRequestManager implements ParameterListener {
 	private Map<Integer,String> subscribeAll =new HashMap<Integer,String>();
 	
 	
-	private XtceTmProcessor tmProcessor=null;
 	private AlarmChecker alarmChecker;
 	private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
 	
 	private static AtomicInteger lastSubscriptionId= new AtomicInteger();
 	public final Channel channel;
-	TmPacketProvider tmPacketProvider;
-	 
-    /**
-     * Creates a new ParameterRequestManager, configured to listen to a newly
-     * created XtceTmProcessor.
-     */
-    public ParameterRequestManager(Channel chan) throws ConfigurationException {
-        this(chan, new XtceTmProcessor(chan));
-    }
+	
     
 	/**
 	 * Creates a new ParameterRequestManager, configured to listen to the
@@ -68,9 +58,10 @@ public class ParameterRequestManager implements ParameterListener {
 	 */
     public ParameterRequestManager(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.channel=chan;
-        this.tmProcessor=tmProcessor;
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
+		addParameterProvider(tmProcessor);
+		
 		
         YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
         if(yconf.containsKey("parameterProviders")) {
@@ -125,7 +116,6 @@ public class ParameterRequestManager implements ParameterListener {
         int id=lastSubscriptionId.incrementAndGet();
         log.debug("new subscribeAll with subscriptionId "+id);
         if(subscribeAll.isEmpty()) {
-            tmProcessor.startProvidingAll();
             for(ParameterProvider provider:parameterProviders.values()) {
                 provider.startProvidingAll();
             }
@@ -340,8 +330,6 @@ public class ParameterRequestManager implements ParameterListener {
 	private ParameterProvider getProvider(NamedObjectId itemId) {
 	    
 	    // First TmProcessor - DO NOT CHANGE YET - during the replay, the ParameterReplayHandler.MyPpProvider says that can provide everything - it does not yet look at what is recorded  
-        if(tmProcessor.canProvide(itemId)) return tmProcessor;
-        
 	    for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(itemId)) {
 		        return provider;
@@ -356,7 +344,6 @@ public class ParameterRequestManager implements ParameterListener {
 	 * @throws InvalidIdentification in case no provider knows of this parameter.
 	 */
 	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-		if(tmProcessor.canProvide(paraId)) return tmProcessor.getParameter(paraId);
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    if(provider.canProvide(paraId)) {
 		        return provider.getParameter(paraId);
@@ -455,10 +442,6 @@ public class ParameterRequestManager implements ParameterListener {
 		    }
 		}
 	}
-
-	public XtceTmProcessor getTmProcessor() {
-		return tmProcessor;
-	}
 	
 	@SuppressWarnings("unchecked")
     public <T extends ParameterProvider> T getParameterProvider(Class<T> type) {
@@ -469,22 +452,12 @@ public class ParameterRequestManager implements ParameterListener {
 	    return alarmChecker;
 	}
 	
-	/**
-	 * Sets the telemetry packet provider by simply calling the corresponding method in the associated
-	 *  TmProcessor
-	 * @param p
-	 */
-	public void setPacketProvider(TmPacketProvider p) {
-	    this.tmPacketProvider=p;
-	    tmPacketProvider.setTmProcessor(tmProcessor);
-	}
 
 	/**
 	 * Starts processing by creating a new thread for the associated TmProcessor and SystemVariablesManager
 	 *
 	 */
 	public void start() {
-		tmProcessor.start();
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    provider.start();
 		}
@@ -494,7 +467,6 @@ public class ParameterRequestManager implements ParameterListener {
 		for(ParameterProvider provider:parameterProviders.values()) {
 		    provider.stop();
 		}
-		tmPacketProvider.stop();
 	}
 	
 	@Override
@@ -511,7 +483,6 @@ public class ParameterRequestManager implements ParameterListener {
 			}
 			sb.append("]\n");
 		}
-		sb.append("TmProcessor subscription:"+tmProcessor);
 		return sb.toString();
 	}
 }

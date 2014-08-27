@@ -15,18 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
-import org.yamcs.sysparameter.SystemParametersCollector;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -75,7 +70,7 @@ public class Channel {
 	private boolean quitting;
 	//a synchronous channel waits for all the clients to deliver tm packets and parameters
 	private boolean synchronous=false;
-	
+	XtceTmProcessor tmProcessor;
 	
 	@GuardedBy("this")
 	HashSet<ChannelClient> connectedClients= new HashSet<ChannelClient>();
@@ -105,18 +100,16 @@ public class Channel {
             this.parameterProviders.addAll(tctms.getParameterProviders());
             this.commandHistoryListener=cmdHistListener;
             
-            if(tmPacketProvider instanceof ArchiveTmPacketProvider) {
-                ReplaySpeed speed=((ArchiveTmPacketProvider)tmPacketProvider).getSpeed();
-                if(speed.getType()==ReplaySpeedType.AFAP) synchronous=true;
-            }
+            synchronous = tctms.isSynchronous();
+            
             
             // Shared between prm and crm
-            XtceTmProcessor tmProcessor = new XtceTmProcessor(this);
+            tmProcessor = new XtceTmProcessor(this);
+            tmPacketProvider.setTmProcessor(tmProcessor);
             containerRequestManager=new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager=new ParameterRequestManager(this, tmProcessor);
             
             containerRequestManager.setPacketProvider(tmPacketProvider);
-            parameterRequestManager.setPacketProvider(tmPacketProvider);
             
             for(ParameterProvider pprov: parameterProviders) {
                 parameterRequestManager.addParameterProvider(pprov);
@@ -176,7 +169,7 @@ public class Channel {
 	}
 
 	public XtceTmProcessor getTmProcessor() {
-		return (parameterRequestManager==null)?null:parameterRequestManager.getTmProcessor();
+		return tmProcessor;
 	}
 
 	

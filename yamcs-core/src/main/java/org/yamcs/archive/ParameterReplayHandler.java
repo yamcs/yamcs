@@ -267,6 +267,11 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             a.add(pp);
             return a;
         }
+
+        @Override
+        public boolean isSynchronous() {
+            return true;
+        }
     }
 
     /**
