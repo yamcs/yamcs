@@ -1,25 +1,24 @@
 package org.yamcs.simulation;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.yamcs.ParameterValue;
+import org.yamcs.protobuf.Pvalue;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.simulation.generated.ObjectFactory;
+import org.yamcs.simulation.generated.PpSimulation;
+import org.yamcs.tctm.PpListener;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
-import junit.framework.Assert;
-
-import org.junit.Test;
-import org.yamcs.ParameterValue;
-import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.simulation.generated.ObjectFactory;
-import org.yamcs.simulation.generated.PpSimulation;
-import org.yamcs.tctm.PpListener;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SimulationPpProviderTest {
 
@@ -204,7 +203,11 @@ public class SimulationPpProviderTest {
 			receivedValue.addAll(params);
 		}
 
-		public String toString() {
+        @Override
+        public void updateParams(long gentime, String group, int seqNum, Collection<Pvalue.ParameterValue> params) {
+        }
+
+        public String toString() {
 			String result = "";
 			long firstGenerationTime = 0;
 			for (ParameterValue pv : receivedValue) {
