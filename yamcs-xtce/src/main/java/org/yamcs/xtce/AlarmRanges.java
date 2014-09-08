@@ -21,46 +21,69 @@ public class AlarmRanges implements Serializable {
 	FloatRange criticalRange=null;
 	FloatRange severeRange=null;
 	
-	public void addWatchRange(FloatRange watchRange) {
+	public void addWatchRange(FloatRange range) {
        if(this.watchRange == null) {
-           this.watchRange = watchRange;
+           this.watchRange = range;
        } else {
-           this.watchRange = this.watchRange.intersectWith(watchRange);
+           this.watchRange = this.watchRange.intersectWith(range);
        }
 	}
 	
-    public void addWarningRange(FloatRange warningRange) {
+    public void addWarningRange(FloatRange range) {
         if(this.warningRange == null) {
-            this.warningRange = warningRange;
+            this.warningRange = range;
         } else {
-            this.warningRange = this.warningRange.intersectWith(warningRange);
+            this.warningRange = this.warningRange.intersectWith(range);
         }
     }
     
-    public void addDistressRange(FloatRange distressRange) {
+    public void addDistressRange(FloatRange range) {
         if(this.distressRange == null) {
-            this.distressRange = distressRange;
+            this.distressRange = range;
         } else {
-            this.distressRange = this.distressRange.intersectWith(distressRange);
+            this.distressRange = this.distressRange.intersectWith(range);
         }
     }
     
-    public void addCriticalRange(FloatRange criticalRange) {
+    public void addCriticalRange(FloatRange range) {
         if(this.criticalRange == null) {
-            this.criticalRange = criticalRange;
+            this.criticalRange = range;
         } else {
-            this.criticalRange = this.criticalRange.intersectWith(criticalRange);
+            this.criticalRange = this.criticalRange.intersectWith(range);
         }
     }
     
-    public void addSevereRange(FloatRange severeRange) {
+    public void addSevereRange(FloatRange range) {
         if(this.severeRange == null) {
-            this.severeRange = severeRange;
+            this.severeRange = range;
         } else {
-            this.severeRange = this.severeRange.intersectWith(severeRange);
+            this.severeRange = this.severeRange.intersectWith(range);
         }
     }
 	
+    public void addRange(FloatRange range, AlarmLevels level) {
+        switch(level) {
+        case watch:
+            addWatchRange(range);
+            break;
+        case warning:
+            addWarningRange(range);
+            break;
+        case distress:
+            addDistressRange(range);
+            break;
+        case critical:
+            addCriticalRange(range);
+            break;
+        case severe:
+            addSevereRange(range);
+            break;
+        default:
+            throw new RuntimeException("Level '"+level+"' not allowed for alarm ranges");
+            
+        }
+    }
+    
 	public FloatRange getWatchRange() {
 	    return watchRange;
 	}

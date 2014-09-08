@@ -16,6 +16,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -58,6 +59,9 @@ public class AlarmTest {
     
     @Test
     public void testIntegerLimits() throws InvalidIdentification {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_10_1");
+        System.out.println("p: "+p);
+        
         final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
         prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_10_1").build()), 
                 new ParameterConsumer() {
@@ -68,9 +72,11 @@ public class AlarmTest {
                 });
         c.start();
         
-        tmGenerator.generate_PKT1_10(30, 1, 0);
+        tmGenerator.generate_PKT1_10(30, 7, 0);
         
         // Check whether spreadsheet loads all levels ok
+        ParameterValue pv = params.get(0).getParameterValue();
+        System.out.println("pv: "+pv);
         assertEquals(-11, params.get(0).getParameterValue().watchRange.getMinInclusive(), 1e-17);
         assertEquals(30, params.get(0).getParameterValue().watchRange.getMaxInclusive(), 1e-17);
         assertEquals(-22, params.get(0).getParameterValue().warningRange.getMinInclusive(), 1e-17);
@@ -83,29 +89,30 @@ public class AlarmTest {
         assertEquals(70, params.get(0).getParameterValue().severeRange.getMaxInclusive(), 1e-17);
         
         assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getParameterValue().getMonitoringResult());
+        System.out.println("q: "+q);
         assertEquals(0, q.size());
         
-        tmGenerator.generate_PKT1_10(42, 1, 0);
+        tmGenerator.generate_PKT1_10(42, 7, 0);
         assertEquals(MonitoringResult.WARNING_HIGH, params.get(1).getParameterValue().getMonitoringResult());
         assertEquals(1, q.size()); // Message for changed MonitoringResult
         
-        tmGenerator.generate_PKT1_10(52, 1, 0);
+        tmGenerator.generate_PKT1_10(52, 7, 0);
         assertEquals(MonitoringResult.DISTRESS_HIGH, params.get(2).getParameterValue().getMonitoringResult());
         assertEquals(2, q.size()); // Message for changed MonitoringResult
         
-        tmGenerator.generate_PKT1_10(62, 1, 0);
+        tmGenerator.generate_PKT1_10(62, 7, 0);
         assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(3).getParameterValue().getMonitoringResult());
         assertEquals(3, q.size()); // Message for changed MonitoringResult
         
-        tmGenerator.generate_PKT1_10(72, 1, 0);
+        tmGenerator.generate_PKT1_10(72, 7, 0);
         assertEquals(MonitoringResult.SEVERE_HIGH, params.get(4).getParameterValue().getMonitoringResult());
         assertEquals(4, q.size()); // Message for changed MonitoringResult
         
-        tmGenerator.generate_PKT1_10(74, 1, 0);
+        tmGenerator.generate_PKT1_10(74, 7, 0);
         assertEquals(MonitoringResult.SEVERE_HIGH, params.get(5).getParameterValue().getMonitoringResult());
         assertEquals(4 /* ! */, q.size()); // No message, since nothing changed
         
-        tmGenerator.generate_PKT1_10(15, 1, 0);
+        tmGenerator.generate_PKT1_10(15, 7, 0);
         assertEquals(MonitoringResult.IN_LIMITS, params.get(6).getParameterValue().getMonitoringResult());
         assertEquals(5, q.size()); // Message for back to normal
         
@@ -114,9 +121,12 @@ public class AlarmTest {
         assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(7).getParameterValue().getMonitoringResult());
         assertEquals(6, q.size()); // Message for changed MonitoringResult
         
+        
         // Test minViolations of 3 under context 6
         tmGenerator.generate_PKT1_10(40, 6, 0);
         assertEquals(MonitoringResult.WARNING_HIGH, params.get(8).getParameterValue().getMonitoringResult());
+        System.out.println("q: "+q);
+        
         assertEquals(6, q.size()); // No message, violations=1
         
         tmGenerator.generate_PKT1_10(40, 6, 0);

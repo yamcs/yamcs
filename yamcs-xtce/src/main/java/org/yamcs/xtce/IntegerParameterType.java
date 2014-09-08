@@ -59,6 +59,13 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
         getAlarmRanges(null).severeRange=severeRange;
     }
 
+    /**
+     * Adds a new, or unions with an existing range for the specified context and level
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+    public void addAlarmRange(MatchCriteria contextMatch, FloatRange range, AlarmLevels level) {
+        getAlarmRanges(contextMatch).addRange(range, level);
+    }
 	/**
 	 * Adds a new, or unions with an existing watch range for the specified context
 	 * @param contextMatch use <tt>null</tt> for the default context

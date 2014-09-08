@@ -39,6 +39,14 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 		return defaultAlarm;
 	}
 	
+	/**
+     * Adds a new, or unions with an existing range for the specified context and level
+     * @param contextMatch use <tt>null</tt> for the default context
+     */
+	public void addAlarmRange(MatchCriteria contextMatch, FloatRange floatRange, AlarmLevels level) {
+	    getAlarmRanges(contextMatch).addRange(floatRange, level);
+        
+    }
     /**
      * Adds a new, or unions with an existing watch range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
