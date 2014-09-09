@@ -53,7 +53,7 @@ public class ChannelsTest {
         yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
 
         try {
-            ccc.createChannel("ChannelsTest0", "test1", "lounge", "test", false, new int[]{10,14});
+            ccc.createChannel("ChannelsTest0", "test1", "dummy", "test", false, new int[]{10,14});
             assertTrue("YamcsException was expected", false);
         } catch(YamcsException e) {
             assertEquals("createChannel invoked with a list full of invalid client ids", e.getMessage());
@@ -71,7 +71,7 @@ public class ChannelsTest {
         Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
         f.get(5, TimeUnit.SECONDS);
         
-        ccc.createChannel("ChannelsTest1", "channel1", "lounge", "", true, new int[0]);
+        ccc.createChannel("ChannelsTest1", "channel1", "dummy", "", true, new int[0]);
         
         MyChannelClient client=new MyChannelClient();
         Channel chan=Channel.getInstance("ChannelsTest1", "channel1");
@@ -82,7 +82,7 @@ public class ChannelsTest {
         
         ManagementService.getInstance().registerClient("ChannelsTest1", "channel1", client);
         
-        ccc.createChannel("ChannelsTest1", "channel2", "lounge", "", false, new int[]{1});
+        ccc.createChannel("ChannelsTest1", "channel2", "dummy", "", false, new int[]{1});
         
         Thread.sleep(3000); //to make sure that this event will not overwrite the previous ChannelsTest1,channel1 one 
         ccc.connectToChannel("ChannelsTest1", "channel1", new int[]{1}); //this one should trigger the closing of non permanent channel2 because no more client connected
@@ -98,13 +98,13 @@ public class ChannelsTest {
         ChannelInfo ci=ml.channelUpdated.get("channel1");
         assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel1",ci.getName());
-        assertEquals("lounge",ci.getType());
+        assertEquals("dummy",ci.getType());
         assertEquals(ServiceState.RUNNING, ci.getState());
         
         ci=ml.channelUpdated.get("channel2");
         assertEquals("ChannelsTest1",ci.getInstance());
         assertEquals("channel2",ci.getName());
-        assertEquals("lounge",ci.getType());
+        assertEquals("dummy",ci.getType());
         assertEquals("",ci.getSpec());
         assertEquals(ServiceState.RUNNING, ci.getState());
         
