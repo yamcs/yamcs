@@ -42,8 +42,8 @@ public class AlarmChecker {
         }
     }
     
-    public void enableReporting(AlarmReporter alarmReporter) {
-        this.alarmReporter=alarmReporter;
+    public void enableReporting(AlarmReporter reporter) {
+        this.alarmReporter=reporter;
     }
     
     /**
