@@ -15,6 +15,7 @@ public final class YamcsManagement {
     RUNNING(2, 2),
     STOPPING(3, 3),
     TERMINATED(4, 4),
+    FAILED(5, 5),
     ;
     
     
@@ -27,6 +28,7 @@ public final class YamcsManagement {
         case 2: return RUNNING;
         case 3: return STOPPING;
         case 4: return TERMINATED;
+        case 5: return FAILED;
         default: return null;
       }
     }
@@ -57,7 +59,7 @@ public final class YamcsManagement {
     }
     
     private static final ServiceState[] VALUES = {
-      NEW, STARTING, RUNNING, STOPPING, TERMINATED, 
+      NEW, STARTING, RUNNING, STOPPING, TERMINATED, FAILED, 
     };
     public static ServiceState valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -764,7 +766,6 @@ public final class YamcsManagement {
       return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_descriptor;
     }
     
-    @Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_fieldAccessorTable;
@@ -3838,20 +3839,20 @@ public final class YamcsManagement {
       "\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 " +
       "\001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010dis" +
       "abled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount" +
-      "\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*P\n\014Servic" +
+      "\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014Servic" +
       "eState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING" +
-      "\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\0042\233\003\n\016Cha" +
-      "nnelControl\022M\n\rCreateChannel\022\".org.yamcs" +
-      ".protobuf.ChannelRequest\032\030.org.yamcs.pro",
-      "tobuf.Void\022P\n\020ConnectToChannel\022\".org.yam" +
-      "cs.protobuf.ChannelRequest\032\030.org.yamcs.p" +
-      "rotobuf.Void\022L\n\014PauseChannel\022\".org.yamcs" +
-      ".protobuf.ChannelRequest\032\030.org.yamcs.pro" +
-      "tobuf.Void\022M\n\rResumeChannel\022\".org.yamcs." +
-      "protobuf.ChannelRequest\032\030.org.yamcs.prot" +
-      "obuf.Void\022K\n\013SeekChannel\022\".org.yamcs.pro" +
-      "tobuf.ChannelRequest\032\030.org.yamcs.protobu" +
-      "f.Void"
+      "\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAIL" +
+      "ED\020\0052\233\003\n\016ChannelControl\022M\n\rCreateChannel" +
+      "\022\".org.yamcs.protobuf.ChannelRequest\032\030.o",
+      "rg.yamcs.protobuf.Void\022P\n\020ConnectToChann" +
+      "el\022\".org.yamcs.protobuf.ChannelRequest\032\030" +
+      ".org.yamcs.protobuf.Void\022L\n\014PauseChannel" +
+      "\022\".org.yamcs.protobuf.ChannelRequest\032\030.o" +
+      "rg.yamcs.protobuf.Void\022M\n\rResumeChannel\022" +
+      "\".org.yamcs.protobuf.ChannelRequest\032\030.or" +
+      "g.yamcs.protobuf.Void\022K\n\013SeekChannel\022\".o" +
+      "rg.yamcs.protobuf.ChannelRequest\032\030.org.y" +
+      "amcs.protobuf.Void"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

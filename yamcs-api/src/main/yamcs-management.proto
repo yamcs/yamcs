@@ -6,11 +6,12 @@ import "yamcs.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
-   NEW=0;
-   STARTING=1;
-   RUNNING=2;
-   STOPPING=3;
-   TERMINATED=4;
+   NEW = 0;
+   STARTING = 1;
+   RUNNING = 2;
+   STOPPING = 3;
+   TERMINATED = 4;
+   FAILED = 5;
 }
 
 /************** Channel Control service *********************/
