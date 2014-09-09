@@ -14,11 +14,16 @@ import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.yamcs.ParameterValue;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.simulation.generated.ObjectFactory;
+import org.yamcs.simulation.generated.PpSimulation;
+import org.yamcs.tctm.PpListener;
+import org.yamcs.utils.TimeEncoding;
 
 public class SimulationPpProviderTest {
 
@@ -26,6 +31,10 @@ public class SimulationPpProviderTest {
 	private static final String DATA_SCENARIO2 = "src/test/resources/simulation_data2.xml";
 	private static final String DATA_SCENARIO_DATE = "src/test/resources/simulation_data_date.xml";
 
+	@BeforeClass
+	public static void beforeClass() {
+	    TimeEncoding.setUp();
+	}
 	@Test
 	public void LoadSimulationData_loadOk() {
 
@@ -162,26 +171,24 @@ public class SimulationPpProviderTest {
 		target.enable();
 
 		// Act
-		long dateStart = new Date().getTime();
+		long dateStart = TimeEncoding.currentInstant();
 		target.ProcessSimulationData();
-		long dateEnd = new Date().getTime();
+		long dateEnd = TimeEncoding.currentInstant();
 
 		// Assert
 		assertTrue(ppListener.receivedValue.size() == 2);
-		assertTrue(ppListener.receivedValue.get(1).getGenerationTime() == ppListener.receivedValue
-				.get(1).getAcquisitionTime() - 1500);
+		assertTrue(ppListener.receivedValue.get(1).getGenerationTime() == ppListener.receivedValue.get(1).getAcquisitionTime() - 1500);
 
-		long elapsedTimeGen0 = ppListener.receivedValue.get(0)
-				.getGenerationTime() - dateStart;
-		long elapsedTimeAcqu0 = ppListener.receivedValue.get(0)
-				.getAcquisitionTime() - dateStart;
+		long elapsedTimeGen0 = ppListener.receivedValue.get(0).getGenerationTime() - dateStart;
+		long elapsedTimeAcqu0 = ppListener.receivedValue.get(0).getAcquisitionTime() - dateStart;
+		
+		
 		assertTrue(0 <= elapsedTimeGen0 && elapsedTimeGen0 < 200);
 		assertTrue(1300 < elapsedTimeAcqu0 && elapsedTimeAcqu0 < 1600);
 
-		long elapsedTimeGen1 = ppListener.receivedValue.get(1)
-				.getGenerationTime() - dateStart;
-		long elapsedTimeAcqu1 = ppListener.receivedValue.get(1)
-				.getAcquisitionTime() - dateStart;
+		long elapsedTimeGen1 = ppListener.receivedValue.get(1).getGenerationTime() - dateStart;
+		long elapsedTimeAcqu1 = ppListener.receivedValue.get(1).getAcquisitionTime() - dateStart;
+		
 		assertTrue(1900 < elapsedTimeGen1 && elapsedTimeGen1 < 2100);
 		assertTrue(3400 < elapsedTimeAcqu1 && elapsedTimeAcqu1 < 3600);
 
@@ -207,6 +214,8 @@ public class SimulationPpProviderTest {
         public void updateParams(long gentime, String group, int seqNum, Collection<Pvalue.ParameterValue> params) {
         }
 
+		@Override
+>>>>>>> added missing method
         public String toString() {
 			String result = "";
 			long firstGenerationTime = 0;
