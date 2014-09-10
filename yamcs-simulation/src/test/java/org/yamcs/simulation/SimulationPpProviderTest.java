@@ -1,5 +1,7 @@
 package org.yamcs.simulation;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.yamcs.ParameterValue;
 import org.yamcs.protobuf.Pvalue;
@@ -17,12 +19,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.junit.BeforeClass;
-import org.junit.Test;
-import org.yamcs.ParameterValue;
-import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.simulation.generated.ObjectFactory;
-import org.yamcs.simulation.generated.PpSimulation;
-import org.yamcs.tctm.PpListener;
 import org.yamcs.utils.TimeEncoding;
 
 public class SimulationPpProviderTest {
@@ -215,7 +211,6 @@ public class SimulationPpProviderTest {
         }
 
 		@Override
->>>>>>> added missing method
         public String toString() {
 			String result = "";
 			long firstGenerationTime = 0;
