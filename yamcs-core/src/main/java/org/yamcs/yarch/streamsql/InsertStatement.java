@@ -9,7 +9,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TcTableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.TcTableWriter.InsertMode;
+import org.yamcs.yarch.TableWriter.InsertMode;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;

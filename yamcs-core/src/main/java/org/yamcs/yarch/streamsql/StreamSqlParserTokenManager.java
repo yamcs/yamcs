@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.yamcs.yarch.*;
-import org.yamcs.yarch.TcTableWriter.InsertMode;
+import org.yamcs.yarch.TableWriter.InsertMode;
 
 /** Token Manager. */
 public class StreamSqlParserTokenManager implements StreamSqlParserConstants

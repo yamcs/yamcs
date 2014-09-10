@@ -454,7 +454,7 @@ public class TableDefinition {
                 }
             }
         }
-        return partitionManager.createAndGetPartition(time, value);
+        return partitionManager.createAndGetPartition(time, value).getFilename();
     }
     
     public String getHistogramDbFilename(String columnName) {

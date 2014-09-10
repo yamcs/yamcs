@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.yarch.PartitionManager.Partition;
 import org.yamcs.yarch.management.ManagementService;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -28,7 +29,7 @@ import org.yaml.snakeyaml.Yaml;
 
 /**
  * Synchronization policy: to avoid problems with stream disappearing when clients connect to them, all
- * the creation/closing/subscription to streams/tables shall be done while acquiring a lock on the DataDictionary
+ * the creation/closing/subscription to streams/tables shall be done while acquiring a lock on the YarchDatabase
  * object. This is done in the StreamSqlStatement.java
  * 
  * Delivery of tuples does not require locking, this means subscription can change while delivering 
@@ -216,9 +217,9 @@ public class YarchDatabase {
 		}
 		managementService.unregisterTable(dbname, tblName);
 		if(tbl.hasPartitioning()) {
-			for(String s:tbl.partitionManager.getPartitions()) {
-			  String file=tbl.getDataDir()+"/"+s+".tcb";
-			  File f=new File(tbl.getDataDir()+"/"+s+".tcb");
+			for(Partition p:tbl.partitionManager.getPartitions()) {
+			  String file=tbl.getDataDir()+"/"+p.getFilename()+".tcb";
+			  File f=new File(tbl.getDataDir()+"/"+p.getFilename()+".tcb");
 			  if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+f);
 			  tcbFactory.delete(file);
 			}

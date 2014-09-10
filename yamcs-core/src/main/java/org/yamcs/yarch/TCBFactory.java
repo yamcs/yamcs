@@ -20,7 +20,7 @@ import tokyocabinet.BDB;
  *
  */
 public class TCBFactory implements Runnable {
-	HashMap<String, DbAndAccessTime> databases=new HashMap<String,DbAndAccessTime>();
+	HashMap<String, DbAndAccessTime> databases=new HashMap<String, DbAndAccessTime>();
 	
 	static Logger log=LoggerFactory.getLogger(TCBFactory.class.getName());
 	static TCBFactory instance=new TCBFactory(); 
@@ -154,6 +154,7 @@ public class TCBFactory implements Runnable {
 	}
 
 	public synchronized void dispose(YBDB ybdb) {
+	  //  System.out.println("here ybdb.path: "+ybdb.path());
 	    DbAndAccessTime daat=databases.get(ybdb.path());
 	    daat.lastAccess=System.currentTimeMillis();
 	    daat.refcount--;

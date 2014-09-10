@@ -12,31 +12,18 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 
 
-public class TcTableWriter implements StreamSubscriber {
-	TableDefinition tableDefinition;
-	public enum InsertMode { //UPSERT and UPSERT_APPEND are not yet implemented TODO
-	    INSERT, //insert rows whose key do not exist, ignore the others
-	//    UPSERT, //insert rows as they come, overwriting old values if the key already exist
-	    INSERT_APPEND, //like INSERT but if the row already exist, append to it all the columns that are not already there
-	//    UPSERT_APPEND, //like INSERT_APPEND but if the row already exists, add all the columns from the new row, overwriting old values if necessary
-	};
-	InsertMode mode;
-	
+public class TcTableWriter extends TableWriter {
+
+    
+    
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	Map<String, HistogramDb> column2HistoDb=new HashMap<String, HistogramDb>();
-	final private YarchDatabase ydb;
+	
 	
 	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException, ConfigurationException {
-		this.tableDefinition=tableDefinition;
-		this.mode=mode;
-		this.ydb=ydb;
+		super(ydb, tableDefinition, mode);
 	}
 
-	public TableDefinition getTableDefinition() {
-	    return tableDefinition;
-	}
-	
-	
 	@Override
     public void onTuple(Stream s, Tuple t) {
 		try {

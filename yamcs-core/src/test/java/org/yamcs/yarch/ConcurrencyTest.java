@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
@@ -67,6 +68,7 @@ public class ConcurrencyTest extends YarchTestCase {
 				long time0=cal.getTimeInMillis();
 
 				for (psent=0; psent<n; psent++) {
+				    if(psent%1000==0) System.out.println("ConcurrencyTest write tuples: "+psent*2+" out of "+n*2);
 					cal.add(Calendar.MINUTE,1);
 					int apidSeqCount=psent;
 					long time=time0+psent*60L*1000;
@@ -116,13 +118,14 @@ public class ConcurrencyTest extends YarchTestCase {
 		    
             @Override
             public void streamClosed(Stream stream) {
-                System.out.println("received "+i+" tuples");
                 assertTrue(i>10);
                 semaphore.release();
             }
             
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
+                if(i%1000==0) System.out.println("ConcurrencyTest read tuples: "+i);
+              
                 long time=(Long)tuple.getColumn(0);
                 int apidSeqCount=(Integer) tuple.getColumn(1);
                 byte[] b= (byte[]) tuple.getColumn(2);
@@ -142,10 +145,10 @@ public class ConcurrencyTest extends YarchTestCase {
             }
         });
 		s.start();
-		semaphore.acquire();
+		assertTrue(semaphore.tryAcquire(1000, TimeUnit.SECONDS));
 		
 		
-		
+		System.out.println("closing streams");
 	//	assertEquals(time0+(n-1)*60L*1000L,time);
 		execute("close stream testcrw_in1");
 		execute("close stream testcrw_in2");

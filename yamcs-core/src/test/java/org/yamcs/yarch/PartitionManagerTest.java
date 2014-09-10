@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.PartitionManager.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -50,33 +51,33 @@ public class PartitionManagerTest {
         String tmpdir=Files.createTempDir().getAbsolutePath();
         
         PartitionManager pm=new PartitionManager("tbltest", spec, tmpdir);
-        String part=pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
-        assertEquals(tmpdir+"/2011/001/tbltest#1",part);
+        Partition part=pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
+        assertEquals(tmpdir+"/2011/001/tbltest#1",part.getFilename());
         
         part=pm.createAndGetPartition(TimeEncoding.parse("2011-03-01T00:00:00"),1);
-        assertEquals(tmpdir+"/2011/060/tbltest#1",part);
+        assertEquals(tmpdir+"/2011/060/tbltest#1",part.getFilename());
         
         part=pm.createAndGetPartition(TimeEncoding.parse("2011-02-01T00:00:00"),2);
-        assertEquals(tmpdir+"/2011/032/tbltest#2",part);
+        assertEquals(tmpdir+"/2011/032/tbltest#2",part.getFilename());
         
         part=pm.createAndGetPartition(TimeEncoding.parse("2011-02-01T00:00:00"),3);
-        assertEquals(tmpdir+"/2011/032/tbltest#3",part);
+        assertEquals(tmpdir+"/2011/032/tbltest#3",part.getFilename());
         
         part=pm.createAndGetPartition(TimeEncoding.parse("2011-03-01T00:00:00"),3);
-        assertEquals(tmpdir+"/2011/060/tbltest#3",part);
+        assertEquals(tmpdir+"/2011/060/tbltest#3", part.getFilename());
         
         Set<Object>filter=new HashSet<Object>();
         filter.add(1);
         filter.add(3);
-        Iterator<List<String>> it=pm.iterator(TimeEncoding.parse("2011-02-01T00:00:00"), filter);
+        Iterator<List<Partition>> it=pm.iterator(TimeEncoding.parse("2011-02-01T00:00:00"), filter);
         assertTrue(it.hasNext());
-        List<String> parts=it.next();
+        List<Partition> parts=it.next();
         assertEquals(1, parts.size());
         
         assertTrue(it.hasNext());
         parts=it.next();
-        assertEquals(tmpdir+"/2011/060/tbltest#1", parts.get(0));
-        assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1));
+        assertEquals(tmpdir+"/2011/060/tbltest#1", parts.get(0).getFilename());
+        assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1).getFilename());
         
         Files.deleteRecursively(new File(tmpdir));
     }
@@ -101,11 +102,11 @@ public class PartitionManagerTest {
         filter.add(3);
         
         
-        Iterator<List<String>> it=pm.iterator(TimeEncoding.parse("2011-02-03T00:00:00"), filter);
+        Iterator<List<Partition>> it=pm.iterator(TimeEncoding.parse("2011-02-03T00:00:00"), filter);
         assertTrue(it.hasNext());
-        List<String> parts=it.next();
-        assertEquals(tmpdir+"/2011/060/tbltest#1", parts.get(0));
-        assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1));
+        List<Partition> parts=it.next();
+        assertEquals(tmpdir+"/2011/060/tbltest#1", parts.get(0).getFilename());
+        assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1).getFilename());
         assertFalse(it.hasNext());
         
         Files.deleteRecursively(new File(tmpdir));

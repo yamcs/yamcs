@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.PartitionManager.Partition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -39,9 +40,9 @@ public class PartitioningTest extends YarchTestCase {
         TableDefinition tdef=ydb.getTable("test1");
         assertTrue(tdef.hasPartitioning());
         PartitionManager pmgr=tdef.getPartitionManager();
-        Collection<String> partitions=pmgr.getPartitions();
+        Collection<Partition> partitions=pmgr.getPartitions();
         assertEquals(1,partitions.size());
-        assertEquals("1999/172/test1",partitions.iterator().next());
+        assertEquals("1999/172/test1",partitions.iterator().next().getFilename());
         File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/test1.tcb");
         System.out.println("f="+f);
         assertTrue(f.exists());
@@ -50,26 +51,26 @@ public class PartitioningTest extends YarchTestCase {
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant2, 2000}));
         partitions=pmgr.getPartitions();
         assertEquals(2,partitions.size());
-        Iterator<String>it=partitions.iterator();
-        assertEquals("1999/172/test1",it.next());
-        assertEquals("2001/001/test1",it.next());
+        Iterator<Partition>it=partitions.iterator();
+        assertEquals("1999/172/test1",it.next().getFilename());
+        assertEquals("2001/001/test1",it.next().getFilename());
 
         long instant3=TimeEncoding.parse("2001-01-01T00:00:01");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant3, 2000}));
         partitions=pmgr.getPartitions();
         assertEquals(2,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1",it.next());
-        assertEquals("2001/001/test1",it.next());
+        assertEquals("1999/172/test1",it.next().getFilename());
+        assertEquals("2001/001/test1",it.next().getFilename());
 
         long instant4=TimeEncoding.parse("2000-12-31T23:59:59");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant4, 2000}));
         partitions=pmgr.getPartitions();
         assertEquals(3,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1",it.next());
-        assertEquals("2000/366/test1",it.next());
-        assertEquals("2001/001/test1",it.next());
+        assertEquals("1999/172/test1",it.next().getFilename());
+        assertEquals("2000/366/test1",it.next().getFilename());
+        assertEquals("2001/001/test1",it.next().getFilename());
 
         
         long instant5=TimeEncoding.parse("2008-12-31T23:59:60");
@@ -78,10 +79,10 @@ public class PartitioningTest extends YarchTestCase {
         partitions=pmgr.getPartitions();
         assertEquals(4,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1",it.next());
-        assertEquals("2000/366/test1",it.next());
-        assertEquals("2001/001/test1",it.next());
-        assertEquals("2008/366/test1",it.next());
+        assertEquals("1999/172/test1",it.next().getFilename());
+        assertEquals("2000/366/test1",it.next().getFilename());
+        assertEquals("2001/001/test1",it.next().getFilename());
+        assertEquals("2008/366/test1",it.next().getFilename());
         ydb.execute("close stream tm_in");
 
 
@@ -160,11 +161,11 @@ public class PartitioningTest extends YarchTestCase {
         TableDefinition tdef=ydb.getTable("testdp");
         assertTrue(tdef.hasPartitioning());
         PartitionManager pmgr=tdef.getPartitionManager();
-        Collection<String> partitions=pmgr.getPartitions();
-        Iterator<String>it=partitions.iterator();
+        Collection<Partition> partitions=pmgr.getPartitions();
+        Iterator<Partition>it=partitions.iterator();
         assertEquals(2,partitions.size());
-        assertEquals("1999/172/testdp#part1",it.next());
-        assertEquals("1999/172/testdp#partition2",it.next());
+        assertEquals("1999/172/testdp#part1",it.next().getFilename());
+        assertEquals("1999/172/testdp#partition2",it.next().getFilename());
         File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp#part1.tcb");
         assertTrue(f.exists());
         f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp#partition2.tcb");
@@ -237,11 +238,11 @@ public class PartitioningTest extends YarchTestCase {
         TableDefinition tdef=ydb.getTable("testdp");
         assertTrue(tdef.hasPartitioning());
         PartitionManager pmgr=tdef.getPartitionManager();
-        Collection<String> partitions=pmgr.getPartitions();
-        Iterator<String>it=partitions.iterator();
+        Collection<Partition> partitions=pmgr.getPartitions();
+        Iterator<Partition>it=partitions.iterator();
         assertEquals(2, partitions.size());
-        assertEquals("testdp#0", it.next());
-        assertEquals("testdp#1", it.next());
+        assertEquals("testdp#0", it.next().getFilename());
+        assertEquals("testdp#1", it.next().getFilename());
         File f=new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#0.tcb");
         assertTrue(f.exists());
         f=new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#1.tcb");
