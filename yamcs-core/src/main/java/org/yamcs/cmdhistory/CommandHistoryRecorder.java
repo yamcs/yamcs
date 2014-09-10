@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.archive.TcUplinkerAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TcTableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -78,7 +79,7 @@ public class CommandHistoryRecorder extends AbstractService {
         Stream stream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         for(StreamSubscriber ss:stream.getSubscribers()) {
             if(ss instanceof TcTableWriter) {
-                if("cmdhist".equals(((TcTableWriter)ss).getTableDefinition().getName()))
+                if("cmdhist".equals(((TableWriter)ss).getTableDefinition().getName()))
                     stream.removeSubscriber(ss);
             }
         }
