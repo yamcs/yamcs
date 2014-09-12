@@ -7,7 +7,7 @@ package org.yamcs;
  * @author nm
  *
  */
-public class ConfigurationException extends Exception {
+public class ConfigurationException extends RuntimeException {
     
     String confpath; 
 
