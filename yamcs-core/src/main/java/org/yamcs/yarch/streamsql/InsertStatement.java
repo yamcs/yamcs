@@ -6,10 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TcTableWriter;
+import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableWriter.InsertMode;
+import org.yamcs.yarch.YarchException;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
@@ -20,6 +21,7 @@ import org.yamcs.yarch.streamsql.StreamExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
+import org.yamcs.yarch.tokyocabinet.TcTableWriter;
 
 public class InsertStatement extends StreamSqlStatement {
     String name;
@@ -57,12 +59,11 @@ public class InsertStatement extends StreamSqlStatement {
             if(outputTableDef!=null) {
                 try {
                     //writing into a table
-                    TcTableWriter tableWriter=new TcTableWriter(ydb, outputTableDef, insertMode);
+                    TableWriter tableWriter=ydb.getStorageEngine(outputTableDef).newTableWriter(outputTableDef, insertMode);
                     inputStream.addSubscriber(tableWriter);
                     return new StreamSqlResult();
-                } catch( FileNotFoundException e) {
-                    throw new GenericStreamSqlException(e.getMessage());
-                } catch (ConfigurationException e) {
+                } catch(YarchException e) {
+                    log.warn("Got exception when creatin table", e);
                     throw new GenericStreamSqlException(e.getMessage());
                 }
             }

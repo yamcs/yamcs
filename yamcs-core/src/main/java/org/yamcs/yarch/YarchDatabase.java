@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.yarch.PartitionManager.Partition;
 import org.yamcs.yarch.management.ManagementService;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -23,6 +22,8 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.TokenMgrError;
+import org.yamcs.yarch.tokyocabinet.TCBFactory;
+import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -39,13 +40,17 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class YarchDatabase {
-	private static final long serialVersionUID = 200805301445L;
+	
 	Map<String,TableDefinition> tables;
 	transient Map<String,AbstractStream> streams;
 	static Logger log=LoggerFactory.getLogger(YarchDatabase.class.getName());
 	static YConfiguration config;
 	private static String home;
 	private TCBFactory tcbFactory=TCBFactory.getInstance();
+	
+	Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
+	public static String TC_ENGINE_NAME="tokyocabinet";
+	public static String DEFAULT_STORAGE_ENGINE=TC_ENGINE_NAME;
 	
 	static {
 		try {
@@ -67,6 +72,7 @@ public class YarchDatabase {
 		managementService=ManagementService.getInstance();
 		tables=new HashMap<String,TableDefinition>();
 		streams=new HashMap<String,AbstractStream>();
+		storageEngines.put(TC_ENGINE_NAME, new TcStorageEngine(this));
 		loadTables();
 	}
 	
@@ -124,8 +130,7 @@ public class YarchDatabase {
 		}
 	}
 	
-	TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
-	    
+	TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {	    
 	    String fn=f.getName();
 	    String tblName=fn.substring(0,fn.length()-4);
 	    Yaml yaml = new Yaml(new TableDefinitionConstructor());
@@ -136,11 +141,6 @@ public class YarchDatabase {
 	    tblDef.setDb(this);
 	    if(!tblDef.hasCustomDataDir()) tblDef.setDataDir(getRoot());
 
-	    if(tblDef.hasPartitioning()) {
-	        PartitionManager pm=new PartitionManager(tblDef);
-	        tblDef.setPartitionManager(pm);
-	        pm.readPartitions();
-	    }
 	    log.debug("loaded table definition "+tblName+" from "+fn);
 	    return tblDef;
 	}
@@ -170,14 +170,17 @@ public class YarchDatabase {
 	 *  throws exception if a table or a stream with the same name already exist
 	 *  
 	 */
-	public void addTable(TableDefinition def) throws YarchException {
+	public void createTable(TableDefinition def) throws YarchException {
 		if(tables.containsKey(def.getName())) throw new YarchException("A table named '"+def.getName()+"' already exists");
 		if(streams.containsKey(def.getName())) throw new YarchException("A stream named '"+def.getName()+"' already exists");
+		StorageEngine se = storageEngines.get(def.getStorageEngineName());
+		if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+" specified. Valid names are: "+storageEngines.keySet());
+		se.createTable(def);
+		
 		tables.put(def.getName(),def);
 		def.setDb(this);
 		serializeTableDefinition(def);
-		managementService.registerTable(dbname, def);
-		
+		managementService.registerTable(dbname, def);		
 	}
 
 	
@@ -217,12 +220,7 @@ public class YarchDatabase {
 		}
 		managementService.unregisterTable(dbname, tblName);
 		if(tbl.hasPartitioning()) {
-			for(Partition p:tbl.partitionManager.getPartitions()) {
-			  String file=tbl.getDataDir()+"/"+p.getFilename()+".tcb";
-			  File f=new File(tbl.getDataDir()+"/"+p.getFilename()+".tcb");
-			  if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+f);
-			  tcbFactory.delete(file);
-			}
+		    getStorageEngine(tbl).dropTable(tbl);
 		} else {
 		  String file=tbl.getDataDir()+"/"+tblName+".tcb";
 		  File f=new File(file);
@@ -241,6 +239,11 @@ public class YarchDatabase {
 	    if(s!=null) managementService.unregisterStream(dbname, name);
 	}
 
+	public StorageEngine getStorageEngine(TableDefinition tbldef) {
+	    return storageEngines.get(tbldef.getStorageEngineName());	    
+	}
+	
+	
 	public Collection<AbstractStream> getStreams() {
 		return streams.values();
 	}

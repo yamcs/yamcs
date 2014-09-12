@@ -1,4 +1,4 @@
-package org.yamcs.yarch;
+package org.yamcs.yarch.tokyocabinet;
 
 import java.io.IOException;
 import java.util.HashMap;

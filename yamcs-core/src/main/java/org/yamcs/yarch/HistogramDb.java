@@ -12,8 +12,8 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
-import org.yamcs.yarch.YBDB;
-import org.yamcs.yarch.YBDBCUR;
+import org.yamcs.yarch.tokyocabinet.YBDB;
+import org.yamcs.yarch.tokyocabinet.YBDBCUR;
 
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;

@@ -53,8 +53,8 @@ public class CreateTableStatement extends StreamSqlStatement {
     
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
-        synchronized(dict) {
+        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+        synchronized(ydb) {
             TableDefinition tableDefinition=new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
             
@@ -62,7 +62,7 @@ public class CreateTableStatement extends StreamSqlStatement {
                 tableDefinition.setDataDir(dataDir);
                 tableDefinition.setCustomDataDir(true);
             } else {
-                tableDefinition.setDataDir(dict.getRoot());
+                tableDefinition.setDataDir(ydb.getRoot());
                 tableDefinition.setCustomDataDir(false);
             }
             tableDefinition.setCompressed(compressed);
@@ -72,8 +72,9 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
+            tableDefinition.setStorageEngineName(YarchDatabase.TC_ENGINE_NAME);
             try {
-                dict.addTable(tableDefinition);
+                ydb.createTable(tableDefinition);
                 return new StreamSqlResult();
             } catch(YarchException e) {
                 throw new GenericStreamSqlException("Cannot create table: "+e.getMessage());

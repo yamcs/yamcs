@@ -1,4 +1,4 @@
-package org.yamcs.yarch;
+package org.yamcs.yarch.tokyocabinet;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,18 +10,31 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.ColumnSerializer;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.HistogramDb;
+import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
 
 
 public class TcTableWriter extends TableWriter {
-
-    
-    
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	Map<String, HistogramDb> column2HistoDb=new HashMap<String, HistogramDb>();
+    private final PartitioningSpec partitioningSpec;
+    private final PartitionManager partitionManager;
 	
 	
-	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException, ConfigurationException {
+	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, PartitionManager pm) throws FileNotFoundException, ConfigurationException {
 		super(ydb, tableDefinition, mode);
+		this.partitioningSpec = tableDefinition.getPartitioningSpec();
+		this.partitionManager = pm;
 	}
 
 	@Override
@@ -82,7 +95,7 @@ public class TcTableWriter extends TableWriter {
             
             boolean changed=false;
             ArrayList<Object> cols=new ArrayList<Object>(oldt.getColumns().size()+t.getColumns().size());
-            cols.addAll(oldt.columns);
+            cols.addAll(oldt.getColumns());
             for(ColumnDefinition cd:tdef.getColumnDefinitions()) {
                 if(!oldtdef.hasColumn(cd.getName())) {
                     oldtdef.addColumn(cd);
@@ -91,7 +104,7 @@ public class TcTableWriter extends TableWriter {
                 }
             }
             if(changed) {
-                oldt.columns=cols;
+                oldt.setColumns(cols);
                 v=tableDefinition.serializeValue(oldt);
                 db.put(k, v);
             }
@@ -109,7 +122,7 @@ public class TcTableWriter extends TableWriter {
     */
 	
 	private YBDB getDatabase(Tuple t) throws IOException {
-		String filename=tableDefinition.getDbFilename(t);
+		String filename = getDbFilename(t);
 		return ydb.getTCBFactory().getTcb(filename+".tcb", tableDefinition.isCompressed(), false);
 	}
 	
@@ -145,4 +158,29 @@ public class TcTableWriter extends TableWriter {
 	    return "TcTableWriter["+tableDefinition.getName()+"]";
 	}
 	
+	
+	
+	
+	/**
+     * get the filename where the tuple would fit (can be a partition)
+     * @param t
+     * @return
+     * @throws IOException if there was an error while creating the directories where the file should be located
+     */
+    public String getDbFilename(Tuple t) throws IOException {
+        if(partitioningSpec==null) return tableDefinition.getDataDir()+"/"+tableDefinition.getName();
+        long time=TimeEncoding.INVALID_INSTANT;
+        Object value=null;
+        if(partitioningSpec.timeColumn!=null) {
+            time =(Long)t.getColumn(partitioningSpec.timeColumn);
+        }
+        if(partitioningSpec.valueColumn!=null) {
+            value=t.getColumn(partitioningSpec.valueColumn);
+            ColumnDefinition cd=tableDefinition.getColumnDefinition(partitioningSpec.valueColumn);
+            if(cd.getType()==DataType.ENUM) {
+                value = tableDefinition.addAndGetEnumValue(partitioningSpec.valueColumn, (String) value);                
+            }
+        }
+        return partitionManager.createAndGetPartition(time, value);
+    }
 }

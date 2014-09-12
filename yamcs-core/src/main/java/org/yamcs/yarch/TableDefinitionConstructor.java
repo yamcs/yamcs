@@ -26,6 +26,7 @@ public class TableDefinitionConstructor  extends Constructor {
     }
 
     private class ConstructTableDefinition extends AbstractConstruct {
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Object construct(Node node) {
             Map<String, Object> m = (Map) constructMapping((MappingNode)node);
@@ -65,12 +66,18 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey("compressed")) {
                 tdef.setCompressed((Boolean)m.get("compressed"));
             }
+            if(m.containsKey("storageEngine")) {
+                tdef.setStorageEngineName((String)m.get("storageEngine"));
+            } else {
+                tdef.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
+            }
           
             return tdef;
         }
     }
     
     private class ConstructTupleDefinition extends AbstractConstruct {
+        @SuppressWarnings({"unchecked","rawtypes"})
         @Override
         public Object construct(Node node) {
             List<Object> l = (List) constructSequence((SequenceNode)node);
@@ -102,9 +109,10 @@ public class TableDefinitionConstructor  extends Constructor {
     }
     
     private class ConstructPartitioningSpec extends AbstractConstruct {
+        @SuppressWarnings({"unchecked","rawtypes"})
         @Override
         public Object construct(Node node) {
-        	Map<String, Object> m = (Map) constructMapping((MappingNode)node);
+            Map<String, Object> m = (Map) constructMapping((MappingNode)node);
         	PartitioningSpec p=new PartitioningSpec();
         	if(!m.containsKey("type")) throw new RuntimeException("partitioning spec type not specified");
         	p.type=PartitioningSpec._type.valueOf((String)m.get("type"));

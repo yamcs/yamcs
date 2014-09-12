@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.yarch.YBDB;
-import org.yamcs.yarch.YBDBCUR;
+import org.yamcs.yarch.tokyocabinet.YBDB;
+import org.yamcs.yarch.tokyocabinet.YBDBCUR;
 
 import tokyocabinet.BDB;
 

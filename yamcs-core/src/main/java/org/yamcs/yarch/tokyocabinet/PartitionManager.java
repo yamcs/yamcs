@@ -1,4 +1,4 @@
-package org.yamcs.yarch;
+package org.yamcs.yarch.tokyocabinet;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,14 +12,18 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TableDefinition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
@@ -63,16 +67,16 @@ public class PartitionManager {
 	 * 
 	 * @return partition filenames (relative to the data directory of the table, and without the .tcb extension)
 	 */
-    public Collection<Partition> getPartitions() {
-        List<Partition> filenames=new ArrayList<Partition>();
+    public Collection<String> getPartitions() {
+        List<String> filenames=new ArrayList<String>();
         for(Entry<Long,Interval> entry:intervals.entrySet()) {
             Interval intv=entry.getValue();
             if(partitioningSpec.type==_type.TIME) {
-                filenames.add(new Partition(intv.dir+"/"+tblName));
+                filenames.add(intv.dir+"/"+tblName);
             } else {
                 for(Object o:entry.getValue().values) {
                     String fn=((intv.dir!=null) ?intv.dir+"/":"")+tblName+"#"+o; 
-                    filenames.add(new Partition(fn));
+                    filenames.add(fn);
                 }
             }
         }
@@ -80,12 +84,12 @@ public class PartitionManager {
     }
     
 	/**
-	 * Creates (if not already existing) and returns the partition in which the instant,value (one of them can be invalid) should be written.
+	 * Creates (if not already existing) and returns the partition in which the instance,value (one of them can be invalid) should be written.
 	 * It creates all directories necessary.
 	 * 
 	 * @return an absolute filename, without the ".tcb" extension
 	 */
-	public synchronized Partition createAndGetPartition(long instant, Object value) throws IOException {
+	public synchronized String createAndGetPartition(long instant, Object value) throws IOException {
 	    if(partitioningSpec.timeColumn!=null) {
 	        if((pcache==null) || (pcache.start>instant) || (pcache.end<=instant)) {
 	            Entry<Long, Interval>entry=intervals.floorEntry(instant);
@@ -120,13 +124,13 @@ public class PartitionManager {
 	        }
 	        
 	        if(value!=null) {
-	            return new Partition(dataDir+"/"+pcache.dir+"/"+tblName+"#"+valueToPartition(value));
+	            return dataDir+"/"+pcache.dir+"/"+tblName+"#"+valueToPartition(value);
 	        } else {
-                return new Partition(dataDir+"/"+pcache.dir+"/"+tblName);
+                return dataDir+"/"+pcache.dir+"/"+tblName;
 	        }
 	    } else { //partitioning based on values only
 	        pcache.values.add(value);
-	        return new Partition(dataDir+"/"+tblName+"#"+valueToPartition(value));
+	        return dataDir+"/"+tblName+"#"+valueToPartition(value);
 	    }
 	}
 	
@@ -222,21 +226,21 @@ public class PartitionManager {
 	   if(o!=null) intv.values.add(o);
 	}
 	
-	public Iterator<List<Partition>> iterator(Set<Object> partitionFilter) {
+	public Iterator<List<String>> iterator(Set<Object> partitionFilter) {
 	    PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionFilter);
         return pi;
    }
 	
-	public Iterator<List<Partition>> iterator(long start, Set<Object> partitionFilter) {
+	public Iterator<List<String>> iterator(long start, Set<Object> partitionFilter) {
 	    PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionFilter);
 	     pi.jumpToStart(start);
 	     return pi;
 	}
 
-	class PartitionIterator implements Iterator<List<Partition>> {
+	class PartitionIterator implements Iterator<List<String>> {
 	    final Iterator<Entry<Long,Interval>> it;
 	    final Set<Object> partitionFilter;
-	    List<Partition> next;
+	    List<String> next;
 	    long start;
 	    boolean jumpToStart=false;
 	    
@@ -254,7 +258,7 @@ public class PartitionManager {
 	    @Override
 	    public boolean hasNext() {
 	        if(next!=null) return true;
-	        next=new ArrayList<Partition>();
+	        next=new ArrayList<String>();
 	        
 	        while(it.hasNext()) {
                 Entry<Long,Interval> entry=it.next();
@@ -266,11 +270,11 @@ public class PartitionManager {
                 }
                 String base=dataDir+"/"+(intv.dir!=null?intv.dir+"/":"")+tblName;
                 if(partitioningSpec.type==_type.TIME) { 
-                    next.add(new Partition(base));
+                    next.add(base);
                 } else {
                     for(Object o:entry.getValue().values) {
                         if((partitionFilter==null) || (partitionFilter.contains(o))) {
-                            next.add(new Partition(base+"#"+valueToPartition(o)));
+                            next.add(base+"#"+valueToPartition(o));
                         }
                     }
                 }
@@ -287,8 +291,8 @@ public class PartitionManager {
         }
 
 	    @Override
-	    public List<Partition> next() {
-	        List<Partition> ret=next;
+	    public List<String> next() {
+	        List<String> ret=next;
 	        next=null;
 	        return ret;
 	    }
@@ -298,20 +302,7 @@ public class PartitionManager {
 	        throw new UnsupportedOperationException("cannot remove partitions like this");
 	    }
 	}
-
-	static class Partition {
-	    final private String filename;
-
-	    public Partition(String filename) {
-	        this.filename = filename;
-	    }
-	    
-	    public String getFilename() {
-	        return filename;
-	    }
-	}
 }
-
 
 class Interval {
     long start,  end;

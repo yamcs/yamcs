@@ -11,7 +11,6 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.HistogramReaderStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TcTableReaderStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -22,6 +21,7 @@ import org.yamcs.yarch.streamsql.StreamExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 import org.yamcs.yarch.streamsql.TupleSourceExpression;
+import org.yamcs.yarch.tokyocabinet.TcTableReaderStream;
 /**
  * A source of tuples. Can be:
  *  - a reference to an existing stream objectName
@@ -100,7 +100,7 @@ class TupleSourceExpression {
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {
-                    stream=new TcTableReaderStream(ydb, tbl);
+                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl);
                 } else {
                     HistogramReaderStream histoStream=new HistogramReaderStream(ydb, tbl, histoColumn, definition);
                     if(histogramMergeTime!=null) {

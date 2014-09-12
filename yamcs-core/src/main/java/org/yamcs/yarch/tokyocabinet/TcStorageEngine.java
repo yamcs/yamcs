@@ -1,0 +1,75 @@
+package org.yamcs.yarch.tokyocabinet;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.StorageEngine;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWriter.InsertMode;
+
+public class TcStorageEngine implements StorageEngine {    
+    Map<TableDefinition, PartitionManager> partitionManagers = new HashMap<TableDefinition, PartitionManager>();
+    final YarchDatabase ydb;
+    
+    public TcStorageEngine(YarchDatabase ydb) {
+        this.ydb = ydb;
+    }
+    
+    
+    @Override
+    public void loadTable(TableDefinition tbl) throws YarchException {
+        if(tbl.hasPartitioning()) {
+            PartitionManager pm = new PartitionManager(tbl);
+            pm.readPartitions();
+            partitionManagers.put(tbl, pm);
+        }
+    }
+    
+    @Override
+    public void dropTable(TableDefinition tbl) throws YarchException {
+        TCBFactory tcbFactory = TCBFactory.getInstance();
+        PartitionManager pm = partitionManagers.get(tbl);
+        
+        for(String p:pm.getPartitions()) {
+          String file=tbl.getDataDir()+"/"+p+".tcb";
+          File f=new File(tbl.getDataDir()+"/"+p+".tcb");
+          if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+f);
+          tcbFactory.delete(file);
+        }
+
+    }
+    
+    @Override
+    public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException {
+        try {
+            return new TcTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+        } catch (FileNotFoundException e) {
+            throw new YarchException("Failed to create writer", e);
+        } 
+    }
+
+    public PartitionManager getPartitionManager(TableDefinition tdef) {      
+        return partitionManagers.get(tdef);
+    }
+
+
+    @Override
+    public AbstractStream newTableReaderStream(TableDefinition tbl) {
+        return new TcTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
+    }
+
+
+    @Override
+    public void createTable(TableDefinition tbl) {
+        if(tbl.hasPartitioning()) {
+            PartitionManager pm = new PartitionManager(tbl);
+            partitionManagers.put(tbl, pm);
+        }
+    }
+}

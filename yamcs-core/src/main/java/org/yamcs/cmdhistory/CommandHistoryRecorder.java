@@ -6,10 +6,10 @@ import org.yamcs.archive.TcUplinkerAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableWriter;
-import org.yamcs.yarch.TcTableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.tokyocabinet.TcTableWriter;
 
 import com.google.common.util.concurrent.AbstractService;
 

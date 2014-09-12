@@ -1,12 +1,11 @@
-package org.yamcs.yarch;
+package org.yamcs.yarch.tokyocabinet;
 
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.yamcs.yarch.TCBFactory;
-import org.yamcs.yarch.YBDB;
+import org.yamcs.yarch.tokyocabinet.TCBFactory;
 
 
 public class TCBFactoryTest {

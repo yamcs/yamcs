@@ -34,7 +34,11 @@ public class Tuple {
     public List<Object> getColumns() {
         return columns;
     }
-
+    
+    public void  setColumns(List<Object> cols) {
+        this.columns=cols;
+    }
+    
     public Object getColumn(String colName) {
         int i=definition.getColumnIndex(colName);
         if(i==-1) throw new IllegalArgumentException("invalid column "+colName);
