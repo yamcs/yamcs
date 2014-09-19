@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class BaseDataType extends NameDescription {
@@ -27,4 +28,8 @@ public abstract class BaseDataType extends NameDescription {
 	public void addUnit(UnitType unit) {
 	    unitSet.add(unit);
 	}
+	
+	public void addAllUnits(Collection<UnitType> units) {
+        unitSet.addAll(units);
+    }
 }
