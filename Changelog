@@ -1,3 +1,8 @@
+Verion 0.27.0 Relased 23-Sep-2014
+- improvements into the GUIs
+- read the parameter type units (e.g. meter) from XTCE XML file
+
+
 Version 0.26.4 Released 27-Aug-2014 
 - Renamed system variables to system parameters for consistency
 - Added a system parameter for yamcs instance
