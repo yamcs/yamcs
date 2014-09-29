@@ -74,10 +74,12 @@ public class IndexBox extends Box implements MouseListener {
         topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(topPanel);
         
-        centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBorder(BorderFactory.createEmptyBorder());
         centerPanel.setOpaque(false);
         centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+       
         add(centerPanel);
 
         addMouseListener(this);
@@ -317,8 +319,8 @@ public class IndexBox extends Box implements MouseListener {
         dataView.setBusyPointer();
         selectedPacket.assocMenuItem.setVisible(true);
         selectedPacket.enabled = false;
-        remove(selectedPacket.assocTmPanel);
-        selectedPacket.assocTmPanel = null;
+        remove(selectedPacket.assocIndexLine);
+        selectedPacket.assocIndexLine = null;
         updatePrefsVisiblePackets();
         if(getComponents().length==0) {
             showEmptyLabel("Right click for "+name+" data");
@@ -337,9 +339,9 @@ public class IndexBox extends Box implements MouseListener {
                     pkt.assocMenuItem.setVisible(true);
                 }
                 pkt.enabled = false;
-                if (pkt.assocTmPanel != null) {
-                    remove(pkt.assocTmPanel);
-                    pkt.assocTmPanel = null;
+                if (pkt.assocIndexLine != null) {
+                    remove(pkt.assocIndexLine);
+                    pkt.assocIndexLine = null;
                 }
             }
             if(getComponents().length==0) {
@@ -360,9 +362,9 @@ public class IndexBox extends Box implements MouseListener {
                         pkt.assocMenuItem.setVisible(true);
                     }
                     pkt.enabled = false;
-                    if (pkt.assocTmPanel != null) {
-                        remove(pkt.assocTmPanel);
-                        pkt.assocTmPanel = null;
+                    if (pkt.assocIndexLine != null) {
+                        remove(pkt.assocIndexLine);
+                        pkt.assocIndexLine = null;
                     }
                 }
             }
@@ -405,15 +407,18 @@ public class IndexBox extends Box implements MouseListener {
                         empty=false;
                         // create panel that contains the index blocks
                         IndexLine line = new IndexLine(this, pkt);
+                        
                         centerPanel.add(line);
                         indexLines.add(line);
-                        redrawTmPanel(pkt);
+                        redrawTmPanel(pkt);                                                
                     }
                 }
             }
+        
             if(empty) {
                 showEmptyLabel("Right click for "+name+" data");
             }
+            
             buildPopup();
         }
     }
@@ -429,14 +434,10 @@ public class IndexBox extends Box implements MouseListener {
         b.add(Box.createHorizontalGlue());
         b.setMaximumSize(new Dimension(b.getMaximumSize().width, b.getPreferredSize().height));
         centerPanel.add(b);
-        centerPanel.setMaximumSize(new Dimension(centerPanel.getMaximumSize().width, centerPanel.getPreferredSize().height));
-        b.revalidate();
-        b.repaint();
     }
 
     public void receiveArchiveRecords(List<ArchiveRecord> records) {
         String[] nameparts;
-       // System.out.println("received records: "+records);
         synchronized (tmData) {
             //progressMonitor.setProgress(30);
             //progressMonitor.setNote("Receiving data");
@@ -522,22 +523,23 @@ public class IndexBox extends Box implements MouseListener {
         }
    }
     
-    void redrawTmPanel(IndexLineSpec pkt) {
-        JComponent pktpanel = pkt.assocTmPanel;
-        pktpanel.setOpaque(false);
+    void redrawTmPanel(IndexLineSpec pkt) {        
+        IndexLine indexLine = pkt.assocIndexLine;
+        indexLine.setOpaque(false);
         final int stopx = zoom.getPixels();
-        final Insets in = pktpanel.getInsets();
+        final Insets in = indexLine.getInsets();
         final int panelw = zoom.getPixels();
         JLabel pktlab;
         Font font = null;
         int x1, y = 0;//, count = 0;
         
-        pktpanel.removeAll();
+        indexLine.removeAll();
 
         //debugLog("redrawTmPanel() "+pkt.name+" mark 1");
         // set labels
         x1 = 10;
-        do {
+        indexLine.setBackground(Color.RED);
+        do {            
             pktlab = new JLabel(pkt.lineName);
             pktlab.setForeground(pkt.color);
             if (font == null) {
@@ -546,13 +548,13 @@ public class IndexBox extends Box implements MouseListener {
             }
             pktlab.setFont(font);
             pktlab.setBounds(x1 + in.left, in.top, pktlab.getPreferredSize().width, pktlab.getPreferredSize().height);
-            pktpanel.add(pktlab);
+            indexLine.add(pktlab);
 
             if (y == 0) {
                 y = in.top + pktlab.getSize().height;
-                pktpanel.setPreferredSize(new Dimension(panelw, y + tmRowHeight + in.bottom));
-                pktpanel.setMinimumSize(pktpanel.getPreferredSize());
-                pktpanel.setMaximumSize(pktpanel.getPreferredSize());
+                indexLine.setPreferredSize(new Dimension(panelw, y + tmRowHeight + in.bottom));
+                indexLine.setMinimumSize(indexLine.getPreferredSize());
+                indexLine.setMaximumSize(indexLine.getPreferredSize());
             }
             x1 += 600;
         } while (x1 < panelw - pktlab.getSize().width);
@@ -561,15 +563,16 @@ public class IndexBox extends Box implements MouseListener {
         if(ts!=null) {
             Timeline tmt=new Timeline(this, pkt, ts,zoom, in.left);
             tmt.setBounds(in.left,y,stopx, tmRowHeight);
-            pktpanel.add(tmt);
+            indexLine.add(tmt);
         }
 
-        centerPanel.setPreferredSize(new Dimension(panelw, centerPanel.getPreferredSize().height));
-        centerPanel.setMaximumSize(centerPanel.getPreferredSize());
+     //   centerPanel.setPreferredSize(new Dimension(panelw, centerPanel.getPreferredSize().height));
+       // centerPanel.setMaximumSize(centerPanel.getPreferredSize());
 
-        pktpanel.revalidate();
-        pktpanel.repaint();
+        indexLine.revalidate();
+        indexLine.repaint();
 
+      //  System.out.println("indexLine.preferred size: "+indexLine.getPreferredSize());
         //pkt.assocLabel.setToolTipText(pkt.opsname + ", " + count + " Chunks");
     }
 
@@ -580,7 +583,7 @@ public class IndexBox extends Box implements MouseListener {
         Color color;
         JMenuItem assocMenuItem;
         JComponent assocLabel;
-        JComponent assocTmPanel;
+        IndexLine assocIndexLine;
 
         public IndexLineSpec(String lineName, String grpName, String shortName) {
             this.lineName = lineName;
@@ -588,7 +591,7 @@ public class IndexBox extends Box implements MouseListener {
             this.shortName = shortName;
             enabled = false;
             assocMenuItem = null;
-            assocTmPanel = null;
+            assocIndexLine = null;
             assocLabel = null;
             newColor();
         }
