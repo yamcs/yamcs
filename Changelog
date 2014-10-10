@@ -1,4 +1,7 @@
-Verion 0.27.0 Relased 23-Sep-2014
+Version 0.27.1 Relased 10-Oct-2014
+- check if web connedction to yamcs is running via https and use wss:// instead of ws:// for websocket
+
+Version 0.27.0 Relased 23-Sep-2014
 - improvements into the GUIs
 - read the parameter type units (e.g. meter) from XTCE XML file
 
