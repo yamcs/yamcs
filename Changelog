@@ -1,4 +1,7 @@
-Version 0.27.1 Relased 10-Oct-2014
+Version 0.27.2 Released 21-Oct-2014
+- fixed bug in packetviewer
+
+Version 0.27.1 Released 10-Oct-2014
 - check if web connedction to yamcs is running via https and use wss:// instead of ws:// for websocket
 
 Version 0.27.0 Relased 23-Sep-2014
