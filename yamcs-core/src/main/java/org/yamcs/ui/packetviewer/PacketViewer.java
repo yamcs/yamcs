@@ -564,13 +564,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                     ListPacket ccsds;
                     ByteBuffer buf;
                     int res;
-                    long len, offset = 0;
+                    int len, offset = 0;
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
-        progress = new ProgressMonitor(theApp,
-                String.format("Loading %s", lastFile.getName()),
-                null, 0, progressMax);
+        progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
 
         int packetCount = 0;
         while (!progress.isCanceled()) {
@@ -583,7 +581,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
             } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                 buf.put(fourb, 0, 4);
-                if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
+                if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
             } else {//pacts packet
                 isPacts=true;
                 //System.out.println("pacts packet");
@@ -606,15 +604,18 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
-
-            ccsds = new ListPacket(buf, offset);
-
-            String opsname = xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
+            len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;           
+            int apid=CcsdsPacket.getAPID(buf);
+            int packetid = CcsdsPacket.getPacketID(buf);
+            ccsds = new ListPacket(buf.array(), len, offset);
+            
+            
+            String opsname = xtceutil.getPacketNameByApidPacketid(apid, packetid, MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(packetid, MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = String.format("Packet ID %d", packetid);
             ccsds.setOpsname(opsname);
 
-            len = ccsds.getCccsdsPacketLength() + 7;
+            
             r = reader.skip(len - 16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
             offset += len;
@@ -630,6 +631,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         }
         reader.close();
                 } catch (Exception x) {
+                    x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
                     log(msg);
                     showError(msg);
@@ -644,10 +646,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 for (ListPacket ccsds:chunks) {
                     packetsTable.addRow(new Object[] {
                             TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-                            ccsds.getAPID(),
-                            ccsds,
-                            ccsds.getCccsdsPacketLength() + 7
-                    });
+                            ccsds.getAPID(), ccsds, ccsds.getLength()      });
                 }
             }
 
@@ -854,15 +853,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         currentPacket = listPacket;
         try {
             currentPacket.load(lastFile);
-            ByteBuffer bb = currentPacket.getByteBuffer();
-            byte[] b;
-            if(bb.hasArray()) {
-                b = bb.array();
-            } else {
-                b = new byte[bb.capacity()];
-                bb.get(b);
-            }
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), b));
+            byte[] b = currentPacket.getBuffer();
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getInstant(), b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
