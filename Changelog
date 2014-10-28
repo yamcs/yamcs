@@ -1,3 +1,9 @@
+Version 0.27.3 Released 
+- fixed connection in PacketViewer:
+  - now the stream specified in the connection dialog is taken into account
+  - if the stream is not specified, then tm_realtime is used
+  - an "-s" option has been added such that the stream can be speficied on the command line also
+
 Version 0.27.2 Released 21-Oct-2014
 - fixed bug in packetviewer
 

@@ -50,6 +50,10 @@ public class Protocol {
         return new SimpleString(instance+".tm_realtime");
     }
     
+    public static SimpleString getPacketAddress(String instance, String streamName) {
+        return new SimpleString(instance+"."+streamName);
+    }
+    
     final static public String MSG_TYPE_HEADER_NAME="yamcs-content";
     
     final static public String REQUEST_TYPE_HEADER_NAME="yamcs-req-type";
@@ -196,4 +200,6 @@ public class Protocol {
             
         }
     }
+
+   
 }
