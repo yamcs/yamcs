@@ -54,9 +54,16 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public static short getAPID(ByteBuffer bb) {
 		return (short)(bb.getShort(0)& 0x07FF);
 	}
+	
+	/*returns the length written in the ccsds header*/
+    public static int getCccsdsPacketLength(ByteBuffer bb) {
+        return bb.getShort(4)&0xFFFF;
+    }
+    
+	
 	/*returns the length written in the ccsds header*/
 	public int getCccsdsPacketLength() {
-		return bb.getShort(4)&0xFFFF;
+		return getCccsdsPacketLength(bb);
 	}
 	
     public void setCccsdsPacketLength(short length) {
@@ -178,6 +185,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	    return getAPID(ByteBuffer.wrap(packet));
 	}
 	
+	public static int getCccsdsPacketLength(byte[] buf) {       
+        return getCccsdsPacketLength(ByteBuffer.wrap(buf));
+    }
 
     /*comparison based on time*/
     @Override
@@ -223,7 +233,7 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 		return sb.toString();
 	}
 
-   
-
-    
+    public static int getPacketID(byte[] buf) {
+        return getPacketID(ByteBuffer.wrap(buf));
+    }    
 }

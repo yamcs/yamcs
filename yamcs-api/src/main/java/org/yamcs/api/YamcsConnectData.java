@@ -11,9 +11,9 @@ import java.util.Properties;
 
 public class YamcsConnectData extends ConnectionParameters implements Cloneable {
 	public boolean ssl=false;
-	public String instance=null;
-	public String username=null;
-	public String password=null;
+	public String instance = null;
+	public String username = null;
+	public String password = null;
 	
 	public YamcsConnectData() {
 	    host="localhost";

@@ -65,6 +65,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
@@ -85,6 +86,8 @@ import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.Yamcs.YamcsInstance;
+import org.yamcs.protobuf.Yamcs.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
@@ -142,7 +145,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     XtceUtil xtceutil;
     XtceTmProcessor tmProcessor;
     boolean authenticationEnabled = false;
-
+    String streamName;
+    
     public PacketViewer() throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -455,6 +459,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
             int ret=connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
+                streamName = connectDialog.getStreamName();
                 connectYamcs(connectDialog.getConnectData());
             }
         } else if (cmd.startsWith("recent-file-")) {
@@ -564,13 +569,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                     ListPacket ccsds;
                     ByteBuffer buf;
                     int res;
-                    long len, offset = 0;
+                    int len, offset = 0;
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
-        progress = new ProgressMonitor(theApp,
-                String.format("Loading %s", lastFile.getName()),
-                null, 0, progressMax);
+        progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
 
         int packetCount = 0;
         while (!progress.isCanceled()) {
@@ -583,7 +586,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
             } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                 buf.put(fourb, 0, 4);
-                if((r=reader.read(buf.array(),4,12))!=12) throw new ShortReadException(16, r, offset);
+                if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
             } else {//pacts packet
                 isPacts=true;
                 //System.out.println("pacts packet");
@@ -606,15 +609,18 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
-
-            ccsds = new ListPacket(buf, offset);
-
-            String opsname = xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
+            len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;           
+            int apid=CcsdsPacket.getAPID(buf);
+            int packetid = CcsdsPacket.getPacketID(buf);
+            ccsds = new ListPacket(buf.array(), len, offset);
+            
+            
+            String opsname = xtceutil.getPacketNameByApidPacketid(apid, packetid, MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(packetid, MdbMappings.MDB_OPSNAME);
+            if(opsname == null) opsname = String.format("Packet ID %d", packetid);
             ccsds.setOpsname(opsname);
 
-            len = ccsds.getCccsdsPacketLength() + 7;
+            
             r = reader.skip(len - 16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
             offset += len;
@@ -630,6 +636,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         }
         reader.close();
                 } catch (Exception x) {
+                    x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
                     log(msg);
                     showError(msg);
@@ -644,10 +651,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 for (ListPacket ccsds:chunks) {
                     packetsTable.addRow(new Object[] {
                             TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-                            ccsds.getAPID(),
-                            ccsds,
-                            ccsds.getCccsdsPacketLength() + 7
-                    });
+                            ccsds.getAPID(), ccsds, ccsds.getLength()      });
                 }
             }
 
@@ -854,15 +858,8 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         currentPacket = listPacket;
         try {
             currentPacket.load(lastFile);
-            ByteBuffer bb = currentPacket.getByteBuffer();
-            byte[] b;
-            if(bb.hasArray()) {
-                b = bb.array();
-            } else {
-                b = new byte[bb.capacity()];
-                bb.get(b);
-            }
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), b));
+            byte[] b = currentPacket.getBuffer();
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getInstant(), b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -898,13 +895,36 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         YamcsConnectData ycd=yconnector.getConnectionParams();
         try {
             log("connected to "+url);
-            if(connectDialog.getUseServerMdb()) {
-                if(!loadRemoteXtcedb(connectDialog.getServerMdbConfig())) return;
+            if(connectDialog!=null) {
+                if(connectDialog.getUseServerMdb()) {
+                    if(!loadRemoteXtcedb(connectDialog.getServerMdbConfig())) return;
+                } else {
+                    if(!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) return;
+                }
             } else {
-                if(!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) return;
+                YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).build();
+                YamcsInstances ainst=(YamcsInstances) yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
+                yc.close();
+                for(YamcsInstance yi:ainst.getInstanceList()) {
+                    if(ycd.instance.equals(yi.getName())) {
+                        String mdbConfig = yi.getMissionDatabase().getConfigName();
+                        if(!loadRemoteXtcedb(mdbConfig)) return;
+                    }
+                }
+                
             }
+            SimpleString dataAddress;
+            if(streamName==null || streamName.isEmpty()) {
+                dataAddress = Protocol.getPacketRealtimeAddress(ycd.instance);
+            } else {
+                dataAddress = Protocol.getPacketAddress(ycd.instance, streamName);
+            }
+            log("subscribing to "+dataAddress);
             yclient=yconnector.getSession().newClientBuilder().setRpc(false).
-                    setDataConsumer(Protocol.getPacketRealtimeAddress(ycd.instance), null).build();
+                    setDataConsumer(dataAddress, null).build();
+            
+            
+            
             yclient.dataConsumer.setMessageHandler(new MessageHandler() {
                 @Override
                 public void onMessage(ClientMessage msg) {
@@ -919,6 +939,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 }
             });
         } catch (HornetQException e) {
+            log(e.toString());
+            e.printStackTrace();
+        } catch(Exception e) {
             log(e.toString());
             e.printStackTrace();
         }
@@ -984,7 +1007,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     }
 
     private static void printUsageAndExit(boolean full) {
-        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [file|url]");
+        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [-s name] [file|url]");
         if (full) {
             System.err.println();
             System.err.println("    file       The file to open at startup. Requires the use of -db");
@@ -1003,6 +1026,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
             System.err.println("               mdb.yaml configuration file.");
             System.err.println();
+            System.err.println("    -s  name  Name of the stream to connect to (if not specified, it connects to tm_realtime");
             System.err.println("EXAMPLES");
             System.err.println("        packetviewer.sh yamcs://localhost:5445/yops");
             System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
@@ -1014,11 +1038,15 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         System.err.println(message);
         printUsageAndExit(false);
     }
+    
+    private void setStreamName(String streamName) {
+        this.streamName = streamName;        
+    }
 
     public static void main(String[] args) throws ConfigurationException, URISyntaxException {
         // Scan args
         String fileOrUrl = null;
-        Map<String,Object> options = new HashMap<String,Object>();
+        Map<String,String> options = new HashMap<String,String>();
         for (int i = 0; i < args.length; i++) {
             if ("-h".equals(args[i])) {
                 printUsageAndExit(true);
@@ -1033,6 +1061,12 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                     options.put(args[i], args[++i]);
                 } else {
                     printArgsError("Name of XTCE DB not specified for -x option");
+                }
+            } else if ("-s".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of stream not specified for -s option");
                 }
             } else if (args[i].startsWith("-")) {
                 printArgsError("Unknown option: " + args[i]);
@@ -1063,6 +1097,11 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
                 printArgsError("-x argument must be specified when opening a file");
             }
         }
+        if (fileOrUrl != null && !fileOrUrl.startsWith("yamcs://")) {
+            if (options.containsKey("-s")) {
+                printArgsError("-s argument only valid for yamcs connections");
+            }
+        }
 
         // Okay, launch the GUI now
         YConfiguration.setup();
@@ -1070,6 +1109,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("yamcs://")) {
                 YamcsConnectData ycd = YamcsConnectData.parse(fileOrUrl);
+                theApp.setStreamName(options.get("-s"));
                 theApp.connectYamcs(ycd);
             } else {
                 File file = new File(fileOrUrl);
@@ -1077,4 +1117,6 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
             }
         }
     }
+
+  
 }

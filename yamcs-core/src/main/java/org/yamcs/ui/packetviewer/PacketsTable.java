@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -391,7 +392,6 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
 
                 packetViewer.setSelectedPacket((ListPacket)getModel().getValueAt(rowIndex, 3));
                 int packetNumber = (Integer) getModel().getValueAt(rowIndex, 0);
-
                 if (history.isEmpty() || history.get(historyPosition) != packetNumber) {
                     historyPosition++;
                     history.add(historyPosition, packetNumber);
@@ -460,7 +460,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         int historyIndex = history.indexOf(packetNr);
         if (historyIndex != -1) {
             history.remove(historyIndex);
-            if (historyIndex < historyPosition)
+            if (historyIndex <= historyPosition)
                 historyPosition--;
         }
 
@@ -469,7 +469,17 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
 
     @Override
     public void packetReceived(CcsdsPacket c) {
-        final ListPacket ccsds = new ListPacket(c.getByteBuffer());
+        int len = c.getCccsdsPacketLength()+7;
+        ByteBuffer bb = c.getByteBuffer();
+        byte[] buf;
+        if(bb.isDirect()) {
+            buf=bb.array();
+        } else {
+            buf = new byte[bb.capacity()];
+            bb.get(buf);
+        }
+        
+        final ListPacket ccsds = new ListPacket(buf, len);
         String opsname = packetViewer.xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
         if(opsname == null) opsname = packetViewer.xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
         if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
@@ -480,9 +490,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 DefaultTableModel packetsModel = (DefaultTableModel) getModel();
                 addRow(new Object[] {
                         TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-                        ccsds.getAPID(),
-                        ccsds,
-                        ccsds.getCccsdsPacketLength() + 7
+                        ccsds.getAPID(), ccsds, ccsds.getLength()
                 });
                 while (packetsModel.getRowCount() > maxLines) {
                     removeRow(0);

@@ -1,3 +1,20 @@
+Version 0.27.3 Released 31-Oct-2014
+- fixed connection in PacketViewer:
+  - now the stream specified in the connection dialog is taken into account
+  - if the stream is not specified, then tm_realtime is used
+  - an "-s" option has been added such that the stream can be spefcified on the command line also
+
+Version 0.27.2 Released 21-Oct-2014
+- fixed bug in packetviewer
+
+Version 0.27.1 Released 10-Oct-2014
+- check if web connedction to yamcs is running via https and use wss:// instead of ws:// for websocket
+
+Version 0.27.0 Relased 23-Sep-2014
+- improvements into the GUIs
+- read the parameter type units (e.g. meter) from XTCE XML file
+
+
 Version 0.26.4 Released 27-Aug-2014 
 - Renamed system variables to system parameters for consistency
 - Added a system parameter for yamcs instance

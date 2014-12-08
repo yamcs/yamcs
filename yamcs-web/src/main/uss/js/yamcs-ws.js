@@ -6,12 +6,13 @@ var YamcsWebSocket = function(instance) {
     var MESSAGE_TYPE_DATA=4;
     
     var requestSeqCount=-1;    
+    var wsproto = "ws";
 
-    var conn = new WebSocket("ws://"+window.location.host+"/"+instance+"/_websocket");
+    if(window.location.protocol=='https:') {
+        wsproto = "wss"   
+    }
+    var conn = new WebSocket(wsproto+"://"+window.location.host+"/"+instance+"/_websocket");
 
-
-
-    console.log(conn);
     var dataCallbacks = {};
     var exceptionHandlers = {};
     var replyHandlers = {};

@@ -313,7 +313,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 				//values.ssl= sslCheckBox.isSelected();
 				if(authenticationEnabled) {
 				    values.username = usernameTextField.getText();
-				    values.password = passwordTextField.getText();
+				    values.password = new String(passwordTextField.getPassword());
 				    passwordTextField.setText("");
 
 	                // Treat empty strings as null
@@ -339,6 +339,10 @@ public class ConnectDialog extends JDialog implements ActionListener {
 				} else {
 				    prefs.put("selectedLocalMdbConfig", (String)localMdbConfigCombo.getSelectedItem());
 				}
+				
+				if(getStreamName) {
+				    prefs.put("streamName", streamName.getText());
+				}
 				returnValue=APPROVE_OPTION;
 				setVisible(false);			
 		} else if ("cancel".equals(cmd) ) {
@@ -353,7 +357,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		        String password = null;
 		        if(authenticationEnabled) {
 		        	username = usernameTextField.getText();
-					password = passwordTextField.getText();
+					password = new String(passwordTextField.getPassword());
 					// Treat empty strings as null
 					if( "".equals( username ) ) username = null;
 					if( "".equals( password ) ) password = null;
@@ -364,7 +368,6 @@ public class ConnectDialog extends JDialog implements ActionListener {
 		        YamcsInstances ainst=(YamcsInstances)msgClient.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
 		        instanceCombo.removeAllItems();
 		        serverMdbConfigCombo.removeAllItems();
-		        System.out.println("got "+ainst);
 		        for(YamcsInstance ai:ainst.getInstanceList()) {
 		            if(getInstance) {
 		                instanceCombo.addItem(ai.getName());
@@ -423,6 +426,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
         ycd.showDialog();
     }
 
-   
+    public String getStreamName() {
+        return streamName.getText();
+    }
 
 }

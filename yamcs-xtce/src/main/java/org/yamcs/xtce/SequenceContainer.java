@@ -75,6 +75,7 @@ public class SequenceContainer extends Container {
     public void setEntryList(ArrayList<SequenceEntry> entryList) {
         this.entryList = entryList;
     }
+    
     public ArrayList<SequenceEntry> getEntryList() {
         return entryList;
     }
