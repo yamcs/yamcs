@@ -12,7 +12,14 @@ import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter.InsertMode;
-
+/**
+ * Storage engine based on TokyoCabinets
+ * Each table partition is mapped to a tcb file. 
+ * 
+ * 
+ * @author nm
+ *
+ */
 public class TcStorageEngine implements StorageEngine {    
     Map<TableDefinition, PartitionManager> partitionManagers = new HashMap<TableDefinition, PartitionManager>();
     final YarchDatabase ydb;
@@ -42,7 +49,6 @@ public class TcStorageEngine implements StorageEngine {
           if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+f);
           tcbFactory.delete(file);
         }
-
     }
     
     @Override

@@ -2,8 +2,6 @@ package org.yamcs.yarch;
 
 import java.io.FileNotFoundException;
 
-import org.yamcs.ConfigurationException;
-
 
 public abstract class TableWriter implements StreamSubscriber {         
     public enum InsertMode { //UPSERT and UPSERT_APPEND are not yet implemented TODO
@@ -17,7 +15,7 @@ public abstract class TableWriter implements StreamSubscriber {
     final protected InsertMode mode;
     final protected YarchDatabase ydb;
     
-    public TableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException, ConfigurationException {
+    public TableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException {
         this.tableDefinition=tableDefinition;
         this.mode=mode;
         this.ydb=ydb;

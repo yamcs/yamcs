@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
@@ -31,7 +30,7 @@ public class TcTableWriter extends TableWriter {
     private final PartitionManager partitionManager;
 	
 	
-	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, PartitionManager pm) throws FileNotFoundException, ConfigurationException {
+	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, PartitionManager pm) throws FileNotFoundException {
 		super(ydb, tableDefinition, mode);
 		this.partitioningSpec = tableDefinition.getPartitioningSpec();
 		this.partitionManager = pm;
