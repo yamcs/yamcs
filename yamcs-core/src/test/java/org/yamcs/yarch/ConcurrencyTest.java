@@ -2,19 +2,13 @@ package org.yamcs.yarch;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 
 /**
