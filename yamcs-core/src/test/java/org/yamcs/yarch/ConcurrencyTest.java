@@ -27,13 +27,15 @@ public class ConcurrencyTest extends YarchTestCase {
 	int n=100*24*60; //x days with one packet per minute
 	//int n=10;
 	
+	static final String engine="rocksdb"; 
+	
 	class InputStreamFeeder implements Runnable {
 		volatile int psent;
 		volatile boolean finished;
 		Stream stream1, stream2, stream3;
 		
 		InputStreamFeeder() throws Exception {
-			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) partition by time(gentime)");
+			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) engine="+engine+" partition by time(gentime)");
 
 			ydb.execute("create stream testcrw_in1(gentime timestamp, apidSeqCount int, packet binary)");
 			ydb.execute("insert into testcrw select * from testcrw_in1");

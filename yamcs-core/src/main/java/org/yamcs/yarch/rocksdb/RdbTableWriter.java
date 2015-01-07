@@ -20,12 +20,12 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
 public class RdbTableWriter extends TableWriter {
-	private final PartitionManager partitionManager;
+	private final RdbPartitionManager partitionManager;
 	private final PartitioningSpec partitioningSpec;
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	RDBFactory rdbFactory; 
 	
-	public RdbTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, PartitionManager pm) throws FileNotFoundException {
+	public RdbTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws FileNotFoundException {
 		super(ydb, tableDefinition, mode);
 		this.partitioningSpec = tableDefinition.getPartitioningSpec();
 		this.partitionManager = pm;

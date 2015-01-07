@@ -14,7 +14,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.PartitioningSpec._type;
-import org.yamcs.yarch.tokyocabinet.PartitionManager;
+import org.yamcs.yarch.tokyocabinet.TcPartitionManager;
 
 import com.google.common.io.Files;
 import org.yamcs.utils.TimeEncoding;
@@ -46,7 +46,7 @@ public class PartitionManagerTest {
         
         String tmpdir=Files.createTempDir().getAbsolutePath();
         
-        PartitionManager pm=new PartitionManager("tbltest", spec, tmpdir);
+        TcPartitionManager pm=new TcPartitionManager("tbltest", spec, tmpdir);
         String part=pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
         assertEquals(tmpdir+"/2011/001/tbltest#1",part);
         
@@ -90,7 +90,7 @@ public class PartitionManagerTest {
         Files.touch(new File(tmpdir+"/2011/032/tbltest#2.tcb"));
         Files.touch(new File(tmpdir+"/2011/032/tbltest#3.tcb"));
         Files.touch(new File(tmpdir+"/2011/060/tbltest#3.tcb"));
-        PartitionManager pm=new PartitionManager("tbltest", spec, tmpdir);
+        TcPartitionManager pm=new TcPartitionManager("tbltest", spec, tmpdir);
         pm.readPartitions();
         
         Set<Object>filter=new HashSet<Object>();

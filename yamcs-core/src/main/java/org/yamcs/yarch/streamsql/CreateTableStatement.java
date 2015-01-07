@@ -7,7 +7,6 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
-
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -22,6 +21,8 @@ public class CreateTableStatement extends StreamSqlStatement {
     ArrayList<String> histoColumns;
     PartitioningSpec partitioningSpec;;
     String dataDir;
+    String engine;
+    
     private boolean compressed=false;
     
 	public CreateTableStatement(String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
@@ -65,6 +66,12 @@ public class CreateTableStatement extends StreamSqlStatement {
                 tableDefinition.setDataDir(ydb.getRoot());
                 tableDefinition.setCustomDataDir(false);
             }
+            if(engine!=null) {
+            	tableDefinition.setStorageEngineName(engine);
+            } else {
+            	tableDefinition.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
+            }
+            
             tableDefinition.setCompressed(compressed);
             if(partitioningSpec!=null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
@@ -72,7 +79,7 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
-            tableDefinition.setStorageEngineName(YarchDatabase.TC_ENGINE_NAME);
+            
             try {
                 ydb.createTable(tableDefinition);
                 return new StreamSqlResult();
@@ -81,4 +88,8 @@ public class CreateTableStatement extends StreamSqlStatement {
             }
         }
     }
+
+	public void setEngine(String engine) {
+		this.engine=engine;		
+	}
 }

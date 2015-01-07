@@ -21,7 +21,7 @@ import org.yamcs.yarch.TableWriter.InsertMode;
  *
  */
 public class TcStorageEngine implements StorageEngine {    
-    Map<TableDefinition, PartitionManager> partitionManagers = new HashMap<TableDefinition, PartitionManager>();
+    Map<TableDefinition, TcPartitionManager> partitionManagers = new HashMap<TableDefinition, TcPartitionManager>();
     final YarchDatabase ydb;
     
     public TcStorageEngine(YarchDatabase ydb) {
@@ -32,7 +32,7 @@ public class TcStorageEngine implements StorageEngine {
     @Override
     public void loadTable(TableDefinition tbl) throws YarchException {
         if(tbl.hasPartitioning()) {
-            PartitionManager pm = new PartitionManager(tbl);
+            TcPartitionManager pm = new TcPartitionManager(tbl);
             pm.readPartitions();
             partitionManagers.put(tbl, pm);
         }
@@ -41,7 +41,7 @@ public class TcStorageEngine implements StorageEngine {
     @Override
     public void dropTable(TableDefinition tbl) throws YarchException {
         TCBFactory tcbFactory = TCBFactory.getInstance();
-        PartitionManager pm = partitionManagers.get(tbl);
+        TcPartitionManager pm = partitionManagers.get(tbl);
         
         for(String p:pm.getPartitions()) {
           String file=tbl.getDataDir()+"/"+p+".tcb";
@@ -60,7 +60,7 @@ public class TcStorageEngine implements StorageEngine {
         } 
     }
 
-    public PartitionManager getPartitionManager(TableDefinition tdef) {      
+    public TcPartitionManager getPartitionManager(TableDefinition tdef) {      
         return partitionManagers.get(tdef);
     }
 
@@ -74,7 +74,7 @@ public class TcStorageEngine implements StorageEngine {
     @Override
     public void createTable(TableDefinition tbl) {
         if(tbl.hasPartitioning()) {
-            PartitionManager pm = new PartitionManager(tbl);
+            TcPartitionManager pm = new TcPartitionManager(tbl);
             partitionManagers.put(tbl, pm);
         }
     }

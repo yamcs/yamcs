@@ -27,10 +27,10 @@ public class TcTableWriter extends TableWriter {
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	Map<String, HistogramDb> column2HistoDb=new HashMap<String, HistogramDb>();
     private final PartitioningSpec partitioningSpec;
-    private final PartitionManager partitionManager;
+    private final TcPartitionManager partitionManager;
 	
 	
-	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, PartitionManager pm) throws FileNotFoundException {
+	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, TcPartitionManager pm) throws FileNotFoundException {
 		super(ydb, tableDefinition, mode);
 		this.partitioningSpec = tableDefinition.getPartitioningSpec();
 		this.partitionManager = pm;

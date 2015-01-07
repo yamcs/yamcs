@@ -8,19 +8,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.yarch.management.ManagementService;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
+import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
 import org.yamcs.yarch.tokyocabinet.TCBFactory;
 import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
@@ -48,14 +53,17 @@ public class YarchDatabase {
 	private static String home;
 	private TCBFactory tcbFactory=TCBFactory.getInstance();
 	
-	Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
-	public static String TC_ENGINE_NAME="tokyocabinet";
+	static Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
+	public static String TC_ENGINE_NAME="tokyocabinet";	
+	public static String RDB_ENGINE_NAME="rocksdb";
+	
 	public static String DEFAULT_STORAGE_ENGINE=TC_ENGINE_NAME;
 	
 	static {
 		try {
 			config=YConfiguration.getConfiguration("yamcs");
 			home=config.getString("dataDir");
+		
 		} catch (ConfigurationException e) {
 			throw new RuntimeException(e);
 		}
@@ -67,12 +75,29 @@ public class YarchDatabase {
 	static Map<String,YarchDatabase> databases=new HashMap<String,YarchDatabase>();
 	private String dbname;
 	
+	@SuppressWarnings("unchecked")
 	private YarchDatabase(String dbname) {
 		this.dbname=dbname;
 		managementService=ManagementService.getInstance();
 		tables=new HashMap<String,TableDefinition>();
 		streams=new HashMap<String,AbstractStream>();
-		storageEngines.put(TC_ENGINE_NAME, new TcStorageEngine(this));
+		
+
+		List<String> se;
+		if(config.containsKey("storageEngines")) {
+			se = config.getList("storageEngines");
+		} else {
+			se = Arrays.asList(TC_ENGINE_NAME, RDB_ENGINE_NAME);
+		}
+		if(se!=null) {
+			for(String s:se) {
+				if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
+					storageEngines.put(TC_ENGINE_NAME, new TcStorageEngine(this));					
+				} else if(RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
+					storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this));			
+				}					
+			}
+		}
 		loadTables();
 	}
 	
@@ -173,6 +198,7 @@ public class YarchDatabase {
 	public void createTable(TableDefinition def) throws YarchException {
 		if(tables.containsKey(def.getName())) throw new YarchException("A table named '"+def.getName()+"' already exists");
 		if(streams.containsKey(def.getName())) throw new YarchException("A stream named '"+def.getName()+"' already exists");
+		
 		StorageEngine se = storageEngines.get(def.getStorageEngineName());
 		if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+" specified. Valid names are: "+storageEngines.keySet());
 		se.createTable(def);
@@ -183,6 +209,7 @@ public class YarchDatabase {
 		managementService.registerTable(dbname, def);		
 	}
 
+	
 	
 	/**
 	 * Adds a stream to the dictionary making it "official"
@@ -277,7 +304,8 @@ public class YarchDatabase {
         ExecutionContext context=new ExecutionContext(dbname);
         StreamSqlParser parser=new StreamSqlParser(new java.io.StringReader(query));
         try {
-            return parser.StreamSqlStatement().execute(context);
+            StreamSqlStatement s =  parser.OneStatement();
+            return s.execute(context);
         } catch (TokenMgrError e) {
             throw new ParseException(e.getMessage());
         }

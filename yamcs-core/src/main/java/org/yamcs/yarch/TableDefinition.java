@@ -61,7 +61,7 @@ public class TableDefinition {
     private boolean compressed;
     private PartitioningSpec partitioningSpec;
     
-    private String storageEngineName="tc";
+    private String storageEngineName="tokyocabinet";
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;

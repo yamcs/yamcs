@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.rocksdb.RocksDB;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.rocksdb.PartitionManager;
-import org.yamcs.yarch.tokyocabinet.TcTableWriter;
+import org.yamcs.yarch.rocksdb.RdbPartitionManager;
 import org.yamcs.yarch.YarchException;
 
 import com.google.common.io.Files;
@@ -26,9 +26,13 @@ import com.google.common.io.Files;
  * 
  */
 public class RdbStorageEngine implements StorageEngine {
-	Map<TableDefinition, PartitionManager> partitionManagers = new HashMap<TableDefinition, PartitionManager>();
+	Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<TableDefinition, RdbPartitionManager>();
 	final YarchDatabase ydb;
-	  
+	
+	static {
+		 RocksDB.loadLibrary();
+	}
+	
     public RdbStorageEngine(YarchDatabase ydb) {
         this.ydb = ydb;
     }
@@ -37,7 +41,7 @@ public class RdbStorageEngine implements StorageEngine {
 	@Override
 	public void loadTable(TableDefinition tbl) throws YarchException {
 		if(tbl.hasPartitioning()) {
-			PartitionManager pm = new PartitionManager(tbl);
+			RdbPartitionManager pm = new RdbPartitionManager(tbl);
 			pm.readPartitions();
 			partitionManagers.put(tbl, pm);
 		}
@@ -45,7 +49,7 @@ public class RdbStorageEngine implements StorageEngine {
 
 	@Override
 	public void dropTable(TableDefinition tbl) throws YarchException {
-		PartitionManager pm = partitionManagers.get(tbl);
+		RdbPartitionManager pm = partitionManagers.get(tbl);
 
 		for(String p:pm.getPartitions()) {
 			File f=new File(tbl.getDataDir()+"/"+p);
@@ -70,7 +74,7 @@ public class RdbStorageEngine implements StorageEngine {
 
 	@Override
 	public AbstractStream newTableReaderStream(TableDefinition tbl) {
-		return null;
+		return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
 	}
 
 	@Override

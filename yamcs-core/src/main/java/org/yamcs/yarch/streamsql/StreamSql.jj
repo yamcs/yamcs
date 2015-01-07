@@ -83,6 +83,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DOUBLE:"DOUBLE">
 |   <K_DROP:"DROP">
+|   <K_ENGINE:"ENGINE">
 |   <K_ENUM:"ENUM">
 |   <K_ESCAPE:"ESCAPE">
 |   <K_EXISTS:"EXISTS">
@@ -202,12 +203,18 @@ DataType BasicDataTypeDefinition():
 /* ---------------- DECLARATIONS SECTION ends here ------------------ */
 
 /* ---------------- Code Section starts here ---------------------- */
-                                
 
-StreamSqlStatement StreamSqlStatement() throws StreamSqlException:
-{
+StreamSqlStatement OneStatement() throws StreamSqlException: {
     StreamSqlStatement statement;
+} {
+    statement=StreamSqlStatement() 
+    <EOF>
+    {
+        return statement;
+    }
 }
+
+StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlStatement statement;}
 {
     (LOOKAHEAD(2) statement=CreateTableStatement()
     |
@@ -234,50 +241,46 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException:
     }
 }
 
-CreateInputStreamStatement CreateInputStreamStatement():
-{
+CreateInputStreamStatement CreateInputStreamStatement(): {
     TupleDefinition tupleDefinition;
     String streamName;
-}
-{
+} {
     <K_CREATE> "INPUT" "STREAM" streamName=ObjectName() tupleDefinition=TupleDefinition()
     {
 	return new CreateInputStreamStatement(streamName,tupleDefinition);
     }
 }
 
-CreateTableStatement CreateTableStatement() throws StreamSqlException:
-{
+CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition=new TupleDefinition();
     ArrayList<String> primaryKey=new ArrayList<String>();
     ArrayList<String> partitions=new ArrayList<String>();
     String tableName, columnName, pk, partitionColumn, datadir;
+    String engine;
     PartitioningSpec pspec;
     DataType columnType;
     String dataDir=null;
     CreateTableStatement cts;
-}
-{
+} {
     <K_CREATE> <K_TABLE> tableName=ObjectName()
     "(" (columnName=ObjectName() columnType=BasicDataTypeDefinition() "," {tupleDefinition.addColumn(columnName,columnType);} )+
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
      ")"
      {cts=new CreateTableStatement(tableName,tupleDefinition, primaryKey);}
 	[<K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"]
+	[<K_ENGINE>  engine=ObjectName() {cts.setEngine(engine);} ]
 	[<K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} ]
 	[<K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}]
 	[<K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}]
     {
-	
 	return cts;
     }
 }
-PartitioningSpec PartitioningSpec():
-{
+
+PartitioningSpec PartitioningSpec(): {
     PartitioningSpec pspec=new PartitioningSpec();
     String cname1, cname2;
-}
-{
+} {
   ( <K_TIME> "(" cname1=ObjectName() ")" {pspec.type=PartitioningSpec._type.TIME; pspec.timeColumn=cname1;} 
     |
 	<K_VALUE> "(" cname1=ObjectName() ")" {pspec.type=PartitioningSpec._type.VALUE; pspec.valueColumn=cname1;} 
@@ -285,25 +288,22 @@ PartitioningSpec PartitioningSpec():
 	<K_TIME_AND_VALUE> "(" cname1=ObjectName() "," cname2=ObjectName() ")" { pspec.type=PartitioningSpec._type.TIME_AND_VALUE; pspec.timeColumn=cname1; pspec.valueColumn=cname2;} 
   ) { return pspec;}
 }
-CreateOutputStreamStatement CreateOutputStreamStatement():
-{
+
+CreateOutputStreamStatement CreateOutputStreamStatement(): {
     String name;
     StreamExpression expression;
-}
-{
+} {
     "CREATE" "OUTPUT" "STREAM" name=ObjectName() "AS" expression=SpeedLimitStreamExpression()
     {
 	return new CreateOutputStreamStatement(name,expression);
     }
 }
 
-CreateStreamStatement CreateStreamStatement():
-{
+CreateStreamStatement CreateStreamStatement(): {
     String name;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
-}
-{
+} {
     <K_CREATE> <K_STREAM> name=ObjectName() (
         <K_AS> expression=SpeedLimitStreamExpression() 
         { 
@@ -318,12 +318,10 @@ CreateStreamStatement CreateStreamStatement():
 
 }
 
-SpeedLimitStreamExpression SpeedLimitStreamExpression():
-{
+SpeedLimitStreamExpression SpeedLimitStreamExpression(): {
     StreamExpression expression;
     SpeedSpec speedSpec=null;
-}
-{
+} {
     expression=StreamExpression() [<K_SPEED> speedSpec=SpeedSpec()]
     {
 	return new SpeedLimitStreamExpression(expression,speedSpec);
@@ -332,22 +330,18 @@ SpeedLimitStreamExpression SpeedLimitStreamExpression():
 }
 
 
-CloseStreamStatement CloseStreamStatement():
-{
+CloseStreamStatement CloseStreamStatement(): {
     String name;
-}
-{
+} {
     <K_CLOSE> <K_STREAM> name=ObjectName()
     {
 	return new CloseStreamStatement(name);
     }
 }
 
-DropTableStatement DropTableStatement():
-{
+DropTableStatement DropTableStatement(): {
     String name;
-}
-{
+} {
     <K_DROP> <K_TABLE> name=ObjectName()
     {
 	return new DropTableStatement(name);
@@ -355,43 +349,35 @@ DropTableStatement DropTableStatement():
 }
 
 
-ShowStreamsStatement ShowStreamsStatement():
-{
-}
-{
+ShowStreamsStatement ShowStreamsStatement(): {
+} {
     <K_SHOW> <K_STREAMS> 
     {
 	return new ShowStreamsStatement();
     }
 }
 
-ShowTablesStatement ShowTablesStatement():
-{
-}
-{
+ShowTablesStatement ShowTablesStatement(): {
+} {
     <K_SHOW> <K_TABLES> 
     {
 	return new ShowTablesStatement();
     }
 }
 
-ShowStreamStatement ShowStreamStatement():
-{
- boolean showPort=false;
- String name;
-}
-{
+ShowStreamStatement ShowStreamStatement(): {
+    boolean showPort=false;
+    String name;
+} {
     <K_SHOW> <K_STREAM> name=ObjectName() [<K_PORT> {showPort=true;}]
     {
 	return new ShowStreamStatement(name,showPort);
     }
 }
 
-StreamExpression StreamExpression(): 
-{
+StreamExpression StreamExpression():  {
     StreamExpression expression;
-}
-{
+} {
    (expression=SelectStatement()
    |
    expression=MergeExpression()
@@ -403,57 +389,48 @@ StreamExpression StreamExpression():
 
 
 
-void IntoClause():
-{}
-{
+void IntoClause():{
+} {
     "INTO" ObjectName()
 }
 
 
-void ColumnValues():
-{}
-{
+void ColumnValues(): {
+} {
     ColumnValue() ("," ColumnValue())*
   | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectStatement() ")"
 }
 
-void ColumnValue():
-{}
-{
+void ColumnValue(): {
+} {
     ObjectName() "=" Expression()
 }
 
-InsertStatement InsertStatement():
-{
+InsertStatement InsertStatement(): {
     String name;
     StreamExpression expression;
-}
-{
+} {
     "INSERT" "INTO" name=ObjectName() expression=StreamExpression()
     {
        return new InsertStatement(name, expression, InsertMode.INSERT);
     }
 }
 
-InsertStatement InsertAppendStatement():
-{
+InsertStatement InsertAppendStatement(): {
     String name;
     StreamExpression expression;
-}
-{
+} {
     "INSERT_APPEND" "INTO" name=ObjectName() expression=StreamExpression()
     {
        return new InsertStatement(name, expression, InsertMode.INSERT_APPEND);
     }
 }
 
-MergeExpression MergeExpression():
-{
+MergeExpression MergeExpression(): {
     MergeExpression mergeExpr=new MergeExpression();
     TupleSourceExpression tsrc;
     String name;
-}
-{
+} {
     "MERGE" 
        tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
        ("," 
@@ -465,25 +442,21 @@ MergeExpression MergeExpression():
     }
 }
 
-DeleteStatement DeleteStatement():
-{
+DeleteStatement DeleteStatement(): {
     String tableName;
     Expression expression=null;
-}
-{
+} {
     "DELETE" "FROM" tableName=ObjectName() ["WHERE" expression=Expression() ] ";"
     {
 	return new DeleteStatement(tableName,expression);
     }
 }
 
-SpeedSpec SpeedSpec():
-{
+SpeedSpec SpeedSpec(): {
   String columnName;
   BigDecimal bd;
   float x=1;
-}
-{
+} {
     "AFAP" {return new SpeedSpec(SpeedSpec.Type.AFAP);}
   | "FIXED_DELAY" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, Integer.parseInt(token.image));}
   | "ORIGINAL" columnName=ObjectName() ["," bd=NumericConstant() {x=bd.floatValue();}] {return new SpeedSpec(SpeedSpec.Type.ORIGINAL, columnName, x);}
@@ -492,12 +465,10 @@ SpeedSpec SpeedSpec():
 
 // Expression and it's childs
 
-Expression Expression():
-{
+Expression Expression(): {
     Expression expr;
     Expression retExpr;
-}
-{
+} {
     expr=AndExpression() {retExpr=expr;}
     ["OR" expr=AndExpression() {retExpr=new OrExpression(retExpr,expr);} ]
     {
@@ -505,12 +476,10 @@ Expression Expression():
     }
 }
 
-Expression AndExpression():
-{
+Expression AndExpression(): {
     Expression expr;
     ArrayList<Expression> list=new ArrayList<Expression>();
-}
-{
+} {
     expr=UnaryLogicalExpression() {list.add(expr);}
     ( "AND" expr=UnaryLogicalExpression() {list.add(expr);})*
     {
@@ -519,12 +488,10 @@ Expression AndExpression():
     }
 }
 
-Expression UnaryLogicalExpression():
-{
+Expression UnaryLogicalExpression(): {
     boolean notset=false;
     Expression expr;
-}
-{
+} {
     ["NOT" {notset=true;}] expr=RelationalExpression() 
     {
 	if(notset) return new NotExpression(expr);
@@ -532,13 +499,11 @@ Expression UnaryLogicalExpression():
     }
 }
 
-Expression RelationalExpression():
-{
+Expression RelationalExpression(): {
     Expression retExpr, expr;
     RelOp relOp;
     List<Expression> list;
-}
-{
+} {
     expr=SimpleExpression(){retExpr=expr;}
     ( relOp=RelOp() expr=SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
       |
@@ -555,56 +520,47 @@ Expression RelationalExpression():
     }
 }
 
-List<Expression> ExpressionList():
-{
+List<Expression> ExpressionList(): {
     List<Expression> list=new ArrayList<Expression>();
     Expression expr;
-}
-{
+} {
     expr=Expression(){list.add(expr);} ("," expr=Expression() {list.add(expr);})*
     {
     return list;
     }
 }
 
-List<Expression> InClause():
-{
+List<Expression> InClause(): {
     List<Expression> list;
-}
-{
+} {
     "IN" "(" list=ExpressionList()")"
     {
     return list;
     }
 }
 
-void BetweenClause():
-{}
-{
+void BetweenClause(): {
+} {
     ["NOT"] "BETWEEN" SimpleExpression() "AND" SimpleExpression()
 }
 
-void LikeClause():
-{}
-{
+void LikeClause():{
+} {
     ["NOT"] "LIKE" SimpleExpression() ["ESCAPE" SimpleExpression()]
 }
 
-void IsNullClause():
-{}
-{
+void IsNullClause():{
+} {
     "IS" ["NOT"] "NULL"
 }
 
 
-Expression SimpleExpression():
-{
+Expression SimpleExpression(): {
     Expression expr;
     AddOp addOp;
     List<Expression>exprs=new ArrayList<Expression>();
     List<AddOp> ops=new ArrayList<AddOp>();
-}
-{
+} {
     expr=MultiplicativeExpression() {exprs.add(expr);} 
     ( addOp=AddOp() expr=MultiplicativeExpression() {exprs.add(expr); ops.add(addOp);} )* 
     {
@@ -618,14 +574,12 @@ Expression SimpleExpression():
 
 
 
-Expression MultiplicativeExpression():
-{
+Expression MultiplicativeExpression(): {
     Expression expr;
     MultOp multOp;
     List<Expression>exprs=new ArrayList<Expression>();
     List<MultOp> ops=new ArrayList<MultOp>();
-}
-{
+} {
     expr=ExponentExpression() {exprs.add(expr);}
     ( LOOKAHEAD(1) multOp=MultOp() expr=MultiplicativeExpression() {exprs.add(expr); ops.add(multOp);} )*
     {
@@ -637,11 +591,9 @@ Expression MultiplicativeExpression():
     }
 }
 
-Expression ExponentExpression():
-{
+Expression ExponentExpression(): {
     Expression retExpr,expr;
-}
-{
+} {
     expr=UnaryExpression() {retExpr=expr;} 
     [ "**" expr=UnaryExpression() {retExpr=new ExponentExpression(retExpr,expr);}]
     {
@@ -649,12 +601,10 @@ Expression ExponentExpression():
     }
 }
 
-Expression UnaryExpression():
-{
+Expression UnaryExpression(): {
     Expression expr;
     boolean negative=false;
-}
-{
+} {
     ("+" | "-" {negative=true;})? expr=PrimaryExpression()
     {
 	    if(negative) {
@@ -670,12 +620,10 @@ Expression UnaryExpression():
 }
 
 
-Expression PrimaryExpression():
-{
+Expression PrimaryExpression(): {
     String name;
     Expression expr;
-}
-{
+} {
     <S_INTEGER> 
       {
          BigInteger bi=new BigInteger(token.image); 
@@ -702,26 +650,23 @@ String ObjectName():
 
 
 
-AddOp AddOp():
-{}
-{
+AddOp AddOp(): {
+} {
     "+" {return AddOp.PLUS;}
   | "-" {return AddOp.MINUS;}
   | "||" {return AddOp.STRING_PLUS;}
 }
 
-MultOp MultOp():
-{}
-{
+MultOp MultOp(): {
+} {
     "*" {return MultOp.MULT;}
   | "/" {return MultOp.DIV;}
   | "MOD" {return MultOp.MOD;}
 }
 
 
-RelOp RelOp():
-{}
-{
+RelOp RelOp(): {
+} {
     "=" {return RelOp.EQUAL;}
   | "!" "=" {return RelOp.NOT_EQUAL;}
   | LOOKAHEAD(2) ">" "=" {return RelOp.GREATER_OR_EQUAL;}
@@ -731,15 +676,13 @@ RelOp RelOp():
   | "<" {return RelOp.LESS;}
 }
 
-void Arguments():
-{}
-{
+void Arguments(): {
+} {
     Argument() ("," Argument())*
 }
 
-void Argument():
-{}
-{
+void Argument(): {
+} {
     [LOOKAHEAD(2) <S_IDENTIFIER> "=>"] Expression()
 }
 
@@ -747,11 +690,9 @@ void Argument():
 
 /* ----------- SQL productions start here ----------------- */
 
-SelectExpression SelectStatement():
-{
+SelectExpression SelectStatement(): {
     SelectExpression expression;
-}
-{
+} {
     expression=Select()
     [ OrderByClause() ]
     {
@@ -779,24 +720,20 @@ SelectExpression Select():
 
 
 /* Checks for whatever follows  SELECT */
-List<SelectItem> SelectList():
-{
+List<SelectItem> SelectList(): {
     List<SelectItem> selectList = new ArrayList<SelectItem>();
     SelectItem selectItem;
-}
-{
+} {
    selectItem=SelectItem() {selectList.add(selectItem);} 
      ("," selectItem=SelectItem()  {selectList.add(selectItem);} )*
    {return selectList;} 
 }
 
-SelectItem SelectItem():
-{
+SelectItem SelectItem(): {
     String name;
     Expression expr;
     SelectItem selectItem;
-}
-{
+} {
        "*" {return SelectItem.STAR;}
    |
        expr=SimpleExpression() {selectItem=new SelectItem(expr);}
@@ -808,13 +745,11 @@ SelectItem SelectItem():
 }
 
 
-WindowSpecification WindowSpecification():
-{
+WindowSpecification WindowSpecification(): {
     String name,field;
     WindowSpecification wspec;
     BigDecimal size, advance;
-}
-{
+} {
     name=ObjectName() {wspec=new WindowSpecification(name);}
     |
     "SIZE" size=NumericConstant() "ADVANCE" advance=NumericConstant()
@@ -826,14 +761,12 @@ WindowSpecification WindowSpecification():
   {return wspec;}
 }
 
-TupleSourceExpression TupleSourceExpression():
-{
+TupleSourceExpression TupleSourceExpression(): {
     TupleSourceExpression tsrc;
     StreamExpression expr;
     String name, histoColumn;
     BigDecimal mergeTime;
-}
-{
+} {
     (name=ObjectName() {tsrc=new TupleSourceExpression(name);} 
          [ <K_HISTOGRAM> "(" histoColumn=ObjectName() {tsrc.setHistogramColumn(histoColumn);} 
           [ "," mergeTime=NumericConstant()  { tsrc.setHistogramMergeTime(mergeTime);}] 
@@ -845,13 +778,11 @@ TupleSourceExpression TupleSourceExpression():
     }
 }
 
-TupleDefinition TupleDefinition():
-{
+TupleDefinition TupleDefinition(): {
     String columnName;
     TupleDefinition tupleDefinition=new TupleDefinition();
     DataType columnType;
-}
-{
+} {
     "(" 
     	columnName=ObjectName() columnType=BasicDataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);}
     ("," columnName=ObjectName() columnType=BasicDataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);})*
@@ -862,28 +793,24 @@ TupleDefinition TupleDefinition():
 }
 
 
-void OrderByClause():
-{}
-{
+void OrderByClause(): {
+} {
     "ORDER" "BY" OrderByExpression() ("," OrderByExpression())*
 }
 
-void OrderByExpression():
-{}
-{
+void OrderByExpression(): {
+} {
     SimpleExpression()
     ["ASC" | "DESC"]
     ["NULLS" ID("LAST")]
 }
 
 
-Expression FunctionCall():
-{
+Expression FunctionCall(): {
    String name;
    List<Expression> args=null;
    boolean star=false;
-}
-{
+} {
     name=ObjectName()
         "(" [(args=FunctionArgumentList()
             | "*" {star=true;}
@@ -893,26 +820,23 @@ Expression FunctionCall():
     }
 }
 
-List<Expression> FunctionArgumentList():
-{
+List<Expression> FunctionArgumentList(): {
   List<Expression> args=new ArrayList<Expression>();
   Expression expr;
-}
-{
+} {
     expr=Expression() {args.add(expr);}
     ("," Expression() {args.add(expr);}
     )*
  { return args; }
 }
 
-BigDecimal NumericConstant() : {}
-{
+BigDecimal NumericConstant() : {
+} {
  (<S_INTEGER> | <S_FLOAT>) {return new BigDecimal(token.image);}
 }
 
-void ID(String id):
-{}
-{
+void ID(String id):{
+} {
     <S_IDENTIFIER>
     {
         if (!token.image.matches("(?i)" + id)) {

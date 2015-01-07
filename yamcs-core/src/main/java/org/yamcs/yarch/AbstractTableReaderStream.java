@@ -1,4 +1,4 @@
-package org.yamcs.yarch.tokyocabinet;
+package org.yamcs.yarch;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,14 +12,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.yarch.AbstractStream;
-import org.yamcs.yarch.AbstractTableReaderStream;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.IndexFilter;
 import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -32,26 +30,27 @@ import com.google.common.collect.BiMap;
 import com.google.common.primitives.UnsignedBytes;
 
 /**
- * Reads Tokyo Cabinet tables
+ * Reads data from tables into streams
  * @author nm
  *
  */
-public class TcTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
+public abstract class AbstractTableReaderStream extends AbstractStream implements Runnable, DbReaderStream {
+    protected TableDefinition tableDefinition;
     private IndexFilter rangeIndexFilter; //if not null, the replay should run in this range
     private Set<Object> partitionFilter;//if not null, the replay only includes data from these partitions - if the table is partitioned on a non index column
 
     static AtomicInteger count=new AtomicInteger(0);
     volatile boolean quit=false;
-    
+    Comparator<byte[]> bytesComparator=UnsignedBytes.lexicographicalComparator();
     private Tuple lastEmitted;
-    final PartitioningSpec partitioningSpec;
-    final TcPartitionManager partitionManager;
-    
-    public TcTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, TcPartitionManager partitionManager) {
-        super(ydb, tblDef, partitionManager);        
-        partitioningSpec=tblDef.getPartitioningSpec();
-        this.partitionManager = partitionManager;
+ 
+    final protected PartitionManager partitionManager;
+    protected AbstractTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, PartitionManager partitionManager) {
+    	 super(ydb, tblDef.getName()+"_"+count.getAndIncrement(), tblDef.getTupleDefinition());
+    	this.tableDefinition = tblDef;
+    	this.partitionManager = partitionManager;
     }
+   
 
     @Override 
     public void start() {
@@ -102,88 +101,25 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
      * reads a file, sending data only that conform with the start and end filters. 
      * returns true if the stop condition is met
      */
-    protected boolean runPartitions(Collection<String> partitions, IndexFilter range) throws IOException {
-        byte[] rangeStart=null;
-        boolean strictStart=false;
-        byte[] rangeEnd=null;
-        boolean strictEnd=false;
-        
-        if(range!=null) {
-            ColumnDefinition cd=tableDefinition.getKeyDefinition().getColumn(0);
-            ColumnSerializer cs=tableDefinition.getColumnSerializer(cd.getName());
-            if(range.keyStart!=null) {
-                strictStart=range.strictStart;
-                rangeStart=cs.getByteArray(range.keyStart);
-            }
-            if(range.keyEnd!=null) {
-                strictEnd=range.strictEnd;
-                rangeEnd=cs.getByteArray(range.keyEnd);
-            }
-        }
-        
-        
-        log.debug("running partitions "+partitions);
-        PriorityQueue<TcRawTuple> orderedQueue=new PriorityQueue<TcRawTuple>();
-        TCBFactory tcbf=ydb.getTCBFactory();
-        try {
-            int i=0;
-            //first open all the partitions and collect a tuple from each
-            for(String p:partitions) {
-                log.debug("opening partition "+p);
-                YBDB db=tcbf.getTcb(p+".tcb",tableDefinition.isCompressed(),false);
-                YBDBCUR cursor=db.openCursor();
-                boolean found=true;
-                if(rangeStart!=null) {
-                    if(cursor.jump(rangeStart)) {
-                        if((strictStart)&&(compare(rangeStart, cursor.key())==0)) {
-                            //if filter condition is ">" we skip the first record if it is equal to the key
-                            found=cursor.next();
-                        }
-                    } else {
-                        found=false;
-                    }
-                    if(!found) log.debug("no record corresponding to the StartFilter");
-                } else {                
-                    if(!cursor.first()) {
-                        log.debug("tcb contains no record");
-                        found=false;
-                    }
-                }
-                if(!found) {
-                    db.closeCursor(cursor);
-                    tcbf.dispose(db);
-                } else {
-                    orderedQueue.add(new TcRawTuple(this, cursor.key(), cursor.val(), db, cursor, i++));
-                }
-            }
-            log.debug("got one tuple from each partition, starting the business");
+    protected abstract boolean runPartitions(Collection<String> partitions, IndexFilter range) throws IOException;
+ 
 
-            //now continue publishing the first element from the priority queue till it becomes empty
-            while((!quit) && orderedQueue.size()>0){
-                TcRawTuple rt=orderedQueue.poll();
-                if(!emitIfNotPastStop(rt, rangeEnd, strictEnd)) {
-                    return true;
-                }
-                if(rt.cursor.next()) {
-                   rt.key=rt.cursor.key();
-                   rt.value=rt.cursor.val();
-                   orderedQueue.add(rt);
-                } else {
-                    log.debug(rt.db.path()+" finished");
-                    rt.cursor.close();
-                    tcbf.dispose(rt.db);
-                }
-            }
-            return false;
-        } catch (Exception e){
-           e.printStackTrace();
-           return false;
-        } finally {
-            for(RawTuple rt:orderedQueue) {
-                rt.cursor.close();
-                tcbf.dispose(rt.db);
-            }
+    protected boolean emitIfNotPastStop (RawTuple rt,  byte[] rangeEnd, boolean strictEnd) {
+        boolean emit=true;
+        if(rangeEnd!=null) { //check if we have reached the end
+            int c=compare(rt.key, rangeEnd);
+            if(c<0) emit=true;
+            else if((c==0) && (!strictEnd)) emit=true;
+            else emit=false;
         }
+        lastEmitted=dataToTuple(rt.key, rt.value);
+        if(emit) emitTuple(lastEmitted);
+        return emit;
+    }
+
+    private Tuple dataToTuple(byte[] k, byte[] v) {
+        return tableDefinition.deserialize(k,v); //TODO adapt to the stream schema
+
     }
 
     @Override
@@ -301,20 +237,5 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
             if(d!=0)return d;
         }
         return 0;
-    }
-
-    
-    
-    class TcRawTuple extends RawTuple {
-        int index;//used for sorting tuples with equals keys
-        YBDB db;
-        YBDBCUR cursor;
-        
-        public RawTuple(byte[] key, byte[] value, YBDB db, YBDBCUR cursor, int index) {
-        	super(key,value, index);
-            this.db = db;
-            this.cursor = cursor;
-            this.index=index;
-        }
     }
 }

@@ -21,7 +21,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.tokyocabinet.PartitionManager;
+import org.yamcs.yarch.tokyocabinet.TcPartitionManager;
 import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
 
 import org.yamcs.utils.TimeEncoding;
@@ -42,7 +42,7 @@ public class PartitioningTest extends YarchTestCase {
         TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
         
         assertTrue(tdef.hasPartitioning());
-        PartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
         Collection<String> partitions=pmgr.getPartitions();
         assertEquals(1,partitions.size());
         assertEquals("1999/172/test1",partitions.iterator().next());
@@ -167,7 +167,7 @@ public class PartitioningTest extends YarchTestCase {
         TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
        
         assertTrue(tdef.hasPartitioning());
-        PartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
         
         Collection<String> partitions=pmgr.getPartitions();
         Iterator<String>it=partitions.iterator();
@@ -247,7 +247,7 @@ public class PartitioningTest extends YarchTestCase {
         assertTrue(tdef.hasPartitioning());
         TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
         
-        PartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
 
         Collection<String> partitions=pmgr.getPartitions();
         Iterator<String>it=partitions.iterator();

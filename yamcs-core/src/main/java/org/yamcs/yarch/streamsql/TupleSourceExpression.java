@@ -92,7 +92,7 @@ class TupleSourceExpression {
     
     AbstractStream execute(ExecutionContext c) throws StreamSqlException{
         AbstractStream stream;
-        if(streamExpression!=null) {
+        if(streamExpression!=null) {        	
             stream=streamExpression.execute(c);
         } else if (objectName!=null) {
             YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
@@ -115,6 +115,8 @@ class TupleSourceExpression {
         } else {
             throw new NoneSpecifiedException();
         }
+        
+        
         return stream;
     }
 

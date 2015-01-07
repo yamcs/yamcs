@@ -13,9 +13,11 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentSkipListMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.TableDefinition;
@@ -24,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.netty.util.internal.ConcurrentHashMap;
-
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 
@@ -35,7 +36,7 @@ import org.yamcs.utils.TimeEncoding;
  *  value                   - creates directories of shape tblname
  * @author nm
  */
-public class PartitionManager {
+public class RdbPartitionManager implements PartitionManager {
 	final String tblName;
 	final PartitioningSpec partitioningSpec;
 	final String dataDir;
@@ -46,13 +47,13 @@ public class PartitionManager {
 	// in case of value based partition, it is basically the list of all partitions
 	Interval pcache;
 	
-	static Logger log=LoggerFactory.getLogger(PartitionManager.class.getName());
+	static Logger log=LoggerFactory.getLogger(RdbPartitionManager.class.getName());
 	
-	public PartitionManager(TableDefinition def) {
+	public RdbPartitionManager(TableDefinition def) {
 	    this(def.getName(), def.getPartitioningSpec(), def.getDataDir());
 	}
 
-	public PartitionManager(String tblName, PartitioningSpec partitioningSpec, String dataDir) {
+	public RdbPartitionManager(String tblName, PartitioningSpec partitioningSpec, String dataDir) {
         this.tblName=tblName;
         this.partitioningSpec=partitioningSpec;
         this.dataDir=dataDir;
