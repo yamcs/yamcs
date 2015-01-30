@@ -30,14 +30,16 @@ import com.google.common.collect.BiMap;
 import com.google.common.primitives.UnsignedBytes;
 
 /**
- * Reads data from tables into streams
+ * Implements skeleton for table streamer that uses partitioning.
+ * 
+ * 
  * @author nm
  *
  */
 public abstract class AbstractTableReaderStream extends AbstractStream implements Runnable, DbReaderStream {
     protected TableDefinition tableDefinition;
     private IndexFilter rangeIndexFilter; //if not null, the replay should run in this range
-    private Set<Object> partitionFilter;//if not null, the replay only includes data from these partitions - if the table is partitioned on a non index column
+    private Set<Object> partitionValueFilter;//if not null, the replay only includes data from these partitions - if the table is partitioned on a non index column
 
     static AtomicInteger count=new AtomicInteger(0);
     volatile boolean quit=false;
@@ -60,32 +62,32 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     @Override
     public void run() {
         log.debug("starting a table stream from table "+tableDefinition.getName()
-                +" with rangeIndexFilter:" +rangeIndexFilter+"\n partitionFilter:"+partitionFilter);
+                +" with rangeIndexFilter:" +rangeIndexFilter+"\n partitionFilter:"+partitionValueFilter);
         
         try {
             if(tableDefinition.hasPartitioning()) {
-                Iterator<List<String>> partitionIterator;
+                Iterator<List<Partition>> partitionIterator;
                 
                 PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
                 if(pspec.valueColumn!=null) {
                     if((rangeIndexFilter!=null) && (rangeIndexFilter.keyStart!=null)) {
                         long start=(Long)rangeIndexFilter.keyStart;
-                        partitionIterator=partitionManager.iterator(start, partitionFilter);
+                        partitionIterator=partitionManager.iterator(start, partitionValueFilter);
                     } else {
-                        partitionIterator=partitionManager.iterator(partitionFilter);
+                        partitionIterator=partitionManager.iterator(partitionValueFilter);
                     }
                 } else {
-                    partitionIterator=partitionManager.iterator(partitionFilter);
+                    partitionIterator=partitionManager.iterator(partitionValueFilter);
                 }
 
                 while((!quit) && partitionIterator.hasNext()) {
-                    List<String> partitions=partitionIterator.next();
+                    List<Partition> partitions=partitionIterator.next();
                     boolean endReached=runPartitions(partitions, rangeIndexFilter);
                     if(endReached) break;
                 }
             } else {
-                Collection<String> partitions=new ArrayList<String>();
-                partitions.add(tableDefinition.getDataDir()+"/"+ tableDefinition.getName());
+                Collection<Partition> partitions=new ArrayList<Partition>();
+                partitions.add(partitionManager.iterator());
                 runPartitions(partitions, rangeIndexFilter);
                 return;
             }
@@ -101,7 +103,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      * reads a file, sending data only that conform with the start and end filters. 
      * returns true if the stop condition is met
      */
-    protected abstract boolean runPartitions(Collection<String> partitions, IndexFilter range) throws IOException;
+    protected abstract boolean runPartitions(Collection<Partition> partitions, IndexFilter range) throws IOException;
  
 
     protected boolean emitIfNotPastStop (RawTuple rt,  byte[] rangeEnd, boolean strictEnd) {
@@ -165,10 +167,10 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
                 Set<Object> values=new HashSet<Object>();
                 values.add(value);
                 values=transformEnums(values);
-                if(partitionFilter==null) {
-                    partitionFilter=values;
+                if(partitionValueFilter==null) {
+                    partitionValueFilter=values;
                 } else {
-                    partitionFilter.retainAll(values); 
+                    partitionValueFilter.retainAll(values); 
                 }
                 return true;
             }
@@ -210,10 +212,10 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         if((pspec.valueColumn==null) || (!pspec.valueColumn.equals(cexpr.getName()))) return false;
         values=transformEnums(values);
         
-        if(partitionFilter==null) {
-            partitionFilter=values;
+        if(partitionValueFilter==null) {
+            partitionValueFilter=values;
         } else {
-            partitionFilter.retainAll(values);
+            partitionValueFilter.retainAll(values);
         }
         return true;
     }

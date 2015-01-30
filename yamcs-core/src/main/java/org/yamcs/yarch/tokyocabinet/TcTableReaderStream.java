@@ -18,6 +18,7 @@ import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.IndexFilter;
+import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
@@ -56,53 +57,13 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
     @Override 
     public void start() {
         (new Thread(this, "TcTableReader["+getName()+"]")).start();
-    }
-
-    @Override
-    public void run() {
-        log.debug("starting a table stream from table "+tableDefinition.getName()
-                +" with rangeIndexFilter:" +rangeIndexFilter+"\n partitionFilter:"+partitionFilter);
-        
-        try {
-            if(tableDefinition.hasPartitioning()) {
-                Iterator<List<String>> partitionIterator;
-                
-                PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
-                if(pspec.valueColumn!=null) {
-                    if((rangeIndexFilter!=null) && (rangeIndexFilter.keyStart!=null)) {
-                        long start=(Long)rangeIndexFilter.keyStart;
-                        partitionIterator=partitionManager.iterator(start, partitionFilter);
-                    } else {
-                        partitionIterator=partitionManager.iterator(partitionFilter);
-                    }
-                } else {
-                    partitionIterator=partitionManager.iterator(partitionFilter);
-                }
-
-                while((!quit) && partitionIterator.hasNext()) {
-                    List<String> partitions=partitionIterator.next();
-                    boolean endReached=runPartitions(partitions, rangeIndexFilter);
-                    if(endReached) break;
-                }
-            } else {
-                Collection<String> partitions=new ArrayList<String>();
-                partitions.add(tableDefinition.getDataDir()+"/"+ tableDefinition.getName());
-                runPartitions(partitions, rangeIndexFilter);
-                return;
-            }
-        } catch (Exception e) {
-            log.error("got exception ", e);
-            e.printStackTrace();
-        } finally {
-            close();
-        }
-    }
+    } 
 
     /*
      * reads a file, sending data only that conform with the start and end filters. 
      * returns true if the stop condition is met
      */
-    protected boolean runPartitions(Collection<String> partitions, IndexFilter range) throws IOException {
+    protected boolean runPartitions(Collection<Partition> partitions, IndexFilter range) throws IOException {
         byte[] rangeStart=null;
         boolean strictStart=false;
         byte[] rangeEnd=null;
@@ -128,7 +89,7 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
         try {
             int i=0;
             //first open all the partitions and collect a tuple from each
-            for(String p:partitions) {
+            for(Partition p:partitions) {
                 log.debug("opening partition "+p);
                 YBDB db=tcbf.getTcb(p+".tcb",tableDefinition.isCompressed(),false);
                 YBDBCUR cursor=db.openCursor();
