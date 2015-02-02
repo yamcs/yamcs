@@ -43,9 +43,9 @@ public class TcStorageEngine implements StorageEngine {
         TCBFactory tcbFactory = TCBFactory.getInstance();
         TcPartitionManager pm = partitionManagers.get(tbl);
         
-        for(String p:pm.getPartitions()) {
-          String file=tbl.getDataDir()+"/"+p+".tcb";
-          File f=new File(tbl.getDataDir()+"/"+p+".tcb");
+        for(String p:pm.getPartitionFilenames()) {
+          String file=tbl.getDataDir()+"/"+p;
+          File f=new File(file);
           if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+f);
           tcbFactory.delete(file);
         }

@@ -80,7 +80,7 @@ public class TableDefinition {
      * @param primaryKey
      * @throws StreamSqlException
      */
-    public TableDefinition(String name, TupleDefinition tdef, ArrayList<String> primaryKey) throws StreamSqlException {
+    public TableDefinition(String name, TupleDefinition tdef, List<String> primaryKey) throws StreamSqlException {
         keyDef=new TupleDefinition();
         this.name=name;
         for(String s:primaryKey) {

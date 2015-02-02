@@ -18,7 +18,8 @@ import org.yamcs.yarch.YarchException;
 
 import com.google.common.io.Files;
 
-/*Storage Engine based on RocksDB.
+/**
+ * Storage Engine based on RocksDB.
  * 
  * Tables are mapped to multiple RocksDB databases - one for each time based partition.
  * Value based partitions are mapped to column families.
@@ -28,13 +29,14 @@ import com.google.common.io.Files;
 public class RdbStorageEngine implements StorageEngine {
 	Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<TableDefinition, RdbPartitionManager>();
 	final YarchDatabase ydb;
-	
+	static Map<YarchDatabase, RdbStorageEngine> instances = new HashMap<YarchDatabase, RdbStorageEngine>();
 	static {
 		 RocksDB.loadLibrary();
 	}
 	
     public RdbStorageEngine(YarchDatabase ydb) {
         this.ydb = ydb;
+        instances.put(ydb, this);
     }
     
     
@@ -51,7 +53,7 @@ public class RdbStorageEngine implements StorageEngine {
 	public void dropTable(TableDefinition tbl) throws YarchException {
 		RdbPartitionManager pm = partitionManagers.get(tbl);
 
-		for(String p:pm.getPartitions()) {
+		for(String p:pm.getPartitionDirectories()) {
 			File f=new File(tbl.getDataDir()+"/"+p);
 			try {
 				Files.deleteRecursively(f);
@@ -80,6 +82,11 @@ public class RdbStorageEngine implements StorageEngine {
 	@Override
 	public void createTable(TableDefinition def) {
 
+	}
+
+
+	public static RdbStorageEngine getInstance(YarchDatabase ydb) {
+		return instances.get(ydb);
 	}
 
 }

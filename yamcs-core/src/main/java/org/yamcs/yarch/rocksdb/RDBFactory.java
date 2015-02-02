@@ -9,13 +9,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.FlushOptions;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * manufacturer of TCB databases. It runs a thread that synchronizes them from time to time and closes 
+ * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes 
  * those that have not been used in a while
  * @author nm
  *
@@ -56,12 +55,12 @@ public class RDBFactory implements Runnable {
 		return rdbFactory;
 	}
 	
-	public RocksDB getRdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
+	public YRDB getRdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
 		return rdb(dir, compressed, readonly);
 	}
 	
 	
-	private synchronized RocksDB rdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
+	private synchronized YRDB rdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
 		DbAndAccessTime daat=databases.get(dir);
 		if(daat==null) {
 			if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
@@ -80,7 +79,7 @@ public class RDBFactory implements Runnable {
 					daat.db.close();
 				}
 			}
-			RocksDB db = RocksDB.open(dir);
+			YRDB db = new YRDB(dir);
 			log.debug("Creating or opening RDB "+dir+" total tcb files open: "+databases.size());
 			
 			
@@ -155,14 +154,14 @@ public class RDBFactory implements Runnable {
 
 
 class DbAndAccessTime {
-	RocksDB db;
+	YRDB db;
 	long lastAccess;
 	int refcount=0;
 	boolean readonly;
 	String dir;
 	
 	
-	public DbAndAccessTime(RocksDB db, String dir, boolean readonly) {
+	public DbAndAccessTime(YRDB db, String dir, boolean readonly) {
 		this.db=db;
 		this.readonly=readonly;
 		this.dir = dir;

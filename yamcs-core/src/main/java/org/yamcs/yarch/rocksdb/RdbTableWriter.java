@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.rocksdb.RocksDB;
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,27 +35,26 @@ public class RdbTableWriter extends TableWriter {
 	@Override
 	public void onTuple(Stream stream, Tuple t) {
 		try {
-			String dir = getDbDirname(t);
-			
-			RocksDB db = rdbFactory.getRdb(dir, tableDefinition.isCompressed(), false);
+			RdbPartition partition = getDbPartition(t);
+			YRDB db = rdbFactory.getRdb(partition.dir, tableDefinition.isCompressed(), false);
 			
 			boolean inserted=false; 
 			
 			switch (mode) {
 			case INSERT:
-			    inserted=insert(db,t);
+			    inserted=insert(db,partition, t);
 			    break;
 		/*	case UPSERT:
 			    upsert(db,t);
                 break;*/
 			case INSERT_APPEND:
-			   inserted=insertAppend(db,t);
+			   inserted=insertAppend(db,partition, t);
 			   break;
 			/*case UPSERT_APPEND:
 			    upsertAppend(db,t);
 			    break;*/
 			}
-			rdbFactory.dispose(dir);
+			rdbFactory.dispose(partition.dir);
 			if(inserted && tableDefinition.hasHistogram()) {
 			    addHistogram(t);
 			}
@@ -81,11 +80,20 @@ public class RdbTableWriter extends TableWriter {
 	}
 
 	
-    private boolean insert(RocksDB db, Tuple t) throws IOException {
+    private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
 	    byte[] k=tableDefinition.serializeKey(t);
 	    byte[] v=tableDefinition.serializeValue(t);
-	    return false;
-	 //   return db.putkeep(k, v);
+	    byte[] cfb=partitionManager.valueToPartition(partition.getValue());
+	    ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfb);
+        if(cfh==null) {
+        	cfh = db.createColumnFamily(cfb);
+        }
+	    if(db.get(cfh, k)==null) {
+	    	db.put(cfh, k, v);
+	    	return true;
+	    } else {
+	    	return false;
+	    }
 	}
 	/* commented out because not tested TODO
 	private void upsert(YBDB db, Tuple t) throws IOException {
@@ -96,11 +104,17 @@ public class RdbTableWriter extends TableWriter {
     
 	/**
 	 * returns true if a new record has been inserted and false if an record was already existing with this key (even if modified)
+	 * @param partition 
 	 * @throws RocksDBException 
 	 */
-	private boolean insertAppend(RocksDB db, Tuple t) throws RocksDBException {
+	private boolean insertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k=tableDefinition.serializeKey(t);
-        byte[] v=db.get(k);
+        byte[] cfb=partitionManager.valueToPartition(partition.getValue());
+        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfb);
+        if(cfh==null) {
+        	cfh = db.createColumnFamily(cfb);
+        }
+        byte[] v=db.get(cfh, k);
         boolean inserted=false;
         if(v!=null) {//append to an existing row
             Tuple oldt=tableDefinition.deserialize(k, v);
@@ -120,12 +134,12 @@ public class RdbTableWriter extends TableWriter {
             if(changed) {
                 oldt.setColumns(cols);
                 v=tableDefinition.serializeValue(oldt);
-                db.put(k, v);
+                db.put(cfh, k, v);
             }
         } else {//new row
             inserted=true;
             v=tableDefinition.serializeValue(t);
-            db.put(k, v);
+            db.put(cfh, k, v);
         }
         return inserted;
     }
@@ -141,9 +155,7 @@ public class RdbTableWriter extends TableWriter {
      * @return
      * @throws IOException if there was an error while creating the directories where the file should be located
      */
-    public String getDbDirname(Tuple t) throws IOException {
-    	
-        if(partitioningSpec==null) return tableDefinition.getDataDir()+"/"+tableDefinition.getName();
+    public RdbPartition getDbPartition(Tuple t) throws IOException {
         long time=TimeEncoding.INVALID_INSTANT;
         Object value=null;
         if(partitioningSpec.timeColumn!=null) {
@@ -156,6 +168,6 @@ public class RdbTableWriter extends TableWriter {
                 value = tableDefinition.addAndGetEnumValue(partitioningSpec.valueColumn, (String) value);                
             }
         }
-        return partitionManager.createAndGetPartition(time, value);
+        return (RdbPartition)partitionManager.createAndGetPartition(time, value);
     }
 }

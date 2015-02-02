@@ -3,6 +3,7 @@ package org.yamcs.yarch;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,25 +19,27 @@ import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.yarch.PartitioningSpec._type;
 
 /**
- * Keeps track of partitions
+ * Keeps track of partitions. This class is used and by the engines (TokyoCabinets, RocksDB) where the partitioning is kept track inside yamcs.
+ * If the StorageEngine has built-in partitioning (e.g. mysql), there is no need for this.
+ * 
  * @author nm
  *
  */
 public abstract class PartitionManager {
-	final protected String tblName;
+	final protected TableDefinition tableDefinition;
 	final protected PartitioningSpec partitioningSpec;
 
 
 
-	private NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
+	protected NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
 	//pcache is a cache of the last interval where data has been inserted
 	// in case of value based partition, it is basically the list of all partitions
 	Interval pcache;
 
 
-	public PartitionManager(String tblName, PartitioningSpec partitioningSpec) {
-		this.tblName=tblName;
-		this.partitioningSpec=partitioningSpec;
+	public PartitionManager(TableDefinition tableDefinition) {
+		this.tableDefinition=tableDefinition;
+		this.partitioningSpec=tableDefinition.getPartitioningSpec();
 		if(partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
 			pcache=new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
 			intervals.put(TimeEncoding.MIN_INSTANT, pcache);
@@ -61,9 +64,7 @@ public abstract class PartitionManager {
 	 * @param partitionValueFilter values
 	 * 
 	 */
-
-
-	Iterator<List<Partition>> iterator(long start, Set<Object> partitionValueFilter) {
+	public Iterator<List<Partition>> iterator(long start, Set<Object> partitionValueFilter) {
 		PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionValueFilter);
 		pi.jumpToStart(start);
 		return pi;
@@ -79,9 +80,9 @@ public abstract class PartitionManager {
 	public synchronized Partition createAndGetPartition(long instant, Object value) throws IOException {
 		Partition partition;
 		if(partitioningSpec.timeColumn!=null) {
-			if((pcache==null) || (pcache.start>instant) || (pcache.end<=instant)) {
+			if((pcache==null) || (pcache.start>instant) || (pcache.getEnd()<=instant)) {
 				Entry<Long, Interval>entry=intervals.floorEntry(instant);
-				if((entry!=null) && (instant<entry.getValue().end)) {
+				if((entry!=null) && (instant<entry.getValue().getEnd())) {
 					pcache=entry.getValue();		               
 				} else {//no partition in this interval.		            	
 					DateTimeComponents dtc =TimeEncoding.toUtc(instant);
@@ -113,13 +114,38 @@ public abstract class PartitionManager {
 	}
 	
 	/**
+	 * Gets partition where tuple has to be written. Creates the partition if necessary.
+	 * @param t
+	 * @return
+	 * @throws IOException 
+	 */
+	public synchronized Partition getPartitionForTuple(Tuple t) throws IOException {
+		
+	//	  if(partitioningSpec==null) return tableDefinition.getDataDir()+"/"+tableDefinition.getName();
+		  
+		  long time=TimeEncoding.INVALID_INSTANT;
+		  Object value=null;
+		  if(partitioningSpec.timeColumn!=null) {
+			  time =(Long)t.getColumn(partitioningSpec.timeColumn);
+		  }
+		  if(partitioningSpec.valueColumn!=null) {
+			  value=t.getColumn(partitioningSpec.valueColumn);
+			  ColumnDefinition cd=tableDefinition.getColumnDefinition(partitioningSpec.valueColumn);
+			  if(cd.getType()==DataType.ENUM) {
+				  value = tableDefinition.addAndGetEnumValue(partitioningSpec.valueColumn, (String) value);                
+			  }
+		  }
+		  return createAndGetPartition(time, value);
+	}
+	/**
 	 * Create a partition for time (and possible value) based partitioning
 	 * @param year
 	 * @param doy
 	 * @param value
 	 * @return
+	 * @throws IOException 
 	 */
-	protected abstract Partition createPartition(int year, int doy, Object value);
+	protected abstract Partition createPartition(int year, int doy, Object value) throws IOException;
 	
 	/**
 	 * Create a partition for value based partitioning
@@ -154,7 +180,7 @@ public abstract class PartitionManager {
 			while(it.hasNext()) {
 				Entry<Long,Interval> entry=it.next();
 				Interval intv=entry.getValue();
-				if(jumpToStart && (intv.end<=start)) {
+				if(jumpToStart && (intv.getEnd()<=start)) {
 					continue;
 				} else {
 					jumpToStart=false;
@@ -193,15 +219,17 @@ public abstract class PartitionManager {
 		}
 	}
 
-	static class Interval {
+	public static class Interval {
 		static final Object NON_NULL=new Object(); //we use this as a key in the ConcurrentHashMap in case value is null (i.e. time only partitioning)
 
-		long start,  end;
+		long start;
+
+		private long end;
 		Map<Object, Partition> partitions=new ConcurrentHashMap<Object, Partition>();
 
 		public Interval(long start, long end) {
 			this.start=start;
-			this.end=end;
+			this.end = end;
 		}
 
 		public Partition get(Object value) {
@@ -216,10 +244,21 @@ public abstract class PartitionManager {
 				partitions.put(NON_NULL, partition);
 			}
 		}
+		
+		public Map<Object, Partition> getPartitions() {
+			return Collections.unmodifiableMap(partitions);
+		}
+		
+		public long getEnd() {
+			return end;
+		}
 
 		@Override
 		public String toString() {
-			return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(end)+"] values: "+partitions;
-		}
+			return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(getEnd())+"] values: "+partitions;
+		}		
 	}
+	
+	
+
 }

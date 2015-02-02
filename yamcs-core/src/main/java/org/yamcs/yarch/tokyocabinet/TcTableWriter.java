@@ -9,12 +9,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
-import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.HistogramDb;
-import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -26,13 +23,11 @@ import org.yamcs.yarch.YarchDatabase;
 public class TcTableWriter extends TableWriter {
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
 	Map<String, HistogramDb> column2HistoDb=new HashMap<String, HistogramDb>();
-    private final PartitioningSpec partitioningSpec;
     private final TcPartitionManager partitionManager;
 	
 	
 	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, TcPartitionManager pm) throws FileNotFoundException {
 		super(ydb, tableDefinition, mode);
-		this.partitioningSpec = tableDefinition.getPartitioningSpec();
 		this.partitionManager = pm;
 	}
 
@@ -122,7 +117,7 @@ public class TcTableWriter extends TableWriter {
 	
 	private YBDB getDatabase(Tuple t) throws IOException {
 		String filename = getDbFilename(t);
-		return ydb.getTCBFactory().getTcb(filename+".tcb", tableDefinition.isCompressed(), false);
+		return ydb.getTCBFactory().getTcb(filename, tableDefinition.isCompressed(), false);
 	}
 	
 	
@@ -167,19 +162,7 @@ public class TcTableWriter extends TableWriter {
      * @throws IOException if there was an error while creating the directories where the file should be located
      */
     public String getDbFilename(Tuple t) throws IOException {
-        if(partitioningSpec==null) return tableDefinition.getDataDir()+"/"+tableDefinition.getName();
-        long time=TimeEncoding.INVALID_INSTANT;
-        Object value=null;
-        if(partitioningSpec.timeColumn!=null) {
-            time =(Long)t.getColumn(partitioningSpec.timeColumn);
-        }
-        if(partitioningSpec.valueColumn!=null) {
-            value=t.getColumn(partitioningSpec.valueColumn);
-            ColumnDefinition cd=tableDefinition.getColumnDefinition(partitioningSpec.valueColumn);
-            if(cd.getType()==DataType.ENUM) {
-                value = tableDefinition.addAndGetEnumValue(partitioningSpec.valueColumn, (String) value);                
-            }
-        }
-        return partitionManager.createAndGetPartition(time, value);
+    	TcPartition p = (TcPartition) partitionManager.getPartitionForTuple(t);      
+        return tableDefinition.getDataDir()+"/"+p.filename;
     }
 }

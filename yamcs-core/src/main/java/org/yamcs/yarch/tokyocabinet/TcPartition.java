@@ -3,11 +3,11 @@ package org.yamcs.yarch.tokyocabinet;
 import org.yamcs.yarch.Partition;
 
 public class TcPartition extends Partition {
-	String dir;
+	String filename;
 	
-	public TcPartition(long start, long end, Object v, String dir) {
+	public TcPartition(long start, long end, Object v, String filename) {
 		super(start, end, v);
-		this.dir = dir;
+		this.filename = filename;
 	}
 
 }
