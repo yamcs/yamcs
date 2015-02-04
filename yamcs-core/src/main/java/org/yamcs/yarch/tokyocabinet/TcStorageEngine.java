@@ -20,7 +20,7 @@ import org.yamcs.yarch.TableWriter.InsertMode;
  * @author nm
  *
  */
-public class TcStorageEngine implements StorageEngine {    
+public class TcStorageEngine implements StorageEngine {
     Map<TableDefinition, TcPartitionManager> partitionManagers = new HashMap<TableDefinition, TcPartitionManager>();
     final YarchDatabase ydb;
     
@@ -73,9 +73,7 @@ public class TcStorageEngine implements StorageEngine {
 
     @Override
     public void createTable(TableDefinition tbl) {
-        if(tbl.hasPartitioning()) {
-            TcPartitionManager pm = new TcPartitionManager(tbl);
-            partitionManagers.put(tbl, pm);
-        }
+    	TcPartitionManager pm = new TcPartitionManager(tbl);
+    	partitionManagers.put(tbl, pm);
     }
 }

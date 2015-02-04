@@ -36,13 +36,13 @@ public class RdbTableWriter extends TableWriter {
 	public void onTuple(Stream stream, Tuple t) {
 		try {
 			RdbPartition partition = getDbPartition(t);
-			YRDB db = rdbFactory.getRdb(partition.dir, tableDefinition.isCompressed(), false);
+			YRDB db = rdbFactory.getRdb(tableDefinition, tableDefinition.getDataDir()+"/"+partition.dir, false);
 			
 			boolean inserted=false; 
 			
 			switch (mode) {
 			case INSERT:
-			    inserted=insert(db,partition, t);
+			    inserted=insert(db, partition, t);
 			    break;
 		/*	case UPSERT:
 			    upsert(db,t);
@@ -54,7 +54,7 @@ public class RdbTableWriter extends TableWriter {
 			    upsertAppend(db,t);
 			    break;*/
 			}
-			rdbFactory.dispose(partition.dir);
+			rdbFactory.dispose(db);
 			if(inserted && tableDefinition.hasHistogram()) {
 			    addHistogram(t);
 			}
@@ -83,10 +83,9 @@ public class RdbTableWriter extends TableWriter {
     private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
 	    byte[] k=tableDefinition.serializeKey(t);
 	    byte[] v=tableDefinition.serializeValue(t);
-	    byte[] cfb=partitionManager.valueToPartition(partition.getValue());
-	    ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfb);
+	    ColumnFamilyHandle cfh = db.getColumnFamilyHandle(partition.getValue());
         if(cfh==null) {
-        	cfh = db.createColumnFamily(cfb);
+        	cfh = db.createColumnFamily(partition.getValue());
         }
 	    if(db.get(cfh, k)==null) {
 	    	db.put(cfh, k, v);
@@ -109,10 +108,9 @@ public class RdbTableWriter extends TableWriter {
 	 */
 	private boolean insertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k=tableDefinition.serializeKey(t);
-        byte[] cfb=partitionManager.valueToPartition(partition.getValue());
-        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfb);
+        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(partition.getValue());
         if(cfh==null) {
-        	cfh = db.createColumnFamily(cfb);
+        	cfh = db.createColumnFamily(partition.getValue());
         }
         byte[] v=db.get(cfh, k);
         boolean inserted=false;

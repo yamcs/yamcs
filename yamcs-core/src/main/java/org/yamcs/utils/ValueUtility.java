@@ -1,6 +1,5 @@
 package org.yamcs.utils;
 
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;

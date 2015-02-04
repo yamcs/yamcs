@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -33,6 +36,7 @@ public class RdbStorageEngine implements StorageEngine {
 	static {
 		 RocksDB.loadLibrary();
 	}
+	static Logger log=LoggerFactory.getLogger(RdbStorageEngine.class.getName());
 	
     public RdbStorageEngine(YarchDatabase ydb) {
         this.ydb = ydb;
@@ -43,8 +47,8 @@ public class RdbStorageEngine implements StorageEngine {
 	@Override
 	public void loadTable(TableDefinition tbl) throws YarchException {
 		if(tbl.hasPartitioning()) {
-			RdbPartitionManager pm = new RdbPartitionManager(tbl);
-			pm.readPartitions();
+			RdbPartitionManager pm = new RdbPartitionManager(ydb, tbl);
+			pm.readPartitionsFromDisk();
 			partitionManagers.put(tbl, pm);
 		}
 	}
@@ -53,10 +57,14 @@ public class RdbStorageEngine implements StorageEngine {
 	public void dropTable(TableDefinition tbl) throws YarchException {
 		RdbPartitionManager pm = partitionManagers.get(tbl);
 
-		for(String p:pm.getPartitionDirectories()) {
-			File f=new File(tbl.getDataDir()+"/"+p);
+		for(Partition p:pm.getPartitions()) {
+			RdbPartition rdbp = (RdbPartition)p;
+			File f=new File(tbl.getDataDir()+"/"+rdbp.dir);
 			try {
-				Files.deleteRecursively(f);
+				if(f.exists()) {
+					log.debug("Removing {}",f);
+					Files.deleteRecursively(f);
+				}
 			} catch (IOException e) {
 				throw new YarchException("Cannot remove "+f, e);
 			}
@@ -72,21 +80,23 @@ public class RdbStorageEngine implements StorageEngine {
 		} 
 	}
 
-
-
 	@Override
 	public AbstractStream newTableReaderStream(TableDefinition tbl) {
 		return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
 	}
 
 	@Override
-	public void createTable(TableDefinition def) {
-
+	public void createTable(TableDefinition def) {		
+		 RdbPartitionManager pm = new RdbPartitionManager(ydb, def);
+         partitionManagers.put(def, pm);
 	}
-
 
 	public static RdbStorageEngine getInstance(YarchDatabase ydb) {
 		return instances.get(ydb);
 	}
+	
+	 public RdbPartitionManager getPartitionManager(TableDefinition tdef) {      
+	        return partitionManagers.get(tdef);
+	 }
 
 }

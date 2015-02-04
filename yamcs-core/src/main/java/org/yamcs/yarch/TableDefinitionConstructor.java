@@ -18,6 +18,16 @@ import org.yaml.snakeyaml.nodes.Tag;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+/**
+ * Constructs {@link org.yamcs.yarch.TableDefinition} from .def yaml files.
+ * 
+ * Note on the storage engine: before we had multiple storage engines, the only one existing was TokyoCabinets. 
+ * So, when the .def file do not specify the storage engine, we assume it's TokyoCabinets. 
+ * That despite the fact that when creating tables with the create table statement, a different storage engine is assumed as default.
+ * 
+ * @author nm
+ *
+ */
 public class TableDefinitionConstructor  extends Constructor {
     public TableDefinitionConstructor() {
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
@@ -69,7 +79,7 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey("storageEngine")) {
                 tdef.setStorageEngineName((String)m.get("storageEngine"));
             } else {
-                tdef.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
+                tdef.setStorageEngineName(YarchDatabase.TC_ENGINE_NAME);
             }
           
             return tdef;

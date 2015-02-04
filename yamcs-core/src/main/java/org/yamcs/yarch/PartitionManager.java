@@ -2,21 +2,20 @@ package org.yamcs.yarch;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 
 /**
  * Keeps track of partitions. This class is used and by the engines (TokyoCabinets, RocksDB) where the partitioning is kept track inside yamcs.
@@ -70,10 +69,10 @@ public abstract class PartitionManager {
 		return pi;
 	}
 
-
-
 	/**
-	 * Creates (if not already existing) and returns the partition in which the instant,value (one of them can be invalid) should be written.
+	 * Creates (if not already existing) and returns the partition in which the instant,value should be written.
+	 * instant can be invalid (in case value only or no partitioning)
+	 * value can be null (in case 
 	 *  
 	 * @return a Partition
 	 */
@@ -84,27 +83,19 @@ public abstract class PartitionManager {
 				Entry<Long, Interval>entry=intervals.floorEntry(instant);
 				if((entry!=null) && (instant<entry.getValue().getEnd())) {
 					pcache=entry.getValue();		               
-				} else {//no partition in this interval.		            	
-					DateTimeComponents dtc =TimeEncoding.toUtc(instant);
-					Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-					cal.clear();
-					cal.set(Calendar.YEAR, dtc.year);
-					cal.set(Calendar.DAY_OF_YEAR, dtc.doy);
-					long dayStartInstant = TimeEncoding.fromCalendar(cal);
-					cal.add(Calendar.DAY_OF_YEAR, 1);
-					long nextDayStartInstant = TimeEncoding.fromCalendar(cal);
-					pcache=new Interval(dayStartInstant, nextDayStartInstant);		                
+				} else {//no partition in this interval.		
+					PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+					pcache=new Interval(pinfo.partitionStart, pinfo.partitionEnd);		                
 					intervals.put(pcache.start, pcache);
 				}
-			}
-			
+			}			
 		} 
 		
 		partition = pcache.get(value);
 		if(partition == null) {
 			if(partitioningSpec.timeColumn!=null) {
-				DateTimeComponents dtc =TimeEncoding.toUtc(instant);
-				partition = createPartition(dtc.year, dtc.doy, value);
+				PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+				partition = createPartition(pinfo, value);
 			} else {
 				partition = createPartition(value);
 			}
@@ -145,15 +136,29 @@ public abstract class PartitionManager {
 	 * @return
 	 * @throws IOException 
 	 */
-	protected abstract Partition createPartition(int year, int doy, Object value) throws IOException;
+	protected abstract Partition createPartition(PartitionInfo pinfo, Object value) throws IOException;
 	
 	/**
 	 * Create a partition for value based partitioning
 	 * @param value
 	 * @return
+	 * @throws IOException 
 	 */
-	protected abstract Partition createPartition(Object value);
+	protected abstract Partition createPartition(Object value) throws IOException;
 
+	
+	/**
+	 * returns a collection of all existing partitions
+	 * @return
+	 */
+	public Collection<Partition> getPartitions() {
+		List<Partition> plist = new ArrayList<Partition>();
+		for(Interval interval: intervals.values()) {
+			plist.addAll(interval.partitions.values());
+		}
+		return plist;
+	}
+	
 	class PartitionIterator implements Iterator<List<Partition>> {
 		final Iterator<Entry<Long,Interval>> it;
 		final Set<Object> partitionValueFilter;
@@ -258,7 +263,4 @@ public abstract class PartitionManager {
 			return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(getEnd())+"] values: "+partitions;
 		}		
 	}
-	
-	
-
 }

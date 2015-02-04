@@ -74,11 +74,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         	RdbPartition p1 = (RdbPartition) partitions.iterator().next();
         	String dbDir = p1.dir;
         	log.debug("opening database "+ dbDir);
-        	YRDB rdb = rdbf.getRdb(p1.dir,tableDefinition.isCompressed(), false);
+        	YRDB rdb = rdbf.getRdb(tableDefinition, tableDefinition.getDataDir()+"/"+p1.dir, false);
         	List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
         	for(Partition p: partitions) {
-        		byte[] b = partitionManager.valueToPartition(p.getValue());
-        		ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(b);
+        		ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());
         		if(cfh!=null) {
         			cfhList.add(cfh);
         		}
@@ -133,7 +132,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 }
             }
             
-            rdbf.dispose(dbDir);
+            rdbf.dispose(rdb);
             return false;
         } catch (Exception e){
            e.printStackTrace();

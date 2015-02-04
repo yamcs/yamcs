@@ -3,24 +3,21 @@ package org.yamcs.yarch.tokyocabinet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
-import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 import org.yamcs.yarch.TableDefinition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Keeps track of table partitions. 
@@ -28,62 +25,49 @@ import org.yamcs.utils.TimeEncoding;
  *  time          - creates files of shape yyyy/ddd/tblname
  *  time,value    - creates files of shape yyyy/ddd/tblname#value
  *  value         - creates files of shape tblname#value
+ *  
+ *  yyyy/ddd can also be yyyy/mm depending on the {@link TimePartitioningSchema}
  * @author nm
  */
 public class TcPartitionManager extends PartitionManager {
-	final String dataDir;
-	
 	static Logger log=LoggerFactory.getLogger(TcPartitionManager.class.getName());
-	
-	public TcPartitionManager(TableDefinition def) {
-	    this(def, def.getDataDir());
-	}
 
-	public TcPartitionManager(TableDefinition tableDefinition, String dataDir) {
-      super(tableDefinition);
-      this.dataDir = dataDir;
-    }
+	public TcPartitionManager(TableDefinition tableDefinition) {
+		super(tableDefinition);
+	}
 	/**
 	 * 
 	 * @return partition filenames (relative to the data directory of the table)
 	 */
-    public Collection<String> getPartitionFilenames() {
-        List<String> filenames=new ArrayList<String>();
-        for(Entry<Long,Interval> entry:intervals.entrySet()) {
-            Interval intv=entry.getValue();
-            for(Partition p:intv.getPartitions().values()) {
-            	TcPartition tcp = (TcPartition)p;
-            	filenames.add(tcp.filename);
-            }           
-        }
-        return filenames;
-    }
-    
-    
+	public Collection<String> getPartitionFilenames() {
+		List<String> filenames=new ArrayList<String>();
+		for(Entry<Long,Interval> entry:intervals.entrySet()) {
+			Interval intv=entry.getValue();
+			for(Partition p:intv.getPartitions().values()) {
+				TcPartition tcp = (TcPartition)p;
+				filenames.add(tcp.filename);
+			}           
+		}
+		return filenames;
+	}
+
+
 
 	@Override
-	protected Partition createPartition(int year, int doy, Object value) throws IOException {
-         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-         cal.clear();
-         cal.set(Calendar.YEAR, year);
-         cal.set(Calendar.DAY_OF_YEAR, doy);
-         long dayStartInstant = TimeEncoding.fromCalendar(cal);
-         cal.add(Calendar.DAY_OF_YEAR, 1);
-         long nextDayStartInstant = TimeEncoding.fromCalendar(cal);
-
-         String dir=String.format("%4d/%03d", year, doy);
-         File f=new File(dataDir+"/"+dir);
-         if(!f.exists()) { 
-             f.mkdirs(); //we don't check the return of mkdirs because maybe another thread creates the directory in the same time
-             if(!f.exists()) {
-                 log.error("Failed to create directories for "+f);
-                 throw new IOException("failed to create directories for "+f);
-             }
-         }
- 		if(value==null) {
-			return new TcPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, dir+"/"+tableDefinition.getName()+".tcb");
+	protected Partition createPartition(PartitionInfo pinfo, Object value) throws IOException {
+		String dataDir = tableDefinition.getDataDir();
+		File f=new File(dataDir+"/"+pinfo.dir);
+		if(!f.exists()) { 
+			f.mkdirs(); //we don't check the return of mkdirs because maybe another thread creates the directory in the same time
+			if(!f.exists()) {
+				log.error("Failed to create directories for "+f);
+				throw new IOException("failed to create directories for "+f);
+			}
+		}
+		if(value==null) {
+			return new TcPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, pinfo.dir+"/"+tableDefinition.getName()+".tcb");
 		} else {
-			return new TcPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, dir+"/"+tableDefinition.getName()+"#"+valueToPartition(value)+".tcb");
+			return new TcPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, pinfo.dir+"/"+tableDefinition.getName()+"#"+valueToPartition(value)+".tcb");
 		}
 	}
 
@@ -95,8 +79,8 @@ public class TcPartitionManager extends PartitionManager {
 			return new TcPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, tableDefinition.getName()+"#"+valueToPartition(value)+".tcb");
 		}
 	}
-	
-	
+
+
 	private String valueToPartition(Object value) {
 		if(value.getClass()==Integer.class) {
 			return value.toString();
@@ -107,91 +91,73 @@ public class TcPartitionManager extends PartitionManager {
 		} else if(value.getClass()==String.class) {
 			return (String)value;
 		} else {
-			 throw new IllegalArgumentException("partition on values of type "+value.getClass()+" not supported");
+			throw new IllegalArgumentException("partition on values of type "+value.getClass()+" not supported");
 		}
 	}
-	
+
 	private Object partitionToValue(String part, DataType dt) {
-		 switch(dt.val) {
-		 case INT:
-             return Integer.valueOf(part);
-		 case SHORT:
-		 case ENUM:
-             return Short.valueOf(part);
-         case BYTE:
-             return Byte.valueOf(part);
-         case STRING:
-        	 return part;
-         default:
-             throw new IllegalArgumentException("partition on values of type "+dt+" not supported");
-		 }
+		switch(dt.val) {
+		case INT:
+			return Integer.valueOf(part);
+		case SHORT:
+		case ENUM:
+			return Short.valueOf(part);
+		case BYTE:
+			return Byte.valueOf(part);
+		case STRING:
+			return part;
+		default:
+			throw new IllegalArgumentException("partition on values of type "+dt+" not supported");
+		}
 	}
 	/**
 	 * Reads the partitions from disk
 	 */
 	public void readPartitions() {
-		String[] years=(new File(dataDir)).list();
-		for(String y:years) {
-			if(y.matches("\\d{4,5}")) {
-			    int year=Integer.parseInt(y);
-			    if(year>1900)
-			        readYear(y,year);
-			}
-		}
+		readDir("");		
 	}
 
-	private void readYear(String dir, int year) {
+	private void readDir(String dir) {		
 		String tblName = tableDefinition.getName();
-		String[] days=new File(dataDir+"/"+dir).list();
+		String dataDir = tableDefinition.getDataDir();
+		String[] files=new File(dataDir+"/"+dir).list();
 		Pattern p=Pattern.compile(tblName+"#([\\-\\s\\w]+)\\.tcb");
-		for(String d:days) {
-		    if(!d.matches("\\d{3,3}")) continue;
-		    int day=Integer.parseInt(d);
-		    if((day<0)||day>366)continue;
-		    String[] files=new File(dataDir+"/"+dir+"/"+d).list();
-		    for(String f:files) {
-		        if(partitioningSpec.type==_type.TIME) {
-		            if(f.equals(tblName+".tcb")) {
-		                addPartition(year, day, dir+"/"+d+"/"+f, null);
-		            }
-		        } else {
-		            Matcher m=p.matcher(f);
-		            if(m.matches()) {
-		                String so=m.group(1);
-		                DataType reqType=partitioningSpec.valueColumnType;
-		                try {
-		                    Object o=partitionToValue(so, reqType);
-		                    addPartition(year, day, dir+"/"+d+"/"+f, o);
-		                } catch(IllegalArgumentException e) {
-		                    log.error("cannot cast string '"+so+"' to type "+reqType+": "+e.getMessage());
-		                    continue;
-		                }
-		            }
-		        }
-		    }
-		}
+		for(String s:files) {
+			File f = new File(dataDir +"/"+dir+"/"+s);
+			if(f.isDirectory()) {
+				if(dir.isEmpty()) {
+					readDir(s);
+				} else {
+					readDir(dir+"/"+s);	
+				}
+			} else {
+				Matcher m=p.matcher(s);
+				if(!m.matches())  continue;
+				PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.parseDir(dir);
+				if(pinfo==null) continue;
+
+				String so=m.group(1);
+				DataType reqType=partitioningSpec.valueColumnType;
+				try {
+					Object o=partitionToValue(so, reqType);
+					addPartition(pinfo, dir+"/"+s, o);
+				} catch(IllegalArgumentException e) {
+					log.error("cannot cast string '"+so+"' to type "+reqType+": "+e.getMessage());
+					continue;
+				}
+			}
+		}			
 	}
-	
-	private void addPartition(int year, int day, String filename, Object v) {
-	    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-	    cal.clear();
-	    cal.set(Calendar.YEAR, year);
-	    cal.set(Calendar.DAY_OF_YEAR, day);
-	    long start=TimeEncoding.fromCalendar(cal);
-	    Interval intv=intervals.get(start);
-	    long end;
-	    
-	    if(intv==null) {
-	        cal.add(Calendar.DAY_OF_YEAR, 1);
-	        end=TimeEncoding.fromCalendar(cal);
-	        intv=new Interval(start, end);
-	        intervals.put(start, intv);
-	   } else {
-		   end=intv.getEnd();
-	   }
-	
-	   Partition p=new TcPartition(start, end, v, filename);
-	   intv.add(v, p);
+
+	private void addPartition(PartitionInfo pinfo, String filename, Object v) {	   	   
+		Interval intv=intervals.get(pinfo.partitionStart);	  
+
+		if(intv==null) {	    
+			intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
+			intervals.put(pinfo.partitionStart, intv);
+		}
+		Partition p=new TcPartition(pinfo.partitionStart, pinfo.partitionEnd, v, filename);
+		intv.add(v, p);
 	}		
 }
 

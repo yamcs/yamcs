@@ -57,7 +57,7 @@ public class YarchDatabase {
 	public static String TC_ENGINE_NAME="tokyocabinet";	
 	public static String RDB_ENGINE_NAME="rocksdb";
 	
-	public static String DEFAULT_STORAGE_ENGINE=TC_ENGINE_NAME;
+	public static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
 	
 	static {
 		try {

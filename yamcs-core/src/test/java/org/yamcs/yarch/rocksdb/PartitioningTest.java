@@ -1,4 +1,4 @@
-package org.yamcs.yarch.tokyocabinet;
+package org.yamcs.yarch.rocksdb;
 
 import static org.junit.Assert.*;
 
@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -21,16 +22,13 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.tokyocabinet.TcPartitionManager;
-import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
-
 import org.yamcs.utils.TimeEncoding;
 
 public class PartitioningTest extends YarchTestCase {
 
     @Test
     public void testIndexPartitioning() throws ParseException, StreamSqlException, IOException, InterruptedException {
-        ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine tokyocabinet partition by time(gentime)");
+        ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine rocksdb partition by time(gentime)");
         ydb.execute("create stream tm_in(gentime timestamp, apidSeqCount int)");
         ydb.execute("insert into test1 select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
@@ -39,52 +37,64 @@ public class PartitioningTest extends YarchTestCase {
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant1, 20000}));
 
         TableDefinition tdef=ydb.getTable("test1");
-        TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
+        RdbStorageEngine storageEngine = (RdbStorageEngine) ydb.getStorageEngine(tdef);
         
         assertTrue(tdef.hasPartitioning());
-        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
-        Collection<String> partitions=pmgr.getPartitionFilenames();
+        RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        Collection<Partition> partitions=pmgr.getPartitions();
         assertEquals(1, partitions.size());
-        assertEquals("1999/172/test1.tcb",partitions.iterator().next());
-        File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/test1.tcb");
+        RdbPartition p1 = (RdbPartition) partitions.iterator().next();
+        assertEquals("1999/172/test1", p1.dir);
+        File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172");
         assertTrue(f.exists());
 
         long instant2=TimeEncoding.parse("2001-01-01T00:00:00");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant2, 2000}));
-        partitions=pmgr.getPartitionFilenames();
+        partitions=pmgr.getPartitions();
         assertEquals(2,partitions.size());
-        Iterator<String>it=partitions.iterator();
-        assertEquals("1999/172/test1.tcb",it.next());
-        assertEquals("2001/001/test1.tcb",it.next());
+        Iterator<Partition>it=partitions.iterator();
+        p1 = (RdbPartition) it.next();
+        assertEquals("1999/172/test1",p1.dir);
+        RdbPartition p2 = (RdbPartition) it.next();
+        assertEquals("2001/001/test1", p2.dir);
 
         long instant3=TimeEncoding.parse("2001-01-01T00:00:01");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant3, 2000}));
-        partitions=pmgr.getPartitionFilenames();
+        partitions=pmgr.getPartitions();
         assertEquals(2,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1.tcb",it.next());
-        assertEquals("2001/001/test1.tcb",it.next());
+        p1 = (RdbPartition) it.next();
+        assertEquals("1999/172/test1", p1.dir);
+        p2 = (RdbPartition) it.next();
+        assertEquals("2001/001/test1", p2.dir);
 
         long instant4=TimeEncoding.parse("2000-12-31T23:59:59");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant4, 2000}));
-        partitions=pmgr.getPartitionFilenames();
-        assertEquals(3,partitions.size());
+        partitions=pmgr.getPartitions();
+        assertEquals(3, partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1.tcb",it.next());
-        assertEquals("2000/366/test1.tcb",it.next());
-        assertEquals("2001/001/test1.tcb",it.next());
+        p1 = (RdbPartition) it.next();
+        assertEquals("1999/172/test1", p1.dir);
+        p2 = (RdbPartition) it.next();
+        assertEquals("2000/366/test1", p2.dir);
+        RdbPartition p3 = (RdbPartition) it.next();
+        assertEquals("2001/001/test1", p3.dir);
 
         
         long instant5=TimeEncoding.parse("2008-12-31T23:59:60");
         tm_in.emitTuple(new Tuple(tm_in.getDefinition(), new Object[]{instant5, 2000}));
         Thread.sleep(100);//give time to the other thread to finish reading the input
-        partitions=pmgr.getPartitionFilenames();
+        partitions=pmgr.getPartitions();
         assertEquals(4,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/test1.tcb",it.next());
-        assertEquals("2000/366/test1.tcb",it.next());
-        assertEquals("2001/001/test1.tcb",it.next());
-        assertEquals("2008/366/test1.tcb",it.next());
+        p1 = (RdbPartition) it.next();        
+        assertEquals("1999/172/test1", p1.dir);
+        p2 = (RdbPartition) it.next();
+        assertEquals("2000/366/test1",p2.dir);
+        p3 = (RdbPartition) it.next();
+        assertEquals("2001/001/test1",p3.dir);
+        RdbPartition  p4 = (RdbPartition) it.next();
+        assertEquals("2008/366/test1",p4.dir);
         ydb.execute("close stream tm_in");
 
 
@@ -142,7 +152,7 @@ public class PartitioningTest extends YarchTestCase {
     @Test
     public void testDoublePartitioning() throws Exception {
         final long[] instant=new long[4];
-        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine tokyocabinet partition by time_and_value(gentime,part) ");
+        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by time_and_value(gentime,part) ");
         ydb.execute("create stream tm_in(gentime timestamp, seqNumber int, part String, packet binary)");
         ydb.execute("insert into testdp select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
@@ -163,30 +173,37 @@ public class PartitioningTest extends YarchTestCase {
         TableDefinition tdef=ydb.getTable("testdp");
         assertTrue(tdef.hasPartitioning());
         
-        TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
+        RdbStorageEngine storageEngine = (RdbStorageEngine) ydb.getStorageEngine(tdef);
        
         assertTrue(tdef.hasPartitioning());
-        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
         
-        Collection<String> partitions=pmgr.getPartitionFilenames();
-        Iterator<String>it=partitions.iterator();
+        Collection<Partition> partitions=pmgr.getPartitions();
+        Iterator<Partition>it= partitions.iterator();
         assertEquals(2, partitions.size());
-        assertEquals("1999/172/testdp#part1.tcb",it.next());
-        assertEquals("1999/172/testdp#partition2.tcb",it.next());
-        File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp#part1.tcb");
-        assertTrue(f.exists());
-        f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp#partition2.tcb");
+        RdbPartition p1 = (RdbPartition)it.next();
+        assertEquals("1999/172/testdp",p1.dir);
+        assertEquals("part1", p1.getValue());
+        
+        RdbPartition p2 = (RdbPartition)it.next();
+        assertEquals("1999/172/testdp",p2.dir);
+        assertEquals("partition2", p2.getValue());
+        
+        File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp");
         assertTrue(f.exists());
 
         instant[3]=TimeEncoding.parse("2001-01-01T00:00:00");
         Tuple t3=new Tuple(tpdef, new Object[] {instant[3], 4, "part3", new byte[1000]});
         tm_in.emitTuple(t3);
-        partitions=pmgr.getPartitionFilenames();
+        partitions=pmgr.getPartitions();
         assertEquals(3,partitions.size());
         it=partitions.iterator();
-        assertEquals("1999/172/testdp#part1.tcb",it.next());
-        assertEquals("1999/172/testdp#partition2.tcb",it.next());
-        assertEquals("2001/001/testdp#part3.tcb",it.next());
+        it.next();it.next();
+        RdbPartition p3 = (RdbPartition)it.next();
+        
+        assertEquals("2001/001/testdp",p3.dir);
+        assertEquals("part3", p3.getValue());
+        
 
         ydb.execute("close stream tm_in");
 
@@ -216,7 +233,7 @@ public class PartitioningTest extends YarchTestCase {
     @Test
     public void testEnumPartitioning() throws ParseException, StreamSqlException, IOException, InterruptedException {
         final long[] instant=new long[4];
-        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part enum, packet binary, primary key(gentime,seqNumber)) engine tokyocabinet partition by value(part)");
+        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part enum, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by value(part)");
         ydb.execute("create stream tm_in(gentime timestamp, seqNumber int, part enum, packet binary)");
         ydb.execute("insert into testdp select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
@@ -236,30 +253,40 @@ public class PartitioningTest extends YarchTestCase {
 
         TableDefinition tdef=ydb.getTable("testdp");
         assertTrue(tdef.hasPartitioning());
-        TcStorageEngine storageEngine = (TcStorageEngine) ydb.getStorageEngine(tdef);
+        RdbStorageEngine storageEngine = (RdbStorageEngine) ydb.getStorageEngine(tdef);
         
-        TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
+        RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
 
-        Collection<String> partitions=pmgr.getPartitionFilenames();
-        Iterator<String>it=partitions.iterator();
+        Collection<Partition> partitions=pmgr.getPartitions();
+        Iterator<Partition>it=partitions.iterator();
         assertEquals(2, partitions.size());
-        assertEquals("testdp#0.tcb", it.next());
-        assertEquals("testdp#1.tcb", it.next());
-        File f=new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#0.tcb");
+        RdbPartition p1 = (RdbPartition) it.next();
+        assertEquals("testdp", p1.dir);
+        assertEquals((short)0, p1.getValue());
+        
+        RdbPartition p2 = (RdbPartition) it.next();
+        assertEquals("testdp", p2.dir);
+        assertEquals((short)1, p2.getValue());
+        File f=new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp");
         assertTrue(f.exists());
-        f=new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#1.tcb");
-        assertTrue(f.exists());
-
+        
         instant[3]=TimeEncoding.parse("2001-01-01T00:00:00");
         Tuple t3=new Tuple(tpdef, new Object[] {instant[3], 4, "part2", new byte[1000]});
         tm_in.emitTuple(t3);
-        partitions=pmgr.getPartitionFilenames();
+        partitions=pmgr.getPartitions();
         assertEquals(3, partitions.size());
         it=partitions.iterator();
-
-        assertTrue(partitions.contains("testdp#0.tcb"));
-        assertTrue(partitions.contains("testdp#1.tcb"));
-        assertTrue(partitions.contains("testdp#2.tcb"));
+        p1 = (RdbPartition) it.next();
+        assertEquals("testdp", p1.dir);
+        assertEquals((short)0, p1.getValue());
+        
+        p2 = (RdbPartition) it.next();
+        assertEquals((short)2, p2.getValue());
+              
+        RdbPartition p3 = (RdbPartition) it.next();
+        assertEquals("testdp", p3.dir);
+        assertEquals((short)1, p3.getValue());
+        
 
         ydb.execute("close stream tm_in");
 
@@ -274,8 +301,6 @@ public class PartitioningTest extends YarchTestCase {
 
         doublePartitioningSelect("part='partition2' and part='part3' and gentime>"+instant[1], new long[]{});
         execute("drop table testdp");
-        assertFalse((new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#0.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#1.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp#2.tcb")).exists());
-    }      
+        assertFalse((new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp")).exists());        
+    }
 }

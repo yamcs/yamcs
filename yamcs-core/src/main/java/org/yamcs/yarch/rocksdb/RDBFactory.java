@@ -1,5 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.rocksdb.FlushOptions;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.yarch.TableDefinition;
 
 /**
  * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes 
@@ -55,13 +57,24 @@ public class RDBFactory implements Runnable {
 		return rdbFactory;
 	}
 	
-	public YRDB getRdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
-		return rdb(dir, compressed, readonly);
+	/**
+	 * Opens or create a database.
+	 * 
+	 * 
+	 * @param tblDef - table definition containing the partition manager as well as the data directory
+	 * @param absolutePath - absolute path - should be a directory
+	 * @param readonly
+	 * @return
+	 * @throws RocksDBException
+	 * @throws IOException
+	 */
+	public YRDB getRdb(TableDefinition tblDef, String absolutePath, boolean readonly) throws RocksDBException, IOException{
+		return rdb(tblDef, absolutePath, readonly);
 	}
 	
 	
-	private synchronized YRDB rdb(String dir, boolean compressed, boolean readonly) throws RocksDBException{
-		DbAndAccessTime daat=databases.get(dir);
+	private synchronized YRDB rdb(TableDefinition tblDef, String absolutePath, boolean readonly) throws RocksDBException, IOException {
+		DbAndAccessTime daat=databases.get(absolutePath);
 		if(daat==null) {
 			if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
 				long min=Long.MAX_VALUE;
@@ -79,12 +92,12 @@ public class RDBFactory implements Runnable {
 					daat.db.close();
 				}
 			}
-			YRDB db = new YRDB(dir);
-			log.debug("Creating or opening RDB "+dir+" total tcb files open: "+databases.size());
+			YRDB db = new YRDB(absolutePath, tblDef.getPartitioningSpec().valueColumnType);
+			log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
 			
 			
-			daat=new DbAndAccessTime(db, dir, readonly);
-			databases.put(dir, daat);
+			daat=new DbAndAccessTime(db, absolutePath, readonly);
+			databases.put(absolutePath, daat);
 		}
 		
 		daat.lastAccess=System.currentTimeMillis();
@@ -126,7 +139,7 @@ public class RDBFactory implements Runnable {
 			}
 		}
 	}
-	private synchronized void shutdown() {
+	synchronized void shutdown() {
 		log.debug("shutting down, closing all the databases "+databases.keySet());
 		Iterator<Map.Entry<String, DbAndAccessTime>>it=databases.entrySet().iterator();
 		while(it.hasNext()) {
@@ -143,9 +156,8 @@ public class RDBFactory implements Runnable {
 		}
 	}
 
-	public synchronized void dispose(String dbdir) {
-	  //  System.out.println("here ybdb.path: "+ybdb.path());
-	    DbAndAccessTime daat=databases.get(dbdir);
+	public synchronized void dispose(YRDB rdb) {		
+	    DbAndAccessTime daat=databases.get(rdb.getPath());
 	    daat.lastAccess=System.currentTimeMillis();
 	    daat.refcount--;
 	}
