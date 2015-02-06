@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import java.util.ArrayList;
 
 import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -75,6 +76,8 @@ public class CreateTableStatement extends StreamSqlStatement {
             tableDefinition.setCompressed(compressed);
             if(partitioningSpec!=null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
+            } else {
+            	tableDefinition.setPartitioningSpec(new PartitioningSpec(_type.NONE));
             }
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);

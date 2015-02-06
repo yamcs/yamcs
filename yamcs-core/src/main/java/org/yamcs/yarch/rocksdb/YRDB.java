@@ -14,6 +14,7 @@ import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.FlushOptions;
 import org.rocksdb.Options;
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
@@ -90,7 +91,9 @@ public class YRDB {
 	}
 	
 	List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList) throws RocksDBException {
-		return db.newIterators(cfhList);
+		ReadOptions ro = new ReadOptions();
+		ro.setTailing(true);
+		return db.newIterators(cfhList, ro);
 	}
 	
 	

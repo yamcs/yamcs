@@ -28,14 +28,17 @@ public class ConcurrencyTest extends YarchTestCase {
 	//int n=10;
 	
 	static final String engine="rocksdb"; 
+	//static final String engine="tokyocabinet";
 	
+
 	class InputStreamFeeder implements Runnable {
 		volatile int psent;
 		volatile boolean finished;
+		volatile boolean quitting = false;
 		Stream stream1, stream2, stream3;
 		
 		InputStreamFeeder() throws Exception {
-			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) engine="+engine+" partition by time(gentime)");
+			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) engine "+engine+" partition by time(gentime)");
 
 			ydb.execute("create stream testcrw_in1(gentime timestamp, apidSeqCount int, packet binary)");
 			ydb.execute("insert into testcrw select * from testcrw_in1");
@@ -83,6 +86,8 @@ public class ConcurrencyTest extends YarchTestCase {
 					bb=ByteBuffer.allocate(2000);
 					while(bb.remaining()>0) bb.putInt(-psent);
                     send(stream3, time, -psent, bb.array());
+                    
+                    if(quitting) break;
 				}
 				
 			} catch (Exception e) {
@@ -96,7 +101,7 @@ public class ConcurrencyTest extends YarchTestCase {
 	public void testConcurrentReadAndWrite() throws Exception {
 		InputStreamFeeder isf=new InputStreamFeeder();
 		(new Thread(isf)).start();
-		Thread.sleep(5000);//give some lead time to the writer streams
+		Thread.sleep(10000);//give some lead time to the writer streams
 
 		Calendar cal=Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		cal.set(2003,11,25,0,0,0);
@@ -114,7 +119,7 @@ public class ConcurrencyTest extends YarchTestCase {
 		    
             @Override
             public void streamClosed(Stream stream) {
-                assertTrue(i>10);
+                assertTrue(i>10);                
                 semaphore.release();
             }
             
@@ -143,7 +148,8 @@ public class ConcurrencyTest extends YarchTestCase {
 		s.start();
 		assertTrue(semaphore.tryAcquire(1000, TimeUnit.SECONDS));
 		
-		
+		isf.quitting=true;
+		Thread.sleep(1000);
 		System.out.println("closing streams");
 	//	assertEquals(time0+(n-1)*60L*1000L,time);
 		execute("close stream testcrw_in1");

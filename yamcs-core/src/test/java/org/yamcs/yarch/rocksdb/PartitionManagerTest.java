@@ -27,10 +27,9 @@ import static org.junit.Assert.*;
 
 public class PartitionManagerTest {
     
-    static PartitioningSpec spec=new PartitioningSpec();
+    static PartitioningSpec spec=new PartitioningSpec(_type.TIME_AND_VALUE);
     static {
         spec.timeColumn="gentime";
-        spec.type=_type.TIME_AND_VALUE;
         spec.valueColumn="packetid";
         spec.valueColumnType=DataType.INT;
     }
@@ -124,6 +123,7 @@ public class PartitionManagerTest {
         RdbPartitionManager pm=new RdbPartitionManager(ydb, tblDef);
         pm.readPartitionsFromDisk();
         Collection<Partition> partitions = pm.getPartitions();
+        assertEquals(5, partitions.size());
         
         Set<Object>filter=new HashSet<Object>();
         filter.add(1);

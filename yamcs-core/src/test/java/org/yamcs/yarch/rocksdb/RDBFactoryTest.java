@@ -24,9 +24,8 @@ public class RDBFactoryTest {
 		return yrdb.isOpen();	
 	}
 	TableDefinition getTableDef() throws Exception {
-		PartitioningSpec spec=new PartitioningSpec();
+		PartitioningSpec spec=new PartitioningSpec(_type.TIME_AND_VALUE);
 		spec.timeColumn="gentime";
-        spec.type=_type.TIME_AND_VALUE;
         spec.valueColumn="packetid";
         spec.valueColumnType=DataType.INT;
         

@@ -180,6 +180,7 @@ TOKEN:
   | < #SPECIAL_CHARS: "$" | "_" | "#">
   | < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
   | < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+  | < S_PATH: (<DIGIT> | <LETTER> | "/")+ >
 }
 
 DataType BasicDataTypeDefinition():
@@ -278,15 +279,24 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
 }
 
 PartitioningSpec PartitioningSpec(): {
-    PartitioningSpec pspec=new PartitioningSpec();
+    PartitioningSpec pspec;
     String cname1, cname2;
+    String timePartSchema = null;
 } {
-  ( <K_TIME> "(" cname1=ObjectName() ")" {pspec.type=PartitioningSpec._type.TIME; pspec.timeColumn=cname1;} 
+  ( <K_TIME> "(" cname1=ObjectName() [ "(" timePartSchema=TimePartitioningSchema() ")" ] ")" {pspec = new PartitioningSpec(PartitioningSpec._type.TIME); pspec.timeColumn=cname1;} 
     |
-	<K_VALUE> "(" cname1=ObjectName() ")" {pspec.type=PartitioningSpec._type.VALUE; pspec.valueColumn=cname1;} 
+	<K_VALUE> "(" cname1=ObjectName() ")" {pspec = new PartitioningSpec(PartitioningSpec._type.VALUE); pspec.valueColumn=cname1;} 
     |
-	<K_TIME_AND_VALUE> "(" cname1=ObjectName() "," cname2=ObjectName() ")" { pspec.type=PartitioningSpec._type.TIME_AND_VALUE; pspec.timeColumn=cname1; pspec.valueColumn=cname2;} 
-  ) { return pspec;}
+	<K_TIME_AND_VALUE> "(" cname1=ObjectName() "," cname2=ObjectName() ")" { pspec = new PartitioningSpec(PartitioningSpec._type.TIME_AND_VALUE); pspec.timeColumn=cname1; pspec.valueColumn=cname2;} 
+  ) {  if(timePartSchema!=null) {
+          try {
+          	 pspec.setTimePartitioningSchema(timePartSchema);
+           } catch (IllegalArgumentException e) {
+               throw new ParseException(e.getMessage());
+           }
+       }
+       return pspec;
+    }
 }
 
 CreateOutputStreamStatement CreateOutputStreamStatement(): {
@@ -648,7 +658,11 @@ String ObjectName():
   | <S_QUOTED_IDENTIFIER> {String s = token.image; return s.substring(1, s.length() - 1);}
 }
 
-
+String TimePartitioningSchema():
+{}
+{
+    (<S_PATH> | <S_IDENTIFIER>) { return token.image;}
+}
 
 AddOp AddOp(): {
 } {

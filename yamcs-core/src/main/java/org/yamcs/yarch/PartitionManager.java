@@ -39,7 +39,7 @@ public abstract class PartitionManager {
 	public PartitionManager(TableDefinition tableDefinition) {
 		this.tableDefinition=tableDefinition;
 		this.partitioningSpec=tableDefinition.getPartitioningSpec();
-		if(partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
+		if(partitioningSpec.type==_type.NONE || partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
 			pcache=new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
 			intervals.put(TimeEncoding.MIN_INSTANT, pcache);
 		}
@@ -80,10 +80,11 @@ public abstract class PartitionManager {
 		Partition partition;
 		if(partitioningSpec.timeColumn!=null) {
 			if((pcache==null) || (pcache.start>instant) || (pcache.getEnd()<=instant)) {
+				
 				Entry<Long, Interval>entry=intervals.floorEntry(instant);
 				if((entry!=null) && (instant<entry.getValue().getEnd())) {
 					pcache=entry.getValue();		               
-				} else {//no partition in this interval.		
+				} else {//no partition in this interval.
 					PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
 					pcache=new Interval(pinfo.partitionStart, pinfo.partitionEnd);		                
 					intervals.put(pcache.start, pcache);
@@ -130,8 +131,7 @@ public abstract class PartitionManager {
 	}
 	/**
 	 * Create a partition for time (and possible value) based partitioning
-	 * @param year
-	 * @param doy
+	 * @param pinfo
 	 * @param value
 	 * @return
 	 * @throws IOException 
@@ -247,6 +247,7 @@ public abstract class PartitionManager {
 				partitions.put(value, partition);
 			} else {
 				partitions.put(NON_NULL, partition);
+				System.out.println("after having put non_null, I get: "+partitions.get(NON_NULL));
 			}
 		}
 		
@@ -260,7 +261,7 @@ public abstract class PartitionManager {
 
 		@Override
 		public String toString() {
-			return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(getEnd())+"] values: "+partitions;
+			return "["+TimeEncoding.toString(start)+"("+start+") - "+TimeEncoding.toString(getEnd())+"] values: "+partitions;
 		}		
 	}
 }

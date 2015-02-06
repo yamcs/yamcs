@@ -17,6 +17,18 @@ import org.yaml.snakeyaml.representer.Representer;
  *
  */
 public class TableDefinitionRepresenter extends Representer {
+	public final static String K_compressed = "compressed";
+	public final static String K_keyDef = "keyDef";
+	public final static String K_valueDef = "valueDef";
+	public final static String K_dataDir = "dataDir";
+	public final static String K_histogram = "histogram";
+	public final static String K_enumValue = "enumValues";
+	public final static String K_partitioningSpec = "partitioningSpec";	
+	public final static String K_timeColumn = "timeColumn";
+	public final static String K_valueColumn = "valueColumn";
+	public final static String K_timePartitioningSchema = "timePartitioningSchema";
+	
+	
     public TableDefinitionRepresenter() {
         this.representers.put(TableDefinition.class, new RepresentTableDefinition());
         this.representers.put(TupleDefinition.class, new RepresentTupleDefinition());
@@ -28,20 +40,20 @@ public class TableDefinitionRepresenter extends Representer {
         public Node representData(Object data) {
             TableDefinition td = (TableDefinition) data;
             Map<String, Object> m=new HashMap<String, Object>();
-            m.put("compressed", td.isCompressed());
-            m.put("keyDef", td.getKeyDefinition());
-            m.put("valueDef", td.serializedValueDef);
+            m.put(K_compressed, td.isCompressed());
+            m.put(K_keyDef, td.getKeyDefinition());
+            m.put(K_valueDef, td.serializedValueDef);
             if(td.hasHistogram()) {
-                m.put("histogram", td.getHistogramColumns());
+                m.put(K_histogram, td.getHistogramColumns());
             }
             if(td.serializedEmumValues!=null) {
-                m.put("enumValues", td.serializedEmumValues);
+                m.put(K_enumValue, td.serializedEmumValues);
             }
             if(td.hasCustomDataDir()) {
-            	m.put("dataDir", td.getDataDir());
+            	m.put(K_dataDir, td.getDataDir());
             }
             if(td.hasPartitioning()) {
-            	m.put("partitioningSpec", td.getPartitioningSpec());
+            	m.put(K_partitioningSpec, td.getPartitioningSpec());
             }
             return representMapping(new Tag("TableDefinition"), m, false);
         }
@@ -72,10 +84,13 @@ public class TableDefinitionRepresenter extends Representer {
             m.put("type", p.type.toString());
             if((p.type==_type.TIME) || (p.type==_type.TIME_AND_VALUE)) {
             	m.put("timeColumn", p.timeColumn);
+            	m.put(K_timePartitioningSchema, p.timePartitioningSchema.getName());
             }
             if((p.type==_type.VALUE) || (p.type==_type.TIME_AND_VALUE)) {
-            	m.put("valueColumn", p.valueColumn);
+            	m.put(K_valueColumn, p.valueColumn);
             }
+            
+            
             return representMapping(new Tag("PartitioningSpec"), m, true);
         }
     }
