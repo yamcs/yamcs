@@ -256,7 +256,7 @@ public class TaiUtcConverter {
 	
 	public static class DateTimeComponents {
 		public int year;
-		public int month;
+		public int month; //month starting with 1
         public int day;
         public int hour;
         public int minute;
@@ -305,7 +305,7 @@ public class TaiUtcConverter {
 		}
 
         public String toIso8860String() {
-            return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", year, month, day, hour, minute,second,millisec);
+            return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", year, month, day, hour, minute, second, millisec);
         }
 	}
 	
