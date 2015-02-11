@@ -4,7 +4,7 @@ cd `dirname $0`
 yamcshome=`pwd`
 
 unset GREP_OPTIONS
-yjar=`ls yamcs-core/target/yamcs*.jar -t -1 | head -n 1`
+yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | head -n 1`
 dist=yamcs-client-`echo $yjar | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'`
 version=`echo $yjar | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'`
 
