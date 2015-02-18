@@ -74,7 +74,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         	RdbPartition p1 = (RdbPartition) partitions.iterator().next();
         	String dbDir = p1.dir;
         	log.debug("opening database "+ dbDir);
-        	YRDB rdb = rdbf.getRdb(tableDefinition, tableDefinition.getDataDir()+"/"+p1.dir, false);
+        	YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().valueColumnType), false);
         	List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
         	for(Partition p: partitions) {
         		ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());

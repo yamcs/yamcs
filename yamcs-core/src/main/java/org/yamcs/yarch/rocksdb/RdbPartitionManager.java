@@ -76,7 +76,7 @@ public class RdbPartitionManager extends PartitionManager {
 		RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
 		String tblName = tableDefinition.getName();
 		String dataDir = tableDefinition.getDataDir();
-		YRDB rdb = rdbFactory.getRdb(tableDefinition, dataDir+"/"+dir+"/"+tblName, true);
+		YRDB rdb = rdbFactory.getRdb(dataDir+"/"+dir+"/"+tblName, new ColumnValueSerializer(tableDefinition), false);
 		
 		for(Object o: rdb.getColumnFamilies()) {
 			addPartition(pinfo, o);			
@@ -108,7 +108,7 @@ public class RdbPartitionManager extends PartitionManager {
 			if(!f.exists()) {
 				f.mkdirs();
 			}
-			YRDB rdb = rdbFactory.getRdb(tableDefinition, f.getAbsolutePath(), true);
+			YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
 			rdb.createColumnFamily(value);
 			rdbFactory.dispose(rdb);
 			return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, pinfo.dir+"/"+tableDefinition.getName());			
@@ -131,7 +131,7 @@ public class RdbPartitionManager extends PartitionManager {
 			if(!f.exists()) {
 				f.mkdirs();
 			}
-			YRDB rdb = rdbFactory.getRdb(tableDefinition, f.getAbsolutePath(), true);
+			YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
 			
 			rdb.createColumnFamily(value);
 			rdbFactory.dispose(rdb);

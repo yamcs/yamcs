@@ -1,6 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-
+import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.NoneSpecifiedException;
 import org.yamcs.yarch.streamsql.ResourceNotFoundException;
@@ -21,7 +22,6 @@ import org.yamcs.yarch.streamsql.StreamExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 import org.yamcs.yarch.streamsql.TupleSourceExpression;
-import org.yamcs.yarch.tokyocabinet.TcTableReaderStream;
 /**
  * A source of tuples. Can be:
  *  - a reference to an existing stream objectName
@@ -90,7 +90,7 @@ class TupleSourceExpression {
         
     }
     
-    AbstractStream execute(ExecutionContext c) throws StreamSqlException{
+    AbstractStream execute(ExecutionContext c) throws StreamSqlException {
         AbstractStream stream;
         if(streamExpression!=null) {        	
             stream=streamExpression.execute(c);
@@ -102,7 +102,12 @@ class TupleSourceExpression {
                 if(histoColumn==null) {
                     stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl);
                 } else {
-                    HistogramReaderStream histoStream=new HistogramReaderStream(ydb, tbl, histoColumn, definition);
+                    HistogramReaderStream histoStream;
+					try {
+						histoStream = new HistogramReaderStream(ydb, tbl, histoColumn, definition);
+					} catch (YarchException e) {
+						throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
+					}
                     if(histogramMergeTime!=null) {
                         histoStream.setMergeTime(histogramMergeTime.longValue());
                     }

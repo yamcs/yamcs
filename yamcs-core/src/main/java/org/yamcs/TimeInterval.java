@@ -1,6 +1,9 @@
 package org.yamcs;
 
-/* time interval where both ends can be open */
+/**
+ *  time interval where both ends can be open 
+ *  
+ **/
 public class TimeInterval {
     private long start, stop;
     private boolean hasStart = false;
@@ -15,6 +18,7 @@ public class TimeInterval {
      */
     public TimeInterval() {
     }
+  
     public boolean hasStart() {
         return hasStart;
     }

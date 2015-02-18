@@ -105,16 +105,16 @@ public class PartitionManagerTest {
         
         YarchDatabase ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
-        YRDB rdb = rdbFactory.getRdb(tblDef, tmpdir+"/2011/001/tbltest", false);
+        YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest", new ColumnValueSerializer(tblDef), false);
         rdb.createColumnFamily((int)1);
         rdbFactory.dispose(rdb);        
         
-        rdb = rdbFactory.getRdb(tblDef, tmpdir+"/2011/060/tbltest", false);
+        rdb = rdbFactory.getRdb(tmpdir+"/2011/060/tbltest", new ColumnValueSerializer(tblDef), false);
         rdb.createColumnFamily((int)1);
         rdb.createColumnFamily((int)3);
         rdbFactory.dispose(rdb);
         
-        rdb = rdbFactory.getRdb(tblDef, tmpdir+"/2011/032/tbltest", false);
+        rdb = rdbFactory.getRdb(tmpdir+"/2011/032/tbltest", new ColumnValueSerializer(tblDef), false);
         rdb.createColumnFamily((int)2);
         rdb.createColumnFamily((int)3);
         rdbFactory.dispose(rdb);

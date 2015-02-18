@@ -2,7 +2,6 @@ package org.yamcs.yarch.rocksdb;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +17,6 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
-import org.yamcs.yarch.DataType;
-
 /**
  * wrapper around RocksDB that keeps track of column families
  * @author nm
@@ -29,10 +26,9 @@ public class YRDB {
 	Map<Object, ColumnFamilyHandle> columnFamilies=new HashMap<Object, ColumnFamilyHandle>();
 	RocksDB db;
 	private boolean isClosed = false;
-	DataType valuePartitionDataType;
 	private final String path;
-	
-	public static byte[] NULL_COLUMN_FAMILY = {}; 
+	private final ColumnFamilySerializer cfSerializer;
+
 	/**
 	 * Create or open a new RocksDb.
 	 * 
@@ -41,8 +37,8 @@ public class YRDB {
 	 * @throws RocksDBException
 	 * @throws IOException 
 	 */
-	public YRDB(String dir, DataType valuePartitionDataType) throws RocksDBException, IOException {
-		this.valuePartitionDataType = valuePartitionDataType;
+	YRDB(String dir, ColumnFamilySerializer cfSerializer) throws RocksDBException, IOException {
+		this.cfSerializer = cfSerializer;
 		File f = new File(dir);
 		if(f.exists() && !f.isDirectory()) {
 			throw new IOException("'"+dir+"' exists and it is not a directory");
@@ -61,7 +57,7 @@ public class YRDB {
 				for(int i=0;i<cfl.size();i++) {
 					byte[] b = cfl.get(i);
 					if(!Arrays.equals(b, RocksDB.DEFAULT_COLUMN_FAMILY)) {
-						Object value = byteArrayToValue(b);	
+						Object value = cfSerializer.byteArrayToObject(b);	
 						columnFamilies.put(value, cfhList.get(i));
 					}
 				}
@@ -90,12 +86,16 @@ public class YRDB {
 		db.flush(flushOptions);		
 	}
 	
-	List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList) throws RocksDBException {
+	public List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList) throws RocksDBException {
 		ReadOptions ro = new ReadOptions();
 		ro.setTailing(true);
 		return db.newIterators(cfhList, ro);
 	}
 	
+	
+	public RocksIterator newIterator(ColumnFamilyHandle cfh) throws RocksDBException {
+		return db.newIterator(cfh);
+	}
 	
 	public synchronized ColumnFamilyHandle getColumnFamilyHandle(Object value) {
 		return columnFamilies.get(value);
@@ -106,7 +106,7 @@ public class YRDB {
 	}
 
 	public synchronized ColumnFamilyHandle createColumnFamily(Object value) throws RocksDBException {
-		byte[] b =valueToByteArray(value);
+		byte[] b = cfSerializer.objectToByteArray(value);
 		ColumnFamilyDescriptor cfd= new ColumnFamilyDescriptor(b);
 		ColumnFamilyHandle cfh = db.createColumnFamily(cfd);			
 		columnFamilies.put(value, cfh);
@@ -121,65 +121,6 @@ public class YRDB {
 		return columnFamilies.keySet();
 	}
 	
-	
-
-	/**
-	 * In RocksDB value based partitioning is based on RocksDB Column Families. Each ColumnFamily is identified by a byte[]
-	 * 
-	 * This method makes the conversion between the value and the byte[]	
-	 * @param value
-	 * @return
-	 */
-	public byte[] valueToByteArray(Object value) {
-		if(value==null) return NULL_COLUMN_FAMILY;
-		
-		if(value.getClass()==Integer.class) {
-			ByteBuffer bb = ByteBuffer.allocate(4);
-			bb.putInt((Integer)value);
-			return bb.array();
-		} else if(value.getClass()==Short.class) {
-			ByteBuffer bb = ByteBuffer.allocate(2);
-			bb.putShort((Short)value);
-			return bb.array();			
-		} else if(value.getClass()==Byte.class) {
-			ByteBuffer bb = ByteBuffer.allocate(1);
-			bb.put((Byte)value);
-			return bb.array();
-		} else if(value.getClass()==String.class) {
-			return ((String)value).getBytes();
-		} else {
-			throw new IllegalArgumentException("partition on values of type "+value.getClass()+" not supported");
-		}
-	}
-	/**
-	 * this is the reverse of the {@link #valueToByteArray(Object value)}
-	 * @param part
-	 * @param dt
-	 * @return
-	 */
-	public Object byteArrayToValue(byte[] b) {
-		DataType dt = valuePartitionDataType;
-		switch(dt.val) {
-		case INT:
-			if(b.length!=4) throw new IllegalArgumentException("unexpected buffer of size "+b.length+" for a partition of type "+dt);
-			ByteBuffer bb = ByteBuffer.wrap(b);
-			return bb.getInt();            
-		case SHORT:
-		case ENUM: //intentional fall-through
-			if(b.length!=2) throw new IllegalArgumentException("unexpected buffer of size "+b.length+" for a partition of type "+dt);
-			bb = ByteBuffer.wrap(b);
-			return bb.getShort();             
-		case BYTE:
-			if(b.length!=1) throw new IllegalArgumentException("unexpected buffer of size "+b.length+" for a partition of type "+dt);
-			bb = ByteBuffer.wrap(b);
-			return bb.get();             
-		case STRING:
-			return new String(b);
-		default:
-			throw new IllegalArgumentException("partition on values of type "+dt+" not supported");
-		}
-	}
-
 	public String getPath() { 
 		return path;
 	}

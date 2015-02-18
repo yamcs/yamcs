@@ -440,11 +440,6 @@ public class TableDefinition {
         return histoColumns!=null;
     }
     
-    
-    public String getHistogramDbFilename(String columnName) {
-        return getDataDir()+"/"+getName()+"-histo#"+columnName;
-    }
-    
     public BiMap<String, Short> getEnumValues(String columnName) {
         if(enumValues==null)return null;
         return enumValues.get(columnName);

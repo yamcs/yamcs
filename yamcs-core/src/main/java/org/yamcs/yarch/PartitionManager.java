@@ -247,7 +247,6 @@ public abstract class PartitionManager {
 				partitions.put(value, partition);
 			} else {
 				partitions.put(NON_NULL, partition);
-				System.out.println("after having put non_null, I get: "+partitions.get(NON_NULL));
 			}
 		}
 		

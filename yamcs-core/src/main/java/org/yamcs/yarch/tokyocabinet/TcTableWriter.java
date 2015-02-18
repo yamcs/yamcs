@@ -3,15 +3,12 @@ package org.yamcs.yarch.tokyocabinet;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
-import org.yamcs.yarch.HistogramDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -22,13 +19,16 @@ import org.yamcs.yarch.YarchDatabase;
 
 public class TcTableWriter extends TableWriter {
 	Logger log=LoggerFactory.getLogger(this.getClass().getName());
-	Map<String, HistogramDb> column2HistoDb=new HashMap<String, HistogramDb>();
     private final TcPartitionManager partitionManager;
-	
+    TcHistogramDb histodb;
 	
 	public TcTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, TcPartitionManager pm) throws FileNotFoundException {
 		super(ydb, tableDefinition, mode);
 		this.partitionManager = pm;
+		
+		if(tableDefinition.hasHistogram()) {
+             histodb=TcHistogramDb.getInstance(ydb, tableDefinition);
+		}
 	}
 
 	@Override
@@ -129,13 +129,7 @@ public class TcTableWriter extends TableWriter {
             long time=(Long)t.getColumn(0);
             ColumnSerializer cs=tableDefinition.getColumnSerializer(c);
             byte[] v=cs.getByteArray(t.getColumn(c));
-            HistogramDb histodb=column2HistoDb.get(c);
-            if(histodb==null) {
-                String filename=tableDefinition.getHistogramDbFilename(c)+".tcb";
-                histodb=HistogramDb.getInstance(ydb, filename);
-                column2HistoDb.put(c, histodb);
-            }
-            histodb.addValue(v, time);
+            histodb.addValue(c, v, time);
         }
     }
 

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.HistogramDb;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
@@ -76,4 +77,10 @@ public class TcStorageEngine implements StorageEngine {
     	TcPartitionManager pm = new TcPartitionManager(tbl);
     	partitionManagers.put(tbl, pm);
     }
+
+
+	@Override
+	public HistogramDb getHistogramDb(TableDefinition tbl) {		
+		return TcHistogramDb.getInstance(ydb, tbl);
+	}
 }

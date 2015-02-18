@@ -1,15 +1,16 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.HistogramDb;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
@@ -75,7 +76,7 @@ public class RdbStorageEngine implements StorageEngine {
 	public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException {
 		try {
 			return new RdbTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			throw new YarchException("Failed to create writer", e);
 		} 
 	}
@@ -99,4 +100,13 @@ public class RdbStorageEngine implements StorageEngine {
 	        return partitionManagers.get(tdef);
 	 }
 
+
+	@Override
+	public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException {		
+		try {
+			return RdbHistogramDb.getInstance(ydb, tbl);
+		} catch (IOException e) {
+			throw new YarchException(e);
+		}
+	}
 }

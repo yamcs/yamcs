@@ -13,7 +13,6 @@ import org.rocksdb.FlushOptions;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.yarch.TableDefinition;
 
 /**
  * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes 
@@ -30,23 +29,7 @@ public class RDBFactory implements Runnable {
 	ScheduledThreadPoolExecutor scheduler;
 	
 	public static FlushOptions flushOptions = new FlushOptions();
-	/**
-	 * use default visibility to be able to create a separate one from the unit test
-	 */
-	RDBFactory() {
-		flushOptions.setWaitForFlush(false);
-		scheduler=new ScheduledThreadPoolExecutor(1,new ThreadFactory() {//the default thread factory creates non daemon threads 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t=new Thread(r);
-                t.setDaemon(true);
-                t.setName("TcbFactory-sync");
-                return t;
-            }
-        });
-		scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
-		Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
-	}
+	
 	
 	public static synchronized RDBFactory getInstance(String instance) {
 		RDBFactory rdbFactory=instances.get(instance); 
@@ -65,15 +48,31 @@ public class RDBFactory implements Runnable {
 	 * @param absolutePath - absolute path - should be a directory
 	 * @param readonly
 	 * @return
-	 * @throws RocksDBException
 	 * @throws IOException
 	 */
-	public YRDB getRdb(TableDefinition tblDef, String absolutePath, boolean readonly) throws RocksDBException, IOException{
-		return rdb(tblDef, absolutePath, readonly);
+	public YRDB getRdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException{
+		return rdb(absolutePath, cfSerializer, readonly);
 	}
 	
+	/**
+	 * use default visibility to be able to create a separate one from the unit test
+	 */
+	RDBFactory() {
+		flushOptions.setWaitForFlush(false);
+		scheduler=new ScheduledThreadPoolExecutor(1,new ThreadFactory() {//the default thread factory creates non daemon threads 
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t=new Thread(r);
+                t.setDaemon(true);
+                t.setName("TcbFactory-sync");
+                return t;
+            }
+        });
+		scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
+		Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
+	}
 	
-	private synchronized YRDB rdb(TableDefinition tblDef, String absolutePath, boolean readonly) throws RocksDBException, IOException {
+	private synchronized YRDB rdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException {
 		DbAndAccessTime daat=databases.get(absolutePath);
 		if(daat==null) {
 			if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
@@ -92,8 +91,13 @@ public class RDBFactory implements Runnable {
 					daat.db.close();
 				}
 			}
-			YRDB db = new YRDB(absolutePath, tblDef.getPartitioningSpec().valueColumnType);
 			log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
+			YRDB db;
+			try {
+				db = new YRDB(absolutePath, cfSerializer);
+			} catch (RocksDBException e) {
+				throw new IOException(e);
+			}
 			
 			
 			daat=new DbAndAccessTime(db, absolutePath, readonly);

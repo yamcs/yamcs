@@ -46,9 +46,10 @@ public class RDBFactoryTest {
 		TableDefinition tblDef= getTableDef();
 		YRDB[] dbs=new YRDB[RDBFactory.maxOpenDbs*2];
 		RDBFactory rdbf=new RDBFactory();
-
+		ColumnValueSerializer cvs= new ColumnValueSerializer(tblDef);
+		
 		for(int i=0;i<RDBFactory.maxOpenDbs;i++) {
-			dbs[i]=rdbf.getRdb(tblDef, "/tmp/rdbfactorytest"+i, false);
+			dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, cvs, false);
 		}
 		for(int i=0;i<RDBFactory.maxOpenDbs/2;i++) {
 			rdbf.dispose(dbs[i]);
@@ -57,7 +58,7 @@ public class RDBFactoryTest {
 			assertTrue(isOpen(dbs[i]));
 		}
 		for(int i=RDBFactory.maxOpenDbs;i<2*RDBFactory.maxOpenDbs;i++) {
-			dbs[i]=rdbf.getRdb(tblDef, "/tmp/rdbfactorytest"+i, false);
+			dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, cvs, false);
 		}
 		for(int i=0;i<RDBFactory.maxOpenDbs/2;i++) {
 			assertFalse(isOpen(dbs[i]));

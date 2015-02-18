@@ -38,7 +38,7 @@ public class ConcurrencyTest extends YarchTestCase {
 		Stream stream1, stream2, stream3;
 		
 		InputStreamFeeder() throws Exception {
-			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) engine "+engine+" partition by time(gentime)");
+			ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) engine "+engine+" partition by time(gentime(YYYY/MM))");
 
 			ydb.execute("create stream testcrw_in1(gentime timestamp, apidSeqCount int, packet binary)");
 			ydb.execute("insert into testcrw select * from testcrw_in1");
