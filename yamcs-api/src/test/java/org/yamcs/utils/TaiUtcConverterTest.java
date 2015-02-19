@@ -18,6 +18,10 @@ public class TaiUtcConverterTest {
 		TaiUtcConverter tuc = new TaiUtcConverter();
 		DateTimeComponents dtc = tuc.instantToUtc(0);
 		assertEquals(1969, dtc.year);
+		assertEquals(12, dtc.month);
+		assertEquals(31, dtc.day);
+		assertEquals(23, dtc.hour);
+		assertEquals(59, dtc.minute);
 		assertEquals(51, dtc.second);
 		
 		
