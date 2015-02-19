@@ -38,6 +38,8 @@ public class AlarmChecker {
         for(ParameterValue pval:pvals) {
             if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
                 performAlarmChecking(pval, comparisonProcessor);
+            } else {
+                pval.setMonitoringResult(MonitoringResult.IN_LIMITS);
             }
         }
     }

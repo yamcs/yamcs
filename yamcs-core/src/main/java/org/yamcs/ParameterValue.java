@@ -317,6 +317,27 @@ public class ParameterValue {
         .setGenerationTime(getGenerationTime())
         .setMonitoringResult(getMonitoringResult())
         .setProcessingStatus(getProcessingStatus());
+
+        if (getWatchRange() != null) {
+            gpvb.setWatchLow(getWatchRange().getMinInclusive());
+            gpvb.setWatchHigh(getWatchRange().getMaxInclusive());
+        }
+        if (getWarningRange() != null) {
+            gpvb.setWarningLow(getWarningRange().getMinInclusive());
+            gpvb.setWarningHigh(getWarningRange().getMaxInclusive());
+        }
+        if(getDistressRange() != null) {
+            gpvb.setDistressLow(getDistressRange().getMinInclusive());
+            gpvb.setDistressHigh(getDistressRange().getMaxInclusive());
+        }
+        if(getCriticalRange() != null) {
+            gpvb.setCriticalLow(getCriticalRange().getMinInclusive());
+            gpvb.setCriticalLow(getCriticalRange().getMaxInclusive());
+        }
+        if(getSevereRange()!=null) {
+            gpvb.setSevereLow(getSevereRange().getMinInclusive());
+            gpvb.setSevereLow(getSevereRange().getMaxInclusive());
+        }
         
         if(id!=null) gpvb.setId(id);
         if(getRawValue()!=null) gpvb.setRawValue(getRawValue());

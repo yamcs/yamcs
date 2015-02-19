@@ -273,6 +273,76 @@ public final class Pvalue {
     public boolean hasGenerationTimeUTC() { return hasGenerationTimeUTC; }
     public java.lang.String getGenerationTimeUTC() { return generationTimeUTC_; }
     
+    // optional double watchLow = 13;
+    public static final int WATCHLOW_FIELD_NUMBER = 13;
+    private boolean hasWatchLow;
+    private double watchLow_ = 0D;
+    public boolean hasWatchLow() { return hasWatchLow; }
+    public double getWatchLow() { return watchLow_; }
+    
+    // optional double watchHigh = 14;
+    public static final int WATCHHIGH_FIELD_NUMBER = 14;
+    private boolean hasWatchHigh;
+    private double watchHigh_ = 0D;
+    public boolean hasWatchHigh() { return hasWatchHigh; }
+    public double getWatchHigh() { return watchHigh_; }
+    
+    // optional double warningLow = 15;
+    public static final int WARNINGLOW_FIELD_NUMBER = 15;
+    private boolean hasWarningLow;
+    private double warningLow_ = 0D;
+    public boolean hasWarningLow() { return hasWarningLow; }
+    public double getWarningLow() { return warningLow_; }
+    
+    // optional double warningHigh = 16;
+    public static final int WARNINGHIGH_FIELD_NUMBER = 16;
+    private boolean hasWarningHigh;
+    private double warningHigh_ = 0D;
+    public boolean hasWarningHigh() { return hasWarningHigh; }
+    public double getWarningHigh() { return warningHigh_; }
+    
+    // optional double distressLow = 17;
+    public static final int DISTRESSLOW_FIELD_NUMBER = 17;
+    private boolean hasDistressLow;
+    private double distressLow_ = 0D;
+    public boolean hasDistressLow() { return hasDistressLow; }
+    public double getDistressLow() { return distressLow_; }
+    
+    // optional double distressHigh = 18;
+    public static final int DISTRESSHIGH_FIELD_NUMBER = 18;
+    private boolean hasDistressHigh;
+    private double distressHigh_ = 0D;
+    public boolean hasDistressHigh() { return hasDistressHigh; }
+    public double getDistressHigh() { return distressHigh_; }
+    
+    // optional double criticalLow = 19;
+    public static final int CRITICALLOW_FIELD_NUMBER = 19;
+    private boolean hasCriticalLow;
+    private double criticalLow_ = 0D;
+    public boolean hasCriticalLow() { return hasCriticalLow; }
+    public double getCriticalLow() { return criticalLow_; }
+    
+    // optional double criticalHigh = 20;
+    public static final int CRITICALHIGH_FIELD_NUMBER = 20;
+    private boolean hasCriticalHigh;
+    private double criticalHigh_ = 0D;
+    public boolean hasCriticalHigh() { return hasCriticalHigh; }
+    public double getCriticalHigh() { return criticalHigh_; }
+    
+    // optional double severeLow = 21;
+    public static final int SEVERELOW_FIELD_NUMBER = 21;
+    private boolean hasSevereLow;
+    private double severeLow_ = 0D;
+    public boolean hasSevereLow() { return hasSevereLow; }
+    public double getSevereLow() { return severeLow_; }
+    
+    // optional double severeHigh = 22;
+    public static final int SEVEREHIGH_FIELD_NUMBER = 22;
+    private boolean hasSevereHigh;
+    private double severeHigh_ = 0D;
+    public boolean hasSevereHigh() { return hasSevereHigh; }
+    public double getSevereHigh() { return severeHigh_; }
+    
     private void initFields() {
       id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
       rawValue_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
@@ -326,6 +396,36 @@ public final class Pvalue {
       if (hasGenerationTimeUTC()) {
         output.writeString(12, getGenerationTimeUTC());
       }
+      if (hasWatchLow()) {
+        output.writeDouble(13, getWatchLow());
+      }
+      if (hasWatchHigh()) {
+        output.writeDouble(14, getWatchHigh());
+      }
+      if (hasWarningLow()) {
+        output.writeDouble(15, getWarningLow());
+      }
+      if (hasWarningHigh()) {
+        output.writeDouble(16, getWarningHigh());
+      }
+      if (hasDistressLow()) {
+        output.writeDouble(17, getDistressLow());
+      }
+      if (hasDistressHigh()) {
+        output.writeDouble(18, getDistressHigh());
+      }
+      if (hasCriticalLow()) {
+        output.writeDouble(19, getCriticalLow());
+      }
+      if (hasCriticalHigh()) {
+        output.writeDouble(20, getCriticalHigh());
+      }
+      if (hasSevereLow()) {
+        output.writeDouble(21, getSevereLow());
+      }
+      if (hasSevereHigh()) {
+        output.writeDouble(22, getSevereHigh());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -374,6 +474,46 @@ public final class Pvalue {
       if (hasGenerationTimeUTC()) {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(12, getGenerationTimeUTC());
+      }
+      if (hasWatchLow()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(13, getWatchLow());
+      }
+      if (hasWatchHigh()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(14, getWatchHigh());
+      }
+      if (hasWarningLow()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(15, getWarningLow());
+      }
+      if (hasWarningHigh()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(16, getWarningHigh());
+      }
+      if (hasDistressLow()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(17, getDistressLow());
+      }
+      if (hasDistressHigh()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(18, getDistressHigh());
+      }
+      if (hasCriticalLow()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(19, getCriticalLow());
+      }
+      if (hasCriticalHigh()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(20, getCriticalHigh());
+      }
+      if (hasSevereLow()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(21, getSevereLow());
+      }
+      if (hasSevereHigh()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(22, getSevereHigh());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -563,6 +703,36 @@ public final class Pvalue {
         if (other.hasGenerationTimeUTC()) {
           setGenerationTimeUTC(other.getGenerationTimeUTC());
         }
+        if (other.hasWatchLow()) {
+          setWatchLow(other.getWatchLow());
+        }
+        if (other.hasWatchHigh()) {
+          setWatchHigh(other.getWatchHigh());
+        }
+        if (other.hasWarningLow()) {
+          setWarningLow(other.getWarningLow());
+        }
+        if (other.hasWarningHigh()) {
+          setWarningHigh(other.getWarningHigh());
+        }
+        if (other.hasDistressLow()) {
+          setDistressLow(other.getDistressLow());
+        }
+        if (other.hasDistressHigh()) {
+          setDistressHigh(other.getDistressHigh());
+        }
+        if (other.hasCriticalLow()) {
+          setCriticalLow(other.getCriticalLow());
+        }
+        if (other.hasCriticalHigh()) {
+          setCriticalHigh(other.getCriticalHigh());
+        }
+        if (other.hasSevereLow()) {
+          setSevereLow(other.getSevereLow());
+        }
+        if (other.hasSevereHigh()) {
+          setSevereHigh(other.getSevereHigh());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -653,6 +823,46 @@ public final class Pvalue {
             }
             case 98: {
               setGenerationTimeUTC(input.readString());
+              break;
+            }
+            case 105: {
+              setWatchLow(input.readDouble());
+              break;
+            }
+            case 113: {
+              setWatchHigh(input.readDouble());
+              break;
+            }
+            case 121: {
+              setWarningLow(input.readDouble());
+              break;
+            }
+            case 129: {
+              setWarningHigh(input.readDouble());
+              break;
+            }
+            case 137: {
+              setDistressLow(input.readDouble());
+              break;
+            }
+            case 145: {
+              setDistressHigh(input.readDouble());
+              break;
+            }
+            case 153: {
+              setCriticalLow(input.readDouble());
+              break;
+            }
+            case 161: {
+              setCriticalHigh(input.readDouble());
+              break;
+            }
+            case 169: {
+              setSevereLow(input.readDouble());
+              break;
+            }
+            case 177: {
+              setSevereHigh(input.readDouble());
               break;
             }
           }
@@ -906,6 +1116,186 @@ public final class Pvalue {
       public Builder clearGenerationTimeUTC() {
         result.hasGenerationTimeUTC = false;
         result.generationTimeUTC_ = getDefaultInstance().getGenerationTimeUTC();
+        return this;
+      }
+      
+      // optional double watchLow = 13;
+      public boolean hasWatchLow() {
+        return result.hasWatchLow();
+      }
+      public double getWatchLow() {
+        return result.getWatchLow();
+      }
+      public Builder setWatchLow(double value) {
+        result.hasWatchLow = true;
+        result.watchLow_ = value;
+        return this;
+      }
+      public Builder clearWatchLow() {
+        result.hasWatchLow = false;
+        result.watchLow_ = 0D;
+        return this;
+      }
+      
+      // optional double watchHigh = 14;
+      public boolean hasWatchHigh() {
+        return result.hasWatchHigh();
+      }
+      public double getWatchHigh() {
+        return result.getWatchHigh();
+      }
+      public Builder setWatchHigh(double value) {
+        result.hasWatchHigh = true;
+        result.watchHigh_ = value;
+        return this;
+      }
+      public Builder clearWatchHigh() {
+        result.hasWatchHigh = false;
+        result.watchHigh_ = 0D;
+        return this;
+      }
+      
+      // optional double warningLow = 15;
+      public boolean hasWarningLow() {
+        return result.hasWarningLow();
+      }
+      public double getWarningLow() {
+        return result.getWarningLow();
+      }
+      public Builder setWarningLow(double value) {
+        result.hasWarningLow = true;
+        result.warningLow_ = value;
+        return this;
+      }
+      public Builder clearWarningLow() {
+        result.hasWarningLow = false;
+        result.warningLow_ = 0D;
+        return this;
+      }
+      
+      // optional double warningHigh = 16;
+      public boolean hasWarningHigh() {
+        return result.hasWarningHigh();
+      }
+      public double getWarningHigh() {
+        return result.getWarningHigh();
+      }
+      public Builder setWarningHigh(double value) {
+        result.hasWarningHigh = true;
+        result.warningHigh_ = value;
+        return this;
+      }
+      public Builder clearWarningHigh() {
+        result.hasWarningHigh = false;
+        result.warningHigh_ = 0D;
+        return this;
+      }
+      
+      // optional double distressLow = 17;
+      public boolean hasDistressLow() {
+        return result.hasDistressLow();
+      }
+      public double getDistressLow() {
+        return result.getDistressLow();
+      }
+      public Builder setDistressLow(double value) {
+        result.hasDistressLow = true;
+        result.distressLow_ = value;
+        return this;
+      }
+      public Builder clearDistressLow() {
+        result.hasDistressLow = false;
+        result.distressLow_ = 0D;
+        return this;
+      }
+      
+      // optional double distressHigh = 18;
+      public boolean hasDistressHigh() {
+        return result.hasDistressHigh();
+      }
+      public double getDistressHigh() {
+        return result.getDistressHigh();
+      }
+      public Builder setDistressHigh(double value) {
+        result.hasDistressHigh = true;
+        result.distressHigh_ = value;
+        return this;
+      }
+      public Builder clearDistressHigh() {
+        result.hasDistressHigh = false;
+        result.distressHigh_ = 0D;
+        return this;
+      }
+      
+      // optional double criticalLow = 19;
+      public boolean hasCriticalLow() {
+        return result.hasCriticalLow();
+      }
+      public double getCriticalLow() {
+        return result.getCriticalLow();
+      }
+      public Builder setCriticalLow(double value) {
+        result.hasCriticalLow = true;
+        result.criticalLow_ = value;
+        return this;
+      }
+      public Builder clearCriticalLow() {
+        result.hasCriticalLow = false;
+        result.criticalLow_ = 0D;
+        return this;
+      }
+      
+      // optional double criticalHigh = 20;
+      public boolean hasCriticalHigh() {
+        return result.hasCriticalHigh();
+      }
+      public double getCriticalHigh() {
+        return result.getCriticalHigh();
+      }
+      public Builder setCriticalHigh(double value) {
+        result.hasCriticalHigh = true;
+        result.criticalHigh_ = value;
+        return this;
+      }
+      public Builder clearCriticalHigh() {
+        result.hasCriticalHigh = false;
+        result.criticalHigh_ = 0D;
+        return this;
+      }
+      
+      // optional double severeLow = 21;
+      public boolean hasSevereLow() {
+        return result.hasSevereLow();
+      }
+      public double getSevereLow() {
+        return result.getSevereLow();
+      }
+      public Builder setSevereLow(double value) {
+        result.hasSevereLow = true;
+        result.severeLow_ = value;
+        return this;
+      }
+      public Builder clearSevereLow() {
+        result.hasSevereLow = false;
+        result.severeLow_ = 0D;
+        return this;
+      }
+      
+      // optional double severeHigh = 22;
+      public boolean hasSevereHigh() {
+        return result.hasSevereHigh();
+      }
+      public double getSevereHigh() {
+        return result.getSevereHigh();
+      }
+      public Builder setSevereHigh(double value) {
+        result.hasSevereHigh = true;
+        result.severeHigh_ = value;
+        return this;
+      }
+      public Builder clearSevereHigh() {
+        result.hasSevereHigh = false;
+        result.severeHigh_ = 0D;
         return this;
       }
       
@@ -1395,7 +1785,7 @@ public final class Pvalue {
   static {
     java.lang.String[] descriptorData = {
       "\n\014pvalue.proto\022\022org.yamcs.protobuf\032\013yamc" +
-      "s.proto\"\235\003\n\016ParameterValue\022-\n\002id\030\001 \001(\0132!" +
+      "s.proto\"\350\004\n\016ParameterValue\022-\n\002id\030\001 \001(\0132!" +
       ".org.yamcs.protobuf.NamedObjectId\022+\n\010raw" +
       "Value\030\002 \001(\0132\031.org.yamcs.protobuf.Value\022+" +
       "\n\010engValue\030\003 \001(\0132\031.org.yamcs.protobuf.Va" +
@@ -1405,19 +1795,24 @@ public final class Pvalue {
       "\n\020processingStatus\030\007 \001(\010\022>\n\020monitoringRe" +
       "sult\030\010 \001(\0162$.org.yamcs.protobuf.Monitori",
       "ngResult\022\032\n\022acquisitionTimeUTC\030\013 \001(\t\022\031\n\021" +
-      "generationTimeUTC\030\014 \001(\t\"}\n\rParameterData" +
-      "\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.protobuf" +
-      ".ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016genera" +
-      "tionTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acquis" +
-      "itionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVE" +
-      "D\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Monito" +
-      "ringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022" +
-      "\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020" +
-      "\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNI",
-      "NG_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020" +
-      "\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CR" +
-      "ITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVER" +
-      "E\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025"
+      "generationTimeUTC\030\014 \001(\t\022\020\n\010watchLow\030\r \001(" +
+      "\001\022\021\n\twatchHigh\030\016 \001(\001\022\022\n\nwarningLow\030\017 \001(\001" +
+      "\022\023\n\013warningHigh\030\020 \001(\001\022\023\n\013distressLow\030\021 \001" +
+      "(\001\022\024\n\014distressHigh\030\022 \001(\001\022\023\n\013criticalLow\030" +
+      "\023 \001(\001\022\024\n\014criticalHigh\030\024 \001(\001\022\021\n\tsevereLow" +
+      "\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\"}\n\rParameterD" +
+      "ata\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.proto" +
+      "buf.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016gen" +
+      "erationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acq",
+      "uisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECE" +
+      "IVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Mon" +
+      "itoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS" +
+      "\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HI" +
+      "GH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WA" +
+      "RNING_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_L" +
+      "OW\020\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n" +
+      "\014CRITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SE" +
+      "VERE\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1429,7 +1824,7 @@ public final class Pvalue {
           internal_static_org_yamcs_protobuf_ParameterValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_yamcs_protobuf_ParameterValue_descriptor,
-              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", },
+              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "WatchLow", "WatchHigh", "WarningLow", "WarningHigh", "DistressLow", "DistressHigh", "CriticalLow", "CriticalHigh", "SevereLow", "SevereHigh", },
               org.yamcs.protobuf.Pvalue.ParameterValue.class,
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder.class);
           internal_static_org_yamcs_protobuf_ParameterData_descriptor =

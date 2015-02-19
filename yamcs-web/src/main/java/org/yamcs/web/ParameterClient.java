@@ -236,17 +236,8 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
         ParameterData.Builder pd=ParameterData.newBuilder();
         for(ParameterValueWithId pvwi:paramList) {
             ParameterValue pv=pvwi.getParameterValue();
-            org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setId(pvwi.getId())
-                .setAcquisitionStatus(pv.getAcquisitionStatus())
-                .setAcquisitionTime(pv.getAcquisitionTime())
-                .setEngValue(pv.getEngValue())
-                .setGenerationTime(pv.getGenerationTime())
-                .setMonitoringResult(pv.getMonitoringResult())
-                .setProcessingStatus(pv.getProcessingStatus());
-            if(pv.getRawValue()!=null) gpvb.setRawValue(pv.getRawValue());
-            pd.addParameter(gpvb.build());
-        } 
+            pd.addParameter(pv.toGpb(pvwi.getId()));
+        }
         try {
             wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
         } catch (Exception e) {
