@@ -91,7 +91,6 @@ public abstract class PartitionManager {
 				}
 			}			
 		} 
-		
 		partition = pcache.get(value);
 		if(partition == null) {
 			if(partitioningSpec.timeColumn!=null) {
@@ -260,7 +259,7 @@ public abstract class PartitionManager {
 
 		@Override
 		public String toString() {
-			return "["+TimeEncoding.toString(start)+"("+start+") - "+TimeEncoding.toString(getEnd())+"] values: "+partitions;
+			return "["+TimeEncoding.toString(start)+"("+start+") - "+TimeEncoding.toString(end)+"("+end+")] values: "+partitions;
 		}		
 	}
 }

@@ -142,6 +142,8 @@ public abstract class TimePartitionSchema {
 			cal.clear();
 			cal.set(Calendar.YEAR, year);
 			cal.set(Calendar.MONTH, month-1);
+			cal.set(Calendar.HOUR, 0);
+			
 			pinfo.partitionStart = TimeEncoding.fromCalendar(cal);
 			cal.add(Calendar.MONTH, 1);
 			pinfo.partitionEnd = TimeEncoding.fromCalendar(cal);			

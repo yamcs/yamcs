@@ -164,6 +164,7 @@ public class TableDefinition {
             }
             pspec.valueColumnType=c.getType();
         }
+        
         this.partitioningSpec=pspec;
     }
  

@@ -72,7 +72,7 @@ public class TableDefinitionConstructor  extends Constructor {
 				if(m.containsKey("partitioningSpec")) {
 					tdef.setPartitioningSpec((PartitioningSpec)m.get("partitioningSpec"));
 				} else {
-					PartitioningSpec ps = new PartitioningSpec(_type.NONE);
+					PartitioningSpec ps = PartitioningSpec.noneSpec();
 					tdef.setPartitioningSpec(ps);
 				}
 			} catch (StreamSqlException e) {
@@ -130,19 +130,29 @@ public class TableDefinitionConstructor  extends Constructor {
 			Map<String, Object> m = (Map) constructMapping((MappingNode)node);
 			if(!m.containsKey("type")) throw new RuntimeException("partitioning spec type not specified");
 			
+			PartitioningSpec pspec;
+			PartitioningSpec._type type = PartitioningSpec._type.valueOf((String)m.get("type"));
+			if(type==_type.NONE) {
+				pspec = PartitioningSpec.noneSpec();
+			} else if(type==_type.TIME) {
+				String timeColumn = (String)m.get("timeColumn");
+				pspec = PartitioningSpec.timeSpec(timeColumn);
+			} else if((type==_type.VALUE)) {
+				String valueColumn = (String)m.get("valueColumn");
+				pspec = PartitioningSpec.valueSpec(valueColumn);
+			} else if(type==_type.TIME_AND_VALUE) {
+				String timeColumn = (String)m.get("timeColumn");
+				String valueColumn = (String)m.get("valueColumn");
+				pspec = PartitioningSpec.timeAndValueSpec(timeColumn, valueColumn);				
+			} else {
+				throw new RuntimeException("Unkwnon partitioning type "+type);
+			}
 			
-			PartitioningSpec p = new PartitioningSpec (PartitioningSpec._type.valueOf((String)m.get("type")));
-			if((p.type==_type.TIME) || (p.type==_type.TIME_AND_VALUE)) {
-				p.timeColumn=(String)m.get("timeColumn");
-			}
-			if((p.type==_type.VALUE) || (p.type==_type.TIME_AND_VALUE)) {
-				p.valueColumn=(String)m.get("valueColumn");
-			}
 			
 			if(m.containsKey(K_timePartitioningSchema)) {
-				p.setTimePartitioningSchema((String)m.get(K_timePartitioningSchema));
+				pspec.setTimePartitioningSchema((String)m.get(K_timePartitioningSchema));
 			}
-			return p;
+			return pspec;
 		}
 	}
 }

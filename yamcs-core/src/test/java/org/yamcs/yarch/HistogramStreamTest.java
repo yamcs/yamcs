@@ -22,7 +22,7 @@ public class HistogramStreamTest extends YarchTestCase {
     int m=3;
 
     private void populate(String tblName) throws Exception {
-        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition_by_time(gentime) table_format=compressed";
+        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed";
         System.out.println("query= "+query);
         ydb.execute(query);
         

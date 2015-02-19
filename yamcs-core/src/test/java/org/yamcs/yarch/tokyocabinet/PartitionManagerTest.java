@@ -26,12 +26,7 @@ import static org.junit.Assert.*;
 
 public class PartitionManagerTest {
     
-    static PartitioningSpec spec=new PartitioningSpec(_type.TIME_AND_VALUE);
-    static {
-        spec.timeColumn="gentime";
-        spec.valueColumn="packetid";
-        spec.valueColumnType=DataType.INT;
-    }
+	 static PartitioningSpec spec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
     
     @BeforeClass
     static public void init() {

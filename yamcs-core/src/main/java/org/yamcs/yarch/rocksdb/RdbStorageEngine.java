@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.AbstractStream;
@@ -56,20 +55,23 @@ public class RdbStorageEngine implements StorageEngine {
 
 	@Override
 	public void dropTable(TableDefinition tbl) throws YarchException {
-		RdbPartitionManager pm = partitionManagers.get(tbl);
+		RdbPartitionManager pm = partitionManagers.remove(tbl);
 
 		for(Partition p:pm.getPartitions()) {
 			RdbPartition rdbp = (RdbPartition)p;
 			File f=new File(tbl.getDataDir()+"/"+rdbp.dir);
+			RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+			rdbFactory.closeIfOpen(f.getAbsolutePath());
 			try {
 				if(f.exists()) {
-					log.debug("Removing {}",f);
+					log.debug("Recursively removing {}", f);
 					Files.deleteRecursively(f);
 				}
 			} catch (IOException e) {
 				throw new YarchException("Cannot remove "+f, e);
 			}
 		}
+		
 	}
 
 	@Override
@@ -83,6 +85,9 @@ public class RdbStorageEngine implements StorageEngine {
 
 	@Override
 	public AbstractStream newTableReaderStream(TableDefinition tbl) {
+		if(!partitionManagers.containsKey(tbl)) {
+			throw new IllegalArgumentException("Do not have a partition manager for this table");
+		}
 		return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
 	}
 

@@ -221,11 +221,7 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int SPECIAL_CHARS = 109;
   /** RegularExpression Id. */
-  int S_CHAR_LITERAL = 110;
-  /** RegularExpression Id. */
-  int S_QUOTED_IDENTIFIER = 111;
-  /** RegularExpression Id. */
-  int S_PATH = 112;
+  int S_DOUBLE_QUOTED_IDENTIFIER = 110;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -342,9 +338,7 @@ public interface StreamSqlParserConstants {
     "<S_IDENTIFIER>",
     "<LETTER>",
     "<SPECIAL_CHARS>",
-    "<S_CHAR_LITERAL>",
-    "<S_QUOTED_IDENTIFIER>",
-    "<S_PATH>",
+    "<S_DOUBLE_QUOTED_IDENTIFIER>",
     "\"(\"",
     "\")\"",
     "\",\"",

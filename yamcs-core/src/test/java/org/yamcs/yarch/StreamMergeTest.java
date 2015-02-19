@@ -89,9 +89,9 @@ public class StreamMergeTest extends YarchTestCase {
 
     @Test   
     public void testTableMerge1() throws Exception {
-        populate("tm1",0,1000,2,1000);
-        populate("tm2",1,1000,4,2000);
-        populate("tm3",3,1000,4,3000);
+        populate("tm1", 0, 1000, 2, 1000);
+        populate("tm2", 1, 1000, 4, 2000);
+        populate("tm3", 3, 1000, 4, 3000);
 
         verify("merge tm1,tm2,tm3 using \"time\"",
                 new Checker() {

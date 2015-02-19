@@ -32,6 +32,7 @@ public class StreamSqlParserTest extends YarchTestCase {
 		
 		ydb.execute("drop table droptabletest_test1");
 		tbl=ydb.getTable("droptabletest_test1");
+		
 		assertNull(tbl);
 	}
 	

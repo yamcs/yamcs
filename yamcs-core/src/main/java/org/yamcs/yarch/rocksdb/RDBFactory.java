@@ -165,7 +165,17 @@ public class RDBFactory implements Runnable {
 	    daat.lastAccess=System.currentTimeMillis();
 	    daat.refcount--;
 	}
-	
+
+	/**
+	 * Close the DB if open (called when dropping the table)
+	 * @param f
+	 */
+	public synchronized void closeIfOpen(String absolutePath) {
+		DbAndAccessTime daat = databases.remove(absolutePath);
+		if(daat!=null) {
+			daat.db.close();
+		}		
+	}	
 }
 
 

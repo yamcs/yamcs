@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Test;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.yarch.PartitioningSpec._type;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.BiMap;
@@ -33,8 +32,8 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
             assertEquals(ps1in.timeColumn, ps1out.timeColumn);
             assertEquals(ps1in.valueColumn, ps1out.valueColumn);
             break;
-        
-            
+        case NONE:
+        	break;
         }
         
     }
@@ -42,19 +41,15 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
     @Test
     public void testPartitioningSpecSerialization() {
         Yaml yaml=new Yaml(new TableDefinitionConstructor(), new TableDefinitionRepresenter());
-        PartitioningSpec ps1in=new PartitioningSpec(_type.TIME);
-        ps1in.timeColumn="ttt1";
+        PartitioningSpec ps1in=PartitioningSpec.timeSpec("ttt1");
         PartitioningSpec ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
-        ps1in=new PartitioningSpec(_type.VALUE);
-        ps1in.valueColumn="vvv2";
+        ps1in = PartitioningSpec.valueSpec("vvv2");
         ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
-        ps1in=new PartitioningSpec(_type.TIME_AND_VALUE);
-        ps1in.timeColumn="ttt3";
-        ps1in.timeColumn="vvv4";
+        ps1in = PartitioningSpec.timeAndValueSpec("ttt3", "vvv4");
         ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
@@ -64,7 +59,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
     @Test
 	public void testTableDefinitionSerialization() throws Exception {
-		ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1(YYYY)) table_format=compressed");
+		ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1('YYYY')) table_format=compressed");
 		TableDefinition td1=ydb.getTable("abcde1");
 		
 		PartitioningSpec pspec = td1.getPartitioningSpec();

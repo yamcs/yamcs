@@ -7,12 +7,10 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.python.core.util.FileUtil;
 import org.yamcs.TimeInterval;
 import org.yamcs.yarch.HistogramDb.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.tokyocabinet.TcHistogramDb;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.io.Files;

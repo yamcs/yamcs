@@ -28,7 +28,7 @@ public class PartitioningTest extends YarchTestCase {
 
     @Test
     public void testIndexPartitioning() throws ParseException, StreamSqlException, IOException, InterruptedException {
-        ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine rocksdb partition by time(gentime)");
+        ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine rocksdb partition by time(gentime('YYYY/DOY'))");
         ydb.execute("create stream tm_in(gentime timestamp, apidSeqCount int)");
         ydb.execute("insert into test1 select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
@@ -152,7 +152,7 @@ public class PartitioningTest extends YarchTestCase {
     @Test
     public void testDoublePartitioning() throws Exception {
         final long[] instant=new long[4];
-        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by time_and_value(gentime,part) ");
+        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by time_and_value(gentime('YYYY/DOY'),part) ");
         ydb.execute("create stream tm_in(gentime timestamp, seqNumber int, part String, packet binary)");
         ydb.execute("insert into testdp select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
@@ -182,7 +182,7 @@ public class PartitioningTest extends YarchTestCase {
         Iterator<Partition>it= partitions.iterator();
         assertEquals(2, partitions.size());
         RdbPartition p1 = (RdbPartition)it.next();
-        assertEquals("1999/172/testdp",p1.dir);
+        assertEquals("1999/172/testdp", p1.dir);
         assertEquals("part1", p1.getValue());
         
         RdbPartition p2 = (RdbPartition)it.next();

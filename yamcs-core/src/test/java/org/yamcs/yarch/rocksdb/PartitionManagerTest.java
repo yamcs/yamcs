@@ -16,7 +16,6 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.io.Files;
@@ -26,13 +25,6 @@ import org.yamcs.utils.TimeEncoding;
 import static org.junit.Assert.*;
 
 public class PartitionManagerTest {
-    
-    static PartitioningSpec spec=new PartitioningSpec(_type.TIME_AND_VALUE);
-    static {
-        spec.timeColumn="gentime";
-        spec.valueColumn="packetid";
-        spec.valueColumnType=DataType.INT;
-    }
     
     @BeforeClass
     static public void init() {
@@ -44,7 +36,8 @@ public class PartitionManagerTest {
         TupleDefinition tdef=new TupleDefinition();
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
-        
+        PartitioningSpec spec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+        spec.setTimePartitioningSchema("YYYY/DOY");
        
         TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
         tblDef.setPartitioningSpec(spec);
@@ -56,8 +49,8 @@ public class PartitionManagerTest {
     @Test
     public void createAndIteratePartitions() throws Exception {
     	 String tmpdir=Files.createTempDir().getAbsolutePath();
-        
     	TableDefinition tblDef= getTableDef();
+    	tblDef.setDataDir(tmpdir);
         
         RdbPartitionManager pm=new RdbPartitionManager(YarchDatabase.getInstance("test"), tblDef);
         RdbPartition part= (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);

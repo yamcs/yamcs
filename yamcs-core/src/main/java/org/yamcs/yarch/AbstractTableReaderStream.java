@@ -44,6 +44,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
 	private Tuple lastEmitted;
 
 	final protected PartitionManager partitionManager;
+	
 	protected AbstractTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, PartitionManager partitionManager) {
 		super(ydb, tblDef.getName()+"_"+count.getAndIncrement(), tblDef.getTupleDefinition());
 		this.tableDefinition = tblDef;

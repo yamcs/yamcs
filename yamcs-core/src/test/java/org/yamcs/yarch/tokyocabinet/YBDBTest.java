@@ -1,4 +1,4 @@
-package org.yamcs.yarch;
+package org.yamcs.yarch.tokyocabinet;
 
 import static org.junit.Assert.*;
 
@@ -34,8 +34,8 @@ public class YBDBTest {
 			for(int i=0;i<val.length;i++) {
 			    val[i]=(byte)i;
 			}
-			for(int i=0;i<n;i++) {
-				bbkey.putInt(0,i);
+			for(int i=0;i<n; i++) {
+				bbkey.putInt(0, i);
 				if(i%10000==0)System.err.println("writing "+i);
 				try {
 				db.putkeep(key, val);

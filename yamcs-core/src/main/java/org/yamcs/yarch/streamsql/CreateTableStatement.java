@@ -77,7 +77,7 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(partitioningSpec!=null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
             } else {
-            	tableDefinition.setPartitioningSpec(new PartitioningSpec(_type.NONE));
+            	tableDefinition.setPartitioningSpec(PartitioningSpec.noneSpec());
             }
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);

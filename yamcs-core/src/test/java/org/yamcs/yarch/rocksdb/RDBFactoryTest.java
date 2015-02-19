@@ -12,7 +12,6 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.PartitioningSpec._type;
 
 public class RDBFactoryTest {	
 	@BeforeClass
@@ -24,11 +23,8 @@ public class RDBFactoryTest {
 		return yrdb.isOpen();	
 	}
 	TableDefinition getTableDef() throws Exception {
-		PartitioningSpec spec=new PartitioningSpec(_type.TIME_AND_VALUE);
-		spec.timeColumn="gentime";
-        spec.valueColumn="packetid";
-        spec.valueColumnType=DataType.INT;
-        
+		PartitioningSpec spec = PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+		
 		TupleDefinition tdef=new TupleDefinition();
 		tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
 		tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));

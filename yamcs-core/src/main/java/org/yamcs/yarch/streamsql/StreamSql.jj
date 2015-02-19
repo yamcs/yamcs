@@ -178,9 +178,7 @@ TOKEN:
     < S_IDENTIFIER: (<LETTER>)+ (<DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
   | < #LETTER: ["a"-"z", "A"-"Z"] >
   | < #SPECIAL_CHARS: "$" | "_" | "#">
-  | < S_CHAR_LITERAL: "'" (~["'"])* "'" ("'" (~["'"])* "'")*>
-  | < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
-  | < S_PATH: (<DIGIT> | <LETTER> | "/")+ >
+  | < S_DOUBLE_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
 }
 
 DataType BasicDataTypeDefinition():
@@ -281,16 +279,16 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
 PartitioningSpec PartitioningSpec(): {
     PartitioningSpec pspec;
     String cname1, cname2;
-    String timePartSchema = null;
+    Token timePartSchema = null;
 } {
-  ( <K_TIME> "(" cname1=ObjectName() [ "(" timePartSchema=TimePartitioningSchema() ")" ] ")" {pspec = new PartitioningSpec(PartitioningSpec._type.TIME); pspec.timeColumn=cname1;} 
+  ( <K_TIME> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] ")" {pspec = PartitioningSpec.timeSpec(cname1);} 
     |
-	<K_VALUE> "(" cname1=ObjectName() ")" {pspec = new PartitioningSpec(PartitioningSpec._type.VALUE); pspec.valueColumn=cname1;} 
+	<K_VALUE> "(" cname1=ObjectName() ")" {pspec = PartitioningSpec.valueSpec(cname1);} 
     |
-	<K_TIME_AND_VALUE> "(" cname1=ObjectName() "," cname2=ObjectName() ")" { pspec = new PartitioningSpec(PartitioningSpec._type.TIME_AND_VALUE); pspec.timeColumn=cname1; pspec.valueColumn=cname2;} 
+	<K_TIME_AND_VALUE> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] "," cname2=ObjectName() ")" { pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2);} 
   ) {  if(timePartSchema!=null) {
           try {
-          	 pspec.setTimePartitioningSchema(timePartSchema);
+          	 pspec.setTimePartitioningSchema(getNonEscapedString(timePartSchema.image));
            } catch (IllegalArgumentException e) {
                throw new ParseException(e.getMessage());
            }
@@ -655,14 +653,9 @@ String ObjectName():
 {}
 {
     <S_IDENTIFIER>        {return token.image;}
-  | <S_QUOTED_IDENTIFIER> {String s = token.image; return s.substring(1, s.length() - 1);}
+  | <S_DOUBLE_QUOTED_IDENTIFIER> {String s1 = token.image; return s1.substring(1, s1.length() - 1);}
 }
 
-String TimePartitioningSchema():
-{}
-{
-    (<S_PATH> | <S_IDENTIFIER>) { return token.image;}
-}
 
 AddOp AddOp(): {
 } {
