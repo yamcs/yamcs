@@ -279,6 +279,11 @@ public class YarchDatabase {
 		return tables.values();
 	}
 
+	/**
+	 * Returns the root directory for this database instance.
+	 *  It is usually home/instance_name.
+	 * @return
+	 */
 	public String getRoot() {
 		return getHome()+"/"+dbname;
 	}
