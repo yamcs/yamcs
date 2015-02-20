@@ -129,17 +129,18 @@ public class RdbPartitionManager extends PartitionManager {
 			String tblName = tableDefinition.getName();
 			String dataDir = tableDefinition.getDataDir();
 			RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+			
 			File f= new File(dataDir+"/"+tblName);
+			
 			if(!f.exists()) {
 				f.mkdirs();
 			}
 			YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
-			
 			rdb.createColumnFamily(value);
 			rdbFactory.dispose(rdb);
 			return new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, tableDefinition.getName());			
 		} catch (RocksDBException e) {
-			log.error("failed to create partition for table "+tableDefinition.getName()+" and value "+value, e);
+			log.error("failed to create partition for table "+tableDefinition.getName()+" and value '"+value+"': ", e);
 			throw new IOException(e);
 		}
 	}

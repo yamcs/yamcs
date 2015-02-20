@@ -183,6 +183,4 @@ public abstract class TimePartitionSchema {
 			return pinfo;
 		}
 	}
-
-	
 }

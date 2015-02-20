@@ -3,7 +3,6 @@ package org.yamcs.yarch.streamsql;
 import java.util.ArrayList;
 
 import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;

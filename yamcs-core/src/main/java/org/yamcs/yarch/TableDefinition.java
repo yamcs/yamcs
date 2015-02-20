@@ -55,7 +55,7 @@ public class TableDefinition {
     private YarchDatabase ydb; 
     
     private boolean customDataDir=false; //if not null, dataDir represents a directory different than the YarchDatabase root. 
-                                         //It will not be discarded after serialization.
+                                         //It will not be discarded after serialisation.
     private String dataDir; 
     
     private boolean compressed;
@@ -195,7 +195,9 @@ public class TableDefinition {
     }
 
     /**
-     * setds both the customDataDir and dataDir to the value
+     * sets the customDataDir 
+     *   - if true, the dataDir will not be discarded after serialisation, so the next time the server is restarted it will stay to the set value.
+     *   - if false, at restart the dataDir will be set to the YarchDatabase.dataDir
      * @param dataDir
      */
     public void setCustomDataDir(boolean b) {
@@ -212,7 +214,7 @@ public class TableDefinition {
     }
 
     /**
-     * sets customDataDir to null and dataDir to this value
+     * sets dataDir to this value
      * @param dataDir
      */
     public void setDataDir(String dataDir) {

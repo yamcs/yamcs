@@ -13,10 +13,8 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-
 import org.yamcs.yarch.streamsql.AggregateExpression;
 import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public abstract class Expression {
@@ -133,11 +131,11 @@ public abstract class Expression {
 		    .append("\t}\n")
 		    .append("}\n");
 		
-		System.out.println("got source to compile: "+source);
 		try {
 			SimpleCompiler compiler=new SimpleCompiler();
 			compiler.cook(new StringReader(source.toString()));
-			Class cexprClass = compiler.getClassLoader().loadClass("org.yamcs.yarch."+className);
+			@SuppressWarnings("unchecked")
+			Class<CompiledExpression> cexprClass = (Class<CompiledExpression>) compiler.getClassLoader().loadClass("org.yamcs.yarch."+className);
 			Constructor<CompiledExpression> cexprConstructor=cexprClass.getConstructor(ColumnDefinition.class);
 			ColumnDefinition cdef=new ColumnDefinition(colName, type);
 			return cexprConstructor.newInstance(cdef);
