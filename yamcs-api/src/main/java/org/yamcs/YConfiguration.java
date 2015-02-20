@@ -66,18 +66,17 @@ public class YConfiguration {
 	}
 	
 	/**
-	 * sets up the configuration to search the classpath for files like "configPrefix/xyz.properties"
+	 * If configPrefix is not null, sets up the configuration to search the classpath for files like "configPrefix/xyz.properties"
+	 * 
+	 * Also sets up the TimeEncoding configuration
+	 * 
 	 * @param configPrefix
 	 * @throws ConfigurationException
 	 */
-	public static void setup(String configPrefix) throws ConfigurationException {
+	public synchronized static void setup(String configPrefix) throws ConfigurationException {
 	    prefix=configPrefix;
-	    setup();
-	}
-	
-	public synchronized static void setup() throws ConfigurationException {
 	    configurations.clear();//forget any known config (useful in the maven unit tests called in the same VM)
-	    if(System.getenv("YAMCS_DAEMON")==null) {
+    	if(System.getenv("YAMCS_DAEMON")==null) {
             userConfigDirectory=System.getProperty("user.home")+File.separatorChar+".yamcs";
             File logDir = new File(userConfigDirectory+File.separatorChar+"log");
             if (!logDir.exists()) {
@@ -101,11 +100,19 @@ public class YConfiguration {
 	            //do nothing, the default java builtin logging is used
 	        }
 	    }
-	    TimeEncoding.setUp();
+	    TimeEncoding.setUp();	    
+	}
+	/**
+	 * calls setup(null)
+	 * 
+	 * @throws ConfigurationException
+	 */
+	public synchronized static void setup() throws ConfigurationException {
+		setup(null);
 	}
 
-    
-    public synchronized static YConfiguration getConfiguration(String subsystem) throws ConfigurationException {
+	
+	public synchronized static YConfiguration getConfiguration(String subsystem) throws ConfigurationException {
         if(subsystem.contains("..") || subsystem.contains("/")) throw new ConfigurationException("Invalid subsystem '"+subsystem+"'");
     	YConfiguration c=configurations.get(subsystem);
     	if(c==null) {
