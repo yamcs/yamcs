@@ -1,19 +1,9 @@
 package org.yamcs.web;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.regex.Pattern;
 
-import org.codehaus.jackson.JsonFactory;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -29,6 +19,13 @@ import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 /**
  * Handles handshakes and messages
  */
@@ -40,19 +37,10 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
-    //this checks the url to be of shape /yamcs-instance/handler/...
-    final Pattern urlPattern=Pattern.compile("\\/([\\w\\-]+)\\/([\\w\\-]*)\\/(.*)");
-    
-    JsonFactory jsonFactory=new JsonFactory();
-    
-    //these two are valid after the socket has been upgraded
-    Channel channel;
-    ParameterClient paraClient;
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
-   
     
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {

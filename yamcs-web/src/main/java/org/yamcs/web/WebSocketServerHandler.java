@@ -1,10 +1,9 @@
-    package org.yamcs.web;
+package org.yamcs.web;
 
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.regex.Pattern;
-
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -47,7 +46,7 @@ public class WebSocketServerHandler {
     public final int MESSAGE_TYPE_EXCEPTION=3;
     public final int MESSAGE_TYPE_DATA=4;
     private int dataSeqCount=-1;
-  
+
     final Pattern urlPattern=Pattern.compile("\\/([\\w\\-]+)\\/(.*)");
     
     JsonFactory jsonFactory=new JsonFactory();
@@ -58,7 +57,20 @@ public class WebSocketServerHandler {
     
     void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
         //TODO: can we ever reach this twice???
-        if(paraClient==null) this.paraClient=new ParameterClient(yamcsInstance, this);
+        if(paraClient==null) {
+            String applicationName;
+            if (req.containsHeader(HttpHeaders.Names.USER_AGENT)) {
+                applicationName = req.getHeader(HttpHeaders.Names.USER_AGENT);
+                // Wish we could send appname from JS, but JS WebSocket API doesn't support custom http headers
+                if (applicationName.contains("Mozilla")) {
+                    applicationName = "uss-web";
+                }
+            } else {
+                applicationName = "Unknown Client";
+            }
+            this.paraClient=new ParameterClient(yamcsInstance, this, applicationName);
+        }
+
         this.channel=ctx.getChannel();
 
         // Handshake
@@ -91,16 +103,16 @@ public class WebSocketServerHandler {
         
         JsonParser jsp=jsonFactory.createJsonParser(jsrequest);
         if(jsp.nextToken()!=JsonToken.START_ARRAY) throw new RuntimeException("Invalid message (expecting an array)");
-        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting version as a integer number)");
+        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting version as an integer number)");
         int version=jsp.getIntValue();
         if(version!=PROTOCOL_VERSION) throw new RuntimeException("Invalid version (expecting "+PROTOCOL_VERSION+" received "+version);
 
-        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting type as a integer number)");
+        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting type as an integer number)");
         int messageType=jsp.getIntValue();
         if(messageType!=MESSAGE_TYPE_REQUEST) throw new RuntimeException("Invalid message type (expecting request="+MESSAGE_TYPE_REQUEST+" received "+messageType);
 
         
-        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting seqId as a integer number)");
+        if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting seqId as an integer number)");
         int seqId=jsp.getIntValue();
 
         if(jsp.nextToken()!=JsonToken.START_OBJECT) throw new RuntimeException("Invalid message (expecting an object)");
@@ -200,7 +212,7 @@ public class WebSocketServerHandler {
         if(!channel.isOpen()) throw new IOException("Channel not open");
         
         if(!channel.isWritable()) {
-            log.warn("Dropping message becasue channel is not writtable");
+            log.warn("Dropping message because channel is not writable");
             return;
         }
         

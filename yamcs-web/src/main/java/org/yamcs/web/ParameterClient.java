@@ -10,9 +10,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.codehaus.jackson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.dyuproject.protostuff.JsonIOUtil;
-
 import org.yamcs.Channel;
 import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
@@ -22,16 +19,18 @@ import org.yamcs.ParameterConsumer;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Comp.ComputationDef;
 import org.yamcs.protobuf.Comp.ComputationDefList;
+import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.management.ManagementService;
+
+import com.dyuproject.protostuff.JsonIOUtil;
 
 /**
  * Provides realtime parameter subscription via web.  
@@ -52,15 +51,16 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
     int compSubscriptionId=-1;
     
     final String username="unknown";
-    final String applicationName="uss-web";
+    final String applicationName;
 
     final CopyOnWriteArrayList<Computation> compList=new CopyOnWriteArrayList<Computation>();
     final int clientId;
     
-    public ParameterClient(String yamcsInstance, WebSocketServerHandler webSocketServerHandler) {
-        this.channel=Channel.getInstance(yamcsInstance, "realtime");
-        log=LoggerFactory.getLogger(ParameterClient.class.getName()+"["+yamcsInstance+"]");
+    public ParameterClient(String yamcsInstance, WebSocketServerHandler webSocketServerHandler, String applicationName) {
+        this.channel= Channel.getInstance(yamcsInstance, "realtime");
+        log=LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + yamcsInstance + "]");
         this.wsHandler=webSocketServerHandler;
+        this.applicationName=applicationName;
         clientId=ManagementService.getInstance().registerClient(yamcsInstance, channel.getName(), this);
     }
     
@@ -236,17 +236,8 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
         ParameterData.Builder pd=ParameterData.newBuilder();
         for(ParameterValueWithId pvwi:paramList) {
             ParameterValue pv=pvwi.getParameterValue();
-            org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setId(pvwi.getId())
-                .setAcquisitionStatus(pv.getAcquisitionStatus())
-                .setAcquisitionTime(pv.getAcquisitionTime())
-                .setEngValue(pv.getEngValue())
-                .setGenerationTime(pv.getGenerationTime())
-                .setMonitoringResult(pv.getMonitoringResult())
-                .setProcessingStatus(pv.getProcessingStatus());
-            if(pv.getRawValue()!=null) gpvb.setRawValue(pv.getRawValue());
-            pd.addParameter(gpvb.build());
-        } 
+            pd.addParameter(pv.toGpb(pvwi.getId()));
+        }
         try {
             wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
         } catch (Exception e) {
