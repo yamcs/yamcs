@@ -28,6 +28,7 @@ public class PartitioningTest extends YarchTestCase {
 
     @Test
     public void testIndexPartitioning() throws ParseException, StreamSqlException, IOException, InterruptedException {
+    	
         ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine rocksdb partition by time(gentime('YYYY/DOY'))");
         ydb.execute("create stream tm_in(gentime timestamp, apidSeqCount int)");
         ydb.execute("insert into test1 select * from tm_in");
@@ -111,10 +112,15 @@ public class PartitioningTest extends YarchTestCase {
         assertEquals(instant3, (long)(Long)iter.next().getColumn(0));
         assertEquals(instant5, (long)(Long)iter.next().getColumn(0));
 
+        
+        assertTrue((new File(ydb.getRoot()+"/1999/172/test1")).exists());
+        assertTrue((new File(ydb.getRoot()+"/2001/001/test1")).exists());
+        assertTrue((new File(ydb.getRoot()+"/2000/366/test1")).exists());
+        
         execute("drop table test1");
-        assertFalse((new File(YarchDatabase.getHome()+"/1999/172/test1.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"/2001/001/test1.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"/2000/365/test1.tcb")).exists());
+        assertFalse((new File(ydb.getRoot()+"/1999/172/test1")).exists());
+        assertFalse((new File(ydb.getRoot()+"/2001/001/test1")).exists());
+        assertFalse((new File(ydb.getRoot()+"/2000/366/test1")).exists());
 
     }
 
@@ -217,10 +223,13 @@ public class PartitioningTest extends YarchTestCase {
         doublePartitioningSelect("part in ('part1','part3') and gentime<="+instant[3], new long[]{instant[0], instant[3]});
 
         doublePartitioningSelect("part='partition2' and part='part3' and gentime>"+instant[1], new long[]{});
+        
+        assertTrue((new File(ydb.getRoot()+"/1999/172/testdp")).exists());
+        assertTrue((new File(ydb.getRoot()+"/2001/001/testdp")).exists());
+        
         execute("drop table testdp");
-        assertFalse((new File(YarchDatabase.getHome()+"1999/172/testdp#part1.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"1999/172/testdp#partition2.tcb")).exists());
-        assertFalse((new File(YarchDatabase.getHome()+"2001/001/testdp#part3.tcb")).exists());
+        assertFalse((new File(ydb.getRoot()+"/1999/172/testdp")).exists());
+        assertFalse((new File(ydb.getRoot()+"/2001/001/testdp")).exists());
     }
 
     /**
@@ -300,7 +309,9 @@ public class PartitioningTest extends YarchTestCase {
         doublePartitioningSelect("part in ('part0','part2') and gentime<="+instant[3], new long[]{instant[0], instant[3]});
 
         doublePartitioningSelect("part='partition2' and part='part3' and gentime>"+instant[1], new long[]{});
+        
+        assertTrue((new File(ydb.getRoot()+"/testdp")).exists());
         execute("drop table testdp");
-        assertFalse((new File(YarchDatabase.getHome()+"/"+ydb.getName()+"/testdp")).exists());        
+        assertFalse((new File(ydb.getRoot()+"/testdp")).exists());   
     }
 }

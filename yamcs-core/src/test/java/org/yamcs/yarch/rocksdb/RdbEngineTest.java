@@ -15,6 +15,8 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
 
+import com.google.common.io.Files;
+
 
 public class RdbEngineTest extends YarchTestCase {
 		
@@ -25,7 +27,13 @@ public class RdbEngineTest extends YarchTestCase {
 		 TupleDefinition tdef=new TupleDefinition();
 		 tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
 		 tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));	        	       
-		 TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
+		 TableDefinition tblDef = new TableDefinition("RdbEngineTest", tdef, Arrays.asList("gentime"));
+		 
+		 
+		 String tmpdir=Files.createTempDir().getAbsolutePath();
+	     tblDef.setDataDir(tmpdir);
+	        
+	        
 		 PartitioningSpec pspec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
 		 tblDef.setPartitioningSpec(pspec);
 		 IllegalArgumentException iae=null;
