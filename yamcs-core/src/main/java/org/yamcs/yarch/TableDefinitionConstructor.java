@@ -151,6 +151,8 @@ public class TableDefinitionConstructor  extends Constructor {
 			
 			if(m.containsKey(K_timePartitioningSchema)) {
 				pspec.setTimePartitioningSchema((String)m.get(K_timePartitioningSchema));
+			} else {
+				pspec.setTimePartitioningSchema("YYY/DOY");
 			}
 			return pspec;
 		}

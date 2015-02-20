@@ -15,7 +15,6 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.tokyocabinet.TcPartitionManager;
 
 import com.google.common.io.Files;
@@ -26,21 +25,22 @@ import static org.junit.Assert.*;
 
 public class PartitionManagerTest {
     
-	 static PartitioningSpec spec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
-    
     @BeforeClass
     static public void init() {
         TimeEncoding.setUp();
     }
  
     TableDefinition getTableDef() throws Exception {
-    	  
+    	
         TupleDefinition tdef=new TupleDefinition();
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
         
        
         TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
+        
+        PartitioningSpec spec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+        spec.setTimePartitioningSchema("YYYY/DOY");
         tblDef.setPartitioningSpec(spec);
         
         return tblDef;

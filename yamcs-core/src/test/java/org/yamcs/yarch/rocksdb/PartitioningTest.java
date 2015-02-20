@@ -152,7 +152,7 @@ public class PartitioningTest extends YarchTestCase {
     @Test
     public void testDoublePartitioning() throws Exception {
         final long[] instant=new long[4];
-        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by time_and_value(gentime('YYYY/DOY'),part) ");
+        ydb.execute("create table testdp(gentime timestamp, seqNumber int, part String, packet binary, primary key(gentime,seqNumber)) engine rocksdb partition by time_and_value(gentime('YYYY/DOY'), part) ");
         ydb.execute("create stream tm_in(gentime timestamp, seqNumber int, part String, packet binary)");
         ydb.execute("insert into testdp select * from tm_in");
         Stream tm_in=ydb.getStream("tm_in");
