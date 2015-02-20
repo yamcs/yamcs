@@ -59,7 +59,7 @@ public class TimeEncoding {
     
     /**
      * Returns the instant formatted as utc
-     * yyyy-DD-MMTHH:mm:ss.SSS
+     * yyyy-MM-DDTHH:mm:ss.SSS
      * @param instant
      * @return
      */

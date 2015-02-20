@@ -6,7 +6,7 @@ import org.yamcs.ConfigurationException;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Starts a HTTTP server (if not already started by another instance) and registers this yamcs instance to allow 
+ * Starts an HTTP server (if not already started by another instance) and registers this yamcs instance to allow
  * web requests to http://url/instanceName/... 
  * 
  * @author nm

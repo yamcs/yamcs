@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
@@ -317,6 +318,32 @@ public class ParameterValue {
         .setGenerationTime(getGenerationTime())
         .setMonitoringResult(getMonitoringResult())
         .setProcessingStatus(getProcessingStatus());
+
+        // TODO make this optional
+        gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+        gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
+
+        // TODO make this optional
+        if (getWatchRange() != null) {
+            gpvb.setWatchLow(getWatchRange().getMinInclusive());
+            gpvb.setWatchHigh(getWatchRange().getMaxInclusive());
+        }
+        if (getWarningRange() != null) {
+            gpvb.setWarningLow(getWarningRange().getMinInclusive());
+            gpvb.setWarningHigh(getWarningRange().getMaxInclusive());
+        }
+        if(getDistressRange() != null) {
+            gpvb.setDistressLow(getDistressRange().getMinInclusive());
+            gpvb.setDistressHigh(getDistressRange().getMaxInclusive());
+        }
+        if(getCriticalRange() != null) {
+            gpvb.setCriticalLow(getCriticalRange().getMinInclusive());
+            gpvb.setCriticalLow(getCriticalRange().getMaxInclusive());
+        }
+        if(getSevereRange()!=null) {
+            gpvb.setSevereLow(getSevereRange().getMinInclusive());
+            gpvb.setSevereLow(getSevereRange().getMaxInclusive());
+        }
         
         if(id!=null) gpvb.setId(id);
         if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
