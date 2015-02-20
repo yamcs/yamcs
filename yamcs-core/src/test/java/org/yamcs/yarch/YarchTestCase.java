@@ -44,7 +44,8 @@ public abstract class YarchTestCase {
 	
 	@BeforeClass 
 	public static void setUpYarch() throws Exception {
-	    YConfiguration.setup();
+	    YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
+	   	    
 	    YConfiguration config=YConfiguration.getConfiguration("yamcs");
 	    if(config.containsKey("littleEndian")) {
 	        littleEndian=config.getBoolean("littleEndian");
@@ -61,9 +62,10 @@ public abstract class YarchTestCase {
         instance = "yarchtest_"+this.getClass().getSimpleName();
         context=new ExecutionContext(instance);
         
-        File ytdir=new File(dir+"/"+context.getDbName());
+        File ytdir=new File(dir+"/"+context.getDbName());               
+        
         deleteDir(ytdir);
-        //System.out.println("creating "+ytdir);
+        
         if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
         YarchDatabase.removeInstance(instance);
         ydb=YarchDatabase.getInstance(instance);

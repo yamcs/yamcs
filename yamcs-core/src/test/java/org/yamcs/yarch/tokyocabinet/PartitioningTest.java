@@ -104,11 +104,11 @@ public class PartitioningTest extends YarchTestCase {
         
         assertTrue((new File(ydb.getRoot()+"/1999/172/test1.tcb")).exists());
         assertTrue((new File(ydb.getRoot()+"/2001/001/test1.tcb")).exists());
-        assertTrue((new File(ydb.getRoot()+"/2000/365/test1.tcb")).exists());
+        assertTrue((new File(ydb.getRoot()+"/2000/366/test1.tcb")).exists());
         execute("drop table test1");
         assertFalse((new File(ydb.getRoot()+"/1999/172/test1.tcb")).exists());
         assertFalse((new File(ydb.getRoot()+"/2001/001/test1.tcb")).exists());
-        assertFalse((new File(ydb.getRoot()+"/2000/365/test1.tcb")).exists());
+        assertFalse((new File(ydb.getRoot()+"/2000/366/test1.tcb")).exists());
 
     }
 
