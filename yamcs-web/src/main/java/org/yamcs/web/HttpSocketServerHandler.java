@@ -30,16 +30,19 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Handles handshakes and messages
  */
 public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
+
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
     public static final String ARCHIVE_PATH = "archive";
+    public static final String MDB_PATH = "mdb";
     
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
+    static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
     @Override
@@ -89,7 +92,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             fileRequestHandler.handleStaticFileRequest(ctx, req, e, path[2]);
             return;
         }
-        
+
         String yamcsInstance=path[1];
 
         if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
@@ -110,6 +113,8 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             displayRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else if(ARCHIVE_PATH.equals(handler)) {
             archiveRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+        } else if(MDB_PATH.equals(handler)) {
+            mdbRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);

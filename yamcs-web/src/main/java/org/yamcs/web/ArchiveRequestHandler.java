@@ -1,9 +1,5 @@
 package org.yamcs.web;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
@@ -47,6 +43,9 @@ import org.yamcs.xtce.MdbMappings;
 
 import com.csvreader.CsvWriter;
 import com.google.common.io.Files;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /** 
  * Serves archived data through a web api. The Archived data is fetched from the
@@ -138,7 +137,7 @@ public class ArchiveRequestHandler extends AbstractRequestHandler {
             response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
             
             if(decoder.getPath().equals("packets")) {
-                response.setHeader("Content-Disposition", "attachment; filename=packet-dump"); 
+                response.setHeader("Content-Disposition", "attachment; filename=packet-dump");
                 setContentTypeHeader(response, "application/octet-stream");
             } else if(decoder.getPath().equals("parameters")) {
                 response.setHeader("Content-Disposition", "attachment; filename=parameters.csv"); 
