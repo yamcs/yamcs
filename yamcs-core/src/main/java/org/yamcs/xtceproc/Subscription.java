@@ -97,7 +97,6 @@ public class Subscription {
                 setmp=sctmp.getEntryList().get(setmp.getIndex()-1);
             } else { //continue with the basecontainer if we are at the first entry
                 sctmp=sctmp.getBaseContainer();
-                System.out.println("aici se:"+se+" sctmp: "+sctmp);
                 setmp=sctmp.getEntryList().get(sctmp.getEntryList().size()-1);
             }
             addSequenceEntry(setmp);
