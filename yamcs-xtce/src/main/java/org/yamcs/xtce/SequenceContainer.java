@@ -2,8 +2,6 @@ package org.yamcs.xtce;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A list of raw parameters, parameter segments, stream segments, containers, or container segments.  
@@ -17,7 +15,7 @@ public class SequenceContainer extends Container {
 	public SequenceContainer(String name) {
 		super(name);
 	}
-	static Logger log=LoggerFactory.getLogger(SequenceContainer.class.getName());
+
 	ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
 	transient NameReference baseContainerRef;
 	

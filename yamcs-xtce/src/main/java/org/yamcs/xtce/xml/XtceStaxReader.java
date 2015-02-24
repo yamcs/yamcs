@@ -1462,7 +1462,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DiscreteLookupList)) {
                 skipXtceSection(XTCE_DiscreteLookupList);
             } else if (isEndElementWithName(XTCE_LocationInContainerInBits)) {
-                entry.setLocation(locationInContainerInBits);
+                entry.setLocationInContainerInBits(locationInContainerInBits);
                 return;
             }
         }

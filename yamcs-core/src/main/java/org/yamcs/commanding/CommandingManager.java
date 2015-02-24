@@ -3,6 +3,7 @@ package org.yamcs.commanding;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
@@ -16,13 +17,16 @@ import org.yamcs.parser.HlclParsedCommand;
 import org.yamcs.parser.HlclParsedParameter;
 import org.yamcs.parser.ParseException;
 import org.yamcs.parser.TokenMgrError;
-
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.MetaCommandContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Responsible for parsing and tc packet composition.
@@ -73,14 +77,14 @@ public class CommandingManager {
 		HlclParsedCommand cmd=null;
 		cmd=parseCommandString(source);
 		//check if we know anything about this command
-		TcPacketDefinition def=null;
+		MetaCommandContainer def=null;
 		MetaCommand mc=null;
 		if(cmd.commandName!=null) {
 		    mc=xtcedb.getMetaCommand(MdbMappings.MDB_OPSNAME, cmd.commandName);
 		} else {
 		    mc=xtcedb.getMetaCommand(MdbMappings.MDB_PATHNAME, cmd.pathname);
 		}
-		if((mc==null) || ((def=mc.getTcPacket())==null)) {
+		if((mc==null) || ((def=mc.getCommandContainer())==null)) {
 			throw new ErrorInCommand("unknown telecommand "+cmd.commandName, source,1,1);
 		}
 		
@@ -98,8 +102,8 @@ public class CommandingManager {
 		PreparedCommand pc=new PreparedCommand(cmdIdBuilder.build());
         pc.setSource(source);
         
-		pc.setApid(def.getApid());
-		pc.setSid(def.getSid());
+	//	pc.setApid(def.getApid());
+//		pc.setSid(def.getSid());
 		
 		Object[] pvalues=null;
 		try {
@@ -154,20 +158,25 @@ public class CommandingManager {
 	}
 
 
-	private void fillInParameters(TcPacketDefinition tcDef, Object[] pvalues, ByteBuffer bb, int headerLength) throws DecalibrationNotSupportedException {
+	private void fillInParameters(MetaCommand tcDef, Object[] pvalues, ByteBuffer bb, int headerLength) throws DecalibrationNotSupportedException {
 		int bitPos=0;	
+		MetaCommandContainer container = tcDef.getCommandContainer();
 		
 		for(int i=0;i<pvalues.length;i++){
-			TcParameterDefinition pDef=tcDef.getParameter(i);
-			switch(tcDef.getLocationSpecificationMode()){
-			case ABSOLUTE: 
-				bitPos=pDef.location-1;
+			Argument arg=tcDef.getArgument(i);
+			ArgumentEntry argEntry = container.getEntryForArgument(arg);
+			ReferenceLocationType rlt = argEntry.getReferenceLocation();
+			switch(rlt) {
+			case containerStart: 
+				bitPos = argEntry.getLocationInContainerInBits();
 				break;
-			case RELATIVE:
-				bitPos=bitPos+pDef.location-1;
+			case previousEntry:
+				bitPos=bitPos + argEntry.getLocationInContainerInBits();
 				break;
 			}
-			Object rawValue=pDef.decalibrate(pvalues[i]);
+			
+			arg.get
+			Object rawValue = argEntry.decalibrate(pvalues[i]);
 			
 			switch (pDef.getRawType()) {
 			case BYTE_TYPE:
