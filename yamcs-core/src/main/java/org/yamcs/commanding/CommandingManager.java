@@ -19,14 +19,17 @@ import org.yamcs.parser.ParseException;
 import org.yamcs.parser.TokenMgrError;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+import org.yamcs.xtceproc.ArgumentTypeProcessor;
 import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Responsible for parsing and tc packet composition.
@@ -158,7 +161,7 @@ public class CommandingManager {
 	}
 
 
-	private void fillInParameters(MetaCommand tcDef, Object[] pvalues, ByteBuffer bb, int headerLength) throws DecalibrationNotSupportedException {
+	private void fillInParameters(MetaCommand tcDef, Value[] pvalues, ByteBuffer bb, int headerLength) throws DecalibrationNotSupportedException {
 		int bitPos=0;	
 		MetaCommandContainer container = tcDef.getCommandContainer();
 		
@@ -175,8 +178,8 @@ public class CommandingManager {
 				break;
 			}
 			
-			arg.get
-			Object rawValue = argEntry.decalibrate(pvalues[i]);
+			ArgumentType atype = arg.getArgumentType();
+			Value rawValue = ArgumentTypeProcessor.decalibrate(atype, pvalues[i]);
 			
 			switch (pDef.getRawType()) {
 			case BYTE_TYPE:

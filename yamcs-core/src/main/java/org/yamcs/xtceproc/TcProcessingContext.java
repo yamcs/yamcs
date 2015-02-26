@@ -8,11 +8,11 @@ import org.yamcs.ParameterValue;
 
 
 /**
- * Keeps track of where we are when processing a packet.
+ * Keeps track of where we are when filling in the bits and bytes of a command
  * @author nm
  *
  */
-public class ProcessingContext {
+public class TcProcessingContext {
 	
 	ByteBuffer bb;
 	public int bitPosition;
@@ -38,7 +38,7 @@ public class ProcessingContext {
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
 	public ComparisonProcessor comparisonProcessor;
 	
-	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
+	public TcProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
 	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
 	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
 		this.bb = bb;
