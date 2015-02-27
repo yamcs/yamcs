@@ -16,7 +16,11 @@ import org.yamcs.xtce.ParameterInstanceRef;
 
 import com.google.common.primitives.UnsignedBytes;
 
-
+/**
+ * Implements XTCE processing for {@link org.yamcs.xtce.Comparison}
+ * @author nm
+ *
+ */
 public class ComparisonProcessor {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     ArrayList<ParameterValue> params;

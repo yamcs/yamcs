@@ -34,7 +34,7 @@ public class ProcessingContext {
 	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
 	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
 	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
+	public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
 	public ComparisonProcessor comparisonProcessor;
 	

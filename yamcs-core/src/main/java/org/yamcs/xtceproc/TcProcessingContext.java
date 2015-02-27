@@ -2,10 +2,10 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ParameterValue;
-
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.xtce.Argument;
 
 /**
  * Keeps track of where we are when filling in the bits and bytes of a command
@@ -19,37 +19,34 @@ public class TcProcessingContext {
 	
 	//Keeps track of the absolute offset of the container where the processing takes place. 
 	//Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
-	int containerAbsoluteByteOffset; 	
+	int containerAbsoluteByteOffset;
 	
-	Subscription subscription;
+	//arguments and their values - the lists have the same length all the time and arguments correspond one to one to values
+	List<Argument> arguments = new ArrayList<Argument>() ;
+	List<Value> argValues = new ArrayList<Value>();
 	
-	//this is the result of the processing
-	public ArrayList<ParameterValue> paramResult;
-	public ArrayList<ContainerExtractionResult> containerResult;
-	
-	public long acquisitionTime;
 	public long generationTime;
-	ProcessingStatistics stats;
+	public DataEncodingEncoder deEncoder = new DataEncodingEncoder(this);
 	
-	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
-	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
-	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
-	public ValueProcessor valueProcessor=new ValueProcessor(this);
-	public ComparisonProcessor comparisonProcessor;
-	
-	public TcProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
-	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
-	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
+	public TcProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, long generationTime) {
 		this.bb = bb;
 		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;
 		this.bitPosition = bitPosition;
-		this.subscription = subscription;
-		this.paramResult = params;
-		this.containerResult=containers;
-		this.acquisitionTime = acquisitionTime;
 		this.generationTime = generationTime;
-		this.stats = stats;
-		this.comparisonProcessor=new ComparisonProcessor(paramResult);
+		
+	}
+
+	public Value getArgumentValue(Argument arg) {
+		for(int i =0; i<arguments.size(); i++) {
+			if(arguments.get(i)==arg) {
+				return argValues.get(i);
+			}
+		}
+		return null;
+	}
+	
+	public void addArgument(Argument arg, Value v) {
+		arguments.add(arg);
+		argValues.add(v);
 	}
 }

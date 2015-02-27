@@ -61,6 +61,7 @@ public class MetaCommand extends NameDescription {
     *       Note that if argument entries are specified by absolute positions, it doesn't matter whichever comes first except maybe the order in the user interface.
     */
     MetaCommand baseMetaCommand;
+    //assignment for inheritance
     List<ArgumentAssignment> argumentAssignmentList;
    
     
@@ -75,16 +76,21 @@ public class MetaCommand extends NameDescription {
         out.println(commandContainer);
     }
     
-    static class ArgumentAssignment {
-    	String argumentName;
-    	String argumentValue;
-    }
-
-	public MetaCommandContainer getCommandContainer() {
+    public MetaCommandContainer getCommandContainer() {
 		return commandContainer;
 	}
 
-	public Argument getArgument(int i) {
-		return argumentList.get(i);
+	/**
+	 * returns an argument based on name or null if it doesn't exist
+	 * @param argumentName
+	 * @return
+	 */
+	public Argument getArgument(String argumentName) {
+		for(Argument a: argumentList) {
+			if(a.getName().equals(argumentName)) {
+				return a;
+			}
+		}
+		return null;
 	}
 }

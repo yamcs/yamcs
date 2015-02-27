@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MetaCommandContainer extends Container {
 	private static final long serialVersionUID = 1L;
@@ -32,4 +33,13 @@ public class MetaCommandContainer extends Container {
 		}
 		return null;
 	}
+	
+	/**
+	 * returns the list of entries
+	 * @return
+	 */
+	public List<SequenceEntry> getEntryList(){
+		return entryList;
+	}
+	
 }

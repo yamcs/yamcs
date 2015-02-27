@@ -14,11 +14,16 @@ import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
-public class DataEncodingProcessor {
+/**
+ * Decodes TM data according to the specification of the DataEncoding
+ * @author nm
+ *
+ */
+public class DataEncodingDecoder {
     ProcessingContext pcontext;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
 
-    public DataEncodingProcessor(ProcessingContext pcontext) {
+    public DataEncodingDecoder(ProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
 
@@ -49,11 +54,11 @@ public class DataEncodingProcessor {
             return;
         }
         
-        int byteOffset=(pcontext.bitPosition)/8;
-        int byteSize=(pcontext.bitPosition+ide.getSizeInBits()-1)/8-byteOffset+1;
-        int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
-        int bitsToShift=8*byteSize-bitOffsetInsideMask-ide.getSizeInBits();
-        long mask=(-1L<<(64-ide.getSizeInBits()))>>>(64-ide.getSizeInBits()-bitsToShift);
+        int byteOffset = (pcontext.bitPosition)/8;
+        int byteSize = (pcontext.bitPosition + ide.getSizeInBits()-1)/8-byteOffset+1;
+        int bitOffsetInsideMask = pcontext.bitPosition - 8*byteOffset;
+        int bitsToShift = 8*byteSize-bitOffsetInsideMask-ide.getSizeInBits();
+        long mask = (-1L<<(64-ide.getSizeInBits()))>>>(64-ide.getSizeInBits()-bitsToShift);
         pcontext.bb.order(ide.getByteOrder());
 
         long rv=0;

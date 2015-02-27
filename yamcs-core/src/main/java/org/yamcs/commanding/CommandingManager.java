@@ -2,7 +2,7 @@ package org.yamcs.commanding;
 
 import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,6 @@ import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
-import org.yamcs.Privilege;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parser.HlclCommandParser;
 import org.yamcs.parser.HlclParsedCommand;
@@ -18,18 +17,21 @@ import org.yamcs.parser.HlclParsedParameter;
 import org.yamcs.parser.ParseException;
 import org.yamcs.parser.TokenMgrError;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
-import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
+import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtceproc.ArgumentTypeProcessor;
+import org.yamcs.xtceproc.TcProcessingContext;
 import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Responsible for parsing and tc packet composition.
@@ -56,186 +58,83 @@ public class CommandingManager {
 		return commandQueueManager;
 	}
 	
-	/**
-     * pc is a command whose source is included.
-     * parse the source populate the binary part and the definition.
-     */
-    public PreparedCommand buildCommand(String source, String origin, int seqNum) throws ErrorInCommand, NoPermissionException, YamcsException {
-        log.debug("commandString="+source);
-        CommandId.Builder cmdIdBuilder=CommandId.newBuilder().setGenerationTime(TimeEncoding.currentInstant())
-            .setOrigin(origin)
-            .setSequenceNumber(seqNum);
-            
-        return buildCommand(source, cmdIdBuilder);
-    }
     
 	/**
 	 * pc is a command whose source is included.
 	 * parse the source populate the binary part and the definition.
 	 */
-	public PreparedCommand buildCommand(String source, CommandId.Builder cmdIdBuilder) throws ErrorInCommand, NoPermissionException, YamcsException {
-		log.debug("commandString="+source);
+	public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> args) throws ErrorInCommand, NoPermissionException, YamcsException {
+		log.debug("buildginc command ");
 		
-		
-		HlclParsedCommand cmd=null;
-		cmd=parseCommandString(source);
-		//check if we know anything about this command
 		MetaCommandContainer def=null;
-		MetaCommand mc=null;
-		if(cmd.commandName!=null) {
-		    mc=xtcedb.getMetaCommand(MdbMappings.MDB_OPSNAME, cmd.commandName);
-		} else {
-		    mc=xtcedb.getMetaCommand(MdbMappings.MDB_PATHNAME, cmd.pathname);
-		}
-		if((mc==null) || ((def=mc.getCommandContainer())==null)) {
-			throw new ErrorInCommand("unknown telecommand "+cmd.commandName, source,1,1);
+		def=mc.getCommandContainer();
+		if(def==null) {
+			throw new ErrorInCommand("MetaCommand has no container: "+def);
 		}
 		
-		Privilege priv=Privilege.getInstance();
-		if(!priv.hasPrivilege(Privilege.Type.TC, def.getOpsName())) {
-			log.warn("Throwing InsufficientPrivileges for user "+priv.getCurrentUser()+" because he doesn't have the privilege to send command "+def.getOpsName());
-			throw new NoPermissionException("Sorry, you are not authorized to send this command");
-		}
-		String opsname = def.getOpsName();
-		if(opsname == null) {
-		    opsname = "unknown";
-		}
-		cmdIdBuilder.setCommandName(opsname);
 		
-		PreparedCommand pc=new PreparedCommand(cmdIdBuilder.build());
-        pc.setSource(source);
-        
-	//	pc.setApid(def.getApid());
-//		pc.setSid(def.getSid());
-		
-		Object[] pvalues=null;
-		try {
-			pvalues=extractParameters(def, cmd);
-		} catch (ErrorInCommand e) {
-			e.errorSource=pc.source;
-			throw e;
-		}
-		//length of the packet excluding the ccsds headers
-		int paramPartLength=computeTcPacketLength(def, pvalues);
-		int headerLength=16;
-		int totalPacketLength=headerLength+paramPartLength+2;
-		if(totalPacketLength>def.getPhPacketLength()+7) {
-			throw new ErrorInCommand("packet too long, maximum size according to the ccsds header definition:"+(def.getPhPacketLength()+7)+", resulting size:"+totalPacketLength,pc.source,0,0);
-		}
-		//strange enough, CIS sends always the packet of the length defined in the database.
-		totalPacketLength=def.getPhPacketLength()+7;
-		byte[] buffer=new byte[totalPacketLength];
-		ByteBuffer bb=ByteBuffer.wrap(buffer);
-	
-
-		def.fillInHeaders(bb, 0, totalPacketLength-7, pc.getGenerationTime());
-		fillInBitstreamLayout(def, bb, headerLength);
-		try {
-			fillInParameters(def, pvalues, bb, headerLength);
-		} catch(DecalibrationNotSupportedException e) {
-			log.warn("caught "+e+" when filling in parameters. Throwing Yamcs exception");
-			throw new YamcsException(e.toString());
-		}
-		pc.binary=buffer;
-		return pc;
+		TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0, 0, TimeEncoding.currentInstant());
+		addArguments(mc, args, pcontext);
+		fillInEntries(mc, pcontext);		
+		return null;
 	}
 	
-	private void fillInBitstreamLayout(TcPacketDefinition tcDef, ByteBuffer bb, int headerLength) {
-		for(BitstreamLayoutDefinition bld: tcDef.getBitstreamLayoutList()) {
-			switch(bld.format) {
-			case UNSIGNED:
-				int bitOffsetToTheEndOfInt=7-(bld.location+bld.getNumberOfBits()-2)%8;
-				int intOffset=headerLength+(bld.location+bld.getNumberOfBits()-2)/8-3;//this is the offset of the int(4 bytes) whose last byte contains the last bit of this bitstream layout
-				int x=bb.getInt(intOffset);
-				x=x|(bld.unsignedIntegerValue<<bitOffsetToTheEndOfInt);
-				bb.putInt(intOffset,x);
-				break;
-			case BINARY:
-				for(int j=0;j<bld.getBinaryValue().length;j++){
-					bb.put(headerLength+j+(bld.location-1)/8,bld.getBinaryValue()[j]);
-				}
-				break;
-			}
+
+	/**
+	 * convers argument values from String to Value and adds them to the pcontext
+	 * @param pcontext
+	 * @param args
+	 */
+	private void addArguments(MetaCommand mc, List<ArgumentAssignment> args, TcProcessingContext pcontext) {
+		for(ArgumentAssignment aa:args) {
+			Argument arg= mc.getArgument(aa.getArgumentName());
+			if(arg==null) throw new ErrorInCommand("Command "+mc.getQualifiedName()+" does not have an argument '"+aa.getArgumentName()+"'");
+			ArgumentType type = arg.getArgumentType();
+			
+			Value v = ArgumentTypeProcessor.parse(aa.getArgumentValue());
+			
 		}
-		
 	}
-
-
-	private void fillInParameters(MetaCommand tcDef, Value[] pvalues, ByteBuffer bb, int headerLength) throws DecalibrationNotSupportedException {
-		int bitPos=0;	
+	
+	
+	private void fillInEntries(MetaCommand tcDef, TcProcessingContext pcontext) {
 		MetaCommandContainer container = tcDef.getCommandContainer();
 		
-		for(int i=0;i<pvalues.length;i++){
-			Argument arg=tcDef.getArgument(i);
-			ArgumentEntry argEntry = container.getEntryForArgument(arg);
-			ReferenceLocationType rlt = argEntry.getReferenceLocation();
-			switch(rlt) {
-			case containerStart: 
-				bitPos = argEntry.getLocationInContainerInBits();
-				break;
-			case previousEntry:
-				bitPos=bitPos + argEntry.getLocationInContainerInBits();
-				break;
+		for(SequenceEntry se: container.getEntryList()) {
+			if(se instanceof ArgumentEntry) {
+				fillInArgumentEntry((ArgumentEntry) se, pcontext);
+			} else if (se instanceof FixedValueEntry) {
+				fillInFixedValueEntry((FixedValueEntry) se, pcontext);
 			}
 			
-			ArgumentType atype = arg.getArgumentType();
-			Value rawValue = ArgumentTypeProcessor.decalibrate(atype, pvalues[i]);
-			
-			switch (pDef.getRawType()) {
-			case BYTE_TYPE:
-			case INTEGER_TYPE:
-			case UNSIGNED_INTEGER_TYPE:
-				int bitOffsetToTheEndOfLong=7-(bitPos+pDef.numberOfBits-1)%8;
-				int longOffset=headerLength+(bitPos+pDef.numberOfBits-1)/8-7;//this is the offset of the long(8 bytes) whose last byte contains the last bit of this parameter
-				long v=(Long)rawValue;
-				long x=bb.getLong(longOffset); //we take the long that ends with the last byte of this parameter
-				long mask=-1L>>>(64-pDef.numberOfBits);
-				x=x|((v&mask)<<bitOffsetToTheEndOfLong);
-				bb.putLong(longOffset,x);
-				bitPos+=pDef.numberOfBits;
-				break;
-			case REAL_TYPE:
-				bb.putFloat(headerLength+bitPos/8, (float) (double) (Double) rawValue);
-				bitPos+=32;
-				break;
-			case STATE_CODE_TYPE:
-			case BYTE_STRING_TYPE:
-			case STRING_TYPE:
-				byte[] b=(byte[])rawValue;
-				switch (tcDef.getStringLengthFieldSize()) {
-				case 8:
-					bb.put(headerLength+bitPos/8,(byte)b.length);
-					bitPos+=8;
-					break;
-				case 16:
-					bb.putShort(headerLength+bitPos/8,(short) b.length);
-					bitPos+=16;
-					break;
-				case 32:
-					bb.putInt(headerLength+bitPos/8,b.length);
-					bitPos+=32;
-					break;
-				case 0:
-					break;
-				default:
-					log.error("String Length Field Size "+tcDef.getStringLengthFieldSize()+" not supported");
-				}
-				for(int j=0;j<b.length;j++){
-					bb.put(headerLength+bitPos/8,b[j]);
-					bitPos+=8;
-				}
-				if(pDef.stringType==TcParameterDefinition.StringTypes.FIXED_LENGTH) {
-					//for fixed size strings we fill in 0 the rest
-					for(int j=0;j<pDef.getMaxLength()-b.length;j++){
-						bb.put(headerLength+bitPos/8,(byte)0);
-						bitPos+=8;
-					}
-				}
-				break;
-			}
+							
 		}
 	}
-
+	
+	private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {
+		Argument arg = argEntry.getArgument();
+		Value argValue = pcontext.getArgumentValue(arg);
+		if(argValue==null) {
+			throw new IllegalStateException("No value for argument "+arg);
+		}
+		ReferenceLocationType rlt = argEntry.getReferenceLocation();
+		switch(rlt) {
+		case containerStart: 
+			pcontext.bitPosition = argEntry.getLocationInContainerInBits();
+			break;
+		case previousEntry:
+			pcontext.bitPosition += argEntry.getLocationInContainerInBits();
+			break;
+		}
+		
+		ArgumentType atype = arg.getArgumentType();
+		Value rawValue = ArgumentTypeProcessor.decalibrate(atype, argValue);
+		pcontext.deEncoder.encodeRaw(((BaseDataType)atype).getEncoding(), rawValue);		
+	}
+		
+	private void fillInFixedValueEntry(FixedValueEntry fvEntry, TcProcessingContext pcontext) {
+		
+	}
 
 	private HlclParsedCommand parseCommandString(String commandString) throws ErrorInCommand {
 		//first parse the command. CIS puts the entire command on one line, so here we are doing the same :(
@@ -253,57 +152,7 @@ public class CommandingManager {
 		return cmd;
 	}
 	
-	/**
-	 * make an array that includes all the parameter values copying the passed value or the default ones 
-	 *	  when there is no passed one
-	 */
-	private Object[] extractParameters(TcPacketDefinition tcDef,HlclParsedCommand cmd) throws ErrorInCommand {
-		ArrayList<TcParameterDefinition> plistDef=tcDef.getParameterList();
-		ArrayList<HlclParsedParameter> plistParsed=cmd.parameterList;
-		Object[] pvalues=new Object[plistDef.size()];
-
-		int i=0,startNamed=0;
-		if(plistParsed!=null) {
-			// the unnamed parameters have to mach exactly the beginning of the command
-			while((i < plistParsed.size()) && (plistParsed.get(i).name==null)) {
-				CheckTypeAndRangeCompatibility(plistDef.get(i),plistParsed.get(i));
-				pvalues[i]=plistParsed.get(i).value;
-				i++;
-			}
-			startNamed=i;
-
-			/* Now try to match all the passed named parameters to parameters from the command definition */
-			for(int k=startNamed;k<plistParsed.size();k++) {
-				boolean found=false;
-				HlclParsedParameter p=plistParsed.get(k);
-				for (i=0;i<pvalues.length;i++) {
-					if(p.name.toUpperCase().equals(plistDef.get(i).name.toUpperCase())) {
-						found=true;
-						if(pvalues[i]!=null) {
-							throw new ErrorInCommand("Formal parameter "+p.name+" already associated",null,p.nameBeginLine,p.nameBeginColumn);
-						}
-						CheckTypeAndRangeCompatibility(plistDef.get(i),p);
-						pvalues[i]=p.value;
-						break;
-					}
-				}
-				if(!found) {
-					throw new ErrorInCommand("Unknown formal parameter '"+p.name+"'",null,p.nameBeginLine,p.nameBeginColumn);
-				}
-			}
-		}
-		/* and finally traverse the pvalues array and for any parameter that doesn't have a value yet, 
-		 *  copy the default one or complain if there is no default
-		 */
-		for(i=startNamed;i<pvalues.length;i++) {
-			if(pvalues[i]!=null) continue;
-			if(plistDef.get(i).getDefaultValue()==null) {
-				throw new ErrorInCommand("Command parameter incomplete: > > "+plistDef.get(i).name,null,0,0);
-			}
-			pvalues[i]=plistDef.get(i).getDefaultValue();
-		}
-		return pvalues;
-	}
+	
 	
 	/**
 	 * compute the size in bytes of the parameter part by taking the maximum between the 
