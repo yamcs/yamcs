@@ -11,7 +11,7 @@ public class ArgumentEntry extends SequenceEntry {
 	private Argument argument;
 	
 	
-	public ArgumentEntry(int position, SequenceContainer container, int locationInContainerInBits, ReferenceLocationType location, Argument argument) {
+	public ArgumentEntry(int position, MetaCommandContainer container, int locationInContainerInBits, ReferenceLocationType location, Argument argument) {
 		super(position, container, locationInContainerInBits, location);
 		this.argument = argument;
 	}
@@ -23,7 +23,7 @@ public class ArgumentEntry extends SequenceEntry {
 	 * @param locationInContainerInBits
 	 * @param location
 	 */
-	public ArgumentEntry(int position,SequenceContainer container,int locationInContainerInBits, ReferenceLocationType location) {
+	public ArgumentEntry(int position, MetaCommandContainer container, int locationInContainerInBits, ReferenceLocationType location) {
         super(position, container, locationInContainerInBits, location);
     }
 

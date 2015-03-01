@@ -163,12 +163,12 @@ public class CommandQueueManager {
 	
 	private void uplinkCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
 		if(rebuild) {
-			try {
+	/*		try {
 				pc=commandingManager.buildCommand(pc.source, pc.getCommandId().toBuilder());
 			} catch (YamcsException e) {
 				log.warn("Got Exception for a command already in the queue: ", e);
 				return;
-			}
+			}*/
 		}
 		uplinker.sendTc(pc);
 		//Notify the monitoring clients

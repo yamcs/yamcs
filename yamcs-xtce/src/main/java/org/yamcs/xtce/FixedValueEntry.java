@@ -18,7 +18,7 @@ public class FixedValueEntry extends SequenceEntry {
 	//the size in bits of the value - this should be not more than the length in bits of the binaryValue
 	final int sizeInBits;
 	
-	public FixedValueEntry(int position, SequenceContainer container, int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
+	public FixedValueEntry(int position, MetaCommandContainer container, int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
 		super(position, container, locationInContainerInBits, location);
 		this.name = name;
 		this.binaryValue = binaryValue;

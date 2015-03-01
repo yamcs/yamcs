@@ -75,10 +75,17 @@ public class MetaCommand extends NameDescription {
         out.println( "." );
         out.println(commandContainer);
     }
+    public void setMetaCommandContainer(MetaCommandContainer mcc) {
+    	this.commandContainer = mcc;
+    }
     
     public MetaCommandContainer getCommandContainer() {
 		return commandContainer;
 	}
+    
+    public void setBaseMetaCommand(MetaCommand mc) {
+    	this.baseMetaCommand = mc;
+    }
 
 	/**
 	 * returns an argument based on name or null if it doesn't exist

@@ -84,7 +84,11 @@ public class SpaceSystem extends NameDescription {
             throw new IllegalArgumentException("there is already a command with name "+command.getName());
         commands.put(command.getName(), command);
     }
-    
+
+    public MetaCommand getMetaCommand(String refName) {
+        return commands.get(refName);
+    }
+
     public ParameterType getParameterType(String typeName) {
         return parameterTypes.get(typeName);
     }

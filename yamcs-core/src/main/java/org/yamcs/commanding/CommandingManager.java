@@ -84,15 +84,16 @@ public class CommandingManager {
 	 * convers argument values from String to Value and adds them to the pcontext
 	 * @param pcontext
 	 * @param args
+	 * @throws ErrorInCommand 
 	 */
-	private void addArguments(MetaCommand mc, List<ArgumentAssignment> args, TcProcessingContext pcontext) {
+	private void addArguments(MetaCommand mc, List<ArgumentAssignment> args, TcProcessingContext pcontext) throws ErrorInCommand {
 		for(ArgumentAssignment aa:args) {
 			Argument arg= mc.getArgument(aa.getArgumentName());
 			if(arg==null) throw new ErrorInCommand("Command "+mc.getQualifiedName()+" does not have an argument '"+aa.getArgumentName()+"'");
 			ArgumentType type = arg.getArgumentType();
 			
-			Value v = ArgumentTypeProcessor.parse(aa.getArgumentValue());
-			
+			Value v = ArgumentTypeProcessor.parse(type, aa.getArgumentValue());
+			pcontext.addArgument(arg,  v);
 		}
 	}
 	

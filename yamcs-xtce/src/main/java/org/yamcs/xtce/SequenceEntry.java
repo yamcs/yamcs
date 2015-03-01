@@ -12,7 +12,9 @@ import java.io.Serializable;
  */
 public abstract class SequenceEntry implements Serializable, Comparable<SequenceEntry> {
 	private static final long serialVersionUID=200805131551L;
-	protected SequenceContainer container;
+	
+	//this is either SequenceContainer or MetaCommandContainer
+	protected Container container;
 	
 
 	/**
@@ -40,7 +42,7 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 	 */
 	Repeat repeatEntry=null;
 	
-	public SequenceEntry(int position, SequenceContainer container, int locationInContainerInBits, ReferenceLocationType location) {
+	public SequenceEntry(int position, Container container, int locationInContainerInBits, ReferenceLocationType location) {
 		this.container=container;
 		this.locationInContainerInBits=locationInContainerInBits;
 		this.referenceLocation=location;
@@ -55,10 +57,17 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 	    this.index = index;
 	}
 	
-	public SequenceContainer getSequenceContainer() {
+	public Container getContainer() {
 		return container;
 	}
 
+	public SequenceContainer getSequenceContainer() {
+		if(container instanceof SequenceContainer) {
+			return (SequenceContainer) container;
+		} else {
+			return null;
+		}
+	}
 	
 	public void setLocationInContainerInBits( int locationInBits ) {
 	    locationInContainerInBits = locationInBits;

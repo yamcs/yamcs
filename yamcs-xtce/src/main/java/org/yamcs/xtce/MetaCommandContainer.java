@@ -41,5 +41,9 @@ public class MetaCommandContainer extends Container {
 	public List<SequenceEntry> getEntryList(){
 		return entryList;
 	}
+
+	public void setBaseContainer(MetaCommandContainer commandContainer) {
+		this.baseContainer = commandContainer;		
+	}
 	
 }

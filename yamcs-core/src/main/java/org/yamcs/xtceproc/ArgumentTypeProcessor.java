@@ -1,7 +1,9 @@
 package org.yamcs.xtceproc;
 
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.Calibrator;
@@ -143,4 +145,23 @@ public class ArgumentTypeProcessor {
         }
     	return raw;
     }
+
+	public static Value parse(ArgumentType type, String argumentValue) {
+		Value v;
+		if(type instanceof IntegerArgumentType) {
+			long l = Long.decode(argumentValue);
+			v = ValueHelper.newValue(l);
+		} else if(type instanceof FloatArgumentType) {
+			double d = Double.parseDouble(argumentValue);
+			v = ValueHelper.newValue(d);
+		} else if(type instanceof StringArgumentType) {
+			v = ValueHelper.newValue(argumentValue);			
+		} else if (type instanceof BinaryArgumentType) {
+			byte[] b = StringConvertors.hexStringToArray(argumentValue);
+			v = ValueHelper.newValue(b);
+		} else {
+			throw new IllegalArgumentException("Cannot parse values of type "+type);
+		}
+		return v;
+	}
 }
