@@ -6,6 +6,8 @@ package org.yamcs.xtce;
  *
  */
 public class Argument extends NameDescription {
+	private static final long serialVersionUID = 1L;
+
 	Argument(String name) {
 		super(name);
 	}
@@ -31,4 +33,9 @@ public class Argument extends NameDescription {
 	public void setArgumentType(ArgumentType argumentType) {
 		this.argumentType = argumentType;
 	}
+	
+	 @Override
+	 public String toString() {
+	        return "ArgName: " + this.getName() + " argType:" + argumentType;
+	 }
 }

@@ -68,7 +68,6 @@ public class SequenceContainer extends Container {
 		for(SequenceEntry se:getEntryList()) {
 			out.println("\t\t"+se);
 		}
-		
 	}
     public void setEntryList(ArrayList<SequenceEntry> entryList) {
         this.entryList = entryList;

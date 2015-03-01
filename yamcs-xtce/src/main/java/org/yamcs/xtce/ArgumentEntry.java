@@ -39,9 +39,9 @@ public class ArgumentEntry extends SequenceEntry {
     
     @Override
     public String toString() {
-        return "ParameterEntry position:"+getIndex()+", container:"+container.getName()+
+        return "ArgumentEntry position:"+getIndex()+", container:"+container.getName()+
             " locationInContainer:"+getLocationInContainerInBits()+" from:"+getReferenceLocation()+
-            ", "+argument+
-            ((getRepeatEntry()!=null)?", repeatEntry: ("+getRepeatEntry()+")":"");
+            ", argument: "+argument;
+            
     }
 }

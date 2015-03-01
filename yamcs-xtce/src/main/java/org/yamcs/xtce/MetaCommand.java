@@ -69,12 +69,8 @@ public class MetaCommand extends NameDescription {
         super(name);
     }
 
-    public void print(PrintStream out) {
-        out.print("MetaCommand name: "+name);
-        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-        out.println( "." );
-        out.println(commandContainer);
-    }
+   
+    
     public void setMetaCommandContainer(MetaCommandContainer mcc) {
     	this.commandContainer = mcc;
     }
@@ -100,4 +96,11 @@ public class MetaCommand extends NameDescription {
 		}
 		return null;
 	}
+	
+	 public void print(PrintStream out) {
+	        out.print("MetaCommand name: "+name);
+	        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+	        out.println( "." );
+	        commandContainer.print(out);
+	    }
 }

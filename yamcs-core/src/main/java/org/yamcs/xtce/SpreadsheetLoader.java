@@ -878,8 +878,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			containers.put(name, container);
 			container.setRateInStream(rate);
 
-			//System.out.println("for "+name+" got absoluteoffset="+)
-			// we mark the start of the TM packet and advance to the next line, to get to the first parameter (if there is one)
+			//System.out.println("for "+name+" got absoluteOffset="+)
+			// we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
 			int start = i++;
 
 			// now, we start processing the parameters (or references to aggregate containers)
@@ -902,7 +902,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 				int relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
 
-				// we add the relative position to the absoluteoffset, to specify the location of the new parameter. We only do this if the absoluteoffset is not equal to -1, because that would mean that we cannot and should not use absolute positions anymore
+				// we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
+				// We only do this if the absoluteOffset is not equal to -1, 
+				//  because that would mean that we cannot and should not use absolute positions anymore
 				if (absoluteoffset != -1) {
 					absoluteoffset += relpos;
 				}
@@ -1050,7 +1052,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 			if("".equals(parent)) parent=null;
 
-			// absoluteoffset is the absolute offset of the first parameter of the container
+			// absoluteOffset is the absolute offset of the first parameter of the container
 			int absoluteOffset=-1;
 			if(parent==null) {
 				absoluteOffset=0;
@@ -1069,7 +1071,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			cmd.setMetaCommandContainer(container);
 			commands.put(name, cmd);
 
-			//System.out.println("for "+name+" got absoluteoffset="+)
+			//System.out.println("for "+name+" got absoluteOffset="+)
 			// we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
 			int start = i++;
 
@@ -1121,6 +1123,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 						fve = new FixedValueEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
 					}
 					absoluteOffset += sizeInBits;
+					container.entryList.add(fve);
 				} else {
 					absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
 				}
@@ -1183,7 +1186,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		Matcher m = Pattern.compile("(.*?)(=)(.*)").matcher(argAssignment);
 		if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '"+argAssignment+"'");
 		String aname=m.group(1).trim();
-		String op=m.group(2);
 		String value=m.group(3).trim();
 		return new ArgumentAssignment(aname, value);
 	}
@@ -1254,7 +1256,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		Argument arg = new Argument(name);	
 
 		
-		if(flags.contains("L")) {
+		if((flags!=null) && flags.contains("L")) {
 			if(atype instanceof IntegerArgumentType) {
 				((IntegerArgumentType)atype).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
 			} else if(atype instanceof FloatArgumentType) {

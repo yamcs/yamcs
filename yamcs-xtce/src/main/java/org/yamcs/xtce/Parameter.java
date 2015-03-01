@@ -28,11 +28,7 @@ public class Parameter extends NameDescription {
 		return parameterType;
 	}
 	
-	@Override
-    public String toString() {
-        return "ParaName: " + this.getName() + " paraType:" + parameterType +" opsname: "+getOpsName();
-    }
-
+	
 
 	/*
 	 * This is used for recording; if the recordingGroup is not set, the subsystem name is used.
@@ -48,6 +44,10 @@ public class Parameter extends NameDescription {
     
     public void setRecordingGroup(String g) {
         this.recordingGroup = g;
+    }
+    @Override
+    public String toString() {
+        return "ParaName: " + this.getName() + " paraType:" + parameterType +" opsname: "+getOpsName();
     }
 
 }

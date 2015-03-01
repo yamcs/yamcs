@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.utils.StringConvertors;
+
 /**
  * 
  * Holds an optional attributes name, bitOrder, byteOrderList, 
@@ -28,8 +30,8 @@ public class FixedValueEntry extends SequenceEntry {
     
     @Override
     public String toString() {
-        return "ParameterEntry position:"+getIndex()+", container:"+container.getName()+
+        return "FixedValueEntry position:"+getIndex()+", container:"+container.getName()+
             " locationInContainer:"+getLocationInContainerInBits()+" from:"+getReferenceLocation()+
-            ((getRepeatEntry()!=null)?", repeatEntry: ("+getRepeatEntry()+")":"");
+            ", binaryValue: "+StringConvertors.arrayToHexString(binaryValue);
     }
 }

@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class MetaCommandContainer extends Container {
 	 * looks up in the argumentEntry list the first one that is linked to the passed on argument
 	 * 
 	 * @param arg
-	 * @return the ArgumentEntry whose aregument is arg. Returns  null if no ArgumentEntry satisfies the condition;
+	 * @return the ArgumentEntry whose argument is arg. Returns  null if no ArgumentEntry satisfies the condition;
 	 */
 	public ArgumentEntry getEntryForArgument(Argument arg) {
 		for(SequenceEntry se: entryList) {
@@ -44,6 +45,18 @@ public class MetaCommandContainer extends Container {
 
 	public void setBaseContainer(MetaCommandContainer commandContainer) {
 		this.baseContainer = commandContainer;		
+	}
+
+	public void print(PrintStream out) {		
+		out.print("  MetaCommandContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
+		if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+		out.println();
+		if(baseContainer!=null) {
+			out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());			
+		}
+		for(SequenceEntry se:getEntryList()) {
+			out.println("\t\t"+se);
+		}
 	}
 	
 }
