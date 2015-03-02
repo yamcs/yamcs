@@ -298,6 +298,8 @@ public class XtceDbFactory {
             return (NameDescription) ss.getParameterType(name);
         case SEQUENCE_CONTAINTER:
             return ss.getSequenceContainer(name);
+        case META_COMMAND:
+        	return ss.getMetaCommand(name);
         }
         //shouldn't arrive here
         return null;

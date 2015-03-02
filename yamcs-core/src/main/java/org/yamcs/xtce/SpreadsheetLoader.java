@@ -1070,7 +1070,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			MetaCommand cmd = new MetaCommand(name);
 			cmd.setMetaCommandContainer(container);
 			commands.put(name, cmd);
-
+			
+			if(hasColumn(cells, IDX_CMD_FLAGS)) {			
+				String flags = cells[IDX_CMD_FLAGS].getContents();
+				if(flags.contains("A")){
+					cmd.setAbstract(true);
+				}
+			}
+			
 			//System.out.println("for "+name+" got absoluteOffset="+)
 			// we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
 			int start = i++;

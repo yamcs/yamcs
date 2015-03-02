@@ -64,11 +64,28 @@ public class MetaCommand extends NameDescription {
     //assignment for inheritance
     List<ArgumentAssignment> argumentAssignmentList;
    
+    /**
+     * if command is abstract, it cannot be instantiated
+     */
+    boolean abstractCmd = false;
+    
     
     public MetaCommand(String name) {
         super(name);
     }
 
+    /**
+     * Set the command as abstract or non abstract.
+     * Abstract commands cannot be instantiated
+     * @param a
+     */
+    public void setAbstract(boolean a) {
+ 	   abstractCmd = a;
+    }
+   
+    public boolean isAbstract() {
+	   return abstractCmd;
+    }
    
     
     public void setMetaCommandContainer(MetaCommandContainer mcc) {
@@ -98,7 +115,7 @@ public class MetaCommand extends NameDescription {
 	}
 	
 	 public void print(PrintStream out) {
-	        out.print("MetaCommand name: "+name);
+	        out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
 	        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
 	        out.println( "." );
 	        commandContainer.print(out);

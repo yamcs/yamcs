@@ -52,7 +52,7 @@ public class MetaCommandContainer extends Container {
 		if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
 		out.println();
 		if(baseContainer!=null) {
-			out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());			
+			out.println("\tbaseContainer: '"+baseContainer.getName());			
 		}
 		for(SequenceEntry se:getEntryList()) {
 			out.println("\t\t"+se);
