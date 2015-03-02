@@ -27,6 +27,9 @@ public class FixedValueEntry extends SequenceEntry {
 		this.sizeInBits = sizeInBits;
 	}
 	
+	public byte[] getBinaryValue() {
+		return binaryValue;
+	}
     
     @Override
     public String toString() {

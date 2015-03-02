@@ -8,6 +8,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
@@ -27,7 +28,7 @@ public class DataEncodingEncoder {
     }
 
     /**
-     *  Extracts the raw uncalibrated parameter value from the packet.
+     *  Encode the raw value of th eargument into the packet.
      */
    public void encodeRaw(DataEncoding de, Value rawValue) {
         if(de instanceof IntegerDataEncoding) {
@@ -236,5 +237,15 @@ public class DataEncodingEncoder {
         if(sizeInBytes>v.length) sizeInBytes = v.length;
         pcontext.bb.put(v, pcontext.bitPosition/8, sizeInBytes);
         pcontext.bitPosition+=bde.getSizeInBits();
+    }
+    
+    public void encodeFixedValue(FixedValueEntry fve) {    	
+        if(pcontext.bitPosition%8!=0) {
+        	throw new IllegalStateException("Fixed Value Entry that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        
+        }
+        byte[] v = fve.getBinaryValue();
+        
+        pcontext.bb.put(v, pcontext.bitPosition/8, v.length);
+        pcontext.bitPosition+=v.length;
     }
 }

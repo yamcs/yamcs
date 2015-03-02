@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import org.yamcs.ErrorInCommand;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -11,8 +12,11 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.StringArgumentType;
 
 public class ArgumentTypeProcessor {
@@ -146,16 +150,40 @@ public class ArgumentTypeProcessor {
     	return raw;
     }
 
-	public static Value parse(ArgumentType type, String argumentValue) {
+	public static Value parseAndCheckRange(ArgumentType type, String argumentValue) throws ErrorInCommand {
 		Value v;
 		if(type instanceof IntegerArgumentType) {
 			long l = Long.decode(argumentValue);
+			IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
+			if(vr!=null) {
+				if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
+					throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
+				}
+			}
 			v = ValueHelper.newValue(l);
 		} else if(type instanceof FloatArgumentType) {
 			double d = Double.parseDouble(argumentValue);
+			FloatValidRange vr = ((FloatArgumentType)type).getValidRange();
+			if(vr!=null) {
+				if(!ValidRangeChecker.checkFloatRange(vr, d)) {
+					throw new ErrorInCommand("Value "+d+" is not in the range required for the type "+type);
+				}
+			}
 			v = ValueHelper.newValue(d);
 		} else if(type instanceof StringArgumentType) {
-			v = ValueHelper.newValue(argumentValue);			
+			v = ValueHelper.newValue(argumentValue);
+			IntegerRange r = ((StringArgumentType)type).getSizeRangeInCharacters();
+			
+			if(r!=null) {
+				int length = argumentValue.length();
+				if (length<r.getMinInclusive()) {
+					throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
+				}
+				if(length>r.getMaxInclusive()) {
+					throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
+				}
+			}
+			
 		} else if (type instanceof BinaryArgumentType) {
 			byte[] b = StringConvertors.hexStringToArray(argumentValue);
 			v = ValueHelper.newValue(b);
@@ -164,4 +192,5 @@ public class ArgumentTypeProcessor {
 		}
 		return v;
 	}
+
 }

@@ -1,8 +1,7 @@
 package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.Argument;
@@ -22,10 +21,11 @@ public class TcProcessingContext {
 	int containerAbsoluteByteOffset;
 	
 	//arguments and their values - the lists have the same length all the time and arguments correspond one to one to values
-	List<Argument> arguments = new ArrayList<Argument>() ;
-	List<Value> argValues = new ArrayList<Value>();
+	public Map<Argument,Value> argValues;
+
 	
 	public long generationTime;
+	public MetaCommandContainerProcessor mccProcessor = new MetaCommandContainerProcessor(this);
 	public DataEncodingEncoder deEncoder = new DataEncodingEncoder(this);
 	
 	public TcProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, long generationTime) {
@@ -37,16 +37,7 @@ public class TcProcessingContext {
 	}
 
 	public Value getArgumentValue(Argument arg) {
-		for(int i =0; i<arguments.size(); i++) {
-			if(arguments.get(i)==arg) {
-				return argValues.get(i);
-			}
-		}
-		return null;
+		return argValues.get(arg);
 	}
 	
-	public void addArgument(Argument arg, Value v) {
-		arguments.add(arg);
-		argValues.add(v);
-	}
 }

@@ -1,6 +1,10 @@
 package org.yamcs.xtce;
 
-public class ArgumentAssignment {
+import java.io.Serializable;
+
+public class ArgumentAssignment implements Serializable{
+	private static final long serialVersionUID = 1L;
+	
 	
 	final String argumentName;
 	final String argumentValue;

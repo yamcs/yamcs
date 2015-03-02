@@ -5,6 +5,14 @@ public class IntegerDataType extends NumericDataType {
 	int sizeInBits=32;
 	boolean signed=true;
 	
+	/**
+	 * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. 
+	 *        For Telemetry the valid range is always applied before calibration, regardless of the value of validRangeAppliesToCalibrated. 
+	 *        For commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link DataEncoding.
+	 */
+	IntegerValidRange validRange;
+
+	
 	IntegerDataType(String name){
 		super(name);
 	}
@@ -23,5 +31,13 @@ public class IntegerDataType extends NumericDataType {
 
 	public void setSizeInBits(int sizeInBits) {
 	    this.sizeInBits=sizeInBits;
+	}
+	
+	/**
+	 * returns the range for the values of this type to be valid or null if there is no range set (meaning that all values are valid)
+	 * @return
+	 */
+	public IntegerValidRange getValidRange() {
+		return validRange;
 	}
 }

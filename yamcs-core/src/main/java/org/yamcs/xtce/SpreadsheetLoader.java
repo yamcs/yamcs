@@ -1078,7 +1078,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 			}
 			
-			//System.out.println("for "+name+" got absoluteOffset="+)
 			// we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
 			int start = i++;
 

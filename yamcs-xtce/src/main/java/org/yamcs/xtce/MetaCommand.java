@@ -101,7 +101,27 @@ public class MetaCommand extends NameDescription {
     	this.baseMetaCommand = mc;
     }
 
+    public MetaCommand getBaseMetaCommand() {
+    	return baseMetaCommand;
+    }
+    /**
+     * returns the argument assignment list in relation to the inheritance 
+     *   - this is the list of arguments of the parent(s) which are assigned when the inheritance takes place
+     * 
+     * returns null if there is no such argument
+     * @return
+     */
+    public List<ArgumentAssignment> getArgumentAssignmentList() {
+    	if(argumentAssignmentList==null) return null;
+    	return Collections.unmodifiableList(argumentAssignmentList);
+    }
+    
+    /**
+     * returns the list of arguments of this command or null if the command doesn't have arguments
+     * @return
+     */
     public List<Argument> getArgumentList() {
+    	if(argumentList==null) return null;
     	return Collections.unmodifiableList(argumentList);
     }
 	/**
