@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -100,6 +101,9 @@ public class MetaCommand extends NameDescription {
     	this.baseMetaCommand = mc;
     }
 
+    public List<Argument> getArgumentList() {
+    	return Collections.unmodifiableList(argumentList);
+    }
 	/**
 	 * returns an argument based on name or null if it doesn't exist
 	 * @param argumentName
