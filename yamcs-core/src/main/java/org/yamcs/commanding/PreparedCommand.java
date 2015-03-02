@@ -156,7 +156,19 @@ public class PreparedCommand {
         Tuple t =  new Tuple(td, al.toArray());
         return t;
     }
-    
+    public void setBinary(byte[] b) {
+		this.binary =b;
+	}
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+
     public static PreparedCommand fromTuple(Tuple t) {
         CommandId cmdId=getCommandId(t);
         PreparedCommand pc=new PreparedCommand(cmdId);
@@ -183,13 +195,5 @@ public class PreparedCommand {
             .setValue(ValueUtility.getStringValue(value))
             .build();
         attributes.add(a);
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUsername() {
-        return username;
-    }
+    }	
 }

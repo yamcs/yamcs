@@ -13,6 +13,7 @@ import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.YamcsException;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
@@ -54,7 +55,7 @@ public class CommandingManager {
 	 * pc is a command whose source is included.
 	 * parse the source populate the binary part and the definition.
 	 */
-	public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand, NoPermissionException, YamcsException {
+	public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin, int seq, String username) throws ErrorInCommand, NoPermissionException, YamcsException {
 		log.debug("building command ");
 		
 		MetaCommandContainer def=null;
@@ -70,11 +71,19 @@ public class CommandingManager {
 		
 		collectAndCheckArguments(mc, args, argAssignment);
 
-		TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0, 0, TimeEncoding.currentInstant());
+		TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0);
 		pcontext.argValues = args;
 		pcontext.mccProcessor.encode(def);		
 		
-		return null;
+		
+		byte[] b = new byte[pcontext.size];
+		CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(TimeEncoding.currentInstant()).build();
+		PreparedCommand pc = new PreparedCommand(cmdId);
+		pc.setSource(mc.getName()+argAssignmentList);
+		pc.setBinary(b);
+		pc.setUsername(username);
+		
+		return pc;
 	}
 	
 	/**
@@ -130,10 +139,6 @@ public class CommandingManager {
 	}
 	
 
-	/**
-	 * sends the command. It uses the passed parameter just for finding back the original command string.
-	 * 
-	 */
 	public void sendCommand(PreparedCommand pc) {
 		log.debug("sendCommand commandSource="+pc.source);
 		commandQueueManager.addCommand(pc);

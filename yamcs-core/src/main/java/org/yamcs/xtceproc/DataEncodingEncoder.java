@@ -239,13 +239,5 @@ public class DataEncodingEncoder {
         pcontext.bitPosition+=bde.getSizeInBits();
     }
     
-    public void encodeFixedValue(FixedValueEntry fve) {    	
-        if(pcontext.bitPosition%8!=0) {
-        	throw new IllegalStateException("Fixed Value Entry that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        
-        }
-        byte[] v = fve.getBinaryValue();
-        
-        pcontext.bb.put(v, pcontext.bitPosition/8, v.length);
-        pcontext.bitPosition+=v.length;
-    }
+
 }

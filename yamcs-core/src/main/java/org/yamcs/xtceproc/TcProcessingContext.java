@@ -16,9 +16,8 @@ public class TcProcessingContext {
 	ByteBuffer bb;
 	public int bitPosition;
 	
-	//Keeps track of the absolute offset of the container where the processing takes place. 
-	//Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
-	int containerAbsoluteByteOffset;
+	//keep track of the maximum size in bytes to know at the end the buffer required
+	public int size;
 	
 	//arguments and their values - the lists have the same length all the time and arguments correspond one to one to values
 	public Map<Argument,Value> argValues;
@@ -28,12 +27,9 @@ public class TcProcessingContext {
 	public MetaCommandContainerProcessor mccProcessor = new MetaCommandContainerProcessor(this);
 	public DataEncodingEncoder deEncoder = new DataEncodingEncoder(this);
 	
-	public TcProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, long generationTime) {
+	public TcProcessingContext(ByteBuffer bb, int bitPosition) {
 		this.bb = bb;
-		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;
 		this.bitPosition = bitPosition;
-		this.generationTime = generationTime;
-		
 	}
 
 	public Value getArgumentValue(Argument arg) {

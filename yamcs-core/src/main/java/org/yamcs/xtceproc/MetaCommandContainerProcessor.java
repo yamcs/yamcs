@@ -14,29 +14,33 @@ import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 
 public class MetaCommandContainerProcessor {
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    TcProcessingContext pcontext;
-    MetaCommandContainerProcessor(TcProcessingContext pcontext) {
-        this.pcontext=pcontext;
-    }
-    
-    public void encode(MetaCommandContainer container) {
+	Logger log=LoggerFactory.getLogger(this.getClass().getName());
+	TcProcessingContext pcontext;
+	MetaCommandContainerProcessor(TcProcessingContext pcontext) {
+		this.pcontext=pcontext;
+	}
+
+	public void encode(MetaCommandContainer container) {
 		for(SequenceEntry se: container.getEntryList()) {
 			switch(se.getReferenceLocation()) {
-            case previousEntry:
-                pcontext.bitPosition+=se.getLocationInContainerInBits();
-                break;
-            case containerStart:
-                pcontext.bitPosition=se.getLocationInContainerInBits();
-            }
+			case previousEntry:
+				pcontext.bitPosition+=se.getLocationInContainerInBits();
+				break;
+			case containerStart:
+				pcontext.bitPosition=se.getLocationInContainerInBits();
+			}
 			if(se instanceof ArgumentEntry) {
 				fillInArgumentEntry((ArgumentEntry) se, pcontext);
 			} else if (se instanceof FixedValueEntry) {
 				fillInFixedValueEntry((FixedValueEntry) se, pcontext);
-			}			
-        } 
+			}
+			int size = (pcontext.bitPosition+7)/8;
+			if(size>pcontext.size) {
+				pcontext.size = size;
+			}
+		} 
 	}
-	
+
 	private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {
 		Argument arg = argEntry.getArgument();
 		Value argValue = pcontext.getArgumentValue(arg);
@@ -52,14 +56,20 @@ public class MetaCommandContainerProcessor {
 			pcontext.bitPosition += argEntry.getLocationInContainerInBits();
 			break;
 		}
-		
+
 		ArgumentType atype = arg.getArgumentType();
 		Value rawValue = ArgumentTypeProcessor.decalibrate(atype, argValue);
 		pcontext.deEncoder.encodeRaw(((BaseDataType)atype).getEncoding(), rawValue);		
 	}
-		
-	private void fillInFixedValueEntry(FixedValueEntry fvEntry, TcProcessingContext pcontext) {
-		
+
+	private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {
+		if(pcontext.bitPosition%8!=0) {
+			throw new IllegalStateException("Fixed Value Entry that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        
+		}
+		byte[] v = fve.getBinaryValue();
+
+		pcontext.bb.put(v, pcontext.bitPosition/8, v.length);
+		pcontext.bitPosition+=v.length;
 	}
- 
+
 }
