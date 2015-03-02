@@ -1,5 +1,7 @@
 package org.yamcs.web;
 
+import java.io.ObjectOutputStream;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -29,7 +31,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * Handles incoming requests related to the MDB (offset /mdb).
+ * Handles incoming requests related to the Mission Database (offset /mdb).
  */
 public class MdbRequestHandler extends AbstractRequestHandler {
 
@@ -44,6 +46,22 @@ public class MdbRequestHandler extends AbstractRequestHandler {
         HttpResponse response;
         if ("parameters".equals(remainingUri)) {
             response = handleParameters(yamcsInstance, contentType);
+        } else if ("dump".equals(remainingUri)) {
+            // TODO TEMP would prefer if we don't send java-serialized data.
+            // TODO this limits our abilities to send, say, json
+            // TODO and makes the studio to dependent
+            XtceDb mdb = XtceDbFactory.getInstance(yamcsInstance);
+
+            ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
+            ChannelBufferOutputStream out = new ChannelBufferOutputStream(buf);
+            ObjectOutputStream oos=new ObjectOutputStream(out);
+            oos.writeObject(mdb);
+            oos.close();
+
+            response = new DefaultHttpResponse(HTTP_1_1, OK);
+            setContentTypeHeader(response, BINARY_MIME_TYPE);
+            setContentLength(response, buf.readableBytes());
+            response.setContent(buf);
         } else {
             sendError(ctx, BAD_REQUEST);
             return;
