@@ -18,6 +18,10 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.web.api.ArchiveRequestHandler;
+import org.yamcs.web.api.CommandingRequestHandler;
+import org.yamcs.web.api.MdbRequestHandler;
+import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
@@ -34,8 +38,11 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
+
+    // Web API
     public static final String ARCHIVE_PATH = "archive";
     public static final String MDB_PATH = "mdb";
+    public static final String COMMANDING_PATH = "commanding";
     
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
@@ -43,6 +50,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
+    static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
     @Override
@@ -115,6 +123,8 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             archiveRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else if(MDB_PATH.equals(handler)) {
             mdbRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+        } else if(COMMANDING_PATH.equals(handler)) {
+            commandingRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);

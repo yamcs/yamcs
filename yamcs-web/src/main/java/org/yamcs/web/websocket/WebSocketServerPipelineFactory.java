@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.websocket;
 
 import static org.jboss.netty.channel.Channels.*;
 
@@ -9,6 +9,7 @@ import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
+import org.yamcs.web.HttpSocketServerHandler;
 
 /**
  */

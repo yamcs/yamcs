@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.web.api.AbstractRequestHandler;
 
 public class StaticFileRequestHandler extends AbstractRequestHandler {
     public static String WEB_Root;

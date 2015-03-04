@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.api;
 
 import java.io.ObjectOutputStream;
 

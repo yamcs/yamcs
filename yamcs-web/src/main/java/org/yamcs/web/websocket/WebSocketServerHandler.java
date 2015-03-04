@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.websocket;
 
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class WebSocketServerHandler {
 
     final static Logger log=LoggerFactory.getLogger(WebSocketServerHandler.class.getName());
 
-    static final String WEBSOCKET_PATH = "_websocket";
+    public static final String WEBSOCKET_PATH = "_websocket";
     private WebSocketServerHandshaker handshaker;
     public final int PROTOCOL_VERSION=1;
     public final int MESSAGE_TYPE_REQUEST=1;
@@ -55,7 +55,7 @@ public class WebSocketServerHandler {
     Channel channel;
     ParameterClient paraClient;
     
-    void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
+    public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
         //TODO: can we ever reach this twice???
         if(paraClient==null) {
             String applicationName;
@@ -85,7 +85,7 @@ public class WebSocketServerHandler {
     
    
 
-    void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) throws JsonParseException, IOException {
+    public void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) throws JsonParseException, IOException {
         log.debug("received websocket frame {}", frame);
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {

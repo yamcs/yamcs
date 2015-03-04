@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.api;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,7 +56,7 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class ArchiveRequestHandler extends AbstractRequestHandler {
     final static Logger log=LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
     
-    void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
+    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
             sendError(ctx, BAD_REQUEST);
             return;
