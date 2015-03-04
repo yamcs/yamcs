@@ -100,7 +100,8 @@ public class WebSocketServerHandler {
         }
        
         String jsrequest = ((TextWebSocketFrame) frame).getText();
-        
+
+        // Parse common fields, e.g. [1,1,2,{"<request-type>":"<request>"}]
         JsonParser jsp=jsonFactory.createJsonParser(jsrequest);
         if(jsp.nextToken()!=JsonToken.START_ARRAY) throw new RuntimeException("Invalid message (expecting an array)");
         if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting version as an integer number)");
@@ -110,22 +111,42 @@ public class WebSocketServerHandler {
         if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting type as an integer number)");
         int messageType=jsp.getIntValue();
         if(messageType!=MESSAGE_TYPE_REQUEST) throw new RuntimeException("Invalid message type (expecting request="+MESSAGE_TYPE_REQUEST+" received "+messageType);
-
         
         if(jsp.nextToken()!=JsonToken.VALUE_NUMBER_INT) throw new RuntimeException("Invalid message (expecting seqId as an integer number)");
         int seqId=jsp.getIntValue();
 
         if(jsp.nextToken()!=JsonToken.START_OBJECT) throw new RuntimeException("Invalid message (expecting an object)");
 
-        if((jsp.nextToken()!=JsonToken.FIELD_NAME) || (!"request".equals(jsp.getCurrentName())))
-            throw new RuntimeException("Invalid message (expecting request as the first field)");
-        if(jsp.nextToken()!=JsonToken.VALUE_STRING) throw new RuntimeException("Invalid message (expecting request as a string)");
+        if((jsp.nextToken()!=JsonToken.FIELD_NAME))
+            throw new RuntimeException("Invalid message (expecting request type as the first field)");
+
+        String requestType = jsp.getCurrentName();
+        if(jsp.nextToken()!=JsonToken.VALUE_STRING) throw new RuntimeException("Invalid message (expecting actual request as a string)");
         String request=jsp.getText();
        
-       if((jsp.nextToken()!=JsonToken.FIELD_NAME) || (!"data".equals(jsp.getCurrentName())))
-           throw new RuntimeException("Invalid message (expecting data as the next field)");
-       
-       paraClient.processRequest(request, seqId, jsp, this);
+        if ("request".equals(requestType)) {
+            handleParameterRequest(seqId, request, jsp);
+        } else if ("cmdhistory".equals(requestType)) {
+            handleCommandHistoryRequest(seqId, request, jsp);
+        } else {
+            throw new RuntimeException("Invalid message (unsupported request type: '"+requestType+"')");
+        }
+    }
+
+    /**
+     * Sample: [1,1,2,{"request":"subscribe","data":{"list":[{"name":"<X>","namespace":"<Y>"}]}}]
+     */
+    private void handleParameterRequest(int seqId, String request, JsonParser jsp) throws IOException {
+        if((jsp.nextToken()!=JsonToken.FIELD_NAME) || (!"data".equals(jsp.getCurrentName())))
+            throw new RuntimeException("Invalid message (expecting data as the next field)");
+        paraClient.processRequest(request, seqId, jsp, this);
+    }
+
+    /**
+     * Sample: [1,1,3,{"cmdhistory":"subscribe"}]
+     */
+    private void handleCommandHistoryRequest(int seqId, String request, JsonParser jsp) {
+        System.out.println("Got a cmd history request..");
     }
     
     private String getWebSocketLocation(String yamcsInstance, HttpRequest req) {
