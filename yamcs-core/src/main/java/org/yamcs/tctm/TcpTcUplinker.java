@@ -77,7 +77,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 			socketChannel.socket().setKeepAlive(true);
 			selector = Selector.open();
 			selectionKey=socketChannel.register(selector,SelectionKey.OP_WRITE|SelectionKey.OP_READ);
-			log.info("TC connection estabilished to "+host+" port "+port);
+			log.info("TC connection established to "+host+" port "+port);
 		} catch (IOException e) {
 			log.info("Cannot open TC connection to "+host+":"+port+": "+e+"; retrying in 10 seconds");
 			try {socketChannel.close();} catch (Exception e1) {}
