@@ -34,4 +34,5 @@ exec "$_RUNJAVA" $JAVA_LIBRARY_PATH\
     -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yamcs-server.properties \
     -Djacorb.home=$YAMCS_HOME\
     -Djavax.net.ssl.trustStore=$YAMCS_HOME/etc/trustStore\
+    -Dapple.awt.UIElement=true\
 	org.yamcs.YamcsServer "$@"
