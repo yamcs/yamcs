@@ -120,10 +120,10 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
 
     private void unsubscribe(int id, JsonParser jsp) {
         List<NamedObjectId> paraList=null;
-       
         try {
             NamedObjectList.Builder nolb=NamedObjectList.newBuilder();
             JsonIOUtil.mergeFrom(jsp, nolb, SchemaYamcs.NamedObjectList.MERGE, false);
+            paraList=nolb.getListList();
         } catch (IOException e) {
             log.warn("Could not decode the parameter list");
             return;
