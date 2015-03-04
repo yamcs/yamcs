@@ -1052,7 +1052,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 			if("".equals(parent)) parent=null;
 
-			// absoluteOffset is the absolute offset of the first parameter of the container
+			// absoluteOffset is the absolute offset of the first argument or FixedValue in the container
 			int absoluteOffset=-1;
 			if(parent==null) {
 				absoluteOffset=0;
@@ -1063,7 +1063,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					parent=parent.substring(0, x);
 				}
 			}
-
+			System.out.println("parent: "+parent+" absoluteOffset: "+absoluteOffset);
 			// create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, 
 			//and register that new SequenceContainer in the containers hashmap
 			MetaCommandContainer container = new MetaCommandContainer(name);
@@ -1149,6 +1149,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					parentCmd = spaceSystem.getMetaCommand(parent);
 				}
 				if (parentCmd != null) {
+					cmd.setBaseMetaCommand(parentCmd);
 					container.setBaseContainer(parentCmd.getCommandContainer());
 				} else {
 					final MetaCommand mc = cmd;
@@ -1259,8 +1260,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		} else {
 			throw new SpreadsheetLoadException(ctx, "Unknown parameter type " + engType);
 		}
+		if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
 		Argument arg = new Argument(name);	
-
+		cmd.addArgument(arg);
 		
 		if((flags!=null) && flags.contains("L")) {
 			if(atype instanceof IntegerArgumentType) {
@@ -1274,6 +1276,33 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			}
 		}
 		
+		if(hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+			if(atype instanceof IntegerArgumentType) {
+				long minInclusive = Long.MIN_VALUE;
+				long maxInclusive = Long.MAX_VALUE;
+				if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+					minInclusive = Long.parseLong(cells[IDX_CMD_RANGELOW].getContents());
+				}
+				if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+					maxInclusive = Long.parseLong(cells[IDX_CMD_RANGEHIGH].getContents());
+				}
+				IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
+				((IntegerArgumentType)atype).setValidRange(range);
+			} else if(atype instanceof FloatArgumentType) {
+				double minInclusive = Double.NEGATIVE_INFINITY;
+				double maxInclusive = Double.POSITIVE_INFINITY;
+				if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+					minInclusive = Double.parseDouble(cells[IDX_CMD_RANGELOW].getContents());
+				}
+				if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+					maxInclusive = Double.parseDouble(cells[IDX_CMD_RANGEHIGH].getContents());
+				}
+				FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
+				((FloatArgumentType)atype).setValidRange(range);
+			}
+		}
+			
+			
 		ArgumentEntry ae;
 		// if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
 		if (absoluteOffset == -1) {

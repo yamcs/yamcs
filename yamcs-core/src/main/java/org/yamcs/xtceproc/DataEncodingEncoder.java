@@ -8,7 +8,6 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
@@ -79,19 +78,22 @@ public class DataEncodingEncoder {
         default:
         	throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to string");        	
         }
-						
+	
+        System.out.println("for "+ide+" encoding  "+v+" bitposition: "+pcontext.bitPosition);
+        
         //STEP 1 extract 8 bytes from the buffer into the long x.
         // The first extracted byte is where the first bit of v should fit in
         //NOTE: in order to do this for the last arguments, the byte buffer has to be longer than the packet
         int byteOffset = (pcontext.bitPosition)/8;
-        int byteSize = (pcontext.bitPosition+ide.getSizeInBits()-1)/8-byteOffset+1;
         int bitOffsetInsideMask = pcontext.bitPosition-8*byteOffset;
-        int bitsToShift = 8*byteSize-bitOffsetInsideMask-ide.getSizeInBits();
+        int bitsToShift = 64 - bitOffsetInsideMask - ide.getSizeInBits();
         long mask = ~((-1L<<(64-ide.getSizeInBits()))>>>(64-ide.getSizeInBits()-bitsToShift));
         pcontext.bb.order(ide.getByteOrder());
-                  
-        long x = pcontext.bb.getLong(byteOffset);       
         
+        long x = pcontext.bb.getLong(byteOffset);
+        pcontext.bitPosition+=ide.getSizeInBits();
+        
+        System.out.println("bitOffsetInsideMask: "+bitOffsetInsideMask+", bitsToShift: "+bitsToShift);
         //STEP 2 mix the extracted bytes x with he value of the argument v, depending on the encoding type        
         x = x & mask;
         switch(ide.getEncoding()) {
@@ -111,6 +113,7 @@ public class DataEncodingEncoder {
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");
         }
+        System.out.println(String.format("after encoding x:%x byteOffset: %d",x, byteOffset));
         //STEP 3 put back the extracted bytes into the buffer
         pcontext.bb.putLong(byteOffset, x);
     }

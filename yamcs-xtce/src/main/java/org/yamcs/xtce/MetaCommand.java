@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  */
 public class MetaCommand extends NameDescription {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
     
     /**
      * From XTCE:
@@ -20,7 +21,7 @@ public class MetaCommand extends NameDescription {
      * MetaCommand arguments are local to the MetaCommand. Arguments are the visible to the user or processing software. 
      * This can be somewhat subjective -- for example a checksum that is always part of the command format is probably not an argument.
      */
-    List<Argument> argumentList;
+    List<Argument> argumentList = new ArrayList<Argument>();
      
     
    /**
@@ -117,7 +118,8 @@ public class MetaCommand extends NameDescription {
     }
     
     /**
-     * returns the list of arguments of this command or null if the command doesn't have arguments
+     * returns the list of arguments of this command
+     * can be empty if the command doesn't have arguments
      * @return
      */
     public List<Argument> getArgumentList() {
@@ -138,10 +140,16 @@ public class MetaCommand extends NameDescription {
 		return null;
 	}
 	
-	 public void print(PrintStream out) {
+	public void addArgument(Argument arg) {
+		argumentList.add(arg);
+	}
+	
+	public void print(PrintStream out) {
 	        out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
 	        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
 	        out.println( "." );
 	        commandContainer.print(out);
 	    }
+
+	
 }

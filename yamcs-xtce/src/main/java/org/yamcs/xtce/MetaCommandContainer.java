@@ -46,7 +46,11 @@ public class MetaCommandContainer extends Container {
 	public void setBaseContainer(MetaCommandContainer commandContainer) {
 		this.baseContainer = commandContainer;		
 	}
-
+	
+	public MetaCommandContainer getBaseContainer() {
+		return baseContainer;
+	}
+	
 	public void print(PrintStream out) {		
 		out.print("  MetaCommandContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
 		if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());

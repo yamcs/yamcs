@@ -40,4 +40,9 @@ public class IntegerDataType extends NumericDataType {
 	public IntegerValidRange getValidRange() {
 		return validRange;
 	}
+	
+	public void setValidRange(IntegerValidRange range) {
+		this.validRange = range;		
+	}
+	
 }

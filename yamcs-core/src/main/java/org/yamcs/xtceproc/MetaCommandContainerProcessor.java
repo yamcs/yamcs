@@ -21,6 +21,11 @@ public class MetaCommandContainerProcessor {
 	}
 
 	public void encode(MetaCommandContainer container) {
+		MetaCommandContainer parent = container.getBaseContainer();
+		if(parent !=null ) {
+			encode(parent);
+		}
+
 		for(SequenceEntry se: container.getEntryList()) {
 			switch(se.getReferenceLocation()) {
 			case previousEntry:
@@ -34,6 +39,7 @@ public class MetaCommandContainerProcessor {
 			} else if (se instanceof FixedValueEntry) {
 				fillInFixedValueEntry((FixedValueEntry) se, pcontext);
 			}
+			System.out.println("after processing "+se+" bitPosition: "+pcontext.bitPosition);
 			int size = (pcontext.bitPosition+7)/8;
 			if(size>pcontext.size) {
 				pcontext.size = size;
@@ -63,13 +69,82 @@ public class MetaCommandContainerProcessor {
 	}
 
 	private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {
-		if(pcontext.bitPosition%8!=0) {
-			throw new IllegalStateException("Fixed Value Entry that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        
+		int sizeInBits = fve.getSizeInBits();
+
+		//CAREFUL: do not change v1 since it is supposed to be final
+		byte[] v1 = fve.getBinaryValue();
+
+		//shift v1 into v2 to be byte aligned with the pcontext.bitPostion	
+		int fb1 = sizeInBits&0x07; //number of bits in the leftmost byte in v
+		int fb2 = 8 - pcontext.bitPosition&0x07; //number if bits in the leftmost byte in the pcontext
+
+		byte[]v2;
+
+		int bitshift;
+		if(fb1>fb2) {//shift to right
+			int shift = fb1 - fb2; 
+			v2 = new byte[v1.length+1];
+			int bits=0;
+			int mask = -1>>>(32-shift);
+
+			for(int i = 0; i < v1.length; i++) {
+				v2[i] = (byte) (bits | ((v1[i]&0xFF) >> shift));
+				bits = (v1[i] & mask) <<(8-shift);
+			}
+			v2[v1.length] = (byte)bits;
+			bitshift = 8-shift; 
+		} else if(fb1<fb2){//shift to left
+			int shift = fb2 - fb1;
+			v2 = new byte[v1.length+1];
+			int mask = -1>>>(24+shift);
+			int bits=0;
+			for(int i = 0; i < v1.length; i++) {
+				v2[i] = (byte) (bits | (v1[i]&0xFF)>>(8-shift));
+				bits = (v1[i] & mask)<<shift;
+			}
+			v2[v1.length] = (byte)bits;
+			bitshift = shift;
+		} else {
+			v2 = v1;
+			bitshift = 0;
 		}
-		byte[] v = fve.getBinaryValue();
-
-		pcontext.bb.put(v, pcontext.bitPosition/8, v.length);
-		pcontext.bitPosition+=v.length;
+		
+		//number of bytes to copy from v2 into pcontext.bb; 
+		// the first and last are potentially only partially copied
+		//NOTE that v1 and implicitly v2 could potentially have more bytes than required by sizeInBits 
+		int bytesToCopy = (bitshift+sizeInBits+7)/8;
+		//the first byte in v2 which has to be copied		
+		int startByte = v2.length-bytesToCopy; 
+				
+		int bitsToMergeFromFirstByte = (bitshift + sizeInBits) & 0x7; 
+		
+		//clear the first byte just in case there was some stuff in there
+		v2[startByte] = (byte) (v2[startByte] & (~ (-1<<bitsToMergeFromFirstByte)));
+				
+				
+		if(bytesToCopy==1) { //special case first and last byte are the same
+			byte x = pcontext.bb.get(pcontext.bitPosition/8);
+			x = (byte) (x & (-1<<bitsToMergeFromFirstByte));
+			x = (byte) (x & ~(-1<<bitshift));
+			pcontext.bb.put(pcontext.bitPosition/8, (byte)(x | v2[startByte]));
+			pcontext.bitPosition+=bitsToMergeFromFirstByte;
+		} else {
+			if(bitsToMergeFromFirstByte!=0 ) { //first byte
+				byte x = pcontext.bb.get(pcontext.bitPosition/8);
+				pcontext.bb.put(pcontext.bitPosition/8, (byte)(x | v2[startByte]));
+				pcontext.bitPosition+=bitsToMergeFromFirstByte;
+			}
+			
+			for(int i=0; i<bytesToCopy; i++) { //the middle part //could be optimised using a bulk put method
+				pcontext.bb.put(pcontext.bitPosition/8, v2[startByte+i]);
+				pcontext.bitPosition+=8;
+			}
+			if(bitshift>0) { //last byte
+				byte x = pcontext.bb.get(pcontext.bitPosition/8);
+				x = (byte) (x & ~(-1<<bitshift));
+				pcontext.bb.put(pcontext.bitPosition/8, (byte)(x | v2[v2.length-1]));
+				pcontext.bitPosition+=bitshift;
+			}
+		}
 	}
-
 }

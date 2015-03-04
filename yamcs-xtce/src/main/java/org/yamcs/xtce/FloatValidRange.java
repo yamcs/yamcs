@@ -15,4 +15,5 @@ public class FloatValidRange extends FloatRange {
 	public FloatValidRange(double minInclusive, double maxInclusive) {
 		super(minInclusive, maxInclusive);
 	}
+
 }

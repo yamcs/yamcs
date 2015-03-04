@@ -17,7 +17,6 @@ import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.tctm.TcUplinker;
 
 
-import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.utils.TimeEncoding;

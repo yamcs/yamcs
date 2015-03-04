@@ -30,7 +30,9 @@ public class FixedValueEntry extends SequenceEntry {
 	public byte[] getBinaryValue() {
 		return binaryValue;
 	}
-    
+    public int getSizeInBits() {
+    	return sizeInBits;
+    }
     @Override
     public String toString() {
         return "FixedValueEntry position:"+getIndex()+", container:"+container.getName()+

@@ -2,20 +2,31 @@ package org.yamcs.xtce;
 
 
 public class IntegerArgumentType extends IntegerDataType implements ArgumentType {
-	private static final long serialVersionUID=1L;
+	private static final long serialVersionUID=2L;
 
 	
 	public IntegerArgumentType(String name){
 		super(name);
 	}
 			
-	@Override
-    public String toString() {
-		return "IntegerDataType name:"+name+" sizeInBits:"+sizeInBits+" signed:"+signed+" encoding:"+encoding;
-	}
+	
 
     @Override
     public String getTypeAsString() {
         return "integer";
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("IntegerDataType name:").append(name)
+    			.append(" sizeInBits:").append(sizeInBits)
+    			.append(" signed: ").append(signed);
+    	
+    	if(validRange!=null) sb.append(" validRange: ").append(validRange);
+    	
+    	sb.append(" encoding: ").append(encoding);
+    	
+    	return sb.toString();
+	}
 }
