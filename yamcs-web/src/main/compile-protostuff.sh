@@ -1,4 +1,5 @@
 protoc -I .:../../../yamcs-api/src/main/ --java_out=java comp.proto
+protoc -I .:../../../yamcs-api/src/main/ --java_out=java rest.proto
 
 #workaround the inability of protostuff to include other directories in import
 rm -f yamcs.proto

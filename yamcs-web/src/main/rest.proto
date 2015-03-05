@@ -1,0 +1,53 @@
+package org.yamcs.protobuf;
+
+import "yamcs.proto";
+
+// Generic holder for an applicative exception
+// (extend for cases where more structured info is needed)
+message ExceptionMessage {
+  optional string type=1;
+  optional string msg=2;
+}
+
+message ListAvailableParametersRequest {
+  repeated string namespaces=1; // if not available, all the namespaces
+}
+
+message ListAvailableParametersResponse {
+  optional ExceptionMessage exception=1;
+  repeated NamedObjectId ids=2;
+}
+
+message RequestArchiveRequest {
+  // TODO
+}
+
+message RequestArchiveResponse {
+  optional ExceptionMessage exception=1;
+}
+
+message ValidateCommandRequest {
+  optional string commandString=1;
+}
+
+message ValidateCommandResponse {
+  optional ExceptionMessage exception=1;
+}
+
+// TODO refactor this out. Requires rewriting a lot of the xtce stuff
+// in proto though :(
+message DumpRawMdbRequest {
+
+}
+
+message DumpRawMdbResponse {
+  optional ExceptionMessage exception=1;
+  optional bytes rawMdb=2;
+}
+
+service RESTService {
+  rpc listAvailableParameters(ListAvailableParametersRequest) returns (ListAvailableParametersResponse);
+  rpc requestArchive(RequestArchiveRequest) returns (RequestArchiveResponse);
+  rpc validateCommand(ValidateCommandRequest) returns (ValidateCommandResponse);
+  rpc dumpRawMdb(DumpRawMdbRequest) returns (DumpRawMdbResponse);
+}

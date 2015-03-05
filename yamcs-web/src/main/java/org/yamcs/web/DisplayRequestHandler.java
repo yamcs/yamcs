@@ -21,7 +21,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.web.api.AbstractRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;

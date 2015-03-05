@@ -1,4 +1,4 @@
-package org.yamcs.web.api;
+package org.yamcs.web.rest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,14 +48,15 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /** 
- * Serves archived data through a web api. The Archived data is fetched from the
+ * Serves archived data through a webresti. The Archived data is fetched from the
  * ReplayServer using HornetQ.
  * <p>
  * Parameters or packets need to be defined in a profile. 
  */
-public class ArchiveRequestHandler extends AbstractRequestHandler {
+public class ArchiveRequestHandler extends RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
     
+    @Override
     public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
             sendError(ctx, BAD_REQUEST);

@@ -18,14 +18,13 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.web.api.ArchiveRequestHandler;
-import org.yamcs.web.api.CommandingRequestHandler;
-import org.yamcs.web.api.MdbRequestHandler;
+import org.yamcs.web.rest.ArchiveRequestHandler;
+import org.yamcs.web.rest.CommandingRequestHandler;
+import org.yamcs.web.rest.MdbRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -66,12 +65,6 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
 
-        // Allow only GET methods.
-        if (req.getMethod() != GET) {
-            sendHttpResponse(ctx, req, new DefaultHttpResponse(HTTP_1_1, FORBIDDEN));
-            return;
-        }
-    
         if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);

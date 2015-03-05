@@ -1,4 +1,4 @@
-package org.yamcs.web.api;
+package org.yamcs.web;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
