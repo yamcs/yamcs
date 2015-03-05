@@ -2,8 +2,6 @@ package org.yamcs.yarch;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +13,6 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.PartitioningSpec._type;
 
@@ -78,7 +75,7 @@ public class PartitionManagerTest {
         assertEquals(tmpdir+"/2011/060/tbltest#1", parts.get(0));
         assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1));
         
-        Files.deleteRecursively(new File(tmpdir));
+       deleteRecursively(new File(tmpdir));
     }
     
     @Test
@@ -108,7 +105,10 @@ public class PartitionManagerTest {
         assertEquals(tmpdir+"/2011/060/tbltest#3", parts.get(1));
         assertFalse(it.hasNext());
         
-        Files.deleteRecursively(new File(tmpdir));
+        deleteRecursively(new File(tmpdir));
     }  
     
+    private void deleteRecursively(File f) throws IOException {
+    	Runtime.getRuntime().exec(new String[] {"rm", "-rf", f.getAbsolutePath()});
+    }
 }

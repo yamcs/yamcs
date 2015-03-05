@@ -11,10 +11,20 @@ import org.yamcs.xtce.Parameter;
  */
 public interface ParameterProvider extends Service {
     /**
-     * 
-     * @param parameterRequestManager
+     * Called before the startup to pass on the channel and initialise whatever needed
+     * @param channel
+     * @throws ConfigurationException 
      */
-    public abstract void setParameterListener(ParameterListener parameterRequestManager);
+	public abstract void init(Channel channel) throws ConfigurationException;
+	
+	/**
+     * Send parameters to this listener.
+     * Normally is the channel.parameterRequestManager but something different may be used for unit tests or special applications (PacketViewer)
+     * 
+     * @param parameterListener
+     */
+    public abstract void setParameterListener(ParameterListener parameterListener);
+    
 	/**
 	 * Adds a new parameter to the list  of parameters that have to provided 
 	 * @param paramDef
@@ -31,6 +41,7 @@ public interface ParameterProvider extends Service {
 	 * @param paramDef
 	 */
 	public abstract void stopProviding(Parameter paramDef);
+	
 	/**
 	 * Returns whether or not a given parameter can be provided by this provider
 	 * @param itemId

@@ -1,122 +1,122 @@
 package org.yamcs;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 
-
 /**
- * Used to create replay or test channels
+ * Used to create channels as defined in channel.yaml
  * 
  * @author mache
  *
  */
 public class ChannelFactory {
-    static Logger log=LoggerFactory.getLogger(Channel.class.getName());
-    static Map<String, ChannelTypeConfig> types;
+	static Logger log=LoggerFactory.getLogger(Channel.class.getName());
+
+	/**
+	 * Create a channel with the give name, type, creator and spec
+	 * 
+	 *  type is used to load the tm, parameter and command classes as defined in channel.yaml
+	 *  spec if not null is passed as an extra argument to those classes - it is used for example when creating replay channels to pass on the data that has to be replayed.
+	 *       should probably be changed from string to some sort of object.
+	 * 
+	 * @param yamcsInstance
+	 * @param name
+	 * @param type
+	 * @param creator
+	 * @param spec
+	 * @return
+	 * @throws ChannelException
+	 * @throws ConfigurationException
+	 */
+	@SuppressWarnings("unchecked")
+	static public Channel create(String yamcsInstance, String name, String type, String creator, String spec) throws ChannelException,  ConfigurationException {
+		boolean initialized = false;
+		TcTmService tctms=null;
+		YConfiguration conf=YConfiguration.getConfiguration("channel");
+		try {
+			if(conf.containsKey(type,"tmtcpp")) {
+				Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "tmtcpp");            	
+				String clsName = YConfiguration.getString(m, "class");
+				Object args = m.get("args");
+				tctms= loadObject(clsName, yamcsInstance, args, spec);
+			} else {
+				TmPacketProvider tm=null;
+				List<ParameterProvider> pps = new ArrayList<ParameterProvider>();
+				CommandReleaser tc=null;
+
+				if(conf.containsKey(type,"telemetryProvider")) {
+					Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "telemetryProvider");            	
+					String tmClass = YConfiguration.getString(m, "class");
+					Object tmArgs = m.get("args");
+					tm = loadObject(tmClass, yamcsInstance, tmArgs, spec);
+					initialized = true;
+				} else {//TODO: it should work without telemetryProvider (currently causes a NPE in Channel.java)
+					throw new ConfigurationException("No telemetryProvider specified for channel of type '"+type+"' in channel.yaml");
+				}
+				
+				if(conf.containsKey(type,"parameterProviders")) {
+					List<Map<String, Object>> l = (List<Map<String, Object>>) conf.getList(type, "parameterProviders");
+					for(Map<String, Object> m:l) {
+						String paramClass = YConfiguration.getString(m, "class");
+						Object paramArgs = m.get("args");
+						ParameterProvider pp = loadObject(paramClass, yamcsInstance, paramArgs, spec);
+						pps.add(pp);
+					}
+					initialized = true;
+				}
+				if(conf.containsKey(type, "commandReleaser")) {
+					Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "commandReleaser");            	
+					String commandClass = YConfiguration.getString(m, "class");
+					Object commandArgs = m.get("args");
+					tc =  loadObject(commandClass, yamcsInstance, commandArgs, spec);
+					initialized = true;
+				}
+				tctms=new SimpleTcTmService(tm, pps, tc);
+				if(!initialized) {
+					throw new ConfigurationException("For channel type '"+type+"', none of  telemetryProvider, parameterProviders or commandReleaser specified");
+				}
+			}
+		} catch (IOException e) {
+			throw new ConfigurationException("Cannot load service",e);
+		}
+		
+		return create(yamcsInstance, name, type, tctms, creator);
+	}
+	/**
+	 * loads objects but passes only non null parameters
+	 */
+	static private <T> T loadObject(String className, String yamcsInstance, Object args, String spec) throws ConfigurationException, IOException {
+		List<Object> params = new ArrayList<Object>();
+		params.add(yamcsInstance);
+
+		if(args!=null) {
+			params.add(args);
+		}
+		if(spec!=null) {
+			params.add(spec);
+		}
+		return new YObjectLoader<T>().loadObject(className, params.toArray());
+	}
 
 
-    static public Channel create(String yamcsInstance, String name, String type, String spec, String creator) throws ChannelException,  ConfigurationException {
-        Channel channel=new Channel(yamcsInstance, name, type, spec, creator);
+	/**
+	 *  Create a Channel by specifying the service.
+	 *  The type is not used in this case, except for showing it in the yamcs monitor.
+	 **/
+	static public Channel create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
+		Channel channel=new Channel(instance, name, type, creator);
 
-        initTypes();
-        String lctype=type.toLowerCase();
-        if(!types.containsKey(lctype)) throw new ChannelException("unknown channel type '"+type+"'. Available types are "+types.keySet());
-        TcTmService tctms=null;
-        CommandHistory cmdHist=null;
-
-        ChannelTypeConfig ctc=types.get(lctype);
-        try {
-            if(ctc.serviceClass!=null) {
-                tctms= new YObjectLoader<TcTmService>().loadObject(ctc.serviceClass, yamcsInstance, spec);
-            } else {
-                TmPacketProvider tm=null;
-                ParameterProvider pp=null;
-                TcUplinker tc=null;
-
-                if(ctc.tmClass!=null) {
-                    tm = new YObjectLoader<TmPacketProvider>().loadObject(ctc.tmClass, yamcsInstance, spec);
-                }
-
-                if(ctc.ppClass!=null) {
-                    pp = new YObjectLoader<ParameterProvider>().loadObject(ctc.ppClass, yamcsInstance, spec);
-                }
-
-                if(ctc.tcClass!=null) {
-                    tc = new YObjectLoader<TcUplinker>().loadObject(ctc.tcClass, yamcsInstance, spec);
-                }
-                tctms=new SimpleTcTmService(tm, pp, tc);
-            }
-
-            if(ctc.cmdHistClass!=null) {
-                cmdHist = new YObjectLoader<CommandHistory>().loadObject(ctc.tcClass, yamcsInstance, spec);
-            }
-        } catch (IOException e) {
-            throw new ConfigurationException("Cannot load service",e);
-        }
-        channel.init(tctms, cmdHist);
-        return channel;
-    }
-
-    /**
-     *  Create a Channel by specifying the service.
-     *  The type is not used in this case, except for showing it in the yamcs monitor.
-     **/
-    static public Channel create(String instance, String name, String type, String spec, TcTmService tctms, String creator, CommandHistory cmdHist) throws ChannelException, ConfigurationException {
-        Channel channel=new Channel(instance, name, type, spec, creator);
-
-        channel.init(tctms, cmdHist);
-        return channel;
-    }
-
-
-    static private synchronized void initTypes() throws ConfigurationException {
-        if(types!=null) return;
-        YConfiguration conf=YConfiguration.getConfiguration("channel");
-        types=new HashMap<String, ChannelTypeConfig>();
-        List<String> typesarray=conf.getList("types");
-        for(String s:typesarray) {
-            ChannelTypeConfig ctc=new ChannelTypeConfig();
-            boolean initialized=false;
-            if(conf.containsKey(s,"tmtcpp")) {
-                ctc.serviceClass=conf.getString(s, "tmtcpp");	
-                initialized=true;
-            } else {
-                if(conf.containsKey(s,"tm")) {
-                    ctc.tmClass=conf.getString(s, "tm");
-                    initialized=true;
-                }
-                if(conf.containsKey(s,"pp")) {
-                    ctc.ppClass=conf.getString(s, "pp");
-                    initialized=true;
-                }
-                if(conf.containsKey(s,"tc")) {
-                    ctc.tcClass=conf.getString(s, "tc");
-                }
-            }
-            if(!initialized) throw new ConfigurationException("TM/PP/TC services not defined for channel type "+s);
-            types.put(s.toLowerCase(), ctc);
-        }
-    }
-
-    static class ChannelTypeConfig {
-        //this is an entry from channel.properties
-        // either serviceClass or tm/pp/tc are set
-        String serviceClass;
-        String tmClass;
-        String ppClass;
-        String tcClass;
-        String cmdHistClass;
-    }
-
-
+		channel.init(tctms);
+		return channel;
+	}
 }

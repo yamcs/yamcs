@@ -1,7 +1,35 @@
+# this file defines the diferrent channels
+# channel is where TM/TC processing happends inside Yamcs.
+#
+# each channel uses a source of TM packets, one or more sources of parameters and a command releaser
+#  all of these are optional
+#
+#
 #all the supported channel types
-types: [Archive]
+# 
+types: [realtime, Archive]
+
+
+
+realtime:
+    telemetryProvider: 
+       class: org.yamcs.tctm.YarchTmPacketProvider
+       args: 
+           stream: "tm_realtime"
+    commandReleaser:
+       class: org.yamcs.tctm.YarchTcCommandReleaser
+       args:
+           stream: "tc_realtime"
+    parameterProviders:
+#       - class: org.yamcs.tctm.YarchPpProvider
+#         args:
+#           stream: "pp_realtime"
+       # implements XTCE algorithms
+       - class: org.yamcs.algorithms.AlgorithmManager
+       # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
+       - class: org.yamcs.sysparameter.SystemParametersChannelProvider
 
 
 Archive:
-    tm: org.yamcs.tctm.ReplayService
-
+    tm: 
+       class: org.yamcs.tctm.ReplayService

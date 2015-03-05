@@ -1,9 +1,9 @@
 package org.yamcs;
 
-import org.yamcs.tctm.AbstractTcTmService;
+import org.yamcs.tctm.SimpleTcTmService;
 
-public class RefMdbTmService extends AbstractTcTmService {
+public class RefMdbTmService extends SimpleTcTmService {
     public RefMdbTmService(RefMdbPacketGenerator tmGenerator) throws ConfigurationException {
-        this.tm=tmGenerator;
+        super(tmGenerator, null, null);
     }
 }

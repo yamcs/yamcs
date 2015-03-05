@@ -90,33 +90,24 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer;
-    final Channel chan;
+    Channel chan;
 
-    public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan) throws ConfigurationException {
-        this(parameterRequestManager, chan, null);
+    public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
+    	this(yamcsInstance, null);
     }
-
-    public AlgorithmManager(ParameterRequestManager parameterRequestManager, Channel chan, Object args) throws ConfigurationException {
-        this.xtcedb = chan.xtcedb;
-        this.chan = chan;
-        this.parameterRequestManager=parameterRequestManager;
-        try {
-            subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
-        } catch (InvalidIdentification e) {
-            log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
-        }
+    
+    public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         
-        yamcsInstance=chan.getInstance();
+        this.yamcsInstance = yamcsInstance;
 
         scriptLanguage=DEFAULT_LANGUAGE;
         List<String> libraries=new ArrayList<String>();
-        if(args!=null) {
-            Map<String,Object> m=(Map<String,Object>) args;
-            if(m.containsKey("scriptLanguage")) {
-                scriptLanguage=(String)m.get("scriptLanguage");
+        if(config!=null) {
+            if(config.containsKey("scriptLanguage")) {
+                scriptLanguage=(String)config.get("scriptLanguage");
             }
-            if(m.containsKey("libraries")) {
-                libraries=(List<String>)m.get("libraries");
+            if(config.containsKey("libraries")) {
+                libraries=(List<String>)config.get("libraries");
             }
         }
 
@@ -149,13 +140,26 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             // Put engine bindings in shared global scope
             Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
             scriptEngineManager.setBindings(commonBindings);
+        }        
+    }
+    
+    @Override
+	public void init(Channel channel) {
+    	this.chan = channel;
+    	this.parameterRequestManager = chan.getParameterRequestManager();
+    	xtcedb = chan.getXtceDb();
+        try {
+            subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
+        } catch (InvalidIdentification e) {
+            log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
         }
-
-        for(Algorithm algo : xtcedb.getAlgorithms()) {
+    	
+    	for(Algorithm algo : xtcedb.getAlgorithms()) {
             loadAlgorithm(algo);
         }
-    }
+	}
 
+    
     private void loadAlgorithm(Algorithm algo) {
         for(OutputParameter oParam:algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
@@ -459,4 +463,5 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 engineByAlgorithm.size(), xtcedb.getAlgorithms().size());
     }
 
+	
 }

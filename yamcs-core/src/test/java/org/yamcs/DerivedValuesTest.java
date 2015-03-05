@@ -34,7 +34,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest");
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_add").build());
@@ -79,7 +79,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest");
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_add_js").build());
@@ -120,7 +120,7 @@ public class DerivedValuesTest {
         assertNotNull(fp);
 
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest", null);
+        Channel c=ChannelFactory.create("dvtest", "dvtest", "dvtest", new RefMdbTmService(tmGenerator), "dvtest");
         ParameterRequestManager prm=c.getParameterRequestManager();
         List<NamedObjectId> paraList=new ArrayList<NamedObjectId>();
         paraList.add(NamedObjectId.newBuilder().setName("test_float_ypr_js").build());

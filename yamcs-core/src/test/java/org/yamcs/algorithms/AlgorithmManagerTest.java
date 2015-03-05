@@ -60,7 +60,7 @@ public class AlgorithmManagerTest {
         tmGenerator=new RefMdbPacketGenerator();
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
         try {
-            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", new RefMdbTmService(tmGenerator), "refmdb");
         } catch (Exception e) {
             e.printStackTrace();
         }

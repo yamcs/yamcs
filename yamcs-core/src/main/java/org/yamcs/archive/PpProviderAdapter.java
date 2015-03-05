@@ -114,20 +114,20 @@ public class PpProviderAdapter extends AbstractService {
     @Override
     protected void doStart() {
         for(PpProvider prov:ppproviders) {
-            prov.start();
+            prov.startAsync();
         }
         notifyStarted();
     }	
 
     static public void main(String[] args) throws Exception {
-        new PpProviderAdapter("test").start();
+        new PpProviderAdapter("test").startAsync();
     }
 
 
     @Override
     protected void doStop() {
         for(PpProvider prov:ppproviders) {
-            prov.stop();
+            prov.stopAsync();
         }
         notifyStopped();
 

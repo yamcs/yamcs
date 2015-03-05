@@ -79,7 +79,6 @@ public class DataEncodingEncoder {
         	throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to string");        	
         }
 	
-        System.out.println("for "+ide+" encoding  "+v+" bitposition: "+pcontext.bitPosition);
         
         //STEP 1 extract 8 bytes from the buffer into the long x.
         // The first extracted byte is where the first bit of v should fit in
@@ -93,7 +92,6 @@ public class DataEncodingEncoder {
         long x = pcontext.bb.getLong(byteOffset);
         pcontext.bitPosition+=ide.getSizeInBits();
         
-        System.out.println("bitOffsetInsideMask: "+bitOffsetInsideMask+", bitsToShift: "+bitsToShift);
         //STEP 2 mix the extracted bytes x with he value of the argument v, depending on the encoding type        
         x = x & mask;
         switch(ide.getEncoding()) {
@@ -113,7 +111,6 @@ public class DataEncodingEncoder {
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");
         }
-        System.out.println(String.format("after encoding x:%x byteOffset: %d",x, byteOffset));
         //STEP 3 put back the extracted bytes into the buffer
         pcontext.bb.putLong(byteOffset, x);
     }

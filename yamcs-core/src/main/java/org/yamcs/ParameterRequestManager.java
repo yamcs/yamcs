@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,9 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -61,36 +58,6 @@ public class ParameterRequestManager implements ParameterListener {
 	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		tmProcessor.setParameterListener(this);
 		addParameterProvider(tmProcessor);
-		
-		
-        YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+chan.getInstance());
-        if(yconf.containsKey("parameterProviders")) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, String>> providers=yconf.getList("parameterProviders");
-            for(Map<String,String> provider:providers) {
-                String className=provider.get("class");
-                Object args=provider.get("args");
-                try {
-                    YObjectLoader<ParameterProvider> objLoader=new YObjectLoader<ParameterProvider>();
-                    ParameterProvider p;
-                    if(args == null) {
-                        p = objLoader.loadObject(className, this, chan);
-                    } else {
-                        p = objLoader.loadObject(className, this, chan, args);
-                    }
-                    addParameterProvider(p);
-                } catch (IOException e) {
-                    throw new ConfigurationException("Cannot load parameter provider from class "+className, e);
-                }
-            }
-        } else {
-            log.debug("No parameter providers defined in yamcs."+chan.getInstance()+".yaml. Using defaults.");
-            // Load default parameter providers
-         //   addParameterProvider(new SystemVariablesChannelProvider(this, chan));
-            addParameterProvider(new AlgorithmManager(this, chan));
-            addParameterProvider(new DerivedValuesManager(this, chan));
-        }
-        
         alarmChecker=new AlarmChecker();
 	}
 	
@@ -459,13 +426,13 @@ public class ParameterRequestManager implements ParameterListener {
 	 */
 	public void start() {
 		for(ParameterProvider provider:parameterProviders.values()) {
-		    provider.start();
+		    provider.startAsync();
 		}
 	}
 
 	public void quit() {
 		for(ParameterProvider provider:parameterProviders.values()) {
-		    provider.stop();
+		    provider.stopAsync();
 		}
 	}
 	

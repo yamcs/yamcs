@@ -2,7 +2,9 @@ package org.yamcs.tctm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterListener;
@@ -31,8 +33,14 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     ParameterListener paraListener;
     final XtceDb xtceDb;
     
-    public YarchPpProvider(String archiveInstance, String streamName) throws ConfigurationException {
+    public YarchPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+        
+        if(!config.containsKey("stream")) {
+        	throw new ConfigurationException("the config(args) for YarchPpProvider has to contain a parameter 'stream' - stream name for retrieving parameters from");
+        }
+        String streamName = config.get("stream");
+        
         stream=ydb.getStream(streamName);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
         xtceDb=XtceDbFactory.getInstance(archiveInstance);
@@ -112,4 +120,11 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     public void startProvidingAll() {
         // TODO Auto-generated method stub
     }
+
+
+
+	@Override
+	public void init(Channel channel) {
+		//nothing to be done here
+	}
 }

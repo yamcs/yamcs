@@ -499,7 +499,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     }
 
     private boolean loadLocalXtcedb(String configName) {
-        if(tmProcessor!=null) tmProcessor.stop();
+        if(tmProcessor!=null) tmProcessor.stopAsync();
         log("Loading local XTCE db "+configName);
         try {
             xtcedb=XtceDbFactory.getInstanceByConfig(configName);
@@ -518,7 +518,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tmProcessor=new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
-        tmProcessor.start();
+        tmProcessor.startAsync();
         log(String.format("Loaded definition of %d sequence container%s and %d parameter%s"
                 , xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s":"")
                 , xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s":"")));
@@ -526,7 +526,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     }
 
     private boolean loadRemoteXtcedb(String configName) {
-        if(tmProcessor!=null) tmProcessor.stop();
+        if(tmProcessor!=null) tmProcessor.stopAsync();
         log("Loading remote XTCE db "+configName);
         MissionDatabaseRequest mdr = MissionDatabaseRequest.newBuilder().setDbConfigName(configName).build();
         try {
@@ -548,7 +548,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         tmProcessor=new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
-        tmProcessor.start();
+        tmProcessor.startAsync();
 
         log("Loaded "+xtcedb.getSequenceContainers().size()+" sequence containers and "+xtcedb.getParameterNames().size()+" parameters");
         return true;

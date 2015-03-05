@@ -96,7 +96,7 @@ public class TcUplinkerAdapter extends AbstractService {
                 
                 @Override
                 public void streamClosed(Stream s) {
-                    stop();
+                    stopAsync();
                 }
             });
 			
@@ -110,7 +110,7 @@ public class TcUplinkerAdapter extends AbstractService {
 	@Override
 	protected void doStart() {
 		for(TcUplinker tcuplinker:tcuplinkers) {
-		    tcuplinker.start();
+		    tcuplinker.startAsync();
 		}
 		notifyStarted();
 	}
@@ -118,7 +118,7 @@ public class TcUplinkerAdapter extends AbstractService {
 	@Override
 	protected void doStop() {
 		for(TcUplinker tcuplinker:tcuplinkers) {
-		    tcuplinker.stop();
+		    tcuplinker.stopAsync();
 		}
 		notifyStopped();
 	}

@@ -58,7 +58,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         final int n=100;
         ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
         
-        (new CommandHistoryRecorder(ydb.getName())).start();
+        (new CommandHistoryRecorder(ydb.getName())).startAsync();
        
         Stream rtstream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         assertNotNull(rtstream);
@@ -100,7 +100,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         
         //and now try remotely using replay
         ReplayServer replay=new ReplayServer(ydb.getName());
-        replay.start();
+        replay.startAsync();
         
         YamcsSession ysession=YamcsSession.newBuilder().build();
         YamcsClient yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
@@ -130,6 +130,6 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         
         yclient.close();
         ysession.close();
-        replay.stop();
+        replay.stopAsync();
     }
 }

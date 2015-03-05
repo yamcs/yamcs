@@ -122,7 +122,7 @@ public class TmProviderAdapter extends AbstractService {
 	@Override
 	protected void doStart() {
 		for(TmPacketProvider prov:tmproviders) {
-			prov.start();
+			prov.startAsync();
 		}
 		notifyStarted();
 	}
@@ -130,7 +130,7 @@ public class TmProviderAdapter extends AbstractService {
 	@Override
 	protected void doStop() {
 		for(TmPacketProvider prov:tmproviders) {
-			prov.stop();
+			prov.stopAsync();
 		}
 		notifyStopped();
 	}

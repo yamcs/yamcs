@@ -154,11 +154,11 @@ public class ContainerRequestManager implements ContainerListener {
     }
 
     public void start() {
-        tmProcessor.start();
+        tmProcessor.startAsync();
     }
     
     public void quit() {
-        tmPacketProvider.stop();
+        tmPacketProvider.stopAsync();
     }
     
     private static class ContainerWithId {

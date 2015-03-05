@@ -14,7 +14,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterListener;
 import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -46,19 +45,22 @@ public class SystemParametersChannelProvider extends AbstractService implements 
     Logger log;
     Stream stream;
     XtceDb xtceDb;
-    final Channel channel;
+    Channel channel;
     ArrayList<ParameterValue> channelParams = new ArrayList<ParameterValue>();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     ParameterValue channelModePv;
     
+    public SystemParametersChannelProvider(String yamcsInstance) throws ConfigurationException {
+        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+    }
     
-    public SystemParametersChannelProvider(ParameterRequestManager parameterRequestManager, Channel channel) throws ConfigurationException {
+    public void init(Channel channel) throws ConfigurationException {
         String instance = channel.getInstance();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+channel.getName()+"]");
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         stream=ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
-        xtceDb = XtceDbFactory.getInstance(instance);
+
         this.channel = channel;
         setupChannelParameters();
       

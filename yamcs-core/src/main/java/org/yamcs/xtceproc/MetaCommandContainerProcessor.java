@@ -39,7 +39,6 @@ public class MetaCommandContainerProcessor {
 			} else if (se instanceof FixedValueEntry) {
 				fillInFixedValueEntry((FixedValueEntry) se, pcontext);
 			}
-			System.out.println("after processing "+se+" bitPosition: "+pcontext.bitPosition);
 			int size = (pcontext.bitPosition+7)/8;
 			if(size>pcontext.size) {
 				pcontext.size = size;

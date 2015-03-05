@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
+import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ContainerProvider;
 import org.yamcs.InvalidIdentification;
@@ -36,21 +37,23 @@ import com.google.common.util.concurrent.AbstractService;
 
 public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
 
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private ParameterListener parameterRequestManager;
-    private ContainerListener containerRequestManager;
-	
+	Logger log=LoggerFactory.getLogger(this.getClass().getName());
+	private ParameterListener parameterRequestManager;
+	private ContainerListener containerRequestManager;
+
 	public final Channel channel;
 	public final XtceDb xtcedb;
 	final XtceTmExtractor tmExtractor;
-	
+
 	public XtceTmProcessor(Channel chan) {
-	    log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
-	    this.channel=chan;
-	    this.xtcedb=chan.xtcedb;
-	    tmExtractor=new XtceTmExtractor(xtcedb);
+		log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
+		this.channel=chan;
+		this.xtcedb=chan.getXtceDb();
+		tmExtractor=new XtceTmExtractor(xtcedb);
 	}
-	
+
+
+
 	/**
 	 * Creates a TmProcessor to be used in "standalone" mode, outside of any channel.
 	 */
@@ -62,13 +65,18 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	}
 
 	@Override
+	public void init(Channel channel) throws ConfigurationException {
+		
+	}
+	
+	@Override
 	public void setParameterListener(ParameterListener p) {
-	    this.parameterRequestManager=p;
+		this.parameterRequestManager=p;
 	}
 
 	@Override
 	public void setContainerListener(ContainerListener c) {
-	    this.containerRequestManager=c;
+		this.containerRequestManager=c;
 	}
 
 	/**
@@ -78,116 +86,116 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	 * @param param parameter to be added to the current subscription list 
 	 */
 	@Override
-    public void startProviding(Parameter param) { 
-	    tmExtractor.startProviding(param);
+	public void startProviding(Parameter param) { 
+		tmExtractor.startProviding(param);
 	}
-	
+
 	/**
 	 * adds all parameters to the subscription
 	 */
 	@Override
-    public void startProvidingAll() {
-	    tmExtractor.startProvidingAll();
+	public void startProvidingAll() {
+		tmExtractor.startProvidingAll();
 	}
-	
+
 	@Override
-    public void stopProviding(Parameter param) {
+	public void stopProviding(Parameter param) {
 		tmExtractor.stopProviding(param);
 	}
-	
+
 	@Override
-    public boolean canProvide(NamedObjectId paraId) {
-	    Parameter p = xtcedb.getParameter(paraId);
-	    if(p==null) return false;
-	    
-	    return xtcedb.getParameterEntries(p)!=null;
+	public boolean canProvide(NamedObjectId paraId) {
+		Parameter p = xtcedb.getParameter(paraId);
+		if(p==null) return false;
+
+		return xtcedb.getParameterEntries(p)!=null;
 	}
-	
+
 	@Override
-    public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
+	public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
 		Parameter p = xtcedb.getParameter(paraId);
 		if(p==null) throw new InvalidIdentification(paraId);
 		return p;
 	}
-	
+
 	/**
 	 * Start processing telemetry packets
 	 *
 	 */
 	@Override
-    public void processPacket(PacketWithTime pwrt){
+	public void processPacket(PacketWithTime pwrt){
 
-	    try {
-	        ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-	        tmExtractor.processPacket(bb, pwrt.getGenerationTime());
-	        
-	        ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();
-	        ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
-	        
-	        if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
-	            //careful out of the synchronized block in order to avoid dead locks 
-	            //  with the parameterRequestManager trying to add/remove parameters 
-	            //  while we are sending updates
-	            parameterRequestManager.update(paramResult);
-	        }
-	        
-	        if((containerRequestManager!=null) && (containerResult.size()>0)) {
-	            containerRequestManager.update(containerResult);
-	        }
-	        
-	    } catch (Exception e) {
-	        log.error("got exception in tmprocessor ", e);
-	    }
+		try {
+			ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
+			tmExtractor.processPacket(bb, pwrt.getGenerationTime());
+
+			ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();
+			ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
+
+			if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
+				//careful out of the synchronized block in order to avoid dead locks 
+				//  with the parameterRequestManager trying to add/remove parameters 
+				//  while we are sending updates
+				parameterRequestManager.update(paramResult);
+			}
+
+			if((containerRequestManager!=null) && (containerResult.size()>0)) {
+				containerRequestManager.update(containerResult);
+			}
+
+		} catch (Exception e) {
+			log.error("got exception in tmprocessor ", e);
+		}
 	}
-	
+
 	@Override
-    public void finished() {
-	    notifyStopped();
-        if(channel!=null) channel.quit();
+	public void finished() {
+		notifyStopped();
+		if(channel!=null) channel.quit();
 	}
-	
+
 	public void resetStatistics() {
-	    tmExtractor.resetStatistics();
+		tmExtractor.resetStatistics();
 	}
-		
+
 	public ProcessingStatistics getStatistics(){
 		return tmExtractor.getStatistics();
 	}
 
-    @Override
-    public boolean canProvideContainer(NamedObjectId containerId) {
-        return xtcedb.getSequenceContainer(containerId) != null;
-    }
-	
-    @Override
+	@Override
+	public boolean canProvideContainer(NamedObjectId containerId) {
+		return xtcedb.getSequenceContainer(containerId) != null;
+	}
+
+	@Override
 	public void startProviding(SequenceContainer container) {
-        tmExtractor.startProviding(container);
-    }
-    
-    @Override
-    public void stopProviding(SequenceContainer container) {
-        tmExtractor.stopProviding(container);
-    }
+		tmExtractor.startProviding(container);
+	}
 
-    @Override
-    public String getDetailedStatus() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public void stopProviding(SequenceContainer container) {
+		tmExtractor.stopProviding(container);
+	}
 
-    @Override
-    public void startProvidingAllContainers() {
-        tmExtractor.startProvidingAll();
-    }
+	@Override
+	public String getDetailedStatus() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
-        SequenceContainer c = xtcedb.getSequenceContainer(containerId);
-        if(c==null) throw new InvalidIdentification(containerId);
-        return c;
-    }
+	@Override
+	public void startProvidingAllContainers() {
+		tmExtractor.startProvidingAll();
+	}
 
-    /*
+	@Override
+	public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
+		SequenceContainer c = xtcedb.getSequenceContainer(containerId);
+		if(c==null) throw new InvalidIdentification(containerId);
+		return c;
+	}
+
+	/*
 	public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {
 	    synchronized(subscription) {
 	        for(ItemIdPacketConsumerStruct i:iipcs) {
@@ -195,21 +203,21 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	        }
 	    }
 	}
-*/
+	 */
 
-    public Subscription getSubscription() {
-        return tmExtractor.getSubscription();
-    }
+	public Subscription getSubscription() {
+		return tmExtractor.getSubscription();
+	}
 
- 
 
-    @Override
-    protected void doStart() {
-        notifyStarted();
-    }
 
-    @Override
-    protected void doStop() {
-        notifyStopped();
-    }
+	@Override
+	protected void doStart() {
+		notifyStarted();
+	}
+
+	@Override
+	protected void doStop() {
+		notifyStopped();
+	}
 }

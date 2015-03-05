@@ -24,7 +24,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.AbstractTcTmService;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -56,7 +55,7 @@ public class AlgorithmManagerPyTest {
         tmGenerator=new RefMdbPacketGenerator();
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
         try {
-            c=ChannelFactory.create("refmdb-py", "AlgorithmManagerPyTest", "refmdb-py", "refmdb-py", new RefMdbTmService(tmGenerator), "refmdb-py", null);
+            c=ChannelFactory.create("refmdb-py", "AlgorithmManagerPyTest", "refmdb-py", new RefMdbTmService(tmGenerator), "refmdb-py");
         } catch (Exception e) {
             e.printStackTrace();
         }

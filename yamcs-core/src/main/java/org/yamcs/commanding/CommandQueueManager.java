@@ -37,7 +37,7 @@ import org.yamcs.utils.TimeEncoding;
 public class CommandQueueManager {
 	@GuardedBy("this")
 	private HashMap<String,CommandQueue> queues=new HashMap<String,CommandQueue>();
-	TcUplinker uplinker;
+	CommandReleaser commandReleaser;
 	CommandHistory commandHistoryListener;
 	CommandingManager commandingManager;
 	ConcurrentLinkedQueue<CommandQueueListener> monitoringClients=new ConcurrentLinkedQueue<CommandQueueListener>();
@@ -49,7 +49,7 @@ public class CommandQueueManager {
 	 * Constructs a Command Queue Manager having the given history manager and tc uplinker.
 	 *  The parameters have to be not null.
 	 * @param commandHistoryListener
-	 * @param uplinker
+	 * @param commandReleaser
 	 * @throws ConfigurationException in case there is an error in the configuration file. 
 	 *         Note: if the configuration file doesn't exist, this exception is not thrown.
 	 */
@@ -59,7 +59,7 @@ public class CommandQueueManager {
 		Channel chan=commandingManager.getChannel();
 		log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		this.commandHistoryListener=chan.getCommandHistoryListener();
-		this.uplinker=chan.getTcUplinker();
+		this.commandReleaser=chan.getCommandReleaser();
 		this.instance=chan.getInstance();
 		this.channelName=chan.getName();
 		
@@ -119,7 +119,6 @@ public class CommandQueueManager {
 		} else if(q.state==QueueState.BLOCKED) {
 			q.commands.add(pc);
 			//	Notify the monitoring clients
-			System.out.println("going to notify "+monitoringClients.size()+" clients that command is added into queue"+q.name);
 			for(CommandQueueListener m:monitoringClients) {
 				try {
 					m.commandAdded(q, pc);
@@ -169,7 +168,7 @@ public class CommandQueueManager {
 				return;
 			}*/
 		}
-		uplinker.sendTc(pc);
+		commandReleaser.releaseCommand(pc);
 		//Notify the monitoring clients
 		if(notify) {
 			for(CommandQueueListener m:monitoringClients) {

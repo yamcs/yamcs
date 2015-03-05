@@ -8,11 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -20,13 +21,11 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
-import com.google.common.util.concurrent.Service.State;
 
 /**
  * This class helps keeping track of the different objects used in a channel - i.e. all the 
@@ -50,14 +49,13 @@ public class Channel {
 	private CommandHistory commandHistoryListener;
 	private CommandingManager commandingManager;
 	private TmPacketProvider tmPacketProvider;
-	private TcUplinker tcUplinker;
+	private CommandReleaser commandReleaser;
 	private List<ParameterProvider> parameterProviders = new ArrayList<ParameterProvider>();
 	
-	public XtceDb xtcedb;
+	private XtceDb xtcedb;
 	
 	private String name;
 	private String type;
-	private String spec;
 	private final String yamcsInstance;
 	
 	
@@ -78,27 +76,26 @@ public class Channel {
 	
 	
 	
-	public Channel(String yamcsInstance, String name, String type, String spec, String creator) throws ChannelException {
-	    if((name==null) || "".equals(name)) 
+	public Channel(String yamcsInstance, String name, String type, String creator) throws ChannelException {
+	    if((name==null) || "".equals(name)) {
 			throw new ChannelException("The channel name can not be empty");
-		log.info("creating a new channel name="+name+" type="+type+" spec="+spec);
+	    }
+		log.info("creating a new channel name="+name+" type="+type);
 		this.yamcsInstance=yamcsInstance;
 		this.name=name; 
 		this.creator=creator;
 		this.type=type;
-		this.spec=spec;
 	}
 	
-	void init(TcTmService tctms, CommandHistory cmdHistListener) throws ChannelException, ConfigurationException {
+	void init(TcTmService tctms) throws ChannelException, ConfigurationException {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
         
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new ChannelException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
            
             this.tmPacketProvider=tctms.getTmPacketProvider();
-            this.tcUplinker=tctms.getTcUplinker();
+            this.commandReleaser=tctms.getCommandReleaser();
             this.parameterProviders.addAll(tctms.getParameterProviders());
-            this.commandHistoryListener=cmdHistListener;
             
             synchronous = tctms.isSynchronous();
             
@@ -112,12 +109,18 @@ public class Channel {
             containerRequestManager.setPacketProvider(tmPacketProvider);
             
             for(ParameterProvider pprov: parameterProviders) {
+            	pprov.init(this);
                 parameterRequestManager.addParameterProvider(pprov);
             }
             
-            if(tcUplinker!=null) { 
+            if(commandReleaser!=null) { 
                 commandingManager=new CommandingManager(this);
-                if(commandHistoryListener!=null) tcUplinker.setCommandHistoryListener(commandHistoryListener);
+                try {
+    				this.commandHistoryListener=new YarchCommandHistoryAdapter(yamcsInstance);
+    			} catch (Exception e) {
+    				throw new ConfigurationException("Cannot create command history" , e);
+    			}
+                commandReleaser.setCommandHistoryListener(commandHistoryListener);
             } else {
                 commandingManager=null;
             }
@@ -135,26 +138,6 @@ public class Channel {
 	private static String key(String instance, String name) {
 	    return instance+"."+name;
 	}
-    /**
-	 * Used only for unit tests!
-	 * @param hasCommanding
-	 */
-	public Channel (boolean hasCommanding) throws ConfigurationException {
-	    this.yamcsInstance=null;
-	    xtcedb=XtceDbFactory.getInstance(null);
-		if(hasCommanding) {
-			commandingManager=new CommandingManager(this);
-		} else {
-			commandingManager=null;
-		}
-		tmPacketProvider = null;
-		parameterProviders=new ArrayList<ParameterProvider>();
-		tcUplinker=null;
-		parameterRequestManager=null;
-		containerRequestManager=null;
-		commandHistoryListener=null;
-	}
-	
 	
 	public CommandHistory getCommandHistoryListener() {
 		return commandHistoryListener;
@@ -178,18 +161,15 @@ public class Channel {
 	 *
 	 */
 	public void start() {
-	    Future<State> f=tmPacketProvider.start();
-	    if(tcUplinker!=null)tcUplinker.start();
+	    tmPacketProvider.startAsync();
+	    if(commandReleaser!=null) commandReleaser.startAsync();
 	    for(ParameterProvider pprov: parameterProviders) {
-	        pprov.start();
+	        pprov.startAsync();
 	    }
 		if(parameterRequestManager!=null) parameterRequestManager.start();
 		if(containerRequestManager!=null) containerRequestManager.start();
-		try {
-            f.get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+		tmPacketProvider.awaitRunning();
+
 		propagateChannelStateChange();
 	}
 
@@ -216,8 +196,8 @@ public class Channel {
 	/**
 	 * @return the tcUplinker
 	 */
-	public TcUplinker getTcUplinker() {
-		return tcUplinker;
+	public CommandReleaser getCommandReleaser() {
+		return commandReleaser;
 	}
 
 	/**
@@ -229,13 +209,6 @@ public class Channel {
 
 	public String getName() {
 		return name;
-	}
-
-	/**
-	 * @return the spec
-	 */
-	public String getSpec() {
-		return spec;
 	}
 
 	/**
@@ -322,7 +295,7 @@ public class Channel {
 		parameterRequestManager.quit();
 		containerRequestManager.quit();
 		//if(commandHistoryListener!=null) commandHistoryListener.channelStopped();
-		if(tcUplinker!=null) tcUplinker.stop();
+		if(commandReleaser!=null) commandReleaser.stopAsync();
 		log.info("Channel "+name+" is out of business");
 		for(int i=0; i<listeners.size(); i++) {
             listeners.get(i).channelClosed(this);
@@ -390,7 +363,7 @@ public class Channel {
 	
 	@Override
     public String toString() {
-        return "name: "+name+" type: "+type+" spec:"+spec+" connectedClients:"+connectedClients.size();
+        return "name: "+name+" type: "+type+" connectedClients:"+connectedClients.size();
     }
 	
 	/**
@@ -399,5 +372,9 @@ public class Channel {
 	 */
 	public String getInstance() {
 	    return yamcsInstance;
+	}
+	
+	public XtceDb getXtceDb() {
+		return xtcedb;
 	}
 }

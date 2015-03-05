@@ -65,7 +65,7 @@ public class TestEventRecording extends YarchTestCase {
     @Test
     public void testRecording() throws Exception {
         final int n=100;
-        (new EventRecorder(context.getDbName())).start();
+        (new EventRecorder(context.getDbName())).startAsync();
         YamcsSession ys=YamcsSession.newBuilder().build();
         ClientBuilder pcb=ys.newClientBuilder();
         SimpleString address=new SimpleString("events_realtime");
@@ -128,7 +128,7 @@ public class TestEventRecording extends YarchTestCase {
         
         //and now try remotely using replay
         ReplayServer replay=new ReplayServer(ydb.getName());
-        replay.start();
+        replay.startAsync();
         msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
         
@@ -156,6 +156,6 @@ public class TestEventRecording extends YarchTestCase {
         
         streamAdapter.quit();
         msgClient.close();
-        replay.stop();
+        replay.stopAsync();
     }
 }

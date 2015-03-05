@@ -408,7 +408,7 @@ public class XtceDbFactory {
         XtceDb db = (XtceDb) in.readObject();
         in.close();
         log.info("Loaded xtce database with " + db.getSequenceContainers().size()
-                + " containers and " + db.getParameterNames().size() + " parameters");
+                + " containers, " + db.getParameterNames().size() + " parameters and "+db.getMetaCommands().size()+" commands");
         return db;
     }
 

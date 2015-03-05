@@ -58,7 +58,6 @@ public class MetaCommandProcessor {
 	 */
 	private static void collectAndCheckArguments(MetaCommand mc, Map<Argument, Value> args, Map<String, String> argAssignment) throws ErrorInCommand {
 		List<Argument> argList = mc.getArgumentList();
-		System.out.println("here 1 argList: "+argList);
 		if(argList!=null) {
 			//check for each argument that we either have an assignment or a value 
 			for(Argument a: argList) {
@@ -86,7 +85,6 @@ public class MetaCommandProcessor {
 		
 		//now, go to the parent
 		MetaCommand parent = mc.getBaseMetaCommand();
-		System.out.println("here parent: "+parent);
 		if(parent!=null) {
 			List<ArgumentAssignment> aaList = mc.getArgumentAssignmentList();
 			if(aaList!=null) {

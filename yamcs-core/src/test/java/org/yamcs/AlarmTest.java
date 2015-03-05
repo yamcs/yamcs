@@ -44,7 +44,7 @@ public class AlarmTest {
 
         tmGenerator=new RefMdbPacketGenerator();
         try {
-            c=ChannelFactory.create(yamcsInstance, "AlarmTest", "refmdb", "refmdb", new RefMdbTmService(tmGenerator), "refmdb", null);
+            c=ChannelFactory.create(yamcsInstance, "AlarmTest", "refmdb", new RefMdbTmService(tmGenerator), "test");
         } catch (Exception e) {
             e.printStackTrace();
         }

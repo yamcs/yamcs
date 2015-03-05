@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
 import org.yamcs.ChannelFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterConsumer;
 import org.yamcs.ParameterListener;
@@ -20,6 +21,7 @@ import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
 import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
+import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -79,7 +81,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         MyTcTmService tctms=new MyTcTmService();
 
         try {
-            channel = ChannelFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", plist.size()+" params", tctms, "internal", null);
+            channel = ChannelFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
         } catch (Exception e) {
             throw new YamcsException("cannot create channel", e);
         }
@@ -257,7 +259,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         }
 
         @Override
-        public TcUplinker getTcUplinker() {
+        public CommandReleaser getCommandReleaser() {
             return null;
         }
 
@@ -336,6 +338,10 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         Set<Parameter> subscribedParams = new HashSet<Parameter>();
         
         @Override
+		public void init(Channel channel) throws ConfigurationException {
+			
+		}
+        @Override
         public void setParameterListener(ParameterListener parameterRequestManager) {
         }
 
@@ -383,5 +389,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         protected void doStop() {
             notifyStopped();
         }
+
+		
     }
 }
