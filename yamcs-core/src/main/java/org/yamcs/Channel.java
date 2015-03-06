@@ -166,8 +166,7 @@ public class Channel {
 	    for(ParameterProvider pprov: parameterProviders) {
 	        pprov.startAsync();
 	    }
-		if(parameterRequestManager!=null) parameterRequestManager.start();
-		if(containerRequestManager!=null) containerRequestManager.start();
+		
 		tmPacketProvider.awaitRunning();
 
 		propagateChannelStateChange();
@@ -292,8 +291,9 @@ public class Channel {
 		log.info("Channel "+name+" quitting");
 		quitting=true;
 		instances.remove(key(yamcsInstance,name));
-		parameterRequestManager.quit();
-		containerRequestManager.quit();
+		for(ParameterProvider p:parameterProviders) {
+			p.stopAsync();
+		}
 		//if(commandHistoryListener!=null) commandHistoryListener.channelStopped();
 		if(commandReleaser!=null) commandReleaser.stopAsync();
 		log.info("Channel "+name+" is out of business");

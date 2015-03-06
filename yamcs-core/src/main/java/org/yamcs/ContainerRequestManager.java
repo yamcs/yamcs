@@ -153,13 +153,6 @@ public class ContainerRequestManager implements ContainerListener {
         return tmProcessor;
     }
 
-    public void start() {
-        tmProcessor.startAsync();
-    }
-    
-    public void quit() {
-        tmPacketProvider.stopAsync();
-    }
     
     private static class ContainerWithId {
         SequenceContainer def; // The definition of the container

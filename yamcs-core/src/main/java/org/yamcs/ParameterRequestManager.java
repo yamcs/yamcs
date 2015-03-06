@@ -419,23 +419,6 @@ public class ParameterRequestManager implements ParameterListener {
 	    return alarmChecker;
 	}
 	
-
-	/**
-	 * Starts processing by creating a new thread for the associated TmProcessor and SystemVariablesManager
-	 *
-	 */
-	public void start() {
-		for(ParameterProvider provider:parameterProviders.values()) {
-		    provider.startAsync();
-		}
-	}
-
-	public void quit() {
-		for(ParameterProvider provider:parameterProviders.values()) {
-		    provider.stopAsync();
-		}
-	}
-	
 	@Override
     public String toString() {
 		StringBuffer sb=new StringBuffer();
