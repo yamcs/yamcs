@@ -11,8 +11,8 @@ bin/
 target/
 yamcs-core/lib/
 yamcs-core/src/main/java/org/yamcs/YamcsVersion.java
-make-live-devel.sh
 live
 doc/yamcs-manual.fo
 doc/yamcs-manual.pdf
 server.lock
+make-live-devel-local.sh
