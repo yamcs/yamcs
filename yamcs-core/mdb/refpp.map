@@ -1,7 +1,0 @@
-#Processed Parameter definition
-#each line has to contain at least two values separated by tab 
-#opsname UMI
-# The same UMI can appear multiple times with diferent opsnames, but not the otherway around
-Name	Group	MDB:OpsName
-umi_280993940373519	grp1	grp1_para1_PP
-umi_0x010203040506	grp2	grp2_para2_PP

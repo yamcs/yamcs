@@ -5,7 +5,7 @@
   <parent>
     <artifactId>yamcs</artifactId>
     <groupId>org.yamcs</groupId>
-    <version>0.27.3</version>
+    <version>0.27.4</version>
   </parent>
 
   <artifactId>yamcs-web</artifactId>
