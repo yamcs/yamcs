@@ -4,12 +4,25 @@ public class BinaryDataType extends BaseDataType {
     private static final long serialVersionUID = 1L;
     
     /**
-     * DIFFERS_FROM_XTCE
+     * DIFFERS_FROM_XTCE XTCE does not define a size range
      */
     IntegerRange sizeRangeInBytes; 
-    BinaryDataType(String name) {
+    
+    byte[] initialValue;
+    
+
+	BinaryDataType(String name) {
 		super(name);
 	}
+	
+    public byte[] getInitialValue() {
+		return initialValue;
+	}
+
+	public void setInitialValue(byte[] initialValue) {
+		this.initialValue = initialValue;
+	}
+
     
 	public IntegerRange getSizeRangeInBytes() {
 		return sizeRangeInBytes;

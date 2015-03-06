@@ -15,10 +15,20 @@ public class StringDataType extends BaseDataType {
 	 * Initial value - used as default value for arguments
 	 */
 	String initialValue;
-	
 	StringDataType(String name) {
 		super(name);
 	}
+	
+	
+	public String getInitialValue() {
+		return initialValue;
+	}
+
+	public void setInitialValue(String initialValue) {
+		this.initialValue = initialValue;
+	}
+
+
 	
 	public IntegerRange getSizeRangeInCharacters() {
 		return sizeRangeInCharacters;
