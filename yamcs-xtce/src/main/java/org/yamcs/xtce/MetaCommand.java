@@ -144,6 +144,13 @@ public class MetaCommand extends NameDescription {
 		argumentList.add(arg);
 	}
 	
+	public void addArgumentAssignment(ArgumentAssignment aa) {
+		if(argumentAssignmentList==null) {
+			argumentAssignmentList = new ArrayList<ArgumentAssignment>();
+			argumentAssignmentList.add(aa);
+		}
+	}
+	
 	public void print(PrintStream out) {
 	        out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
 	        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());

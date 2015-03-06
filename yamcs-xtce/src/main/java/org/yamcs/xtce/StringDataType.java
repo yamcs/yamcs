@@ -11,6 +11,11 @@ public class StringDataType extends BaseDataType {
 	 */
 	IntegerRange sizeRangeInCharacters; 
 	
+	/**
+	 * Initial value - used as default value for arguments
+	 */
+	String initialValue;
+	
 	StringDataType(String name) {
 		super(name);
 	}
@@ -23,5 +28,4 @@ public class StringDataType extends BaseDataType {
 	public void setSizeRangeInCharacters(IntegerRange sizeRangeInCharacters) {
 		this.sizeRangeInCharacters = sizeRangeInCharacters;
 	}
-	
 }

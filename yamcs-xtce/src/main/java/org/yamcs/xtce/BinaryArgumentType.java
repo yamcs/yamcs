@@ -15,4 +15,5 @@ public class BinaryArgumentType extends BinaryDataType implements ArgumentType {
     public String toString() {
         return "BinaryArgumentType name:"+name+" encoding:"+encoding;
     }
+
 }

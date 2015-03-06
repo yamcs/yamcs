@@ -12,6 +12,11 @@ public class IntegerDataType extends NumericDataType {
 	 */
 	IntegerValidRange validRange;
 
+	/**
+	 * Used mainly for command arguments to specify the default value
+	 */
+	String initialValue;
+
 	
 	IntegerDataType(String name){
 		super(name);
@@ -45,4 +50,11 @@ public class IntegerDataType extends NumericDataType {
 		this.validRange = range;		
 	}
 	
+	public void setInitialValue(String initialValue) {
+		this.initialValue = initialValue;
+	}
+	
+	public String getInitialValue() {
+		return initialValue;
+	}
 }

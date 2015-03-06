@@ -8,7 +8,7 @@ package org.yamcs.xtce;
 public class Argument extends NameDescription {
 	private static final long serialVersionUID = 2L;
 
-	Argument(String name) {
+	public Argument(String name) {
 		super(name);
 	}
 	

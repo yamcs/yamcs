@@ -9,7 +9,19 @@ public class FloatDataType extends NumericDataType {
 	 * 
 	 */
 	FloatValidRange validRange;
-		
+	
+	/**
+	 * XTCE: Initial value is always given in calibrated form
+	 */
+	double initialValue;
+	
+	public double getInitialValue() {
+		return initialValue;
+	}
+	public void setInitialValue(double initialValue) {
+		this.initialValue = initialValue;
+	}
+
 	int sizeInBits=32;
 	FloatDataType(String name) {
 		super(name);
