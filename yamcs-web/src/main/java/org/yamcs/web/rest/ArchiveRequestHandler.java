@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
@@ -24,6 +25,7 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
@@ -48,23 +50,40 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /** 
- * Serves archived data through a webresti. The Archived data is fetched from the
+ * Serves archived data through a web api. The Archived data is fetched from the
  * ReplayServer using HornetQ.
- * <p>
- * Parameters or packets need to be defined in a profile. 
+ *
+ * <p>Archive requests use chunked encoding with an unspecified content length, which enables
+ * us to send large dumps without needing to determine a content length on the server. At the
+ * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
  */
 public class ArchiveRequestHandler extends RestRequestHandler {
-    final static Logger log=LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
-    
+
+    private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    private final File profileDir;
+
+    public ArchiveRequestHandler() {
+        try {
+            String cacheDir = YConfiguration.getConfiguration("mdb").getGlobalProperty("cacheDirectory");
+            profileDir = new File(cacheDir, "profiles");
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+/*    @Override
+    public String[] getSupportedOutboundMediaTypes() {
+        return new String[] { JSON_MIME_TYPE, CSV_MIME_TYPE, BINARY_MIME_TYPE };
+    }*/
+
     @Override
     public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
-        if((remainingUri==null) || remainingUri.isEmpty()) {
+        if(remainingUri == null || remainingUri.isEmpty()) {
             sendError(ctx, BAD_REQUEST);
             return;
         }
         
-        ReplayRequest.Builder rrb=ReplayRequest.newBuilder()
-                        .setEndAction(EndAction.QUIT);
+        ReplayRequest.Builder rrb=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         
         QueryStringDecoder decoder=new QueryStringDecoder(remainingUri);
         Map<String,List<String>> qParams=decoder.getParameters();
@@ -80,9 +99,6 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 sendError(ctx, BAD_REQUEST);
                 return;
             }
-            YConfiguration c=YConfiguration.getConfiguration("mdb");
-            String dir=c.getGlobalProperty("cacheDirectory");
-            File profileDir=new File(dir, "profiles");
             File profile=new File(profileDir, qParams.get("profile").get(0));
             if (profile.exists()) {
                 List<String> lines=Files.readLines(profile, CharsetUtil.UTF_8);
@@ -139,10 +155,10 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             
             if(decoder.getPath().equals("packets")) {
                 response.setHeader("Content-Disposition", "attachment; filename=packet-dump");
-                setContentTypeHeader(response, "application/octet-stream");
+                setContentTypeHeader(response, BINARY_MIME_TYPE);
             } else if(decoder.getPath().equals("parameters")) {
                 response.setHeader("Content-Disposition", "attachment; filename=parameters.csv"); 
-                setContentTypeHeader(response, "text/csv");
+                setContentTypeHeader(response, CSV_MIME_TYPE);
             }
             
             Channel ch=evt.getChannel();
@@ -193,6 +209,9 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                     log.trace("Writing chunk of length {}",n);
                     HttpChunk chunk=new DefaultHttpChunk(ChannelBuffers.wrappedBuffer(barray,0,n));
                     writeFuture=ch.write(chunk);
+                    while (!ch.isWritable() && ch.isOpen()) {
+                        writeFuture.await(5, TimeUnit.SECONDS);
+                    }
                 }
             }
         } finally {

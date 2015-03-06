@@ -9,8 +9,10 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.protobuf.Rest.ValidateCommandRequest;
-import org.yamcs.protobuf.Rest.ValidateCommandResponse;
+import org.yamcs.protobuf.Rest.RestArgumentType;
+import org.yamcs.protobuf.Rest.RestCommandType;
+import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
+import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -32,9 +34,9 @@ public class CommandingRequestHandler extends RestRequestHandler {
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
             if ("validate".equals(qsDecoder.getPath())) {
-                ValidateCommandRequest request = readMessage(req, SchemaRest.ValidateCommandRequest.MERGE).build();
-                ValidateCommandResponse response = validateCommand(request, yamcsChannel);
-                writeMessage(req, qsDecoder, evt, response, SchemaRest.ValidateCommandResponse.WRITE);
+                RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
+                RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
+                writeMessage(req, qsDecoder, evt, response, SchemaRest.RestValidateCommandResponse.WRITE);
             } else {
                 sendError(ctx, BAD_REQUEST);
             }
@@ -43,25 +45,34 @@ public class CommandingRequestHandler extends RestRequestHandler {
 
     /**
      * Validates commands sent by POST
+     * /REFMDB/SOAR/SWITCH_VOLTAGE_ON
+     * curl -XGET http://localhost:8090/commanding/validate -D
+     * vlotage_num", "5"
      */
-    private ValidateCommandResponse validateCommand(ValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws Exception {
+    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws Exception {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        ValidateCommandResponse.Builder responseb = ValidateCommandResponse.newBuilder();
+        RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
 
-        // TODO build from request
-        MetaCommand mc = xtcedb.getMetaCommand(NamedObjectId.newBuilder().setName("/REFMDB/SOAR/SWITCH_VOLTAGE_ON").build());
-        ArgumentAssignment assignment = new ArgumentAssignment("vlotage_num", "5");
-        List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
-        assignments.add(assignment);
-        String origin = "fdi-mac"; // TODO
-        int seqId = 1234; // TODO
-        String user = "anonymous"; // TODO
+        for (RestCommandType restCommand : request.getCommandsList()) {
+            MetaCommand mc = xtcedb.getMetaCommand(NamedObjectId.newBuilder().setName(restCommand.getName().getName()).build());
 
-        try {
-            PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
-        } catch (ErrorInCommand e) {
-            responseb.setException(toException("ErrorInCommand", e));
+            List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
+            for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
+                assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
+            }
+
+            String origin = "fdi-mac"; // TODO
+            int seqId = 1234; // TODO
+            String user = "anonymous"; // TODO
+
+            try {
+                PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
+            } catch (ErrorInCommand e) {
+                responseb.setException(toException("ErrorInCommand", e));
+            }
+
+            break; // FIXME
         }
 
         return responseb.build();

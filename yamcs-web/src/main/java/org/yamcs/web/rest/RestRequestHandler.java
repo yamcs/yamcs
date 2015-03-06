@@ -21,7 +21,7 @@ import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.yamcs.protobuf.Rest.ExceptionMessage;
+import org.yamcs.protobuf.Rest.RestExceptionMessage;
 import org.yamcs.web.AbstractRequestHandler;
 
 import com.dyuproject.protostuff.JsonIOUtil;
@@ -136,7 +136,7 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
     /**
      * Just a little shortcut because builders are dead ugly
      */
-    protected static ExceptionMessage.Builder toException(String type, Throwable t) {
-        return ExceptionMessage.newBuilder().setType(type).setMsg(t.getMessage());
+    protected static RestExceptionMessage.Builder toException(String type, Throwable t) {
+        return RestExceptionMessage.newBuilder().setType(type).setMsg(t.getMessage());
     }
 }

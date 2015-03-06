@@ -6,10 +6,10 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.yamcs.protobuf.Rest.DumpRawMdbRequest;
-import org.yamcs.protobuf.Rest.DumpRawMdbResponse;
-import org.yamcs.protobuf.Rest.ListAvailableParametersRequest;
-import org.yamcs.protobuf.Rest.ListAvailableParametersResponse;
+import org.yamcs.protobuf.Rest.RestDumpRawMdbRequest;
+import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
+import org.yamcs.protobuf.Rest.RestListAvailableParametersRequest;
+import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.NamedDescriptionIndex;
@@ -30,13 +30,13 @@ public class MdbRequestHandler extends RestRequestHandler {
     public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("parameters".equals(remainingUri)) {
-            ListAvailableParametersRequest request = readMessage(httpRequest, SchemaRest.ListAvailableParametersRequest.MERGE).build();
+            RestListAvailableParametersRequest request = readMessage(httpRequest, SchemaRest.RestListAvailableParametersRequest.MERGE).build();
             MessageLite responseMsg = listAvailableParameters(request, yamcsInstance);
-            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.ListAvailableParametersResponse.WRITE);
+            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestListAvailableParametersResponse.WRITE);
         } else if ("dump".equals(remainingUri)) {
-            DumpRawMdbRequest request = readMessage(httpRequest, SchemaRest.DumpRawMdbRequest.MERGE).build();
+            RestDumpRawMdbRequest request = readMessage(httpRequest, SchemaRest.RestDumpRawMdbRequest.MERGE).build();
             MessageLite responseMsg = dumpRawMdb(request, yamcsInstance);
-            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.DumpRawMdbResponse.WRITE);
+            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
         } else {
             sendError(ctx, BAD_REQUEST);
         }
@@ -47,10 +47,10 @@ public class MdbRequestHandler extends RestRequestHandler {
      * <p>
      * Currently only sends MDB:OPS Name names.
      */
-    private ListAvailableParametersResponse listAvailableParameters(ListAvailableParametersRequest request, String yamcsInstance) throws Exception {
+    private RestListAvailableParametersResponse listAvailableParameters(RestListAvailableParametersRequest request, String yamcsInstance) throws Exception {
         XtceDb mdb =  XtceDbFactory.getInstance(yamcsInstance);
 
-        ListAvailableParametersResponse.Builder responseb = ListAvailableParametersResponse.newBuilder();
+        RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
 
         NamedDescriptionIndex<Parameter> index = mdb.getParameterAliases();
         // TODO dump for all namespaces if not specified
@@ -62,8 +62,8 @@ public class MdbRequestHandler extends RestRequestHandler {
         return responseb.build();
     }
 
-    private DumpRawMdbResponse dumpRawMdb(DumpRawMdbRequest request, String yamcsInstance) throws Exception {
-        DumpRawMdbResponse.Builder responseb = DumpRawMdbResponse.newBuilder();
+    private RestDumpRawMdbResponse dumpRawMdb(RestDumpRawMdbRequest request, String yamcsInstance) throws Exception {
+        RestDumpRawMdbResponse.Builder responseb = RestDumpRawMdbResponse.newBuilder();
 
         // TODO TEMP would prefer if we don't send java-serialized data.
         // TODO this limits our abilities to send, say, json
