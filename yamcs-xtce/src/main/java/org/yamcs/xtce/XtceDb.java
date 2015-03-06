@@ -136,6 +136,10 @@ public class XtceDb implements Serializable {
     public Collection<Parameter> getParameters() {
         return parameters.values();
     }
+
+    public NamedDescriptionIndex<Parameter> getParameterAliases() {
+        return parameterAliases;
+    }
     
     public MetaCommand getMetaCommand(String qualifiedName) {
         return commandAliases.get(qualifiedName);

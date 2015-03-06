@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.websocket;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;

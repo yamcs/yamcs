@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.websocket;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +29,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.web.Computation;
+import org.yamcs.web.ComputationFactory;
 
 import com.dyuproject.protostuff.JsonIOUtil;
 
@@ -118,10 +120,10 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
 
     private void unsubscribe(int id, JsonParser jsp) {
         List<NamedObjectId> paraList=null;
-       
         try {
             NamedObjectList.Builder nolb=NamedObjectList.newBuilder();
             JsonIOUtil.mergeFrom(jsp, nolb, SchemaYamcs.NamedObjectList.MERGE, false);
+            paraList=nolb.getListList();
         } catch (IOException e) {
             log.warn("Could not decode the parameter list");
             return;
