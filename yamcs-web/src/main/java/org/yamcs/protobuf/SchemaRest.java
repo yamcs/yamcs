@@ -1063,6 +1063,21 @@ public final class SchemaRest
                 if(message.hasException())
                     output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
 
+                if(message.hasParameterData())
+                    output.writeObject(2, message.getParameterData(), org.yamcs.protobuf.SchemaPvalue.ParameterData.WRITE, false);
+
+                if(message.hasPacketData())
+                    output.writeObject(3, message.getPacketData(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.WRITE, false);
+
+                if(message.hasCommand())
+                    output.writeObject(4, message.getCommand(), org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.WRITE, false);
+
+                if(message.hasEvent())
+                    output.writeObject(5, message.getEvent(), org.yamcs.protobuf.SchemaYamcs.Event.WRITE, false);
+
+                if(message.hasPpData())
+                    output.writeObject(6, message.getPpData(), org.yamcs.protobuf.SchemaPvalue.ParameterData.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestReplayResponse message)
             {
@@ -1106,6 +1121,26 @@ public final class SchemaRest
                             builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
 
                             break;
+                        case 2:
+                            builder.setParameterData(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE));
+
+                            break;
+                        case 3:
+                            builder.setPacketData(input.mergeObject(org.yamcs.protobuf.Yamcs.TmPacketData.newBuilder(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.MERGE));
+
+                            break;
+                        case 4:
+                            builder.setCommand(input.mergeObject(org.yamcs.protobuf.Commanding.CommandHistoryEntry.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.MERGE));
+
+                            break;
+                        case 5:
+                            builder.setEvent(input.mergeObject(org.yamcs.protobuf.Yamcs.Event.newBuilder(), org.yamcs.protobuf.SchemaYamcs.Event.MERGE));
+
+                            break;
+                        case 6:
+                            builder.setPpData(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1147,6 +1182,11 @@ public final class SchemaRest
             switch(number)
             {
                 case 1: return "exception";
+                case 2: return "parameterData";
+                case 3: return "packetData";
+                case 4: return "command";
+                case 5: return "event";
+                case 6: return "ppData";
                 default: return null;
             }
         }
@@ -1159,6 +1199,11 @@ public final class SchemaRest
         static
         {
             fieldMap.put("exception", 1);
+            fieldMap.put("parameterData", 2);
+            fieldMap.put("packetData", 3);
+            fieldMap.put("command", 4);
+            fieldMap.put("event", 5);
+            fieldMap.put("ppData", 6);
         }
     }
 

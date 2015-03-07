@@ -80,7 +80,7 @@ public final class YamcsManagement {
       org.yamcs.protobuf.YamcsManagement.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.ServiceState)
+    // @@protoc_insertion_point(enum_scope:yamcsmanagement.ServiceState)
   }
   
   public static final class ChannelInfo extends
@@ -102,12 +102,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ChannelInfo_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ChannelInfo_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -152,21 +152,21 @@ public final class YamcsManagement {
     public boolean hasHasCommanding() { return hasHasCommanding; }
     public boolean getHasCommanding() { return hasCommanding_; }
     
-    // optional .org.yamcs.protobuf.ServiceState state = 7;
+    // optional .yamcsmanagement.ServiceState state = 7;
     public static final int STATE_FIELD_NUMBER = 7;
     private boolean hasState;
     private org.yamcs.protobuf.YamcsManagement.ServiceState state_;
     public boolean hasState() { return hasState; }
     public org.yamcs.protobuf.YamcsManagement.ServiceState getState() { return state_; }
     
-    // optional .org.yamcs.protobuf.ReplayRequest replayRequest = 8;
+    // optional .yamcs.ReplayRequest replayRequest = 8;
     public static final int REPLAYREQUEST_FIELD_NUMBER = 8;
     private boolean hasReplayRequest;
     private org.yamcs.protobuf.Yamcs.ReplayRequest replayRequest_;
     public boolean hasReplayRequest() { return hasReplayRequest; }
     public org.yamcs.protobuf.Yamcs.ReplayRequest getReplayRequest() { return replayRequest_; }
     
-    // optional .org.yamcs.protobuf.ReplayStatus.ReplayState replayState = 9;
+    // optional .yamcs.ReplayStatus.ReplayState replayState = 9;
     public static final int REPLAYSTATE_FIELD_NUMBER = 9;
     private boolean hasReplayState;
     private org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState replayState_;
@@ -653,7 +653,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ServiceState state = 7;
+      // optional .yamcsmanagement.ServiceState state = 7;
       public boolean hasState() {
         return result.hasState();
       }
@@ -674,7 +674,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ReplayRequest replayRequest = 8;
+      // optional .yamcs.ReplayRequest replayRequest = 8;
       public boolean hasReplayRequest() {
         return result.hasReplayRequest();
       }
@@ -711,7 +711,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ReplayStatus.ReplayState replayState = 9;
+      // optional .yamcs.ReplayStatus.ReplayState replayState = 9;
       public boolean hasReplayState() {
         return result.hasReplayState();
       }
@@ -732,7 +732,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ChannelInfo)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.ChannelInfo)
     }
     
     static {
@@ -741,7 +741,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ChannelInfo)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.ChannelInfo)
   }
   
   public static final class ClientInfo extends
@@ -763,12 +763,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ClientInfo_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ClientInfo_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ClientInfo_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -1186,7 +1186,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ClientInfo)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.ClientInfo)
     }
     
     static {
@@ -1195,7 +1195,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ClientInfo)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.ClientInfo)
   }
   
   public static final class TmStatistics extends
@@ -1217,12 +1217,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_TmStatistics_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_TmStatistics_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_TmStatistics_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_TmStatistics_fieldAccessorTable;
     }
     
     // required string packetName = 1;
@@ -1630,7 +1630,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.TmStatistics)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.TmStatistics)
     }
     
     static {
@@ -1639,7 +1639,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.TmStatistics)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.TmStatistics)
   }
   
   public static final class Statistics extends
@@ -1661,12 +1661,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_Statistics_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_Statistics_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_Statistics_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_Statistics_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -1683,7 +1683,7 @@ public final class YamcsManagement {
     public boolean hasChannelName() { return hasChannelName; }
     public java.lang.String getChannelName() { return channelName_; }
     
-    // repeated .org.yamcs.protobuf.TmStatistics tmstats = 3;
+    // repeated .yamcsmanagement.TmStatistics tmstats = 3;
     public static final int TMSTATS_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.YamcsManagement.TmStatistics> tmstats_ =
       java.util.Collections.emptyList();
@@ -2020,7 +2020,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.TmStatistics tmstats = 3;
+      // repeated .yamcsmanagement.TmStatistics tmstats = 3;
       public java.util.List<org.yamcs.protobuf.YamcsManagement.TmStatistics> getTmstatsList() {
         return java.util.Collections.unmodifiableList(result.tmstats_);
       }
@@ -2089,7 +2089,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.Statistics)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.Statistics)
     }
     
     static {
@@ -2098,7 +2098,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.Statistics)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.Statistics)
   }
   
   public static final class ChannelRequest extends
@@ -2120,12 +2120,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ChannelRequest_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_ChannelRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -2663,7 +2663,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ChannelRequest)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.ChannelRequest)
     }
     
     static {
@@ -2672,7 +2672,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ChannelRequest)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.ChannelRequest)
   }
   
   public static final class LinkInfo extends
@@ -2694,12 +2694,12 @@ public final class YamcsManagement {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_LinkInfo_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_LinkInfo_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_org_yamcs_protobuf_LinkInfo_fieldAccessorTable;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_LinkInfo_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -3282,7 +3282,7 @@ public final class YamcsManagement {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.LinkInfo)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.LinkInfo)
     }
     
     static {
@@ -3291,7 +3291,7 @@ public final class YamcsManagement {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.LinkInfo)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.LinkInfo)
   }
   
   public static abstract class ChannelControl
@@ -3776,35 +3776,35 @@ public final class YamcsManagement {
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ChannelInfo_descriptor;
+    internal_static_yamcsmanagement_ChannelInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ChannelInfo_fieldAccessorTable;
+      internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ClientInfo_descriptor;
+    internal_static_yamcsmanagement_ClientInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ClientInfo_fieldAccessorTable;
+      internal_static_yamcsmanagement_ClientInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_TmStatistics_descriptor;
+    internal_static_yamcsmanagement_TmStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_TmStatistics_fieldAccessorTable;
+      internal_static_yamcsmanagement_TmStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_Statistics_descriptor;
+    internal_static_yamcsmanagement_Statistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_Statistics_fieldAccessorTable;
+      internal_static_yamcsmanagement_Statistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ChannelRequest_descriptor;
+    internal_static_yamcsmanagement_ChannelRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ChannelRequest_fieldAccessorTable;
+      internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_LinkInfo_descriptor;
+    internal_static_yamcsmanagement_LinkInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_LinkInfo_fieldAccessorTable;
+      internal_static_yamcsmanagement_LinkInfo_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3814,96 +3814,94 @@ public final class YamcsManagement {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\026yamcs-management.proto\022\022org.yamcs.prot" +
-      "obuf\032\013yamcs.proto\"\237\002\n\013ChannelInfo\022\020\n\010ins" +
-      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
-      "\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\025\n\rhasCom" +
-      "manding\030\006 \001(\010\022/\n\005state\030\007 \001(\0162 .org.yamcs" +
-      ".protobuf.ServiceState\0228\n\rreplayRequest\030" +
-      "\010 \001(\0132!.org.yamcs.protobuf.ReplayRequest" +
-      "\022A\n\013replayState\030\t \001(\0162,.org.yamcs.protob" +
-      "uf.ReplayStatus.ReplayState\"j\n\nClientInf" +
-      "o\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022\020\n\010usern",
-      "ame\030\003 \001(\t\022\027\n\017applicationName\030\004 \001(\t\022\023\n\013ch" +
-      "annelName\030\005 \001(\t\"\213\001\n\014TmStatistics\022\022\n\npack" +
-      "etName\030\001 \002(\t\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n" +
-      "\014lastReceived\030\003 \001(\003\022\026\n\016lastPacketTime\030\004 " +
-      "\001(\003\022 \n\030subscribedParameterCount\030\005 \001(\005\"{\n" +
-      "\nStatistics\022\020\n\010instance\030\001 \002(\t\022\023\n\013channel" +
-      "Name\030\002 \002(\t\0221\n\007tmstats\030\003 \003(\0132 .org.yamcs." +
-      "protobuf.TmStatistics\022\023\n\013lastUpdated\030\004 \001" +
-      "(\003\"\213\001\n\016ChannelRequest\022\020\n\010instance\030\001 \002(\t\022" +
-      "\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(",
-      "\t\022\031\n\npersistent\030\005 \001(\010:\005false\022\020\n\010clientId" +
-      "\030\006 \003(\005\022\020\n\010seekTime\030\007 \001(\003\"\243\001\n\010LinkInfo\022\020\n" +
-      "\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 " +
-      "\001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010dis" +
-      "abled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount" +
-      "\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014Servic" +
-      "eState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING" +
-      "\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAIL" +
-      "ED\020\0052\233\003\n\016ChannelControl\022M\n\rCreateChannel" +
-      "\022\".org.yamcs.protobuf.ChannelRequest\032\030.o",
-      "rg.yamcs.protobuf.Void\022P\n\020ConnectToChann" +
-      "el\022\".org.yamcs.protobuf.ChannelRequest\032\030" +
-      ".org.yamcs.protobuf.Void\022L\n\014PauseChannel" +
-      "\022\".org.yamcs.protobuf.ChannelRequest\032\030.o" +
-      "rg.yamcs.protobuf.Void\022M\n\rResumeChannel\022" +
-      "\".org.yamcs.protobuf.ChannelRequest\032\030.or" +
-      "g.yamcs.protobuf.Void\022K\n\013SeekChannel\022\".o" +
-      "rg.yamcs.protobuf.ChannelRequest\032\030.org.y" +
-      "amcs.protobuf.Void"
+      "\n\026yamcs-management.proto\022\017yamcsmanagemen" +
+      "t\032\013yamcs.proto\"\202\002\n\013ChannelInfo\022\020\n\010instan" +
+      "ce\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004" +
+      "spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\025\n\rhasComman" +
+      "ding\030\006 \001(\010\022,\n\005state\030\007 \001(\0162\035.yamcsmanagem" +
+      "ent.ServiceState\022+\n\rreplayRequest\030\010 \001(\0132" +
+      "\024.yamcs.ReplayRequest\0224\n\013replayState\030\t \001" +
+      "(\0162\037.yamcs.ReplayStatus.ReplayState\"j\n\nC" +
+      "lientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022" +
+      "\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004 \001",
+      "(\t\022\023\n\013channelName\030\005 \001(\t\"\213\001\n\014TmStatistics" +
+      "\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030" +
+      "\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026\n\016lastPacke" +
+      "tTime\030\004 \001(\003\022 \n\030subscribedParameterCount\030" +
+      "\005 \001(\005\"x\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\023\n" +
+      "\013channelName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.ya" +
+      "mcsmanagement.TmStatistics\022\023\n\013lastUpdate" +
+      "d\030\004 \001(\003\"\213\001\n\016ChannelRequest\022\020\n\010instance\030\001" +
+      " \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec" +
+      "\030\004 \001(\t\022\031\n\npersistent\030\005 \001(\010:\005false\022\020\n\010cli",
+      "entId\030\006 \003(\005\022\020\n\010seekTime\030\007 \001(\003\"\243\001\n\010LinkIn" +
+      "fo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004ty" +
+      "pe\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020" +
+      "\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdata" +
+      "Count\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014S" +
+      "erviceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RU" +
+      "NNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n" +
+      "\006FAILED\020\0052\313\002\n\016ChannelControl\022=\n\rCreateCh" +
+      "annel\022\037.yamcsmanagement.ChannelRequest\032\013" +
+      ".yamcs.Void\022@\n\020ConnectToChannel\022\037.yamcsm",
+      "anagement.ChannelRequest\032\013.yamcs.Void\022<\n" +
+      "\014PauseChannel\022\037.yamcsmanagement.ChannelR" +
+      "equest\032\013.yamcs.Void\022=\n\rResumeChannel\022\037.y" +
+      "amcsmanagement.ChannelRequest\032\013.yamcs.Vo" +
+      "id\022;\n\013SeekChannel\022\037.yamcsmanagement.Chan" +
+      "nelRequest\032\013.yamcs.VoidB\024\n\022org.yamcs.pro" +
+      "tobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_ChannelInfo_descriptor =
+          internal_static_yamcsmanagement_ChannelInfo_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_ChannelInfo_fieldAccessorTable = new
+          internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ChannelInfo_descriptor,
+              internal_static_yamcsmanagement_ChannelInfo_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Creator", "HasCommanding", "State", "ReplayRequest", "ReplayState", },
               org.yamcs.protobuf.YamcsManagement.ChannelInfo.class,
               org.yamcs.protobuf.YamcsManagement.ChannelInfo.Builder.class);
-          internal_static_org_yamcs_protobuf_ClientInfo_descriptor =
+          internal_static_yamcsmanagement_ClientInfo_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_ClientInfo_fieldAccessorTable = new
+          internal_static_yamcsmanagement_ClientInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ClientInfo_descriptor,
+              internal_static_yamcsmanagement_ClientInfo_descriptor,
               new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ChannelName", },
               org.yamcs.protobuf.YamcsManagement.ClientInfo.class,
               org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder.class);
-          internal_static_org_yamcs_protobuf_TmStatistics_descriptor =
+          internal_static_yamcsmanagement_TmStatistics_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_org_yamcs_protobuf_TmStatistics_fieldAccessorTable = new
+          internal_static_yamcsmanagement_TmStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_TmStatistics_descriptor,
+              internal_static_yamcsmanagement_TmStatistics_descriptor,
               new java.lang.String[] { "PacketName", "ReceivedPackets", "LastReceived", "LastPacketTime", "SubscribedParameterCount", },
               org.yamcs.protobuf.YamcsManagement.TmStatistics.class,
               org.yamcs.protobuf.YamcsManagement.TmStatistics.Builder.class);
-          internal_static_org_yamcs_protobuf_Statistics_descriptor =
+          internal_static_yamcsmanagement_Statistics_descriptor =
             getDescriptor().getMessageTypes().get(3);
-          internal_static_org_yamcs_protobuf_Statistics_fieldAccessorTable = new
+          internal_static_yamcsmanagement_Statistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_Statistics_descriptor,
+              internal_static_yamcsmanagement_Statistics_descriptor,
               new java.lang.String[] { "Instance", "ChannelName", "Tmstats", "LastUpdated", },
               org.yamcs.protobuf.YamcsManagement.Statistics.class,
               org.yamcs.protobuf.YamcsManagement.Statistics.Builder.class);
-          internal_static_org_yamcs_protobuf_ChannelRequest_descriptor =
+          internal_static_yamcsmanagement_ChannelRequest_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_org_yamcs_protobuf_ChannelRequest_fieldAccessorTable = new
+          internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ChannelRequest_descriptor,
+              internal_static_yamcsmanagement_ChannelRequest_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Persistent", "ClientId", "SeekTime", },
               org.yamcs.protobuf.YamcsManagement.ChannelRequest.class,
               org.yamcs.protobuf.YamcsManagement.ChannelRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_LinkInfo_descriptor =
+          internal_static_yamcsmanagement_LinkInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);
-          internal_static_org_yamcs_protobuf_LinkInfo_fieldAccessorTable = new
+          internal_static_yamcsmanagement_LinkInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_LinkInfo_descriptor,
+              internal_static_yamcsmanagement_LinkInfo_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Stream", "Disabled", "Status", "DataCount", "DetailedStatus", },
               org.yamcs.protobuf.YamcsManagement.LinkInfo.class,
               org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder.class);

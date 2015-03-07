@@ -74,7 +74,7 @@ public final class Commanding {
       org.yamcs.protobuf.Commanding.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.QueueState)
+    // @@protoc_insertion_point(enum_scope:commanding.QueueState)
   }
   
   public static final class CommandId extends
@@ -96,12 +96,12 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandId_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandId_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandId_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandId_fieldAccessorTable;
     }
     
     // required int64 generationTime = 1;
@@ -475,7 +475,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandId)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandId)
     }
     
     static {
@@ -484,7 +484,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandId)
+    // @@protoc_insertion_point(class_scope:commanding.CommandId)
   }
   
   public static final class CommandQueueInfo extends
@@ -506,12 +506,12 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueInfo_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueInfo_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueInfo_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueInfo_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -535,7 +535,7 @@ public final class Commanding {
     public boolean hasName() { return hasName; }
     public java.lang.String getName() { return name_; }
     
-    // optional .org.yamcs.protobuf.QueueState state = 4;
+    // optional .commanding.QueueState state = 4;
     public static final int STATE_FIELD_NUMBER = 4;
     private boolean hasState;
     private org.yamcs.protobuf.Commanding.QueueState state_;
@@ -877,7 +877,7 @@ public final class Commanding {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.QueueState state = 4;
+      // optional .commanding.QueueState state = 4;
       public boolean hasState() {
         return result.hasState();
       }
@@ -898,7 +898,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandQueueInfo)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandQueueInfo)
     }
     
     static {
@@ -907,7 +907,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandQueueInfo)
+    // @@protoc_insertion_point(class_scope:commanding.CommandQueueInfo)
   }
   
   public static final class CommandQueueEntry extends
@@ -929,12 +929,12 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueEntry_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueEntry_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueEntry_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueEntry_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -958,7 +958,7 @@ public final class Commanding {
     public boolean hasQueueName() { return hasQueueName; }
     public java.lang.String getQueueName() { return queueName_; }
     
-    // required .org.yamcs.protobuf.CommandId cmdId = 4;
+    // required .commanding.CommandId cmdId = 4;
     public static final int CMDID_FIELD_NUMBER = 4;
     private boolean hasCmdId;
     private org.yamcs.protobuf.Commanding.CommandId cmdId_;
@@ -1385,7 +1385,7 @@ public final class Commanding {
         return this;
       }
       
-      // required .org.yamcs.protobuf.CommandId cmdId = 4;
+      // required .commanding.CommandId cmdId = 4;
       public boolean hasCmdId() {
         return result.hasCmdId();
       }
@@ -1503,7 +1503,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandQueueEntry)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandQueueEntry)
     }
     
     static {
@@ -1512,7 +1512,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandQueueEntry)
+    // @@protoc_insertion_point(class_scope:commanding.CommandQueueEntry)
   }
   
   public static final class CommandQueueRequest extends
@@ -1534,22 +1534,22 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueRequest_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandQueueRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueRequest_fieldAccessorTable;
     }
     
-    // optional .org.yamcs.protobuf.CommandQueueInfo queueInfo = 1;
+    // optional .commanding.CommandQueueInfo queueInfo = 1;
     public static final int QUEUEINFO_FIELD_NUMBER = 1;
     private boolean hasQueueInfo;
     private org.yamcs.protobuf.Commanding.CommandQueueInfo queueInfo_;
     public boolean hasQueueInfo() { return hasQueueInfo; }
     public org.yamcs.protobuf.Commanding.CommandQueueInfo getQueueInfo() { return queueInfo_; }
     
-    // optional .org.yamcs.protobuf.CommandQueueEntry queueEntry = 2;
+    // optional .commanding.CommandQueueEntry queueEntry = 2;
     public static final int QUEUEENTRY_FIELD_NUMBER = 2;
     private boolean hasQueueEntry;
     private org.yamcs.protobuf.Commanding.CommandQueueEntry queueEntry_;
@@ -1829,7 +1829,7 @@ public final class Commanding {
       }
       
       
-      // optional .org.yamcs.protobuf.CommandQueueInfo queueInfo = 1;
+      // optional .commanding.CommandQueueInfo queueInfo = 1;
       public boolean hasQueueInfo() {
         return result.hasQueueInfo();
       }
@@ -1866,7 +1866,7 @@ public final class Commanding {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.CommandQueueEntry queueEntry = 2;
+      // optional .commanding.CommandQueueEntry queueEntry = 2;
       public boolean hasQueueEntry() {
         return result.hasQueueEntry();
       }
@@ -1921,7 +1921,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandQueueRequest)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandQueueRequest)
     }
     
     static {
@@ -1930,7 +1930,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandQueueRequest)
+    // @@protoc_insertion_point(class_scope:commanding.CommandQueueRequest)
   }
   
   public static final class CommandHistoryAttribute extends
@@ -1952,12 +1952,12 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandHistoryAttribute_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryAttribute_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandHistoryAttribute_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable;
     }
     
     // required string name = 1;
@@ -1967,7 +1967,7 @@ public final class Commanding {
     public boolean hasName() { return hasName; }
     public java.lang.String getName() { return name_; }
     
-    // required .org.yamcs.protobuf.Value value = 2;
+    // required .yamcs.Value value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private boolean hasValue;
     private org.yamcs.protobuf.Yamcs.Value value_;
@@ -2238,7 +2238,7 @@ public final class Commanding {
         return this;
       }
       
-      // required .org.yamcs.protobuf.Value value = 2;
+      // required .yamcs.Value value = 2;
       public boolean hasValue() {
         return result.hasValue();
       }
@@ -2275,7 +2275,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandHistoryAttribute)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandHistoryAttribute)
     }
     
     static {
@@ -2284,7 +2284,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandHistoryAttribute)
+    // @@protoc_insertion_point(class_scope:commanding.CommandHistoryAttribute)
   }
   
   public static final class CommandHistoryEntry extends
@@ -2306,15 +2306,15 @@ public final class Commanding {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandHistoryEntry_descriptor;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryEntry_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Commanding.internal_static_org_yamcs_protobuf_CommandHistoryEntry_fieldAccessorTable;
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryEntry_fieldAccessorTable;
     }
     
-    // required .org.yamcs.protobuf.CommandId cmdId = 1;
+    // required .commanding.CommandId cmdId = 1;
     public static final int CMDID_FIELD_NUMBER = 1;
     private boolean hasCmdId;
     private org.yamcs.protobuf.Commanding.CommandId cmdId_;
@@ -2328,7 +2328,7 @@ public final class Commanding {
     public boolean hasCmdName() { return hasCmdName; }
     public java.lang.String getCmdName() { return cmdName_; }
     
-    // repeated .org.yamcs.protobuf.CommandHistoryAttribute attr = 3;
+    // repeated .commanding.CommandHistoryAttribute attr = 3;
     public static final int ATTR_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryAttribute> attr_ =
       java.util.Collections.emptyList();
@@ -2609,7 +2609,7 @@ public final class Commanding {
       }
       
       
-      // required .org.yamcs.protobuf.CommandId cmdId = 1;
+      // required .commanding.CommandId cmdId = 1;
       public boolean hasCmdId() {
         return result.hasCmdId();
       }
@@ -2667,7 +2667,7 @@ public final class Commanding {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.CommandHistoryAttribute attr = 3;
+      // repeated .commanding.CommandHistoryAttribute attr = 3;
       public java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryAttribute> getAttrList() {
         return java.util.Collections.unmodifiableList(result.attr_);
       }
@@ -2718,7 +2718,7 @@ public final class Commanding {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandHistoryEntry)
+      // @@protoc_insertion_point(builder_scope:commanding.CommandHistoryEntry)
     }
     
     static {
@@ -2727,7 +2727,7 @@ public final class Commanding {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandHistoryEntry)
+    // @@protoc_insertion_point(class_scope:commanding.CommandHistoryEntry)
   }
   
   public static abstract class CommandQueueControl
@@ -3082,35 +3082,35 @@ public final class Commanding {
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandId_descriptor;
+    internal_static_commanding_CommandId_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandId_fieldAccessorTable;
+      internal_static_commanding_CommandId_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandQueueInfo_descriptor;
+    internal_static_commanding_CommandQueueInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandQueueInfo_fieldAccessorTable;
+      internal_static_commanding_CommandQueueInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandQueueEntry_descriptor;
+    internal_static_commanding_CommandQueueEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandQueueEntry_fieldAccessorTable;
+      internal_static_commanding_CommandQueueEntry_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandQueueRequest_descriptor;
+    internal_static_commanding_CommandQueueRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandQueueRequest_fieldAccessorTable;
+      internal_static_commanding_CommandQueueRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandHistoryAttribute_descriptor;
+    internal_static_commanding_CommandHistoryAttribute_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandHistoryAttribute_fieldAccessorTable;
+      internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandHistoryEntry_descriptor;
+    internal_static_commanding_CommandHistoryEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandHistoryEntry_fieldAccessorTable;
+      internal_static_commanding_CommandHistoryEntry_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3120,87 +3120,84 @@ public final class Commanding {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020commanding.proto\022\022org.yamcs.protobuf\032\013" +
-      "yamcs.proto\"`\n\tCommandId\022\026\n\016generationTi" +
-      "me\030\001 \002(\003\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumb" +
-      "er\030\003 \002(\005\022\023\n\013commandName\030\004 \001(\t\"v\n\020Command" +
-      "QueueInfo\022\020\n\010instance\030\001 \002(\t\022\023\n\013channelNa" +
-      "me\030\002 \002(\t\022\014\n\004name\030\003 \002(\t\022-\n\005state\030\004 \001(\0162\036." +
-      "org.yamcs.protobuf.QueueState\"\305\001\n\021Comman" +
-      "dQueueEntry\022\020\n\010instance\030\001 \002(\t\022\023\n\013channel" +
-      "Name\030\002 \002(\t\022\021\n\tqueueName\030\003 \002(\t\022,\n\005cmdId\030\004" +
-      " \002(\0132\035.org.yamcs.protobuf.CommandId\022\016\n\006s",
-      "ource\030\005 \001(\t\022\016\n\006binary\030\006 \001(\014\022\020\n\010username\030" +
-      "\007 \001(\t\022\026\n\016generationTime\030\010 \001(\003\"\241\001\n\023Comman" +
-      "dQueueRequest\0227\n\tqueueInfo\030\001 \001(\0132$.org.y" +
-      "amcs.protobuf.CommandQueueInfo\0229\n\nqueueE" +
-      "ntry\030\002 \001(\0132%.org.yamcs.protobuf.CommandQ" +
-      "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"Q\n\027Com" +
-      "mandHistoryAttribute\022\014\n\004name\030\001 \002(\t\022(\n\005va" +
-      "lue\030\002 \002(\0132\031.org.yamcs.protobuf.Value\"\217\001\n" +
-      "\023CommandHistoryEntry\022,\n\005cmdId\030\001 \002(\0132\035.or" +
-      "g.yamcs.protobuf.CommandId\022\017\n\007cmdName\030\002 ",
-      "\002(\t\0229\n\004attr\030\003 \003(\0132+.org.yamcs.protobuf.C" +
-      "ommandHistoryAttribute*4\n\nQueueState\022\013\n\007" +
-      "BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\212\002\n" +
-      "\023CommandQueueControl\022O\n\rSetQueueState\022$." +
-      "org.yamcs.protobuf.CommandQueueInfo\032\030.or" +
-      "g.yamcs.protobuf.Void\022P\n\013SendCommand\022\'.o" +
-      "rg.yamcs.protobuf.CommandQueueRequest\032\030." +
-      "org.yamcs.protobuf.Void\022P\n\rRejectCommand" +
-      "\022%.org.yamcs.protobuf.CommandQueueEntry\032" +
-      "\030.org.yamcs.protobuf.Void"
+      "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
+      "oto\"`\n\tCommandId\022\026\n\016generationTime\030\001 \002(\003" +
+      "\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumber\030\003 \002(\005" +
+      "\022\023\n\013commandName\030\004 \001(\t\"n\n\020CommandQueueInf" +
+      "o\022\020\n\010instance\030\001 \002(\t\022\023\n\013channelName\030\002 \002(\t" +
+      "\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.commandi" +
+      "ng.QueueState\"\275\001\n\021CommandQueueEntry\022\020\n\010i" +
+      "nstance\030\001 \002(\t\022\023\n\013channelName\030\002 \002(\t\022\021\n\tqu" +
+      "eueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.commandin" +
+      "g.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006binary\030\006 ",
+      "\001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generationTime\030" +
+      "\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tqueueIn" +
+      "fo\030\001 \001(\0132\034.commanding.CommandQueueInfo\0221" +
+      "\n\nqueueEntry\030\002 \001(\0132\035.commanding.CommandQ" +
+      "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"D\n\027Com" +
+      "mandHistoryAttribute\022\014\n\004name\030\001 \002(\t\022\033\n\005va" +
+      "lue\030\002 \002(\0132\014.yamcs.Value\"\177\n\023CommandHistor" +
+      "yEntry\022$\n\005cmdId\030\001 \002(\0132\025.commanding.Comma" +
+      "ndId\022\017\n\007cmdName\030\002 \002(\t\0221\n\004attr\030\003 \003(\0132#.co" +
+      "mmanding.CommandHistoryAttribute*4\n\nQueu",
+      "eState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENA" +
+      "BLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQue" +
+      "ueState\022\034.commanding.CommandQueueInfo\032\013." +
+      "yamcs.Void\022;\n\013SendCommand\022\037.commanding.C" +
+      "ommandQueueRequest\032\013.yamcs.Void\022;\n\rRejec" +
+      "tCommand\022\035.commanding.CommandQueueEntry\032" +
+      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_CommandId_descriptor =
+          internal_static_commanding_CommandId_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_CommandId_fieldAccessorTable = new
+          internal_static_commanding_CommandId_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandId_descriptor,
+              internal_static_commanding_CommandId_descriptor,
               new java.lang.String[] { "GenerationTime", "Origin", "SequenceNumber", "CommandName", },
               org.yamcs.protobuf.Commanding.CommandId.class,
               org.yamcs.protobuf.Commanding.CommandId.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandQueueInfo_descriptor =
+          internal_static_commanding_CommandQueueInfo_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_CommandQueueInfo_fieldAccessorTable = new
+          internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandQueueInfo_descriptor,
+              internal_static_commanding_CommandQueueInfo_descriptor,
               new java.lang.String[] { "Instance", "ChannelName", "Name", "State", },
               org.yamcs.protobuf.Commanding.CommandQueueInfo.class,
               org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandQueueEntry_descriptor =
+          internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_org_yamcs_protobuf_CommandQueueEntry_fieldAccessorTable = new
+          internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandQueueEntry_descriptor,
+              internal_static_commanding_CommandQueueEntry_descriptor,
               new java.lang.String[] { "Instance", "ChannelName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", },
               org.yamcs.protobuf.Commanding.CommandQueueEntry.class,
               org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandQueueRequest_descriptor =
+          internal_static_commanding_CommandQueueRequest_descriptor =
             getDescriptor().getMessageTypes().get(3);
-          internal_static_org_yamcs_protobuf_CommandQueueRequest_fieldAccessorTable = new
+          internal_static_commanding_CommandQueueRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandQueueRequest_descriptor,
+              internal_static_commanding_CommandQueueRequest_descriptor,
               new java.lang.String[] { "QueueInfo", "QueueEntry", "Rebuild", },
               org.yamcs.protobuf.Commanding.CommandQueueRequest.class,
               org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandHistoryAttribute_descriptor =
+          internal_static_commanding_CommandHistoryAttribute_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_org_yamcs_protobuf_CommandHistoryAttribute_fieldAccessorTable = new
+          internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandHistoryAttribute_descriptor,
+              internal_static_commanding_CommandHistoryAttribute_descriptor,
               new java.lang.String[] { "Name", "Value", },
               org.yamcs.protobuf.Commanding.CommandHistoryAttribute.class,
               org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandHistoryEntry_descriptor =
+          internal_static_commanding_CommandHistoryEntry_descriptor =
             getDescriptor().getMessageTypes().get(5);
-          internal_static_org_yamcs_protobuf_CommandHistoryEntry_fieldAccessorTable = new
+          internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandHistoryEntry_descriptor,
+              internal_static_commanding_CommandHistoryEntry_descriptor,
               new java.lang.String[] { "CmdId", "CmdName", "Attr", },
               org.yamcs.protobuf.Commanding.CommandHistoryEntry.class,
               org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder.class);

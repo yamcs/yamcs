@@ -1,6 +1,9 @@
-package org.yamcs.protobuf;
+package rest;
+option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
+import "commanding.proto";
+import "pvalue.proto";
 
 // Generic holder for an applicative exception
 // (extend for cases where more structured info is needed)
@@ -15,7 +18,7 @@ message RestArgumentType {
 }
 
 message RestCommandType {
-  optional NamedObjectId name=1;
+  optional yamcs.NamedObjectId name=1;
   repeated RestArgumentType arguments=2;
 }
 
@@ -25,7 +28,7 @@ message RestListAvailableParametersRequest {
 
 message RestListAvailableParametersResponse {
   optional RestExceptionMessage exception=1;
-  repeated NamedObjectId ids=2;
+  repeated yamcs.NamedObjectId ids=2;
 }
 
 message RestValidateCommandRequest {
@@ -46,6 +49,11 @@ message RestDumpRawMdbResponse {
 
 message RestReplayResponse {
   optional RestExceptionMessage exception=1;
+  optional pvalue.ParameterData parameterData=2;
+  optional yamcs.TmPacketData packetData=3;
+  optional commanding.CommandHistoryEntry command=4;
+  optional yamcs.Event event=5;
+  optional pvalue.ParameterData ppData=6;
 }
 
 service RESTService {
@@ -54,5 +62,5 @@ service RESTService {
   rpc dumpRawMdb(RestDumpRawMdbRequest) returns (RestDumpRawMdbResponse);
 
   // Just a shortcut right now, reusing this Message. Might reconsider to improve prettyness of the exposed json API
-  rpc replay(ReplayRequest) returns (RestReplayResponse);
+  rpc replay(yamcs.ReplayRequest) returns (RestReplayResponse);
 }

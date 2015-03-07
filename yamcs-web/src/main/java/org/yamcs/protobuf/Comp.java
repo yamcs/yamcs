@@ -27,12 +27,12 @@ public final class Comp {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Comp.internal_static_org_yamcs_protobuf_ComputationDef_descriptor;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Comp.internal_static_org_yamcs_protobuf_ComputationDef_fieldAccessorTable;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_fieldAccessorTable;
     }
     
     // required string name = 1;
@@ -49,7 +49,7 @@ public final class Comp {
     public boolean hasExpression() { return hasExpression; }
     public java.lang.String getExpression() { return expression_; }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId argument = 3;
+    // repeated .yamcs.NamedObjectId argument = 3;
     public static final int ARGUMENT_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> argument_ =
       java.util.Collections.emptyList();
@@ -386,7 +386,7 @@ public final class Comp {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId argument = 3;
+      // repeated .yamcs.NamedObjectId argument = 3;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getArgumentList() {
         return java.util.Collections.unmodifiableList(result.argument_);
       }
@@ -458,7 +458,7 @@ public final class Comp {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ComputationDef)
+      // @@protoc_insertion_point(builder_scope:comp.ComputationDef)
     }
     
     static {
@@ -467,7 +467,7 @@ public final class Comp {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ComputationDef)
+    // @@protoc_insertion_point(class_scope:comp.ComputationDef)
   }
   
   public static final class ComputationDefList extends
@@ -489,15 +489,15 @@ public final class Comp {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Comp.internal_static_org_yamcs_protobuf_ComputationDefList_descriptor;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Comp.internal_static_org_yamcs_protobuf_ComputationDefList_fieldAccessorTable;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.ComputationDef compDef = 1;
+    // repeated .comp.ComputationDef compDef = 1;
     public static final int COMPDEF_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_ =
       java.util.Collections.emptyList();
@@ -741,7 +741,7 @@ public final class Comp {
       }
       
       
-      // repeated .org.yamcs.protobuf.ComputationDef compDef = 1;
+      // repeated .comp.ComputationDef compDef = 1;
       public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getCompDefList() {
         return java.util.Collections.unmodifiableList(result.compDef_);
       }
@@ -792,7 +792,7 @@ public final class Comp {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ComputationDefList)
+      // @@protoc_insertion_point(builder_scope:comp.ComputationDefList)
     }
     
     static {
@@ -801,19 +801,19 @@ public final class Comp {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ComputationDefList)
+    // @@protoc_insertion_point(class_scope:comp.ComputationDefList)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ComputationDef_descriptor;
+    internal_static_comp_ComputationDef_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ComputationDef_fieldAccessorTable;
+      internal_static_comp_ComputationDef_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ComputationDefList_descriptor;
+    internal_static_comp_ComputationDefList_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ComputationDefList_fieldAccessorTable;
+      internal_static_comp_ComputationDefList_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -823,32 +823,31 @@ public final class Comp {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\ncomp.proto\022\022org.yamcs.protobuf\032\013yamcs." +
-      "proto\"y\n\016ComputationDef\022\014\n\004name\030\001 \002(\t\022\022\n" +
-      "\nexpression\030\002 \002(\t\0223\n\010argument\030\003 \003(\0132!.or" +
-      "g.yamcs.protobuf.NamedObjectId\022\020\n\010langua" +
-      "ge\030\004 \001(\t\"I\n\022ComputationDefList\0223\n\007compDe" +
-      "f\030\001 \003(\0132\".org.yamcs.protobuf.Computation" +
-      "Def"
+      "\n\ncomp.proto\022\004comp\032\013yamcs.proto\"l\n\016Compu" +
+      "tationDef\022\014\n\004name\030\001 \002(\t\022\022\n\nexpression\030\002 " +
+      "\002(\t\022&\n\010argument\030\003 \003(\0132\024.yamcs.NamedObjec" +
+      "tId\022\020\n\010language\030\004 \001(\t\";\n\022ComputationDefL" +
+      "ist\022%\n\007compDef\030\001 \003(\0132\024.comp.ComputationD" +
+      "efB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_ComputationDef_descriptor =
+          internal_static_comp_ComputationDef_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_ComputationDef_fieldAccessorTable = new
+          internal_static_comp_ComputationDef_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ComputationDef_descriptor,
+              internal_static_comp_ComputationDef_descriptor,
               new java.lang.String[] { "Name", "Expression", "Argument", "Language", },
               org.yamcs.protobuf.Comp.ComputationDef.class,
               org.yamcs.protobuf.Comp.ComputationDef.Builder.class);
-          internal_static_org_yamcs_protobuf_ComputationDefList_descriptor =
+          internal_static_comp_ComputationDefList_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_ComputationDefList_fieldAccessorTable = new
+          internal_static_comp_ComputationDefList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ComputationDefList_descriptor,
+              internal_static_comp_ComputationDefList_descriptor,
               new java.lang.String[] { "CompDef", },
               org.yamcs.protobuf.Comp.ComputationDefList.class,
               org.yamcs.protobuf.Comp.ComputationDefList.Builder.class);
