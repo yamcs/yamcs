@@ -21,6 +21,7 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class AbstractRequestHandler {
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
+    static protected String CSV_MIME_TYPE="text/csv";
     static protected String JSON_MIME_TYPE="application/json";
     static protected String BINARY_MIME_TYPE="application/octet-stream";
     

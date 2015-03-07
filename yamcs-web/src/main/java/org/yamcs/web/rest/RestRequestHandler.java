@@ -36,29 +36,52 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Collects some typical patterns which might be of use for extending classes when dealing with incoming
  * REST requests.
  *
- * <p>This is currently in no way forced to be used by extending classes since we would need to do a bit
+ * <p>This is currently in no way enforced to extending classes since we would need to do a bit
  * more work as far as integrating the different approaches (archiverequesthandler does some special stuff
  * to support retrieving large dumps of unknown size).
  */
 public abstract class RestRequestHandler extends AbstractRequestHandler {
 
+    private static final String[] DEFAULT_INBOUND_MEDIA_TYPES = new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
+    private static final String[] DEFAULT_OUTBOUND_MEDIA_TYPES = new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
     private JsonFactory jsonFactory = new JsonFactory();
 
     public abstract void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception;
 
     /**
-     * Derives the content type of the incoming request. Defaults
-     * to JSON for improved usability through various client tools.
+     * Accepted Content-Type headers (in priority order, defaults to first if unspecified).
+     * <p>By default support for JSON and GPB is configured.
      */
-    protected String getSourceContentType(HttpRequest httpRequest) {
-        String sourceContentType = JSON_MIME_TYPE;
+    public String[] getSupportedInboundMediaTypes() {
+        return DEFAULT_INBOUND_MEDIA_TYPES;
+    }
+
+    /**
+     * Supported Accept headers (if unspecified in request, will be matched
+     * to inbound meda type or first in this list)
+     * <p>By default support for JSON and GPB is configured
+     */
+    public String[] getSupportedOutboundMediaTypes() {
+        return DEFAULT_OUTBOUND_MEDIA_TYPES;
+    }
+
+    /**
+     * Derives the content type of the incoming request. Supported media types
+     * are treated in priority order if no content type was specified.
+     * @return null if an unsupported content type was specified
+     */
+    String getSourceContentType(HttpRequest httpRequest) {
         if (httpRequest.containsHeader(Names.CONTENT_TYPE)) {
-            String contentType = httpRequest.getHeader(Names.CONTENT_TYPE);
-            if (BINARY_MIME_TYPE.equals(contentType)) {
-                sourceContentType = BINARY_MIME_TYPE;
+            String declaredContentType = httpRequest.getHeader(Names.CONTENT_TYPE);
+            for (String supportedContentType : getSupportedInboundMediaTypes()) {
+                if (supportedContentType.equals(declaredContentType)) {
+                    return declaredContentType;
+                }
             }
+            return null; // Unsupported Content-Type header
+        } else {
+            return getSupportedInboundMediaTypes()[0];
         }
-        return sourceContentType;
     }
 
     /**
@@ -67,18 +90,24 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
      * This tries to match supported media types with the ACCEPT header,
      * else it will revert to the (derived) source content type.
      */
-    protected String getTargetContentType(HttpRequest httpRequest) {
-        // By default match output content type with input content type
-        String targetContentType = getSourceContentType(httpRequest);
+    String getTargetContentType(HttpRequest httpRequest) {
         if (httpRequest.containsHeader(Names.ACCEPT)) {
-            String accept = httpRequest.getHeader(Names.ACCEPT);
-            if (BINARY_MIME_TYPE.equals(accept)) {
-                targetContentType = BINARY_MIME_TYPE;
-            } else if (JSON_MIME_TYPE.equals(accept)) {
-                targetContentType = JSON_MIME_TYPE;
+            String acceptedContentType = httpRequest.getHeader(Names.ACCEPT);
+            for (String supportedContentType : getSupportedOutboundMediaTypes()) {
+                if (supportedContentType.equals(acceptedContentType)) {
+                    return acceptedContentType;
+                }
             }
+            return null; // Unsupported Accept header
+        } else {
+            String sourceContentType = getSourceContentType(httpRequest);
+            for (String supportedContentType : getSupportedOutboundMediaTypes()) {
+                if (supportedContentType.equals(sourceContentType)) {
+                    return supportedContentType;
+                }
+            }
+            return getSupportedOutboundMediaTypes()[0];
         }
-        return targetContentType;
     }
 
     /**
