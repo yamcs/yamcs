@@ -7,7 +7,11 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.NoPermissionException;
+import org.yamcs.YamcsException;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
@@ -19,18 +23,19 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * Handles incoming requests related to Commanding (offset /commanding).
  */
-public class CommandingRequestHandler extends RestRequestHandler {
+public class CommandingRequestHandler extends AbstractRestRequestHandler {
+    private static final Logger log = LoggerFactory.getLogger(CommandingRequestHandler.class);
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
+    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
         org.yamcs.Channel yamcsChannel = org.yamcs.Channel.getInstance(yamcsInstance, "realtime");
         if (!yamcsChannel.hasCommanding()) {
-            sendError(ctx, BAD_REQUEST);
+            throw new BadRequestException("Commanding not activated for this channel");
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
             if ("validate".equals(qsDecoder.getPath())) {
@@ -38,18 +43,15 @@ public class CommandingRequestHandler extends RestRequestHandler {
                 RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
                 writeMessage(req, qsDecoder, evt, response, SchemaRest.RestValidateCommandResponse.WRITE);
             } else {
-                sendError(ctx, BAD_REQUEST);
+                sendError(ctx, NOT_FOUND);
             }
         }
     }
 
     /**
      * Validates commands sent by POST
-     * /REFMDB/SOAR/SWITCH_VOLTAGE_ON
-     * curl -XGET http://localhost:8090/commanding/validate -D
-     * vlotage_num", "5"
      */
-    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws Exception {
+    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
@@ -68,8 +70,13 @@ public class CommandingRequestHandler extends RestRequestHandler {
 
             try {
                 PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
+            } catch (NoPermissionException e) {
+                throw new ForbiddenException(e);
             } catch (ErrorInCommand e) {
-                responseb.setException(toException("ErrorInCommand", e));
+                throw new BadRequestException("Parse Exception", e);
+            } catch (YamcsException e) { // could be anything, consider as internal server error
+                log.error("Could not build command", e);
+                throw new RestException(e);
             }
 
             break; // FIXME

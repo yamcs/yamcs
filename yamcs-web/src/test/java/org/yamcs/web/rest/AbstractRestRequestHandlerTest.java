@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
-public class RestRequestHandlerTest {
+public class AbstractRestRequestHandlerTest {
 
-    private RestRequestHandler mockHandler = new MockRestRequestHandler();
+    private AbstractRestRequestHandler mockHandler = new MockRestRequestHandler();
 
     @Test
     public void testMediaType_unspecified() {
@@ -24,6 +24,17 @@ public class RestRequestHandlerTest {
 
         String out = mockHandler.getTargetContentType(req);
         assertEquals(in, out); // Match with default in, if unspecified
+    }
+
+    @Test
+    public void testMediaType_wildcard() {
+        HttpRequest req = makeHttpRequest(null, "*/*");  // curl uses this by default
+
+        String in = mockHandler.getSourceContentType(req);
+        assertEquals(mockHandler.getSupportedInboundMediaTypes()[0], in);
+
+        String out = mockHandler.getTargetContentType(req);
+        assertEquals(in, out);
     }
 
     @Test
@@ -39,10 +50,11 @@ public class RestRequestHandlerTest {
 
     @Test
     public void testMediaType_unsupported_ContentType() {
+        // We currently don't throw an error for this
         HttpRequest req = makeHttpRequest("blabla", null);
 
         String in = mockHandler.getSourceContentType(req);
-        assertEquals(null, in);
+        assertEquals(mockHandler.getSupportedInboundMediaTypes()[0], in);
 
         String out = mockHandler.getTargetContentType(req);
         assertEquals("application/json", out); // Match with default in, if unspecified
@@ -70,9 +82,9 @@ public class RestRequestHandlerTest {
         return req;
     }
 
-    private static final class MockRestRequestHandler extends RestRequestHandler {
+    private static final class MockRestRequestHandler extends AbstractRestRequestHandler {
         @Override
-        public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
+        public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
             // NOP
         }
     }

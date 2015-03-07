@@ -18,9 +18,7 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.web.rest.ArchiveRequestHandler;
-import org.yamcs.web.rest.CommandingRequestHandler;
-import org.yamcs.web.rest.MdbRequestHandler;
+import org.yamcs.web.rest.ApiRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -37,19 +35,13 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
+    public static final String API_PATH = "api";
 
-    // Web API
-    public static final String ARCHIVE_PATH = "archive";
-    public static final String MDB_PATH = "mdb";
-    public static final String COMMANDING_PATH = "commanding";
-    
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
+    static ApiRequestHandler apiRequestHandler=new ApiRequestHandler();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
-    static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
-    static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
-    static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
     @Override
@@ -112,12 +104,8 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             webSocketHandler.handleHttpRequest(ctx, req, e, yamcsInstance);
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
-        } else if(ARCHIVE_PATH.equals(handler)) {
-            archiveRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
-        } else if(MDB_PATH.equals(handler)) {
-            mdbRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
-        } else if(COMMANDING_PATH.equals(handler)) {
-            commandingRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+        } else if(API_PATH.equals(handler)) {
+            apiRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
