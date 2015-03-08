@@ -18,8 +18,10 @@ message RestArgumentType {
 }
 
 message RestCommandType {
-  optional yamcs.NamedObjectId name=1;
-  repeated RestArgumentType arguments=2;
+  optional string origin=1;
+  optional int32 sequenceNumber=2;
+  optional yamcs.NamedObjectId name=3;
+  repeated RestArgumentType arguments=4;
 }
 
 message RestListAvailableParametersRequest {
@@ -56,9 +58,18 @@ message RestReplayResponse {
   optional pvalue.ParameterData ppData=6;
 }
 
+message RestSendCommandRequest {
+  repeated RestCommandType commands=1;
+}
+
+message RestSendCommandResponse {
+  optional RestExceptionMessage exception=1;
+}
+
 service RESTService {
   rpc listAvailableParameters(RestListAvailableParametersRequest) returns (RestListAvailableParametersResponse);
   rpc validateCommand(RestValidateCommandRequest) returns (RestValidateCommandResponse);
+  rpc sendCommand(RestSendCommandRequest) returns (RestSendCommandResponse);
   rpc dumpRawMdb(RestDumpRawMdbRequest) returns (RestDumpRawMdbResponse);
 
   // Just a shortcut right now, reusing this Message. Might reconsider to improve prettyness of the exposed json API

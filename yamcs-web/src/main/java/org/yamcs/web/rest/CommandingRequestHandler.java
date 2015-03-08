@@ -15,6 +15,8 @@ import org.yamcs.YamcsException;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
+import org.yamcs.protobuf.Rest.RestSendCommandRequest;
+import org.yamcs.protobuf.Rest.RestSendCommandResponse;
 import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
 import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -42,6 +44,10 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
                 RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
                 writeMessage(req, qsDecoder, evt, response, SchemaRest.RestValidateCommandResponse.WRITE);
+            } if ("send".equals(qsDecoder.getPath())) {
+                RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
+                RestSendCommandResponse response = sendCommand(request, yamcsChannel);
+                writeMessage(req, qsDecoder, evt, response, SchemaRest.RestSendCommandResponse.WRITE);
             } else {
                 sendError(ctx, NOT_FOUND);
             }
@@ -80,6 +86,49 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             }
 
             break; // FIXME
+        }
+
+        return responseb.build();
+    }
+
+    /**
+     * Validates and sends commands sent by POST
+     */
+    private RestSendCommandResponse sendCommand(RestSendCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
+        XtceDb xtcedb = yamcsChannel.getXtceDb();
+
+        RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();
+
+        // Validate all first
+        List<PreparedCommand> validated = new ArrayList<PreparedCommand>();
+        for (RestCommandType restCommand : request.getCommandsList()) {
+            MetaCommand mc = xtcedb.getMetaCommand(NamedObjectId.newBuilder().setName(restCommand.getName().getName()).build());
+
+            List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
+            for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
+                assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
+            }
+
+            String origin = "fdi-mac";
+            int seqId = 1234; // TODO
+            String user = "anonymous"; // TODO
+
+            try {
+                PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
+                validated.add(cmd);
+            } catch (NoPermissionException e) {
+                throw new ForbiddenException(e);
+            } catch (ErrorInCommand e) {
+                throw new BadRequestException("Parse Exception", e);
+            } catch (YamcsException e) { // could be anything, consider as internal server error
+                log.error("Could not build command", e);
+                throw new RestException(e);
+            }
+        }
+
+        // Good, now send
+        for (PreparedCommand cmd : validated) {
+            yamcsChannel.getCommandingManager().sendCommand(cmd);
         }
 
         return responseb.build();

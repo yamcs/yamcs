@@ -254,11 +254,15 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestCommandType message) throws java.io.IOException
             {
+                if(message.hasOrigin())
+                    output.writeString(1, message.getOrigin(), false);
+                if(message.hasSequenceNumber())
+                    output.writeInt32(2, message.getSequenceNumber(), false);
                 if(message.hasName())
-                    output.writeObject(1, message.getName(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+                    output.writeObject(3, message.getName(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
 
                 for(org.yamcs.protobuf.Rest.RestArgumentType arguments : message.getArgumentsList())
-                    output.writeObject(2, arguments, org.yamcs.protobuf.SchemaRest.RestArgumentType.WRITE, true);
+                    output.writeObject(4, arguments, org.yamcs.protobuf.SchemaRest.RestArgumentType.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestCommandType message)
@@ -300,10 +304,16 @@ public final class SchemaRest
                         case 0:
                             return;
                         case 1:
+                            builder.setOrigin(input.readString());
+                            break;
+                        case 2:
+                            builder.setSequenceNumber(input.readInt32());
+                            break;
+                        case 3:
                             builder.setName(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
-                        case 2:
+                        case 4:
                             builder.addArguments(input.mergeObject(org.yamcs.protobuf.Rest.RestArgumentType.newBuilder(), org.yamcs.protobuf.SchemaRest.RestArgumentType.MERGE));
 
                             break;
@@ -347,8 +357,10 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "name";
-                case 2: return "arguments";
+                case 1: return "origin";
+                case 2: return "sequenceNumber";
+                case 3: return "name";
+                case 4: return "arguments";
                 default: return null;
             }
         }
@@ -360,8 +372,10 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("name", 1);
-            fieldMap.put("arguments", 2);
+            fieldMap.put("origin", 1);
+            fieldMap.put("sequenceNumber", 2);
+            fieldMap.put("name", 3);
+            fieldMap.put("arguments", 4);
         }
     }
 
@@ -1204,6 +1218,232 @@ public final class SchemaRest
             fieldMap.put("command", 4);
             fieldMap.put("event", 5);
             fieldMap.put("ppData", 6);
+        }
+    }
+
+    public static final class RestSendCommandRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Rest.RestCommandType commands : message.getCommandsList())
+                    output.writeObject(1, commands, org.yamcs.protobuf.SchemaRest.RestCommandType.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSendCommandRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestSendCommandRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addCommands(input.mergeObject(org.yamcs.protobuf.Rest.RestCommandType.newBuilder(), org.yamcs.protobuf.SchemaRest.RestCommandType.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "commands";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("commands", 1);
+        }
+    }
+
+    public static final class RestSendCommandResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.BuilderSchema();
+        
+        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse>
+        {
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException
+            {
+                if(message.hasException())
+                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSendCommandResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestSendCommandResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder>
+        {
+            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getName();
+            }
+            //unused
+            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "exception";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("exception", 1);
         }
     }
 
