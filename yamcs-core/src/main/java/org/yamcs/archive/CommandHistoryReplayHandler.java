@@ -41,8 +41,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
     @Override
     public MessageLite transform(Tuple t) {
         CommandHistoryEntry.Builder che=CommandHistoryEntry.newBuilder();
-        che.setCmdId(PreparedCommand.getCommandId(t));
-        che.setCmdName((String) t.getColumn(PreparedCommand.CNAME_CMDNAME));
+        che.setCommandId(PreparedCommand.getCommandId(t));
         
         for(int i=1;i<t.size(); i++) { //first column is constant ProtoDataType.CMD_HISTORY.getNumber()
             ColumnDefinition cd=t.getColumnDefinition(i);

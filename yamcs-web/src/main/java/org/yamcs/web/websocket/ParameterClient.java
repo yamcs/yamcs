@@ -22,6 +22,7 @@ import org.yamcs.protobuf.Comp.ComputationDef;
 import org.yamcs.protobuf.Comp.ComputationDefList;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
+import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -96,7 +97,6 @@ public class ParameterClient implements ParameterConsumer {
                 prm.addItemsToRequest(subscriptionId, paraList);
             } else {
                 subscriptionId=prm.addRequest(paraList, this);
-                System.out.println("---------------- here3 subscriptionID: "+subscriptionId);
             }
             wsHandler.sendReply(id, "OK", null);
         } catch (InvalidIdentification e) {
@@ -232,7 +232,7 @@ public class ParameterClient implements ParameterConsumer {
             pd.addParameter(pv.toGpb(pvwi.getId()));
         }
         try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
+            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
         } catch (Exception e) {
             log.warn("got error when sending parameter updates, quitting", e);
             quit();
@@ -252,7 +252,7 @@ public class ParameterClient implements ParameterConsumer {
         if(pd.getParameterCount()==0) return;
         
         try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
+            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
         } catch (Exception e) {
             log.warn("got error when sending parameter updates, quitting", e);
             quit();

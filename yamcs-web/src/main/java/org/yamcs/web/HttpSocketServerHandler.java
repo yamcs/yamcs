@@ -89,6 +89,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
         String yamcsInstance=path[1];
 
         if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+        	log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
             return;
@@ -107,6 +108,7 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
         } else if(API_PATH.equals(handler)) {
             apiRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
+        	log.warn("Unknown handler {}", handler);
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
         }

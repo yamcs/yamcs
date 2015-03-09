@@ -120,8 +120,8 @@ public class TestCmdHistoryRecording extends YarchTestCase {
             ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
             assertEquals(ProtoDataType.CMD_HISTORY, dt);
             CommandHistoryEntry cmd=(CommandHistoryEntry)decode(msg, CommandHistoryEntry.newBuilder());
-            assertEquals(i, cmd.getCmdId().getGenerationTime());
-            assertEquals("test"+i, cmd.getCmdName());
+            assertEquals(i, cmd.getCommandId().getGenerationTime());
+            assertEquals("test"+i, cmd.getCommandId().getCommandName());
         }
         ClientMessage msg=yclient.dataConsumer.receive(5000);
         assertNotNull(msg);

@@ -1,7 +1,6 @@
 package org.yamcs.cmdhistory;
 
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +13,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidCommandId;
 import org.yamcs.archive.TcUplinkerAdapter;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
@@ -40,13 +41,13 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class CommandHistoryRequestManager extends AbstractService implements StreamSubscriber{
-	private ConcurrentHashMap<CommandId,CommandHistoryEntry> activeCommands=new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
-	private ConcurrentHashMap<CommandHistoryEntry,ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<CommandHistoryEntry,ConcurrentLinkedQueue<CommandHistoryConsumer>>();
+public class CommandHistoryRequestManager extends AbstractService implements StreamSubscriber {
+	private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands=new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
+	private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<CommandId ,ConcurrentLinkedQueue<CommandHistoryConsumer>>();
 	private ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer>();
 
 	Stream realtimeCmdHistoryStream; 
-	
+
 	static AtomicInteger subscriptionIdGenerator=new AtomicInteger();
 	final Logger log;
 	//maps strings are requested in the getCommandHistory to strings as they appear in the commnad history
@@ -75,8 +76,8 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 	public CommandHistoryEntry subscribeCommand(CommandId cmdId, CommandHistoryConsumer consumer) throws InvalidCommandId {
 		CommandHistoryEntry che=activeCommands.get(cmdId);
 		if(che!=null) {
-			cmdSubcriptions.putIfAbsent(che,new ConcurrentLinkedQueue<CommandHistoryConsumer>());
-			cmdSubcriptions.get(che).add(consumer);
+			cmdSubcriptions.putIfAbsent(cmdId, new ConcurrentLinkedQueue<CommandHistoryConsumer>());
+			cmdSubcriptions.get(cmdId).add(consumer);
 			return che;
 		}
 		log.warn("Received subscribe command for a command not in my active list: ("+cmdId+")");
@@ -107,7 +108,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 	 * @return
 	 */
 	public int subscribeCommandHistory(String commandsOrigin, long commandsSince, CommandHistoryConsumer consumer) {
-		log.debug("commandsOrigin={}",commandsOrigin);
+		log.debug("commandsOrigin={}", commandsOrigin);
 		CommandHistoryFilter filter=new CommandHistoryFilter(subscriptionIdGenerator.getAndIncrement(), commandsOrigin, commandsSince);
 		historySubcriptions.put(filter,consumer);
 		return filter.subscriptionId;
@@ -127,7 +128,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 	}
 
 	/**
-	 * Called by the CommandHistoryImpl to move the subcription from another command history manager to this one
+	 * Called by the CommandHistoryImpl to move the subscription from another command history manager to this one
 	 * @param filter
 	 */
 	public void addSubscription(CommandHistoryFilter filter, CommandHistoryConsumer consumer) {
@@ -143,11 +144,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 	 */
 	private void addCommand(PreparedCommand pc) {
 		log.debug("addCommand cmdId="+pc);
-
-		CommandHistoryEntry che=new CommandHistoryEntry();
-		che.pc=pc;
-		che.extensionValues=new HashMap<String, String>();
-
+		CommandHistoryEntry che = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).build();
 		//deliver to clients
 		for(Iterator<CommandHistoryFilter> it=historySubcriptions.keySet().iterator();it.hasNext();) {
 			CommandHistoryFilter filter=it.next();
@@ -176,6 +173,11 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 			throw new InvalidCommandId("received an update for a command not in my active list: "+cmdId      );
 		}
 
+		CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(value).build();
+		CommandHistoryEntry che1 = CommandHistoryEntry.newBuilder(che).addAttr(cha).build();
+		activeCommands.put(cmdId, che1);
+		
+		
 		long changeDate=TimeEncoding.currentInstant();
 		for(Iterator<CommandHistoryFilter> it=historySubcriptions.keySet().iterator();it.hasNext();) {
 			CommandHistoryFilter filter=it.next();
@@ -183,7 +185,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 				historySubcriptions.get(filter).updatedCommand(cmdId, changeDate, key, value);
 			}
 		}
-		ConcurrentLinkedQueue<CommandHistoryConsumer> consumers=cmdSubcriptions.get(che);
+		ConcurrentLinkedQueue<CommandHistoryConsumer> consumers=cmdSubcriptions.get(cmdId);
 
 		if(consumers!=null) {
 			for(Iterator<CommandHistoryConsumer> it=consumers.iterator();it.hasNext();) {
@@ -204,8 +206,8 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 			realtimeStream.addSubscriber(this);
 			notifyStarted();
 		}
-		
-		
+
+
 	}
 
 

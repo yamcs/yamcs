@@ -1,5 +1,6 @@
 package org.yamcs.cmdhistory;
 
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 
@@ -16,7 +17,7 @@ public class CommandHistoryFilter {
     
     //  TODO 2.0 implement proper filtering (not supported by mcs tools yet)
     public boolean matches(CommandHistoryEntry che) {
-        CommandId cmdId=che.pc.getCommandId();
+        CommandId cmdId=che.getCommandId();
         if(cmdId.getGenerationTime()<commandsSince)
             return false;
         if((commandsOrigin!=null)&&(!commandsOrigin.equals("*"))&&(!commandsOrigin.equals(cmdId.getOrigin()))) return false;

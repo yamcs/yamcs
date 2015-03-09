@@ -16,12 +16,6 @@ public interface CommandHistoryConsumer {
 	 */
 	void addedCommand(PreparedCommand pc);
 	
-	/**
-	 * Called command history deliveries - these are requested with 
-	 *    subscribeCommandHistory or with getCommandHistory
-	 * @param extract
-	 */
-	void commandHistoryDelivery(CommandHistoryExtract extract);
 	
 	/**
 	 * Called when the history of a command matching the filters has been updated

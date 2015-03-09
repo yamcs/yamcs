@@ -157,8 +157,8 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     break;
                 case CMD_HISTORY:
                     CommandHistoryEntry.Builder command = (CommandHistoryEntry.Builder) Protocol.decodeBuilder(msg, CommandHistoryEntry.newBuilder());
-                    CommandId.Builder commandId = command.getCmdId().toBuilder().setGenerationTime(TimeEncoding.toUnixTime(command.getCmdId().getGenerationTime()));
-                    command.setCmdId(commandId);
+                    CommandId.Builder commandId = command.getCommandId().toBuilder().setGenerationTime(TimeEncoding.toUnixTime(command.getCommandId().getGenerationTime()));
+                    command.setCommandId(commandId);
                     responseb.setCommand(command);
                     break;
                 case PP:

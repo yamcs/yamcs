@@ -60,10 +60,7 @@ public class PreparedCommand {
     public String getSource() {
         return source;
     }
-    
-    public String getOpsName() {
-        return id.getCommandName();
-    }
+
     
 
     public int getSid() {
@@ -76,13 +73,7 @@ public class PreparedCommand {
         return id.getCommandName();
     }
 
-    public void setSid(int sid) {
-        attributes.add(CommandHistoryAttribute.newBuilder()
-                .setName("sid")
-                .setValue(ValueUtility.getUint32Value(sid))
-                .build());
-    }
-
+ 
     public int getApid() {
         CommandHistoryAttribute a=findAttribute("apid");
         if(a!=null) return a.getValue().getUint32Value();
@@ -96,13 +87,6 @@ public class PreparedCommand {
         return null;
     }
    
-    
-    public void setApid(int apid) {
-        attributes.add(CommandHistoryAttribute.newBuilder()
-                .setName("apid")
-                .setValue(ValueUtility.getUint32Value(apid))
-                .build());
-    }
     
     private CommandHistoryAttribute findAttribute(String name) {
         for(CommandHistoryAttribute a:attributes) {
@@ -168,7 +152,10 @@ public class PreparedCommand {
         return username;
     }
 
-
+    public List<CommandHistoryAttribute> getAttirbutes() {
+    	return attributes;
+    }
+    
     public static PreparedCommand fromTuple(Tuple t) {
         CommandId cmdId=getCommandId(t);
         PreparedCommand pc=new PreparedCommand(cmdId);

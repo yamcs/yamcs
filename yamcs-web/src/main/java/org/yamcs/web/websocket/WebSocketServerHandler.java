@@ -23,8 +23,6 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import com.dyuproject.protostuff.JsonIOUtil;
@@ -143,7 +141,8 @@ public class WebSocketServerHandler {
      * Sample: [1,1,3,{"cmdhistory":"subscribe"}]
      */
     private void handleCommandHistoryRequest(int seqId, String request, JsonParser jsp) {
-        System.out.println("Got a cmd history request..");
+    	System.out.println("Got a cmd history request..");
+    	channelClient.getCommandHistoryClient().subcribe();
     }
     
     private String getWebSocketLocation(String yamcsInstance, HttpRequest req) {
@@ -225,7 +224,7 @@ public class WebSocketServerHandler {
         channel.write(new TextWebSocketFrame(msg));
     }
 
-    public void sendData(ProtoDataType parameter, ParameterData pdata) throws IOException {
+    public <T> void sendData(ProtoDataType dataType, T pdata, Schema<T> schema) throws IOException {
         dataSeqCount++;
         if(!channel.isOpen()) throw new IOException("Channel not open");
         
@@ -239,9 +238,9 @@ public class WebSocketServerHandler {
             JsonGenerator g=jsonFactory.createJsonGenerator(sw);
             writeMessageStart(g,MESSAGE_TYPE_DATA, dataSeqCount);
             g.writeStartObject();
-            g.writeStringField("dt", "ParameterData");
+            g.writeStringField("dt", dataType.name());
             g.writeFieldName("data");
-            JsonIOUtil.writeTo(g, pdata, SchemaPvalue.ParameterData.WRITE, false);
+            JsonIOUtil.writeTo(g, pdata, schema, false);
             g.writeEndObject();
             writeMessageEnd(g);
             
@@ -253,6 +252,7 @@ public class WebSocketServerHandler {
         channel.write(new TextWebSocketFrame(msg));
     }
 
+    
     public void channelDisconnected(Channel c) {
         if(channelClient!=null) {
             log.info("Channel "+c.getRemoteAddress()+" disconnected");
