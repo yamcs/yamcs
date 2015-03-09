@@ -23,10 +23,10 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
     			.append(" sizeInBits:").append(sizeInBits)
     			.append(" signed: ").append(signed);
     	
-    	if(initialValue!=null) sb.append(" defaultValue: ").append(initialValue);
-    	if(validRange!=null) sb.append(" validRange: ").append(validRange);
+    	if(initialValue!=null) sb.append(", defaultValue: ").append(initialValue);
+    	if(validRange!=null) sb.append(", validRange: ").append(validRange);
     	
-    	sb.append(" encoding: ").append(encoding);
+    	sb.append(", encoding: ").append(encoding);
     	
     	return sb.toString();
 	}
