@@ -58,7 +58,7 @@ message CommandHistoryAttribute {
 }
 
 message CommandHistoryEntry {
-    required CommandId cmdId = 1;
-    required string cmdName = 2;
+    required CommandId commandId = 1;
+    //required string cmdName = 2; //removed because it's part of the CommandId
     repeated CommandHistoryAttribute attr = 3 ;
 }
