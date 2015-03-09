@@ -70,11 +70,8 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
     @Override
     public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
-        if(remainingUri == null || remainingUri.isEmpty()) {
-            sendError(ctx, NOT_FOUND);
-            return;
-        }
         ReplayRequest incomingRequest = readMessage(req, SchemaYamcs.ReplayRequest.MERGE).build();
+        if (remainingUri == null) remainingUri = "";
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
 
         /*

@@ -11,7 +11,6 @@ import org.codehaus.jackson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
-import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
@@ -19,7 +18,6 @@ import org.yamcs.ParameterConsumer;
 import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 import org.yamcs.ParameterValueWithId;
-import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Comp.ComputationDef;
 import org.yamcs.protobuf.Comp.ComputationDefList;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -42,7 +40,7 @@ import com.dyuproject.protostuff.JsonIOUtil;
  * @author nm
  *
  */
-public class ParameterClient implements ParameterConsumer, ChannelClient {
+public class ParameterClient implements ParameterConsumer {
     Channel channel;
     Logger log;
     //maps subscription ids <-> addresses
@@ -51,19 +49,13 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
     
     //subscription id used for computations
     int compSubscriptionId=-1;
-    
-    final String username="unknown";
-    final String applicationName;
 
     final CopyOnWriteArrayList<Computation> compList=new CopyOnWriteArrayList<Computation>();
-    final int clientId;
     
-    public ParameterClient(String yamcsInstance, WebSocketServerHandler webSocketServerHandler, String applicationName) {
-        this.channel= Channel.getInstance(yamcsInstance, "realtime");
-        log=LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + yamcsInstance + "]");
-        this.wsHandler=webSocketServerHandler;
-        this.applicationName=applicationName;
-        clientId=ManagementService.getInstance().registerClient(yamcsInstance, channel.getName(), this);
+    public ParameterClient(Channel channel, WebSocketServerHandler wsHandler) {
+        this.channel = channel;
+        this.wsHandler = wsHandler;
+        log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + channel.getInstance() + "]");
     }
     
     public void processRequest(String request, int id, JsonParser jsp, WebSocketServerHandler wssh) {
@@ -85,7 +77,6 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
         
     }
 
-   
     private void subscribe(int id, JsonParser jsp) {
         List<NamedObjectId> paraList=null;
         NamedObjectList.Builder nolb=NamedObjectList.newBuilder();
@@ -269,22 +260,16 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
     }
     
     /**
-     * called when the socket is closed
-     * unsubscribe all parameters and the client from the managmenet interface
-     * 
+     * called when the socket is closed.
+     * unsubscribe all parameters
      */
     public void quit() {
         ParameterRequestManager prm=channel.getParameterRequestManager();
-        ManagementService.getInstance().unregisterClient(clientId);
         if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
         if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
-    
 
-    @Override
     public void switchChannel(Channel c) throws ChannelException {
-        log.info("switching channel to {}", c);
-        
         ParameterRequestManager prm=channel.getParameterRequestManager();
         List<NamedObjectId> paraList=prm.removeRequest(subscriptionId);
         List<NamedObjectId> compParaList=prm.removeRequest(compSubscriptionId);
@@ -302,21 +287,5 @@ public class ParameterClient implements ParameterConsumer, ChannelClient {
             log.warn("got InvalidIdentification when resubscribing");
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void channelQuit() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getApplicationName() {
-        return applicationName;
     }
 }
