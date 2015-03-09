@@ -694,11 +694,9 @@ public final class SchemaCommanding
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryEntry message) throws java.io.IOException
             {
-                if(message.hasCmdId())
-                    output.writeObject(1, message.getCmdId(), org.yamcs.protobuf.SchemaCommanding.CommandId.WRITE, false);
+                if(message.hasCommandId())
+                    output.writeObject(1, message.getCommandId(), org.yamcs.protobuf.SchemaCommanding.CommandId.WRITE, false);
 
-                if(message.hasCmdName())
-                    output.writeString(2, message.getCmdName(), false);
                 for(org.yamcs.protobuf.Commanding.CommandHistoryAttribute attr : message.getAttrList())
                     output.writeObject(3, attr, org.yamcs.protobuf.SchemaCommanding.CommandHistoryAttribute.WRITE, true);
 
@@ -742,11 +740,8 @@ public final class SchemaCommanding
                         case 0:
                             return;
                         case 1:
-                            builder.setCmdId(input.mergeObject(org.yamcs.protobuf.Commanding.CommandId.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandId.MERGE));
+                            builder.setCommandId(input.mergeObject(org.yamcs.protobuf.Commanding.CommandId.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandId.MERGE));
 
-                            break;
-                        case 2:
-                            builder.setCmdName(input.readString());
                             break;
                         case 3:
                             builder.addAttr(input.mergeObject(org.yamcs.protobuf.Commanding.CommandHistoryAttribute.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandHistoryAttribute.MERGE));
@@ -792,8 +787,7 @@ public final class SchemaCommanding
         {
             switch(number)
             {
-                case 1: return "cmdId";
-                case 2: return "cmdName";
+                case 1: return "commandId";
                 case 3: return "attr";
                 default: return null;
             }
@@ -806,8 +800,7 @@ public final class SchemaCommanding
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("cmdId", 1);
-            fieldMap.put("cmdName", 2);
+            fieldMap.put("commandId", 1);
             fieldMap.put("attr", 3);
         }
     }
