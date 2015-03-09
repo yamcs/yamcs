@@ -64,7 +64,7 @@ public class CommandingManager {
 			sb.append(aa.getArgumentName()+": "+aa.getArgumentValue());
 		}
 		sb.append(")");
-		pc.setSource(mc.getName()+argAssignmentList);
+		pc.setSource(sb.toString());
 		pc.setBinary(b);
 		pc.setUsername(username);
 		

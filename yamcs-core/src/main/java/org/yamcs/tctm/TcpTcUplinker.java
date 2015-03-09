@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.text.SimpleDateFormat;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 	protected CommandHistory commandHistoryListener;
 	protected Selector selector; 
 	SelectionKey selectionKey;
-	protected SeqAndChecksumFiller seqAndChecksumFiller=new SeqAndChecksumFiller();
+	protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
 	protected ScheduledThreadPoolExecutor timer;
 	protected volatile boolean disabled=false;
 	protected int minimumTcPacketLength=48; //the minimum size of the CCSDS packets uplinked
@@ -155,7 +154,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 		
 		int retries=5;
 		boolean sent=false;
-		int seqCount=seqAndChecksumFiller.fill(bb);
+		int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
 		bb.rewind();
 		while (!sent&&(retries>0)) {
 			if (!isSocketOpen()) {
