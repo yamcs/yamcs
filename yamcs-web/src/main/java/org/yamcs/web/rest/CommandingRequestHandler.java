@@ -20,7 +20,6 @@ import org.yamcs.protobuf.Rest.RestSendCommandResponse;
 import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
 import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -44,7 +43,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
                 RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
                 writeMessage(req, qsDecoder, evt, response, SchemaRest.RestValidateCommandResponse.WRITE);
-            } if ("send".equals(qsDecoder.getPath())) {
+            } else if ("send".equals(qsDecoder.getPath())) {
                 RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
                 RestSendCommandResponse response = sendCommand(request, yamcsChannel);
                 writeMessage(req, qsDecoder, evt, response, SchemaRest.RestSendCommandResponse.WRITE);
@@ -81,7 +80,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             } catch (NoPermissionException e) {
                 throw new ForbiddenException(e);
             } catch (ErrorInCommand e) {
-                throw new BadRequestException("Parse Exception", e);
+                throw new BadRequestException(e);
             } catch (YamcsException e) { // could be anything, consider as internal server error
                 log.error("Could not build command", e);
                 throw new RestException(e);
@@ -104,7 +103,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<PreparedCommand>();
         for (RestCommandType restCommand : request.getCommandsList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(NamedObjectId.newBuilder().setName(restCommand.getName().getName()).build());
+            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getName());
 
             List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
@@ -121,7 +120,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             } catch (NoPermissionException e) {
                 throw new ForbiddenException(e);
             } catch (ErrorInCommand e) {
-                throw new BadRequestException("Parse Exception", e);
+                throw new BadRequestException(e);
             } catch (YamcsException e) { // could be anything, consider as internal server error
                 log.error("Could not build command", e);
                 throw new RestException(e);

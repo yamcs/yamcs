@@ -12,11 +12,7 @@ public class BadRequestException extends RestException {
     }
 
     public BadRequestException(Throwable t) {
-        super("Bad Request", t);
-    }
-
-    public BadRequestException(String message, Throwable t) {
-        super(message, t);
+        super(t.getMessage(), t);
     }
 
     @Override

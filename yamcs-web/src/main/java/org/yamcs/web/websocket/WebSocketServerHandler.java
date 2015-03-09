@@ -3,7 +3,6 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.regex.Pattern;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -47,17 +46,15 @@ public class WebSocketServerHandler {
     public final int MESSAGE_TYPE_DATA=4;
     private int dataSeqCount=-1;
 
-    final Pattern urlPattern=Pattern.compile("\\/([\\w\\-]+)\\/(.*)");
-    
     JsonFactory jsonFactory=new JsonFactory();
     
     //these two are valid after the socket has been upgraded and they are practical final
     Channel channel;
-    ParameterClient paraClient;
+    WebSocketChannelClient channelClient;
     
     public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
         //TODO: can we ever reach this twice???
-        if(paraClient==null) {
+        if(channelClient==null) {
             String applicationName;
             if (req.containsHeader(HttpHeaders.Names.USER_AGENT)) {
                 applicationName = req.getHeader(HttpHeaders.Names.USER_AGENT);
@@ -68,7 +65,7 @@ public class WebSocketServerHandler {
             } else {
                 applicationName = "Unknown Client";
             }
-            this.paraClient=new ParameterClient(yamcsInstance, this, applicationName);
+            this.channelClient=new WebSocketChannelClient(yamcsInstance, this, applicationName);
         }
 
         this.channel=ctx.getChannel();
@@ -139,7 +136,7 @@ public class WebSocketServerHandler {
     private void handleParameterRequest(int seqId, String request, JsonParser jsp) throws IOException {
         if((jsp.nextToken()!=JsonToken.FIELD_NAME) || (!"data".equals(jsp.getCurrentName())))
             throw new RuntimeException("Invalid message (expecting data as the next field)");
-        paraClient.processRequest(request, seqId, jsp, this);
+        channelClient.getParameterClient().processRequest(request, seqId, jsp, this);
     }
 
     /**
@@ -256,12 +253,10 @@ public class WebSocketServerHandler {
         channel.write(new TextWebSocketFrame(msg));
     }
 
-
-
     public void channelDisconnected(Channel c) {
-        if(paraClient!=null) {
+        if(channelClient!=null) {
             log.info("Channel "+c.getRemoteAddress()+" disconnected");
-            paraClient.quit();
+            channelClient.quit();
         }
     }
 }

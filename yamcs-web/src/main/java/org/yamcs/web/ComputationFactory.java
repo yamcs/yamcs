@@ -21,6 +21,6 @@ public class ComputationFactory {
         if("jformula".equals(cdef.getLanguage())) {
             return objLoader.loadObject("org.yamcs.web.JFormulaComputation", cdef);
         }
-        throw new ConfigurationException("Unkown language '"+cdef.getLanguage()+"'");   
+        throw new ConfigurationException("Unknown language '"+cdef.getLanguage()+"'");
     }
 }
