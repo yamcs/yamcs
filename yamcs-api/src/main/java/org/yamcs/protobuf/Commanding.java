@@ -2314,19 +2314,12 @@ public final class Commanding {
       return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryEntry_fieldAccessorTable;
     }
     
-    // required .commanding.CommandId cmdId = 1;
-    public static final int CMDID_FIELD_NUMBER = 1;
-    private boolean hasCmdId;
-    private org.yamcs.protobuf.Commanding.CommandId cmdId_;
-    public boolean hasCmdId() { return hasCmdId; }
-    public org.yamcs.protobuf.Commanding.CommandId getCmdId() { return cmdId_; }
-    
-    // required string cmdName = 2;
-    public static final int CMDNAME_FIELD_NUMBER = 2;
-    private boolean hasCmdName;
-    private java.lang.String cmdName_ = "";
-    public boolean hasCmdName() { return hasCmdName; }
-    public java.lang.String getCmdName() { return cmdName_; }
+    // required .commanding.CommandId commandId = 1;
+    public static final int COMMANDID_FIELD_NUMBER = 1;
+    private boolean hasCommandId;
+    private org.yamcs.protobuf.Commanding.CommandId commandId_;
+    public boolean hasCommandId() { return hasCommandId; }
+    public org.yamcs.protobuf.Commanding.CommandId getCommandId() { return commandId_; }
     
     // repeated .commanding.CommandHistoryAttribute attr = 3;
     public static final int ATTR_FIELD_NUMBER = 3;
@@ -2341,12 +2334,11 @@ public final class Commanding {
     }
     
     private void initFields() {
-      cmdId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
+      commandId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
     }
     public final boolean isInitialized() {
-      if (!hasCmdId) return false;
-      if (!hasCmdName) return false;
-      if (!getCmdId().isInitialized()) return false;
+      if (!hasCommandId) return false;
+      if (!getCommandId().isInitialized()) return false;
       for (org.yamcs.protobuf.Commanding.CommandHistoryAttribute element : getAttrList()) {
         if (!element.isInitialized()) return false;
       }
@@ -2356,11 +2348,8 @@ public final class Commanding {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasCmdId()) {
-        output.writeMessage(1, getCmdId());
-      }
-      if (hasCmdName()) {
-        output.writeString(2, getCmdName());
+      if (hasCommandId()) {
+        output.writeMessage(1, getCommandId());
       }
       for (org.yamcs.protobuf.Commanding.CommandHistoryAttribute element : getAttrList()) {
         output.writeMessage(3, element);
@@ -2374,13 +2363,9 @@ public final class Commanding {
       if (size != -1) return size;
     
       size = 0;
-      if (hasCmdId()) {
+      if (hasCommandId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getCmdId());
-      }
-      if (hasCmdName()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeStringSize(2, getCmdName());
+          .computeMessageSize(1, getCommandId());
       }
       for (org.yamcs.protobuf.Commanding.CommandHistoryAttribute element : getAttrList()) {
         size += com.google.protobuf.CodedOutputStream
@@ -2548,11 +2533,8 @@ public final class Commanding {
       
       public Builder mergeFrom(org.yamcs.protobuf.Commanding.CommandHistoryEntry other) {
         if (other == org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance()) return this;
-        if (other.hasCmdId()) {
-          mergeCmdId(other.getCmdId());
-        }
-        if (other.hasCmdName()) {
-          setCmdName(other.getCmdName());
+        if (other.hasCommandId()) {
+          mergeCommandId(other.getCommandId());
         }
         if (!other.attr_.isEmpty()) {
           if (result.attr_.isEmpty()) {
@@ -2587,15 +2569,11 @@ public final class Commanding {
             }
             case 10: {
               org.yamcs.protobuf.Commanding.CommandId.Builder subBuilder = org.yamcs.protobuf.Commanding.CommandId.newBuilder();
-              if (hasCmdId()) {
-                subBuilder.mergeFrom(getCmdId());
+              if (hasCommandId()) {
+                subBuilder.mergeFrom(getCommandId());
               }
               input.readMessage(subBuilder, extensionRegistry);
-              setCmdId(subBuilder.buildPartial());
-              break;
-            }
-            case 18: {
-              setCmdName(input.readString());
+              setCommandId(subBuilder.buildPartial());
               break;
             }
             case 26: {
@@ -2609,61 +2587,40 @@ public final class Commanding {
       }
       
       
-      // required .commanding.CommandId cmdId = 1;
-      public boolean hasCmdId() {
-        return result.hasCmdId();
+      // required .commanding.CommandId commandId = 1;
+      public boolean hasCommandId() {
+        return result.hasCommandId();
       }
-      public org.yamcs.protobuf.Commanding.CommandId getCmdId() {
-        return result.getCmdId();
+      public org.yamcs.protobuf.Commanding.CommandId getCommandId() {
+        return result.getCommandId();
       }
-      public Builder setCmdId(org.yamcs.protobuf.Commanding.CommandId value) {
+      public Builder setCommandId(org.yamcs.protobuf.Commanding.CommandId value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        result.hasCmdId = true;
-        result.cmdId_ = value;
+        result.hasCommandId = true;
+        result.commandId_ = value;
         return this;
       }
-      public Builder setCmdId(org.yamcs.protobuf.Commanding.CommandId.Builder builderForValue) {
-        result.hasCmdId = true;
-        result.cmdId_ = builderForValue.build();
+      public Builder setCommandId(org.yamcs.protobuf.Commanding.CommandId.Builder builderForValue) {
+        result.hasCommandId = true;
+        result.commandId_ = builderForValue.build();
         return this;
       }
-      public Builder mergeCmdId(org.yamcs.protobuf.Commanding.CommandId value) {
-        if (result.hasCmdId() &&
-            result.cmdId_ != org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance()) {
-          result.cmdId_ =
-            org.yamcs.protobuf.Commanding.CommandId.newBuilder(result.cmdId_).mergeFrom(value).buildPartial();
+      public Builder mergeCommandId(org.yamcs.protobuf.Commanding.CommandId value) {
+        if (result.hasCommandId() &&
+            result.commandId_ != org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance()) {
+          result.commandId_ =
+            org.yamcs.protobuf.Commanding.CommandId.newBuilder(result.commandId_).mergeFrom(value).buildPartial();
         } else {
-          result.cmdId_ = value;
+          result.commandId_ = value;
         }
-        result.hasCmdId = true;
+        result.hasCommandId = true;
         return this;
       }
-      public Builder clearCmdId() {
-        result.hasCmdId = false;
-        result.cmdId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
-        return this;
-      }
-      
-      // required string cmdName = 2;
-      public boolean hasCmdName() {
-        return result.hasCmdName();
-      }
-      public java.lang.String getCmdName() {
-        return result.getCmdName();
-      }
-      public Builder setCmdName(java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.hasCmdName = true;
-        result.cmdName_ = value;
-        return this;
-      }
-      public Builder clearCmdName() {
-        result.hasCmdName = false;
-        result.cmdName_ = getDefaultInstance().getCmdName();
+      public Builder clearCommandId() {
+        result.hasCommandId = false;
+        result.commandId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
         return this;
       }
       
@@ -3136,17 +3093,17 @@ public final class Commanding {
       "\n\nqueueEntry\030\002 \001(\0132\035.commanding.CommandQ" +
       "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"D\n\027Com" +
       "mandHistoryAttribute\022\014\n\004name\030\001 \002(\t\022\033\n\005va" +
-      "lue\030\002 \002(\0132\014.yamcs.Value\"\177\n\023CommandHistor" +
-      "yEntry\022$\n\005cmdId\030\001 \002(\0132\025.commanding.Comma" +
-      "ndId\022\017\n\007cmdName\030\002 \002(\t\0221\n\004attr\030\003 \003(\0132#.co" +
-      "mmanding.CommandHistoryAttribute*4\n\nQueu",
-      "eState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENA" +
-      "BLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQue" +
-      "ueState\022\034.commanding.CommandQueueInfo\032\013." +
-      "yamcs.Void\022;\n\013SendCommand\022\037.commanding.C" +
-      "ommandQueueRequest\032\013.yamcs.Void\022;\n\rRejec" +
-      "tCommand\022\035.commanding.CommandQueueEntry\032" +
-      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "lue\030\002 \002(\0132\014.yamcs.Value\"r\n\023CommandHistor" +
+      "yEntry\022(\n\tcommandId\030\001 \002(\0132\025.commanding.C" +
+      "ommandId\0221\n\004attr\030\003 \003(\0132#.commanding.Comm" +
+      "andHistoryAttribute*4\n\nQueueState\022\013\n\007BLO",
+      "CKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001\n\023Co" +
+      "mmandQueueControl\022:\n\rSetQueueState\022\034.com" +
+      "manding.CommandQueueInfo\032\013.yamcs.Void\022;\n" +
+      "\013SendCommand\022\037.commanding.CommandQueueRe" +
+      "quest\032\013.yamcs.Void\022;\n\rRejectCommand\022\035.co" +
+      "mmanding.CommandQueueEntry\032\013.yamcs.VoidB" +
+      "\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3198,7 +3155,7 @@ public final class Commanding {
           internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandHistoryEntry_descriptor,
-              new java.lang.String[] { "CmdId", "CmdName", "Attr", },
+              new java.lang.String[] { "CommandId", "Attr", },
               org.yamcs.protobuf.Commanding.CommandHistoryEntry.class,
               org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder.class);
           return null;
