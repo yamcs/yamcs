@@ -24,7 +24,7 @@ public interface CommandReleaser extends Service {
 	
 	/**
 	 * the command releaser has to add the command to the history when it is released. 
-	 * @param commandHistoryListener
+	 * @param commandHistory
 	 */
-	void setCommandHistoryListener(CommandHistory commandHistoryListener);
+	void setCommandHistory(CommandHistory commandHistory);
 }

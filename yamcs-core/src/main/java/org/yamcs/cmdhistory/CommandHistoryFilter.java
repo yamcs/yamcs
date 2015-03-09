@@ -4,8 +4,8 @@ import org.yamcs.protobuf.Commanding.CommandId;
 
 
 public class CommandHistoryFilter {
-    String commandsOrigin;
-    long commandsSince;
+	private String commandsOrigin;
+    private long commandsSince;
     public int subscriptionId;
 
     public CommandHistoryFilter(int subscriptionId, String commandsOrigin, long commandsSince) {

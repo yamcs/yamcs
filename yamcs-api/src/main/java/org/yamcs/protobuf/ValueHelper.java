@@ -59,5 +59,22 @@ public class ValueHelper {
 		return Value.newBuilder().setType(Type.BINARY).setBinaryValue(ByteString.copyFrom(x)).build();
 	}
 	
+	/**
+	 * returns a BOOLEAN Value
+	 * @param x
+	 * @return
+	 */
+	static public Value newValue(boolean x) {
+		return Value.newBuilder().setType(Type.BOOLEAN).setBooleanValue(x).build();
+	}
+	
+	/**
+	 * returns a TIMESTAMP Value
+	 * @param x
+	 * @return
+	 */
+	public static Value newTimestampValue(long  x) {
+		return Value.newBuilder().setType(Type.TIMESTAMP).setTimestampValue(x).build();
+	}
 	
 }

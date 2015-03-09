@@ -49,7 +49,7 @@ public class YarchTcCommandReleaser extends AbstractService implements CommandRe
     
 
     @Override
-    public void setCommandHistoryListener(CommandHistory commandHistoryListener) {
+    public void setCommandHistory(CommandHistory commandHistoryListener) {
         
     }
 

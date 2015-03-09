@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
@@ -46,8 +47,13 @@ public class Channel {
 	static private Map<String,Channel>instances=Collections.synchronizedMap(new HashMap<String,Channel>());
 	private ParameterRequestManager parameterRequestManager;
 	private ContainerRequestManager containerRequestManager;
-	private CommandHistory commandHistoryListener;
+	private CommandHistory commandHistoryPublisher;
+	
+	private CommandHistoryRequestManager commandHistoryRequestManager;
+	
 	private CommandingManager commandingManager;
+	
+	
 	private TmPacketProvider tmPacketProvider;
 	private CommandReleaser commandReleaser;
 	private List<ParameterProvider> parameterProviders = new ArrayList<ParameterProvider>();
@@ -115,12 +121,13 @@ public class Channel {
             
             if(commandReleaser!=null) { 
                 try {
-    				this.commandHistoryListener=new YarchCommandHistoryAdapter(yamcsInstance);
+    				this.commandHistoryPublisher=new YarchCommandHistoryAdapter(yamcsInstance);
     			} catch (Exception e) {
     				throw new ConfigurationException("Cannot create command history" , e);
     			}
                 commandingManager=new CommandingManager(this);
-                commandReleaser.setCommandHistoryListener(commandHistoryListener);
+                commandReleaser.setCommandHistory(commandHistoryPublisher);
+                commandHistoryRequestManager = new CommandHistoryRequestManager(yamcsInstance);
             } else {
                 commandingManager=null;
             }
@@ -140,7 +147,7 @@ public class Channel {
 	}
 	
 	public CommandHistory getCommandHistoryListener() {
-		return commandHistoryListener;
+		return commandHistoryPublisher;
 	}
 
 	public ParameterRequestManager getParameterRequestManager() {
@@ -162,7 +169,10 @@ public class Channel {
 	 */
 	public void start() {
 	    tmPacketProvider.startAsync();
-	    if(commandReleaser!=null) commandReleaser.startAsync();
+	    if(commandReleaser!=null) {
+	    	commandReleaser.startAsync();
+	    	commandHistoryRequestManager.startAsync();
+	    }
 	    for(ParameterProvider pprov: parameterProviders) {
 	        pprov.startAsync();
 	    }
@@ -376,5 +386,9 @@ public class Channel {
 	
 	public XtceDb getXtceDb() {
 		return xtcedb;
+	}
+
+	public CommandHistoryRequestManager getCommandHistoryManager() {
+		return commandHistoryRequestManager;
 	}
 }
