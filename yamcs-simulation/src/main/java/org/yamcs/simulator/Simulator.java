@@ -3,14 +3,15 @@ package org.yamcs.simulator;
 import java.net.*;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+
 
 class Simulator extends Thread {
 
-	Socket receiveSocket;
-	Socket sendSocket;
+	Socket tmSocket;
+	Socket tcSocket;
 
 	CCSDSHandlerFlightData 	flightDataHandler;
 	CCSDSHandlerDHS 		dhsHandler;
@@ -19,22 +20,19 @@ class Simulator extends Thread {
 	CCSDSHandlerEPSLVPDU 	ESPLvpduHandler;
 	CCSDSHandlerAck         AckDataHandler;
 
-	private static Socket connectedSendSocketServer;
 
-	private static Socket connectedReceiveSocketServer;
+	private static Socket connectedTmSocket;
 
-	private static ServerSocket sendSocketServer;
+	private static ServerSocket tcSocketServer;
 
-	private static ServerSocket receiveSocketServer;
-	
-	private static SocketAddress connectedAddress;
+	private static ServerSocket tmSocketServer;
 
 
 	private boolean engageHoldOneCycle = false;
 	private boolean unengageHoldOneCycle = false;
 	private int waitToEngage;
 	private int waitToUnengage;
-    private int DEFAULT_MAX_LENGTH=65542;
+	private int DEFAULT_MAX_LENGTH=65542;
 	private int maxLength = DEFAULT_MAX_LENGTH;
 	private boolean engaged = false;
 	private boolean unengaged = true; 
@@ -42,131 +40,130 @@ class Simulator extends Thread {
 	private int battOneCommand;
 	private int battTwoCommand;
 	private int battThreeCommand;
-	private boolean isconnected = false;
-	
+	Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<CCSDSPacket>(100);//no more than 100 pending commands
 
-	public Simulator(Socket ReceiveSocketServer, Socket SendSocketServer) {
-		
-		this.receiveSocket = ReceiveSocketServer;
-		this.sendSocket    = SendSocketServer;
 
-		isconnected = SendSocketServer.isConnected();
-		
+
+	public Simulator(Socket connectedTmSocket, Socket connectedTcSocket) throws IOException {
+
+
+		this.tmSocket = connectedTmSocket;
+		this.tcSocket    = connectedTcSocket;
+
 		flightDataHandler  = new CCSDSHandlerFlightData();
 		dhsHandler 		   = new CCSDSHandlerDHS();
 		powerDataHandler   = new CCSDSHandlerPower();
 		rcsHandler         = new CCSDSHandlerRCS();
 		ESPLvpduHandler    = new CCSDSHandlerEPSLVPDU();
 		AckDataHandler     = new CCSDSHandlerAck();
- 
+
 	}
 
 	public void run() {
-		CCSDSPacket receivedPacket = new CCSDSPacket(0, 0, 0);
-		CCSDSPacket packet = null;
-		DataInputStream dIn = null;
-		
-		
-		if(isconnected)
-		{
-			try {
-				dIn = new DataInputStream(sendSocket.getInputStream());
-			} catch (IOException e1) {
 
-				e1.printStackTrace();
+		//start the TC reception thread;
+		(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				readCommands();
 			}
-		}
+		})).start();
+
+
+
+
+		CCSDSPacket packet = null;
+
 		try {
 
 			for (int i = 0;;) {
 				CCSDSPacket ExeCompPacket = new CCSDSPacket(3, 2, 8);
 				CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
 				flightDataHandler.fillPacket(flightpacket);
-				flightpacket.send(receiveSocket.getOutputStream());
+				flightpacket.send(tmSocket.getOutputStream());
 
 
 				if (i < 30) ++i;
 				else {
-					
 					if(waitToEngage == 2 || engaged  ){
 						engaged = true;
 						//unengaged = false;
 						CCSDSPacket Powerpacket = new CCSDSPacket(16 , 1);
-						
+
 						powerDataHandler.fillPacket(Powerpacket);
-						
+
 						switch(battOneCommand){
-							case 1: battOneCommand = 1;
-								powerDataHandler.setBattOneOff(Powerpacket);
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 1, 0);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
-								
-							case 2: battOneCommand = 2;
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 1, 1);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
-							default :
-								break;
+						case 1: battOneCommand = 1;
+						powerDataHandler.setBattOneOff(Powerpacket);
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 1, 0);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
+						}
+						break;
+
+						case 2: battOneCommand = 2;
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 1, 1);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
+						}
+						break;
+						default :
+							break;
 						}		
 						switch(battTwoCommand){
-							
-							case 1:battTwoCommand = 1;
-								powerDataHandler.setBattTwoOff(Powerpacket);
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 2, 0);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
-								
-							case 2:battTwoCommand = 2;
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 2, 1);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
+
+						case 1:battTwoCommand = 1;
+						powerDataHandler.setBattTwoOff(Powerpacket);
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 2, 0);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
+						}
+						break;
+
+						case 2:battTwoCommand = 2;
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 2, 1);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
+						}
+						break;
 						}
 						switch(battThreeCommand){
-							case 1:battThreeCommand = 1;
-								powerDataHandler.setBattThreeOff(Powerpacket);
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 3, 0);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
-							case 2:battThreeCommand = 2;
-								AckDataHandler.fillExeCompPacket(ExeCompPacket, 3, 1);
-								if (!ExeTransmitted ){
-									ExeCompPacket.send(receiveSocket.getOutputStream());
-									ExeTransmitted = true;
-								}
-								break;
-							default:
-								break;
+						case 1:battThreeCommand = 1;
+						powerDataHandler.setBattThreeOff(Powerpacket);
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 3, 0);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
 						}
-						
-						Powerpacket.send(receiveSocket.getOutputStream());
+						break;
+						case 2:battThreeCommand = 2;
+						AckDataHandler.fillExeCompPacket(ExeCompPacket, 3, 1);
+						if (!ExeTransmitted ){
+							ExeCompPacket.send(tmSocket.getOutputStream());
+							ExeTransmitted = true;
+						}
+						break;
+						default:
+							break;
+						}
+
+						Powerpacket.send(tmSocket.getOutputStream());
 
 						engageHoldOneCycle = false;
 						waitToEngage = 0;
-						
-						
-					}else if (waitToUnengage == 2 || unengaged ){
+
+
+					} else if (waitToUnengage == 2 || unengaged ){
 						CCSDSPacket	Powerpacket = new CCSDSPacket(16 , 1);
 						powerDataHandler.fillPacket(Powerpacket);
-						Powerpacket.send(receiveSocket.getOutputStream());
+						Powerpacket.send(tmSocket.getOutputStream());
 						unengaged = true;
 						//engaged = false;
-						
+
 						unengageHoldOneCycle = false;
 						waitToUnengage = 0;
 					}	
@@ -174,15 +171,15 @@ class Simulator extends Thread {
 
 					packet = new CCSDSPacket(9, 2);
 					dhsHandler.fillPacket(packet);
-					packet.send(receiveSocket.getOutputStream());
+					packet.send(tmSocket.getOutputStream());
 
 					packet = new CCSDSPacket(36, 3);
 					rcsHandler.fillPacket(packet);
-					packet.send(receiveSocket.getOutputStream());
+					packet.send(tmSocket.getOutputStream());
 
 					packet = new CCSDSPacket(6, 4);
 					ESPLvpduHandler.fillPacket(packet);
-					packet.send(receiveSocket.getOutputStream());
+					packet.send(tmSocket.getOutputStream());
 
 					if (engageHoldOneCycle){ // hold the command for 1 cycle after the command Ack received
 
@@ -195,83 +192,10 @@ class Simulator extends Thread {
 						waitToUnengage = waitToUnengage + 1;
 					}
 
-					//READ IN COMMAND 
-					if(isconnected){
-						byte hdr[] = new byte[6];
-						dIn.readFully(hdr);
-						int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
-						if(remaining>maxLength-6) throw new IOException("Remaining packet length too big: "+remaining+" maximum allowed is "+(maxLength-6));
-						byte[] b = new byte[6+remaining];
-						System.arraycopy(hdr, 0, b, 0, 6);
-						dIn.readFully(b, 6, remaining);
-						CCSDSPacket CommandPacket = new CCSDSPacket(ByteBuffer.wrap(b));
-
-						CCSDSPacket ackPacket;
-						if (CommandPacket.packetType == 10) {
-							System.out.println("BATT COMMAND  : " + receivedPacket.packetid);
-
-							switch(CommandPacket.packetid){
-
-							case 1 : CommandPacket.packetid = 1 ; //switch batt one off
-							engageHoldOneCycle = true;
-							ExeTransmitted = false;
-							battOneCommand = 1;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(ackPacket, 1);
-							ackPacket.send(receiveSocket.getOutputStream());
-							break;	
-							case 2 : CommandPacket.packetid = 2; //switch batt one on
-							unengageHoldOneCycle = true;
-							//engaged = false;
-							ExeTransmitted = false;
-							battOneCommand = 2;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(ackPacket, 1);
-							ackPacket.send(receiveSocket.getOutputStream());
-							break;
-							case 3 : CommandPacket.packetid = 3; //switch batt two off
-							engageHoldOneCycle = true;
-							ExeTransmitted = false;
-							battTwoCommand = 1;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(ackPacket, 1);
-							ackPacket.send(receiveSocket.getOutputStream());
-							break;
-							case 4 : CommandPacket.packetid = 4; //switch batt two on
-							unengageHoldOneCycle = true;
-							//engaged = false;
-							ExeTransmitted = false;
-							battTwoCommand = 2;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(ackPacket, 1);
-							ackPacket.send(receiveSocket.getOutputStream());
-							break;
-							case 5 : CommandPacket.packetid = 5; //switch batt three off
-							engageHoldOneCycle = true;
-							ExeTransmitted = false;
-							battThreeCommand = 1;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(ackPacket, 1);
-							ackPacket.send(receiveSocket.getOutputStream());
-							break;	
-							case 6 : CommandPacket.packetid = 6; // switch batt three on
-							unengageHoldOneCycle = true;
-							//engaged = false;
-							battThreeCommand = 2;
-							ExeTransmitted = false;
-							ackPacket = new CCSDSPacket(1, 2, 7);
-							AckDataHandler.fillAckPacket(packet, 1);
-							ackPacket.send(receiveSocket.getOutputStream());;
-							break;
-							default : 
-							}
-
-						}
-					}
-
 					i = 0;	
 				}
 
+				executePendingCommands();
 				Thread.sleep(4000 / 20);
 			}
 
@@ -285,54 +209,149 @@ class Simulator extends Thread {
 		System.out.println("Simulator thread ended");
 	}
 
-	public static void main(String[] args) {
+	/**
+	 * runs in the main TM thread, executes commands from the queue (if any)
+	 * @throws IOException 
+	 */
+	private void executePendingCommands() throws IOException {
+		while(pendingCommands.size()>0) {
+			CCSDSPacket commandPacket = pendingCommands.poll();
 
-	int sendSocketPort = 10025;
-	int receiveSocketPort = 10015;
+			CCSDSPacket ackPacket;
+			if (commandPacket.packetType == 10) {
+				System.out.println("BATT COMMAND  : " + commandPacket.packetid);
 
-	connectedSendSocketServer = null;
-	connectedReceiveSocketServer = null;
-	
-	
+				switch(commandPacket.packetid){
 
-	System.out.println("Waiting on connection " + receiveSocketPort);
-
-	try {
-		receiveSocketServer = new ServerSocket(receiveSocketPort);
-
-		connectedReceiveSocketServer = receiveSocketServer.accept();
-		System.out.println("connectedReceiveSocketServer: "
-				+ connectedReceiveSocketServer.getInetAddress() + ":"
-				+ connectedReceiveSocketServer.getPort());
-		// receiveSocketServer.setSoTimeout(500);
-	} catch (IOException e) {
-
-		e.printStackTrace();
+				case 1 : commandPacket.packetid = 1 ; //switch batt one off
+					engageHoldOneCycle = true;
+					ExeTransmitted = false;
+					battOneCommand = 1;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());
+				break;	
+				case 2 : commandPacket.packetid = 2; //switch batt one on
+					unengageHoldOneCycle = true;
+					//engaged = false;
+					ExeTransmitted = false;
+					battOneCommand = 2;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());
+				break;
+				case 3 : commandPacket.packetid = 3; //switch batt two off
+					engageHoldOneCycle = true;
+					ExeTransmitted = false;
+					battTwoCommand = 1;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());
+				break;
+				case 4 : commandPacket.packetid = 4; //switch batt two on
+					unengageHoldOneCycle = true;
+					//engaged = false;
+					ExeTransmitted = false;
+					battTwoCommand = 2;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());
+				break;
+				case 5 : commandPacket.packetid = 5; //switch batt three off
+					engageHoldOneCycle = true;
+					ExeTransmitted = false;
+					battThreeCommand = 1;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());
+				break;	
+				case 6 : commandPacket.packetid = 6; // switch batt three on
+					unengageHoldOneCycle = true;
+					//engaged = false;
+					battThreeCommand = 2;
+					ExeTransmitted = false;
+					ackPacket = new CCSDSPacket(1, 2, 7);
+					AckDataHandler.fillAckPacket(ackPacket, 1);
+					ackPacket.send(tmSocket.getOutputStream());;
+				break;
+				default : 
+				}
+			}
+		}
 	}
 
-	System.out.println("Waiting on connection " + sendSocketPort);
+	/**
+	 * this runs in a separate thread but pushes commands to the main TM thread
+	 * @throws IOException 
+	 * 
+	 */
+	private void readCommands() {
+		try {
 
-	System.out.println("Waiting on connection " + sendSocketPort );
+			DataInputStream dIn = new DataInputStream(tcSocket.getInputStream());				
+			while(true) {
+				//READ IN COMMAND 
+				byte hdr[] = new byte[6];
+				dIn.readFully(hdr);
+				int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
+				if(remaining>maxLength-6) throw new IOException("Remaining packet length too big: "+remaining+" maximum allowed is "+(maxLength-6));
+				byte[] b = new byte[6+remaining];
+				System.arraycopy(hdr, 0, b, 0, 6);
+				dIn.readFully(b, 6, remaining);
+				CCSDSPacket commandPacket = new CCSDSPacket(ByteBuffer.wrap(b));
+				System.out.println("received commandPacket "+commandPacket.toString());
+				pendingCommands.add(commandPacket);
+			}
+		} catch(Exception e) {
+			System.err.println("Error reading command");
+			e.printStackTrace();
+			return;
+		}
 
-	  try {
-		  connectedSendSocketServer = new Socket();
-		  connectedAddress = new InetSocketAddress("127.0.0.1", sendSocketPort);
-		  
-		  connectedSendSocketServer.connect(connectedAddress, 1000);
+	}
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
+	public static void main(String[] args) {
 
-	Simulator client = new Simulator(connectedReceiveSocketServer,
-			connectedSendSocketServer);
-	client.start();
+		int tcSocketPort = 10025;
+		int receiveSocketPort = 10015;
 
-}
+		connectedTmSocket = null;
 
 
+		System.out.println("Waiting on TM connection " + receiveSocketPort);
+
+		try {
+			tmSocketServer = new ServerSocket(receiveSocketPort);
+
+			connectedTmSocket = tmSocketServer.accept();
+			System.out.println("connectedReceiveSocketServer: "
+					+ connectedTmSocket.getInetAddress() + ":"
+					+ connectedTmSocket.getPort());
+			// receiveSocketServer.setSoTimeout(500);
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		System.out.println("Waiting on TC connections on " + tcSocketPort);
+
+		try {
+			tcSocketServer = new ServerSocket(tcSocketPort);
+			Socket connectedTcSocket = tcSocketServer.accept();
 
 
+			System.out.println("connectedTCSocketServer: "
+					+ connectedTmSocket.getInetAddress() + ":"
+					+ connectedTmSocket.getPort());
+
+			Simulator client = new Simulator(connectedTmSocket,	connectedTcSocket);
+			client.start();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 
 
 }

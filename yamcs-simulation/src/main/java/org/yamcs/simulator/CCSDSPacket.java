@@ -4,7 +4,6 @@ package org.yamcs.simulator;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -62,8 +61,8 @@ secondary header (10 bytes):
 		this.buffer = buffer;
 		apid = buffer.getShort(0) & 0x07ff;
 		seq = buffer.getShort(2) & 0x3fff;
-		packetType = (byte) (buffer.get(11) & ~(1 <<6)); // get the packet packet type
-		packetid = buffer.get(12);
+		packetType = (byte) (buffer.get(11) & 0x0F); // get the  packet type
+		packetid = buffer.getInt(12);
 		timeMillis = ((long)(buffer.getInt(6)) + 315964800L )*1000 + (long)(buffer.get(10))*1000/256;
 	}
 
@@ -80,8 +79,7 @@ secondary header (10 bytes):
 		putHeader();
 	}
 	
-	public CCSDSPacket(int userDataLength, int packetType, int packetid ) {
-		
+	public CCSDSPacket(int userDataLength, int packetType, int packetid ) {		
 		apid = 1;
 		seq = 0;
 		timeMillis = System.currentTimeMillis();
@@ -152,6 +150,16 @@ secondary header (10 bytes):
 		 
 	 }
 	 
-	
-
+	 @Override
+	 public String toString() {
+			StringBuffer sb=new StringBuffer();
+			sb.append("apid: "+apid+"\n");
+			sb.append("seq: "+seq+"\n");
+			sb.append("packetId: "+packetid+"\n");
+			sb.append("packetType: "+packetType+"\n");
+			sb.append("time: "+ timeMillis);
+			sb.append("\n");
+			
+			return sb.toString();
+		}
 }
