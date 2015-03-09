@@ -38,7 +38,12 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                     commandingRequestHandler.handleRequest(ctx, req, evt, yamcsInstance, path.length>1? path[1] : null);
                 }
             } catch (BadRequestException e) {
-                sendError(e.getCause(), req, new QueryStringDecoder(remainingUri), ctx, HttpResponseStatus.BAD_REQUEST);
+            	Throwable t = e.getCause();
+            	if(t!=null) {
+            		sendError(t, req, new QueryStringDecoder(remainingUri), ctx, HttpResponseStatus.BAD_REQUEST);
+            	} else {
+            		sendError(e, req, new QueryStringDecoder(remainingUri), ctx, HttpResponseStatus.BAD_REQUEST);
+            	}
             } catch (RestException e) {
                 sendError(e, req, new QueryStringDecoder(remainingUri), ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             } catch (Exception e) {
