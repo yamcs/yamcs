@@ -1,7 +1,7 @@
 package org.yamcs.xtce;
 
 public class StringArgumentType extends StringDataType implements ArgumentType {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     public StringArgumentType(String name) {
         super(name);
@@ -15,7 +15,13 @@ public class StringArgumentType extends StringDataType implements ArgumentType {
 
     @Override
     public String toString() {
-        return "StringArgumentType name:"+name+" encoding:"+encoding;
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("StringArgumentType name:").append(name);
+    	if(initialValue!=null) sb.append("defValue: ").append(initialValue);
+    	if(sizeRangeInCharacters!=null) sb.append(" sizeRange: ").append(sizeRangeInCharacters);
+    	
+    	sb.append(" encoding: ").append(encoding);
+    	return sb.toString();
     }
 
 }

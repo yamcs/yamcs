@@ -2,7 +2,7 @@ package org.yamcs.xtce;
 
 
 public class IntegerArgumentType extends IntegerDataType implements ArgumentType {
-	private static final long serialVersionUID=2L;
+	private static final long serialVersionUID=3L;
 
 	
 	public IntegerArgumentType(String name){
@@ -23,6 +23,7 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
     			.append(" sizeInBits:").append(sizeInBits)
     			.append(" signed: ").append(signed);
     	
+    	if(initialValue!=null) sb.append(" defaultValue: ").append(initialValue);
     	if(validRange!=null) sb.append(" validRange: ").append(validRange);
     	
     	sb.append(" encoding: ").append(encoding);
