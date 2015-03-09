@@ -126,6 +126,19 @@ public class Protocol {
             throw new YamcsApiException(e.getMessage(), e);
         }
     }
+
+    public static MessageLite.Builder decodeBuilder(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
+        try {
+            ChannelBuffer buf = msg.getBodyBuffer().channelBuffer();
+            if (buf.hasArray()) {
+                return builder.mergeFrom(buf.array(), buf.readerIndex(), msg.getBodySize());
+            } else {
+                return builder.mergeFrom(new ChannelBufferInputStream(buf));
+            }
+        } catch(IOException e) {
+            throw new YamcsApiException(e.getMessage(), e);
+        }
+    }
     
     public static void encode(ClientMessage msg, MessageLite ml){
         try {

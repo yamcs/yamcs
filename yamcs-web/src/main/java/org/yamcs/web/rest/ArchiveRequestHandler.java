@@ -1,13 +1,16 @@
 package org.yamcs.web.rest;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.codehaus.jackson.JsonGenerator;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -16,36 +19,35 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpChunk;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
+import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.RestReplayResponse;
+import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
 
-import com.csvreader.CsvWriter;
-import com.google.common.io.Files;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import com.dyuproject.protostuff.JsonIOUtil;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -57,91 +59,41 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * us to send large dumps without needing to determine a content length on the server. At the
  * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
  */
-public class ArchiveRequestHandler extends RestRequestHandler {
+public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
-    private final File profileDir;
-
-    public ArchiveRequestHandler() {
-        try {
-            String cacheDir = YConfiguration.getConfiguration("mdb").getGlobalProperty("cacheDirectory");
-            profileDir = new File(cacheDir, "profiles");
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-/*    @Override
-    public String[] getSupportedOutboundMediaTypes() {
-        return new String[] { JSON_MIME_TYPE, CSV_MIME_TYPE, BINARY_MIME_TYPE };
-    }*/
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws Exception {
-        if(remainingUri == null || remainingUri.isEmpty()) {
-            sendError(ctx, BAD_REQUEST);
-            return;
-        }
-        
-        ReplayRequest.Builder rrb=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        
-        QueryStringDecoder decoder=new QueryStringDecoder(remainingUri);
-        Map<String,List<String>> qParams=decoder.getParameters();
-        if(qParams.containsKey("start")) {
-            rrb.setStart(TimeEncoding.parse(qParams.get("start").get(0)));
-        }
-        if(qParams.containsKey("stop")) {
-            rrb.setStop(TimeEncoding.parse(qParams.get("stop").get(0)));
-        }
-        if(qParams.containsKey("profile")) {
-            if(qParams.get("profile").contains("/")) { // No funny business
-                log.warn("Sending BAD_REQUEST because profile contains a /");
-                sendError(ctx, BAD_REQUEST);
-                return;
-            }
-            File profile=new File(profileDir, qParams.get("profile").get(0));
-            if (profile.exists()) {
-                List<String> lines=Files.readLines(profile, CharsetUtil.UTF_8);
-                if(decoder.getPath().equals("parameters")) {
-                    ParameterReplayRequest.Builder prrb=ParameterReplayRequest.newBuilder();
-                    for(String line:lines) {
-                        String trimmed=line.trim();
-                        if(!trimmed.isEmpty() && !trimmed.startsWith("#")) {
-                            if(trimmed.startsWith("/")) {
-                                prrb.addNameFilter(NamedObjectId.newBuilder().setName(trimmed));
-                            } else {
-                                prrb.addNameFilter(NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(trimmed));
-                            }
-                        }
-                    }
-                    rrb.setParameterRequest(prrb.build());
-                } else if(decoder.getPath().equals("packets")) {
-                    PacketReplayRequest.Builder prrb=PacketReplayRequest.newBuilder();
-                    for(String line:lines) {
-                        String trimmed=line.trim();
-                        if(!trimmed.isEmpty() && !trimmed.startsWith("#")) {
-                            prrb.addNameFilter(NamedObjectId.newBuilder().setName(trimmed));
-                        }
-                    }
-                    rrb.setPacketRequest(prrb.build());
-                } else {
-                    log.warn("Sending BAD_REQUEST because neither parameter nor packets are requested");
-                    sendError(ctx, BAD_REQUEST);
-                    return;
-                }
-            } else {
-                log.warn("Sending BAD_REQUEST because neither parameter nor packets are requested");
-                sendError(ctx, BAD_REQUEST);
-                return;
-            }
-        } else {
-            sendError(ctx, BAD_REQUEST);
-            return;
-        }
+    public String[] getSupportedOutboundMediaTypes() {
+        return new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
+    }
 
-        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("yamcs://localhost:5445/"+yamcsInstance).build();        
-        final YamcsClient msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
+    @Override
+    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+        if(remainingUri == null || remainingUri.isEmpty()) {
+            sendError(ctx, NOT_FOUND);
+            return;
+        }
+        ReplayRequest incomingRequest = readMessage(req, SchemaYamcs.ReplayRequest.MERGE).build();
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
+
+        /*
+         * Modify some of the original request settings
+         */
+        ReplayRequest.Builder rrb = ReplayRequest.newBuilder(incomingRequest);
+        // When using the REST api, start and stop are interpreted as unix time. Convert to internal yamcs time.
+        rrb.setStart(TimeEncoding.fromUnixTime(incomingRequest.getStart()));
+        rrb.setStop(TimeEncoding.fromUnixTime(incomingRequest.getStop()));
+        // Don't support other options through web api
+        rrb.setEndAction(EndAction.QUIT);
+        ReplayRequest replayRequest = rrb.build();
+
+        // Send the replay request to the ReplayServer.
+        YamcsSession ys = null;
+        YamcsClient msgClient = null;
         try {
+            ys = YamcsSession.newBuilder().setConnectionParams("yamcs://localhost:5445/"+yamcsInstance).build();
+            msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             SimpleString replayServer=Protocol.getYarchReplayControlAddress(yamcsInstance);
             StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rrb.build(), StringMessage.newBuilder());
             
@@ -149,75 +101,140 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             SimpleString replayAddress=new SimpleString(answer.getMessage());
             msgClient.executeRpc(replayAddress, "start", null, null);
       
+            // Return base HTTP response, indicating that we'll used chunked encoding
             HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
             response.setChunked(true);
             response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
-            
-            if(decoder.getPath().equals("packets")) {
-                response.setHeader("Content-Disposition", "attachment; filename=packet-dump");
-                setContentTypeHeader(response, BINARY_MIME_TYPE);
-            } else if(decoder.getPath().equals("parameters")) {
-                response.setHeader("Content-Disposition", "attachment; filename=parameters.csv"); 
-                setContentTypeHeader(response, CSV_MIME_TYPE);
-            }
+            String contentType = getTargetContentType(req);
+            response.setHeader(Names.CONTENT_TYPE, contentType);
             
             Channel ch=evt.getChannel();
             ChannelFuture writeFuture=ch.write(response);
-            while(true) {
-                writeFuture.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        if(!future.isSuccess()) {
-                            future.getChannel().close();
-                            throw new RuntimeException("Exception while writing data to client", future.getCause());
-                        }
+            writeFuture.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if(!future.isSuccess()) {
+                        future.getChannel().close();
+                        throw new RuntimeException("Exception while writing data to client", future.getCause());
                     }
-                });
-                
-                ClientMessage msg=msgClient.dataConsumer.receive();
-                if(Protocol.endOfStream(msg)) {
-                    // Signal end of response
+                }
+            });
+
+            // For every separate upstream hornetq message send a chunk back downstream
+            while(true) {
+                ClientMessage msg = msgClient.dataConsumer.receive();
+
+                if (Protocol.endOfStream(msg)) {
+                    // Send empty chunk downstream to signal end of response
                     ChannelFuture chunkWriteFuture=ch.write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER));
                     chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
-                    log.trace("All chunks have been written out");
+                    log.trace("All chunks were written out");
                     break;
-                } else {
-                    byte[] barray;
-                    if(decoder.getPath().equals("packets")) {
-                        TmPacketData data=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
-                        barray=data.getPacket().toByteArray();
-                    } else if(decoder.getPath().equals("parameters")) {
-                        ParameterData pd=(ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
-                        ByteArrayOutputStream baos=new ByteArrayOutputStream();
-                        CsvWriter csvWriter=new CsvWriter(baos, ';', CharsetUtil.UTF_8);
-                        for(ParameterValue pval:pd.getParameterList()) {
-                            csvWriter.writeRecord(new String[] {
-                                    TimeEncoding.toString(pval.getAcquisitionTime()),
-                                    TimeEncoding.toString(pval.getGenerationTime()),
-                                    pval.getId().getName(),
-                                    StringConvertors.toString(pval.getRawValue(), false),
-                                    StringConvertors.toString(pval.getEngValue(), false)
-                            });
-                        }
-                        csvWriter.close();
-                        baos.close();
-                        barray=baos.toByteArray();
-                    } else {
-                        throw new IllegalStateException("Unexpected path: "+decoder.getPath());
+                }
+
+                RestReplayResponse.Builder responseb = RestReplayResponse.newBuilder();
+                int dataType = msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME);
+                switch (ProtoDataType.valueOf(dataType)) {
+                case PARAMETER:
+                    // Convert yamcs time to exposed unix time TODO should make this optional
+                    ParameterData.Builder parameterData = (ParameterData.Builder) Protocol.decodeBuilder(msg, ParameterData.newBuilder());
+                    parameterData.setGenerationTime(TimeEncoding.toUnixTime(parameterData.getGenerationTime()));
+
+                    List<ParameterValue> pvals = parameterData.getParameterList();
+                    parameterData.clearParameter();
+                    for (ParameterValue pval : pvals) {
+                        ParameterValue.Builder pvalBuilder = pval.toBuilder();
+                        pvalBuilder.setGenerationTime(TimeEncoding.toUnixTime(pval.getGenerationTime()));
+                        pvalBuilder.setAcquisitionTime(TimeEncoding.toUnixTime(pval.getAcquisitionTime()));
+                        pvalBuilder.setAcquisitionTimeUTC(TimeEncoding.toString(pval.getAcquisitionTime()));
+                        pvalBuilder.setGenerationTimeUTC(TimeEncoding.toString(pval.getGenerationTime()));
+                        parameterData.addParameter(pvalBuilder);
                     }
-                    int n=barray.length;
-                    log.trace("Writing chunk of length {}",n);
-                    HttpChunk chunk=new DefaultHttpChunk(ChannelBuffers.wrappedBuffer(barray,0,n));
-                    writeFuture=ch.write(chunk);
+                    responseb.setParameterData(parameterData);
+                    break;
+                case TM_PACKET:
+                    TmPacketData.Builder packetData = (TmPacketData.Builder) Protocol.decodeBuilder(msg, TmPacketData.newBuilder());
+                    packetData.setGenerationTime(TimeEncoding.toUnixTime(packetData.getGenerationTime()));
+                    packetData.setReceptionTime(TimeEncoding.toUnixTime(packetData.getReceptionTime()));
+                    responseb.setPacketData(packetData);
+                    break;
+                case CMD_HISTORY:
+                    CommandHistoryEntry.Builder command = (CommandHistoryEntry.Builder) Protocol.decodeBuilder(msg, CommandHistoryEntry.newBuilder());
+                    CommandId.Builder commandId = command.getCmdId().toBuilder().setGenerationTime(TimeEncoding.toUnixTime(command.getCmdId().getGenerationTime()));
+                    command.setCmdId(commandId);
+                    responseb.setCommand(command);
+                    break;
+                case PP:
+                    ParameterData.Builder ppData = (ParameterData.Builder) Protocol.decodeBuilder(msg, ParameterData.newBuilder());
+                    ppData.setGenerationTime(TimeEncoding.toUnixTime(ppData.getGenerationTime()));
+
+                    List<ParameterValue> ppvals = ppData.getParameterList();
+                    ppData.clearParameter();
+                    for (ParameterValue pval : ppvals) {
+                        ParameterValue.Builder pvalBuilder = pval.toBuilder();
+                        pvalBuilder.setGenerationTime(TimeEncoding.toUnixTime(pval.getGenerationTime()));
+                        pvalBuilder.setAcquisitionTime(TimeEncoding.toUnixTime(pval.getAcquisitionTime()));
+                        pvalBuilder.setAcquisitionTimeUTC(TimeEncoding.toString(pval.getAcquisitionTime()));
+                        pvalBuilder.setGenerationTimeUTC(TimeEncoding.toString(pval.getGenerationTime()));
+                        ppData.addParameter(pvalBuilder);
+                    }
+                    responseb.setPpData(ppData);
+                    break;
+                case EVENT:
+                    Event.Builder event = (Event.Builder) Protocol.decodeBuilder(msg, Event.newBuilder());
+                    event.setGenerationTime(TimeEncoding.toUnixTime(event.getGenerationTime()));
+                    event.setReceptionTime(TimeEncoding.toUnixTime(event.getReceptionTime()));
+                    responseb.setEvent(event);
+                    break;
+                default:
+                    log.trace("Ignoring unsupported hornetq message of type {}", ProtoDataType.valueOf(dataType));
+                    continue;
+                }
+
+                // Finally, write the chunk
+                ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
+                ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+                try {
+                    if (BINARY_MIME_TYPE.equals(contentType)) {
+                        responseb.build().writeTo(channelOut);
+                    } else {
+                        JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
+                        JsonIOUtil.writeTo(generator, responseb.build(), SchemaRest.RestReplayResponse.WRITE, false);
+                        generator.close();
+                    }
+                } catch (IOException e) {
+                    log.error("Internal server error while writing out message", e);
+                    throw new RestException(e);
+                }
+
+                writeFuture=ch.write(new DefaultHttpChunk(buf));
+                try {
                     while (!ch.isWritable() && ch.isOpen()) {
                         writeFuture.await(5, TimeUnit.SECONDS);
                     }
+                } catch (InterruptedException e) {
+                    log.warn("Interrupted while waiting for channel to become writable", e);
                 }
             }
+        } catch (URISyntaxException e) {
+            log.error("Could not parse URI to local hornetq URI", e);
+            throw new RestException(e);
+        } catch (HornetQException e) {
+            log.error("" + e, e);
+            throw new RestException(e);
+        } catch (YamcsApiException e) {
+            log.error("" + e, e);
+            throw new RestException(e);
+        } catch (YamcsException e) {
+            log.error("" + e, e);
+            throw new RestException(e);
         } finally {
-            msgClient.close();
-            ys.close();
+            if (msgClient != null) {
+                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
+            }
+            if (ys != null) {
+                try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }
+            }
         }
     }
 }
-

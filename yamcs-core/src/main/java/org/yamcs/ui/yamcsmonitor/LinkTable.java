@@ -1,13 +1,11 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.text.NumberFormat;
+import java.util.Locale;
 
-import javax.swing.BorderFactory;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -19,6 +17,7 @@ public class LinkTable extends JTable {
     private static final long serialVersionUID = 1L;
     private LinkTableModel linkTableModel;
     private LinkCellRenderer linkInfoRenderer;
+    private DataCountCellRenderer dataCountRenderer;
 
     public LinkTable(LinkTableModel linkTableModel) {
         super(linkTableModel);
@@ -26,6 +25,7 @@ public class LinkTable extends JTable {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setAutoCreateRowSorter(true);
         linkInfoRenderer = new LinkCellRenderer(this);
+        dataCountRenderer = new DataCountCellRenderer(this);
     }
 
     @Override
@@ -39,9 +39,14 @@ public class LinkTable extends JTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        return linkInfoRenderer;
+        final int modelColumn = convertColumnIndexToModel(column);
+        if (modelColumn == 5) {
+            return dataCountRenderer;
+        } else {
+            return linkInfoRenderer;
+        }
     }
-    
+
     private static class LinkCellRenderer extends DefaultTableCellRenderer {
         private static final long serialVersionUID = 1L;
         final Border statusBorder;
@@ -88,6 +93,28 @@ public class LinkTable extends JTable {
                 setHorizontalAlignment(SwingConstants.LEFT);
             }
             return this;
+        }
+    }
+
+    /**
+     * Adds some extra capabilities for the data count column to render big numbers in groups of three
+     */
+    private static final class DataCountCellRenderer extends LinkCellRenderer {
+        private static final long serialVersionUID = 1L;
+        private final NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+
+        DataCountCellRenderer(LinkTable linkTable) {
+            super(linkTable);
+        }
+
+        @Override
+        protected void setValue(Object value) {
+            Object result = value;
+            if (value != null) {
+                Number numberValue = (Number) value;
+                result = formatter.format(numberValue.doubleValue());
+            }
+            super.setValue(result);
         }
     }
 }

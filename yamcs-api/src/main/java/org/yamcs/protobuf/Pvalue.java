@@ -76,7 +76,7 @@ public final class Pvalue {
       org.yamcs.protobuf.Pvalue.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.AcquisitionStatus)
+    // @@protoc_insertion_point(enum_scope:pvalue.AcquisitionStatus)
   }
   
   public enum MonitoringResult
@@ -173,7 +173,7 @@ public final class Pvalue {
       org.yamcs.protobuf.Pvalue.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.MonitoringResult)
+    // @@protoc_insertion_point(enum_scope:pvalue.MonitoringResult)
   }
   
   public static final class ParameterValue extends
@@ -195,29 +195,29 @@ public final class Pvalue {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Pvalue.internal_static_org_yamcs_protobuf_ParameterValue_descriptor;
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_ParameterValue_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Pvalue.internal_static_org_yamcs_protobuf_ParameterValue_fieldAccessorTable;
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_ParameterValue_fieldAccessorTable;
     }
     
-    // optional .org.yamcs.protobuf.NamedObjectId id = 1;
+    // optional .yamcs.NamedObjectId id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private boolean hasId;
     private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
     public boolean hasId() { return hasId; }
     public org.yamcs.protobuf.Yamcs.NamedObjectId getId() { return id_; }
     
-    // optional .org.yamcs.protobuf.Value rawValue = 2;
+    // optional .yamcs.Value rawValue = 2;
     public static final int RAWVALUE_FIELD_NUMBER = 2;
     private boolean hasRawValue;
     private org.yamcs.protobuf.Yamcs.Value rawValue_;
     public boolean hasRawValue() { return hasRawValue; }
     public org.yamcs.protobuf.Yamcs.Value getRawValue() { return rawValue_; }
     
-    // optional .org.yamcs.protobuf.Value engValue = 3;
+    // optional .yamcs.Value engValue = 3;
     public static final int ENGVALUE_FIELD_NUMBER = 3;
     private boolean hasEngValue;
     private org.yamcs.protobuf.Yamcs.Value engValue_;
@@ -238,7 +238,7 @@ public final class Pvalue {
     public boolean hasGenerationTime() { return hasGenerationTime; }
     public long getGenerationTime() { return generationTime_; }
     
-    // optional .org.yamcs.protobuf.AcquisitionStatus acquisitionStatus = 6;
+    // optional .pvalue.AcquisitionStatus acquisitionStatus = 6;
     public static final int ACQUISITIONSTATUS_FIELD_NUMBER = 6;
     private boolean hasAcquisitionStatus;
     private org.yamcs.protobuf.Pvalue.AcquisitionStatus acquisitionStatus_;
@@ -252,7 +252,7 @@ public final class Pvalue {
     public boolean hasProcessingStatus() { return hasProcessingStatus; }
     public boolean getProcessingStatus() { return processingStatus_; }
     
-    // optional .org.yamcs.protobuf.MonitoringResult monitoringResult = 8;
+    // optional .pvalue.MonitoringResult monitoringResult = 8;
     public static final int MONITORINGRESULT_FIELD_NUMBER = 8;
     private boolean hasMonitoringResult;
     private org.yamcs.protobuf.Pvalue.MonitoringResult monitoringResult_;
@@ -870,7 +870,7 @@ public final class Pvalue {
       }
       
       
-      // optional .org.yamcs.protobuf.NamedObjectId id = 1;
+      // optional .yamcs.NamedObjectId id = 1;
       public boolean hasId() {
         return result.hasId();
       }
@@ -907,7 +907,7 @@ public final class Pvalue {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.Value rawValue = 2;
+      // optional .yamcs.Value rawValue = 2;
       public boolean hasRawValue() {
         return result.hasRawValue();
       }
@@ -944,7 +944,7 @@ public final class Pvalue {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.Value engValue = 3;
+      // optional .yamcs.Value engValue = 3;
       public boolean hasEngValue() {
         return result.hasEngValue();
       }
@@ -1017,7 +1017,7 @@ public final class Pvalue {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.AcquisitionStatus acquisitionStatus = 6;
+      // optional .pvalue.AcquisitionStatus acquisitionStatus = 6;
       public boolean hasAcquisitionStatus() {
         return result.hasAcquisitionStatus();
       }
@@ -1056,7 +1056,7 @@ public final class Pvalue {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.MonitoringResult monitoringResult = 8;
+      // optional .pvalue.MonitoringResult monitoringResult = 8;
       public boolean hasMonitoringResult() {
         return result.hasMonitoringResult();
       }
@@ -1299,7 +1299,7 @@ public final class Pvalue {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ParameterValue)
+      // @@protoc_insertion_point(builder_scope:pvalue.ParameterValue)
     }
     
     static {
@@ -1308,7 +1308,7 @@ public final class Pvalue {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ParameterValue)
+    // @@protoc_insertion_point(class_scope:pvalue.ParameterValue)
   }
   
   public static final class ParameterData extends
@@ -1330,15 +1330,15 @@ public final class Pvalue {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Pvalue.internal_static_org_yamcs_protobuf_ParameterData_descriptor;
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_ParameterData_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Pvalue.internal_static_org_yamcs_protobuf_ParameterData_fieldAccessorTable;
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_ParameterData_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.ParameterValue parameter = 1;
+    // repeated .pvalue.ParameterValue parameter = 1;
     public static final int PARAMETER_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Pvalue.ParameterValue> parameter_ =
       java.util.Collections.emptyList();
@@ -1645,7 +1645,7 @@ public final class Pvalue {
       }
       
       
-      // repeated .org.yamcs.protobuf.ParameterValue parameter = 1;
+      // repeated .pvalue.ParameterValue parameter = 1;
       public java.util.List<org.yamcs.protobuf.Pvalue.ParameterValue> getParameterList() {
         return java.util.Collections.unmodifiableList(result.parameter_);
       }
@@ -1753,7 +1753,7 @@ public final class Pvalue {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ParameterData)
+      // @@protoc_insertion_point(builder_scope:pvalue.ParameterData)
     }
     
     static {
@@ -1762,19 +1762,19 @@ public final class Pvalue {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ParameterData)
+    // @@protoc_insertion_point(class_scope:pvalue.ParameterData)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ParameterValue_descriptor;
+    internal_static_pvalue_ParameterValue_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ParameterValue_fieldAccessorTable;
+      internal_static_pvalue_ParameterValue_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ParameterData_descriptor;
+    internal_static_pvalue_ParameterData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ParameterData_fieldAccessorTable;
+      internal_static_pvalue_ParameterData_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1784,54 +1784,53 @@ public final class Pvalue {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014pvalue.proto\022\022org.yamcs.protobuf\032\013yamc" +
-      "s.proto\"\350\004\n\016ParameterValue\022-\n\002id\030\001 \001(\0132!" +
-      ".org.yamcs.protobuf.NamedObjectId\022+\n\010raw" +
-      "Value\030\002 \001(\0132\031.org.yamcs.protobuf.Value\022+" +
-      "\n\010engValue\030\003 \001(\0132\031.org.yamcs.protobuf.Va" +
-      "lue\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016generati" +
-      "onTime\030\005 \001(\003\022@\n\021acquisitionStatus\030\006 \001(\0162" +
-      "%.org.yamcs.protobuf.AcquisitionStatus\022\030" +
-      "\n\020processingStatus\030\007 \001(\010\022>\n\020monitoringRe" +
-      "sult\030\010 \001(\0162$.org.yamcs.protobuf.Monitori",
-      "ngResult\022\032\n\022acquisitionTimeUTC\030\013 \001(\t\022\031\n\021" +
-      "generationTimeUTC\030\014 \001(\t\022\020\n\010watchLow\030\r \001(" +
-      "\001\022\021\n\twatchHigh\030\016 \001(\001\022\022\n\nwarningLow\030\017 \001(\001" +
-      "\022\023\n\013warningHigh\030\020 \001(\001\022\023\n\013distressLow\030\021 \001" +
-      "(\001\022\024\n\014distressHigh\030\022 \001(\001\022\023\n\013criticalLow\030" +
-      "\023 \001(\001\022\024\n\014criticalHigh\030\024 \001(\001\022\021\n\tsevereLow" +
-      "\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\"}\n\rParameterD" +
-      "ata\0225\n\tparameter\030\001 \003(\0132\".org.yamcs.proto" +
-      "buf.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016gen" +
-      "erationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acq",
-      "uisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECE" +
-      "IVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Mon" +
-      "itoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS" +
-      "\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HI" +
-      "GH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WA" +
-      "RNING_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_L" +
-      "OW\020\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n" +
-      "\014CRITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SE" +
-      "VERE\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025"
+      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\"\251\004\n\016" +
+      "ParameterValue\022 \n\002id\030\001 \001(\0132\024.yamcs.Named" +
+      "ObjectId\022\036\n\010rawValue\030\002 \001(\0132\014.yamcs.Value" +
+      "\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Value\022\027\n\017acqu" +
+      "isitionTime\030\004 \001(\003\022\026\n\016generationTime\030\005 \001(" +
+      "\003\0224\n\021acquisitionStatus\030\006 \001(\0162\031.pvalue.Ac" +
+      "quisitionStatus\022\030\n\020processingStatus\030\007 \001(" +
+      "\010\0222\n\020monitoringResult\030\010 \001(\0162\030.pvalue.Mon" +
+      "itoringResult\022\032\n\022acquisitionTimeUTC\030\013 \001(" +
+      "\t\022\031\n\021generationTimeUTC\030\014 \001(\t\022\020\n\010watchLow",
+      "\030\r \001(\001\022\021\n\twatchHigh\030\016 \001(\001\022\022\n\nwarningLow\030" +
+      "\017 \001(\001\022\023\n\013warningHigh\030\020 \001(\001\022\023\n\013distressLo" +
+      "w\030\021 \001(\001\022\024\n\014distressHigh\030\022 \001(\001\022\023\n\013critica" +
+      "lLow\030\023 \001(\001\022\024\n\014criticalHigh\030\024 \001(\001\022\021\n\tseve" +
+      "reLow\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\"q\n\rParam" +
+      "eterData\022)\n\tparameter\030\001 \003(\0132\026.pvalue.Par" +
+      "ameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016generation" +
+      "Time\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acquisitio" +
+      "nStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022" +
+      "\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Monitoring",
+      "Result\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005W" +
+      "ATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n" +
+      "\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_H" +
+      "IGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n" +
+      "\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITIC" +
+      "AL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022" +
+      "\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org." +
+      "yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_ParameterValue_descriptor =
+          internal_static_pvalue_ParameterValue_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_ParameterValue_fieldAccessorTable = new
+          internal_static_pvalue_ParameterValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ParameterValue_descriptor,
+              internal_static_pvalue_ParameterValue_descriptor,
               new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "WatchLow", "WatchHigh", "WarningLow", "WarningHigh", "DistressLow", "DistressHigh", "CriticalLow", "CriticalHigh", "SevereLow", "SevereHigh", },
               org.yamcs.protobuf.Pvalue.ParameterValue.class,
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder.class);
-          internal_static_org_yamcs_protobuf_ParameterData_descriptor =
+          internal_static_pvalue_ParameterData_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_ParameterData_fieldAccessorTable = new
+          internal_static_pvalue_ParameterData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ParameterData_descriptor,
+              internal_static_pvalue_ParameterData_descriptor,
               new java.lang.String[] { "Parameter", "Group", "GenerationTime", "SeqNum", },
               org.yamcs.protobuf.Pvalue.ParameterData.class,
               org.yamcs.protobuf.Pvalue.ParameterData.Builder.class);
