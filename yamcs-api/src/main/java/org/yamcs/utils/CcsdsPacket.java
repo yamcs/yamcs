@@ -3,8 +3,6 @@ package org.yamcs.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 
 import org.yamcs.utils.TimeEncoding;
 
@@ -227,12 +225,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 			}
 		}
 		sb.append("\n\n");
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("output"));
-            out.write(sb.toString());
-            out.close();
-        } catch (IOException e) {
-        }
 		return sb.toString();
 	}
 
