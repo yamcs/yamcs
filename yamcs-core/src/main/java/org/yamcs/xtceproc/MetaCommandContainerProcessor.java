@@ -71,7 +71,7 @@ public class MetaCommandContainerProcessor {
 		int sizeInBits = fve.getSizeInBits();
 
 		//CAREFUL: do not change v1 since it is supposed to be final
-		byte[] v1 = fve.getBinaryValue();
+		final byte[] v1 = fve.getBinaryValue();
 
 		//shift v1 into v2 to be byte aligned with the pcontext.bitPostion	
 		int fb1 = sizeInBits&0x07; //number of bits in the leftmost byte in v
@@ -107,6 +107,7 @@ public class MetaCommandContainerProcessor {
 			v2 = v1;
 			bitshift = 0;
 		}
+
 		
 		//number of bytes to copy from v2 into pcontext.bb; 
 		// the first and last are potentially only partially copied
@@ -114,25 +115,24 @@ public class MetaCommandContainerProcessor {
 		int bytesToCopy = (bitshift+sizeInBits+7)/8;
 		//the first byte in v2 which has to be copied		
 		int startByte = v2.length-bytesToCopy; 
-				
-		int bitsToMergeFromFirstByte = (bitshift + sizeInBits) & 0x7; 
 		
-		//clear the first byte just in case there was some stuff in there
-		v2[startByte] = (byte) (v2[startByte] & (~ (-1<<bitsToMergeFromFirstByte)));
-				
-				
 		if(bytesToCopy==1) { //special case first and last byte are the same
 			byte x = pcontext.bb.get(pcontext.bitPosition/8);
-			x = (byte) (x & (-1<<bitsToMergeFromFirstByte));
-			x = (byte) (x & ~(-1<<bitshift));
-			pcontext.bb.put(pcontext.bitPosition/8, (byte)(x | v2[startByte]));
-			pcontext.bitPosition+=bitsToMergeFromFirstByte;
+			int mask = (~(-1<<sizeInBits))<<bitshift;
+			pcontext.bb.put(pcontext.bitPosition/8, (byte)(x&~mask | (v2[startByte]&mask)));
+			
+			pcontext.bitPosition+=sizeInBits;
 		} else {
+			int bitsToMergeFromFirstByte = (bitshift + sizeInBits) & 0x7; 
 			if(bitsToMergeFromFirstByte!=0 ) { //first byte
 				byte x = pcontext.bb.get(pcontext.bitPosition/8);
-				pcontext.bb.put(pcontext.bitPosition/8, (byte)(x | v2[startByte]));
+				int mask = ~(-1<<bitsToMergeFromFirstByte);
+				pcontext.bb.put(pcontext.bitPosition/8, (byte)(x&~mask | (v2[startByte]&mask)));
 				pcontext.bitPosition+=bitsToMergeFromFirstByte;
+				bytesToCopy--;
+				startByte++;
 			}
+			if(bitshift>0) bytesToCopy--;
 			
 			for(int i=0; i<bytesToCopy; i++) { //the middle part //could be optimised using a bulk put method
 				pcontext.bb.put(pcontext.bitPosition/8, v2[startByte+i]);
@@ -145,5 +145,6 @@ public class MetaCommandContainerProcessor {
 				pcontext.bitPosition+=bitshift;
 			}
 		}
+		
 	}
 }

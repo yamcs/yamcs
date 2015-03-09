@@ -96,6 +96,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public long getCoarseTime() {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
+	public int getTimeId() {
+		return (bb.get(11) &0xFF)>>6;
+	}
 	
 	public void setCoarseTime(int time) {
 	    bb.putInt(6, time);
@@ -104,7 +107,7 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public static long getCoarseTime(ByteBuffer bb) {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
-
+	
 	public int getFineTime() {
 		return bb.get(10)&0xFF;
 	}

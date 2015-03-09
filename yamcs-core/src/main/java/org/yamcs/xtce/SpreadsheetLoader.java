@@ -438,7 +438,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	protected void loadParametersSheet(boolean required) {
 		Sheet sheet = switchToSheet(SHEET_PARAMETERS, required);
 		if(sheet==null)return;
-
+		Cell[] firstRow = jumpToRow(sheet, 0);
 		for (int i = 1; i < sheet.getRows(); i++) {
 			Cell[] cells = jumpToRow(sheet, i);
 			if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
@@ -455,7 +455,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			XtceAliasSet xas=new XtceAliasSet();
 			xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
 			param.setAliasSet(xas);
-
+			addAdditionalAliases(firstRow, cells, xas);
 			spaceSystem.addParameter(param);
 
 			//String path = cells[IDX_MEAS_PATH].getContents();
@@ -709,6 +709,26 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		}
 		 */	}
 
+	/**
+	 * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
+	 * 
+	 * @param firstRow
+	 * @param cells
+	 * @param xas
+	 */
+	private void addAdditionalAliases(Cell[] firstRow, Cell[] cells, XtceAliasSet xas) {
+		int n = Math.min(firstRow.length, cells.length);
+		
+		for(int i=0; i<n; i++) {
+			if((firstRow[i]!=null) && firstRow[i].getContents().startsWith("namespace:")
+					&& (cells[i]!=null) && (!cells[i].getContents().isEmpty())) {
+				String s = firstRow[i].getContents();
+				String namespace = s.substring(10, s.length());
+				String alias = cells[i].getContents();
+				xas.addAlias(namespace, alias);
+			}
+		}
+	}
 
 	private void loadParameterLimits(ParameterType ptype, Cell[] cells) {
 		String warnMins=null;
@@ -1063,13 +1083,13 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					parent=parent.substring(0, x);
 				}
 			}
-			System.out.println("parent: "+parent+" absoluteOffset: "+absoluteOffset);
 			// create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, 
 			//and register that new SequenceContainer in the containers hashmap
 			MetaCommandContainer container = new MetaCommandContainer(name);
 			MetaCommand cmd = new MetaCommand(name);
 			cmd.setMetaCommandContainer(container);
 			commands.put(name, cmd);
+			cmd.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
 			
 			if(hasColumn(cells, IDX_CMD_FLAGS)) {			
 				String flags = cells[IDX_CMD_FLAGS].getContents();
@@ -1243,7 +1263,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			((FloatArgumentType)atype).setSizeInBits(64);
 		} else if ("enumerated".equalsIgnoreCase(engType)) {
 			if(calib==null) {
-				throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
+				throw new SpreadsheetLoadException(ctx, "Argument " + name + " has to have an enumeration");
 			}
 			EnumerationDefinition enumeration = enumerations.get(calib);
 			if (enumeration == null) {
@@ -1258,7 +1278,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		} else	if ("binary".equalsIgnoreCase(engType)) {
 			atype = new BinaryArgumentType(name);
 		} else {
-			throw new SpreadsheetLoadException(ctx, "Unknown parameter type " + engType);
+			throw new SpreadsheetLoadException(ctx, "Unknown argumnet type " + engType);
 		}
 		if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
 		Argument arg = new Argument(name);	
@@ -1276,6 +1296,27 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			}
 		}
 		
+		if(hasColumn(cells, IDX_CMD_DEFVALUE)) {
+			String v = cells[IDX_CMD_DEFVALUE].getContents();
+			if(atype instanceof IntegerArgumentType) {
+				try {
+					Long.decode(v);
+				} catch(Exception e) {
+					throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
+				}
+				arg.setInitialValue(v);
+			} else if (atype instanceof FloatArgumentType) {
+				try {
+					Double.parseDouble(v);
+				} catch(Exception e) {
+					throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
+				}
+				arg.setInitialValue(v);
+
+			} else {
+				arg.setInitialValue(v);
+			}
+		}
 		if(hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
 			if(atype instanceof IntegerArgumentType) {
 				long minInclusive = Long.MIN_VALUE;
@@ -1424,7 +1465,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					}
 				}
 			}
-		} else if ("float".equalsIgnoreCase(rawType)) {
+		} else if ("float".equalsIgnoreCase(rawType) || "double".equalsIgnoreCase(rawType)) {
 			if(sizeInBits==-1) {
 				throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
 			}

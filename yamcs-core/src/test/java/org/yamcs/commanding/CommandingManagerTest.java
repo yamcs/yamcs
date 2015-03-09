@@ -3,6 +3,7 @@ package org.yamcs.commanding;
 import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,6 +12,8 @@ import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -24,19 +27,61 @@ public class CommandingManagerTest {
 	@BeforeClass 
 	public static void beforeClass() throws ConfigurationException {
 		xtceDb = XtceDbFactory.getInstanceByConfig("refmdb");
+		TimeEncoding.setUp();
 	}
 	
 	@Test
-	public void testParsingCmdSpreadhseet() throws Exception {
-		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INTEGER_ARG_TC");
-		List<Argument> argList = mc.getArgumentList();
-		assertNotNull(argList);
-		assertEquals(4, argList.size());
+	public void testOneIntArg() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
+		assertNotNull(mc);
+		byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>());
+		assertEquals("ABCDEFAB", StringConvertors.arrayToHexString(b));
+		
+	}
+	
+	@Test
+	public void testFixedValue() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
+		assertNotNull(mc);
+		byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>());
+		assertEquals("ABCD901408081808", StringConvertors.arrayToHexString(b));
 		
 	}
 	@Test
 	public void testIntegerArg() throws Exception {
-		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INTEGER_ARG_TC");
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
+		assertNotNull(mc);
+		byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>());
+		assertEquals("ABCD901408081808", StringConvertors.arrayToHexString(b));
+		
+	}
+	
+	@Test
+	public void testFloatArg() throws Exception {
+		
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+		assertNotNull(mc);
+		
+		List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("float_arg", "-10.23"),
+				new ArgumentAssignment("double_arg", "25.4"));
+
+		
+		byte[] b= MetaCommandProcessor.buildCommand(mc, aaList);
+		
+		assertEquals(12, b.length);
+		ByteBuffer bb = ByteBuffer.wrap(b);
+		
+		assertEquals(-10.23, bb.getFloat(), 1e-5);
+		
+		assertEquals(25.4d, bb.getDouble(), 1e-20);
+		
+		
+		
+	}
+	
+	@Test
+	public void testCcsdsTc() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 		assertNotNull(mc);
 		
 		List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("uint8_arg", "1"),
@@ -50,6 +95,10 @@ public class CommandingManagerTest {
 		CcsdsPacket p = new CcsdsPacket(b);
 		
 		assertEquals(100, p.getAPID());
+		assertEquals(0xABCDEFAB, p.getPacketID());
+		assertEquals(1, p.getTimeId());
+		assertEquals(true, p.getChecksumIndicator());
+		
 		ByteBuffer bb = ByteBuffer.wrap(b);
 		assertEquals(1, bb.get(16));
 		assertEquals(2, bb.getShort(17));
@@ -61,7 +110,7 @@ public class CommandingManagerTest {
 	
 	@Test
 	public void testValidIntegerRange() throws Exception {
-		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INTEGER_ARG_TC");
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 		assertNotNull(mc);
 		List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("uint8_arg", "5"),
 				new ArgumentAssignment("uint16_arg", "2"),

@@ -14,7 +14,6 @@ import org.yamcs.Privilege;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistory;
-import org.yamcs.tctm.TcUplinker;
 
 
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -129,7 +128,7 @@ public class CommandQueueManager {
 				}
 			}
 		} else if(q.state==QueueState.ENABLED) {
-			uplinkCommand(q, pc, false, false);	
+			releaseCommand(q, pc, false, false);	
 		}
 	}
 	
@@ -159,7 +158,7 @@ public class CommandQueueManager {
 		}
 	}
 	
-	private void uplinkCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
+	private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
 		if(rebuild) {
 	/*		try {
 				pc=commandingManager.buildCommand(pc.source, pc.getCommandId().toBuilder());
@@ -254,7 +253,7 @@ public class CommandQueueManager {
 		}
 		if(command!=null) {
 		    queue.commands.remove(command);
-		    uplinkCommand(queue, command, true, rebuild);
+		    releaseCommand(queue, command, true, rebuild);
 		}
 		return command;
 	}
@@ -278,7 +277,7 @@ public class CommandQueueManager {
 		queue.state=newState;
 		if(queue.state==QueueState.ENABLED) {
 			for(PreparedCommand pc:queue.commands) {
-				uplinkCommand(queue, pc,true, rebuild);
+				releaseCommand(queue, pc,true, rebuild);
 			}
 			queue.commands.clear();
 		}

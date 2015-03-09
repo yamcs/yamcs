@@ -44,6 +44,7 @@ public class ChannelCreatorService extends AbstractService {
 	protected void doStart() {
 		try {
 			channel =  ChannelFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
+			channel.setPersistent(true);
 			new RealtimeParameterService(channel);
 			channel.start();
 			notifyStarted();

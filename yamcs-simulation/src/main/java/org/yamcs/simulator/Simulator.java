@@ -318,7 +318,7 @@ class Simulator extends Thread {
 		  connectedSendSocketServer = new Socket();
 		  connectedAddress = new InetSocketAddress("127.0.0.1", sendSocketPort);
 		  
-		  connectedSendSocketServer.connect(connectedAddress,1000);
+		  connectedSendSocketServer.connect(connectedAddress, 1000);
 
 	    } catch (Exception e) {
 	        e.printStackTrace();

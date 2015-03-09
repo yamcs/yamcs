@@ -114,12 +114,12 @@ public class Channel {
             }
             
             if(commandReleaser!=null) { 
-                commandingManager=new CommandingManager(this);
                 try {
     				this.commandHistoryListener=new YarchCommandHistoryAdapter(yamcsInstance);
     			} catch (Exception e) {
     				throw new ConfigurationException("Cannot create command history" , e);
     			}
+                commandingManager=new CommandingManager(this);
                 commandReleaser.setCommandHistoryListener(commandHistoryListener);
             } else {
                 commandingManager=null;

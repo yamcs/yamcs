@@ -90,25 +90,25 @@ public class ArgumentTypeProcessor {
 	
 	private static Value decalibrateFloat(FloatArgumentType fat, Value v) {
         if(v.getType() == Type.FLOAT) {
-            return doFloatCalibration(fat, v.getFloatValue());
+            return doFloatDecalibration(fat, v.getFloatValue());
         } else if(v.getType() == Type.DOUBLE) {
-        	return doFloatCalibration(fat, v.getDoubleValue());
+        	return doFloatDecalibration(fat, v.getDoubleValue());
         } else if(v.getType() == Type.STRING) {
-        	return doFloatCalibration(fat, Double.valueOf(v.getStringValue()));
+        	return doFloatDecalibration(fat, Double.valueOf(v.getStringValue()));
         } else if(v.getType() == Type.UINT32) {
-        	return doFloatCalibration(fat, v.getUint32Value());
+        	return doFloatDecalibration(fat, v.getUint32Value());
         } else if(v.getType() == Type.UINT64) {
-        	return doFloatCalibration(fat, v.getUint64Value());
+        	return doFloatDecalibration(fat, v.getUint64Value());
         } else if(v.getType() == Type.SINT32) {
-        	return doFloatCalibration(fat, v.getSint32Value());
+        	return doFloatDecalibration(fat, v.getSint32Value());
         } else if(v.getType() == Type.SINT64) {
-        	return  doFloatCalibration(fat, v.getSint64Value());
+        	return  doFloatDecalibration(fat, v.getSint64Value());
         } else {
             throw new IllegalArgumentException("Unsupported value type '"+v.getType()+"' cannot be converted to float");
         }
     }
     
-    private static Value doFloatCalibration(FloatArgumentType fat, double doubleValue) {
+    private static Value doFloatDecalibration(FloatArgumentType fat, double doubleValue) {
         Calibrator calibrator=null;
         DataEncoding de=fat.getEncoding();
         if(de instanceof FloatDataEncoding) {
