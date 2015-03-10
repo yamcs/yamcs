@@ -707,12 +707,12 @@ public final class Rest {
     public boolean hasSequenceNumber() { return hasSequenceNumber; }
     public int getSequenceNumber() { return sequenceNumber_; }
     
-    // optional .yamcs.NamedObjectId name = 3;
-    public static final int NAME_FIELD_NUMBER = 3;
-    private boolean hasName;
-    private org.yamcs.protobuf.Yamcs.NamedObjectId name_;
-    public boolean hasName() { return hasName; }
-    public org.yamcs.protobuf.Yamcs.NamedObjectId getName() { return name_; }
+    // optional .yamcs.NamedObjectId id = 3;
+    public static final int ID_FIELD_NUMBER = 3;
+    private boolean hasId;
+    private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
+    public boolean hasId() { return hasId; }
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getId() { return id_; }
     
     // repeated .rest.RestArgumentType arguments = 4;
     public static final int ARGUMENTS_FIELD_NUMBER = 4;
@@ -727,11 +727,11 @@ public final class Rest {
     }
     
     private void initFields() {
-      name_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
+      id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
     }
     public final boolean isInitialized() {
-      if (hasName()) {
-        if (!getName().isInitialized()) return false;
+      if (hasId()) {
+        if (!getId().isInitialized()) return false;
       }
       return true;
     }
@@ -745,8 +745,8 @@ public final class Rest {
       if (hasSequenceNumber()) {
         output.writeInt32(2, getSequenceNumber());
       }
-      if (hasName()) {
-        output.writeMessage(3, getName());
+      if (hasId()) {
+        output.writeMessage(3, getId());
       }
       for (org.yamcs.protobuf.Rest.RestArgumentType element : getArgumentsList()) {
         output.writeMessage(4, element);
@@ -768,9 +768,9 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, getSequenceNumber());
       }
-      if (hasName()) {
+      if (hasId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, getName());
+          .computeMessageSize(3, getId());
       }
       for (org.yamcs.protobuf.Rest.RestArgumentType element : getArgumentsList()) {
         size += com.google.protobuf.CodedOutputStream
@@ -944,8 +944,8 @@ public final class Rest {
         if (other.hasSequenceNumber()) {
           setSequenceNumber(other.getSequenceNumber());
         }
-        if (other.hasName()) {
-          mergeName(other.getName());
+        if (other.hasId()) {
+          mergeId(other.getId());
         }
         if (!other.arguments_.isEmpty()) {
           if (result.arguments_.isEmpty()) {
@@ -988,11 +988,11 @@ public final class Rest {
             }
             case 26: {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
-              if (hasName()) {
-                subBuilder.mergeFrom(getName());
+              if (hasId()) {
+                subBuilder.mergeFrom(getId());
               }
               input.readMessage(subBuilder, extensionRegistry);
-              setName(subBuilder.buildPartial());
+              setId(subBuilder.buildPartial());
               break;
             }
             case 34: {
@@ -1045,40 +1045,40 @@ public final class Rest {
         return this;
       }
       
-      // optional .yamcs.NamedObjectId name = 3;
-      public boolean hasName() {
-        return result.hasName();
+      // optional .yamcs.NamedObjectId id = 3;
+      public boolean hasId() {
+        return result.hasId();
       }
-      public org.yamcs.protobuf.Yamcs.NamedObjectId getName() {
-        return result.getName();
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getId() {
+        return result.getId();
       }
-      public Builder setName(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+      public Builder setId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        result.hasName = true;
-        result.name_ = value;
+        result.hasId = true;
+        result.id_ = value;
         return this;
       }
-      public Builder setName(org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        result.hasName = true;
-        result.name_ = builderForValue.build();
+      public Builder setId(org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        result.hasId = true;
+        result.id_ = builderForValue.build();
         return this;
       }
-      public Builder mergeName(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (result.hasName() &&
-            result.name_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
-          result.name_ =
-            org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(result.name_).mergeFrom(value).buildPartial();
+      public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (result.hasId() &&
+            result.id_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
+          result.id_ =
+            org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(result.id_).mergeFrom(value).buildPartial();
         } else {
-          result.name_ = value;
+          result.id_ = value;
         }
-        result.hasName = true;
+        result.hasId = true;
         return this;
       }
-      public Builder clearName() {
-        result.hasName = false;
-        result.name_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
+      public Builder clearId() {
+        result.hasId = false;
+        result.id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
         return this;
       }
       
@@ -4946,43 +4946,43 @@ public final class Rest {
       "ing.proto\032\014pvalue.proto\"1\n\024RestException" +
       "Message\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t\"/\n\020Re" +
       "stArgumentType\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 " +
-      "\001(\t\"\210\001\n\017RestCommandType\022\016\n\006origin\030\001 \001(\t\022" +
-      "\026\n\016sequenceNumber\030\002 \001(\005\022\"\n\004name\030\003 \001(\0132\024." +
-      "yamcs.NamedObjectId\022)\n\targuments\030\004 \003(\0132\026" +
-      ".rest.RestArgumentType\"8\n\"RestListAvaila" +
-      "bleParametersRequest\022\022\n\nnamespaces\030\001 \003(\t" +
-      "\"w\n#RestListAvailableParametersResponse\022",
+      "\001(\t\"\206\001\n\017RestCommandType\022\016\n\006origin\030\001 \001(\t\022" +
+      "\026\n\016sequenceNumber\030\002 \001(\005\022 \n\002id\030\003 \001(\0132\024.ya" +
+      "mcs.NamedObjectId\022)\n\targuments\030\004 \003(\0132\026.r" +
+      "est.RestArgumentType\"8\n\"RestListAvailabl" +
+      "eParametersRequest\022\022\n\nnamespaces\030\001 \003(\t\"w" +
+      "\n#RestListAvailableParametersResponse\022-\n",
+      "\texception\030\001 \001(\0132\032.rest.RestExceptionMes" +
+      "sage\022!\n\003ids\030\002 \003(\0132\024.yamcs.NamedObjectId\"" +
+      "E\n\032RestValidateCommandRequest\022\'\n\010command" +
+      "s\030\001 \003(\0132\025.rest.RestCommandType\"L\n\033RestVa" +
+      "lidateCommandResponse\022-\n\texception\030\001 \001(\013" +
+      "2\032.rest.RestExceptionMessage\"\027\n\025RestDump" +
+      "RawMdbRequest\"W\n\026RestDumpRawMdbResponse\022" +
       "-\n\texception\030\001 \001(\0132\032.rest.RestExceptionM" +
-      "essage\022!\n\003ids\030\002 \003(\0132\024.yamcs.NamedObjectI" +
-      "d\"E\n\032RestValidateCommandRequest\022\'\n\010comma" +
-      "nds\030\001 \003(\0132\025.rest.RestCommandType\"L\n\033Rest" +
-      "ValidateCommandResponse\022-\n\texception\030\001 \001" +
-      "(\0132\032.rest.RestExceptionMessage\"\027\n\025RestDu" +
-      "mpRawMdbRequest\"W\n\026RestDumpRawMdbRespons" +
-      "e\022-\n\texception\030\001 \001(\0132\032.rest.RestExceptio" +
-      "nMessage\022\016\n\006rawMdb\030\002 \001(\014\"\220\002\n\022RestReplayR" +
-      "esponse\022-\n\texception\030\001 \001(\0132\032.rest.RestEx",
-      "ceptionMessage\022,\n\rparameterData\030\002 \001(\0132\025." +
-      "pvalue.ParameterData\022\'\n\npacketData\030\003 \001(\013" +
-      "2\023.yamcs.TmPacketData\0220\n\007command\030\004 \001(\0132\037" +
-      ".commanding.CommandHistoryEntry\022\033\n\005event" +
-      "\030\005 \001(\0132\014.yamcs.Event\022%\n\006ppData\030\006 \001(\0132\025.p" +
-      "value.ParameterData\"A\n\026RestSendCommandRe" +
-      "quest\022\'\n\010commands\030\001 \003(\0132\025.rest.RestComma" +
-      "ndType\"H\n\027RestSendCommandResponse\022-\n\texc" +
-      "eption\030\001 \001(\0132\032.rest.RestExceptionMessage" +
-      "2\244\003\n\013RESTService\022n\n\027listAvailableParamet",
-      "ers\022(.rest.RestListAvailableParametersRe" +
-      "quest\032).rest.RestListAvailableParameters" +
-      "Response\022V\n\017validateCommand\022 .rest.RestV" +
-      "alidateCommandRequest\032!.rest.RestValidat" +
-      "eCommandResponse\022J\n\013sendCommand\022\034.rest.R" +
-      "estSendCommandRequest\032\035.rest.RestSendCom" +
-      "mandResponse\022G\n\ndumpRawMdb\022\033.rest.RestDu" +
-      "mpRawMdbRequest\032\034.rest.RestDumpRawMdbRes" +
-      "ponse\0228\n\006replay\022\024.yamcs.ReplayRequest\032\030." +
-      "rest.RestReplayResponseB\024\n\022org.yamcs.pro",
-      "tobuf"
+      "essage\022\016\n\006rawMdb\030\002 \001(\014\"\220\002\n\022RestReplayRes" +
+      "ponse\022-\n\texception\030\001 \001(\0132\032.rest.RestExce",
+      "ptionMessage\022,\n\rparameterData\030\002 \001(\0132\025.pv" +
+      "alue.ParameterData\022\'\n\npacketData\030\003 \001(\0132\023" +
+      ".yamcs.TmPacketData\0220\n\007command\030\004 \001(\0132\037.c" +
+      "ommanding.CommandHistoryEntry\022\033\n\005event\030\005" +
+      " \001(\0132\014.yamcs.Event\022%\n\006ppData\030\006 \001(\0132\025.pva" +
+      "lue.ParameterData\"A\n\026RestSendCommandRequ" +
+      "est\022\'\n\010commands\030\001 \003(\0132\025.rest.RestCommand" +
+      "Type\"H\n\027RestSendCommandResponse\022-\n\texcep" +
+      "tion\030\001 \001(\0132\032.rest.RestExceptionMessage2\244" +
+      "\003\n\013RESTService\022n\n\027listAvailableParameter",
+      "s\022(.rest.RestListAvailableParametersRequ" +
+      "est\032).rest.RestListAvailableParametersRe" +
+      "sponse\022V\n\017validateCommand\022 .rest.RestVal" +
+      "idateCommandRequest\032!.rest.RestValidateC" +
+      "ommandResponse\022J\n\013sendCommand\022\034.rest.Res" +
+      "tSendCommandRequest\032\035.rest.RestSendComma" +
+      "ndResponse\022G\n\ndumpRawMdb\022\033.rest.RestDump" +
+      "RawMdbRequest\032\034.rest.RestDumpRawMdbRespo" +
+      "nse\0228\n\006replay\022\024.yamcs.ReplayRequest\032\030.re" +
+      "st.RestReplayResponseB\024\n\022org.yamcs.proto",
+      "buf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5010,7 +5010,7 @@ public final class Rest {
           internal_static_rest_RestCommandType_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestCommandType_descriptor,
-              new java.lang.String[] { "Origin", "SequenceNumber", "Name", "Arguments", },
+              new java.lang.String[] { "Origin", "SequenceNumber", "Id", "Arguments", },
               org.yamcs.protobuf.Rest.RestCommandType.class,
               org.yamcs.protobuf.Rest.RestCommandType.Builder.class);
           internal_static_rest_RestListAvailableParametersRequest_descriptor =

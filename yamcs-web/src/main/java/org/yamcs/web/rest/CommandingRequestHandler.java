@@ -62,9 +62,9 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
 
         for (RestCommandType restCommand : request.getCommandsList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getName());
+            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
             if(mc==null) {
-            	throw new BadRequestException("Unknown command: "+restCommand.getName());
+            	throw new BadRequestException("Unknown command: "+restCommand.getId());
             }
             List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
@@ -103,7 +103,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<PreparedCommand>();
         for (RestCommandType restCommand : request.getCommandsList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getName());
+            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
 
             List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {

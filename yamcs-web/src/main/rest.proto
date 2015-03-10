@@ -20,7 +20,7 @@ message RestArgumentType {
 message RestCommandType {
   optional string origin=1;
   optional int32 sequenceNumber=2;
-  optional yamcs.NamedObjectId name=3;
+  optional yamcs.NamedObjectId id=3;
   repeated RestArgumentType arguments=4;
 }
 

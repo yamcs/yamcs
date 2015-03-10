@@ -258,8 +258,8 @@ public final class SchemaRest
                     output.writeString(1, message.getOrigin(), false);
                 if(message.hasSequenceNumber())
                     output.writeInt32(2, message.getSequenceNumber(), false);
-                if(message.hasName())
-                    output.writeObject(3, message.getName(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+                if(message.hasId())
+                    output.writeObject(3, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
 
                 for(org.yamcs.protobuf.Rest.RestArgumentType arguments : message.getArgumentsList())
                     output.writeObject(4, arguments, org.yamcs.protobuf.SchemaRest.RestArgumentType.WRITE, true);
@@ -310,7 +310,7 @@ public final class SchemaRest
                             builder.setSequenceNumber(input.readInt32());
                             break;
                         case 3:
-                            builder.setName(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+                            builder.setId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
                         case 4:
@@ -359,7 +359,7 @@ public final class SchemaRest
             {
                 case 1: return "origin";
                 case 2: return "sequenceNumber";
-                case 3: return "name";
+                case 3: return "id";
                 case 4: return "arguments";
                 default: return null;
             }
@@ -374,7 +374,7 @@ public final class SchemaRest
         {
             fieldMap.put("origin", 1);
             fieldMap.put("sequenceNumber", 2);
-            fieldMap.put("name", 3);
+            fieldMap.put("id", 3);
             fieldMap.put("arguments", 4);
         }
     }
