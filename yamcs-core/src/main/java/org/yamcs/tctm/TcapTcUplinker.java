@@ -69,7 +69,7 @@ public class TcapTcUplinker extends TcpTcUplinker {
 		}
 		
 		ByteBuffer pactsMsgHdr = ByteBuffer.allocate(32);
-		ByteBuffer bb=ByteBuffer.wrap(pc.binary);
+		ByteBuffer bb=ByteBuffer.wrap(pc.getBinary());
 		CcsdsPacket ccsds = new CcsdsPacket(bb);
 		if ( ccsds.getChecksumIndicator() ) {
 			bb.limit(bb.limit() - 2); // remove checksum if present

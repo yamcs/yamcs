@@ -144,12 +144,12 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
 			return;
 		}
 		ByteBuffer bb=null;
-		if(pc.binary.length<minimumTcPacketLength) { //enforce the minimum packet length
+		if(pc.getBinary().length<minimumTcPacketLength) { //enforce the minimum packet length
 			bb=ByteBuffer.allocate(minimumTcPacketLength);
-			bb.put(pc.binary);
+			bb.put(pc.getBinary());
 			bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
 		} else {
-			bb=ByteBuffer.wrap(pc.binary);
+			bb=ByteBuffer.wrap(pc.getBinary());
 		}
 		
 		int retries=5;
