@@ -72,7 +72,7 @@ public class CommandingManager {
 	}
 
 	public void sendCommand(PreparedCommand pc) {
-		log.debug("sendCommand commandSource="+pc.source);
+		log.debug("sendCommand commandSource="+pc.getSource());
 		commandQueueManager.addCommand(pc);
 	}
 
