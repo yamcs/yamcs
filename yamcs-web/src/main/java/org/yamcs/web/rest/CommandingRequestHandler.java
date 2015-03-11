@@ -114,6 +114,22 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             String user = "anonymous"; // TODO
             try {
                 PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
+            	//make the source - should perhaps come from the client
+                StringBuilder sb = new StringBuilder();
+        		sb.append(restCommand.getId().getName());
+        		sb.append("(");
+        		boolean first = true;
+        		for(ArgumentAssignment aa:assignments) {
+        			if(!first) {
+        				sb.append(", ");
+        			} else {
+        				first = false;
+        			}
+        			sb.append(aa.getArgumentName()+": "+aa.getArgumentValue());
+        		}
+        		sb.append(")");
+        		cmd.setSource(sb.toString());
+        		
                 validated.add(cmd);
             } catch (NoPermissionException e) {
                 throw new ForbiddenException(e);

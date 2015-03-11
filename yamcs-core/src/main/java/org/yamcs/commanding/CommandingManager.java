@@ -51,20 +51,7 @@ public class CommandingManager {
 		
 		CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(TimeEncoding.currentInstant()).build();
 		PreparedCommand pc = new PreparedCommand(cmdId);
-		StringBuilder sb = new StringBuilder();
-		sb.append(mc.getName());
-		sb.append("(");
-		boolean first = true;
-		for(ArgumentAssignment aa:argAssignmentList) {
-			if(!first) {
-				sb.append(", ");
-			} else {
-				first = false;
-			}
-			sb.append(aa.getArgumentName()+": "+aa.getArgumentValue());
-		}
-		sb.append(")");
-		pc.setSource(sb.toString());
+	
 		pc.setBinary(b);
 		pc.setUsername(username);
 		
