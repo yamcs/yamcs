@@ -62,19 +62,18 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
 
         for (RestCommandType restCommand : request.getCommandsList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getName());
+            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
             if(mc==null) {
-            	throw new BadRequestException("Unknown command: "+restCommand.getName());
+            	throw new BadRequestException("Unknown command: "+restCommand.getId());
             }
             List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 
-            String origin = "fdi-mac"; // TODO
-            int seqId = 1234; // TODO
+            String origin = required(restCommand.getOrigin(), "Origin needs to be specified");
+            int seqId = restCommand.getSequenceNumber(); // will default to 0 if not set, which is fine for validation
             String user = "anonymous"; // TODO
-
             try {
                 PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
             } catch (NoPermissionException e) {
@@ -85,8 +84,6 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 log.error("Could not build command", e);
                 throw new RestException(e);
             }
-
-            break; // FIXME
         }
 
         return responseb.build();
@@ -103,17 +100,18 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<PreparedCommand>();
         for (RestCommandType restCommand : request.getCommandsList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(restCommand.getName());
-
+            MetaCommand mc = required(xtcedb.getMetaCommand(restCommand.getId()), "Unknown command: " + restCommand.getId());
             List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 
-            String origin = "fdi-mac";
-            int seqId = 1234; // TODO
+            String origin = required(restCommand.getOrigin(), "Origin needs to be specified");
+            if (!restCommand.hasSequenceNumber()) {
+                throw new BadRequestException("SequenceNumber needs to be specified");
+            }
+            int seqId = restCommand.getSequenceNumber();
             String user = "anonymous"; // TODO
-
             try {
                 PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
                 validated.add(cmd);

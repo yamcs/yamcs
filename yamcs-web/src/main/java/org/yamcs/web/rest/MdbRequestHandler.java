@@ -23,7 +23,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
 
 /**
  * Handles incoming requests related to the Mission Database (offset /mdb).
@@ -36,11 +35,11 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("parameters".equals(qsDecoder.getPath())) {
             RestListAvailableParametersRequest request = readMessage(httpRequest, SchemaRest.RestListAvailableParametersRequest.MERGE).build();
-            MessageLite responseMsg = listAvailableParameters(request, yamcsInstance);
+            RestListAvailableParametersResponse responseMsg = listAvailableParameters(request, yamcsInstance);
             writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestListAvailableParametersResponse.WRITE);
         } else if ("dump".equals(qsDecoder.getPath())) {
             RestDumpRawMdbRequest request = readMessage(httpRequest, SchemaRest.RestDumpRawMdbRequest.MERGE).build();
-            MessageLite responseMsg = dumpRawMdb(request, yamcsInstance);
+            RestDumpRawMdbResponse responseMsg = dumpRawMdb(request, yamcsInstance);
             writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
         } else {
             log.debug("No match for '" + qsDecoder.getPath() + "'");

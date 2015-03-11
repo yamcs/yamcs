@@ -61,7 +61,8 @@ public class WebSocketServerHandler {
                     applicationName = "uss-web";
                 }
             } else {
-                applicationName = "Unknown Client";
+                // Origin is always present, according to spec.
+                applicationName = "Unknown (" + req.getHeader(HttpHeaders.Names.ORIGIN) +")";
             }
             this.channelClient=new WebSocketChannelClient(yamcsInstance, this, applicationName);
         }
