@@ -3,6 +3,7 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
@@ -45,7 +46,7 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * more work as far as integrating the different approaches (archiverequesthandler does some special stuff
  * to support retrieving large dumps of unknown size).
  *
- * <p>Provides extra helper logic to return exeptions in the preferred outbound media type.
+ * <p>Provides extra helper logic to return exceptions in the preferred outbound media type.
  */
 public abstract class AbstractRestRequestHandler extends AbstractRequestHandler {
 
@@ -76,7 +77,6 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     /**
      * Derives the content type of the incoming request. Supported media types
      * are treated in priority order if no content type was specified.
-     * @return null if an unsupported content type was specified
      */
     String getSourceContentType(HttpRequest httpRequest) {
         if (httpRequest.containsHeader(Names.CONTENT_TYPE)) {
@@ -148,7 +148,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     /**
      * Writes back a response in one of the supported media types
      */
-    protected void writeMessage(HttpRequest httpRequest, QueryStringDecoder qsDecoder, MessageEvent evt, MessageLite responseMsg, Schema responseSchema) throws RestException {
+    protected <T extends MessageLite> void writeMessage(HttpRequest httpRequest, QueryStringDecoder qsDecoder, MessageEvent evt, T responseMsg, Schema<T> responseSchema) throws RestException {
         String targetContentType = getTargetContentType(httpRequest);
         ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
         ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
@@ -189,7 +189,10 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     protected JsonGenerator createJsonGenerator(OutputStream out, QueryStringDecoder qsDecoder) throws IOException {
         JsonGenerator generator = jsonFactory.createJsonGenerator(out, JsonEncoding.UTF8);
         if (qsDecoder.getParameters().containsKey("pretty")) {
-            generator.useDefaultPrettyPrinter();
+            List<String> pretty = qsDecoder.getParameters().get("pretty");
+            if (pretty == null || Boolean.parseBoolean(pretty.get(0))) {
+                generator.useDefaultPrettyPrinter();
+            }
         }
         return generator;
     }
@@ -227,5 +230,16 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         } else {
             sendError(ctx, status); // text/plain
         }
+    }
+
+    /**
+     * Helper method to throw a BadRequestException on incorrect requests. This is some validation mechanism
+     * beyond proto, where we try to keep things optional
+     */
+    protected static <T> T required(T object, String message) throws BadRequestException {
+        if(object != null)
+            return object;
+        else
+            throw new BadRequestException(message);
     }
 }
