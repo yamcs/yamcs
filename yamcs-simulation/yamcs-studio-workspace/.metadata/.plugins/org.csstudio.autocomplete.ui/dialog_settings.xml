@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="auto_complete_history">
+		<list key="PV">
+			<item value="yamcs://DCSS_Longitude"/>
+			<item value="yamcs://SOAR_Latitude"/>
+			<item value="yamcs://SIM_Longitude"/>
+		</list>
+	</section>
+</section>

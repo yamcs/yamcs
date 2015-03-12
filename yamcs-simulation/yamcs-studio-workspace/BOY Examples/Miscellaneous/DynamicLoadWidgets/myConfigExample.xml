@@ -1,0 +1,26 @@
+<macros>
+	<Group>
+		<m1>loc://g1m1</m1>
+		<m2>loc://g1m2</m2>
+	</Group>
+	<Group>
+		<m1>loc://g2m1</m1>
+		<m2>loc://g2m2</m2>
+	</Group>
+	<Group>
+		<m1>loc://g3m1</m1>
+		<m2>loc://g3m2</m2>
+	</Group>
+	<Group>
+		<m1>loc://g4m1</m1>
+		<m2>loc://g4m2</m2>
+	</Group>
+		<Group>
+		<m1>loc://g5m1</m1>
+		<m2>loc://g5m2</m2>
+	</Group>
+	<Group>
+		<m1>loc://g6m1</m1>
+		<m2>loc://g6m2</m2>
+	</Group>	
+</macros>

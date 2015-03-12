@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0">
+  <widget_type>Display</widget_type>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+  </macros>
+  <width>924</width>
+  <rules />
+  <scripts />
+  <show_ruler>true</show_ruler>
+  <height>400</height>
+  <show_edit_range>true</show_edit_range>
+  <name>Linac Strip Chart</name>
+  <grid_space>5</grid_space>
+  <snap_to_geometry>false</snap_to_geometry>
+  <show_grid>false</show_grid>
+  <y>682</y>
+  <actions hook="false" />
+  <foreground_color>
+    <color red="0" green="0" blue="0" />
+  </foreground_color>
+  <background_color>
+    <color red="235" green="241" blue="181" />
+  </background_color>
+  <x>208</x>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>BLUE: Current at beginning (CM1)</text>
+    <visible>true</visible>
+    <font>
+      <fontdata fontName="Lucida Grande" height="16" style="0" />
+    </font>
+    <vertical_alignment>1</vertical_alignment>
+    <width>317</width>
+    <border_style>0</border_style>
+    <auto_size>true</auto_size>
+    <rules />
+    <scripts />
+    <height>24</height>
+    <border_width>1</border_width>
+    <name>Label</name>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <transparent>true</transparent>
+    <y>19</y>
+    <actions hook="false" />
+    <tooltip />
+    <x>11</x>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="42" green="99" blue="228" />
+    </foreground_color>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>RED: Current at end (FC1)</text>
+    <visible>true</visible>
+    <font>
+      <fontdata fontName="Lucida Grande" height="16" style="0" />
+    </font>
+    <vertical_alignment>1</vertical_alignment>
+    <width>249</width>
+    <border_style>0</border_style>
+    <auto_size>true</auto_size>
+    <rules />
+    <scripts />
+    <height>24</height>
+    <border_width>1</border_width>
+    <name>Label</name>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <transparent>true</transparent>
+    <y>5</y>
+    <actions hook="false" />
+    <tooltip />
+    <x>574</x>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="253" green="0" blue="0" />
+    </foreground_color>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>Purple: Current at end (FC2)</text>
+    <visible>true</visible>
+    <font>
+      <fontdata fontName="Lucida Grande" height="16" style="0" />
+    </font>
+    <vertical_alignment>1</vertical_alignment>
+    <width>264</width>
+    <border_style>0</border_style>
+    <auto_size>true</auto_size>
+    <rules />
+    <scripts />
+    <height>24</height>
+    <border_width>1</border_width>
+    <name>Label</name>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <transparent>true</transparent>
+    <y>26</y>
+    <actions hook="false" />
+    <tooltip />
+    <x>574</x>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="214" green="127" blue="226" />
+    </foreground_color>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.xyGraph" version="1.0">
+    <trace_1_trace_type>0</trace_1_trace_type>
+    <trace_0_trace_color>
+      <color red="21" green="21" blue="196" />
+    </trace_0_trace_color>
+    <axis_0_auto_scale>true</axis_0_auto_scale>
+    <trace_2_chronological>true</trace_2_chronological>
+    <axis_1_time_format>0</axis_1_time_format>
+    <trace_1_point_size>4</trace_1_point_size>
+    <trace_0_plot_mode>0</trace_0_plot_mode>
+    <trace_count>3</trace_count>
+    <trace_0_chronological>true</trace_0_chronological>
+    <axis_0_show_grid>true</axis_0_show_grid>
+    <axis_2_log_scale>false</axis_2_log_scale>
+    <axis_0_log_scale>false</axis_0_log_scale>
+    <trace_1_name>$(trace_1_y_pv)</trace_1_name>
+    <axis_2_grid_color>
+      <color red="200" green="200" blue="200" />
+    </axis_2_grid_color>
+    <axis_2_minimum>0.0</axis_2_minimum>
+    <trace_0_point_size>4</trace_0_point_size>
+    <show_legend>true</show_legend>
+    <y>67</y>
+    <x>13</x>
+    <visible>true</visible>
+    <axis_1_visible>true</axis_1_visible>
+    <height>293</height>
+    <axis_1_maximum>100.0</axis_1_maximum>
+    <trace_2_x_pv />
+    <axis_1_title_font>
+      <fontdata fontName="Arial" height="9" style="1" />
+    </axis_1_title_font>
+    <border_width>1</border_width>
+    <axis_2_left_bottom_side>false</axis_2_left_bottom_side>
+    <trace_2_x_axis_index>0</trace_2_x_axis_index>
+    <axis_2_show_grid>true</axis_2_show_grid>
+    <axis_0_axis_color>
+      <color red="0" green="0" blue="0" />
+    </axis_0_axis_color>
+    <name>XY Graph</name>
+    <axis_1_auto_scale_threshold>0.0</axis_1_auto_scale_threshold>
+    <trace_0_line_width>1</trace_0_line_width>
+    <show_toolbar>false</show_toolbar>
+    <trace_1_update_delay>100</trace_1_update_delay>
+    <axis_1_show_grid>true</axis_1_show_grid>
+    <axis_0_grid_color>
+      <color red="200" green="200" blue="200" />
+    </axis_0_grid_color>
+    <trace_2_line_width>1</trace_2_line_width>
+    <trace_1_line_width>1</trace_1_line_width>
+    <trace_2_y_axis_index>2</trace_2_y_axis_index>
+    <axis_0_auto_scale_threshold>0.0</axis_0_auto_scale_threshold>
+    <trace_2_trace_type>0</trace_2_trace_type>
+    <trace_0_name>$(trace_0_y_pv)</trace_0_name>
+    <trace_1_anti_alias>true</trace_1_anti_alias>
+    <axis_2_maximum>100.0</axis_2_maximum>
+    <trace_0_update_mode>0</trace_0_update_mode>
+    <trace_1_chronological>true</trace_1_chronological>
+    <trace_1_buffer_size>100</trace_1_buffer_size>
+    <axis_0_axis_title>Time</axis_0_axis_title>
+    <trace_2_buffer_size>100</trace_2_buffer_size>
+    <axis_1_axis_color>
+      <color red="0" green="0" blue="0" />
+    </axis_1_axis_color>
+    <trace_2_update_mode>0</trace_2_update_mode>
+    <foreground_color>
+      <color red="0" green="0" blue="255" />
+    </foreground_color>
+    <trace_1_update_mode>0</trace_1_update_mode>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <axis_1_axis_title>CM1</axis_1_axis_title>
+    <axis_2_y_axis>true</axis_2_y_axis>
+    <axis_0_maximum>100.0</axis_0_maximum>
+    <axis_0_scale_font>
+      <fontdata fontName="Lucida Grande" height="13" style="0" />
+    </axis_0_scale_font>
+    <trace_2_point_size>4</trace_2_point_size>
+    <axis_0_time_format>3</axis_0_time_format>
+    <trace_1_plot_mode>0</trace_1_plot_mode>
+    <axis_1_log_scale>false</axis_1_log_scale>
+    <trace_1_point_style>0</trace_1_point_style>
+    <axis_2_auto_scale_threshold>0.0</axis_2_auto_scale_threshold>
+    <trace_2_plot_mode>0</trace_2_plot_mode>
+    <title_font>
+      <fontdata fontName="Arial" height="12" style="1" />
+    </title_font>
+    <axis_1_dash_grid_line>true</axis_1_dash_grid_line>
+    <axis_2_dash_grid_line>true</axis_2_dash_grid_line>
+    <axis_0_visible>true</axis_0_visible>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <trace_0_x_pv />
+    <trace_0_y_pv>$(user):CM1:intensityM</trace_0_y_pv>
+    <axis_0_title_font>
+      <fontdata fontName="Arial" height="9" style="1" />
+    </axis_0_title_font>
+    <axis_1_auto_scale>true</axis_1_auto_scale>
+    <trace_2_update_delay>100</trace_2_update_delay>
+    <trace_0_concatenate_data>true</trace_0_concatenate_data>
+    <actions hook="false" />
+    <trace_1_x_pv />
+    <show_plot_area_border>false</show_plot_area_border>
+    <axis_2_axis_title>FC1, FC2</axis_2_axis_title>
+    <widget_type>XY Graph</widget_type>
+    <enabled>true</enabled>
+    <width>780</width>
+    <trace_0_buffer_size>100</trace_0_buffer_size>
+    <trigger_pv />
+    <axis_count>3</axis_count>
+    <trace_2_name>$(trace_2_y_pv)</trace_2_name>
+    <transparent>false</transparent>
+    <trace_2_anti_alias>true</trace_2_anti_alias>
+    <axis_0_dash_grid_line>true</axis_0_dash_grid_line>
+    <trace_0_x_axis_index>0</trace_0_x_axis_index>
+    <axis_2_time_format>0</axis_2_time_format>
+    <trace_0_point_style>0</trace_0_point_style>
+    <tooltip>$(trace_0_y_pv)
+$(trace_0_y_pv_value)</tooltip>
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <axis_2_title_font>
+      <fontdata fontName="Arial" height="9" style="1" />
+    </axis_2_title_font>
+    <trace_1_x_axis_index>0</trace_1_x_axis_index>
+    <trace_0_y_axis_index>1</trace_0_y_axis_index>
+    <axis_1_scale_font>
+      <fontdata fontName="Lucida Grande" height="13" style="0" />
+    </axis_1_scale_font>
+    <border_style>0</border_style>
+    <plot_area_background_color>
+      <color red="255" green="255" blue="255" />
+    </plot_area_background_color>
+    <trace_2_concatenate_data>true</trace_2_concatenate_data>
+    <trace_2_point_style>0</trace_2_point_style>
+    <title>Cathode Temperature</title>
+    <trace_1_y_pv>$(user):FC1:intensityM</trace_1_y_pv>
+    <axis_2_auto_scale>true</axis_2_auto_scale>
+    <pv_name />
+    <axis_1_minimum>0.0</axis_1_minimum>
+    <axis_2_axis_color>
+      <color red="255" green="0" blue="0" />
+    </axis_2_axis_color>
+    <axis_2_scale_font>
+      <fontdata fontName="Lucida Grande" height="13" style="0" />
+    </axis_2_scale_font>
+    <axis_0_minimum>0.0</axis_0_minimum>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <scripts />
+    <trace_0_anti_alias>true</trace_0_anti_alias>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <trace_1_trace_color>
+      <color red="242" green="26" blue="26" />
+    </trace_1_trace_color>
+    <trace_2_trace_color>
+      <color red="255" green="0" blue="255" />
+    </trace_2_trace_color>
+    <axis_2_visible>true</axis_2_visible>
+    <trace_1_y_axis_index>2</trace_1_y_axis_index>
+    <trace_1_concatenate_data>true</trace_1_concatenate_data>
+    <rules />
+    <trace_2_y_pv>$(user):FC2:intensityM</trace_2_y_pv>
+    <trace_0_trace_type>0</trace_0_trace_type>
+    <axis_1_grid_color>
+      <color red="200" green="200" blue="200" />
+    </axis_1_grid_color>
+    <trace_0_update_delay>100</trace_0_update_delay>
+  </widget>
+</display>
