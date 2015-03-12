@@ -1,7 +1,7 @@
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
 instances:
-  - testinst
+  - simulator
 
 #where to find the web directory with ccs, js etc
 # for the moment the displays are also loaded from here but in the future we should have the possibility to specify per instance
