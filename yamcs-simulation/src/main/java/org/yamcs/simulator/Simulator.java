@@ -219,62 +219,67 @@ class Simulator extends Thread {
 
 			CCSDSPacket ackPacket;
 			if (commandPacket.packetType == 10) {
-				System.out.println("BATT COMMAND  : " + commandPacket.packetid);
+				System.out.println("BATT COMMAND  : " + commandPacket.packetid+" batNum: "+commandPacket.getUserDataBuffer().get(0));
 
 				switch(commandPacket.packetid){
 
-				case 1 : commandPacket.packetid = 1 ; //switch batt one off
-					engageHoldOneCycle = true;
-					ExeTransmitted = false;
-					battOneCommand = 1;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());
-				break;	
-				case 2 : commandPacket.packetid = 2; //switch batt one on
-					unengageHoldOneCycle = true;
-					//engaged = false;
-					ExeTransmitted = false;
-					battOneCommand = 2;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());
-				break;
-				case 3 : commandPacket.packetid = 3; //switch batt two off
-					engageHoldOneCycle = true;
-					ExeTransmitted = false;
-					battTwoCommand = 1;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());
-				break;
-				case 4 : commandPacket.packetid = 4; //switch batt two on
-					unengageHoldOneCycle = true;
-					//engaged = false;
-					ExeTransmitted = false;
-					battTwoCommand = 2;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());
-				break;
-				case 5 : commandPacket.packetid = 5; //switch batt three off
-					engageHoldOneCycle = true;
-					ExeTransmitted = false;
-					battThreeCommand = 1;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());
-				break;	
-				case 6 : commandPacket.packetid = 6; // switch batt three on
-					unengageHoldOneCycle = true;
-					//engaged = false;
-					battThreeCommand = 2;
-					ExeTransmitted = false;
-					ackPacket = new CCSDSPacket(1, 2, 7);
-					AckDataHandler.fillAckPacket(ackPacket, 1);
-					ackPacket.send(tmSocket.getOutputStream());;
-				break;
-				default : 
+				case 1 : commandPacket.packetid = 1 ; //switch on 
+					int batNum = commandPacket.getUserDataBuffer().get(0);
+					switch(batNum) {
+					case 1: batNum = 1; //switch bat1 on
+						unengageHoldOneCycle = true;
+						//engaged = false;
+						ExeTransmitted = false;
+						battOneCommand = 2;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());
+					case 2: batNum = 2 ; //swtich bat2 on
+						unengageHoldOneCycle = true;
+						//engaged = false;
+						ExeTransmitted = false;
+						battTwoCommand = 2;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());
+					case 3: batNum = 3;  //switch bat3 on
+						unengageHoldOneCycle = true;
+						//engaged = false;
+						battThreeCommand = 2;
+						ExeTransmitted = false;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());;
+					}
+					break;
+				case 2: commandPacket.packetid = 2 ; //switch off
+					batNum = commandPacket.getUserDataBuffer().get(0);
+					switch(batNum) {
+				
+					case 1: batNum = 1; //switch bat1 off
+						engageHoldOneCycle = true;
+						ExeTransmitted = false;
+						battOneCommand = 1;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());
+					break;
+					case 2: batNum = 2; //switch bat2 off
+						engageHoldOneCycle = true;
+						ExeTransmitted = false;
+						battTwoCommand = 1;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());
+					break;
+					case 3: batNum = 3; //switch bat3 off
+						engageHoldOneCycle = true;
+						ExeTransmitted = false;
+						battThreeCommand = 1;
+						ackPacket = new CCSDSPacket(1, 2, 7);
+						AckDataHandler.fillAckPacket(ackPacket, 1);
+						ackPacket.send(tmSocket.getOutputStream());
+					}
 				}
 			}
 		}
