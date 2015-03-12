@@ -6,7 +6,7 @@ import java.util.Vector;
 
 class CSVHandlerFlightData extends CSVHandler
 {
-	final static String csvName = "Displays_test_data/Flight parameters-Tabelle 1.csv";
+	final static String csvName = "test_data/Flight parameters.csv";
 
 	Vector<FlightData> entries;
 	CSVHandlerWaypoints wpHandler;

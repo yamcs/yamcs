@@ -7,7 +7,7 @@ import java.util.Vector;
 
 class CSVHandlerPower extends CSVHandler
 {
-	final static String csvName = "Displays_test_data/power-Tabelle 1.csv";
+	final static String csvName = "test_data/power.csv";
 
 	Vector<PowerData> entries;
 	UplinkInterface uplink;

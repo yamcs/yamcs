@@ -8,7 +8,7 @@ import java.util.Vector;
 
 public class CVSHandlerEPS extends CSVHandler{
 	
-	final static String csvName = "Displays_test_data/ESPLVPDU-Tabelle 1.csv";
+	final static String csvName = "test_data/ESPLVPDU.csv";
 
 	Vector<EpsLVPDUData> entries;
 	UplinkInterface uplink;

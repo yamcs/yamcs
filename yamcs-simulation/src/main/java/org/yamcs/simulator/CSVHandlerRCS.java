@@ -6,7 +6,7 @@ import java.util.Vector;
 
 class CSVHandlerRCS extends CSVHandler
 {
-	final static String csvName = "Displays_test_data/RCS-Tabelle 1.csv";
+	final static String csvName = "test_data/RCS.csv";
 
 	Vector<RCSData> entries;
 	UplinkInterface uplink;

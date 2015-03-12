@@ -6,7 +6,7 @@ import java.util.Vector;
 
 class CSVHandlerDHS extends CSVHandler
 {
-	final static String csvName = "Displays_test_data/DHS-Tabelle 1.csv";
+	final static String csvName = "test_data/DHS.csv";
 
 	Vector<DHSData> entries;
 	UplinkInterface uplink;
