@@ -11,5 +11,5 @@ local:
     tmHost: localhost
     tmPort: 10015
     tcHost: localhost
-    tcPort: 10003
+    tcPort: 10025
 
