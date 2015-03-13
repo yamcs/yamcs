@@ -33,52 +33,60 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter=new HashMap<Parameter, ParameterValue>();
+    final String yamcsInstance;
+    final String channelName;
     
     public AlarmReporter(String yamcsInstance) {
         this(yamcsInstance, "realtime");
     }
     
     public AlarmReporter(String yamcsInstance, String channelName) {
+    	this.yamcsInstance = yamcsInstance;
+    	this.channelName = channelName;    			
         eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("AlarmChecker");
-        
-        Channel channel = Channel.getInstance(yamcsInstance, channelName);
-        ParameterRequestManager prm = channel.getParameterRequestManager();
-        prm.getAlarmChecker().enableReporting(this);
-        
-        // Auto-subscribe to parameters with alarms
-        Set<Parameter> requiredParameters=new HashSet<Parameter>();
-        try {
-            XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-            for (Parameter parameter:xtcedb.getParameters()) {
-                ParameterType ptype=parameter.getParameterType();
-                if(ptype!=null && ptype.hasAlarm()) {
-                    requiredParameters.add(parameter);
-                    Set<Parameter> dependentParameters = ptype.getDependentParameters();
-                    if(dependentParameters!=null) {
-                        requiredParameters.addAll(dependentParameters);
-                    }
-                }
-            }
-        } catch(ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-        
-        if(!requiredParameters.isEmpty()) {
-            List<NamedObjectId> paramNames=new ArrayList<NamedObjectId>(); // Now that we have uniques..
-            for(Parameter p:requiredParameters) {
-                paramNames.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
-            }
-            try {
-                prm.addRequest(paramNames, this);
-            } catch(InvalidIdentification e) {
-                throw new RuntimeException("Could not register dependencies for alarms", e);
-            }
-        }
     }
     
     @Override
     public void doStart() {
+    	 Channel channel = Channel.getInstance(yamcsInstance, channelName);
+    	 if(channel==null) {
+    		 ConfigurationException e = new ConfigurationException("Cannot find a channel '"+channelName+"' in instance '"+yamcsInstance+"'");
+    		 notifyFailed(e);
+    		 return;
+    	 }
+         ParameterRequestManager prm = channel.getParameterRequestManager();
+         prm.getAlarmChecker().enableReporting(this);
+         
+         // Auto-subscribe to parameters with alarms
+         Set<Parameter> requiredParameters=new HashSet<Parameter>();
+         try {
+             XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
+             for (Parameter parameter:xtcedb.getParameters()) {
+                 ParameterType ptype=parameter.getParameterType();
+                 if(ptype!=null && ptype.hasAlarm()) {
+                     requiredParameters.add(parameter);
+                     Set<Parameter> dependentParameters = ptype.getDependentParameters();
+                     if(dependentParameters!=null) {
+                         requiredParameters.addAll(dependentParameters);
+                     }
+                 }
+             }
+         } catch(ConfigurationException e) {
+             throw new RuntimeException(e);
+         }
+         
+         if(!requiredParameters.isEmpty()) {
+             List<NamedObjectId> paramNames=new ArrayList<NamedObjectId>(); // Now that we have uniques..
+             for(Parameter p:requiredParameters) {
+                 paramNames.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+             }
+             try {
+                 prm.addRequest(paramNames, this);
+             } catch(InvalidIdentification e) {
+                 throw new RuntimeException("Could not register dependencies for alarms", e);
+             }
+         }
         notifyStarted();
     }
     
