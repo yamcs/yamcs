@@ -73,7 +73,8 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
                  }
              }
          } catch(ConfigurationException e) {
-             throw new RuntimeException(e);
+        	 notifyFailed(e);
+    		 return;
          }
          
          if(!requiredParameters.isEmpty()) {
