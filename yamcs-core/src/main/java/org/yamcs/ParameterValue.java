@@ -324,25 +324,35 @@ public class ParameterValue {
         gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
 
         // TODO make this optional
-        if (getWatchRange() != null) {
-            gpvb.setWatchLow(getWatchRange().getMinInclusive());
-            gpvb.setWatchHigh(getWatchRange().getMaxInclusive());
+        if (watchRange != null) {
+            if (!Double.isInfinite(watchRange.getMinInclusive()))
+                gpvb.setWatchLow(watchRange.getMinInclusive());
+            if (!Double.isInfinite(watchRange.getMaxInclusive()))
+                gpvb.setWatchHigh(watchRange.getMaxInclusive());
         }
-        if (getWarningRange() != null) {
-            gpvb.setWarningLow(getWarningRange().getMinInclusive());
-            gpvb.setWarningHigh(getWarningRange().getMaxInclusive());
+        if (warningRange != null) {
+            if (!Double.isInfinite(warningRange.getMinInclusive()))
+                gpvb.setWarningLow(warningRange.getMinInclusive());
+            if (!Double.isInfinite(warningRange.getMaxInclusive()))
+                gpvb.setWarningHigh(warningRange.getMaxInclusive());
         }
-        if(getDistressRange() != null) {
-            gpvb.setDistressLow(getDistressRange().getMinInclusive());
-            gpvb.setDistressHigh(getDistressRange().getMaxInclusive());
+        if(distressRange != null) {
+            if (!Double.isInfinite(distressRange.getMinInclusive()))
+                gpvb.setDistressLow(distressRange.getMinInclusive());
+            if (!Double.isInfinite(distressRange.getMaxInclusive()))
+                gpvb.setDistressHigh(distressRange.getMaxInclusive());
         }
-        if(getCriticalRange() != null) {
-            gpvb.setCriticalLow(getCriticalRange().getMinInclusive());
-            gpvb.setCriticalLow(getCriticalRange().getMaxInclusive());
+        if(criticalRange != null) {
+            if (!Double.isInfinite(criticalRange.getMinInclusive()))
+                gpvb.setCriticalLow(criticalRange.getMinInclusive());
+            if (!Double.isInfinite(criticalRange.getMaxInclusive()))
+                gpvb.setCriticalHigh(criticalRange.getMaxInclusive());
         }
-        if(getSevereRange()!=null) {
-            gpvb.setSevereLow(getSevereRange().getMinInclusive());
-            gpvb.setSevereLow(getSevereRange().getMaxInclusive());
+        if(severeRange!=null) {
+            if (!Double.isInfinite(severeRange.getMinInclusive()))
+                gpvb.setSevereLow(severeRange.getMinInclusive());
+            if (!Double.isInfinite(severeRange.getMaxInclusive()))
+                gpvb.setSevereHigh(severeRange.getMaxInclusive());
         }
         
         if(id!=null) gpvb.setId(id);
