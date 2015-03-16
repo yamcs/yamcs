@@ -2,6 +2,7 @@ package org.yamcs.web.rest;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.Map.Entry;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
@@ -17,7 +18,6 @@ import org.yamcs.protobuf.Rest.RestListAvailableParametersRequest;
 import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -49,18 +49,24 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
 
     /**
      * Sends the XTCEDB for the requested yamcs instance.
-     * <p>
-     * Currently only sends MDB:OPS Name names.
      */
     private RestListAvailableParametersResponse listAvailableParameters(RestListAvailableParametersRequest request, String yamcsInstance) throws RestException {
         XtceDb mdb = loadMdb(yamcsInstance);
         RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
-
-        NamedDescriptionIndex<Parameter> index = mdb.getParameterAliases();
-        // TODO dump for all namespaces if not specified
-        for (String namespace : request.getNamespacesList()) {
-            for (String name : index.getNamesForAlias(namespace)) {
-                responseb.addIds(NamedObjectId.newBuilder().setNamespace(namespace).setName(name));
+        if (request.getNamespacesCount() == 0) { // Send all, if no namespace specified
+            for(Parameter parameter : mdb.getParameters()) {
+                for (Entry<String,String> entry : parameter.getAliasSet().getAliases().entrySet()) {
+                    responseb.addIds(NamedObjectId.newBuilder().setNamespace(entry.getKey()).setName(entry.getValue()));
+                }
+            }
+        } else {
+            for (Parameter p : mdb.getParameters()) {
+                for (String namespace : request.getNamespacesList()) {
+                    String alias = p.getAlias(namespace);
+                    if (alias != null) {
+                        responseb.addIds(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias));
+                    }
+                }
             }
         }
         return responseb.build();
