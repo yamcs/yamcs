@@ -1,5 +1,7 @@
 package org.yamcs.xtceproc;
 
+import java.util.List;
+
 import org.yamcs.ErrorInCommand;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -18,6 +20,7 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.ValueEnumeration;
 
 public class ArgumentTypeProcessor {
 	
@@ -187,6 +190,21 @@ public class ArgumentTypeProcessor {
 		} else if (type instanceof BinaryArgumentType) {
 			byte[] b = StringConvertors.hexStringToArray(argumentValue);
 			v = ValueHelper.newValue(b);
+		} else if (type instanceof EnumeratedArgumentType) {
+			EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
+			List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
+			boolean found =false;
+			long lv = -1;
+			for(ValueEnumeration ve:vlist) {
+				if(ve.getLabel().equals(argumentValue)) {
+					found = true;
+					lv=ve.getValue();
+				}
+			}
+			if(!found) {
+				throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" cannot be found in enumeration list");
+			}
+			v = ValueHelper.newValue(argumentValue);
 		} else {
 			throw new IllegalArgumentException("Cannot parse values of type "+type);
 		}

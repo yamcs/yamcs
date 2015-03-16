@@ -14,7 +14,6 @@ import org.yamcs.ErrorInCommand;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -126,4 +125,27 @@ public class CommandingManagerTest {
 		assertTrue(e.getMessage().contains("not in the range"));
 	}
 	
+	@Test
+	public void testCalibration() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
+		assertNotNull(mc);
+		
+		List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("p1", "1"),
+					new ArgumentAssignment("p2", "1"),
+					new ArgumentAssignment("p3", "-3.2"),
+					new ArgumentAssignment("p4", "value2"));
+		
+		byte[] b= MetaCommandProcessor.buildCommand(mc, aaList);
+		assertEquals(9, b.length);
+		
+		ByteBuffer bb = ByteBuffer.wrap(b);
+		
+		assertEquals(3, bb.getShort(0));
+		assertEquals(2, bb.getShort(2));
+		assertEquals(-5.4, bb.getFloat(4), 1e-5);
+		
+		int p4 = (bb.get(8)&0xFF)>>6;
+		
+		assertEquals(2, p4);
+	}
 }

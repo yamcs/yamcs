@@ -321,14 +321,17 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				}
 				end++;
 			}
+			if ("pointpair".equalsIgnoreCase(type)) {
+				type = "spline";
+			}
 			if ("enumeration".equalsIgnoreCase(type)) {
 				enumeration = new EnumerationDefinition();
 			} else if ("polynomial".equalsIgnoreCase(type)) {
 				pol_coef = new double[end - start];
-			} else if ("pointpair".equalsIgnoreCase(type)) {
+			} else if ("spline".equalsIgnoreCase(type)) {
 				spline = new ArrayList<SplinePoint>();
 			} else {
-				throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: enumeration, polynomial and pointpair");
+				throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: enumeration, polynomial and spline(alias pointpair)");
 			}
 
 			for (int j = start; j < end; j++) {
@@ -342,7 +345,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 					}
 				} else if ("polynomial".equalsIgnoreCase(type)) {
 					pol_coef[j - start] = getNumber(cells[IDX_CALIB_CALIB1]);
-				} else if ("pointpair".equalsIgnoreCase(type)) {
+				} else if ("spline".equalsIgnoreCase(type)) {
 					spline.add(new SplinePoint(getNumber(cells[IDX_CALIB_CALIB1]), getNumber(cells[IDX_CALIB_CALIB2])));
 				}
 			}
@@ -350,7 +353,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				enumerations.put(name, enumeration);
 			} else if ("polynomial".equalsIgnoreCase(type)) {
 				calibrators.put(name, new PolynomialCalibrator(pol_coef));
-			} else if ("pointpair".equalsIgnoreCase(type)) {
+			} else if ("spline".equalsIgnoreCase(type)) {
 				calibrators.put(name, new SplineCalibrator(spline));
 			}
 			start = end;
@@ -1236,7 +1239,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 		String rawType = engType;
 		if(hasColumn(cells, IDX_CMD_RAWTYPE)) {
-			engType = cells[IDX_CMD_RAWTYPE].getContents();
+			rawType = cells[IDX_CMD_RAWTYPE].getContents();
 		}
 		
 		if("n".equals(calib) || "".equals(calib))calib=null;
@@ -1267,18 +1270,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			}
 			EnumerationDefinition enumeration = enumerations.get(calib);
 			if (enumeration == null) {
-				throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
+				throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
 			}
 			atype = new EnumeratedArgumentType(calib);
 			for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
-				((EnumeratedParameterType) atype).addEnumerationValue(entry.getKey(), entry.getValue());
+				((EnumeratedArgumentType) atype).addEnumerationValue(entry.getKey(), entry.getValue());
 			}
 		} else if ("string".equalsIgnoreCase(engType)) {
 			atype = new StringArgumentType(name);
 		} else	if ("binary".equalsIgnoreCase(engType)) {
 			atype = new BinaryArgumentType(name);
 		} else {
-			throw new SpreadsheetLoadException(ctx, "Unknown argumnet type " + engType);
+			throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
 		}
 		if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
 		Argument arg = new Argument(name);	
@@ -1405,7 +1408,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			if ((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
 				Calibrator c = calibrators.get(calib);
 				if (c == null) {
-					throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
+					throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
 				}
 				((IntegerDataEncoding)encoding).defaultCalibrator = c;
 			}
@@ -1518,10 +1521,10 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 				((FloatArgumentType)atype).encoding = encoding;
 			}
 		} else if (atype instanceof EnumeratedArgumentType) {
-			if(((EnumeratedParameterType) atype).getEncoding() != null) {
+			if(((EnumeratedArgumentType) atype).getEncoding() != null) {
 				// Some other param has already led to setting the encoding of this shared ptype.
 				// Do some basic consistency checks
-				if(((EnumeratedParameterType) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+				if(((EnumeratedArgumentType) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
 					throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
 				}
 			}
