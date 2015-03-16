@@ -54,7 +54,7 @@ public class ParameterCache {
 			if(ce!=null) ceset.add(ce); 
 		}
 
-		//sort CacheEntries such that most recent is in front
+		//sort CacheEntries such that most rece nt is in front
 		CacheEntry[] cearray =  ceset.toArray(new CacheEntry[ceset.size()]);
 		
 		Arrays.sort(cearray, new Comparator<CacheEntry>() {
@@ -67,18 +67,19 @@ public class ParameterCache {
 		//use bitset to clear out the parameters that have already been found
 		BitSet bs = new BitSet(plist.size());
 		
+		int remaining = plist.size();
+		bs.set(0, remaining-1, true);
 		for(CacheEntry ce:cearray) {
-			boolean empty = true;
+			if(remaining<=0) break;
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
-				empty = false;
 				Parameter p = plist.get(i);
 				ParameterValue pv = ce.pvlist.getNewest(p);
 				if(pv!=null) {
 					result.add(pv);
 					bs.set(i, false);
+					remaining--;
 				}
 			}
-			if(empty)break;
 		}
 		return result;
 	}
