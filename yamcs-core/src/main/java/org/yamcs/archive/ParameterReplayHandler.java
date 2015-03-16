@@ -28,7 +28,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
