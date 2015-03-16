@@ -148,4 +148,24 @@ public class CommandingManagerTest {
 		
 		assertEquals(2, p4);
 	}
+	
+	@Test
+	public void testInvalidEnum() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
+		assertNotNull(mc);
+		
+		List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("p1", "1"),
+					new ArgumentAssignment("p2", "1"),
+					new ArgumentAssignment("p3", "-3.2"),
+					new ArgumentAssignment("p4", "invalidenum"));
+		
+		ErrorInCommand e = null;
+		try {
+			MetaCommandProcessor.buildCommand(mc, aaList);
+		} catch (ErrorInCommand e1) {
+			e=e1;
+		}
+		assertNotNull(e);
+		assertTrue(e.getMessage().contains("Cannot assign value to p4"));
+	}
 }

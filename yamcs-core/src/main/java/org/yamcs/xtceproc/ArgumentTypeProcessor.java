@@ -194,15 +194,13 @@ public class ArgumentTypeProcessor {
 			EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
 			List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
 			boolean found =false;
-			long lv = -1;
 			for(ValueEnumeration ve:vlist) {
 				if(ve.getLabel().equals(argumentValue)) {
 					found = true;
-					lv=ve.getValue();
 				}
 			}
 			if(!found) {
-				throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" cannot be found in enumeration list");
+				throw new ErrorInCommand("Value '"+argumentValue+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
 			}
 			v = ValueHelper.newValue(argumentValue);
 		} else {
