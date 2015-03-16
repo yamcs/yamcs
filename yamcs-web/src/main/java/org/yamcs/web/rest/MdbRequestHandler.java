@@ -85,8 +85,7 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             oos = new ObjectOutputStream(bout);
             oos.writeObject(mdb);
         } catch (IOException e) {
-            log.error("Could not serialize MDB", e);
-            throw new RestException("Could not serialize MDB", e);
+            throw new InternalServerErrorException("Could not serialize MDB", e);
         } finally {
             if(oos != null) {
                 try { oos.close(); } catch (IOException e) {}
@@ -101,7 +100,7 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             return XtceDbFactory.getInstance(yamcsInstance);
         } catch(ConfigurationException e) {
             log.error("Could not get MDB for instance '" + yamcsInstance + "'", e);
-            throw new RestException("Could not get MDB for instance '" + yamcsInstance + "'", e);
+            throw new InternalServerErrorException("Could not get MDB for instance '" + yamcsInstance + "'", e);
         }
     }
 }

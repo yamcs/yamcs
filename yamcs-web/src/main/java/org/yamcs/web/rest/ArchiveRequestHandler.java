@@ -47,7 +47,6 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
 
 import com.dyuproject.protostuff.JsonIOUtil;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -200,8 +199,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                         generator.close();
                     }
                 } catch (IOException e) {
-                    log.error("Internal server error while writing out message", e);
-                    throw new RestException(e);
+                    throw new InternalServerErrorException(e);
                 }
 
                 writeFuture=ch.write(new DefaultHttpChunk(buf));
@@ -214,17 +212,13 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 }
             }
         } catch (URISyntaxException e) {
-            log.error("Could not parse URI to local hornetq URI", e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         } catch (HornetQException e) {
-            log.error("" + e, e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         } catch (YamcsApiException e) {
-            log.error("" + e, e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         } catch (YamcsException e) {
-            log.error("" + e, e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         } finally {
             if (msgClient != null) {
                 try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }

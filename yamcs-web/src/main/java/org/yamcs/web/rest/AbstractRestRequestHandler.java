@@ -161,8 +161,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 generator.close();
             }
         } catch (IOException e) {
-            log.error("Internal server error while writing out message", e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         }
         HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentTypeHeader(httpResponse, targetContentType);
