@@ -3,11 +3,9 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.yamcs.xtce.xml.XtceAliasSet;
 
@@ -73,16 +71,6 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
      */
     public Collection<T> getObjects() {
         return index.values();
-    }
-
-    /**
-     * Returns a set with all names under a particular alias namespace.
-     */
-    public Set<String> getNamesForAlias(String namespace) {
-        if (!aliasIndex.containsKey(namespace)) {
-            return Collections.emptySet();
-        }
-        return aliasIndex.get(namespace).keySet();
     }
 
     /**

@@ -190,7 +190,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         JsonGenerator generator = jsonFactory.createJsonGenerator(out, JsonEncoding.UTF8);
         if (qsDecoder.getParameters().containsKey("pretty")) {
             List<String> pretty = qsDecoder.getParameters().get("pretty");
-            if (pretty == null || Boolean.parseBoolean(pretty.get(0))) {
+            if (pretty == null || pretty.isEmpty() || Boolean.parseBoolean(pretty.get(0))) {
                 generator.useDefaultPrettyPrinter();
             }
         }
