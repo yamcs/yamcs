@@ -78,13 +78,13 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
         
         Stream s=ydb.getStream(REALTIME_TM_STREAM_NAME);
         if(s==null) {
-            s=TmProviderAdapter.createTmStream(ydb, REALTIME_TM_STREAM_NAME);
+           throw new ConfigurationException("Cannot find stream '"+REALTIME_TM_STREAM_NAME+"'");
         }
         realtimeStream=s;
         
         s=ydb.getStream(DUMP_TM_STREAM_NAME);
         if(s==null) {
-            s=TmProviderAdapter.createTmStream(ydb, DUMP_TM_STREAM_NAME);
+            throw new ConfigurationException("Cannot find stream '"+DUMP_TM_STREAM_NAME+"'");
         }
         dumpStream=s;
         
