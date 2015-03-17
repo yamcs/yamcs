@@ -48,39 +48,35 @@ public class ParameterCache {
 	 * @return
 	 */
 	List<ParameterValue> getValues(List<Parameter> plist) {
-		Set<CacheEntry> ceset = new HashSet<CacheEntry>();
-		for(Parameter p:plist) {
-			CacheEntry ce = cache.get(p);
-			if(ce!=null) ceset.add(ce); 
-		}
 
-		//sort CacheEntries such that most rece nt is in front
-		CacheEntry[] cearray =  ceset.toArray(new CacheEntry[ceset.size()]);
-		
-		Arrays.sort(cearray, new Comparator<CacheEntry>() {
-			@Override
-			public int compare(CacheEntry o1, CacheEntry o2) {
-				return Long.compare(o2.timestamp, o1.timestamp);
-			}
-		});
-		List<ParameterValue> result = new ArrayList<ParameterValue>(plist.size());
-		//use bitset to clear out the parameters that have already been found
+		//use a bitset to clear out the parameters that have already been found
 		BitSet bs = new BitSet(plist.size());
+		List<ParameterValue> result = new ArrayList<ParameterValue>(plist.size());
+
+		bs.set(0, plist.size()-1, true);
 		
-		int remaining = plist.size();
-		bs.set(0, remaining-1, true);
-		for(CacheEntry ce:cearray) {
-			if(remaining<=0) break;
-			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
-				Parameter p = plist.get(i);
+		for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
+			Parameter p = plist.get(i);
+			CacheEntry ce = cache.get(p);
+			if(ce!=null) { //last delivery where this parameter appears
 				ParameterValue pv = ce.pvlist.getNewest(p);
-				if(pv!=null) {
-					result.add(pv);
-					bs.set(i, false);
-					remaining--;
+				result.add(pv);
+				bs.clear(i);
+			
+				//find all the other parameters that are in this delivery
+				for (int j = bs.nextSetBit(i+1); j >= 0; j = bs.nextSetBit(j+1)) {
+					p = plist.get(j);
+					pv = ce.pvlist.getNewest(p);
+					if(pv!=null) {
+						result.add(pv);
+						bs.clear(j);
+					}
 				}
+			} else { //no value for this parameter
+				bs.clear(i);
 			}
 		}
+				
 		return result;
 	}
 	
