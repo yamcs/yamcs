@@ -23,16 +23,40 @@ public class ParameterValueListTest {
 		pvalues.add(pv2bis);
 	
 		
+		//bulk create
+		ParameterValueList pvlist1 = new ParameterValueList(pvalues);
+		assertEquals(n+1, pvlist1.getSize());
 		
-		ParameterValueList pvlist = new ParameterValueList(pvalues);
-		
-		
-		assertEquals(n+1, pvlist.getSize());
-		
-		ParameterValue pv10 = pvlist.getNewest(params[10]);
+		ParameterValue pv10 = pvlist1.getNewest(params[10]);
 		assertEquals(pvalues.get(10), pv10);
 		
-		ParameterValue pv2 = pvlist.getNewest(params[2]);
+		ParameterValue pv2 = pvlist1.getNewest(params[2]);
 		assertEquals(pvalues.get(n), pv2);
+	
+		
+		List<ParameterValue> pvalues1 = new ArrayList<ParameterValue>(pvalues);
+		pvalues1.removeAll(pvlist1);
+		assertTrue(pvalues1.isEmpty());
+		
+		////////////one by one 
+		ParameterValueList pvlist2 = new ParameterValueList();
+		
+		for(ParameterValue pv:pvalues) {
+		    pvlist2.add(pv);
+		}
+		assertEquals(n+1, pvlist2.getSize());
+		
+		List<ParameterValue> pvalues2 = new ArrayList<ParameterValue>(pvalues);
+		pvalues2.removeAll(pvlist2);
+		assertTrue(pvalues2.isEmpty());
+		
+		
+		//add all
+		ParameterValueList pvlist3 = new ParameterValueList();
+		pvlist3.addAll(pvalues);
+		assertEquals(n+1, pvlist3.getSize());
+		List<ParameterValue> pvalues3 = new ArrayList<ParameterValue>(pvalues);
+		pvalues3.removeAll(pvlist3);
+		assertTrue(pvalues3.isEmpty());		
 	}
 }
