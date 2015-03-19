@@ -1,7 +1,9 @@
 package org.yamcs.parameter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -106,12 +108,11 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 	List<Parameter> paramsToRemove = new ArrayList<Parameter>();
 	synchronized(subscr) {
-	    for(Parameter p:subscr.keySet()) {
-		List<NamedObjectId> noiList = subscr.get(p);
-		noiList.removeAll(parameterIds);
-		if(noiList.isEmpty()) {
-		    paramsToRemove.add(p);
-		    subscr.removeAll(p);
+	    Iterator<Entry<Parameter, NamedObjectId>> it = subscr.entries().iterator();
+	    while(it.hasNext()) {
+		Entry<Parameter, NamedObjectId> e = it.next();
+		if(parameterIds.contains(e.getValue())) {
+		    it.remove();
 		}
 	    }
 	}

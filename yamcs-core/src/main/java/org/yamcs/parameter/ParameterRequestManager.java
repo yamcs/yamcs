@@ -39,7 +39,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class ParameterRequestManager implements ParameterRequestManagerIf {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
-    private ConcurrentHashMap<Parameter, CopyOnWriteArrayList<Integer>> param2RequestMap= new ConcurrentHashMap<Parameter, CopyOnWriteArrayList<Integer>>();
+    private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap= new ConcurrentHashMap<Parameter, SubscriptionArray>();
     
     //Maps the request (subscription id) to an object that is consuming the results who has requested it
     private Map<Integer,ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
@@ -228,11 +228,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
     private void addItemToRequest(int id, Parameter para, ParameterProvider provider) {
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
-	    if(param2RequestMap.putIfAbsent(para, new CopyOnWriteArrayList<Integer>())==null ){;
+	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ){;
 	    	provider.startProviding(para);
 	    }
 	}
-	CopyOnWriteArrayList<Integer> al_req = param2RequestMap.get(para);
+	SubscriptionArray al_req = param2RequestMap.get(para);
 	al_req.add(id);
     }
 
@@ -262,9 +262,9 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
     private void removeItemFromRequest(int subscriptionId, Parameter para, ParameterProvider provider) {
 	if(param2RequestMap.containsKey(para)) { //is there really any request associated to this parameter?
-	    CopyOnWriteArrayList<Integer> al_req=param2RequestMap.get(para);
+	    SubscriptionArray al_req=param2RequestMap.get(para);
 	    //remove the subscription from the list of this parameter
-	    if(al_req.remove(Integer.valueOf(subscriptionId))) {
+	    if(al_req.remove(subscriptionId)) {
 		/*  Don't remove the al_req from the map and 
 		 * don't ask provider to stop providing 
 		 * because it is not thread safe (maybe another thread just asked to start providing after seeing that the list is empty
@@ -292,18 +292,18 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	//loop through all the parameter definitions 
 	//  find all the subscriptions with the requested subscriptionId and add their corresponding 
 	//  itemId to the list.
-	Iterator<Map.Entry<Parameter, CopyOnWriteArrayList<Integer>>> it = param2RequestMap.entrySet().iterator();
+	Iterator<Map.Entry<Parameter, SubscriptionArray>> it = param2RequestMap.entrySet().iterator();
 	while(it.hasNext()) {
-	    Map.Entry<Parameter, CopyOnWriteArrayList<Integer>> m = it.next();
+	    Map.Entry<Parameter, SubscriptionArray> m = it.next();
 	    Parameter param = m.getKey();
-	    CopyOnWriteArrayList<Integer> al_req = m.getValue();
-	    if(al_req.remove(Integer.valueOf(subscriptionId))) {
+	    SubscriptionArray al_req = m.getValue();
+	    if(al_req.remove(subscriptionId)) {
 		result.add(param);
 	    }
 	    if(al_req.isEmpty()) { //nobody wants this parameter anymore
-		if(!cacheAll) {
-		    getProvider(param).stopProviding(param);
-		}
+		/*if(!cacheAll) { commented out because not thread safe
+		    getProvider(param).stopProviding(param); 
+		}*/
 	    }
 	}
 	request2ParameterConsumerMap.remove(subscriptionId);
@@ -405,11 +405,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 	    ParameterValue pv=it.next();
 	    Parameter pDef=pv.def;
-	    CopyOnWriteArrayList<Integer> cowal = param2RequestMap.get(pDef); 
+	    SubscriptionArray cowal = param2RequestMap.get(pDef); 
 	    //now walk through the requests and add this item to their delivery list
 	    if(cowal==null) continue;
 	    
-	    for(Integer s:cowal) {
+	    for(int s:cowal.getArray()) {
 		ArrayList<ParameterValue> al = delivery.get(s);
 		if(al==null) {
 		    al = new ArrayList<ParameterValue>();
@@ -449,9 +449,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	sb.append("Current Subscription list:\n");
 	for(Parameter param:param2RequestMap.keySet()) {
 	    sb.append(param); sb.append("requested by [");
-	    CopyOnWriteArrayList<Integer> al_req=param2RequestMap.get(param);
-	    for(Iterator<Integer> it1=al_req.iterator();it1.hasNext();) {
-		Integer id=it1.next();
+	    SubscriptionArray al_req=param2RequestMap.get(param);
+	    for(int id: al_req.getArray()) {
 		sb.append(id);
 	    }
 	    sb.append("]\n");
