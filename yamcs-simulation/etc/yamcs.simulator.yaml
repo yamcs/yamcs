@@ -1,5 +1,15 @@
 ############################################ testinst configuration  ############################################################################
 services:
+    #creates a number of streams required by the other services
+    #the streams are of predefined type "tm", "tc", "cmdHist" or "event"
+    # in addition - stream sql files can also be loaded by adding sqlFile: key
+    - class: org.yamcs.StreamInitService
+      args:
+           tm: ["tm_realtime", "tm_dump"]
+           cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+           event: ["events_realtime", "events_dump"]
+           param: ["sys_param"]
+
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
     - org.yamcs.archive.TmProviderAdapter
 #    - org.yamcs.archive.PpProviderAdapter
