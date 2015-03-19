@@ -129,7 +129,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      */
     @Override
     public void processPacket(PacketWithTime pwrt){
-	System.out.println("here paramRequestManager: "+parameterRequestManager);
 	try {
 	    ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
 	    tmExtractor.processPacket(bb, pwrt.getGenerationTime());
