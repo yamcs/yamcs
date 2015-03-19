@@ -1,6 +1,7 @@
 package org.yamcs.yarch.tokyocabinet;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -81,7 +82,7 @@ public class PartitionManagerTest {
         assertEquals("2011/060/tbltest#1.tcb", ((TcPartition)parts.get(0)).filename);
         assertEquals("2011/060/tbltest#3.tcb", ((TcPartition)parts.get(1)).filename);
         
-        Files.deleteRecursively(new File(tmpdir));
+        deleteRecursively(new File(tmpdir));
     }
     
     @Test
@@ -115,6 +116,10 @@ public class PartitionManagerTest {
         assertEquals("2011/060/tbltest#3.tcb", ((TcPartition)parts.get(1)).filename);
         assertFalse(it.hasNext());
         
-        Files.deleteRecursively(new File(tmpdir));
-    }  
+        deleteRecursively(new File(tmpdir));
+    } 
+    
+    private void deleteRecursively(File f) throws IOException {
+    	Runtime.getRuntime().exec(new String[] {"rm", "-rf", f.getAbsolutePath()});
+    }
 }

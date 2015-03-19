@@ -2,7 +2,6 @@ package org.yamcs.utils;
 
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 
