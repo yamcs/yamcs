@@ -119,6 +119,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         notifyStopped();
     }
 
+    /**
+     * Run from the timer, collect all parameters and send them on the stream
+     */
     @Override
     public void run() {
         Collection<ParameterValue> params = new ArrayList<ParameterValue>();
@@ -131,7 +134,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             }
         }
         long gentime = TimeEncoding.currentInstant();
-
+        if(params.isEmpty()) return;
 
         TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());
