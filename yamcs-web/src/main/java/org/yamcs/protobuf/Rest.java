@@ -1495,13 +1495,6 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_rest_RestListAvailableParametersResponse_fieldAccessorTable;
     }
     
-    // optional .rest.RestExceptionMessage exception = 1;
-    public static final int EXCEPTION_FIELD_NUMBER = 1;
-    private boolean hasException;
-    private org.yamcs.protobuf.Rest.RestExceptionMessage exception_;
-    public boolean hasException() { return hasException; }
-    public org.yamcs.protobuf.Rest.RestExceptionMessage getException() { return exception_; }
-    
     // repeated .yamcs.NamedObjectId ids = 2;
     public static final int IDS_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> ids_ =
@@ -1515,7 +1508,6 @@ public final class Rest {
     }
     
     private void initFields() {
-      exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
     }
     public final boolean isInitialized() {
       for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getIdsList()) {
@@ -1527,9 +1519,6 @@ public final class Rest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasException()) {
-        output.writeMessage(1, getException());
-      }
       for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getIdsList()) {
         output.writeMessage(2, element);
       }
@@ -1542,10 +1531,6 @@ public final class Rest {
       if (size != -1) return size;
     
       size = 0;
-      if (hasException()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getException());
-      }
       for (org.yamcs.protobuf.Yamcs.NamedObjectId element : getIdsList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, element);
@@ -1712,9 +1697,6 @@ public final class Rest {
       
       public Builder mergeFrom(org.yamcs.protobuf.Rest.RestListAvailableParametersResponse other) {
         if (other == org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.getDefaultInstance()) return this;
-        if (other.hasException()) {
-          mergeException(other.getException());
-        }
         if (!other.ids_.isEmpty()) {
           if (result.ids_.isEmpty()) {
             result.ids_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
@@ -1746,15 +1728,6 @@ public final class Rest {
               }
               break;
             }
-            case 10: {
-              org.yamcs.protobuf.Rest.RestExceptionMessage.Builder subBuilder = org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder();
-              if (hasException()) {
-                subBuilder.mergeFrom(getException());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setException(subBuilder.buildPartial());
-              break;
-            }
             case 18: {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
@@ -1765,43 +1738,6 @@ public final class Rest {
         }
       }
       
-      
-      // optional .rest.RestExceptionMessage exception = 1;
-      public boolean hasException() {
-        return result.hasException();
-      }
-      public org.yamcs.protobuf.Rest.RestExceptionMessage getException() {
-        return result.getException();
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasException = true;
-        result.exception_ = value;
-        return this;
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builderForValue) {
-        result.hasException = true;
-        result.exception_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (result.hasException() &&
-            result.exception_ != org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance()) {
-          result.exception_ =
-            org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(result.exception_).mergeFrom(value).buildPartial();
-        } else {
-          result.exception_ = value;
-        }
-        result.hasException = true;
-        return this;
-      }
-      public Builder clearException() {
-        result.hasException = false;
-        result.exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
-        return this;
-      }
       
       // repeated .yamcs.NamedObjectId ids = 2;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdsList() {
@@ -2227,15 +2163,7 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_rest_RestValidateCommandResponse_fieldAccessorTable;
     }
     
-    // optional .rest.RestExceptionMessage exception = 1;
-    public static final int EXCEPTION_FIELD_NUMBER = 1;
-    private boolean hasException;
-    private org.yamcs.protobuf.Rest.RestExceptionMessage exception_;
-    public boolean hasException() { return hasException; }
-    public org.yamcs.protobuf.Rest.RestExceptionMessage getException() { return exception_; }
-    
     private void initFields() {
-      exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
     }
     public final boolean isInitialized() {
       return true;
@@ -2244,9 +2172,6 @@ public final class Rest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasException()) {
-        output.writeMessage(1, getException());
-      }
       getUnknownFields().writeTo(output);
     }
     
@@ -2256,10 +2181,6 @@ public final class Rest {
       if (size != -1) return size;
     
       size = 0;
-      if (hasException()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getException());
-      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -2418,9 +2339,6 @@ public final class Rest {
       
       public Builder mergeFrom(org.yamcs.protobuf.Rest.RestValidateCommandResponse other) {
         if (other == org.yamcs.protobuf.Rest.RestValidateCommandResponse.getDefaultInstance()) return this;
-        if (other.hasException()) {
-          mergeException(other.getException());
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -2446,56 +2364,10 @@ public final class Rest {
               }
               break;
             }
-            case 10: {
-              org.yamcs.protobuf.Rest.RestExceptionMessage.Builder subBuilder = org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder();
-              if (hasException()) {
-                subBuilder.mergeFrom(getException());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setException(subBuilder.buildPartial());
-              break;
-            }
           }
         }
       }
       
-      
-      // optional .rest.RestExceptionMessage exception = 1;
-      public boolean hasException() {
-        return result.hasException();
-      }
-      public org.yamcs.protobuf.Rest.RestExceptionMessage getException() {
-        return result.getException();
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasException = true;
-        result.exception_ = value;
-        return this;
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builderForValue) {
-        result.hasException = true;
-        result.exception_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (result.hasException() &&
-            result.exception_ != org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance()) {
-          result.exception_ =
-            org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(result.exception_).mergeFrom(value).buildPartial();
-        } else {
-          result.exception_ = value;
-        }
-        result.hasException = true;
-        return this;
-      }
-      public Builder clearException() {
-        result.hasException = false;
-        result.exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
-        return this;
-      }
       
       // @@protoc_insertion_point(builder_scope:rest.RestValidateCommandResponse)
     }
@@ -2781,13 +2653,6 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_rest_RestDumpRawMdbResponse_fieldAccessorTable;
     }
     
-    // optional .rest.RestExceptionMessage exception = 1;
-    public static final int EXCEPTION_FIELD_NUMBER = 1;
-    private boolean hasException;
-    private org.yamcs.protobuf.Rest.RestExceptionMessage exception_;
-    public boolean hasException() { return hasException; }
-    public org.yamcs.protobuf.Rest.RestExceptionMessage getException() { return exception_; }
-    
     // optional bytes rawMdb = 2;
     public static final int RAWMDB_FIELD_NUMBER = 2;
     private boolean hasRawMdb;
@@ -2796,7 +2661,6 @@ public final class Rest {
     public com.google.protobuf.ByteString getRawMdb() { return rawMdb_; }
     
     private void initFields() {
-      exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
     }
     public final boolean isInitialized() {
       return true;
@@ -2805,9 +2669,6 @@ public final class Rest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasException()) {
-        output.writeMessage(1, getException());
-      }
       if (hasRawMdb()) {
         output.writeBytes(2, getRawMdb());
       }
@@ -2820,10 +2681,6 @@ public final class Rest {
       if (size != -1) return size;
     
       size = 0;
-      if (hasException()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getException());
-      }
       if (hasRawMdb()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getRawMdb());
@@ -2986,9 +2843,6 @@ public final class Rest {
       
       public Builder mergeFrom(org.yamcs.protobuf.Rest.RestDumpRawMdbResponse other) {
         if (other == org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.getDefaultInstance()) return this;
-        if (other.hasException()) {
-          mergeException(other.getException());
-        }
         if (other.hasRawMdb()) {
           setRawMdb(other.getRawMdb());
         }
@@ -3017,15 +2871,6 @@ public final class Rest {
               }
               break;
             }
-            case 10: {
-              org.yamcs.protobuf.Rest.RestExceptionMessage.Builder subBuilder = org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder();
-              if (hasException()) {
-                subBuilder.mergeFrom(getException());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setException(subBuilder.buildPartial());
-              break;
-            }
             case 18: {
               setRawMdb(input.readBytes());
               break;
@@ -3034,43 +2879,6 @@ public final class Rest {
         }
       }
       
-      
-      // optional .rest.RestExceptionMessage exception = 1;
-      public boolean hasException() {
-        return result.hasException();
-      }
-      public org.yamcs.protobuf.Rest.RestExceptionMessage getException() {
-        return result.getException();
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasException = true;
-        result.exception_ = value;
-        return this;
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builderForValue) {
-        result.hasException = true;
-        result.exception_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (result.hasException() &&
-            result.exception_ != org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance()) {
-          result.exception_ =
-            org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(result.exception_).mergeFrom(value).buildPartial();
-        } else {
-          result.exception_ = value;
-        }
-        result.hasException = true;
-        return this;
-      }
-      public Builder clearException() {
-        result.hasException = false;
-        result.exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
-        return this;
-      }
       
       // optional bytes rawMdb = 2;
       public boolean hasRawMdb() {
@@ -3132,13 +2940,6 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_rest_RestReplayResponse_fieldAccessorTable;
     }
     
-    // optional .rest.RestExceptionMessage exception = 1;
-    public static final int EXCEPTION_FIELD_NUMBER = 1;
-    private boolean hasException;
-    private org.yamcs.protobuf.Rest.RestExceptionMessage exception_;
-    public boolean hasException() { return hasException; }
-    public org.yamcs.protobuf.Rest.RestExceptionMessage getException() { return exception_; }
-    
     // optional .pvalue.ParameterData parameterData = 2;
     public static final int PARAMETERDATA_FIELD_NUMBER = 2;
     private boolean hasParameterData;
@@ -3175,7 +2976,6 @@ public final class Rest {
     public org.yamcs.protobuf.Pvalue.ParameterData getPpData() { return ppData_; }
     
     private void initFields() {
-      exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
       parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
       packetData_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
       command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
@@ -3204,9 +3004,6 @@ public final class Rest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasException()) {
-        output.writeMessage(1, getException());
-      }
       if (hasParameterData()) {
         output.writeMessage(2, getParameterData());
       }
@@ -3231,10 +3028,6 @@ public final class Rest {
       if (size != -1) return size;
     
       size = 0;
-      if (hasException()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getException());
-      }
       if (hasParameterData()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getParameterData());
@@ -3413,9 +3206,6 @@ public final class Rest {
       
       public Builder mergeFrom(org.yamcs.protobuf.Rest.RestReplayResponse other) {
         if (other == org.yamcs.protobuf.Rest.RestReplayResponse.getDefaultInstance()) return this;
-        if (other.hasException()) {
-          mergeException(other.getException());
-        }
         if (other.hasParameterData()) {
           mergeParameterData(other.getParameterData());
         }
@@ -3454,15 +3244,6 @@ public final class Rest {
                 this.setUnknownFields(unknownFields.build());
                 return this;
               }
-              break;
-            }
-            case 10: {
-              org.yamcs.protobuf.Rest.RestExceptionMessage.Builder subBuilder = org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder();
-              if (hasException()) {
-                subBuilder.mergeFrom(getException());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setException(subBuilder.buildPartial());
               break;
             }
             case 18: {
@@ -3514,43 +3295,6 @@ public final class Rest {
         }
       }
       
-      
-      // optional .rest.RestExceptionMessage exception = 1;
-      public boolean hasException() {
-        return result.hasException();
-      }
-      public org.yamcs.protobuf.Rest.RestExceptionMessage getException() {
-        return result.getException();
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasException = true;
-        result.exception_ = value;
-        return this;
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builderForValue) {
-        result.hasException = true;
-        result.exception_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (result.hasException() &&
-            result.exception_ != org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance()) {
-          result.exception_ =
-            org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(result.exception_).mergeFrom(value).buildPartial();
-        } else {
-          result.exception_ = value;
-        }
-        result.hasException = true;
-        return this;
-      }
-      public Builder clearException() {
-        result.hasException = false;
-        result.exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
-        return this;
-      }
       
       // optional .pvalue.ParameterData parameterData = 2;
       public boolean hasParameterData() {
@@ -4110,15 +3854,7 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_rest_RestSendCommandResponse_fieldAccessorTable;
     }
     
-    // optional .rest.RestExceptionMessage exception = 1;
-    public static final int EXCEPTION_FIELD_NUMBER = 1;
-    private boolean hasException;
-    private org.yamcs.protobuf.Rest.RestExceptionMessage exception_;
-    public boolean hasException() { return hasException; }
-    public org.yamcs.protobuf.Rest.RestExceptionMessage getException() { return exception_; }
-    
     private void initFields() {
-      exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
     }
     public final boolean isInitialized() {
       return true;
@@ -4127,9 +3863,6 @@ public final class Rest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasException()) {
-        output.writeMessage(1, getException());
-      }
       getUnknownFields().writeTo(output);
     }
     
@@ -4139,10 +3872,6 @@ public final class Rest {
       if (size != -1) return size;
     
       size = 0;
-      if (hasException()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getException());
-      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -4301,9 +4030,6 @@ public final class Rest {
       
       public Builder mergeFrom(org.yamcs.protobuf.Rest.RestSendCommandResponse other) {
         if (other == org.yamcs.protobuf.Rest.RestSendCommandResponse.getDefaultInstance()) return this;
-        if (other.hasException()) {
-          mergeException(other.getException());
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -4329,56 +4055,10 @@ public final class Rest {
               }
               break;
             }
-            case 10: {
-              org.yamcs.protobuf.Rest.RestExceptionMessage.Builder subBuilder = org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder();
-              if (hasException()) {
-                subBuilder.mergeFrom(getException());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setException(subBuilder.buildPartial());
-              break;
-            }
           }
         }
       }
       
-      
-      // optional .rest.RestExceptionMessage exception = 1;
-      public boolean hasException() {
-        return result.hasException();
-      }
-      public org.yamcs.protobuf.Rest.RestExceptionMessage getException() {
-        return result.getException();
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasException = true;
-        result.exception_ = value;
-        return this;
-      }
-      public Builder setException(org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builderForValue) {
-        result.hasException = true;
-        result.exception_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeException(org.yamcs.protobuf.Rest.RestExceptionMessage value) {
-        if (result.hasException() &&
-            result.exception_ != org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance()) {
-          result.exception_ =
-            org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(result.exception_).mergeFrom(value).buildPartial();
-        } else {
-          result.exception_ = value;
-        }
-        result.hasException = true;
-        return this;
-      }
-      public Builder clearException() {
-        result.hasException = false;
-        result.exception_ = org.yamcs.protobuf.Rest.RestExceptionMessage.getDefaultInstance();
-        return this;
-      }
       
       // @@protoc_insertion_point(builder_scope:rest.RestSendCommandResponse)
     }
@@ -4950,39 +4630,33 @@ public final class Rest {
       "\026\n\016sequenceNumber\030\002 \001(\005\022 \n\002id\030\003 \001(\0132\024.ya" +
       "mcs.NamedObjectId\022)\n\targuments\030\004 \003(\0132\026.r" +
       "est.RestArgumentType\"8\n\"RestListAvailabl" +
-      "eParametersRequest\022\022\n\nnamespaces\030\001 \003(\t\"w" +
-      "\n#RestListAvailableParametersResponse\022-\n",
-      "\texception\030\001 \001(\0132\032.rest.RestExceptionMes" +
-      "sage\022!\n\003ids\030\002 \003(\0132\024.yamcs.NamedObjectId\"" +
-      "E\n\032RestValidateCommandRequest\022\'\n\010command" +
-      "s\030\001 \003(\0132\025.rest.RestCommandType\"L\n\033RestVa" +
-      "lidateCommandResponse\022-\n\texception\030\001 \001(\013" +
-      "2\032.rest.RestExceptionMessage\"\027\n\025RestDump" +
-      "RawMdbRequest\"W\n\026RestDumpRawMdbResponse\022" +
-      "-\n\texception\030\001 \001(\0132\032.rest.RestExceptionM" +
-      "essage\022\016\n\006rawMdb\030\002 \001(\014\"\220\002\n\022RestReplayRes" +
-      "ponse\022-\n\texception\030\001 \001(\0132\032.rest.RestExce",
-      "ptionMessage\022,\n\rparameterData\030\002 \001(\0132\025.pv" +
-      "alue.ParameterData\022\'\n\npacketData\030\003 \001(\0132\023" +
-      ".yamcs.TmPacketData\0220\n\007command\030\004 \001(\0132\037.c" +
-      "ommanding.CommandHistoryEntry\022\033\n\005event\030\005" +
-      " \001(\0132\014.yamcs.Event\022%\n\006ppData\030\006 \001(\0132\025.pva" +
-      "lue.ParameterData\"A\n\026RestSendCommandRequ" +
-      "est\022\'\n\010commands\030\001 \003(\0132\025.rest.RestCommand" +
-      "Type\"H\n\027RestSendCommandResponse\022-\n\texcep" +
-      "tion\030\001 \001(\0132\032.rest.RestExceptionMessage2\244" +
-      "\003\n\013RESTService\022n\n\027listAvailableParameter",
-      "s\022(.rest.RestListAvailableParametersRequ" +
-      "est\032).rest.RestListAvailableParametersRe" +
-      "sponse\022V\n\017validateCommand\022 .rest.RestVal" +
-      "idateCommandRequest\032!.rest.RestValidateC" +
-      "ommandResponse\022J\n\013sendCommand\022\034.rest.Res" +
-      "tSendCommandRequest\032\035.rest.RestSendComma" +
-      "ndResponse\022G\n\ndumpRawMdb\022\033.rest.RestDump" +
-      "RawMdbRequest\032\034.rest.RestDumpRawMdbRespo" +
-      "nse\0228\n\006replay\022\024.yamcs.ReplayRequest\032\030.re" +
-      "st.RestReplayResponseB\024\n\022org.yamcs.proto",
-      "buf"
+      "eParametersRequest\022\022\n\nnamespaces\030\001 \003(\t\"H" +
+      "\n#RestListAvailableParametersResponse\022!\n",
+      "\003ids\030\002 \003(\0132\024.yamcs.NamedObjectId\"E\n\032Rest" +
+      "ValidateCommandRequest\022\'\n\010commands\030\001 \003(\013" +
+      "2\025.rest.RestCommandType\"\035\n\033RestValidateC" +
+      "ommandResponse\"\027\n\025RestDumpRawMdbRequest\"" +
+      "(\n\026RestDumpRawMdbResponse\022\016\n\006rawMdb\030\002 \001(" +
+      "\014\"\341\001\n\022RestReplayResponse\022,\n\rparameterDat" +
+      "a\030\002 \001(\0132\025.pvalue.ParameterData\022\'\n\npacket" +
+      "Data\030\003 \001(\0132\023.yamcs.TmPacketData\0220\n\007comma" +
+      "nd\030\004 \001(\0132\037.commanding.CommandHistoryEntr" +
+      "y\022\033\n\005event\030\005 \001(\0132\014.yamcs.Event\022%\n\006ppData",
+      "\030\006 \001(\0132\025.pvalue.ParameterData\"A\n\026RestSen" +
+      "dCommandRequest\022\'\n\010commands\030\001 \003(\0132\025.rest" +
+      ".RestCommandType\"\031\n\027RestSendCommandRespo" +
+      "nse2\244\003\n\013RESTService\022n\n\027listAvailablePara" +
+      "meters\022(.rest.RestListAvailableParameter" +
+      "sRequest\032).rest.RestListAvailableParamet" +
+      "ersResponse\022V\n\017validateCommand\022 .rest.Re" +
+      "stValidateCommandRequest\032!.rest.RestVali" +
+      "dateCommandResponse\022J\n\013sendCommand\022\034.res" +
+      "t.RestSendCommandRequest\032\035.rest.RestSend",
+      "CommandResponse\022G\n\ndumpRawMdb\022\033.rest.Res" +
+      "tDumpRawMdbRequest\032\034.rest.RestDumpRawMdb" +
+      "Response\0228\n\006replay\022\024.yamcs.ReplayRequest" +
+      "\032\030.rest.RestReplayResponseB\024\n\022org.yamcs." +
+      "protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5026,7 +4700,7 @@ public final class Rest {
           internal_static_rest_RestListAvailableParametersResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestListAvailableParametersResponse_descriptor,
-              new java.lang.String[] { "Exception", "Ids", },
+              new java.lang.String[] { "Ids", },
               org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.class,
               org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder.class);
           internal_static_rest_RestValidateCommandRequest_descriptor =
@@ -5042,7 +4716,7 @@ public final class Rest {
           internal_static_rest_RestValidateCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestValidateCommandResponse_descriptor,
-              new java.lang.String[] { "Exception", },
+              new java.lang.String[] { },
               org.yamcs.protobuf.Rest.RestValidateCommandResponse.class,
               org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder.class);
           internal_static_rest_RestDumpRawMdbRequest_descriptor =
@@ -5058,7 +4732,7 @@ public final class Rest {
           internal_static_rest_RestDumpRawMdbResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestDumpRawMdbResponse_descriptor,
-              new java.lang.String[] { "Exception", "RawMdb", },
+              new java.lang.String[] { "RawMdb", },
               org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.class,
               org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder.class);
           internal_static_rest_RestReplayResponse_descriptor =
@@ -5066,7 +4740,7 @@ public final class Rest {
           internal_static_rest_RestReplayResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestReplayResponse_descriptor,
-              new java.lang.String[] { "Exception", "ParameterData", "PacketData", "Command", "Event", "PpData", },
+              new java.lang.String[] { "ParameterData", "PacketData", "Command", "Event", "PpData", },
               org.yamcs.protobuf.Rest.RestReplayResponse.class,
               org.yamcs.protobuf.Rest.RestReplayResponse.Builder.class);
           internal_static_rest_RestSendCommandRequest_descriptor =
@@ -5082,7 +4756,7 @@ public final class Rest {
           internal_static_rest_RestSendCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandResponse_descriptor,
-              new java.lang.String[] { "Exception", },
+              new java.lang.String[] { },
               org.yamcs.protobuf.Rest.RestSendCommandResponse.class,
               org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder.class);
           return null;

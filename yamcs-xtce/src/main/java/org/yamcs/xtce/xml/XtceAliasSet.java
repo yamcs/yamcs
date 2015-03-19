@@ -1,7 +1,9 @@
 package org.yamcs.xtce.xml;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,7 +54,14 @@ public class XtceAliasSet implements Serializable {
     public Set<String> getNamespaces() {
         return aliases.keySet();
     }
-    
+
+    /**
+     * Returns a readonly map, mapping namespace to alias
+     */
+    public Map<String, String> getAliases() {
+        return Collections.unmodifiableMap(aliases);
+    }
+
     public int size() {
         return aliases.size();
     }

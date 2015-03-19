@@ -5,8 +5,7 @@ import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
 
-// Generic holder for an applicative exception
-// (extend for cases where more structured info is needed)
+// Generic holder for an exception
 message RestExceptionMessage {
   optional string type=1;
   optional string msg=2;
@@ -29,7 +28,6 @@ message RestListAvailableParametersRequest {
 }
 
 message RestListAvailableParametersResponse {
-  optional RestExceptionMessage exception=1;
   repeated yamcs.NamedObjectId ids=2;
 }
 
@@ -38,19 +36,16 @@ message RestValidateCommandRequest {
 }
 
 message RestValidateCommandResponse {
-  optional RestExceptionMessage exception=1;
 }
 
 message RestDumpRawMdbRequest {
 }
 
 message RestDumpRawMdbResponse {
-  optional RestExceptionMessage exception=1;
   optional bytes rawMdb=2;
 }
 
 message RestReplayResponse {
-  optional RestExceptionMessage exception=1;
   optional pvalue.ParameterData parameterData=2;
   optional yamcs.TmPacketData packetData=3;
   optional commanding.CommandHistoryEntry command=4;
@@ -63,7 +58,6 @@ message RestSendCommandRequest {
 }
 
 message RestSendCommandResponse {
-  optional RestExceptionMessage exception=1;
 }
 
 service RESTService {

@@ -27,12 +27,12 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Rest.RestExceptionMessage;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.AbstractRequestHandler;
 
 import com.dyuproject.protostuff.JsonIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.google.protobuf.MessageLite;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -161,8 +161,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 generator.close();
             }
         } catch (IOException e) {
-            log.error("Internal server error while writing out message", e);
-            throw new RestException(e);
+            throw new InternalServerErrorException(e);
         }
         HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentTypeHeader(httpResponse, targetContentType);
@@ -182,50 +181,60 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     /**
      * Just a little shortcut because builders are dead ugly
      */
-    protected static RestExceptionMessage.Builder toException(String type, Throwable t) {
-        return RestExceptionMessage.newBuilder().setType(type).setMsg(t.getMessage());
+    protected static RestExceptionMessage.Builder toException(Throwable t) {
+        return RestExceptionMessage.newBuilder().setType(t.getClass().getSimpleName()).setMsg(t.getMessage());
     }
 
     protected JsonGenerator createJsonGenerator(OutputStream out, QueryStringDecoder qsDecoder) throws IOException {
         JsonGenerator generator = jsonFactory.createJsonGenerator(out, JsonEncoding.UTF8);
         if (qsDecoder.getParameters().containsKey("pretty")) {
             List<String> pretty = qsDecoder.getParameters().get("pretty");
-            if (pretty == null || Boolean.parseBoolean(pretty.get(0))) {
-                generator.useDefaultPrettyPrinter();
+            if (pretty != null) {
+                String arg = pretty.get(0);
+                if (arg == null || "".equals(arg) || Boolean.parseBoolean(arg)) {
+                    generator.useDefaultPrettyPrinter();
+                }
             }
         }
         return generator;
     }
 
     /**
-     * Used for sending non-application exceptions (for example: bad request, ioexception, ..).
-     * When outputting as json, provide some extra information for debugging reasons. When
-     * outputting as GPB it's difficult to achieve this since we're not using extensions,
-     * so send just a text/plain error in all other cases.
+     * Used for sending back generic exceptions. Clients conventionally should deserialize to this
+     * when the status is not 200.
      */
     protected void sendError(Throwable t, HttpRequest req, QueryStringDecoder qsDecoder, ChannelHandlerContext ctx, HttpResponseStatus status) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
         String contentType = getTargetContentType(req);
         if (JSON_MIME_TYPE.equals(contentType)) {
-            response.setHeader(CONTENT_TYPE, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
             try {
                 ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
                 ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
                 JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
-                generator.writeStartObject();
-                generator.writeFieldName("exception");
-                generator.writeStartObject();
-                generator.writeStringField("type", t.getClass().getSimpleName());
-                generator.writeStringField("msg", t.getMessage());
-                generator.writeEndObject();
-                generator.writeEndObject();
+                JsonIOUtil.writeTo(generator, toException(t).build(), SchemaRest.RestExceptionMessage.WRITE, false);
                 generator.close();
+                setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
+                setContentLength(response, buf.readableBytes());
                 response.setContent(buf);
                 // Close the connection as soon as the error message is sent.
                 ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not create Json Generator", e2);
-                sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                log.debug("Original exception not sent to client", t);
+                sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
+            }
+        } else if (BINARY_MIME_TYPE.equals(contentType)) {
+            ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
+            ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+            try {
+                toException(t).build().writeTo(channelOut);
+                setContentTypeHeader(response, BINARY_MIME_TYPE);
+                setContentLength(response, buf.readableBytes());
+                response.setContent(buf);
+            } catch (IOException e2) {
+                log.error("Could not write to channel buffer", e2);
+                log.debug("Original exception not sent to client", t);
+                sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
             }
         } else {
             sendError(ctx, status); // text/plain

@@ -501,9 +501,6 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException
             {
-                if(message.hasException())
-                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
-
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId ids : message.getIdsList())
                     output.writeObject(2, ids, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
@@ -546,10 +543,6 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 1:
-                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
-
-                            break;
                         case 2:
                             builder.addIds(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
@@ -594,7 +587,6 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "exception";
                 case 2: return "ids";
                 default: return null;
             }
@@ -607,7 +599,6 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("exception", 1);
             fieldMap.put("ids", 2);
         }
     }
@@ -736,9 +727,6 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException
             {
-                if(message.hasException())
-                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
-
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestValidateCommandResponse message)
             {
@@ -778,10 +766,6 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 1:
-                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
-
-                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -822,7 +806,6 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "exception";
                 default: return null;
             }
         }
@@ -834,7 +817,6 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("exception", 1);
         }
     }
 
@@ -953,9 +935,6 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse message) throws java.io.IOException
             {
-                if(message.hasException())
-                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
-
                 if(message.hasRawMdb())
                     output.writeByteArray(2, message.getRawMdb().toByteArray(), false);
 
@@ -998,10 +977,6 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 1:
-                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
-
-                            break;
                         case 2:
                             builder.setRawMdb(com.google.protobuf.ByteString.copyFrom(input.readByteArray()));
                             break;
@@ -1045,7 +1020,6 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "exception";
                 case 2: return "rawMdb";
                 default: return null;
             }
@@ -1058,7 +1032,6 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("exception", 1);
             fieldMap.put("rawMdb", 2);
         }
     }
@@ -1074,9 +1047,6 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestReplayResponse message) throws java.io.IOException
             {
-                if(message.hasException())
-                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
-
                 if(message.hasParameterData())
                     output.writeObject(2, message.getParameterData(), org.yamcs.protobuf.SchemaPvalue.ParameterData.WRITE, false);
 
@@ -1131,10 +1101,6 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 1:
-                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
-
-                            break;
                         case 2:
                             builder.setParameterData(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE));
 
@@ -1195,7 +1161,6 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "exception";
                 case 2: return "parameterData";
                 case 3: return "packetData";
                 case 4: return "command";
@@ -1212,7 +1177,6 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("exception", 1);
             fieldMap.put("parameterData", 2);
             fieldMap.put("packetData", 3);
             fieldMap.put("command", 4);
@@ -1345,9 +1309,6 @@ public final class SchemaRest
         {
             public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException
             {
-                if(message.hasException())
-                    output.writeObject(1, message.getException(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.WRITE, false);
-
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandResponse message)
             {
@@ -1387,10 +1348,6 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 1:
-                            builder.setException(input.mergeObject(org.yamcs.protobuf.Rest.RestExceptionMessage.newBuilder(), org.yamcs.protobuf.SchemaRest.RestExceptionMessage.MERGE));
-
-                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1431,7 +1388,6 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "exception";
                 default: return null;
             }
         }
@@ -1443,7 +1399,6 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("exception", 1);
         }
     }
 

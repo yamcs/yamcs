@@ -81,8 +81,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             } catch (ErrorInCommand e) {
                 throw new BadRequestException(e);
             } catch (YamcsException e) { // could be anything, consider as internal server error
-                log.error("Could not build command", e);
-                throw new RestException(e);
+                throw new InternalServerErrorException(e);
             }
         }
 
@@ -136,8 +135,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             } catch (ErrorInCommand e) {
                 throw new BadRequestException(e);
             } catch (YamcsException e) { // could be anything, consider as internal server error
-                log.error("Could not build command", e);
-                throw new RestException(e);
+                throw new InternalServerErrorException(e);
             }
         }
 

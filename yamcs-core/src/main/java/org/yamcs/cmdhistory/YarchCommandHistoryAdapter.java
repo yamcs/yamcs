@@ -29,12 +29,6 @@ public class YarchCommandHistoryAdapter implements CommandHistory {
     public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
         this.instance=archiveInstance;
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
-        if(ydb.getStream(REALTIME_CMDHIST_STREAM_NAME)==null)
-            ydb.execute("create stream "+REALTIME_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
-        
-        if(ydb.getStream(DUMP_CMDHIST_STREAM_NAME)==null)
-            ydb.execute("create stream "+DUMP_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
-        
         stream=ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);
     }
 
