@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jdbcService ver="1" name="jdbcSample" description="A test service">
+	<jdbcUrl>jdbc:mysql://localhost/test?user=root&amp;password=hkumar</jdbcUrl>
+    <methods>
+		<method name="query" description="A test query">
+			<query>SELECT * FROM Data</query>
+			<result name="result" description="The query result"/>
+		</method>
+		<method name="insert" description="A test insert query">
+			<query>INSERT INTO `test`.`Data` (`Name`, `Index`, `Value`) VALUES (a, b, c)</query>
+			<argument name="name" description="The name" type="VString"/>
+			<argument name="index" description="The index" type="VNumber"/>
+			<argument name="value" description="The value" type="VNumber"/>
+		</method>
+	</methods>
+</jdbcService>

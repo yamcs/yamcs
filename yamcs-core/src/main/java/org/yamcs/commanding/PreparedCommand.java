@@ -9,7 +9,6 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -21,8 +20,7 @@ import org.yamcs.protobuf.Yamcs.Value;
  *
  */
 public class PreparedCommand {
-	public byte[] binary;
-	public String source;
+	private byte[] binary;
 	private CommandId id;
 	List<CommandHistoryAttribute> attributes=new ArrayList<CommandHistoryAttribute>();
 	
@@ -35,8 +33,6 @@ public class PreparedCommand {
 	public final static String CNAME_CMDNAME = "cmdName";
 	public final static String CNAME_SOURCE = "source";
     
-    private String username;
-    
 	public PreparedCommand(CommandId id) {
 		this.id=id;
 	}
@@ -46,7 +42,7 @@ public class PreparedCommand {
 	 * @param binary
 	 */
 	public PreparedCommand(byte[] binary) {
-		this.binary=binary;
+		this.setBinary(binary);
 	}
 	
 	public long getGenerationTime() {
@@ -54,57 +50,25 @@ public class PreparedCommand {
 	}
 
     public void setSource(String source) {
-        this.source=source;
+        setStringAttribute(CNAME_SOURCE, source);
     }
     
     public String getSource() {
-        return source;
-    }
-    
-    public String getOpsName() {
-        return id.getCommandName();
-    }
-    
-
-    public int getSid() {
-        CommandHistoryAttribute a=findAttribute("sid");
-        if(a!=null) return a.getValue().getUint32Value();
-        return -1;
+        return getStringAttribute(CNAME_SOURCE);
     }
 
     public String getCmdName() {
         return id.getCommandName();
     }
 
-    public void setSid(int sid) {
-        attributes.add(CommandHistoryAttribute.newBuilder()
-                .setName("sid")
-                .setValue(ValueUtility.getUint32Value(sid))
-                .build());
-    }
-
-    public int getApid() {
-        CommandHistoryAttribute a=findAttribute("apid");
-        if(a!=null) return a.getValue().getUint32Value();
-        return -1;
-    }
-
     public String getStringAttribute(String attrname) {
-        CommandHistoryAttribute a=findAttribute(attrname);
+        CommandHistoryAttribute a=getAttribute(attrname);
         Value v = a.getValue();
         if((a!=null) && (v.getType()==Value.Type.STRING)) return v.getStringValue();
         return null;
     }
-   
     
-    public void setApid(int apid) {
-        attributes.add(CommandHistoryAttribute.newBuilder()
-                .setName("apid")
-                .setValue(ValueUtility.getUint32Value(apid))
-                .build());
-    }
-    
-    private CommandHistoryAttribute findAttribute(String name) {
+    public CommandHistoryAttribute getAttribute(String name) {
         for(CommandHistoryAttribute a:attributes) {
             if(name.equals(a.getName())) return a;
         }
@@ -135,18 +99,10 @@ public class PreparedCommand {
         al.add(id.getSequenceNumber());
         al.add(id.getCommandName());
         
-        if(source!=null) {
-            td.addColumn(CNAME_SOURCE, DataType.STRING);
-            al.add(source);
-        }
-        if(binary!=null) {
-            td.addColumn(CNAME_BINARY, DataType.BINARY);
-            al.add(binary);
-        }
         
-        if(username!=null) {
-            td.addColumn(CNAME_USERNAME, DataType.STRING);
-            al.add(username);
+        if(getBinary()!=null) {
+            td.addColumn(CNAME_BINARY, DataType.BINARY);
+            al.add(getBinary());
         }
         
         for(CommandHistoryAttribute a:attributes) {
@@ -155,6 +111,20 @@ public class PreparedCommand {
         }
         Tuple t =  new Tuple(td, al.toArray());
         return t;
+    }
+    public void setBinary(byte[] b) {
+		this.binary =b;
+	}
+
+    public String getUsername() {
+    	CommandHistoryAttribute cha = getAttribute(CNAME_USERNAME);
+    	if(cha==null) return null;
+    	
+        return cha.getValue().getStringValue();
+    }
+
+    public List<CommandHistoryAttribute> getAttirbutes() {
+    	return attributes;
     }
     
     public static PreparedCommand fromTuple(Tuple t) {
@@ -170,13 +140,28 @@ public class PreparedCommand {
                 .build();
             pc.attributes.add(a);
         }
-        pc.binary=(byte[])t.getColumn(CNAME_BINARY);
-        pc.username=(String)t.getColumn(CNAME_USERNAME);
-        pc.source=(String)t.getColumn(CNAME_SOURCE);
+        pc.setBinary((byte[])t.getColumn(CNAME_BINARY));
         
         return pc;
     }
-
+    
+    public void setStringAttribute(String name, String value) {
+    	int i;
+    	for(i =0; i<attributes.size(); i++) {
+    		CommandHistoryAttribute a = attributes.get(i);
+            if(name.equals(a.getName())) break;
+        }
+        CommandHistoryAttribute a=CommandHistoryAttribute.newBuilder()
+                .setName(name)
+                .setValue(ValueUtility.getStringValue(value))
+                .build();
+        if(i<attributes.size()) {
+            attributes.set(i, a);
+        } else {
+        	attributes.add(a);
+        }
+     }
+    
     public void addStringAttribute(String name, String value) {
         CommandHistoryAttribute a=CommandHistoryAttribute.newBuilder()
             .setName(name)
@@ -185,11 +170,11 @@ public class PreparedCommand {
         attributes.add(a);
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public byte[] getBinary() {
+		return binary;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setUsername(String username) {
+		setStringAttribute(CNAME_USERNAME, username);
+	}	
 }

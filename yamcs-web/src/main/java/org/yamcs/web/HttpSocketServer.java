@@ -9,6 +9,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.web.websocket.WebSocketServerPipelineFactory;
 
 /**
  * Runs a simple http server based on Netty

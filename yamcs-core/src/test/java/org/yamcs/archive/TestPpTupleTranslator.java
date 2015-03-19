@@ -118,7 +118,7 @@ public class TestPpTupleTranslator extends YarchTestCase {
 	@Test
 	public void testTranslation() throws Exception {
 		// Make sure the stream is created
-		(new PpRecorder(context.getDbName())).start();
+		(new PpRecorder(context.getDbName())).startAsync();
 		
 		// Get the stream
 		Stream rtstream = ydb.getStream( PpRecorder.REALTIME_PP_STREAM_NAME );

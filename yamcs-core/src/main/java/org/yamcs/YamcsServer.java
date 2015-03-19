@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -39,7 +40,9 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * 
@@ -95,7 +98,16 @@ public class YamcsServer {
             managementService.registerService(instance, servclass, serv);
         }
 	    for(Service serv:serviceList) {
-	        serv.start();
+	    	serv.startAsync();
+	    	try {
+	    		serv.awaitRunning();
+	    	} catch (IllegalStateException e) {
+	    		//this happens when it fails, the next check will throw an error in this case
+	    	}
+	    	State result = serv.state();
+	    	if(result==State.FAILED) {
+	    		throw new ConfigurationException("Failed to start service "+serv, serv.failureCause());
+	    	}
 	    }
 	}
 	
@@ -252,11 +264,11 @@ public class YamcsServer {
             setupYamcsServer();
             
 	    } catch (ConfigurationException e) {
-	        staticlog.error("Could not start Yamcs Server: "+e.toString(), e);
+	        staticlog.error("Could not start Yamcs Server: ", e);
 	    	System.err.println(e.toString());
 	    	System.exit(-1);
 	    } catch (Throwable e) {
-	        staticlog.error("Could not start Yamcs Server: "+e.toString(), e);
+	        staticlog.error("Could not start Yamcs Server: ", e);
             e.printStackTrace();
             System.exit(-1);
         }

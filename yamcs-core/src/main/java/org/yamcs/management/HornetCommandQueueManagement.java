@@ -157,7 +157,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
         Channel c=q.getChannel();
         CommandQueueEntry cqe=CommandQueueEntry.newBuilder()
         .setInstance(c.getInstance()).setChannelName(c.getName()).setQueueName(q.getName())
-        .setCmdId(pc.getCommandId()).setSource(pc.source).setBinary(ByteString.copyFrom(pc.binary))
+        .setCmdId(pc.getCommandId()).setSource(pc.getSource()).setBinary(ByteString.copyFrom(pc.getBinary()))
         .setGenerationTime(pc.getGenerationTime()).setUsername(pc.getUsername()).build();
 
         String lvn=c.getInstance()+"."+c.getName()+"."+pc.getCommandId().getOrigin()+"."+pc.getCommandId().getSequenceNumber();

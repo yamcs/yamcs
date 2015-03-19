@@ -22,78 +22,76 @@ import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 
 public abstract class YarchTestCase {
-	protected StreamSqlParser parser;
-	protected ExecutionContext context;
-	protected YarchDatabase ydb;
-	static boolean littleEndian;
-	protected String instance;
-	
-	static private void deleteDir(File dir) throws IOException {
-		if (dir.exists()) {
-			File[] files=dir.listFiles();
-			for (File f:files) {
-				if(f.isDirectory()){
-					deleteDir(f);
-				} else {
-					if(!f.delete()) throw new IOException("Cannot remove "+f);
-				}
-			}
-			if(!dir.delete()) throw new IOException("Cannot remove "+dir);
+    protected StreamSqlParser parser;
+    protected ExecutionContext context;
+    protected YarchDatabase ydb;
+    static boolean littleEndian;
+    protected String instance;
+
+    static private void deleteDir(File dir) throws IOException {
+	if (dir.exists()) {
+	    File[] files=dir.listFiles();
+	    for (File f:files) {
+		if(f.isDirectory()){
+		    deleteDir(f);
+		} else {
+		    if(!f.delete()) throw new IOException("Cannot remove "+f);
 		}
-	}
-	
-	@BeforeClass 
-	public static void setUpYarch() throws Exception {
-	    YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
-	   	    
-	    YConfiguration config=YConfiguration.getConfiguration("yamcs");
-	    if(config.containsKey("littleEndian")) {
-	        littleEndian=config.getBoolean("littleEndian");
-	    } else {
-	        littleEndian=false;
 	    }
-        ManagementService.setup(false);
 	}
-	
-	@Before
-	public void setUp() throws Exception {
-		YConfiguration config=YConfiguration.getConfiguration("yamcs");
-        String dir=config.getString("dataDir");
-        instance = "yarchtest_"+this.getClass().getSimpleName();
-        context=new ExecutionContext(instance);
-        
-        File ytdir=new File(dir+"/"+context.getDbName());               
-        
-        deleteDir(ytdir);
-        
-        if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
-        YarchDatabase.removeInstance(instance);
-        ydb=YarchDatabase.getInstance(instance);
-        
+    }
+    @BeforeClass 
+    public static void setUpYarch() throws Exception {
+	YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
+
+	YConfiguration config=YConfiguration.getConfiguration("yamcs");
+	if(config.containsKey("littleEndian")) {
+	    littleEndian=config.getBoolean("littleEndian");
+	} else {
+	    littleEndian=false;
 	}
-	
-	protected StreamSqlResult execute(String cmd) throws StreamSqlException, ParseException {
-	    return ydb.execute(cmd);
-	}
-	
-	protected List<Tuple> suckAll(String streamName) throws InterruptedException{
-	    final List<Tuple> tuples=new ArrayList<Tuple>();
-	    final Semaphore semaphore=new Semaphore(0);
-	    Stream s=ydb.getStream(streamName);
-	    s.addSubscriber(new StreamSubscriber() {
-            
-            @Override
-            public void streamClosed(Stream stream) {
-                semaphore.release();
-            }
-            
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                tuples.add(tuple);
-            }
-        });
-	    s.start();
-	    semaphore.acquire();
-	    return tuples;
-	}
+	ManagementService.setup(false);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+	YConfiguration config=YConfiguration.getConfiguration("yamcs");
+	String dir=config.getString("dataDir");
+	instance = "yarchtest_"+this.getClass().getSimpleName();
+	context=new ExecutionContext(instance);
+
+	File ytdir=new File(dir+"/"+context.getDbName());               
+
+	deleteDir(ytdir);
+
+	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
+	YarchDatabase.removeInstance(instance);
+	ydb=YarchDatabase.getInstance(instance);
+
+    }
+
+    protected StreamSqlResult execute(String cmd) throws StreamSqlException, ParseException {
+	return ydb.execute(cmd);
+    }
+
+    protected List<Tuple> suckAll(String streamName) throws InterruptedException{
+	final List<Tuple> tuples=new ArrayList<Tuple>();
+	final Semaphore semaphore=new Semaphore(0);
+	Stream s=ydb.getStream(streamName);
+	s.addSubscriber(new StreamSubscriber() {
+
+	    @Override
+	    public void streamClosed(Stream stream) {
+		semaphore.release();
+	    }
+
+	    @Override
+	    public void onTuple(Stream stream, Tuple tuple) {
+		tuples.add(tuple);
+	    }
+	});
+	s.start();
+	semaphore.acquire();
+	return tuples;
+    }
 }

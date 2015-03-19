@@ -1,8 +1,5 @@
 package org.yamcs.web;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,10 +15,14 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
 
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 public class AbstractRequestHandler {
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     static protected String JSON_MIME_TYPE="application/json";
+    static protected String BINARY_MIME_TYPE="application/octet-stream";
     
     protected void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
@@ -51,8 +52,8 @@ public class AbstractRequestHandler {
      * 
      * @param response
      *            HTTP response
-     * @param file
-     *            file to extract content type
+     * @param type
+     *            content type of file to extract
      */
     protected void setContentTypeHeader(HttpResponse response, String type) {
         response.setHeader(HttpHeaders.Names.CONTENT_TYPE, type);

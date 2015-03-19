@@ -1,4 +1,5 @@
-package org.yamcs.protobuf;
+package pvalue;
+option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
 
@@ -39,9 +40,9 @@ enum MonitoringResult {
  this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
 */
 message ParameterValue {
-    optional NamedObjectId id=1;
-  	optional Value rawValue=2;
-	optional Value engValue=3;
+    optional yamcs.NamedObjectId id=1;
+  	optional yamcs.Value rawValue=2;
+	optional yamcs.Value engValue=3;
 	optional int64 acquisitionTime=4;
 	optional int64 generationTime=5;
 	optional AcquisitionStatus acquisitionStatus=6;

@@ -401,7 +401,7 @@ public class TableDefinition {
     
     /**
      * Returns true if this is the first column of the key
-     * @param type
+     * @param channelType
      * @return
      */
     public boolean isIndexedByKey(String cname) {

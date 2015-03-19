@@ -34,8 +34,6 @@ public class EventRecorder extends AbstractService {
         }
         eventTpdef=ydb.getTable("events").getTupleDefinition();
        
-        ydb.execute("create stream "+REALTIME_EVENT_STREAM_NAME+eventTpdef.getStringDefinition());
-        ydb.execute("create stream "+DUMP_EVENT_STREAM_NAME+eventTpdef.getStringDefinition());
         ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_EVENT_STREAM_NAME);
         ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_EVENT_STREAM_NAME);
 

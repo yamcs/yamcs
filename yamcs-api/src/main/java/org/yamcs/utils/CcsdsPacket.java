@@ -3,8 +3,6 @@ package org.yamcs.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 
 import org.yamcs.utils.TimeEncoding;
 
@@ -96,6 +94,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public long getCoarseTime() {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
+	public int getTimeId() {
+		return (bb.get(11) &0xFF)>>6;
+	}
 	
 	public void setCoarseTime(int time) {
 	    bb.putInt(6, time);
@@ -104,7 +105,7 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public static long getCoarseTime(ByteBuffer bb) {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
-
+	
 	public int getFineTime() {
 		return bb.get(10)&0xFF;
 	}
@@ -224,12 +225,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 			}
 		}
 		sb.append("\n\n");
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("output"));
-            out.write(sb.toString());
-            out.close();
-        } catch (IOException e) {
-        }
 		return sb.toString();
 	}
 

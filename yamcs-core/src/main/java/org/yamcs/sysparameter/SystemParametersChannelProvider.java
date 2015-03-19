@@ -12,13 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterListener;
-import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
 
 import com.google.common.util.concurrent.AbstractService;
 
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -40,25 +39,28 @@ import org.yamcs.yarch.YarchDatabase;
  * 
  */
 public class SystemParametersChannelProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
-    private ParameterListener parameterListener;
+    private ParameterRequestManagerIf parameterListener;
 
     volatile private Map<String, SystemParameter> variables = new HashMap<String, SystemParameter>(); 
     Logger log;
     Stream stream;
     XtceDb xtceDb;
-    final Channel channel;
+    Channel channel;
     ArrayList<ParameterValue> channelParams = new ArrayList<ParameterValue>();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     ParameterValue channelModePv;
     
+    public SystemParametersChannelProvider(String yamcsInstance) throws ConfigurationException {
+        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+    }
     
-    public SystemParametersChannelProvider(ParameterRequestManager parameterRequestManager, Channel channel) throws ConfigurationException {
+    public void init(Channel channel) throws ConfigurationException {
         String instance = channel.getInstance();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+channel.getName()+"]");
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         stream=ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
-        xtceDb = XtceDbFactory.getInstance(instance);
+
         this.channel = channel;
         setupChannelParameters();
       
@@ -123,7 +125,6 @@ public class SystemParametersChannelProvider extends AbstractService implements 
      */
     @Override
     public boolean canProvide(NamedObjectId paraId) {
-
         if(!paraId.hasNamespace()) {
             return paraId.getName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
         } else {
@@ -131,6 +132,12 @@ public class SystemParametersChannelProvider extends AbstractService implements 
         }
     }
 
+    @Override
+    public boolean canProvide(Parameter para) {        
+	return para.getName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
+    }
+
+    
     @Override
     public Parameter getParameter(NamedObjectId paraId)  throws InvalidIdentification {
         String name = paraId.getName();
@@ -157,7 +164,7 @@ public class SystemParametersChannelProvider extends AbstractService implements 
     }
 
     @Override
-    public void setParameterListener(ParameterListener parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
         this.parameterListener = parameterRequestManager; 
 
     }

@@ -4,4 +4,4 @@ dvtest:
      subLoaders:
           - type: "sheet"
             spec: "mdb/refmdb-subsys1.xls"
-dvtest_derivedValuesProviders: [org.yamcs.DerivedValuesTest$MyDerivedValuesProvider]
+dvtest_derivedValuesProviders: [org.yamcs.derivedvalues.DerivedValuesTest$MyDerivedValuesProvider]

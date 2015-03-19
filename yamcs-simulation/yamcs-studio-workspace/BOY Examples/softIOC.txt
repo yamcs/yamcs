@@ -1,0 +1,2 @@
+Some OPIs in BOY Examples are using real EPICS PV. 
+The soft IOC for these examples are available at: http://ics-web.sns.ornl.gov/kasemir/CSS/Training/#m1

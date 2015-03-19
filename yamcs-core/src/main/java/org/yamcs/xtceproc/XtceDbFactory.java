@@ -298,6 +298,8 @@ public class XtceDbFactory {
             return (NameDescription) ss.getParameterType(name);
         case SEQUENCE_CONTAINTER:
             return ss.getSequenceContainer(name);
+        case META_COMMAND:
+        	return ss.getMetaCommand(name);
         }
         //shouldn't arrive here
         return null;
@@ -320,6 +322,7 @@ public class XtceDbFactory {
         if (type.equals("xtce")) {
             l= new XtceLoader((String)args);
         } else if (type.equals("sheet")) {
+            if(args==null) throw new ConfigurationException("No argument specified for loading the XTCE spreadhseet in mdb.yaml section: "+m);
             l=new SpreadsheetLoader((String)args);
         } else {
             // custom class
@@ -406,7 +409,7 @@ public class XtceDbFactory {
         XtceDb db = (XtceDb) in.readObject();
         in.close();
         log.info("Loaded xtce database with " + db.getSequenceContainers().size()
-                + " containers and " + db.getParameterNames().size() + " parameters");
+                + " containers, " + db.getParameterNames().size() + " parameters and "+db.getMetaCommands().size()+" commands");
         return db;
     }
 

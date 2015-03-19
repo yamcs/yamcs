@@ -12,8 +12,19 @@ import java.io.Serializable;
  */
 public abstract class SequenceEntry implements Serializable, Comparable<SequenceEntry> {
 	private static final long serialVersionUID=200805131551L;
-	protected SequenceContainer container;
-	protected int locationInContainerInBits;
+	
+	//this is either SequenceContainer or MetaCommandContainer
+	protected Container container;
+	
+
+	/**
+	 * if the referenceLocation is containerStart, then this is number of bits from the start
+	 * for previousEntry, this is the number of bits from where the previous entry ends
+	 * 
+	 */
+	protected int locationInContainerInBits = 0;
+	
+	
 	/**	this is the index in the ArrayList of the Container from which this sequence entry is part
 	 *  is used for sorting and for finding the parameter before or after this one.
 	 */
@@ -31,7 +42,7 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 	 */
 	Repeat repeatEntry=null;
 	
-	public SequenceEntry(int position,SequenceContainer container,int locationInContainerInBits, ReferenceLocationType location) {
+	public SequenceEntry(int position, Container container, int locationInContainerInBits, ReferenceLocationType location) {
 		this.container=container;
 		this.locationInContainerInBits=locationInContainerInBits;
 		this.referenceLocation=location;
@@ -46,17 +57,25 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 	    this.index = index;
 	}
 	
-	public SequenceContainer getSequenceContainer() {
+	public Container getContainer() {
 		return container;
 	}
 
-	public int getLocation() {
-		return locationInContainerInBits;
+	public SequenceContainer getSequenceContainer() {
+		if(container instanceof SequenceContainer) {
+			return (SequenceContainer) container;
+		} else {
+			return null;
+		}
 	}
 	
-	public void setLocation( int locationInBits ) {
+	public void setLocationInContainerInBits( int locationInBits ) {
 	    locationInContainerInBits = locationInBits;
 	}
+
+    public int getLocationInContainerInBits() {
+        return locationInContainerInBits;
+    }
 
 	public void setReferenceLocation(ReferenceLocationType type) {
 	    this.referenceLocation = type;
@@ -81,10 +100,6 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 
     public Repeat getRepeatEntry() {
         return repeatEntry;
-    }
-
-    public int getLocationInContainerInBits() {
-        return locationInContainerInBits;
     }
 
     public void setRepeatEntry(Repeat repeat) {

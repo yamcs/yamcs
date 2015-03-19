@@ -18,10 +18,11 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.web.rest.ApiRequestHandler;
+import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpMethod.GET;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -30,16 +31,17 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Handles handshakes and messages
  */
 public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
+
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
-    public static final String ARCHIVE_PATH = "archive";
-    
+    public static final String API_PATH = "api";
+
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
+    static ApiRequestHandler apiRequestHandler=new ApiRequestHandler();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
-    static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
     @Override
@@ -55,12 +57,6 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
 
-        // Allow only GET methods.
-        if (req.getMethod() != GET) {
-            sendHttpResponse(ctx, req, new DefaultHttpResponse(HTTP_1_1, FORBIDDEN));
-            return;
-        }
-    
         if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
@@ -89,10 +85,11 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             fileRequestHandler.handleStaticFileRequest(ctx, req, e, path[2]);
             return;
         }
-        
+
         String yamcsInstance=path[1];
 
         if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+        	log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
             return;
@@ -108,9 +105,10 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             webSocketHandler.handleHttpRequest(ctx, req, e, yamcsInstance);
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
-        } else if(ARCHIVE_PATH.equals(handler)) {
-            archiveRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+        } else if(API_PATH.equals(handler)) {
+            apiRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
+        	log.warn("Unknown handler {}", handler);
             HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
             sendHttpResponse(ctx, req, res);
         }

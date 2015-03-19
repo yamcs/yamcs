@@ -377,7 +377,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
     
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
-        if(tmProcessor!=null) tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.array()));
+	if(tmProcessor!=null) {
+	    tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.array()));
+	}
     }
     
     
@@ -447,10 +449,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 				
 			}
 		});
-    	mdbgen.start();
+    	mdbgen.startAsync();
     	
     	s.acquire();
-    	mdbgen.stop();
+    	mdbgen.stopAsync();
     	
     	System.out.println("wrote "+count.get()+" packets into "+f);
     }

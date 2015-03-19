@@ -39,7 +39,7 @@ public class TmapTmProvider extends TcpTmProvider {
 			try {
 				if (tmSocket==null) {
 					openSocket();
-					log.info("Tmap connection estabilished to "+host+" port "+port);
+					log.info("Tmap connection established to "+host+" port "+port);
 				} 
 				if(!readWithBlocking(tmaphdr,0,32)) continue;
 				if(!readWithBlocking(hdr,0,6)) continue;

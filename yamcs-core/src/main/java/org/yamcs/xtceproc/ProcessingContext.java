@@ -16,7 +16,11 @@ public class ProcessingContext {
 	
 	ByteBuffer bb;
 	public int bitPosition;
-	int containerAbsoluteByteOffset; //keeps track of the absolute offset of the container where the processing takes place. Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
+	
+	//Keeps track of the absolute offset of the container where the processing takes place. 
+	//Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
+	int containerAbsoluteByteOffset; 	
+	
 	Subscription subscription;
 	
 	//this is the result of the processing
@@ -30,7 +34,7 @@ public class ProcessingContext {
 	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
 	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
 	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
+	public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
 	public ComparisonProcessor comparisonProcessor;
 	

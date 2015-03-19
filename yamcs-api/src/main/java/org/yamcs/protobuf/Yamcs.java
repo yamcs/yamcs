@@ -74,7 +74,7 @@ public final class Yamcs {
       org.yamcs.protobuf.Yamcs.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.EndAction)
+    // @@protoc_insertion_point(enum_scope:yamcs.EndAction)
   }
   
   public enum ReplaySpeedType
@@ -143,7 +143,7 @@ public final class Yamcs {
       org.yamcs.protobuf.Yamcs.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.ReplaySpeedType)
+    // @@protoc_insertion_point(enum_scope:yamcs.ReplaySpeedType)
   }
   
   public enum ProtoDataType
@@ -224,7 +224,7 @@ public final class Yamcs {
       org.yamcs.protobuf.Yamcs.getDescriptor();
     }
     
-    // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.ProtoDataType)
+    // @@protoc_insertion_point(enum_scope:yamcs.ProtoDataType)
   }
   
   public static final class StringMessage extends
@@ -246,12 +246,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_StringMessage_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_StringMessage_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_StringMessage_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_StringMessage_fieldAccessorTable;
     }
     
     // required string message = 1;
@@ -503,7 +503,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.StringMessage)
+      // @@protoc_insertion_point(builder_scope:yamcs.StringMessage)
     }
     
     static {
@@ -512,7 +512,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.StringMessage)
+    // @@protoc_insertion_point(class_scope:yamcs.StringMessage)
   }
   
   public static final class Void extends
@@ -534,12 +534,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Void_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Void_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Void_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Void_fieldAccessorTable;
     }
     
     private void initFields() {
@@ -748,7 +748,7 @@ public final class Yamcs {
       }
       
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.Void)
+      // @@protoc_insertion_point(builder_scope:yamcs.Void)
     }
     
     static {
@@ -757,7 +757,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.Void)
+    // @@protoc_insertion_point(class_scope:yamcs.Void)
   }
   
   public static final class Instant extends
@@ -779,12 +779,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Instant_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Instant_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Instant_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Instant_fieldAccessorTable;
     }
     
     // required int64 instant = 1;
@@ -1033,7 +1033,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.Instant)
+      // @@protoc_insertion_point(builder_scope:yamcs.Instant)
     }
     
     static {
@@ -1042,7 +1042,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.Instant)
+    // @@protoc_insertion_point(class_scope:yamcs.Instant)
   }
   
   public static final class MessagingAddress extends
@@ -1064,12 +1064,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MessagingAddress_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MessagingAddress_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MessagingAddress_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MessagingAddress_fieldAccessorTable;
     }
     
     // required string address = 1;
@@ -1321,7 +1321,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.MessagingAddress)
+      // @@protoc_insertion_point(builder_scope:yamcs.MessagingAddress)
     }
     
     static {
@@ -1330,7 +1330,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.MessagingAddress)
+    // @@protoc_insertion_point(class_scope:yamcs.MessagingAddress)
   }
   
   public static final class YamcsInstances extends
@@ -1352,15 +1352,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_YamcsInstances_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_YamcsInstances_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_YamcsInstances_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_YamcsInstances_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.YamcsInstance instance = 1;
+    // repeated .yamcs.YamcsInstance instance = 1;
     public static final int INSTANCE_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.YamcsInstance> instance_ =
       java.util.Collections.emptyList();
@@ -1604,7 +1604,7 @@ public final class Yamcs {
       }
       
       
-      // repeated .org.yamcs.protobuf.YamcsInstance instance = 1;
+      // repeated .yamcs.YamcsInstance instance = 1;
       public java.util.List<org.yamcs.protobuf.Yamcs.YamcsInstance> getInstanceList() {
         return java.util.Collections.unmodifiableList(result.instance_);
       }
@@ -1655,7 +1655,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.YamcsInstances)
+      // @@protoc_insertion_point(builder_scope:yamcs.YamcsInstances)
     }
     
     static {
@@ -1664,7 +1664,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.YamcsInstances)
+    // @@protoc_insertion_point(class_scope:yamcs.YamcsInstances)
   }
   
   public static final class YamcsInstance extends
@@ -1686,12 +1686,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_YamcsInstance_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_YamcsInstance_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_YamcsInstance_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_YamcsInstance_fieldAccessorTable;
     }
     
     // required string name = 1;
@@ -1701,7 +1701,7 @@ public final class Yamcs {
     public boolean hasName() { return hasName; }
     public java.lang.String getName() { return name_; }
     
-    // optional .org.yamcs.protobuf.MissionDatabase missionDatabase = 3;
+    // optional .yamcs.MissionDatabase missionDatabase = 3;
     public static final int MISSIONDATABASE_FIELD_NUMBER = 3;
     private boolean hasMissionDatabase;
     private org.yamcs.protobuf.Yamcs.MissionDatabase missionDatabase_;
@@ -1973,7 +1973,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.MissionDatabase missionDatabase = 3;
+      // optional .yamcs.MissionDatabase missionDatabase = 3;
       public boolean hasMissionDatabase() {
         return result.hasMissionDatabase();
       }
@@ -2010,7 +2010,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.YamcsInstance)
+      // @@protoc_insertion_point(builder_scope:yamcs.YamcsInstance)
     }
     
     static {
@@ -2019,7 +2019,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.YamcsInstance)
+    // @@protoc_insertion_point(class_scope:yamcs.YamcsInstance)
   }
   
   public static final class MissionDatabase extends
@@ -2041,12 +2041,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MissionDatabase_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MissionDatabase_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MissionDatabase_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MissionDatabase_fieldAccessorTable;
     }
     
     // required string configName = 1;
@@ -2383,7 +2383,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.MissionDatabase)
+      // @@protoc_insertion_point(builder_scope:yamcs.MissionDatabase)
     }
     
     static {
@@ -2392,7 +2392,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.MissionDatabase)
+    // @@protoc_insertion_point(class_scope:yamcs.MissionDatabase)
   }
   
   public static final class Value extends
@@ -2414,12 +2414,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Value_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Value_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Value_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Value_fieldAccessorTable;
     }
     
     public enum Type
@@ -2502,10 +2502,10 @@ public final class Yamcs {
         org.yamcs.protobuf.Yamcs.getDescriptor();
       }
       
-      // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.Value.Type)
+      // @@protoc_insertion_point(enum_scope:yamcs.Value.Type)
     }
     
-    // required .org.yamcs.protobuf.Value.Type type = 1;
+    // required .yamcs.Value.Type type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private boolean hasType;
     private org.yamcs.protobuf.Yamcs.Value.Type type_;
@@ -2950,7 +2950,7 @@ public final class Yamcs {
       }
       
       
-      // required .org.yamcs.protobuf.Value.Type type = 1;
+      // required .yamcs.Value.Type type = 1;
       public boolean hasType() {
         return result.hasType();
       }
@@ -3157,7 +3157,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.Value)
+      // @@protoc_insertion_point(builder_scope:yamcs.Value)
     }
     
     static {
@@ -3166,7 +3166,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.Value)
+    // @@protoc_insertion_point(class_scope:yamcs.Value)
   }
   
   public static final class MissionDatabaseRequest extends
@@ -3188,12 +3188,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MissionDatabaseRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MissionDatabaseRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_MissionDatabaseRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_MissionDatabaseRequest_fieldAccessorTable;
     }
     
     // optional string dbConfigName = 1;
@@ -3486,7 +3486,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.MissionDatabaseRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.MissionDatabaseRequest)
     }
     
     static {
@@ -3495,7 +3495,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.MissionDatabaseRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.MissionDatabaseRequest)
   }
   
   public static final class NamedObjectId extends
@@ -3517,12 +3517,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_NamedObjectId_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_NamedObjectId_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_NamedObjectId_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_NamedObjectId_fieldAccessorTable;
     }
     
     // required string name = 1;
@@ -3816,7 +3816,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.NamedObjectId)
+      // @@protoc_insertion_point(builder_scope:yamcs.NamedObjectId)
     }
     
     static {
@@ -3825,7 +3825,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.NamedObjectId)
+    // @@protoc_insertion_point(class_scope:yamcs.NamedObjectId)
   }
   
   public static final class NamedObjectList extends
@@ -3847,15 +3847,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_NamedObjectList_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_NamedObjectList_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_NamedObjectList_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_NamedObjectList_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId list = 1;
+    // repeated .yamcs.NamedObjectId list = 1;
     public static final int LIST_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
       java.util.Collections.emptyList();
@@ -4099,7 +4099,7 @@ public final class Yamcs {
       }
       
       
-      // repeated .org.yamcs.protobuf.NamedObjectId list = 1;
+      // repeated .yamcs.NamedObjectId list = 1;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
         return java.util.Collections.unmodifiableList(result.list_);
       }
@@ -4150,7 +4150,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.NamedObjectList)
+      // @@protoc_insertion_point(builder_scope:yamcs.NamedObjectList)
     }
     
     static {
@@ -4159,7 +4159,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.NamedObjectList)
+    // @@protoc_insertion_point(class_scope:yamcs.NamedObjectList)
   }
   
   public static final class IndexRequest extends
@@ -4181,12 +4181,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_IndexRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_IndexRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_IndexRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_IndexRequest_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -4238,7 +4238,7 @@ public final class Yamcs {
     public boolean hasSendAllTm() { return hasSendAllTm; }
     public boolean getSendAllTm() { return sendAllTm_; }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId tmPacket = 6;
+    // repeated .yamcs.NamedObjectId tmPacket = 6;
     public static final int TMPACKET_FIELD_NUMBER = 6;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> tmPacket_ =
       java.util.Collections.emptyList();
@@ -4257,7 +4257,7 @@ public final class Yamcs {
     public boolean hasSendAllPp() { return hasSendAllPp; }
     public boolean getSendAllPp() { return sendAllPp_; }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId ppGroup = 8;
+    // repeated .yamcs.NamedObjectId ppGroup = 8;
     public static final int PPGROUP_FIELD_NUMBER = 8;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> ppGroup_ =
       java.util.Collections.emptyList();
@@ -4283,7 +4283,7 @@ public final class Yamcs {
     public boolean hasSendAllCmd() { return hasSendAllCmd; }
     public boolean getSendAllCmd() { return sendAllCmd_; }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId cmdName = 11;
+    // repeated .yamcs.NamedObjectId cmdName = 11;
     public static final int CMDNAME_FIELD_NUMBER = 11;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> cmdName_ =
       java.util.Collections.emptyList();
@@ -4302,7 +4302,7 @@ public final class Yamcs {
     public boolean hasSendAllEvent() { return hasSendAllEvent; }
     public boolean getSendAllEvent() { return sendAllEvent_; }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId eventSource = 13;
+    // repeated .yamcs.NamedObjectId eventSource = 13;
     public static final int EVENTSOURCE_FIELD_NUMBER = 13;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> eventSource_ =
       java.util.Collections.emptyList();
@@ -4917,7 +4917,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId tmPacket = 6;
+      // repeated .yamcs.NamedObjectId tmPacket = 6;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getTmPacketList() {
         return java.util.Collections.unmodifiableList(result.tmPacket_);
       }
@@ -4986,7 +4986,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId ppGroup = 8;
+      // repeated .yamcs.NamedObjectId ppGroup = 8;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getPpGroupList() {
         return java.util.Collections.unmodifiableList(result.ppGroup_);
       }
@@ -5073,7 +5073,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId cmdName = 11;
+      // repeated .yamcs.NamedObjectId cmdName = 11;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getCmdNameList() {
         return java.util.Collections.unmodifiableList(result.cmdName_);
       }
@@ -5142,7 +5142,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId eventSource = 13;
+      // repeated .yamcs.NamedObjectId eventSource = 13;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getEventSourceList() {
         return java.util.Collections.unmodifiableList(result.eventSource_);
       }
@@ -5193,7 +5193,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.IndexRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.IndexRequest)
     }
     
     static {
@@ -5202,7 +5202,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.IndexRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.IndexRequest)
   }
   
   public static final class ArchiveRecord extends
@@ -5224,15 +5224,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ArchiveRecord_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ArchiveRecord_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ArchiveRecord_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ArchiveRecord_fieldAccessorTable;
     }
     
-    // required .org.yamcs.protobuf.NamedObjectId id = 1;
+    // required .yamcs.NamedObjectId id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private boolean hasId;
     private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
@@ -5554,7 +5554,7 @@ public final class Yamcs {
       }
       
       
-      // required .org.yamcs.protobuf.NamedObjectId id = 1;
+      // required .yamcs.NamedObjectId id = 1;
       public boolean hasId() {
         return result.hasId();
       }
@@ -5666,7 +5666,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ArchiveRecord)
+      // @@protoc_insertion_point(builder_scope:yamcs.ArchiveRecord)
     }
     
     static {
@@ -5675,7 +5675,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ArchiveRecord)
+    // @@protoc_insertion_point(class_scope:yamcs.ArchiveRecord)
   }
   
   public static final class IndexResult extends
@@ -5697,12 +5697,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_IndexResult_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_IndexResult_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_IndexResult_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_IndexResult_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -5712,7 +5712,7 @@ public final class Yamcs {
     public boolean hasInstance() { return hasInstance; }
     public java.lang.String getInstance() { return instance_; }
     
-    // repeated .org.yamcs.protobuf.ArchiveRecord records = 2;
+    // repeated .yamcs.ArchiveRecord records = 2;
     public static final int RECORDS_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveRecord> records_ =
       java.util.Collections.emptyList();
@@ -6034,7 +6034,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.ArchiveRecord records = 2;
+      // repeated .yamcs.ArchiveRecord records = 2;
       public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveRecord> getRecordsList() {
         return java.util.Collections.unmodifiableList(result.records_);
       }
@@ -6127,7 +6127,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.IndexResult)
+      // @@protoc_insertion_point(builder_scope:yamcs.IndexResult)
     }
     
     static {
@@ -6136,7 +6136,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.IndexResult)
+    // @@protoc_insertion_point(class_scope:yamcs.IndexResult)
   }
   
   public static final class TagRequest extends
@@ -6158,12 +6158,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TagRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TagRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TagRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TagRequest_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -6493,7 +6493,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.TagRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.TagRequest)
     }
     
     static {
@@ -6502,7 +6502,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.TagRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.TagRequest)
   }
   
   public static final class ArchiveTag extends
@@ -6524,12 +6524,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ArchiveTag_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ArchiveTag_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ArchiveTag_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ArchiveTag_fieldAccessorTable;
     }
     
     // optional int32 id = 1;
@@ -6982,7 +6982,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ArchiveTag)
+      // @@protoc_insertion_point(builder_scope:yamcs.ArchiveTag)
     }
     
     static {
@@ -6991,7 +6991,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ArchiveTag)
+    // @@protoc_insertion_point(class_scope:yamcs.ArchiveTag)
   }
   
   public static final class TagResult extends
@@ -7013,12 +7013,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TagResult_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TagResult_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TagResult_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TagResult_fieldAccessorTable;
     }
     
     // required string instance = 1;
@@ -7028,7 +7028,7 @@ public final class Yamcs {
     public boolean hasInstance() { return hasInstance; }
     public java.lang.String getInstance() { return instance_; }
     
-    // repeated .org.yamcs.protobuf.ArchiveTag tag = 2;
+    // repeated .yamcs.ArchiveTag tag = 2;
     public static final int TAG_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tag_ =
       java.util.Collections.emptyList();
@@ -7308,7 +7308,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.ArchiveTag tag = 2;
+      // repeated .yamcs.ArchiveTag tag = 2;
       public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> getTagList() {
         return java.util.Collections.unmodifiableList(result.tag_);
       }
@@ -7359,7 +7359,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.TagResult)
+      // @@protoc_insertion_point(builder_scope:yamcs.TagResult)
     }
     
     static {
@@ -7368,7 +7368,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.TagResult)
+    // @@protoc_insertion_point(class_scope:yamcs.TagResult)
   }
   
   public static final class UpsertTagRequest extends
@@ -7390,22 +7390,22 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_UpsertTagRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_UpsertTagRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_UpsertTagRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_UpsertTagRequest_fieldAccessorTable;
     }
     
-    // optional .org.yamcs.protobuf.ArchiveTag oldTag = 1;
+    // optional .yamcs.ArchiveTag oldTag = 1;
     public static final int OLDTAG_FIELD_NUMBER = 1;
     private boolean hasOldTag;
     private org.yamcs.protobuf.Yamcs.ArchiveTag oldTag_;
     public boolean hasOldTag() { return hasOldTag; }
     public org.yamcs.protobuf.Yamcs.ArchiveTag getOldTag() { return oldTag_; }
     
-    // required .org.yamcs.protobuf.ArchiveTag newTag = 2;
+    // required .yamcs.ArchiveTag newTag = 2;
     public static final int NEWTAG_FIELD_NUMBER = 2;
     private boolean hasNewTag;
     private org.yamcs.protobuf.Yamcs.ArchiveTag newTag_;
@@ -7663,7 +7663,7 @@ public final class Yamcs {
       }
       
       
-      // optional .org.yamcs.protobuf.ArchiveTag oldTag = 1;
+      // optional .yamcs.ArchiveTag oldTag = 1;
       public boolean hasOldTag() {
         return result.hasOldTag();
       }
@@ -7700,7 +7700,7 @@ public final class Yamcs {
         return this;
       }
       
-      // required .org.yamcs.protobuf.ArchiveTag newTag = 2;
+      // required .yamcs.ArchiveTag newTag = 2;
       public boolean hasNewTag() {
         return result.hasNewTag();
       }
@@ -7737,7 +7737,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.UpsertTagRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.UpsertTagRequest)
     }
     
     static {
@@ -7746,7 +7746,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.UpsertTagRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.UpsertTagRequest)
   }
   
   public static final class DeleteTagRequest extends
@@ -7768,15 +7768,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_DeleteTagRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DeleteTagRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_DeleteTagRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DeleteTagRequest_fieldAccessorTable;
     }
     
-    // required .org.yamcs.protobuf.ArchiveTag tag = 3;
+    // required .yamcs.ArchiveTag tag = 3;
     public static final int TAG_FIELD_NUMBER = 3;
     private boolean hasTag;
     private org.yamcs.protobuf.Yamcs.ArchiveTag tag_;
@@ -8011,7 +8011,7 @@ public final class Yamcs {
       }
       
       
-      // required .org.yamcs.protobuf.ArchiveTag tag = 3;
+      // required .yamcs.ArchiveTag tag = 3;
       public boolean hasTag() {
         return result.hasTag();
       }
@@ -8048,7 +8048,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.DeleteTagRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.DeleteTagRequest)
     }
     
     static {
@@ -8057,7 +8057,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.DeleteTagRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.DeleteTagRequest)
   }
   
   public static final class ReplaySpeed extends
@@ -8079,15 +8079,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplaySpeed_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplaySpeed_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplaySpeed_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplaySpeed_fieldAccessorTable;
     }
     
-    // required .org.yamcs.protobuf.ReplaySpeedType type = 1;
+    // required .yamcs.ReplaySpeedType type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private boolean hasType;
     private org.yamcs.protobuf.Yamcs.ReplaySpeedType type_;
@@ -8343,7 +8343,7 @@ public final class Yamcs {
       }
       
       
-      // required .org.yamcs.protobuf.ReplaySpeedType type = 1;
+      // required .yamcs.ReplaySpeedType type = 1;
       public boolean hasType() {
         return result.hasType();
       }
@@ -8382,7 +8382,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ReplaySpeed)
+      // @@protoc_insertion_point(builder_scope:yamcs.ReplaySpeed)
     }
     
     static {
@@ -8391,7 +8391,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ReplaySpeed)
+    // @@protoc_insertion_point(class_scope:yamcs.ReplaySpeed)
   }
   
   public static final class ReplayRequest extends
@@ -8413,12 +8413,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplayRequest_fieldAccessorTable;
     }
     
     // optional int64 start = 1;
@@ -8435,21 +8435,21 @@ public final class Yamcs {
     public boolean hasStop() { return hasStop; }
     public long getStop() { return stop_; }
     
-    // optional .org.yamcs.protobuf.EndAction endAction = 3 [default = QUIT];
+    // optional .yamcs.EndAction endAction = 3 [default = QUIT];
     public static final int ENDACTION_FIELD_NUMBER = 3;
     private boolean hasEndAction;
     private org.yamcs.protobuf.Yamcs.EndAction endAction_;
     public boolean hasEndAction() { return hasEndAction; }
     public org.yamcs.protobuf.Yamcs.EndAction getEndAction() { return endAction_; }
     
-    // optional .org.yamcs.protobuf.ReplaySpeed speed = 4;
+    // optional .yamcs.ReplaySpeed speed = 4;
     public static final int SPEED_FIELD_NUMBER = 4;
     private boolean hasSpeed;
     private org.yamcs.protobuf.Yamcs.ReplaySpeed speed_;
     public boolean hasSpeed() { return hasSpeed; }
     public org.yamcs.protobuf.Yamcs.ReplaySpeed getSpeed() { return speed_; }
     
-    // repeated .org.yamcs.protobuf.ProtoDataType type = 5 [deprecated = true];
+    // repeated .yamcs.ProtoDataType type = 5 [deprecated = true];
     public static final int TYPE_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> type_ =
       java.util.Collections.emptyList();
@@ -8461,7 +8461,7 @@ public final class Yamcs {
       return type_.get(index);
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6 [deprecated = true];
+    // repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];
     public static final int TMPACKETFILTER_FIELD_NUMBER = 6;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> tmPacketFilter_ =
       java.util.Collections.emptyList();
@@ -8485,35 +8485,35 @@ public final class Yamcs {
       return ppGroupFilter_.get(index);
     }
     
-    // optional .org.yamcs.protobuf.ParameterReplayRequest parameterRequest = 8;
+    // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
     public static final int PARAMETERREQUEST_FIELD_NUMBER = 8;
     private boolean hasParameterRequest;
     private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_;
     public boolean hasParameterRequest() { return hasParameterRequest; }
     public org.yamcs.protobuf.Yamcs.ParameterReplayRequest getParameterRequest() { return parameterRequest_; }
     
-    // optional .org.yamcs.protobuf.PacketReplayRequest packetRequest = 9;
+    // optional .yamcs.PacketReplayRequest packetRequest = 9;
     public static final int PACKETREQUEST_FIELD_NUMBER = 9;
     private boolean hasPacketRequest;
     private org.yamcs.protobuf.Yamcs.PacketReplayRequest packetRequest_;
     public boolean hasPacketRequest() { return hasPacketRequest; }
     public org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest() { return packetRequest_; }
     
-    // optional .org.yamcs.protobuf.EventReplayRequest eventRequest = 10;
+    // optional .yamcs.EventReplayRequest eventRequest = 10;
     public static final int EVENTREQUEST_FIELD_NUMBER = 10;
     private boolean hasEventRequest;
     private org.yamcs.protobuf.Yamcs.EventReplayRequest eventRequest_;
     public boolean hasEventRequest() { return hasEventRequest; }
     public org.yamcs.protobuf.Yamcs.EventReplayRequest getEventRequest() { return eventRequest_; }
     
-    // optional .org.yamcs.protobuf.CommandHistoryReplayRequest commandHistoryRequest = 11;
+    // optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;
     public static final int COMMANDHISTORYREQUEST_FIELD_NUMBER = 11;
     private boolean hasCommandHistoryRequest;
     private org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest commandHistoryRequest_;
     public boolean hasCommandHistoryRequest() { return hasCommandHistoryRequest; }
     public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest getCommandHistoryRequest() { return commandHistoryRequest_; }
     
-    // optional .org.yamcs.protobuf.PpReplayRequest ppRequest = 12;
+    // optional .yamcs.PpReplayRequest ppRequest = 12;
     public static final int PPREQUEST_FIELD_NUMBER = 12;
     private boolean hasPpRequest;
     private org.yamcs.protobuf.Yamcs.PpReplayRequest ppRequest_;
@@ -9039,7 +9039,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.EndAction endAction = 3 [default = QUIT];
+      // optional .yamcs.EndAction endAction = 3 [default = QUIT];
       public boolean hasEndAction() {
         return result.hasEndAction();
       }
@@ -9060,7 +9060,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ReplaySpeed speed = 4;
+      // optional .yamcs.ReplaySpeed speed = 4;
       public boolean hasSpeed() {
         return result.hasSpeed();
       }
@@ -9097,7 +9097,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.ProtoDataType type = 5 [deprecated = true];
+      // repeated .yamcs.ProtoDataType type = 5 [deprecated = true];
       public java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> getTypeList() {
         return java.util.Collections.unmodifiableList(result.type_);
       }
@@ -9137,7 +9137,7 @@ public final class Yamcs {
         return this;
       }
       
-      // repeated .org.yamcs.protobuf.NamedObjectId tmPacketFilter = 6 [deprecated = true];
+      // repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getTmPacketFilterList() {
         return java.util.Collections.unmodifiableList(result.tmPacketFilter_);
       }
@@ -9228,7 +9228,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ParameterReplayRequest parameterRequest = 8;
+      // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
       public boolean hasParameterRequest() {
         return result.hasParameterRequest();
       }
@@ -9265,7 +9265,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.PacketReplayRequest packetRequest = 9;
+      // optional .yamcs.PacketReplayRequest packetRequest = 9;
       public boolean hasPacketRequest() {
         return result.hasPacketRequest();
       }
@@ -9302,7 +9302,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.EventReplayRequest eventRequest = 10;
+      // optional .yamcs.EventReplayRequest eventRequest = 10;
       public boolean hasEventRequest() {
         return result.hasEventRequest();
       }
@@ -9339,7 +9339,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.CommandHistoryReplayRequest commandHistoryRequest = 11;
+      // optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;
       public boolean hasCommandHistoryRequest() {
         return result.hasCommandHistoryRequest();
       }
@@ -9376,7 +9376,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.PpReplayRequest ppRequest = 12;
+      // optional .yamcs.PpReplayRequest ppRequest = 12;
       public boolean hasPpRequest() {
         return result.hasPpRequest();
       }
@@ -9413,7 +9413,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.ReplayRequest)
     }
     
     static {
@@ -9422,7 +9422,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.ReplayRequest)
   }
   
   public static final class ParameterReplayRequest extends
@@ -9444,15 +9444,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ParameterReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ParameterReplayRequest_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+    // repeated .yamcs.NamedObjectId nameFilter = 1;
     public static final int NAMEFILTER_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_ =
       java.util.Collections.emptyList();
@@ -9738,7 +9738,7 @@ public final class Yamcs {
       }
       
       
-      // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+      // repeated .yamcs.NamedObjectId nameFilter = 1;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
         return java.util.Collections.unmodifiableList(result.nameFilter_);
       }
@@ -9825,7 +9825,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ParameterReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.ParameterReplayRequest)
     }
     
     static {
@@ -9834,7 +9834,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ParameterReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.ParameterReplayRequest)
   }
   
   public static final class PacketReplayRequest extends
@@ -9856,15 +9856,15 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_PacketReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_PacketReplayRequest_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+    // repeated .yamcs.NamedObjectId nameFilter = 1;
     public static final int NAMEFILTER_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_ =
       java.util.Collections.emptyList();
@@ -10108,7 +10108,7 @@ public final class Yamcs {
       }
       
       
-      // repeated .org.yamcs.protobuf.NamedObjectId nameFilter = 1;
+      // repeated .yamcs.NamedObjectId nameFilter = 1;
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
         return java.util.Collections.unmodifiableList(result.nameFilter_);
       }
@@ -10159,7 +10159,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.PacketReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.PacketReplayRequest)
     }
     
     static {
@@ -10168,7 +10168,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.PacketReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.PacketReplayRequest)
   }
   
   public static final class EventReplayRequest extends
@@ -10190,12 +10190,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_EventReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_EventReplayRequest_fieldAccessorTable;
     }
     
     private void initFields() {
@@ -10404,7 +10404,7 @@ public final class Yamcs {
       }
       
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.EventReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.EventReplayRequest)
     }
     
     static {
@@ -10413,7 +10413,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.EventReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.EventReplayRequest)
   }
   
   public static final class CommandHistoryReplayRequest extends
@@ -10435,12 +10435,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_CommandHistoryReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_CommandHistoryReplayRequest_fieldAccessorTable;
     }
     
     private void initFields() {
@@ -10649,7 +10649,7 @@ public final class Yamcs {
       }
       
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CommandHistoryReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.CommandHistoryReplayRequest)
     }
     
     static {
@@ -10658,7 +10658,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CommandHistoryReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.CommandHistoryReplayRequest)
   }
   
   public static final class PpReplayRequest extends
@@ -10680,12 +10680,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_PpReplayRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_PpReplayRequest_fieldAccessorTable;
     }
     
     // repeated string groupNameFilter = 1;
@@ -10972,7 +10972,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.PpReplayRequest)
+      // @@protoc_insertion_point(builder_scope:yamcs.PpReplayRequest)
     }
     
     static {
@@ -10981,7 +10981,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.PpReplayRequest)
+    // @@protoc_insertion_point(class_scope:yamcs.PpReplayRequest)
   }
   
   public static final class ReplayStatus extends
@@ -11003,12 +11003,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplayStatus_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplayStatus_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_ReplayStatus_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ReplayStatus_fieldAccessorTable;
     }
     
     public enum ReplayState
@@ -11083,17 +11083,17 @@ public final class Yamcs {
         org.yamcs.protobuf.Yamcs.getDescriptor();
       }
       
-      // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.ReplayStatus.ReplayState)
+      // @@protoc_insertion_point(enum_scope:yamcs.ReplayStatus.ReplayState)
     }
     
-    // required .org.yamcs.protobuf.ReplayStatus.ReplayState state = 1;
+    // required .yamcs.ReplayStatus.ReplayState state = 1;
     public static final int STATE_FIELD_NUMBER = 1;
     private boolean hasState;
     private org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState state_;
     public boolean hasState() { return hasState; }
     public org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState getState() { return state_; }
     
-    // optional .org.yamcs.protobuf.ReplayRequest request = 2;
+    // optional .yamcs.ReplayRequest request = 2;
     public static final int REQUEST_FIELD_NUMBER = 2;
     private boolean hasRequest;
     private org.yamcs.protobuf.Yamcs.ReplayRequest request_;
@@ -11372,7 +11372,7 @@ public final class Yamcs {
       }
       
       
-      // required .org.yamcs.protobuf.ReplayStatus.ReplayState state = 1;
+      // required .yamcs.ReplayStatus.ReplayState state = 1;
       public boolean hasState() {
         return result.hasState();
       }
@@ -11393,7 +11393,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.ReplayRequest request = 2;
+      // optional .yamcs.ReplayRequest request = 2;
       public boolean hasRequest() {
         return result.hasRequest();
       }
@@ -11451,7 +11451,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.ReplayStatus)
+      // @@protoc_insertion_point(builder_scope:yamcs.ReplayStatus)
     }
     
     static {
@@ -11460,7 +11460,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.ReplayStatus)
+    // @@protoc_insertion_point(class_scope:yamcs.ReplayStatus)
   }
   
   public static final class TmPacketData extends
@@ -11482,12 +11482,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TmPacketData_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TmPacketData_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_TmPacketData_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_TmPacketData_fieldAccessorTable;
     }
     
     // required int64 receptionTime = 1;
@@ -11518,7 +11518,7 @@ public final class Yamcs {
     public boolean hasSequenceNumber() { return hasSequenceNumber; }
     public int getSequenceNumber() { return sequenceNumber_; }
     
-    // optional .org.yamcs.protobuf.NamedObjectId id = 5;
+    // optional .yamcs.NamedObjectId id = 5;
     public static final int ID_FIELD_NUMBER = 5;
     private boolean hasId;
     private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
@@ -11887,7 +11887,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.NamedObjectId id = 5;
+      // optional .yamcs.NamedObjectId id = 5;
       public boolean hasId() {
         return result.hasId();
       }
@@ -11924,7 +11924,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.TmPacketData)
+      // @@protoc_insertion_point(builder_scope:yamcs.TmPacketData)
     }
     
     static {
@@ -11933,7 +11933,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.TmPacketData)
+    // @@protoc_insertion_point(class_scope:yamcs.TmPacketData)
   }
   
   public static final class Event extends
@@ -11956,12 +11956,12 @@ public final class Yamcs {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Event_descriptor;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Event_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_org_yamcs_protobuf_Event_fieldAccessorTable;
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_Event_fieldAccessorTable;
     }
     
     public enum EventSeverity
@@ -12030,7 +12030,7 @@ public final class Yamcs {
         org.yamcs.protobuf.Yamcs.getDescriptor();
       }
       
-      // @@protoc_insertion_point(enum_scope:org.yamcs.protobuf.Event.EventSeverity)
+      // @@protoc_insertion_point(enum_scope:yamcs.Event.EventSeverity)
     }
     
     // required string source = 1;
@@ -12075,7 +12075,7 @@ public final class Yamcs {
     public boolean hasMessage() { return hasMessage; }
     public java.lang.String getMessage() { return message_; }
     
-    // optional .org.yamcs.protobuf.Event.EventSeverity severity = 7 [default = INFO];
+    // optional .yamcs.Event.EventSeverity severity = 7 [default = INFO];
     public static final int SEVERITY_FIELD_NUMBER = 7;
     private boolean hasSeverity;
     private org.yamcs.protobuf.Yamcs.Event.EventSeverity severity_;
@@ -12522,7 +12522,7 @@ public final class Yamcs {
         return this;
       }
       
-      // optional .org.yamcs.protobuf.Event.EventSeverity severity = 7 [default = INFO];
+      // optional .yamcs.Event.EventSeverity severity = 7 [default = INFO];
       public boolean hasSeverity() {
         return result.hasSeverity();
       }
@@ -12543,7 +12543,7 @@ public final class Yamcs {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.Event)
+      // @@protoc_insertion_point(builder_scope:yamcs.Event)
     }
     
     static {
@@ -12552,7 +12552,7 @@ public final class Yamcs {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.Event)
+    // @@protoc_insertion_point(class_scope:yamcs.Event)
   }
   
   public static abstract class YamcsControl
@@ -13674,150 +13674,150 @@ public final class Yamcs {
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_StringMessage_descriptor;
+    internal_static_yamcs_StringMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_StringMessage_fieldAccessorTable;
+      internal_static_yamcs_StringMessage_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_Void_descriptor;
+    internal_static_yamcs_Void_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_Void_fieldAccessorTable;
+      internal_static_yamcs_Void_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_Instant_descriptor;
+    internal_static_yamcs_Instant_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_Instant_fieldAccessorTable;
+      internal_static_yamcs_Instant_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_MessagingAddress_descriptor;
+    internal_static_yamcs_MessagingAddress_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_MessagingAddress_fieldAccessorTable;
+      internal_static_yamcs_MessagingAddress_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_YamcsInstances_descriptor;
+    internal_static_yamcs_YamcsInstances_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_YamcsInstances_fieldAccessorTable;
+      internal_static_yamcs_YamcsInstances_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_YamcsInstance_descriptor;
+    internal_static_yamcs_YamcsInstance_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_YamcsInstance_fieldAccessorTable;
+      internal_static_yamcs_YamcsInstance_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_MissionDatabase_descriptor;
+    internal_static_yamcs_MissionDatabase_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_MissionDatabase_fieldAccessorTable;
+      internal_static_yamcs_MissionDatabase_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_Value_descriptor;
+    internal_static_yamcs_Value_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_Value_fieldAccessorTable;
+      internal_static_yamcs_Value_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_MissionDatabaseRequest_descriptor;
+    internal_static_yamcs_MissionDatabaseRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_MissionDatabaseRequest_fieldAccessorTable;
+      internal_static_yamcs_MissionDatabaseRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_NamedObjectId_descriptor;
+    internal_static_yamcs_NamedObjectId_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_NamedObjectId_fieldAccessorTable;
+      internal_static_yamcs_NamedObjectId_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_NamedObjectList_descriptor;
+    internal_static_yamcs_NamedObjectList_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_NamedObjectList_fieldAccessorTable;
+      internal_static_yamcs_NamedObjectList_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_IndexRequest_descriptor;
+    internal_static_yamcs_IndexRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_IndexRequest_fieldAccessorTable;
+      internal_static_yamcs_IndexRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ArchiveRecord_descriptor;
+    internal_static_yamcs_ArchiveRecord_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ArchiveRecord_fieldAccessorTable;
+      internal_static_yamcs_ArchiveRecord_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_IndexResult_descriptor;
+    internal_static_yamcs_IndexResult_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_IndexResult_fieldAccessorTable;
+      internal_static_yamcs_IndexResult_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_TagRequest_descriptor;
+    internal_static_yamcs_TagRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_TagRequest_fieldAccessorTable;
+      internal_static_yamcs_TagRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ArchiveTag_descriptor;
+    internal_static_yamcs_ArchiveTag_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ArchiveTag_fieldAccessorTable;
+      internal_static_yamcs_ArchiveTag_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_TagResult_descriptor;
+    internal_static_yamcs_TagResult_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_TagResult_fieldAccessorTable;
+      internal_static_yamcs_TagResult_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_UpsertTagRequest_descriptor;
+    internal_static_yamcs_UpsertTagRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_UpsertTagRequest_fieldAccessorTable;
+      internal_static_yamcs_UpsertTagRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_DeleteTagRequest_descriptor;
+    internal_static_yamcs_DeleteTagRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_DeleteTagRequest_fieldAccessorTable;
+      internal_static_yamcs_DeleteTagRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ReplaySpeed_descriptor;
+    internal_static_yamcs_ReplaySpeed_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ReplaySpeed_fieldAccessorTable;
+      internal_static_yamcs_ReplaySpeed_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ReplayRequest_descriptor;
+    internal_static_yamcs_ReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_ReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor;
+    internal_static_yamcs_ParameterReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_ParameterReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor;
+    internal_static_yamcs_PacketReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_PacketReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor;
+    internal_static_yamcs_EventReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_EventReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor;
+    internal_static_yamcs_CommandHistoryReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_CommandHistoryReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor;
+    internal_static_yamcs_PpReplayRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable;
+      internal_static_yamcs_PpReplayRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_ReplayStatus_descriptor;
+    internal_static_yamcs_ReplayStatus_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_ReplayStatus_fieldAccessorTable;
+      internal_static_yamcs_ReplayStatus_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_TmPacketData_descriptor;
+    internal_static_yamcs_TmPacketData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_TmPacketData_fieldAccessorTable;
+      internal_static_yamcs_TmPacketData_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_Event_descriptor;
+    internal_static_yamcs_Event_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_Event_fieldAccessorTable;
+      internal_static_yamcs_Event_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -13827,363 +13827,347 @@ public final class Yamcs {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\013yamcs.proto\022\022org.yamcs.protobuf\" \n\rStr" +
-      "ingMessage\022\017\n\007message\030\001 \002(\t\"\006\n\004Void\"\032\n\007I" +
-      "nstant\022\017\n\007instant\030\001 \002(\003\"#\n\020MessagingAddr" +
-      "ess\022\017\n\007address\030\001 \002(\t\"E\n\016YamcsInstances\0223" +
-      "\n\010instance\030\001 \003(\0132!.org.yamcs.protobuf.Ya" +
-      "mcsInstance\"[\n\rYamcsInstance\022\014\n\004name\030\001 \002" +
-      "(\t\022<\n\017missionDatabase\030\003 \001(\0132#.org.yamcs." +
-      "protobuf.MissionDatabase\"D\n\017MissionDatab" +
-      "ase\022\022\n\nconfigName\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\017\n" +
-      "\007version\030\003 \001(\t\"\216\003\n\005Value\022,\n\004type\030\001 \002(\0162\036",
-      ".org.yamcs.protobuf.Value.Type\022\022\n\nfloatV" +
-      "alue\030\002 \001(\002\022\023\n\013doubleValue\030\003 \001(\001\022\023\n\013sint3" +
-      "2Value\030\004 \001(\021\022\023\n\013uint32Value\030\005 \001(\r\022\023\n\013bin" +
-      "aryValue\030\006 \001(\014\022\023\n\013stringValue\030\007 \001(\t\022\026\n\016t" +
-      "imestampValue\030\010 \001(\003\022\023\n\013uint64Value\030\t \001(\004" +
-      "\022\023\n\013sint64Value\030\n \001(\022\022\024\n\014booleanValue\030\013 " +
-      "\001(\010\"\201\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006DOUBLE\020\001\022\n\n\006U" +
-      "INT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006BINARY\020\004\022\n\n\006STRIN" +
-      "G\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006UINT64\020\007\022\n\n\006SINT64" +
-      "\020\010\022\013\n\007BOOLEAN\020\t\"@\n\026MissionDatabaseReques",
-      "t\022\024\n\014dbConfigName\030\001 \001(\t\022\020\n\010instance\030\002 \001(" +
-      "\t\"0\n\rNamedObjectId\022\014\n\004name\030\001 \002(\t\022\021\n\tname" +
-      "space\030\002 \001(\t\"B\n\017NamedObjectList\022/\n\004list\030\001" +
-      " \003(\0132!.org.yamcs.protobuf.NamedObjectId\"" +
-      "\341\003\n\014IndexRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005st" +
-      "art\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010utcStart\030\016 \001(" +
-      "\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defaultNamespace\030\004" +
-      " \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005false\0223\n\010tmPack" +
-      "et\030\006 \003(\0132!.org.yamcs.protobuf.NamedObjec" +
-      "tId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\0222\n\007ppGroup",
-      "\030\010 \003(\0132!.org.yamcs.protobuf.NamedObjectI" +
-      "d\022$\n\025sendCompletenessIndex\030\t \001(\010:\005false\022" +
-      "\031\n\nsendAllCmd\030\n \001(\010:\005false\0222\n\007cmdName\030\013 " +
-      "\003(\0132!.org.yamcs.protobuf.NamedObjectId\022\033" +
-      "\n\014sendAllEvent\030\014 \001(\010:\005false\0226\n\013eventSour" +
-      "ce\030\r \003(\0132!.org.yamcs.protobuf.NamedObjec" +
-      "tId\"v\n\rArchiveRecord\022-\n\002id\030\001 \002(\0132!.org.y" +
-      "amcs.protobuf.NamedObjectId\022\r\n\005first\030\002 \002" +
-      "(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 " +
-      "\001(\t\"t\n\013IndexResult\022\020\n\010instance\030\001 \002(\t\0222\n\007",
-      "records\030\002 \003(\0132!.org.yamcs.protobuf.Archi" +
-      "veRecord\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 \001(" +
-      "\t\";\n\nTagRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005sta" +
-      "rt\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag\022\n\n\002" +
-      "id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(\003\022\014\n" +
-      "\004stop\030\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005colo" +
-      "r\030\006 \001(\t\"J\n\tTagResult\022\020\n\010instance\030\001 \002(\t\022+" +
-      "\n\003tag\030\002 \003(\0132\036.org.yamcs.protobuf.Archive" +
-      "Tag\"r\n\020UpsertTagRequest\022.\n\006oldTag\030\001 \001(\0132" +
-      "\036.org.yamcs.protobuf.ArchiveTag\022.\n\006newTa",
-      "g\030\002 \002(\0132\036.org.yamcs.protobuf.ArchiveTag\"" +
-      "?\n\020DeleteTagRequest\022+\n\003tag\030\003 \002(\0132\036.org.y" +
-      "amcs.protobuf.ArchiveTag\"O\n\013ReplaySpeed\022" +
-      "1\n\004type\030\001 \002(\0162#.org.yamcs.protobuf.Repla" +
-      "ySpeedType\022\r\n\005param\030\002 \001(\002\"\357\004\n\rReplayRequ" +
-      "est\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\0226\n\tendA" +
-      "ction\030\003 \001(\0162\035.org.yamcs.protobuf.EndActi" +
-      "on:\004QUIT\022.\n\005speed\030\004 \001(\0132\037.org.yamcs.prot" +
-      "obuf.ReplaySpeed\0223\n\004type\030\005 \003(\0162!.org.yam" +
-      "cs.protobuf.ProtoDataTypeB\002\030\001\022=\n\016tmPacke",
-      "tFilter\030\006 \003(\0132!.org.yamcs.protobuf.Named" +
-      "ObjectIdB\002\030\001\022\031\n\rppGroupFilter\030\007 \003(\tB\002\030\001\022" +
-      "D\n\020parameterRequest\030\010 \001(\0132*.org.yamcs.pr" +
-      "otobuf.ParameterReplayRequest\022>\n\rpacketR" +
-      "equest\030\t \001(\0132\'.org.yamcs.protobuf.Packet" +
-      "ReplayRequest\022<\n\014eventRequest\030\n \001(\0132&.or" +
-      "g.yamcs.protobuf.EventReplayRequest\022N\n\025c" +
-      "ommandHistoryRequest\030\013 \001(\0132/.org.yamcs.p" +
-      "rotobuf.CommandHistoryReplayRequest\0226\n\tp" +
-      "pRequest\030\014 \001(\0132#.org.yamcs.protobuf.PpRe",
-      "playRequest\"\211\001\n\026ParameterReplayRequest\0225" +
-      "\n\nnameFilter\030\001 \003(\0132!.org.yamcs.protobuf." +
-      "NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n" +
-      "\021performMonitoring\030\003 \001(\010:\005false\"L\n\023Packe" +
-      "tReplayRequest\0225\n\nnameFilter\030\001 \003(\0132!.org" +
-      ".yamcs.protobuf.NamedObjectId\"\024\n\022EventRe" +
-      "playRequest\"\035\n\033CommandHistoryReplayReque" +
-      "st\"*\n\017PpReplayRequest\022\027\n\017groupNameFilter" +
-      "\030\001 \003(\t\"\365\001\n\014ReplayStatus\022;\n\005state\030\001 \002(\0162," +
-      ".org.yamcs.protobuf.ReplayStatus.ReplayS",
-      "tate\0222\n\007request\030\002 \001(\0132!.org.yamcs.protob" +
-      "uf.ReplayRequest\022\024\n\014errorMessage\030\003 \001(\t\"^" +
-      "\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUN" +
-      "NING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED" +
-      "\020\004\022\n\n\006CLOSED\020\005\"\224\001\n\014TmPacketData\022\025\n\rrecep" +
-      "tionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016genera" +
-      "tionTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022-" +
-      "\n\002id\030\005 \001(\0132!.org.yamcs.protobuf.NamedObj" +
-      "ectId\"\363\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016gener" +
-      "ationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021",
-      "\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messa" +
-      "ge\030\006 \002(\t\022?\n\010severity\030\007 \001(\0162\'.org.yamcs.p" +
-      "rotobuf.Event.EventSeverity:\004INFO\"1\n\rEve" +
-      "ntSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERR" +
-      "OR\020\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QU" +
-      "IT\020\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFA" +
-      "P\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rP" +
-      "rotoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHAN" +
-      "GE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021" +
-      "\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPA",
-      "RAMETER\020\010\022\017\n\013CMD_HISTORY\020\t2\275\001\n\014YamcsCont" +
-      "rol\022Q\n\021GetYamcsInstances\022\030.org.yamcs.pro" +
-      "tobuf.Void\032\".org.yamcs.protobuf.YamcsIns" +
-      "tances\022Z\n\022GetMissionDatabase\022*.org.yamcs" +
-      ".protobuf.MissionDatabaseRequest\032\030.org.y" +
-      "amcs.protobuf.Void2\307\002\n\030RealtimeParameter" +
-      "Service\022J\n\tSubscribe\022#.org.yamcs.protobu" +
-      "f.NamedObjectList\032\030.org.yamcs.protobuf.V" +
-      "oid\022K\n\014SubscribeAll\022!.org.yamcs.protobuf" +
-      ".StringMessage\032\030.org.yamcs.protobuf.Void",
-      "\022L\n\013Unsubscribe\022#.org.yamcs.protobuf.Nam" +
-      "edObjectList\032\030.org.yamcs.protobuf.Void\022D" +
-      "\n\016UnsubscribeAll\022\030.org.yamcs.protobuf.Vo" +
-      "id\032\030.org.yamcs.protobuf.Void2\310\002\n\014Archive" +
-      "Index\022M\n\010GetIndex\022 .org.yamcs.protobuf.I" +
-      "ndexRequest\032\037.org.yamcs.protobuf.IndexRe" +
-      "sult\022I\n\006GetTag\022 .org.yamcs.protobuf.Inde" +
-      "xRequest\032\035.org.yamcs.protobuf.TagResult\022" +
-      "Q\n\tUpsertTag\022$.org.yamcs.protobuf.Upsert" +
-      "TagRequest\032\036.org.yamcs.protobuf.ArchiveT",
-      "ag\022K\n\tDeleteTag\022$.org.yamcs.protobuf.Del" +
-      "eteTagRequest\032\030.org.yamcs.protobuf.Void"
+      "\n\013yamcs.proto\022\005yamcs\" \n\rStringMessage\022\017\n" +
+      "\007message\030\001 \002(\t\"\006\n\004Void\"\032\n\007Instant\022\017\n\007ins" +
+      "tant\030\001 \002(\003\"#\n\020MessagingAddress\022\017\n\007addres" +
+      "s\030\001 \002(\t\"8\n\016YamcsInstances\022&\n\010instance\030\001 " +
+      "\003(\0132\024.yamcs.YamcsInstance\"N\n\rYamcsInstan" +
+      "ce\022\014\n\004name\030\001 \002(\t\022/\n\017missionDatabase\030\003 \001(" +
+      "\0132\026.yamcs.MissionDatabase\"D\n\017MissionData" +
+      "base\022\022\n\nconfigName\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\017" +
+      "\n\007version\030\003 \001(\t\"\201\003\n\005Value\022\037\n\004type\030\001 \002(\0162" +
+      "\021.yamcs.Value.Type\022\022\n\nfloatValue\030\002 \001(\002\022\023",
+      "\n\013doubleValue\030\003 \001(\001\022\023\n\013sint32Value\030\004 \001(\021" +
+      "\022\023\n\013uint32Value\030\005 \001(\r\022\023\n\013binaryValue\030\006 \001" +
+      "(\014\022\023\n\013stringValue\030\007 \001(\t\022\026\n\016timestampValu" +
+      "e\030\010 \001(\003\022\023\n\013uint64Value\030\t \001(\004\022\023\n\013sint64Va" +
+      "lue\030\n \001(\022\022\024\n\014booleanValue\030\013 \001(\010\"\201\001\n\004Type" +
+      "\022\t\n\005FLOAT\020\000\022\n\n\006DOUBLE\020\001\022\n\n\006UINT32\020\002\022\n\n\006S" +
+      "INT32\020\003\022\n\n\006BINARY\020\004\022\n\n\006STRING\020\005\022\r\n\tTIMES" +
+      "TAMP\020\006\022\n\n\006UINT64\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEA" +
+      "N\020\t\"@\n\026MissionDatabaseRequest\022\024\n\014dbConfi" +
+      "gName\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t\"0\n\rNamedOb",
+      "jectId\022\014\n\004name\030\001 \002(\t\022\021\n\tnamespace\030\002 \001(\t\"" +
+      "5\n\017NamedObjectList\022\"\n\004list\030\001 \003(\0132\024.yamcs" +
+      ".NamedObjectId\"\255\003\n\014IndexRequest\022\020\n\010insta" +
+      "nce\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020" +
+      "\n\010utcStart\030\016 \001(\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020def" +
+      "aultNamespace\030\004 \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005" +
+      "false\022&\n\010tmPacket\030\006 \003(\0132\024.yamcs.NamedObj" +
+      "ectId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\022%\n\007ppGro" +
+      "up\030\010 \003(\0132\024.yamcs.NamedObjectId\022$\n\025sendCo" +
+      "mpletenessIndex\030\t \001(\010:\005false\022\031\n\nsendAllC",
+      "md\030\n \001(\010:\005false\022%\n\007cmdName\030\013 \003(\0132\024.yamcs" +
+      ".NamedObjectId\022\033\n\014sendAllEvent\030\014 \001(\010:\005fa" +
+      "lse\022)\n\013eventSource\030\r \003(\0132\024.yamcs.NamedOb" +
+      "jectId\"i\n\rArchiveRecord\022 \n\002id\030\001 \002(\0132\024.ya" +
+      "mcs.NamedObjectId\022\r\n\005first\030\002 \002(\003\022\014\n\004last" +
+      "\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 \001(\t\"g\n\013Ind" +
+      "exResult\022\020\n\010instance\030\001 \002(\t\022%\n\007records\030\002 " +
+      "\003(\0132\024.yamcs.ArchiveRecord\022\014\n\004type\030\003 \001(\t\022" +
+      "\021\n\ttableName\030\004 \001(\t\";\n\nTagRequest\022\020\n\010inst" +
+      "ance\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"",
+      "g\n\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022" +
+      "\r\n\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013descript" +
+      "ion\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\"=\n\tTagResult\022\020\n" +
+      "\010instance\030\001 \002(\t\022\036\n\003tag\030\002 \003(\0132\021.yamcs.Arc" +
+      "hiveTag\"X\n\020UpsertTagRequest\022!\n\006oldTag\030\001 " +
+      "\001(\0132\021.yamcs.ArchiveTag\022!\n\006newTag\030\002 \002(\0132\021" +
+      ".yamcs.ArchiveTag\"2\n\020DeleteTagRequest\022\036\n" +
+      "\003tag\030\003 \002(\0132\021.yamcs.ArchiveTag\"B\n\013ReplayS" +
+      "peed\022$\n\004type\030\001 \002(\0162\026.yamcs.ReplaySpeedTy" +
+      "pe\022\r\n\005param\030\002 \001(\002\"\372\003\n\rReplayRequest\022\r\n\005s",
+      "tart\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022)\n\tendAction\030\003 " +
+      "\001(\0162\020.yamcs.EndAction:\004QUIT\022!\n\005speed\030\004 \001" +
+      "(\0132\022.yamcs.ReplaySpeed\022&\n\004type\030\005 \003(\0162\024.y" +
+      "amcs.ProtoDataTypeB\002\030\001\0220\n\016tmPacketFilter" +
+      "\030\006 \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\022\031\n\rppGr" +
+      "oupFilter\030\007 \003(\tB\002\030\001\0227\n\020parameterRequest\030" +
+      "\010 \001(\0132\035.yamcs.ParameterReplayRequest\0221\n\r" +
+      "packetRequest\030\t \001(\0132\032.yamcs.PacketReplay" +
+      "Request\022/\n\014eventRequest\030\n \001(\0132\031.yamcs.Ev" +
+      "entReplayRequest\022A\n\025commandHistoryReques",
+      "t\030\013 \001(\0132\".yamcs.CommandHistoryReplayRequ" +
+      "est\022)\n\tppRequest\030\014 \001(\0132\026.yamcs.PpReplayR" +
+      "equest\"|\n\026ParameterReplayRequest\022(\n\nname" +
+      "Filter\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\007se" +
+      "ndRaw\030\002 \001(\010:\005false\022 \n\021performMonitoring\030" +
+      "\003 \001(\010:\005false\"?\n\023PacketReplayRequest\022(\n\nn" +
+      "ameFilter\030\001 \003(\0132\024.yamcs.NamedObjectId\"\024\n" +
+      "\022EventReplayRequest\"\035\n\033CommandHistoryRep" +
+      "layRequest\"*\n\017PpReplayRequest\022\027\n\017groupNa" +
+      "meFilter\030\001 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state",
+      "\030\001 \002(\0162\037.yamcs.ReplayStatus.ReplayState\022" +
+      "%\n\007request\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024" +
+      "\n\014errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016I" +
+      "NITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020" +
+      "\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n" +
+      "\014TmPacketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006" +
+      "packet\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016" +
+      "sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs" +
+      ".NamedObjectId\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t" +
+      "\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTim",
+      "e\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t" +
+      "\022\017\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.ya" +
+      "mcs.Event.EventSeverity:\004INFO\"1\n\rEventSe" +
+      "verity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002" +
+      "*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002" +
+      "\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022" +
+      "\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rProto" +
+      "DataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002" +
+      "\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rAR" +
+      "CHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAME",
+      "TER\020\010\022\017\n\013CMD_HISTORY\020\t2\211\001\n\014YamcsControl\022" +
+      "7\n\021GetYamcsInstances\022\013.yamcs.Void\032\025.yamc" +
+      "s.YamcsInstances\022@\n\022GetMissionDatabase\022\035" +
+      ".yamcs.MissionDatabaseRequest\032\013.yamcs.Vo" +
+      "id2\337\001\n\030RealtimeParameterService\0220\n\tSubsc" +
+      "ribe\022\026.yamcs.NamedObjectList\032\013.yamcs.Voi" +
+      "d\0221\n\014SubscribeAll\022\024.yamcs.StringMessage\032" +
+      "\013.yamcs.Void\0222\n\013Unsubscribe\022\026.yamcs.Name" +
+      "dObjectList\032\013.yamcs.Void\022*\n\016UnsubscribeA" +
+      "ll\022\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014Archive",
+      "Index\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022" +
+      ".yamcs.IndexResult\022/\n\006GetTag\022\023.yamcs.Ind" +
+      "exRequest\032\020.yamcs.TagResult\0227\n\tUpsertTag" +
+      "\022\027.yamcs.UpsertTagRequest\032\021.yamcs.Archiv" +
+      "eTag\0221\n\tDeleteTag\022\027.yamcs.DeleteTagReque" +
+      "st\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_StringMessage_descriptor =
+          internal_static_yamcs_StringMessage_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_StringMessage_fieldAccessorTable = new
+          internal_static_yamcs_StringMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_StringMessage_descriptor,
+              internal_static_yamcs_StringMessage_descriptor,
               new java.lang.String[] { "Message", },
               org.yamcs.protobuf.Yamcs.StringMessage.class,
               org.yamcs.protobuf.Yamcs.StringMessage.Builder.class);
-          internal_static_org_yamcs_protobuf_Void_descriptor =
+          internal_static_yamcs_Void_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_Void_fieldAccessorTable = new
+          internal_static_yamcs_Void_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_Void_descriptor,
+              internal_static_yamcs_Void_descriptor,
               new java.lang.String[] { },
               org.yamcs.protobuf.Yamcs.Void.class,
               org.yamcs.protobuf.Yamcs.Void.Builder.class);
-          internal_static_org_yamcs_protobuf_Instant_descriptor =
+          internal_static_yamcs_Instant_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_org_yamcs_protobuf_Instant_fieldAccessorTable = new
+          internal_static_yamcs_Instant_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_Instant_descriptor,
+              internal_static_yamcs_Instant_descriptor,
               new java.lang.String[] { "Instant", },
               org.yamcs.protobuf.Yamcs.Instant.class,
               org.yamcs.protobuf.Yamcs.Instant.Builder.class);
-          internal_static_org_yamcs_protobuf_MessagingAddress_descriptor =
+          internal_static_yamcs_MessagingAddress_descriptor =
             getDescriptor().getMessageTypes().get(3);
-          internal_static_org_yamcs_protobuf_MessagingAddress_fieldAccessorTable = new
+          internal_static_yamcs_MessagingAddress_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_MessagingAddress_descriptor,
+              internal_static_yamcs_MessagingAddress_descriptor,
               new java.lang.String[] { "Address", },
               org.yamcs.protobuf.Yamcs.MessagingAddress.class,
               org.yamcs.protobuf.Yamcs.MessagingAddress.Builder.class);
-          internal_static_org_yamcs_protobuf_YamcsInstances_descriptor =
+          internal_static_yamcs_YamcsInstances_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_org_yamcs_protobuf_YamcsInstances_fieldAccessorTable = new
+          internal_static_yamcs_YamcsInstances_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_YamcsInstances_descriptor,
+              internal_static_yamcs_YamcsInstances_descriptor,
               new java.lang.String[] { "Instance", },
               org.yamcs.protobuf.Yamcs.YamcsInstances.class,
               org.yamcs.protobuf.Yamcs.YamcsInstances.Builder.class);
-          internal_static_org_yamcs_protobuf_YamcsInstance_descriptor =
+          internal_static_yamcs_YamcsInstance_descriptor =
             getDescriptor().getMessageTypes().get(5);
-          internal_static_org_yamcs_protobuf_YamcsInstance_fieldAccessorTable = new
+          internal_static_yamcs_YamcsInstance_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_YamcsInstance_descriptor,
+              internal_static_yamcs_YamcsInstance_descriptor,
               new java.lang.String[] { "Name", "MissionDatabase", },
               org.yamcs.protobuf.Yamcs.YamcsInstance.class,
               org.yamcs.protobuf.Yamcs.YamcsInstance.Builder.class);
-          internal_static_org_yamcs_protobuf_MissionDatabase_descriptor =
+          internal_static_yamcs_MissionDatabase_descriptor =
             getDescriptor().getMessageTypes().get(6);
-          internal_static_org_yamcs_protobuf_MissionDatabase_fieldAccessorTable = new
+          internal_static_yamcs_MissionDatabase_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_MissionDatabase_descriptor,
+              internal_static_yamcs_MissionDatabase_descriptor,
               new java.lang.String[] { "ConfigName", "Name", "Version", },
               org.yamcs.protobuf.Yamcs.MissionDatabase.class,
               org.yamcs.protobuf.Yamcs.MissionDatabase.Builder.class);
-          internal_static_org_yamcs_protobuf_Value_descriptor =
+          internal_static_yamcs_Value_descriptor =
             getDescriptor().getMessageTypes().get(7);
-          internal_static_org_yamcs_protobuf_Value_fieldAccessorTable = new
+          internal_static_yamcs_Value_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_Value_descriptor,
+              internal_static_yamcs_Value_descriptor,
               new java.lang.String[] { "Type", "FloatValue", "DoubleValue", "Sint32Value", "Uint32Value", "BinaryValue", "StringValue", "TimestampValue", "Uint64Value", "Sint64Value", "BooleanValue", },
               org.yamcs.protobuf.Yamcs.Value.class,
               org.yamcs.protobuf.Yamcs.Value.Builder.class);
-          internal_static_org_yamcs_protobuf_MissionDatabaseRequest_descriptor =
+          internal_static_yamcs_MissionDatabaseRequest_descriptor =
             getDescriptor().getMessageTypes().get(8);
-          internal_static_org_yamcs_protobuf_MissionDatabaseRequest_fieldAccessorTable = new
+          internal_static_yamcs_MissionDatabaseRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_MissionDatabaseRequest_descriptor,
+              internal_static_yamcs_MissionDatabaseRequest_descriptor,
               new java.lang.String[] { "DbConfigName", "Instance", },
               org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.class,
               org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_NamedObjectId_descriptor =
+          internal_static_yamcs_NamedObjectId_descriptor =
             getDescriptor().getMessageTypes().get(9);
-          internal_static_org_yamcs_protobuf_NamedObjectId_fieldAccessorTable = new
+          internal_static_yamcs_NamedObjectId_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_NamedObjectId_descriptor,
+              internal_static_yamcs_NamedObjectId_descriptor,
               new java.lang.String[] { "Name", "Namespace", },
               org.yamcs.protobuf.Yamcs.NamedObjectId.class,
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder.class);
-          internal_static_org_yamcs_protobuf_NamedObjectList_descriptor =
+          internal_static_yamcs_NamedObjectList_descriptor =
             getDescriptor().getMessageTypes().get(10);
-          internal_static_org_yamcs_protobuf_NamedObjectList_fieldAccessorTable = new
+          internal_static_yamcs_NamedObjectList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_NamedObjectList_descriptor,
+              internal_static_yamcs_NamedObjectList_descriptor,
               new java.lang.String[] { "List", },
               org.yamcs.protobuf.Yamcs.NamedObjectList.class,
               org.yamcs.protobuf.Yamcs.NamedObjectList.Builder.class);
-          internal_static_org_yamcs_protobuf_IndexRequest_descriptor =
+          internal_static_yamcs_IndexRequest_descriptor =
             getDescriptor().getMessageTypes().get(11);
-          internal_static_org_yamcs_protobuf_IndexRequest_fieldAccessorTable = new
+          internal_static_yamcs_IndexRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_IndexRequest_descriptor,
+              internal_static_yamcs_IndexRequest_descriptor,
               new java.lang.String[] { "Instance", "Start", "Stop", "UtcStart", "UtcStop", "DefaultNamespace", "SendAllTm", "TmPacket", "SendAllPp", "PpGroup", "SendCompletenessIndex", "SendAllCmd", "CmdName", "SendAllEvent", "EventSource", },
               org.yamcs.protobuf.Yamcs.IndexRequest.class,
               org.yamcs.protobuf.Yamcs.IndexRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ArchiveRecord_descriptor =
+          internal_static_yamcs_ArchiveRecord_descriptor =
             getDescriptor().getMessageTypes().get(12);
-          internal_static_org_yamcs_protobuf_ArchiveRecord_fieldAccessorTable = new
+          internal_static_yamcs_ArchiveRecord_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ArchiveRecord_descriptor,
+              internal_static_yamcs_ArchiveRecord_descriptor,
               new java.lang.String[] { "Id", "First", "Last", "Num", "Info", },
               org.yamcs.protobuf.Yamcs.ArchiveRecord.class,
               org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder.class);
-          internal_static_org_yamcs_protobuf_IndexResult_descriptor =
+          internal_static_yamcs_IndexResult_descriptor =
             getDescriptor().getMessageTypes().get(13);
-          internal_static_org_yamcs_protobuf_IndexResult_fieldAccessorTable = new
+          internal_static_yamcs_IndexResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_IndexResult_descriptor,
+              internal_static_yamcs_IndexResult_descriptor,
               new java.lang.String[] { "Instance", "Records", "Type", "TableName", },
               org.yamcs.protobuf.Yamcs.IndexResult.class,
               org.yamcs.protobuf.Yamcs.IndexResult.Builder.class);
-          internal_static_org_yamcs_protobuf_TagRequest_descriptor =
+          internal_static_yamcs_TagRequest_descriptor =
             getDescriptor().getMessageTypes().get(14);
-          internal_static_org_yamcs_protobuf_TagRequest_fieldAccessorTable = new
+          internal_static_yamcs_TagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_TagRequest_descriptor,
+              internal_static_yamcs_TagRequest_descriptor,
               new java.lang.String[] { "Instance", "Start", "Stop", },
               org.yamcs.protobuf.Yamcs.TagRequest.class,
               org.yamcs.protobuf.Yamcs.TagRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ArchiveTag_descriptor =
+          internal_static_yamcs_ArchiveTag_descriptor =
             getDescriptor().getMessageTypes().get(15);
-          internal_static_org_yamcs_protobuf_ArchiveTag_fieldAccessorTable = new
+          internal_static_yamcs_ArchiveTag_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ArchiveTag_descriptor,
+              internal_static_yamcs_ArchiveTag_descriptor,
               new java.lang.String[] { "Id", "Name", "Start", "Stop", "Description", "Color", },
               org.yamcs.protobuf.Yamcs.ArchiveTag.class,
               org.yamcs.protobuf.Yamcs.ArchiveTag.Builder.class);
-          internal_static_org_yamcs_protobuf_TagResult_descriptor =
+          internal_static_yamcs_TagResult_descriptor =
             getDescriptor().getMessageTypes().get(16);
-          internal_static_org_yamcs_protobuf_TagResult_fieldAccessorTable = new
+          internal_static_yamcs_TagResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_TagResult_descriptor,
+              internal_static_yamcs_TagResult_descriptor,
               new java.lang.String[] { "Instance", "Tag", },
               org.yamcs.protobuf.Yamcs.TagResult.class,
               org.yamcs.protobuf.Yamcs.TagResult.Builder.class);
-          internal_static_org_yamcs_protobuf_UpsertTagRequest_descriptor =
+          internal_static_yamcs_UpsertTagRequest_descriptor =
             getDescriptor().getMessageTypes().get(17);
-          internal_static_org_yamcs_protobuf_UpsertTagRequest_fieldAccessorTable = new
+          internal_static_yamcs_UpsertTagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_UpsertTagRequest_descriptor,
+              internal_static_yamcs_UpsertTagRequest_descriptor,
               new java.lang.String[] { "OldTag", "NewTag", },
               org.yamcs.protobuf.Yamcs.UpsertTagRequest.class,
               org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_DeleteTagRequest_descriptor =
+          internal_static_yamcs_DeleteTagRequest_descriptor =
             getDescriptor().getMessageTypes().get(18);
-          internal_static_org_yamcs_protobuf_DeleteTagRequest_fieldAccessorTable = new
+          internal_static_yamcs_DeleteTagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_DeleteTagRequest_descriptor,
+              internal_static_yamcs_DeleteTagRequest_descriptor,
               new java.lang.String[] { "Tag", },
               org.yamcs.protobuf.Yamcs.DeleteTagRequest.class,
               org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ReplaySpeed_descriptor =
+          internal_static_yamcs_ReplaySpeed_descriptor =
             getDescriptor().getMessageTypes().get(19);
-          internal_static_org_yamcs_protobuf_ReplaySpeed_fieldAccessorTable = new
+          internal_static_yamcs_ReplaySpeed_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ReplaySpeed_descriptor,
+              internal_static_yamcs_ReplaySpeed_descriptor,
               new java.lang.String[] { "Type", "Param", },
               org.yamcs.protobuf.Yamcs.ReplaySpeed.class,
               org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder.class);
-          internal_static_org_yamcs_protobuf_ReplayRequest_descriptor =
+          internal_static_yamcs_ReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(20);
-          internal_static_org_yamcs_protobuf_ReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_ReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ReplayRequest_descriptor,
+              internal_static_yamcs_ReplayRequest_descriptor,
               new java.lang.String[] { "Start", "Stop", "EndAction", "Speed", "Type", "TmPacketFilter", "PpGroupFilter", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", },
               org.yamcs.protobuf.Yamcs.ReplayRequest.class,
               org.yamcs.protobuf.Yamcs.ReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor =
+          internal_static_yamcs_ParameterReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(21);
-          internal_static_org_yamcs_protobuf_ParameterReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_ParameterReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ParameterReplayRequest_descriptor,
+              internal_static_yamcs_ParameterReplayRequest_descriptor,
               new java.lang.String[] { "NameFilter", "SendRaw", "PerformMonitoring", },
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.class,
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor =
+          internal_static_yamcs_PacketReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(22);
-          internal_static_org_yamcs_protobuf_PacketReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_PacketReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_PacketReplayRequest_descriptor,
+              internal_static_yamcs_PacketReplayRequest_descriptor,
               new java.lang.String[] { "NameFilter", },
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.class,
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor =
+          internal_static_yamcs_EventReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(23);
-          internal_static_org_yamcs_protobuf_EventReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_EventReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_EventReplayRequest_descriptor,
+              internal_static_yamcs_EventReplayRequest_descriptor,
               new java.lang.String[] { },
               org.yamcs.protobuf.Yamcs.EventReplayRequest.class,
               org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor =
+          internal_static_yamcs_CommandHistoryReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(24);
-          internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_CommandHistoryReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CommandHistoryReplayRequest_descriptor,
+              internal_static_yamcs_CommandHistoryReplayRequest_descriptor,
               new java.lang.String[] { },
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class,
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor =
+          internal_static_yamcs_PpReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(25);
-          internal_static_org_yamcs_protobuf_PpReplayRequest_fieldAccessorTable = new
+          internal_static_yamcs_PpReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_PpReplayRequest_descriptor,
+              internal_static_yamcs_PpReplayRequest_descriptor,
               new java.lang.String[] { "GroupNameFilter", },
               org.yamcs.protobuf.Yamcs.PpReplayRequest.class,
               org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder.class);
-          internal_static_org_yamcs_protobuf_ReplayStatus_descriptor =
+          internal_static_yamcs_ReplayStatus_descriptor =
             getDescriptor().getMessageTypes().get(26);
-          internal_static_org_yamcs_protobuf_ReplayStatus_fieldAccessorTable = new
+          internal_static_yamcs_ReplayStatus_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_ReplayStatus_descriptor,
+              internal_static_yamcs_ReplayStatus_descriptor,
               new java.lang.String[] { "State", "Request", "ErrorMessage", },
               org.yamcs.protobuf.Yamcs.ReplayStatus.class,
               org.yamcs.protobuf.Yamcs.ReplayStatus.Builder.class);
-          internal_static_org_yamcs_protobuf_TmPacketData_descriptor =
+          internal_static_yamcs_TmPacketData_descriptor =
             getDescriptor().getMessageTypes().get(27);
-          internal_static_org_yamcs_protobuf_TmPacketData_fieldAccessorTable = new
+          internal_static_yamcs_TmPacketData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_TmPacketData_descriptor,
+              internal_static_yamcs_TmPacketData_descriptor,
               new java.lang.String[] { "ReceptionTime", "Packet", "GenerationTime", "SequenceNumber", "Id", },
               org.yamcs.protobuf.Yamcs.TmPacketData.class,
               org.yamcs.protobuf.Yamcs.TmPacketData.Builder.class);
-          internal_static_org_yamcs_protobuf_Event_descriptor =
+          internal_static_yamcs_Event_descriptor =
             getDescriptor().getMessageTypes().get(28);
-          internal_static_org_yamcs_protobuf_Event_fieldAccessorTable = new
+          internal_static_yamcs_Event_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_Event_descriptor,
+              internal_static_yamcs_Event_descriptor,
               new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", },
               org.yamcs.protobuf.Yamcs.Event.class,
               org.yamcs.protobuf.Yamcs.Event.Builder.class);

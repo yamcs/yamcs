@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0.0">
+  <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+  </macros>
+  <wuid>5291eabb:13f9a846fba:-7ffb</wuid>
+  <boy_version>3.2.6.qualifier</boy_version>
+  <scripts />
+  <show_ruler>true</show_ruler>
+  <height>600</height>
+  <name>Display</name>
+  <snap_to_geometry>true</snap_to_geometry>
+  <show_grid>false</show_grid>
+  <background_color>
+    <color red="240" green="240" blue="240" />
+  </background_color>
+  <foreground_color>
+    <color red="192" green="192" blue="192" />
+  </foreground_color>
+  <widget_type>Display</widget_type>
+  <show_close_button>true</show_close_button>
+  <width>800</width>
+  <rules />
+  <show_edit_range>true</show_edit_range>
+  <grid_space>6</grid_space>
+  <auto_scale_widgets>
+    <auto_scale_widgets>false</auto_scale_widgets>
+    <min_width>-1</min_width>
+    <min_height>-1</min_height>
+  </auto_scale_widgets>
+  <actions hook="false" hook_all="false" />
+  <y>-1</y>
+  <x>-1</x>
+  <widget typeId="org.csstudio.opibuilder.widgets.LED" version="1.0.0">
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>5291eabb:13f9a846fba:-7def</wuid>
+    <scripts />
+    <square_led>false</square_led>
+    <on_color>
+      <color name="On" red="0" green="255" blue="0" />
+    </on_color>
+    <height>32</height>
+    <data_type>0</data_type>
+    <name>LED</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <show_boolean_label>false</show_boolean_label>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>true</keep_wh_ratio>
+    </scale_options>
+    <off_color>
+      <color name="Off" red="0" green="100" blue="0" />
+    </off_color>
+    <pv_name>loc://$(DID)_set(0)</pv_name>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="192" green="192" blue="192" />
+    </foreground_color>
+    <off_label>OFF</off_label>
+    <widget_type>LED</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Verdana" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>32</width>
+    <border_style>0</border_style>
+    <effect_3d>true</effect_3d>
+    <rules />
+    <pv_value />
+    <bit>0</bit>
+    <border_width>1</border_width>
+    <on_label>ON</on_label>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <actions hook="false" hook_all="false" />
+    <y>36</y>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>138</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>5291eabb:13f9a846fba:-7db3</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>Set PV</text>
+    <font>
+      <opifont.name fontName="Verdana" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>77</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>2</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>42</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>53</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <wuid>5291eabb:13f9a846fba:-7daf</wuid>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label_1</name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>Readback PV</text>
+    <font>
+      <opifont.name fontName="Verdana" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>98</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>2</horizontal_alignment>
+    <actions hook="false" hook_all="false" />
+    <y>72</y>
+    <wrap_words>true</wrap_words>
+    <tooltip></tooltip>
+    <x>32</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.LED" version="1.0.0">
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>5291eabb:13f9a846fba:-7dab</wuid>
+    <scripts>
+      <path pathString="delayedSetValueExample.js" checkConnect="true" sfe="true" seoe="false">
+        <pv trig="true">loc://$(DID)_set(0)</pv>
+        <pv trig="false">loc://$(DID)_readback(0)</pv>
+      </path>
+    </scripts>
+    <square_led>false</square_led>
+    <on_color>
+      <color name="On" red="0" green="255" blue="0" />
+    </on_color>
+    <height>32</height>
+    <data_type>0</data_type>
+    <name>LED_1</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <show_boolean_label>false</show_boolean_label>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>true</keep_wh_ratio>
+    </scale_options>
+    <off_color>
+      <color name="Off" red="0" green="100" blue="0" />
+    </off_color>
+    <pv_name>loc://$(DID)_readback(0)</pv_name>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="192" green="192" blue="192" />
+    </foreground_color>
+    <off_label>OFF</off_label>
+    <widget_type>LED</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Verdana" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>32</width>
+    <border_style>0</border_style>
+    <effect_3d>true</effect_3d>
+    <rules />
+    <pv_value />
+    <bit>0</bit>
+    <border_width>1</border_width>
+    <on_label>ON</on_label>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <actions hook="false" hook_all="false" />
+    <y>66</y>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>138</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="2.0.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>5291eabb:13f9a846fba:-7e40</wuid>
+    <scripts>
+      <path pathString="EmbeddedJs" checkConnect="true" sfe="false" seoe="false">
+        <scriptName>SetWritePVActionValue</scriptName>
+        <scriptText><![CDATA[importPackage(Packages.org.csstudio.opibuilder.scriptUtil);
+if(PVUtil.getLong(pvs[0])==0)
+	widget.getHookedActions().get(0).setPropertyValue("value",1);
+else
+	widget.getHookedActions().get(0).setPropertyValue("value",0);
+]]></scriptText>
+        <pv trig="true">loc://$(DID)_readback(0)</pv>
+      </path>
+    </scripts>
+    <height>43</height>
+    <style>0</style>
+    <name>Action Button</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name>loc://$(DID)_set(0)</pv_name>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <widget_type>Action Button</widget_type>
+    <enabled>true</enabled>
+    <text>Power is off</text>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name fontName="Verdana" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>154</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image>off.png</image>
+    <rules>
+      <rule name="Icon Rule" prop_id="image" out_exp="false">
+        <exp bool_exp="pv0==0&amp;&amp;pv1==0">
+          <value>off.png</value>
+        </exp>
+        <exp bool_exp="pv0==0&amp;&amp;pv1==1">
+          <value>down.png</value>
+        </exp>
+        <exp bool_exp="pv0==1&amp;&amp;pv1==0">
+          <value>up.png</value>
+        </exp>
+        <exp bool_exp="pv0==1&amp;&amp;pv1==1">
+          <value>on.png</value>
+        </exp>
+        <pv trig="true">loc://$(DID)_set(0)</pv>
+        <pv trig="true">loc://$(DID)_readback(0)</pv>
+      </rule>
+      <rule name="Label Rule" prop_id="text" out_exp="false">
+        <exp bool_exp="pv0==0&amp;&amp;pv1==0">
+          <value>Power is Off</value>
+        </exp>
+        <exp bool_exp="pv0==0&amp;&amp;pv1==1">
+          <value>Ramping Down ...</value>
+        </exp>
+        <exp bool_exp="pv0==1&amp;&amp;pv1==0">
+          <value>Ramping up ...</value>
+        </exp>
+        <exp bool_exp="pv0==1&amp;&amp;pv1==1">
+          <value>Power is On</value>
+        </exp>
+        <pv trig="true">loc://$(DID)_set(0)</pv>
+        <pv trig="true">loc://$(DID)_readback(0)</pv>
+      </rule>
+    </rules>
+    <pv_value />
+    <toggle_button>false</toggle_button>
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>49</y>
+    <actions hook="false" hook_all="false">
+      <action type="WRITE_PV">
+        <pv_name>$(pv_name)</pv_name>
+        <value></value>
+        <timeout>10</timeout>
+        <confirm_message></confirm_message>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>216</x>
+  </widget>
+</display>

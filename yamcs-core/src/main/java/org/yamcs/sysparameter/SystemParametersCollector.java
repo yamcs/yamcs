@@ -64,12 +64,12 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     
     static public SystemParametersCollector getInstance(String instance) {
         synchronized(instances) {
-            return instances.get(instance);    
+            return instances.get(instance);
         }
     }
 
 
-    public SystemParametersCollector(String instance) {
+    public SystemParametersCollector(String instance) throws ConfigurationException {
         this.instance = instance;
        
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
@@ -77,12 +77,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(STREAM_NAME);
         if(s==null) {
-            try {
-                ydb.execute("create stream "+STREAM_NAME+PpProviderAdapter.PP_TUPLE_DEFINITION.getStringDefinition());
-            } catch (Exception e) {
-                throw new RuntimeException("Unexpected exception when creating the stream ",e);
-            }
-            s=ydb.getStream(STREAM_NAME);
+            throw new ConfigurationException("Stream ' "+STREAM_NAME+"' does not exist");
         }
         stream=s;
         
@@ -99,9 +94,11 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             namespace = XtceDbFactory.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
             log.info("Using {} as serverId, and {} as namespace for system variables", serverId, namespace);
         } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
+            throw e;
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or altenatively add 'serverId: <name>' to yamcs.yaml";
+            log.warn(msg);
+            throw new ConfigurationException(msg, e);
         }
         
         synchronized(instances) {
@@ -122,6 +119,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         notifyStopped();
     }
 
+    /**
+     * Run from the timer, collect all parameters and send them on the stream
+     */
     @Override
     public void run() {
         Collection<ParameterValue> params = new ArrayList<ParameterValue>();
@@ -134,7 +134,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             }
         }
         long gentime = TimeEncoding.currentInstant();
-
+        if(params.isEmpty()) return;
 
         TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());

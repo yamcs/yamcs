@@ -43,6 +43,8 @@ done
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 
+ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
+
 ln -fs $YAMCS_HOME/yamcs-web/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/src/main/resources/mime.types $TARGET/etc
@@ -50,5 +52,16 @@ ln -fs $YAMCS_HOME/yamcs-web/src/main/resources/mime.types $TARGET/etc
 
 mkdir -p $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
+ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/
+
+cp -an $YAMCS_HOME/yamcs-simulation/etc/mdb.yaml $TARGET/etc
+ln -fs $YAMCS_HOME/yamcs-simulation/etc/yamcs.simulator.yaml $TARGET/etc
+
+cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
+ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
 
 
+
+if [ -f make-live-devel-local.sh ] ; then
+ sh make-live-devel-local.sh $TARGET
+fi

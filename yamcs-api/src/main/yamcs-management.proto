@@ -1,4 +1,6 @@
-package org.yamcs.protobuf;
+package yamcsmanagement;
+option java_package = "org.yamcs.protobuf";
+
 /* Yamcs Management structures and services */
 /* Services are used just for reference, no code is being generated (yet) */
 
@@ -27,8 +29,8 @@ message ChannelInfo {
     optional string creator=5;
     optional bool hasCommanding=6;
     optional ServiceState state=7;
-    optional ReplayRequest replayRequest=8; //in case of replay channels
-    optional ReplayStatus.ReplayState replayState=9; //in case of replay channels
+    optional yamcs.ReplayRequest replayRequest=8; //in case of replay channels
+    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay channels
 }
 
 message ClientInfo {
@@ -64,11 +66,11 @@ message ChannelRequest { //this is used for ChannelControl service
 }
 
 service ChannelControl {
-  rpc CreateChannel(ChannelRequest) returns (Void);
-  rpc ConnectToChannel(ChannelRequest) returns (Void);
-  rpc PauseChannel(ChannelRequest) returns (Void);
-  rpc ResumeChannel(ChannelRequest) returns (Void);
-  rpc SeekChannel(ChannelRequest) returns (Void);
+  rpc CreateChannel(ChannelRequest) returns (yamcs.Void);
+  rpc ConnectToChannel(ChannelRequest) returns (yamcs.Void);
+  rpc PauseChannel(ChannelRequest) returns (yamcs.Void);
+  rpc ResumeChannel(ChannelRequest) returns (yamcs.Void);
+  rpc SeekChannel(ChannelRequest) returns (yamcs.Void);
 }
 
 /************** Link Control ****************************/

@@ -17,15 +17,14 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
-
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
-
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.sysparameter.SystemParametersCollector;
 import org.yamcs.sysparameter.SystemParametersProvider;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 
 public class TcpTmProvider extends AbstractExecutionThreadService implements TmPacketProvider,  SystemParametersProvider {
@@ -98,7 +97,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 			try {
 				if (tmSocket==null) {
 					openSocket();
-					log.info("TM connection estabilished to "+host+" port "+port);
+					log.info("TM connection established to "+host+" port "+port);
 				} 
 				byte hdr[] = new byte[6];
 				if(!readWithBlocking(hdr,0,6))

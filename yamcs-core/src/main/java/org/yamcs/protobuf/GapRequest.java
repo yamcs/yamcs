@@ -27,15 +27,15 @@ public final class GapRequest {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.GapRequest.internal_static_org_yamcs_protobuf_CcsdsGap_descriptor;
+      return org.yamcs.protobuf.GapRequest.internal_static_gaprequest_CcsdsGap_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.GapRequest.internal_static_org_yamcs_protobuf_CcsdsGap_fieldAccessorTable;
+      return org.yamcs.protobuf.GapRequest.internal_static_gaprequest_CcsdsGap_fieldAccessorTable;
     }
     
-    // required int32 apid = 1;
+    // optional int32 apid = 1;
     public static final int APID_FIELD_NUMBER = 1;
     private boolean hasApid;
     private int apid_ = 0;
@@ -59,7 +59,6 @@ public final class GapRequest {
     private void initFields() {
     }
     public final boolean isInitialized() {
-      if (!hasApid) return false;
       if (!hasStartTime) return false;
       if (!hasStopTime) return false;
       return true;
@@ -307,7 +306,7 @@ public final class GapRequest {
       }
       
       
-      // required int32 apid = 1;
+      // optional int32 apid = 1;
       public boolean hasApid() {
         return result.hasApid();
       }
@@ -361,7 +360,7 @@ public final class GapRequest {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CcsdsGap)
+      // @@protoc_insertion_point(builder_scope:gaprequest.CcsdsGap)
     }
     
     static {
@@ -370,7 +369,7 @@ public final class GapRequest {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CcsdsGap)
+    // @@protoc_insertion_point(class_scope:gaprequest.CcsdsGap)
   }
   
   public static final class CcsdsGapRequest extends
@@ -392,15 +391,15 @@ public final class GapRequest {
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.GapRequest.internal_static_org_yamcs_protobuf_CcsdsGapRequest_descriptor;
+      return org.yamcs.protobuf.GapRequest.internal_static_gaprequest_CcsdsGapRequest_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.GapRequest.internal_static_org_yamcs_protobuf_CcsdsGapRequest_fieldAccessorTable;
+      return org.yamcs.protobuf.GapRequest.internal_static_gaprequest_CcsdsGapRequest_fieldAccessorTable;
     }
     
-    // repeated .org.yamcs.protobuf.CcsdsGap gaps = 1;
+    // repeated .gaprequest.CcsdsGap gaps = 1;
     public static final int GAPS_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.GapRequest.CcsdsGap> gaps_ =
       java.util.Collections.emptyList();
@@ -644,7 +643,7 @@ public final class GapRequest {
       }
       
       
-      // repeated .org.yamcs.protobuf.CcsdsGap gaps = 1;
+      // repeated .gaprequest.CcsdsGap gaps = 1;
       public java.util.List<org.yamcs.protobuf.GapRequest.CcsdsGap> getGapsList() {
         return java.util.Collections.unmodifiableList(result.gaps_);
       }
@@ -695,7 +694,7 @@ public final class GapRequest {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:org.yamcs.protobuf.CcsdsGapRequest)
+      // @@protoc_insertion_point(builder_scope:gaprequest.CcsdsGapRequest)
     }
     
     static {
@@ -704,19 +703,19 @@ public final class GapRequest {
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:org.yamcs.protobuf.CcsdsGapRequest)
+    // @@protoc_insertion_point(class_scope:gaprequest.CcsdsGapRequest)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CcsdsGap_descriptor;
+    internal_static_gaprequest_CcsdsGap_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CcsdsGap_fieldAccessorTable;
+      internal_static_gaprequest_CcsdsGap_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_yamcs_protobuf_CcsdsGapRequest_descriptor;
+    internal_static_gaprequest_CcsdsGapRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_yamcs_protobuf_CcsdsGapRequest_fieldAccessorTable;
+      internal_static_gaprequest_CcsdsGapRequest_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -726,30 +725,30 @@ public final class GapRequest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021gap-request.proto\022\022org.yamcs.protobuf\"" +
-      "=\n\010CcsdsGap\022\014\n\004apid\030\001 \002(\005\022\021\n\tstartTime\030\002" +
-      " \002(\003\022\020\n\010stopTime\030\003 \002(\003\"=\n\017CcsdsGapReques" +
-      "t\022*\n\004gaps\030\001 \003(\0132\034.org.yamcs.protobuf.Ccs" +
-      "dsGap"
+      "\n\021gap-request.proto\022\ngaprequest\"=\n\010Ccsds" +
+      "Gap\022\014\n\004apid\030\001 \001(\005\022\021\n\tstartTime\030\002 \002(\003\022\020\n\010" +
+      "stopTime\030\003 \002(\003\"5\n\017CcsdsGapRequest\022\"\n\004gap" +
+      "s\030\001 \003(\0132\024.gaprequest.CcsdsGapB\024\n\022org.yam" +
+      "cs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_yamcs_protobuf_CcsdsGap_descriptor =
+          internal_static_gaprequest_CcsdsGap_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_yamcs_protobuf_CcsdsGap_fieldAccessorTable = new
+          internal_static_gaprequest_CcsdsGap_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CcsdsGap_descriptor,
+              internal_static_gaprequest_CcsdsGap_descriptor,
               new java.lang.String[] { "Apid", "StartTime", "StopTime", },
               org.yamcs.protobuf.GapRequest.CcsdsGap.class,
               org.yamcs.protobuf.GapRequest.CcsdsGap.Builder.class);
-          internal_static_org_yamcs_protobuf_CcsdsGapRequest_descriptor =
+          internal_static_gaprequest_CcsdsGapRequest_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_yamcs_protobuf_CcsdsGapRequest_fieldAccessorTable = new
+          internal_static_gaprequest_CcsdsGapRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_yamcs_protobuf_CcsdsGapRequest_descriptor,
+              internal_static_gaprequest_CcsdsGapRequest_descriptor,
               new java.lang.String[] { "Gaps", },
               org.yamcs.protobuf.GapRequest.CcsdsGapRequest.class,
               org.yamcs.protobuf.GapRequest.CcsdsGapRequest.Builder.class);

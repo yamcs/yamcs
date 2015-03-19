@@ -12,5 +12,5 @@ import java.util.ArrayList;
  *
  */
 public interface DVParameterConsumer {
-    public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValueWithId> items);
+    public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValue> items);
 }

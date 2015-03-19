@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>0.28.0.SNAPSHOT</version>
+    <version>0.28.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>r09</version>
+      <version>18.0</version>
     </dependency>
 
     <!-- Dependencies in the spaceapps repo -->

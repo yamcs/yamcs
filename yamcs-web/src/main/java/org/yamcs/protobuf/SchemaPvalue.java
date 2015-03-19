@@ -41,6 +41,26 @@ public final class SchemaPvalue
                     output.writeString(11, message.getAcquisitionTimeUTC(), false);
                 if(message.hasGenerationTimeUTC())
                     output.writeString(12, message.getGenerationTimeUTC(), false);
+                if(message.hasWatchLow())
+                    output.writeDouble(13, message.getWatchLow(), false);
+                if(message.hasWatchHigh())
+                    output.writeDouble(14, message.getWatchHigh(), false);
+                if(message.hasWarningLow())
+                    output.writeDouble(15, message.getWarningLow(), false);
+                if(message.hasWarningHigh())
+                    output.writeDouble(16, message.getWarningHigh(), false);
+                if(message.hasDistressLow())
+                    output.writeDouble(17, message.getDistressLow(), false);
+                if(message.hasDistressHigh())
+                    output.writeDouble(18, message.getDistressHigh(), false);
+                if(message.hasCriticalLow())
+                    output.writeDouble(19, message.getCriticalLow(), false);
+                if(message.hasCriticalHigh())
+                    output.writeDouble(20, message.getCriticalHigh(), false);
+                if(message.hasSevereLow())
+                    output.writeDouble(21, message.getSevereLow(), false);
+                if(message.hasSevereHigh())
+                    output.writeDouble(22, message.getSevereHigh(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
             {
@@ -113,6 +133,36 @@ public final class SchemaPvalue
                         case 12:
                             builder.setGenerationTimeUTC(input.readString());
                             break;
+                        case 13:
+                            builder.setWatchLow(input.readDouble());
+                            break;
+                        case 14:
+                            builder.setWatchHigh(input.readDouble());
+                            break;
+                        case 15:
+                            builder.setWarningLow(input.readDouble());
+                            break;
+                        case 16:
+                            builder.setWarningHigh(input.readDouble());
+                            break;
+                        case 17:
+                            builder.setDistressLow(input.readDouble());
+                            break;
+                        case 18:
+                            builder.setDistressHigh(input.readDouble());
+                            break;
+                        case 19:
+                            builder.setCriticalLow(input.readDouble());
+                            break;
+                        case 20:
+                            builder.setCriticalHigh(input.readDouble());
+                            break;
+                        case 21:
+                            builder.setSevereLow(input.readDouble());
+                            break;
+                        case 22:
+                            builder.setSevereHigh(input.readDouble());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -163,6 +213,16 @@ public final class SchemaPvalue
                 case 8: return "monitoringResult";
                 case 11: return "acquisitionTimeUTC";
                 case 12: return "generationTimeUTC";
+                case 13: return "watchLow";
+                case 14: return "watchHigh";
+                case 15: return "warningLow";
+                case 16: return "warningHigh";
+                case 17: return "distressLow";
+                case 18: return "distressHigh";
+                case 19: return "criticalLow";
+                case 20: return "criticalHigh";
+                case 21: return "severeLow";
+                case 22: return "severeHigh";
                 default: return null;
             }
         }
@@ -184,6 +244,16 @@ public final class SchemaPvalue
             fieldMap.put("monitoringResult", 8);
             fieldMap.put("acquisitionTimeUTC", 11);
             fieldMap.put("generationTimeUTC", 12);
+            fieldMap.put("watchLow", 13);
+            fieldMap.put("watchHigh", 14);
+            fieldMap.put("warningLow", 15);
+            fieldMap.put("warningHigh", 16);
+            fieldMap.put("distressLow", 17);
+            fieldMap.put("distressHigh", 18);
+            fieldMap.put("criticalLow", 19);
+            fieldMap.put("criticalHigh", 20);
+            fieldMap.put("severeLow", 21);
+            fieldMap.put("severeHigh", 22);
         }
     }
 
@@ -201,6 +271,12 @@ public final class SchemaPvalue
                 for(org.yamcs.protobuf.Pvalue.ParameterValue parameter : message.getParameterList())
                     output.writeObject(1, parameter, org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, true);
 
+                if(message.hasGroup())
+                    output.writeString(2, message.getGroup(), false);
+                if(message.hasGenerationTime())
+                    output.writeInt64(3, message.getGenerationTime(), false);
+                if(message.hasSeqNum())
+                    output.writeInt32(4, message.getSeqNum(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterData message)
             {
@@ -244,6 +320,15 @@ public final class SchemaPvalue
                             builder.addParameter(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
+                        case 2:
+                            builder.setGroup(input.readString());
+                            break;
+                        case 3:
+                            builder.setGenerationTime(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setSeqNum(input.readInt32());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -285,6 +370,9 @@ public final class SchemaPvalue
             switch(number)
             {
                 case 1: return "parameter";
+                case 2: return "group";
+                case 3: return "generationTime";
+                case 4: return "seqNum";
                 default: return null;
             }
         }
@@ -297,6 +385,9 @@ public final class SchemaPvalue
         static
         {
             fieldMap.put("parameter", 1);
+            fieldMap.put("group", 2);
+            fieldMap.put("generationTime", 3);
+            fieldMap.put("seqNum", 4);
         }
     }
 

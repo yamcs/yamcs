@@ -8,7 +8,6 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.tokyocabinet.TcTableWriter;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -28,7 +27,7 @@ public class CommandHistoryRecorder extends AbstractService {
     final Logger log;
     final public static String TABLE_NAME="cmdhist"; 
     
-    public CommandHistoryRecorder(String instance) throws StreamSqlException {
+    public CommandHistoryRecorder(String instance) {
         this.instance=instance;
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
     }
@@ -78,7 +77,7 @@ public class CommandHistoryRecorder extends AbstractService {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream stream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         for(StreamSubscriber ss:stream.getSubscribers()) {
-            if(ss instanceof TcTableWriter) {
+            if(ss instanceof TableWriter) {
                 if("cmdhist".equals(((TableWriter)ss).getTableDefinition().getName()))
                     stream.removeSubscriber(ss);
             }

@@ -34,6 +34,7 @@ public class AlarmChecker {
      * matches are taken from the same set of pvals.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
+	
         ComparisonProcessor comparisonProcessor=new ComparisonProcessor(pvals);
         for(ParameterValue pval:pvals) {
             if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
@@ -107,7 +108,7 @@ public class AlarmChecker {
         if(pv.getMonitoringResult()==null) {
             pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
-        
+        System.out.println("performing alarm checking... alarmReporter: "+alarmReporter);
         // Notify when severity changes
         if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);

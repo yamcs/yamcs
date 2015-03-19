@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "C:\SeeVisioDTD\svg10.dtd">
+<!-- Généré par Microsoft Visio 11.0, SVG Export, v1.0 OL_EE0109.svg Page 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="0.374331in"
+		height="0.736439in" viewBox="0 0 26.9518 53.0236" xml:space="preserve" color-interpolation-filters="sRGB" class="st4">
+	<v:documentProperties v:langID="1036" v:metric="true" v:viewMarkup="false"/>
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.72}
+		.st2 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st3 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st4 {fill:none;fill-rule:evenodd;font-size:12;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>Page 1</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="group1-1" transform="translate(0.72,-1)" v:mID="1" v:groupContext="group">
+			<title>Feuille.1</title>
+			<g id="shape2-2" v:mID="2" v:groupContext="shape" transform="translate(0,-50.9917)">
+				<title>Feuille.2</title>
+				<rect x="0" y="52.9917" width="0.0159449" height="0.0318898" class="st1"/>
+			</g>
+			<g id="shape3-4" v:mID="3" v:groupContext="shape" transform="translate(25.4959,0)">
+				<title>Feuille.3</title>
+				<rect x="0" y="52.9917" width="0.0159449" height="0.0318898" class="st1"/>
+			</g>
+		</g>
+		<g id="shape4-6" v:mID="4" v:groupContext="shape" transform="translate(9.22394,-13.7559)">
+			<title>Feuille.4</title>
+			<rect x="0" y="27.5118" width="8.50394" height="25.5118" class="st2"/>
+		</g>
+		<g id="shape5-8" v:mID="5" v:groupContext="shape" transform="translate(66.4995,1) rotate(90)">
+			<title>Feuille.5</title>
+			<path d="M0 53.02 L51.02 53.02" class="st3"/>
+		</g>
+	</g>
+</svg>

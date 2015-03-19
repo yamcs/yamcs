@@ -834,6 +834,8 @@ public final class SchemaYamcs
                     output.writeUInt64(9, message.getUint64Value(), false);
                 if(message.hasSint64Value())
                     output.writeSInt64(10, message.getSint64Value(), false);
+                if(message.hasBooleanValue())
+                    output.writeBool(11, message.getBooleanValue(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.Value message)
             {
@@ -903,6 +905,9 @@ public final class SchemaYamcs
                         case 10:
                             builder.setSint64Value(input.readSInt64());
                             break;
+                        case 11:
+                            builder.setBooleanValue(input.readBool());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -953,6 +958,7 @@ public final class SchemaYamcs
                 case 8: return "timestampValue";
                 case 9: return "uint64Value";
                 case 10: return "sint64Value";
+                case 11: return "booleanValue";
                 default: return null;
             }
         }
@@ -974,6 +980,7 @@ public final class SchemaYamcs
             fieldMap.put("timestampValue", 8);
             fieldMap.put("uint64Value", 9);
             fieldMap.put("sint64Value", 10);
+            fieldMap.put("booleanValue", 11);
         }
     }
 
@@ -3470,6 +3477,9 @@ public final class SchemaYamcs
                     output.writeInt64(3, message.getGenerationTime(), false);
                 if(message.hasSequenceNumber())
                     output.writeInt32(4, message.getSequenceNumber(), false);
+                if(message.hasId())
+                    output.writeObject(5, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.TmPacketData message)
             {
@@ -3521,6 +3531,10 @@ public final class SchemaYamcs
                         case 4:
                             builder.setSequenceNumber(input.readInt32());
                             break;
+                        case 5:
+                            builder.setId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -3565,6 +3579,7 @@ public final class SchemaYamcs
                 case 2: return "packet";
                 case 3: return "generationTime";
                 case 4: return "sequenceNumber";
+                case 5: return "id";
                 default: return null;
             }
         }
@@ -3580,6 +3595,7 @@ public final class SchemaYamcs
             fieldMap.put("packet", 2);
             fieldMap.put("generationTime", 3);
             fieldMap.put("sequenceNumber", 4);
+            fieldMap.put("id", 5);
         }
     }
 

@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SpaceSystem extends NameDescription {
   
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
     private SequenceContainer rootSequenceContainer;
     
     
@@ -84,7 +84,11 @@ public class SpaceSystem extends NameDescription {
             throw new IllegalArgumentException("there is already a command with name "+command.getName());
         commands.put(command.getName(), command);
     }
-    
+
+    public MetaCommand getMetaCommand(String refName) {
+        return commands.get(refName);
+    }
+
     public ParameterType getParameterType(String typeName) {
         return parameterTypes.get(typeName);
     }
@@ -184,4 +188,9 @@ public class SpaceSystem extends NameDescription {
     public Collection<NonStandardData> getNonStandardData() {
         return nonStandardDatas.values();
     }
+    
+    public String toString() {
+    	return "SpaceSystem["+getName()+"]";
+    }
+    
 }
