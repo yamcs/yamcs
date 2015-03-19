@@ -66,10 +66,11 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT13StringStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+    	XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
         //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        
         tmExtractor.startProvidingAll();
         
         ByteBuffer bb=tmGenerator.generate_PKT13();

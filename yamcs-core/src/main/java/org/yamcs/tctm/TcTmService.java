@@ -2,8 +2,8 @@ package org.yamcs.tctm;
 
 import java.util.List;
 
-import org.yamcs.ParameterProvider;
 import org.yamcs.commanding.CommandReleaser;
+import org.yamcs.parameter.ParameterProvider;
 
 import com.google.common.util.concurrent.Service;
 

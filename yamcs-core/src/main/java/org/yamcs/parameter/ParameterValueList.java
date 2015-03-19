@@ -1,9 +1,10 @@
-package org.yamcs;
+package org.yamcs.parameter;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.yamcs.ParameterValue;
 import org.yamcs.xtce.Parameter;
 
 /**

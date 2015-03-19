@@ -1,6 +1,8 @@
-package org.yamcs;
+package org.yamcs.parameter;
 
 import java.util.ArrayList;
+
+import org.yamcs.ParameterValue;
 
 /**
  * Used by the ParameterRequestManager to deliver parameters
@@ -10,6 +12,6 @@ import java.util.ArrayList;
  */
 public interface ParameterConsumer {
 
-	void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items);
+	void updateItems(int subscriptionId, ArrayList<ParameterValue> items);
 
 }

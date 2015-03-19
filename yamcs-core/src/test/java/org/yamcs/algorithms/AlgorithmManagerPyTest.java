@@ -5,6 +5,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -15,16 +18,16 @@ import org.yamcs.ChannelException;
 import org.yamcs.ChannelFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterRequestManager;
-import org.yamcs.ParameterValueWithId;
+import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
-import org.yamcs.RefMdbTmService;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.TcTmService;
+import org.yamcs.parameter.ParameterConsumer;
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.tctm.SimpleTcTmService;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -35,11 +38,11 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class AlgorithmManagerPyTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup("refmdb-py");
+        YConfiguration.setup(instance);
         ManagementService.setup(false,false);
         XtceDbFactory.reset();
     }
-    
+    static String instance = "refmdb-py";
     private XtceDb db;
     private Channel c;
     private RefMdbPacketGenerator tmGenerator;
@@ -49,20 +52,25 @@ public class AlgorithmManagerPyTest {
     public void beforeEachTest() throws ConfigurationException, ChannelException {
         EventProducerFactory.setMockup(true);
         
-        db=XtceDbFactory.getInstance("refmdb-py");
+        db=XtceDbFactory.getInstance(instance);
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
-        try {
-            c=ChannelFactory.create("refmdb-py", "AlgorithmManagerPyTest", "refmdb-py", new RefMdbTmService(tmGenerator), "refmdb-py");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
+        Map<String, Object> config = new HashMap<String, Object>();
+        config.put("libraries", Arrays.asList("mdb/algolib.py"));
+        config.put("scriptLanguage", "python");
+        AlgorithmManager am = new AlgorithmManager(instance, config);
+        paramProviderList.add(am);
+        
+        
+        SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
+        c=ChannelFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after creating chanel c:"+c);
         prm=c.getParameterRequestManager();
     }
     
+
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after eachtest c:"+c);
@@ -71,31 +79,33 @@ public class AlgorithmManagerPyTest {
     
     @Test
     public void testFloats() throws InvalidIdentification {
-        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition").build()), new ParameterConsumer() {
+        final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
+        System.out.println("subscribing to "+p);
+        prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
-                params.addAll(items);
+            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+        	params.addAll(items);
             }
         });
 
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(2.1672918, params.get(0).getParameterValue().getEngValue().getFloatValue(), 0.001);
+        assertEquals(2.1672918, params.get(0).getEngValue().getFloatValue(), 0.001);
     }
     
     @Test
     public void testSignedIntegers() throws InvalidIdentification {
-        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
+        final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(Arrays.asList(
-                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome1").build(),
-                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome2").build(),
-                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome3").build(),
-                NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoNegativeOutcome4").build()
+        	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome1"),
+        	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome2"),
+        	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome3"),
+        	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome4")
         ), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -103,18 +113,18 @@ public class AlgorithmManagerPyTest {
         c.start();
         tmGenerator.generate_PKT18(2,-2);
         assertEquals(4, params.size());
-        assertEquals(2, params.get(0).getParameterValue().getEngValue().getSint32Value());
-        assertEquals(-2, params.get(1).getParameterValue().getEngValue().getSint32Value());
-        assertEquals(-2, params.get(2).getParameterValue().getEngValue().getSint32Value());
-        assertEquals(2, params.get(3).getParameterValue().getEngValue().getSint32Value());
+        assertEquals(2, params.get(0).getEngValue().getSint32Value());
+        assertEquals(-2, params.get(1).getEngValue().getSint32Value());
+        assertEquals(-2, params.get(2).getEngValue().getSint32Value());
+        assertEquals(2, params.get(3).getEngValue().getSint32Value());
     }
 
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
-        final ArrayList<ParameterValueWithId> params=new ArrayList<ParameterValueWithId>();
-        prm.addRequest(Arrays.asList(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build()), new ParameterConsumer() {
+        final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivision"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -122,6 +132,6 @@ public class AlgorithmManagerPyTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getParameterValue().getEngValue().getFloatValue()*3, 0.001);
+        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
     }
 }

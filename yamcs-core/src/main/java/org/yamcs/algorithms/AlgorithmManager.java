@@ -26,11 +26,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.ParameterListener;
-import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
-import org.yamcs.ParameterValueWithId;
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
@@ -96,8 +95,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     	this(yamcsInstance, null);
     }
     
+    @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
-        
         this.yamcsInstance = yamcsInstance;
 
         scriptLanguage=DEFAULT_LANGUAGE;
@@ -112,7 +111,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
         scriptEngineManager = new ScriptEngineManager();
-        
         if(!libraries.isEmpty()) {      
             // Disposable ScriptEngine, just to eval libraries and put them in global scope
             ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
@@ -121,6 +119,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
             try {
                 for(String lib:libraries) {
+                    log.debug("Loading library "+lib);
                     File f=new File(lib);
                     if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
                     
@@ -149,7 +148,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     	this.parameterRequestManager = chan.getParameterRequestManager();
     	xtcedb = chan.getXtceDb();
         try {
-            subscriptionId=parameterRequestManager.addRequest(new ArrayList<NamedObjectId>(0), this);
+            subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
         } catch (InvalidIdentification e) {
             log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
         }
@@ -222,14 +221,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
         engineByAlgorithm.put(algorithm, engine);
         try {
-            ArrayList<NamedObjectId> newItems=new ArrayList<NamedObjectId>();
+            ArrayList<Parameter> newItems=new ArrayList<Parameter>();
             for(Parameter param:engine.getRequiredParameters()) {
-
-                NamedObjectId noid=NamedObjectId.newBuilder().setName(param.getQualifiedName()).build();
                 if(!requiredInParams.contains(param)) {
                     requiredInParams.add(param);
                     // Recursively activate other algorithms on which this algorithm depends
-                    if(canProvide(noid)) {
+                    if(canProvide(param)) {
                         for(Algorithm algo:xtcedb.getAlgorithms()) {
                             if(algorithm != algo) {
                                 for(OutputParameter oParam:algo.getOutputSet()) {
@@ -240,7 +237,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                             }
                         }
                     } else { // Don't ask items to PRM that we can provide ourselves
-                        newItems.add(noid);
+                        newItems.add(param);
                     }
                 }
 
@@ -326,7 +323,13 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	    }
 	}
 
-	@Override
+    @Override
+    public boolean canProvide(Parameter p) {
+	return (outParamIndex.get(p.getQualifiedName())!=null);
+    }
+
+    
+    @Override
     public boolean canProvide(NamedObjectId itemId) {
         try {
             getParameter(itemId);
@@ -353,10 +356,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     @Override
-    public ArrayList<ParameterValue> updateParameters(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+    public ArrayList<ParameterValue> updateParameters(int subscriptionId, ArrayList<ParameterValue> items) {
         ArrayList<ParameterValue> pvals=new ArrayList<ParameterValue>();
-        for(ParameterValueWithId pvwi:items) {
-            pvals.add(pvwi.getParameterValue());
+        for(ParameterValue pv:items) {
+            pvals.add(pv);
         }
 
         updateHistoryWindows(pvals);
@@ -442,7 +445,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     @Override
-    public void setParameterListener(ParameterListener parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
         // do nothing, we're more interested in a ParameterRequestManager, which we're
         // getting from the constructor
     }
@@ -454,6 +457,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     protected void doStop() {
+	if(timer!=null) {
+	    timer.shutdownNow();
+	}
         notifyStopped();
     }
 

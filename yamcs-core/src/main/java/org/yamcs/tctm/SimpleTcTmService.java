@@ -3,8 +3,8 @@ package org.yamcs.tctm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.ParameterProvider;
 import org.yamcs.commanding.CommandReleaser;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 

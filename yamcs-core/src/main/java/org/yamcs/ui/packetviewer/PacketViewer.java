@@ -72,7 +72,6 @@ import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ParameterListener;
 import org.yamcs.ParameterValue;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
@@ -84,6 +83,7 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
@@ -107,7 +107,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 public class PacketViewer extends JFrame implements ActionListener,
-TreeSelectionListener, ParameterListener, ConnectionListener {
+TreeSelectionListener, ParameterRequestManagerIf, ConnectionListener {
     private static final long serialVersionUID = 1L;
     private static final Logger log=LoggerFactory.getLogger(PacketViewer.class);
     static PacketViewer theApp;

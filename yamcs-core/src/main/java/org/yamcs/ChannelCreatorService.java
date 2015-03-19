@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQException;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.parameter.RealtimeParameterService;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 

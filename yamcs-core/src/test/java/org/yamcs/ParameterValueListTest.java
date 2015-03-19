@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Parameter;
 
 public class ParameterValueListTest {

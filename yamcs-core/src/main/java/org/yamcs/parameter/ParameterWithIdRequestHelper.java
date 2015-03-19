@@ -1,0 +1,167 @@
+package org.yamcs.parameter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.Parameter;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+
+
+/**
+ * This sits in front of the ParameterRequestManager and implements subscriptions based on NamedObjectId 
+ * taking care to send to the consumers the parameters with the requested id.
+ * 
+ * A client can request in fact the same parameter with two different names and they will get it twice each time
+ * 
+ * TODO: should also check privileges and subscription limits
+ * 
+ * @author nm
+ *
+ */
+public class ParameterWithIdRequestHelper implements ParameterConsumer {
+    ParameterRequestManager prm;
+    final ParameterWithIdConsumer listener;
+    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<Parameter, NamedObjectId>>();
+
+    public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
+	this.prm = prm;
+	this.listener = listener;
+    }
+
+    public int addRequest(List<NamedObjectId> idList) throws InvalidIdentification {
+	ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+	List<Parameter> plist = checkNames(idList);
+	for(int i =0; i<idList.size() ; i++) {
+	    Parameter p = plist.get(i);
+	    NamedObjectId id = idList.get(i);
+	    lm.put(p, id);
+	}
+	int subscriptionId = prm.addRequest(plist, this);
+	subscriptions.put(subscriptionId, lm);
+
+	return subscriptionId;
+    }
+    public void addItemsToRequest(int subscriptionId,  List<NamedObjectId> idList) throws InvalidIdentification {
+	ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
+	if(subscr==null) {
+	    log.warn("add item requested for an invalid subscription id "+subscriptionId);
+	    return;
+	}
+
+	List<Parameter> plist = checkNames(idList);
+	synchronized(subscr) {
+	    for(int i =0; i<idList.size() ; i++) {
+		Parameter p = plist.get(i);
+		NamedObjectId id = idList.get(i);
+		if(subscr.containsEntry(p, id)) {
+		    log.info("Ignoring duplicate subscription for ({},{})", p.getName(), id);
+		    continue;
+		}
+		subscr.put(p, id);
+	    }
+	}
+	prm.addItemsToRequest(subscriptionId, plist);
+    }
+
+    private List<Parameter> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
+	List<NamedObjectId> invalid = new ArrayList<NamedObjectId>();
+	List<Parameter> result = new ArrayList<Parameter>();
+	for(NamedObjectId id:plist) {
+	    try {
+		Parameter p = prm.getParameter(id);
+		result.add(p);
+	    } catch (InvalidIdentification e) {
+		invalid.add(id);
+	    }
+	}
+	if(!invalid.isEmpty()) throw new InvalidIdentification(invalid);
+
+	return result;
+    }
+
+
+    public void removeRequest(int subscriptionId) {
+	if(!subscriptions.containsKey(subscriptionId)) {
+	    log.warn("remove requested for an invalid subscription id "+subscriptionId);
+	    return;
+	}
+	prm.removeRequest(subscriptionId);
+    }
+
+    public void removeItemsFromRequest(int subscriptionId,   List<NamedObjectId> parameterIds) {
+	ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
+	if(subscr==null) {
+	    log.warn("remove requested for an invalid subscription id "+subscriptionId);
+	    return;
+	}
+
+	List<Parameter> paramsToRemove = new ArrayList<Parameter>();
+	synchronized(subscr) {
+	    for(Parameter p:subscr.keySet()) {
+		List<NamedObjectId> noiList = subscr.get(p);
+		noiList.removeAll(parameterIds);
+		if(noiList.isEmpty()) {
+		    paramsToRemove.add(p);
+		    subscr.removeAll(p);
+		}
+	    }
+	}
+	if(!paramsToRemove.isEmpty()) {
+	    prm.removeItemsFromRequest(subscriptionId, paramsToRemove);
+	}
+    }
+
+    public ParameterRequestManager getPrm() {
+	return prm;
+    }
+
+
+    public int subscribeAll(String namespace) {
+	return prm.subscribeAll(this);
+    }
+
+
+    @Override
+    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+	ListMultimap<Parameter, NamedObjectId> subscription = subscriptions.get(subscriptionId);
+	if(subscription==null) { //probably the subscription has just been removed
+	    log.debug("Recevied an updateItems for an unknown subscription "+subscriptionId);
+	    return;
+	}
+	List<ParameterValueWithId> plist = new ArrayList<ParameterValueWithId>(items.size());
+	synchronized(subscription) {
+	    for(ParameterValue pv: items) {
+		List<NamedObjectId> idList = subscription.get(pv.getParameter());
+		if(idList==null) {
+		    log.warn("Received values for a parameter not subscribed: "+pv.getParameter());
+		    continue;
+		}
+
+		for(NamedObjectId id:idList) {
+		    ParameterValueWithId pvwi = new ParameterValueWithId();
+		    pvwi.setParameterValue(pv);
+		    pvwi.setId(id);
+		    plist.add(pvwi);
+		}	    
+	    }
+	}
+	listener.update(subscriptionId, plist);
+    }
+
+    public void switchPrm(ParameterRequestManager newPrm) throws InvalidIdentification {
+	for(int subscriptionId: subscriptions.keySet()) {
+	    List<Parameter> plist = prm.removeRequest(subscriptionId);
+	    newPrm.addRequest(subscriptionId, plist, this);
+	}
+	prm=newPrm;
+    }
+}

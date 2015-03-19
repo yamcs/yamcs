@@ -1,14 +1,17 @@
-package org.yamcs;
+package org.yamcs.parameter;
 
 import java.util.Collection;
 
+import org.yamcs.ParameterValue;
+
 /**
- * This interface has been created in order to be able to test the ParameterProvider classes without
- * the need for the full blown ParameterRequestManager
+ * This is the ParameterRequestManager
+ * 
+ * used by the provides of parameters to send parameters to PRM
  * @author nm
  *
  */
-public interface ParameterListener {
+public interface ParameterRequestManagerIf {
 	/**
 	 * Called each time some parameters have been updated.
 	 * @param paramDefs

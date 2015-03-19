@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.derivedvalues;
 
 import java.util.Collection;
 
@@ -8,5 +8,5 @@ import java.util.Collection;
  *
  */
 public interface DerivedValuesProvider {
-	Collection<DerivedValue> getDerivedValues();
+    Collection<DerivedValue> getDerivedValues();
 }

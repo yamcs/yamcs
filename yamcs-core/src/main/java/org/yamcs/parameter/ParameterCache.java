@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yamcs.ParameterValue;
 import org.yamcs.xtce.Parameter;
 
 /**
  * 
  * 
- * Used by the {@link org.yamcs.ParameterRequestManager} to cache last value of parameters
+ * Used by the {@link org.yamcs.parameter.ParameterRequestManager} to cache last value of parameters
  * 
  * 
  * We keep delivery consisting of lists of parameter values together such that

@@ -13,22 +13,22 @@ import org.yamcs.Channel;
 import org.yamcs.ChannelFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterConsumer;
-import org.yamcs.ParameterListener;
-import org.yamcs.ParameterProvider;
-import org.yamcs.ParameterRequestManager;
 import org.yamcs.ParameterValue;
-import org.yamcs.ParameterValueWithId;
 import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandReleaser;
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithIdConsumer;
+import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TcUplinker;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -40,13 +40,14 @@ import org.yamcs.yarch.Tuple;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
 
-public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer {
+public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdConsumer {
     final XtceDb xtcedb;
     static Logger log=LoggerFactory.getLogger(ParameterReplayHandler.class.getName());
     ReplayRequest request;
     static AtomicInteger counter=new AtomicInteger(); 
     XtceTmProcessor tmProcessor;
-    ParameterRequestManager paramManager;
+    ParameterWithIdRequestHelper pidrm;
+    ParameterRequestManager prm;
     ArrayList<ParameterValueWithId> paramList=new ArrayList<ParameterValueWithId>();
     final Set<String> tmPartitions=new HashSet<String>();
     Set<String>ppGroups=new HashSet<String>();
@@ -85,13 +86,13 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         } catch (Exception e) {
             throw new YamcsException("cannot create channel", e);
         }
-        
-        paramManager=channel.getParameterRequestManager();
+        prm = channel.getParameterRequestManager();
+        pidrm= new ParameterWithIdRequestHelper(prm, this);
 
         //add all parameters to the ParameterManager and later one query which tm packets or pp groups are subscribed
         // to use them when creating the replay streams.
         try {
-            paramManager.addRequest(plist, this);
+            pidrm.addRequest(plist);
         } catch (InvalidIdentification e) {
             NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
@@ -200,14 +201,13 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
             }
 
             //this will cause derived values to be computed and updateItems to be called            
-            if(!params.isEmpty()) paramManager.update(params);
+            if(!params.isEmpty()) prm.update(params);
         }
 
         if(!paramList.isEmpty()) {
             ParameterData.Builder pd=ParameterData.newBuilder();
             for(ParameterValueWithId pvwi:paramList) {
-                ParameterValue pv=pvwi.getParameterValue();
-                pd.addParameter(pv.toGpb(pvwi.getId()));
+                pd.addParameter(pvwi.getParameterValue().toGpb(pvwi.getId()));
             }
             paramList.clear();
             return pd.build();
@@ -218,7 +218,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
 
 
     @Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> plist) {
+    public void update(int subscriptionId, List<ParameterValueWithId> plist) {
         this.paramList.addAll(plist);
     }
 
@@ -342,7 +342,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
 			
 		}
         @Override
-        public void setParameterListener(ParameterListener parameterRequestManager) {
+        public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
         }
 
         @Override
@@ -362,6 +362,11 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterConsumer 
         public boolean canProvide(NamedObjectId id) {
             if(xtcedb.getParameter(id)!=null) return true;
             else return false;
+        }
+
+        @Override
+        public boolean canProvide(Parameter p) {
+            return true;
         }
 
         public String getDownlinkStatus() {

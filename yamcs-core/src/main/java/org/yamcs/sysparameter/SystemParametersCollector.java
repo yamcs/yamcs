@@ -64,7 +64,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     
     static public SystemParametersCollector getInstance(String instance) {
         synchronized(instances) {
-            return instances.get(instance);    
+            return instances.get(instance);
         }
     }
 
