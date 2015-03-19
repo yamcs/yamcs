@@ -114,7 +114,6 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
     public int addRequest(List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
 	List<ParameterProvider> providers = getProviders(paraList);
-	System.out.println("paraList: "+paraList+"\n providers: "+providers);
 	int id=lastSubscriptionId.incrementAndGet();
 	log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
 
@@ -139,7 +138,6 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	int id=lastSubscriptionId.incrementAndGet();
 	log.debug("new request with subscriptionId "+id+" for parameter: "+para);
 	addItemToRequest(id, para, provider);
-	System.out.println("for req "+id+" tpc: "+tpc);
 	request2ParameterConsumerMap.put(id, tpc);
 	return id;
     }
@@ -228,8 +226,6 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      * @throws InvalidIdentification
      */
     private void addItemToRequest(int id, Parameter para, ParameterProvider provider) {
-	System.out.println("adding to request "+id+" para "+para);
-	
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
 	    if(param2RequestMap.putIfAbsent(para, new CopyOnWriteArrayList<Integer>())==null ){;
