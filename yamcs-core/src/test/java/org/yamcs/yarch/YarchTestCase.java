@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.management.ManagementService;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
-
-
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -28,18 +26,6 @@ public abstract class YarchTestCase {
     static boolean littleEndian;
     protected String instance;
 
-    static private void deleteDir(File dir) throws IOException {
-	if (dir.exists()) {
-	    File[] files=dir.listFiles();
-	    for (File f:files) {
-		if(f.isDirectory()){
-		    deleteDir(f);
-		} else {
-		    if(!f.delete()) throw new IOException("Cannot remove "+f);
-		}
-	    }
-	}
-    }
     @BeforeClass 
     public static void setUpYarch() throws Exception {
 	YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
@@ -61,8 +47,8 @@ public abstract class YarchTestCase {
 	context=new ExecutionContext(instance);
 
 	File ytdir=new File(dir+"/"+context.getDbName());               
-
-	deleteDir(ytdir);
+	
+	FileUtils.deleteRecursively(ytdir.toPath());
 
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
 	YarchDatabase.removeInstance(instance);

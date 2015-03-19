@@ -2,7 +2,8 @@
 types: [dummy, Archive]
 
 dummy:
-    tm: org.yamcs.tctm.DummyTmProvider
+    telemetryProvider: 
+        class: org.yamcs.tctm.DummyTmProvider
 
 
 Archive:

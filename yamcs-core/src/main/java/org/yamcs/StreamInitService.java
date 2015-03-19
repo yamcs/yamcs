@@ -64,7 +64,7 @@ public class StreamInitService extends AbstractService{
 		    } else if(TM.equalsIgnoreCase(streamType)) {
 			createTmStream(streamName);
 		    } else if(PARAM.equalsIgnoreCase(streamType)) {
-			createTmStream(streamName);
+			createParamStream(streamName);
 		    } else if(TC.equalsIgnoreCase(streamType)) {
 			createTcStream(streamName);
 		    } else if(EVENT.equalsIgnoreCase(streamType)) {

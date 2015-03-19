@@ -64,6 +64,9 @@ public class TestEventRecording extends YarchTestCase {
     
     @Test
     public void testRecording() throws Exception {
+	ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+	ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+	
         final int n=100;
         (new EventRecorder(context.getDbName())).startAsync();
         YamcsSession ys=YamcsSession.newBuilder().build();
