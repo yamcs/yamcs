@@ -358,7 +358,6 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     @Override
     public void update(Collection<ParameterValue> params) {
-	System.err.println("update with "+params);
 	log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
 	//maps subscription id to a list of (value,id) to be delivered for that subscription
 	HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
