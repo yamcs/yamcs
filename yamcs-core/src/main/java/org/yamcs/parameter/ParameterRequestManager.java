@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -33,22 +32,21 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  *  - subscribe to a set
  * Both types have an unique id associated but different methods work with them
  * 
- *  TODO: we should get rid of direct reference to tmProcessor
- * 
  */
 public class ParameterRequestManager implements ParameterRequestManagerIf {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
     private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap= new ConcurrentHashMap<Parameter, SubscriptionArray>();
     
-    //Maps the request (subscription id) to an object that is consuming the results who has requested it
-    private Map<Integer,ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
+    //Maps the request (subscription id) to the consumer
+    private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
 
     //these are the consumers that may update the list of parameters
+    // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also computed
     private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
 
     //contains subscribe all
-    private List<Integer> subscribeAll = new CopyOnWriteArrayList<Integer>();
+    private SubscriptionArray subscribeAll = new SubscriptionArray();
 
 
     private AlarmChecker alarmChecker;
@@ -105,11 +103,13 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
     /**
      * removes the subscription to all parameters
+     * 
+     * return true of the subscription has been removed or false if it was not there
      * @param subscriptionId
      * @return
      */
     public boolean unsubscribeAll(int subscriptionId) {
-	return subscribeAll.remove(subscriptionId) != null;
+	return subscribeAll.remove(subscriptionId);
     }
 
     public int addRequest(List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
@@ -420,7 +420,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	}
 
 	//update the subscribeAll subscriptions
-	for(Integer id:subscribeAll) {
+	for(int id:subscribeAll.getArray()) {
 	    ArrayList<ParameterValue> al=delivery.get(id);
 	    
 	    if(al==null){
