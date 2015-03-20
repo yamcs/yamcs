@@ -55,7 +55,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
         
-        System.out.println("tableDef: "+tblDef);
+       // System.out.println("tableDef: "+tblDef);
         
         
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();

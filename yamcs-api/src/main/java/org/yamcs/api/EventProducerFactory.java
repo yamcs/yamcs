@@ -53,16 +53,17 @@ public class EventProducerFactory {
      * @throws RuntimeException
      */
     static public EventProducer getEventProducer(String instance) throws RuntimeException {
-        String configFile = "/event-producer.yaml";
+        
         if(mockup)  {
             log.debug("Creating a ConsoleEventProducer with mockupQueue: "+mockupQueue);
-            return new ConsoleEventProducer(mockupQueue);
+            return new MockupEventProducer(mockupQueue);
             
         }
+        String configFile = "/event-producer.yaml";
         InputStream is=EventProducerFactory.class.getResourceAsStream(configFile);
         if(is==null) {
             log.debug("Could not find {} in the classpath, returning a ConsoleEventProducer", configFile);
-            return new ConsoleEventProducer(null);
+            return new ConsoleEventProducer();
         }
         Yaml yaml=new Yaml();
         Object o=yaml.load(is);

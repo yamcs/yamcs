@@ -11,8 +11,8 @@ webPort: 8090
 
 #the location of the data and the incoming files
 # inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
-dataDir: /storage/yamcs-data
-incomingDir: /storage/yamcs-incoming
+dataDir: /tmp/yamcs-data
+incomingDir: /tmp/yamcs-incoming
 
 #max length of the data of type binary(e.g. tm packets)
 maxBinaryLength: 1048576

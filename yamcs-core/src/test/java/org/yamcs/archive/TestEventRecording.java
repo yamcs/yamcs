@@ -155,7 +155,6 @@ public class TestEventRecording extends YarchTestCase {
         assertNotNull(msg);
         ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
         assertEquals(ProtoDataType.STATE_CHANGE, dt);
-        System.out.println("msgClientAddress="+msgClient.rpcAddress);
         
         streamAdapter.quit();
         msgClient.close();

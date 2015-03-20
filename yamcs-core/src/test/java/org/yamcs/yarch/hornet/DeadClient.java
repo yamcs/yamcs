@@ -54,7 +54,7 @@ public class DeadClient {
                     String hq_notifType=nmsg.getStringProperty("_HQ_NotifType");
                     String hq_address=nmsg.getStringProperty("_HQ_Address");
                     if("CONSUMER_CLOSED".equals(hq_notifType) && "tempAddress".equals(hq_address)) {
-                        System.out.println("closing producer");
+                       // System.out.println("closing producer");
                         producer.close();
                     }
                 }
@@ -77,7 +77,6 @@ public class DeadClient {
                 ClientConsumer consumer = session.createConsumer("tempQueue",false);
                 session.start();
                 nc.close();
-                System.out.println("consumer quitting");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -102,15 +101,14 @@ public class DeadClient {
                 for(int i=0;i<n;i++) {
                     ClientMessage message = session.createMessage(false);
                     message.getBodyBuffer().writeString("Hello "+i+" "+sdf.format(new Date()));
-                    if(i%1000==0)  
-                        System.out.println("sending message "+i);
+                    //if(i%1000==0)  System.out.println("sending message "+i);
                     producer.send(message);
                     //   System.out.println(sdf.format(new Date())+" answer: "+resp.getBodyBuffer().readString());
                     //  Thread.sleep(10);
                 }
                 long t1=System.currentTimeMillis();
                 double d=t1-t0;
-                System.out.println(n+" messages received in "+d+" ms, speed: "+1000*d/n+" micros/message");
+                //System.out.println(n+" messages received in "+d+" ms, speed: "+1000*d/n+" micros/message");
                 //System.out.println("still "+session.queueQuery(qname).getMessageCount()+" mesages in the queue");
                 session.close();
 

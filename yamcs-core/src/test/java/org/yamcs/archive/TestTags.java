@@ -153,8 +153,6 @@ public class TestTags extends YarchTestCase {
     }
     
     private void checkRetrieval(int k1, int k2) throws YamcsApiException, HornetQException, YamcsException {
-    //    System.out.println("**************************checking retrieval between "+k1+" and "+k2);
-     //   if(k1!=-1)System.out.println("tags(k1): "+tags.get(k1));
         TagRequest.Builder trb=TagRequest.newBuilder().setInstance(instance);
         long start=Long.MIN_VALUE,stop=Long.MAX_VALUE;
         if(k1!=-1) {
@@ -166,7 +164,6 @@ public class TestTags extends YarchTestCase {
             stop=tags.get(k2).getStop();
             trb.setStop(tags.get(k2).getStop());
         }
-        System.out.println("retrieving from "+start+" to "+stop);
         msgClient.sendRequest(indexAddress, "getTag", trb.build());
         int i=0,k=0;
         TagResult result=null;
@@ -182,9 +179,7 @@ public class TestTags extends YarchTestCase {
             if(result==null) {
                 result=(TagResult)msgClient.receiveData(TagResult.newBuilder());
                 assertNotNull(result);
-                System.out.println("got result with "+result.getTagCount()+" tags");
                 
-       //     System.out.println("mark 1 received result: "+result);
                 assertEquals(instance,result.getInstance());
                 assertTrue(result.getTagCount()>0);
                 k=0;
@@ -197,7 +192,6 @@ public class TestTags extends YarchTestCase {
             i++;
         }
         TagResult res=(TagResult)msgClient.receiveData(TagResult.newBuilder());
-        if(res!=null)System.out.println("res="+res);
         assertNull(res);
         
     }

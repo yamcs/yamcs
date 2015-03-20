@@ -454,7 +454,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     	s.acquire();
     	mdbgen.stopAsync();
     	
-    	System.out.println("wrote "+count.get()+" packets into "+f);
     }
 
 

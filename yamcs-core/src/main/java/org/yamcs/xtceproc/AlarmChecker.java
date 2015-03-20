@@ -108,7 +108,6 @@ public class AlarmChecker {
         if(pv.getMonitoringResult()==null) {
             pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
-        System.out.println("performing alarm checking... alarmReporter: "+alarmReporter);
         // Notify when severity changes
         if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);

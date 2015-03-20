@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Queue;
 
 import org.junit.After;
@@ -65,7 +64,6 @@ public class AlarmTest {
     @Test
     public void testIntegerLimits() throws InvalidIdentification {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_10_1");
-        System.out.println("p: "+p);
         
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(p,
@@ -81,8 +79,6 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(30, 7, 0);
         
         // Check whether spreadsheet loads all levels ok
-        ParameterValue pv = params.get(0);
-        System.out.println("pv: "+pv);
         assertEquals(-11, params.get(0).watchRange.getMinInclusive(), 1e-17);
         assertEquals(30, params.get(0).watchRange.getMaxInclusive(), 1e-17);
         assertEquals(-22, params.get(0).warningRange.getMinInclusive(), 1e-17);
@@ -95,7 +91,6 @@ public class AlarmTest {
         assertEquals(70, params.get(0).severeRange.getMaxInclusive(), 1e-17);
         
         assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getMonitoringResult());
-        System.out.println("q: "+q);
         assertEquals(0, q.size());
         
         tmGenerator.generate_PKT1_10(42, 7, 0);
@@ -131,7 +126,6 @@ public class AlarmTest {
         // Test minViolations of 3 under context 6
         tmGenerator.generate_PKT1_10(40, 6, 0);
         assertEquals(MonitoringResult.WARNING_HIGH, params.get(8).getMonitoringResult());
-        System.out.println("q: "+q);
         
         assertEquals(6, q.size()); // No message, violations=1
         

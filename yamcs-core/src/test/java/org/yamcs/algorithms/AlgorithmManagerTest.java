@@ -69,19 +69,16 @@ public class AlgorithmManagerTest {
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- before creating chanel: ");
         try {
             c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after creating chanel c:"+c);
         prm=c.getParameterRequestManager();
     }
     
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after eachtest c:"+c);
         c.quit();
     }
 
@@ -137,7 +134,6 @@ public class AlgorithmManagerTest {
             tmGenerator.generate_PKT11();
         }
         long t1 = System.currentTimeMillis();
-        System.out.println("got "+params.size()+" parameters + in "+(t1-t0)/1000.0+" seconds");
         assertEquals(2*n, params.size());
     }
     
@@ -244,7 +240,6 @@ public class AlgorithmManagerTest {
         tmGenerator.generate_PKT11();
         assertTrue(params.isEmpty());
         
-        System.out.println("####################################################");
         // Subscribe again
         params.clear();
         prm.addItemsToRequest(subscriptionId, p);
@@ -439,7 +434,6 @@ public class AlgorithmManagerTest {
                 new ParameterConsumer() {
                     @Override
                     public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
-                        System.out.println("received items: "+items);
                         params.addAll(items);
                     }
         });

@@ -327,6 +327,9 @@ public class Channel {
     public static void addChannelListener(ChannelListener channelListener) {
 	listeners.add(channelListener);
     }
+    public static void removeChannelListner(ChannelListener channelListener) {
+	listeners.remove(channelListener);
+    }
 
     public boolean isPersistent() {
 	return persistent;
@@ -396,4 +399,6 @@ public class Channel {
     public CommandHistoryRequestManager getCommandHistoryManager() {
 	return commandHistoryRequestManager;
     }
+
+
 }

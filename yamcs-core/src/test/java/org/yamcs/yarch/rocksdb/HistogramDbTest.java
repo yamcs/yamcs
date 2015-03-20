@@ -69,7 +69,7 @@ public class HistogramDbTest {
 	db.addValue(colName, grp1, g+4000);
 	db.addValue(colName, grp1, g+3000);
 
-	db.printDb(colName, new TimeInterval(), -1);
+	//db.printDb(colName, new TimeInterval(), -1);
 	it=db.getIterator(colName, new TimeInterval(), -1);
 	assertRecEquals(grp1, 1000, 1000, 1, it.getNextRecord());
 	assertRecEquals(grp2, 1000, 1000, 1, it.getNextRecord());

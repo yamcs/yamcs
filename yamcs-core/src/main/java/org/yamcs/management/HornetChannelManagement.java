@@ -120,8 +120,7 @@ public class HornetChannelManagement implements ChannelListener {
                 throw new YamcsException("Unknown request '"+req+"'");
             }
         } catch (YamcsException e) {
-        	e.printStackTrace();
-            log.warn("Sending error reply ", e);
+            log.warn("Sending error reply "+ e);
             channelControlServer.sendErrorReply(replyto, e.getMessage());
         } 
     }

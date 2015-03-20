@@ -42,7 +42,8 @@ public class ChannelsTest {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        hornetServer.stop();
+        ManagementService.getInstance().shutdown();
+	YamcsServer.stopHornet();
     }
     
     @Test
@@ -119,7 +120,6 @@ public class ChannelsTest {
         assertEquals("channel1",ci.getName());
         
         
-      //  System.out.println("clientUpdatedList: "+ml.clientUpdatedList);
         assertEquals(3, ml.clientUpdatedList.size());
         
         ClientInfo cli=ml.clientUpdatedList.get(0);

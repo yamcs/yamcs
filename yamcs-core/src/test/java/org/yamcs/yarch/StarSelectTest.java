@@ -75,7 +75,6 @@ public class StarSelectTest extends YarchTestCase {
             int k=0;
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                System.out.println("got tuple: "+tuple);
                 int const_three=(Integer)tuple.getColumn(0);
                 assertEquals(const_three,3);
                 long time=(Long)tuple.getColumn(1);

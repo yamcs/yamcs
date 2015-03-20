@@ -87,7 +87,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
 
     public void quit() {
         try {
-            msgClient.close();
+            yamcsSession.close();
         } catch (HornetQException e) {
             log.warn("Got exception when quiting:", e);
         }

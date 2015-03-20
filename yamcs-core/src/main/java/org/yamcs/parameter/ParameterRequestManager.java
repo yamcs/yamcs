@@ -189,7 +189,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      * @throws InvalidIdentification
      */
     public void addItemsToRequest(int subscriptionId, Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
-	log.trace("adding to subscriptionID {}: items: {} ", subscriptionId, para);
+	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
 	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
@@ -205,7 +205,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      * @throws InvalidIdentification
      */
     public void addItemsToRequest(int subscriptionId, List<Parameter> paraList) throws InvalidIdentification, InvalidRequestIdentification {
-	log.info("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
+	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
 	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);

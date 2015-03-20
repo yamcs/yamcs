@@ -66,14 +66,12 @@ public class AlgorithmManagerPyTest {
         
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         c=ChannelFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after creating chanel c:"+c);
         prm=c.getParameterRequestManager();
     }
     
 
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        System.out.println(System.currentTimeMillis()+":"+Thread.currentThread()+"----------- after eachtest c:"+c);
         c.quit();
     }
     
@@ -81,7 +79,6 @@ public class AlgorithmManagerPyTest {
     public void testFloats() throws InvalidIdentification {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
-        System.out.println("subscribing to "+p);
         prm.addRequest(p, new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {

@@ -15,7 +15,6 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.XtceDb;
 
@@ -33,7 +32,7 @@ public class YamcsServerTest {
     
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
-        hornetServer.stop();
+	YamcsServer.stopHornet();
     }
     
     @Test

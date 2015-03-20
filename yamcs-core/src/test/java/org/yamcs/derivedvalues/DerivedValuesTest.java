@@ -86,9 +86,6 @@ public class DerivedValuesTest {
 	}
 	long t1 = System.currentTimeMillis();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
-	System.out.println("params0: "+params.get(0));
-	System.out.println("params1: "+params.get(1));
-	System.out.println("got "+params.size()+" parameters + in "+(t1-t0)/1000.0+" seconds");
 
 	assertEquals(2*n, params.size());
 	ParameterValue p=params.get(0);
@@ -125,8 +122,6 @@ public class DerivedValuesTest {
 	c.start();
 	tmGenerator.generate_PKT11();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
-	System.out.println("params0: "+params.get(0));
-	System.out.println("params1: "+params.get(1));
 	assertEquals(2, params.size());
 	ParameterValue p=params.get(0);
 	assertEquals(0.1672918, p.getEngValue().getFloatValue(), 0.001);
@@ -170,9 +165,6 @@ public class DerivedValuesTest {
 	}
 	long t1 = System.currentTimeMillis();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
-	System.out.println("params0: "+params.get(0));
-	System.out.println("params1: "+params.get(1));
-	System.out.println("got "+params.size()+" parameters + in "+(t1-t0)/1000.0+" seconds");
 	assertEquals(2*n, params.size());
 	ParameterValue p = params.get(0);
 	assertEquals(0.1672918, p.getEngValue().getFloatValue(), 0.001);

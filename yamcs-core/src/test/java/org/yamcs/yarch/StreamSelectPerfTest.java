@@ -67,7 +67,6 @@ public class StreamSelectPerfTest extends YarchTestCase {
       long t0;
       @Override
       public void streamClosed(Stream stream) {
-        // TODO Auto-generated method stub
         
       }
       int k=3;
@@ -81,7 +80,7 @@ public class StreamSelectPerfTest extends YarchTestCase {
         assertEquals(k%10, id);
         do { k++;} while(!((k%10>4)||(k%10==3)));
         if(k>=n) {
-          System.out.println("Read "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+         // System.out.println("Read "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
           finished.release();
         }
       }

@@ -137,7 +137,6 @@ public class ChannelControlClient implements ConnectionListener {
             if("channelUpdated".equals(eventName)) {
                 ChannelInfo ci = (ChannelInfo)Protocol.decode(msg, ChannelInfo.newBuilder());
                 yamcsMonitor.channelUpdated(ci);
-                System.out.println("channelAdded: ci: "+ci);
             } else if("channelClosed".equals(eventName)) {
                 ChannelInfo ci = (ChannelInfo)Protocol.decode(msg, ChannelInfo.newBuilder());
                 yamcsMonitor.channelClosed(ci);
