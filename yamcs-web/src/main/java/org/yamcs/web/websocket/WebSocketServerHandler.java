@@ -120,7 +120,7 @@ public class WebSocketServerHandler {
         if(jsp.nextToken()!=JsonToken.VALUE_STRING) throw new RuntimeException("Invalid message (expecting actual request as a string)");
         String request=jsp.getText();
        
-        if ("request".equals(requestType)) {
+        if ("parameter".equals(requestType) || "request".equals(requestType)) {
             handleParameterRequest(seqId, request, jsp);
         } else if ("cmdhistory".equals(requestType)) {
             handleCommandHistoryRequest(seqId, request, jsp);
