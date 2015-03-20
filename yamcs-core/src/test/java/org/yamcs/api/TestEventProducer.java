@@ -26,7 +26,7 @@ public class TestEventProducer extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        hornetServer.stop();
+	YamcsServer.stopHornet();
     }
     
     @Test
