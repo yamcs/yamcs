@@ -47,6 +47,11 @@ public class ChannelsTest {
     }
     
     @Test
+    public void empty() {
+	
+    }
+    
+    @Test
     public void createChannelWithoutClient() throws Exception {
         YamcsConnector yconnector=new YamcsConnector();
         ChannelControlClient ccc=new ChannelControlClient(yconnector);

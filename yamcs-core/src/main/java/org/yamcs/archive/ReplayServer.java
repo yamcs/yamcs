@@ -44,13 +44,14 @@ public class ReplayServer extends AbstractExecutionThreadService {
     final String instance;
 
     final YamcsClient msgClient;
-
+    final YamcsSession yamcsSession;
     AtomicInteger replayCount=new AtomicInteger();
 
+    
     public ReplayServer(String instance) throws HornetQException, YamcsApiException {
-        this.instance=instance;
-        YamcsSession ys=YamcsSession.newBuilder().build();
-        msgClient=ys.newClientBuilder().setRpcAddress(Protocol.getYarchReplayControlAddress(instance)).build();
+        this.instance = instance;
+        yamcsSession = YamcsSession.newBuilder().build();
+        msgClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.getYarchReplayControlAddress(instance)).build();
     }
 
     @Override
@@ -174,8 +175,9 @@ public class ReplayServer extends AbstractExecutionThreadService {
     public void triggerShutdown() {
         try {
             msgClient.close();
+            yamcsSession.close();
         } catch (HornetQException e) {
-            log.warn("Got exception when quitting", e);
+            log.warn("Got exception when closing the session", e);
         }
     }
 }

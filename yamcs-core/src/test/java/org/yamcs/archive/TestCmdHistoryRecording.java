@@ -57,8 +57,8 @@ public class TestCmdHistoryRecording extends YarchTestCase {
     public void testRecording() throws Exception {
         final int n=100;
         ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
-        
-        (new CommandHistoryRecorder(ydb.getName())).startAsync();
+        CommandHistoryRecorder cmdHistRecorder =new CommandHistoryRecorder(ydb.getName()); 
+        cmdHistRecorder.startAsync();
        
         Stream rtstream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         assertNotNull(rtstream);
@@ -131,5 +131,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         yclient.close();
         ysession.close();
         replay.stopAsync();
+        
+        cmdHistRecorder.stopAsync();
     }
 }

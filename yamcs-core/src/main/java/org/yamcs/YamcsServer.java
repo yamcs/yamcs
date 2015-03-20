@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -40,7 +39,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 
@@ -127,6 +125,7 @@ public class YamcsServer {
     
     public static void stopHornet() throws Exception {
    	yamcsSession.close();
+   	Protocol.closeKiller();
    	hornetServer.stop();
     }
     
@@ -245,7 +244,7 @@ public class YamcsServer {
 
     public static void configureNonBlocking(SimpleString dataAddress) {
 	//TODO
-	Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
+	//Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
     }
 
     /**
@@ -287,6 +286,4 @@ public class YamcsServer {
 	System.err.println("\t All options are taken from yamcs.yaml");
 	System.exit(-1);
     }
-
-   
 }

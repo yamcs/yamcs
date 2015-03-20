@@ -80,8 +80,12 @@ public class ManagementService {
     public void shutdown() {
 	if(hornetEnabled) {
 	    Channel.removeChannelListner(hornetChannelMgr);
+	    hornetMgr.stop();
+	    hornetCmdQueueMgr.stop();
+	    hornetChannelMgr.close();
 	}
     }
+    
     public void registerService(String instance, String serviceName, Service service) {
         if(jmxEnabled) {
             ServiceControlImpl sci;

@@ -272,4 +272,14 @@ public class HornetChannelManagement implements ChannelListener {
         }
     }
 
+
+
+    public void close() {
+	try {
+	    ysession.close();
+	} catch (HornetQException e) {
+	    log.error("Failed to close the yamcs session", e);
+	}
+    }
+
 }
