@@ -76,7 +76,7 @@ public class YarchDatabase {
     private String dbname;
 
     @SuppressWarnings("unchecked")
-    private YarchDatabase(String dbname) {
+    private YarchDatabase(String dbname) throws YarchException {
 	this.dbname=dbname;
 	managementService=ManagementService.getInstance();
 	tables=new HashMap<String,TableDefinition>();
@@ -87,7 +87,7 @@ public class YarchDatabase {
 	if(config.containsKey("storageEngines")) {
 	    se = config.getList("storageEngines");
 	} else {
-	    se = Arrays.asList(TC_ENGINE_NAME, RDB_ENGINE_NAME);
+	    se = Arrays.asList(TC_ENGINE_NAME);
 	}
 	if(se!=null) {
 	    for(String s:se) {
@@ -104,7 +104,11 @@ public class YarchDatabase {
     static synchronized public YarchDatabase getInstance(String dbname) {
 	YarchDatabase instance=databases.get(dbname);
 	if(instance==null) {
-	    instance=new YarchDatabase(dbname);
+	    try {
+		instance=new YarchDatabase(dbname);
+	    } catch (YarchException e) {
+		throw new RuntimeException("Cannot create database '"+dbname+"'", e);
+	    }
 	    databases.put(dbname, instance);
 	}
 	return instance;
@@ -125,8 +129,9 @@ public class YarchDatabase {
      * loads all the .def files from the disk. The ascii def file is structed as follows
      * col1 type1, col2 type2, col3 type3     <- definition of the columns
      * col1, col2                             <- definition of the primary key
+     * @throws YarchException 
      */
-    void loadTables() {
+    void loadTables() throws YarchException {
 	File dir=new File(getRoot());
 	if(dir.exists() ) {
 	    File[] dirFiles=dir.listFiles();
@@ -136,14 +141,22 @@ public class YarchDatabase {
 		if(fn.endsWith(".def")) {
 		    try {
 			TableDefinition tblDef=deserializeTableDefinition(f);
+			StorageEngine storageEngine = getStorageEngine(tblDef);
+			if(storageEngine==null) {
+			    throw new YarchException("Do not have a storage engine '"+tblDef.getStorageEngineName()+"'. Check storageEngines key in yamcs.yaml");
+			}
+		    
+			getStorageEngine(tblDef).loadTable(tblDef);
 			managementService.registerTable(dbname, tblDef);
 			//System.out.println("loaded table: "+tblDef);
 			tables.put(tblDef.getName(), tblDef);
 			log.debug("loaded table definition "+tblDef.getName()+" from "+f);
 		    } catch (IOException e) {
 			log.warn("Got exception when reading the table definition from "+f+": ", e);
+			throw new YarchException("Got exception when reading the table definition from "+f+": ", e);
 		    } catch (ClassNotFoundException e) {
 			log.warn("Got exception when reading the table definition from "+f+": ", e);
+			throw new YarchException("Got exception when reading the table definition from "+f+": ", e);
 		    } 
 		}
 	    }

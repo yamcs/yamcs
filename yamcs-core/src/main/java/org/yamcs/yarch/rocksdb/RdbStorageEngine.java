@@ -75,6 +75,9 @@ public class RdbStorageEngine implements StorageEngine {
 
     @Override
     public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException {
+	if(!partitionManagers.containsKey(tbl)) {
+	    throw new IllegalArgumentException("Do not have a partition manager for this table");
+	}
 	try {
 	    return new RdbTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
 	} catch (IOException e) {

@@ -1,9 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
-import java.io.FileNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -21,7 +19,6 @@ import org.yamcs.yarch.streamsql.StreamExpression;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
-import org.yamcs.yarch.tokyocabinet.TcTableWriter;
 
 public class InsertStatement extends StreamSqlStatement {
     String name;
