@@ -15,8 +15,6 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.utils.StringConvertors;
-import org.yamcs.xtce.AlarmReportType;
-import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
@@ -40,6 +38,8 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
     final String yamcsInstance;
     final String channelName;
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
+    private AlarmListener listener;
+
 
     public AlarmServer(String yamcsInstance) {
 	this(yamcsInstance, "realtime");
@@ -52,6 +52,11 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	eventProducer.setSource("AlarmChecker");
     }
 
+    public void setListener(AlarmListener listener) {
+	this.listener = listener;
+    }
+    
+    
     @Override
     public void doStart() {
 	Channel channel = Channel.getInstance(yamcsInstance, channelName);
@@ -110,9 +115,8 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
      * affect events for parameters that go back to normal, or that change
      * severity levels while the alarm is already active.
      */
-    public void reportNumericParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
+    public void update(ParameterValue pv, int minViolations) {
 	Parameter param = pv.getParameter();
-	boolean sendUpdateEvent=false;
 
 	ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
 
@@ -130,14 +134,14 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 
 	    activeAlarm.currentValue = pv;
 	    if((activeAlarm.acknoledged) ||(activeAlarm.autoAcknoledge)) {
-		notifyCleared(activeAlarm);
+		listener.notifyCleared(activeAlarm);
 		activeAlarms.remove(pv.getParameter());
 	    } else {
-		notifyUpdate(activeAlarm);
+		listener.notifyUpdate(activeAlarm);
 	    }
 	} else { // out of limits
 	    if(activeAlarm==null) {
-		activeAlarm=new ActiveAlarm(alarmType, pv);
+		activeAlarm=new ActiveAlarm(pv);
 		activeAlarms.put(pv.getParameter(), activeAlarm);
 	    } else {
 		activeAlarm.currentValue = pv;
@@ -148,93 +152,29 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	    }
 
 	    if(activeAlarm.violations == minViolations) {
-		notifyTriggered(activeAlarm);
+		listener.notifyTriggered(activeAlarm);
 	    } else {
 		if(moreSevere(pv.monitoringResult, activeAlarm.msValue.monitoringResult)){
 		    activeAlarm.msValue = pv;
-		    notifySeverityIncrease(activeAlarm);
+		    listener.notifySeverityIncrease(activeAlarm);
 		} else {
-		    notifyUpdate(activeAlarm);
+		    listener.notifyUpdate(activeAlarm);
 		}
 	    }
 
 	    activeAlarms.put(pv.getParameter(), activeAlarm);
 	}
+
     }
-	
-	
-    private void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-	// TODO Auto-generated method stub
-	
-    }
+
 
     private boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
 	// TODO Auto-generated method stub
 	return false;
     }
 
-    private void notifyTriggered(ActiveAlarm activeAlarm) {
-	// TODO Auto-generated method stub
-
-    }
-
-    private void notifyUpdate(ActiveAlarm activeAlarm) {
-	// TODO Auto-generated method stub
-
-    }
-
-    private void notifyCleared(ActiveAlarm activeAlarm) {
-	// TODO Auto-generated method stub
-
-    }
 
 
-    private void sendValueChangeEvent(ParameterValue pv) {
-	switch(pv.getMonitoringResult()) {
-	case WATCH_LOW:
-	case WARNING_LOW:
-	    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-	    break;
-	case WATCH_HIGH:
-	case WARNING_HIGH:
-	    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-	    break;
-	case DISTRESS_LOW:
-	case CRITICAL_LOW:
-	case SEVERE_LOW:
-	    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-	    break;
-	case DISTRESS_HIGH:
-	case CRITICAL_HIGH:
-	case SEVERE_HIGH:
-	    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-	    break;
-	case IN_LIMITS:
-	    eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
-	    break;
-	default:
-	    throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
-	}
-    }
-
-    private void sendStateChangeEvent(ParameterValue pv) {
-	switch(pv.getMonitoringResult()) {
-	case WATCH:
-	case WARNING:
-	    eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
-	    break;
-	case DISTRESS:
-	case CRITICAL:
-	case SEVERE:
-	    eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
-	    break;
-	case IN_LIMITS:
-	    eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
-	    break;
-	default:
-	    throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
-	}
-    }
 
     private boolean hasChanged(ParameterValue pvOld, ParameterValue pvNew) {
 	// Crude string value comparison.
@@ -242,6 +182,19 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 		.equals(StringConvertors.toString(pvNew.getEngValue(), false));
     }
 
+    public static interface AlarmListener {
+	public void notifySeverityIncrease(ActiveAlarm activeAlarm);
+
+
+	public void notifyTriggered(ActiveAlarm activeAlarm) ;
+
+	public void notifyUpdate(ActiveAlarm activeAlarm);
+
+	public void notifyCleared(ActiveAlarm activeAlarm);
+    }
+
+    
+    
     public static class ActiveAlarm {
 	public boolean acknoledged;
 
@@ -259,12 +212,10 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	//message provided at triggering time  
 	String message;
 
-	AlarmType alarmType;
 	int violations=1;
 
-	ActiveAlarm(AlarmType alarmType, ParameterValue pv) {
-	    this.alarmType=alarmType;
-	    this.triggerValue = pv;
+	ActiveAlarm(ParameterValue pv) {
+	    this.triggerValue = this.currentValue = this.msValue = pv;
 	}
     }
 }
