@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,6 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
@@ -23,7 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Mantains a list of active alarms. 
+ * Maintains a list of active alarms. 
  * 
  *  
  * <p>
@@ -34,7 +34,6 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     // Last value of each param (for detecting changes in value)
-    private Map<Parameter, ParameterValue> lastValuePerParameter = new HashMap<Parameter, ParameterValue>();
     final String yamcsInstance;
     final String channelName;
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
@@ -49,7 +48,7 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	this.yamcsInstance = yamcsInstance;
 	this.channelName = channelName;    			
 	eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
-	eventProducer.setSource("AlarmChecker");
+	eventProducer.setSource("AlarmServer");
     }
 
     public void setListener(AlarmListener listener) {
@@ -109,13 +108,10 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	// alarm. The PRM is only used to signal the parameter subscriptions.
     }
 
-    /**
-     * Sends an event if an alarm condition for the active context has been
-     * triggered <tt>minViolations</tt> times. This configuration does not
-     * affect events for parameters that go back to normal, or that change
-     * severity levels while the alarm is already active.
-     */
     public void update(ParameterValue pv, int minViolations) {
+	update(pv, minViolations, false);
+    }
+    public void update(ParameterValue pv, int minViolations, boolean autoAck) {
 	Parameter param = pv.getParameter();
 
 	ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
@@ -141,7 +137,7 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	    }
 	} else { // out of limits
 	    if(activeAlarm==null) {
-		activeAlarm=new ActiveAlarm(pv);
+		activeAlarm=new ActiveAlarm(pv, autoAck);
 		activeAlarms.put(pv.getParameter(), activeAlarm);
 	    } else {
 		activeAlarm.currentValue = pv;
@@ -167,42 +163,43 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 
     }
 
-
-    private boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
-	// TODO Auto-generated method stub
-	return false;
+    public void acknowledge(Parameter p, int id) {
+	ActiveAlarm aa = activeAlarms.get(p);
+	if(aa.id!=id) {
+	    log.warn("Got acknowledge for parameter "+p+" but the id does not match");
+	    return;
+	}
+	aa.acknoledged = true;
+	if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
+	    activeAlarms.remove(p);
+	    listener.notifyCleared(aa);
+	}
     }
 
-
-
-
-    private boolean hasChanged(ParameterValue pvOld, ParameterValue pvNew) {
-	// Crude string value comparison.
-	return !StringConvertors.toString(pvOld.getEngValue(), false)
-		.equals(StringConvertors.toString(pvNew.getEngValue(), false));
+    private boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
+	return mr1.getNumber()>mr2.getNumber();
     }
 
     public static interface AlarmListener {
 	public void notifySeverityIncrease(ActiveAlarm activeAlarm);
-
-
 	public void notifyTriggered(ActiveAlarm activeAlarm) ;
-
 	public void notifyUpdate(ActiveAlarm activeAlarm);
-
 	public void notifyCleared(ActiveAlarm activeAlarm);
     }
 
     
     
     public static class ActiveAlarm {
+	static AtomicInteger counter = new AtomicInteger();
+	public int id;
+	
 	public boolean acknoledged;
 
 	public boolean autoAcknoledge;
-
+	
 	//the value that triggered the alarm
 	ParameterValue triggerValue;
-
+	
 	//most severe value
 	ParameterValue msValue;
 
@@ -214,8 +211,19 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 
 	int violations=1;
 
+	
+
 	ActiveAlarm(ParameterValue pv) {
 	    this.triggerValue = this.currentValue = this.msValue = pv;
+	    id = counter.getAndIncrement();
+	}
+	
+	ActiveAlarm(ParameterValue pv, boolean autoAck) {
+	    this(pv);
+	    this.autoAcknoledge = autoAck;
 	}
     }
+
+
+
 }

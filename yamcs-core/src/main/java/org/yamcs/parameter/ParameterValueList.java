@@ -13,7 +13,7 @@ import org.yamcs.xtce.Parameter;
  * 
  * It's like a HashMap<Parameter, ParameterValue> but stores multiple ParameterValue for the same Parameter 
  * Can be iterated like a list, but the order of insertion is not the order of iteration (maybe it should be...), 
- *  except for ParameterValue of the same Parameter which are iterated in the insertion order.
+ *  except for ParameterValues of the same Parameter which are iterated in the insertion order.
  * 
  * @author nm
  *

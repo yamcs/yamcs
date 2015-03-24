@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.yamcs.AlarmReporter;
 import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
@@ -28,13 +29,14 @@ public class AlarmChecker {
     
     private AlarmReporter alarmReporter;
     
+    /*stores a cache of parameter values for parameters that have ChangeAlarm*/
+    private ParameterValueList cache;
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
      * information. Any pvals that are required for performing comparison
      * matches are taken from the same set of pvals.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
-	
         ComparisonProcessor comparisonProcessor=new ComparisonProcessor(pvals);
         for(ParameterValue pval:pvals) {
             if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
@@ -147,7 +149,7 @@ public class AlarmChecker {
             minViolations=defaultAlarm.getMinViolations();
         }
         
-        // Set MonitoringResult
+        // Set MonitoringResult	
         pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
         if(staticAlarmRanges!=null) {
             checkStaticAlarmRanges(pv, doubleCalValue, staticAlarmRanges);
@@ -165,7 +167,7 @@ public class AlarmChecker {
     /**
      * Verify limits, giving priority to highest severity
      */
-    private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
+    private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {	
         FloatRange watchRange=staticAlarmRanges.getWatchRange();
         FloatRange warningRange=staticAlarmRanges.getWarningRange();
         FloatRange distressRange=staticAlarmRanges.getDistressRange();
