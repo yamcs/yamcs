@@ -9,7 +9,7 @@
 ### END INIT INFO
 #
 YAMCS_USER=yamcs
-YAMCS_HOME=/opt/yamcs/
+YAMCS_HOME=/opt/yamcs
 YARCH_BIN=$YAMCS_HOME/bin/yamcs-server.sh
 PID_FILE=/var/run/yamcs-server.pid
 OUTERR=$YAMCS_HOME/log/yamcs-server.out # standard out and err go here
