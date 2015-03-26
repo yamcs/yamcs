@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ItemIdPacketConsumerStruct;
 import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -31,7 +32,7 @@ public class XtceTmExtractor {
 
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
-    ArrayList<ParameterValue> paramResult=new ArrayList<ParameterValue>();
+    ParameterValueList paramResult=new ParameterValueList();
     ArrayList<ContainerExtractionResult> containerResult=new ArrayList<ContainerExtractionResult>();
 
     /**
@@ -83,7 +84,7 @@ public class XtceTmExtractor {
      */
     public void processPacket(ByteBuffer bb, long generationTime, SequenceContainer startContainer) {
 	try {
-	    paramResult=new ArrayList<ParameterValue>();
+	    paramResult=new ParameterValueList();
 	    containerResult=new ArrayList<ContainerExtractionResult>();
 	    synchronized(subscription) {
 		long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
@@ -122,7 +123,7 @@ public class XtceTmExtractor {
 	}
     }
 
-    public ArrayList<ParameterValue> getParameterResult() {
+    public ParameterValueList getParameterResult() {
 	return paramResult;
     }
 

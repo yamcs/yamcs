@@ -37,6 +37,8 @@ public class AlarmChecker {
     private final int subscriptionId;
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
+    
+    //keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on some other parameters)
     ParameterValueList lastValues;
 
 
@@ -68,6 +70,7 @@ public class AlarmChecker {
     public void updateParameters(Collection<ParameterValue> pvals) {
 	synchronized(lastValues) {
 	    for(ParameterValue pv: pvals) {
+		lastValues.removeFirst(pv.def);
 		lastValues.add(pv);
 	    }
 	    ComparisonProcessor comparisonProcessor=new ComparisonProcessor(lastValues);
@@ -86,7 +89,7 @@ public class AlarmChecker {
      * matches are taken from the same set of pvals.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
-	ComparisonProcessor comparisonProcessor=new ComparisonProcessor(pvals);
+	ComparisonProcessor comparisonProcessor=new ComparisonProcessor(lastValues);
 	for(ParameterValue pval:pvals) {
 	    if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
 		performAlarmChecking(pval, comparisonProcessor);

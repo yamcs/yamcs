@@ -1,5 +1,6 @@
 package org.yamcs.parameter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -339,11 +340,17 @@ public class ParameterValueList implements Collection<ParameterValue> {
     }
 
     /**
-     * Throws UnsupportedOperationException
+     * Returns a copy of the list as array
      */
     @Override
     public Object[] toArray() {
-	throw new UnsupportedOperationException();
+	ParameterValue[] r = new ParameterValue[size];
+	int i=0;
+	Iterator<ParameterValue> it = iterator();
+	while(it.hasNext()) {
+	    r[i++] = it.next();
+	}
+	return r;
     }
 
 
