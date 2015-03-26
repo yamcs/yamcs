@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ItemIdPacketConsumerStruct;
-import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;

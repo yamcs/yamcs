@@ -1,6 +1,5 @@
 package org.yamcs.parameter;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -12,9 +11,8 @@ import org.yamcs.xtce.Parameter;
  * 
  * Stores a collection of ParameterValue indexed on Parameter
  * 
- * It works like a HashMap<Parameter, LinkedList<ParameterValue>>  
- * Can be iterated like a list, but the order of insertion is not the order of iteration, 
- *  except for ParameterValue of the same Parameter which are iterated in the insertion order.
+ * It works like a LinkedHashMap<Parameter, LinkedList<ParameterValue>>  
+ *
  * 
  * Not thread safe
  * @author nm
@@ -22,6 +20,8 @@ import org.yamcs.xtce.Parameter;
  */
 public class ParameterValueList implements Collection<ParameterValue> {
     Entry[] table;
+
+    Entry head;
     int size;
     int threshold; 
     float loadFactor = 0.75f;
@@ -30,6 +30,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	size = 0;
 	table = new Entry[16];
 	threshold = (int)(table.length*loadFactor);
+	initHead();
     }
     
     /**     
@@ -41,10 +42,13 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	table = new Entry[len];
 	threshold = (int)(len * loadFactor);
 	size = 0;
+	initHead();
 	for(ParameterValue pv:pvs) {
 	    doAdd(pv);
 	}
     }
+    
+   
     
     //used for unit tests to ensure max collision
     ParameterValueList(int capacity, Collection<ParameterValue> pvs) {
@@ -52,10 +56,18 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	table = new Entry[len];
 	threshold = (int)(len * loadFactor);
 	size = 0;
+	initHead();
+	
 	for(ParameterValue pv:pvs) {
 	    doAdd(pv);
 	}
     }
+    
+    private void initHead() {
+   	head = new Entry(null);
+   	head.before = head.after = head;
+       }
+       
     @Override
     public boolean add(ParameterValue pv) {
 	if(pv==null) throw new NullPointerException();
@@ -114,6 +126,11 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	    while(e.next!=null) e=e.next;
 	    e.next = newEntry;
 	}
+	newEntry.after = head;
+	newEntry.before = head.before;
+	head.before.after = newEntry;
+	head.before = newEntry;
+	
 	size++;
     }
 
@@ -179,10 +196,16 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	} else {
 	    prev_r.next = r.next;
 	}
-	    
+	removeEntryFromLinkedList(r);
 	return r.pv;
     }
 
+    private void removeEntryFromLinkedList(Entry r) {
+	Entry b = r.before;
+	Entry a = r.after;
+	b.after = a;
+	a.before = b;
+    }
     /**
      * Remove the first inserted value for Parameter p
      * 
@@ -217,7 +240,8 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	} else {
 	    prev.next = r.next;
 	}
-	    
+	removeEntryFromLinkedList(r);
+
 	return r.pv;
     }
 
@@ -365,7 +389,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     static class Entry {
 	final ParameterValue pv;
-	Entry next;
+	Entry next, before, after;
 	Entry(ParameterValue pv) {
 	    this.pv = pv;
 	}
@@ -373,32 +397,19 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     
     private final class Iter implements Iterator<ParameterValue> {
-   	Entry next;
-   	int index;
-
-   	Iter() {
-   	    if(size>0) { //go to the first value
-   		Entry[] t = table;
-   		index=0;
-   		while((index<t.length)&& (next=t[index++])==null);
-   	    }
-   	}
+   	Entry next = head.after;
 
    	@Override
    	public boolean hasNext() {
-   	    return next!=null;
+   	    return next!=head;
    	}
 
    	@Override
    	public ParameterValue next() {
-   	    if(next==null) throw new NoSuchElementException();
-
+   	    if(next==head) throw new NoSuchElementException();
+   	    
    	    Entry r = next;
-   	    next = r.next;
-   	    if(next==null) {
-   		Entry[] t = table;
-   		while((index<t.length)&& (next=t[index++])==null);
-   	    }
+   	    next = r.after;
 
    	    return r.pv;
    	}

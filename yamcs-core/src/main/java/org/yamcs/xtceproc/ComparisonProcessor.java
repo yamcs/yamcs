@@ -21,13 +21,12 @@ import com.google.common.primitives.UnsignedBytes;
  */
 public class ComparisonProcessor {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    ParameterValueList params;
+    final ParameterValueList params;
 
     /**
      * @param params pvals within 'scope'. Identifier resolution is performed against these pvals
      */
     public ComparisonProcessor(ParameterValueList params) {
-	// We need a list because of the backwards iteration
 	this.params = params;
     }
 

@@ -193,8 +193,10 @@ public class AlarmTest {
         assertEquals(MonitoringResult.IN_LIMITS, params.get(6).getMonitoringResult());
         assertEquals(5, q.size()); // Message for back to normal
         
+
         // Now, change context
         tmGenerator.generate_PKT1_10(0, 0 /* ! */, 71);
+        
         assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(7).getMonitoringResult());
         assertEquals(6, q.size()); // Message for changed MonitoringResult
     }

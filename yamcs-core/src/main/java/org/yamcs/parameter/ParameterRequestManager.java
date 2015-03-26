@@ -231,8 +231,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
     private void addItemToRequest(int id, Parameter para, ParameterProvider provider) {
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
-	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ){;
+	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ) {
 	    	provider.startProviding(para);
+	    	if(alarmChecker!=null) {
+	    	    alarmChecker.parameterSubscribed(para);
+		}
 	    }
 	}
 	SubscriptionArray al_req = param2RequestMap.get(para);
@@ -368,7 +371,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	//so first we add to the delivery the parameters just received
 	updateDelivery(delivery, params);
 
-
+	
 	//then if the delivery updates some of the parameters required by the derived values
 	//  compute the derived values
 	for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
@@ -383,6 +386,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
 	    Integer subscriptionId=entry.getKey();
 	    if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
+	    if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
+	    
 	    ArrayList<ParameterValue> al=entry.getValue();
 	    ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
 	    if(consumer==null) {
@@ -400,11 +405,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery, Collection<ParameterValue> params) {
 	if(params==null) return;
-	//first check alarms for these new params
-	if(alarmChecker!=null) {
-	    alarmChecker.performAlarmChecking(params);
-	}
-
+	
 	for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 	    ParameterValue pv=it.next();
 	    Parameter pDef=pv.def;
@@ -435,6 +436,16 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 		al.add(pv);
 	    }
 	}
+	if(alarmChecker!=null) {
+	    //update the alarmChecker and check for alarms
+	    ArrayList<ParameterValue> pvlist = delivery.get(alarmChecker.getSubscriptionId());
+	    if(pvlist!=null) {
+		alarmChecker.updateParameters(pvlist);
+	    }
+	    
+	    alarmChecker.performAlarmChecking(params);
+	}
+
     }
 
     @SuppressWarnings("unchecked")

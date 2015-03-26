@@ -4,9 +4,6 @@ import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -317,10 +314,10 @@ public class TestXtceTmExtractor {
         
         assertEquals(2, received.size());
         ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara2_1"));
-        assertEquals(tmGenerator.pIntegerPara2_1, pv.getEngValue().getUint32Value());
+        assertEquals(pIntegerPara2_1, pv.getEngValue().getUint32Value());
         
         pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara2_2"));
-        assertEquals(tmGenerator.pIntegerPara2_2, pv.getEngValue().getUint32Value());
+        assertEquals(pIntegerPara2_2, pv.getEngValue().getUint32Value());
     }
     
     private String byteBufferToHexString(ByteBuffer bb) {

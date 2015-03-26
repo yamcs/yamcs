@@ -3,6 +3,7 @@ package org.yamcs.parameter;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -130,8 +131,76 @@ public class ParameterValueListTest {
 	    }
 	    assertEquals(2*n*(m-j-1), pvlist.getSize());
 	}
-
-	
     }
+    
+    @Test
+    public void testIterator() {
+	Parameter p = new Parameter("p1");
+	ParameterValue pv1 = new ParameterValue(p, false);
+	pv1.setStringValue("pv1");
+	
+	ParameterValue pv2 = new ParameterValue(p, false);
+	pv2.setStringValue("pv2");
+	 
+	ParameterValueList pvlist = new ParameterValueList();
+	
+	Iterator<ParameterValue> it = pvlist.iterator();
+	assertFalse(it.hasNext());
+	
+	pvlist.add(pv1);
+	it = pvlist.iterator();
+	assertTrue(it.hasNext());
+	assertEquals(pv1, it.next());
+	assertFalse(it.hasNext());
+	
+	pvlist.removeFirst(p);
+	
+	pvlist.add(pv2);
+	pvlist.add(pv1);
+	it = pvlist.iterator();
+	
+	assertTrue(it.hasNext());
+	assertEquals(pv2, it.next());
+	assertTrue(it.hasNext());
+	assertEquals(pv1, it.next());
+	assertFalse(it.hasNext());
+    }
+    @Test
+    public void testIterator1() {
+	int n = 10000;
+	Parameter[] params = new Parameter[n];
+	List<ParameterValue> pvalues= new ArrayList<ParameterValue>(n+1);
+	for (int i = 0; i<n; i++) {
+	    params[i] = new Parameter("parameter"+i);
+	    ParameterValue pv = new ParameterValue(params[i], false);
+	    pvalues.add(pv);
+	}
+	
+	ParameterValue pv2bis = new ParameterValue(params[2], false);
+	pvalues.add(pv2bis);
+	
+	ParameterValueList pvlist = new ParameterValueList(pvalues);
+	
+	Iterator<ParameterValue> it = pvlist.iterator();
+	for (int i = 0; i<n; i++) {
+	    assertTrue(it.hasNext());
+	    ParameterValue pv = it.next();
+	    assertEquals(pvalues.get(i), pv);
+	}
+	assertTrue(it.hasNext());
+	ParameterValue pv = it.next();
+	assertEquals(pv2bis, pv);
+	assertFalse(it.hasNext());
+	
 
+	pvlist.removeLast(params[2]);
+	it = pvlist.iterator();
+	for (int i = 0; i<n; i++) {
+	    assertTrue(it.hasNext());
+	    pv = it.next();
+	    assertEquals(pvalues.get(i), pv);
+	}
+	
+	assertFalse(it.hasNext());
+    }
 }

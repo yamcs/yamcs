@@ -72,13 +72,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     
     // Get integers from strings
     static public final String pStringIntFixedPara15_1="120"; // Fixed size, 24 bits
-    static  public final String pStringIntTermPara15_2="12"; // Comma terminated
-    static  public final String pStringIntTermPara15_3="12045"; // Semi-colon terminated
+    static public final String pStringIntTermPara15_2="12"; // Comma terminated
+    static public final String pStringIntTermPara15_3="12045"; // Semi-colon terminated
     static public final String pStringIntPrePara15_4="1204507"; // Prepended size (16 bits)
     static public final String pStringIntStrPara15_5="123406789"; // string
     
-    public volatile int pIntegerPara2_1 = 123;
-    public volatile int pIntegerPara2_2 = 25;
+    static public final int pIntegerPara2_1 = 123;
+    static public final int pIntegerPara2_2 = 25;
     
     Map<Integer, AtomicInteger> seqCount=new HashMap<Integer, AtomicInteger>();
     

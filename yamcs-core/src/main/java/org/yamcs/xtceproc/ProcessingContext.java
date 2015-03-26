@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 
 

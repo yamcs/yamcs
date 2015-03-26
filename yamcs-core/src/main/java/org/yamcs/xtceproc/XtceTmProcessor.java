@@ -11,7 +11,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ContainerProvider;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterProvider;

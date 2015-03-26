@@ -37,9 +37,9 @@ public class AlarmChecker {
     private final int subscriptionId;
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
-    
+
     //keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on some other parameters)
-    ParameterValueList lastValues;
+    ParameterValueList lastValues = new ParameterValueList();
 
 
     public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
@@ -58,11 +58,13 @@ public class AlarmChecker {
 	    return;
 	}
 	Set<Parameter> params = ptype.getDependentParameters();
-	for(Parameter p1:params) {
-	    try {
-		prm.addItemsToRequest(subscriptionId, p1);
-	    } catch (InvalidIdentification e) {
-		log.warn("Got exception when subscribing for "+p1+" which is a dependency for "+p.getName());
+	if(params!=null) {
+	    for(Parameter p1:params) {
+		try {
+		    prm.addItemsToRequest(subscriptionId, p1);
+		} catch (InvalidIdentification e) {
+		    log.warn("Got exception when subscribing for "+p1+" which is a dependency for "+p.getName());
+		}
 	    }
 	}
     }
