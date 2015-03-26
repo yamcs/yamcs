@@ -66,7 +66,8 @@ public class Channel {
     private String type;
     private final String yamcsInstance;
 
-
+    private boolean checkAlarms = true;
+    
     private String creator="system";
     private boolean persistent=false;
 
@@ -400,5 +401,7 @@ public class Channel {
 	return commandHistoryRequestManager;
     }
 
-
+    public boolean hasAlarmChecker() {
+	return checkAlarms;
+    }
 }

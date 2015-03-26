@@ -64,10 +64,12 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     public ParameterRequestManager(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
 	this.channel=chan;
-	log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
+	log = LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 	tmProcessor.setParameterListener(this);
 	addParameterProvider(tmProcessor);
-	alarmChecker=new AlarmChecker();
+	if(chan.hasAlarmChecker()) {
+	    alarmChecker=new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
+	}
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -190,7 +192,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     public void addItemsToRequest(int subscriptionId, Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
 	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
-	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
+	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
+		&& alarmChecker!=null && alarmChecker.getSubscriptionId()!=subscriptionId) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
 	}

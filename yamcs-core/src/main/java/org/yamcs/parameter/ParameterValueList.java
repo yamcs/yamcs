@@ -11,10 +11,11 @@ import org.yamcs.xtce.Parameter;
  * 
  * Stores a collection of ParameterValue indexed on Parameter
  * 
- * It's like a HashMap<Parameter, ParameterValue> but stores multiple ParameterValue for the same Parameter 
- * Can be iterated like a list, but the order of insertion is not the order of iteration (maybe it should be...), 
- *  except for ParameterValues of the same Parameter which are iterated in the insertion order.
+ * It works like a HashMap<Parameter, LinkedList<ParameterValue>>  
+ * Can be iterated like a list, but the order of insertion is not the order of iteration, 
+ *  except for ParameterValue of the same Parameter which are iterated in the insertion order.
  * 
+ * Not thread safe
  * @author nm
  *
  */
@@ -22,27 +23,38 @@ public class ParameterValueList implements Collection<ParameterValue> {
     Entry[] table;
     int size;
     int threshold; 
-    float factor = 0.75f;
+    float loadFactor = 0.75f;
     
     public ParameterValueList() {
 	size = 0;
 	table = new Entry[16];
-	threshold = (int)(table.length*factor);
+	threshold = (int)(table.length*loadFactor);
     }
     
     /**     
      * @param pvs
      */
     public ParameterValueList(Collection<ParameterValue> pvs) {
-	int len = roundUpToPowerOfTwo(pvs.size());
+	int len = (int)(pvs.size()/loadFactor)+ 1;
+	len = roundUpToPowerOfTwo(len);
 	table = new Entry[len];
-	threshold = (int)(len * factor);
+	threshold = (int)(len * loadFactor);
 	size = 0;
 	for(ParameterValue pv:pvs) {
 	    doAdd(pv);
 	}
     }
     
+    //used for unit tests to ensure max collision
+    ParameterValueList(int capacity, Collection<ParameterValue> pvs) {
+	int len = roundUpToPowerOfTwo(capacity);
+	table = new Entry[len];
+	threshold = (int)(len * loadFactor);
+	size = 0;
+	for(ParameterValue pv:pvs) {
+	    doAdd(pv);
+	}
+    }
     @Override
     public boolean add(ParameterValue pv) {
 	if(pv==null) throw new NullPointerException();
@@ -120,7 +132,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
      * @param p
      * @return
      */
-    public ParameterValue getNewest(Parameter p) {
+    public ParameterValue getLast(Parameter p) {
 	int index =  getHash(p) & (table.length - 1);
 	ParameterValue r = null;
 	for(Entry e = table[index] ; e!=null; e=e.next) {
@@ -130,7 +142,83 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	}
 	return r;
     }
+    
+    /**
+     * Remove the last inserted value for Parameter p
+     * 
+     * @param p
+     * @return the value removed or null if there was no value for p
+     */
+    public ParameterValue removeLast(Parameter p) {
+	int index =  getHash(p) & (table.length - 1);
+	Entry e = table[index];
+	if(e == null) return null;
+	
+	Entry prev_r = null;
+	
+	Entry prev_e = null;
+	Entry r = null;
+	
+	while(e!=null) {
+	    if(e.pv.getParameter()==p) {
+		prev_r = prev_e;
+		r = e;
+	    }
+	    prev_e = e;
+	    e = e.next;
+	}
+	
+	if(r==null) {
+	    return null;
+	}
+	
+	size--;
+	if(table[index]==r) {
+	    table[index] = r.next;
+	} else {
+	    prev_r.next = r.next;
+	}
+	    
+	return r.pv;
+    }
 
+    /**
+     * Remove the first inserted value for Parameter p
+     * 
+     * @param p
+     * @return the value removed or null if there was no value for p
+     */
+    public ParameterValue removeFirst(Parameter p) {
+	int index =  getHash(p) & (table.length - 1);
+	Entry prev = table[index];
+	if(prev == null) return null;
+	
+	
+	Entry e = prev;
+	Entry r = null;
+	
+	while(e!=null) {
+	    if(e.pv.getParameter()==p) {
+		r = e;
+		break;
+	    }
+	    prev = e;
+	    e = e.next;
+	}
+	
+	if(r==null) {
+	    return null;
+	}
+	
+	size--;
+	if(table[index]==r) {
+	    table[index] = r.next;
+	} else {
+	    prev.next = r.next;
+	}
+	    
+	return r.pv;
+    }
 
     /**
      * this is copied from http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -166,7 +254,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	if(newSize>threshold) {
 	    int newCapacity = roundUpToPowerOfTwo(newSize);
 	    ensureCapacity(newCapacity);
-	    threshold = (int) (newCapacity*factor);
+	    threshold = (int) (newCapacity*loadFactor);
 	}
 	
 	for(ParameterValue pv:c) {
