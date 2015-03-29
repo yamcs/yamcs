@@ -1,10 +1,6 @@
 package org.yamcs.web.rest;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import com.dyuproject.protostuff.JsonIOUtil;
 import org.codehaus.jackson.JsonGenerator;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -12,18 +8,10 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.DefaultHttpChunk;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
+import org.jboss.netty.channel.*;
+import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -32,21 +20,18 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestReplayResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.Yamcs.*;
 import org.yamcs.utils.TimeEncoding;
 
-import com.dyuproject.protostuff.JsonIOUtil;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -76,12 +61,10 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
         /*
          * Modify some of the original request settings
+         * TODO this uses Yamcs Time. Should perhaps make this configurable. but that seems
+         * more like a yamcs problem than a yamcs-web problem
          */
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder(incomingRequest);
-        // When using the REST api, start and stop are interpreted as unix time. Convert to internal yamcs time.
-        rrb.setStart(TimeEncoding.fromUnixTime(incomingRequest.getStart()));
-        rrb.setStop(TimeEncoding.fromUnixTime(incomingRequest.getStop()));
-        // Don't support other options through web api
         rrb.setEndAction(EndAction.QUIT);
         ReplayRequest replayRequest = rrb.build();
 
@@ -92,7 +75,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             ys = YamcsSession.newBuilder().setConnectionParams("yamcs://localhost:5445/"+yamcsInstance).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             SimpleString replayServer=Protocol.getYarchReplayControlAddress(yamcsInstance);
-            StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rrb.build(), StringMessage.newBuilder());
+            StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
             
             // Server is good to go, start the replay
             SimpleString replayAddress=new SimpleString(answer.getMessage());
@@ -130,19 +113,14 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 }
 
                 RestReplayResponse.Builder responseb = RestReplayResponse.newBuilder();
-                int dataType = msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME);
-                switch (ProtoDataType.valueOf(dataType)) {
+                ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
+                switch (dataType) {
                 case PARAMETER:
-                    // Convert yamcs time to exposed unix time TODO should make this optional
                     ParameterData.Builder parameterData = (ParameterData.Builder) Protocol.decodeBuilder(msg, ParameterData.newBuilder());
-                    parameterData.setGenerationTime(TimeEncoding.toUnixTime(parameterData.getGenerationTime()));
-
                     List<ParameterValue> pvals = parameterData.getParameterList();
                     parameterData.clearParameter();
                     for (ParameterValue pval : pvals) {
                         ParameterValue.Builder pvalBuilder = pval.toBuilder();
-                        pvalBuilder.setGenerationTime(TimeEncoding.toUnixTime(pval.getGenerationTime()));
-                        pvalBuilder.setAcquisitionTime(TimeEncoding.toUnixTime(pval.getAcquisitionTime()));
                         pvalBuilder.setAcquisitionTimeUTC(TimeEncoding.toString(pval.getAcquisitionTime()));
                         pvalBuilder.setGenerationTimeUTC(TimeEncoding.toString(pval.getGenerationTime()));
                         parameterData.addParameter(pvalBuilder);
@@ -150,27 +128,17 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     responseb.setParameterData(parameterData);
                     break;
                 case TM_PACKET:
-                    TmPacketData.Builder packetData = (TmPacketData.Builder) Protocol.decodeBuilder(msg, TmPacketData.newBuilder());
-                    packetData.setGenerationTime(TimeEncoding.toUnixTime(packetData.getGenerationTime()));
-                    packetData.setReceptionTime(TimeEncoding.toUnixTime(packetData.getReceptionTime()));
-                    responseb.setPacketData(packetData);
+                    responseb.setPacketData((TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder()));
                     break;
                 case CMD_HISTORY:
-                    CommandHistoryEntry.Builder command = (CommandHistoryEntry.Builder) Protocol.decodeBuilder(msg, CommandHistoryEntry.newBuilder());
-                    CommandId.Builder commandId = command.getCommandId().toBuilder().setGenerationTime(TimeEncoding.toUnixTime(command.getCommandId().getGenerationTime()));
-                    command.setCommandId(commandId);
-                    responseb.setCommand(command);
+                    responseb.setCommand((CommandHistoryEntry) Protocol.decode(msg, CommandHistoryEntry.newBuilder()));
                     break;
                 case PP:
                     ParameterData.Builder ppData = (ParameterData.Builder) Protocol.decodeBuilder(msg, ParameterData.newBuilder());
-                    ppData.setGenerationTime(TimeEncoding.toUnixTime(ppData.getGenerationTime()));
-
                     List<ParameterValue> ppvals = ppData.getParameterList();
                     ppData.clearParameter();
                     for (ParameterValue pval : ppvals) {
                         ParameterValue.Builder pvalBuilder = pval.toBuilder();
-                        pvalBuilder.setGenerationTime(TimeEncoding.toUnixTime(pval.getGenerationTime()));
-                        pvalBuilder.setAcquisitionTime(TimeEncoding.toUnixTime(pval.getAcquisitionTime()));
                         pvalBuilder.setAcquisitionTimeUTC(TimeEncoding.toString(pval.getAcquisitionTime()));
                         pvalBuilder.setGenerationTimeUTC(TimeEncoding.toString(pval.getGenerationTime()));
                         ppData.addParameter(pvalBuilder);
@@ -178,13 +146,10 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     responseb.setPpData(ppData);
                     break;
                 case EVENT:
-                    Event.Builder event = (Event.Builder) Protocol.decodeBuilder(msg, Event.newBuilder());
-                    event.setGenerationTime(TimeEncoding.toUnixTime(event.getGenerationTime()));
-                    event.setReceptionTime(TimeEncoding.toUnixTime(event.getReceptionTime()));
-                    responseb.setEvent(event);
+                    responseb.setEvent((Event) Protocol.decode(msg, Event.newBuilder()));
                     break;
                 default:
-                    log.trace("Ignoring unsupported hornetq message of type {}", ProtoDataType.valueOf(dataType));
+                    log.trace("Ignoring unsupported hornetq message of type {}", dataType);
                     continue;
                 }
 
@@ -212,13 +177,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     log.warn("Interrupted while waiting for channel to become writable", e);
                 }
             }
-        } catch (URISyntaxException e) {
-            throw new InternalServerErrorException(e);
-        } catch (HornetQException e) {
-            throw new InternalServerErrorException(e);
-        } catch (YamcsApiException e) {
-            throw new InternalServerErrorException(e);
-        } catch (YamcsException e) {
+        } catch (URISyntaxException | HornetQException | YamcsApiException | YamcsException e) {
             throw new InternalServerErrorException(e);
         } finally {
             if (msgClient != null) {
