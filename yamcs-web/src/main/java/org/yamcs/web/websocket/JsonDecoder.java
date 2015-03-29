@@ -11,24 +11,17 @@ import org.codehaus.jackson.JsonToken;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
 
 public class JsonDecoder implements WebSocketDecoder {
 
     private JsonFactory jsonFactory = new JsonFactory();
-
-    @Override
-    public String getSupportedMediaType() {
-        return "application/json";
-    }
 
     /**
      * Decodes the first few common wrapper fields of an incoming web socket message.<br>
      * Sample: [1,1,2,{"<resource>":"<operation>", "data": <undecoded remainder>}]
      */
     @Override
-    public WebSocketDecodeContext decodeMessageWrapper(InputStream in) throws WebSocketException {
-        in = new PushbackInputStream(in);  // Allows pushing back excessively read tokens. See comment below
+    public WebSocketDecodeContext decodeMessage(InputStream in) throws WebSocketException {
         int requestId = WSConstants.NO_REQUEST_ID;
         try {
             JsonParser jsp = jsonFactory.createJsonParser(in);
@@ -106,8 +99,8 @@ public class JsonDecoder implements WebSocketDecoder {
     }
 
     @Override
-    public <T extends MessageLite.Builder> T decodeMessage(WebSocketDecodeContext ctx, InputStream in, Schema<T> schema) throws WebSocketException {
-        // We're NOT using the inputstream here, but intead re-use our earlier JsonParser, since that is correctly positioned
+    public <T extends MessageLite.Builder> T decodeMessageData(WebSocketDecodeContext ctx, Schema<T> schema) throws WebSocketException {
+        // Re-use our earlier JsonParser, since that is correctly positioned
         try {
             T msg = schema.newMessage();
             JsonIOUtil.mergeFrom((JsonParser) ctx.getData(), msg, schema, false);
@@ -119,7 +112,7 @@ public class JsonDecoder implements WebSocketDecoder {
 
     public static void main(String... args) throws WebSocketException {
         WebSocketDecodeContext ctx =
-        new JsonDecoder().decodeMessageWrapper(new ByteArrayInputStream("[1,1,3,{\"cmdhistory\":\"subscribe\"}]".getBytes()));
+        new JsonDecoder().decodeMessage(new ByteArrayInputStream("[1,1,3,{\"cmdhistory\":\"subscribe\"}]".getBytes()));
 
         System.out.println("ctx "+ctx.getRequestId());
     }

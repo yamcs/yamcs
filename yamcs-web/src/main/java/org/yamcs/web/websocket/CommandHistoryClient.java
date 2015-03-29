@@ -12,10 +12,9 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.SchemaCommanding;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
-
-import java.io.InputStream;
 
 /**
  * Provides realtime command history subscription via web.
@@ -27,23 +26,23 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
     public CommandHistoryClient(Channel channel, WebSocketServerHandler wsHandler) {
 	super(channel, wsHandler);
 	log = LoggerFactory.getLogger(CommandHistoryClient.class.getName() + "[" + channel.getInstance() + "]");
+	wsHandler.addResource("cmdhistory", this);
     }
 
     @Override
-    public void processRequest(WebSocketDecodeContext ctx, InputStream in) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
 	switch (ctx.getOperation()) {
 	    case "subscribe":
-		subscribe(ctx.getRequestId());
-		break;
+		return subscribe(ctx.getRequestId());
 	    default:
 		throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
 	}
     }
 
-    private void subscribe(int requestId) {
+    private WebSocketReplyData subscribe(int requestId) {
 	CommandHistoryRequestManager chrm = channel.getCommandHistoryManager();
 	subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
-	wsHandler.sendAckReply(requestId);
+	return toAckReply(requestId);
     }
 
     /**

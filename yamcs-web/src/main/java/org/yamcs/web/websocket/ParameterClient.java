@@ -13,6 +13,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -20,7 +21,6 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.web.Computation;
 import org.yamcs.web.ComputationFactory;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,36 +50,33 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	super(channel, wsHandler);
 	log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + channel.getInstance() + "]");
 	pidrm = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
+	wsHandler.addResource("parameter", this);
+	wsHandler.addResource("request", this);
     }
 
-    public void processRequest(WebSocketDecodeContext ctx, InputStream in) throws WebSocketException {
-	WebSocketDecoder decoder = wsHandler.getJsonDecoder();
+    @Override
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
 	switch (ctx.getOperation()) {
 	    case "subscribe":
-		NamedObjectList subscribeList = decoder.decodeMessage(ctx, in, SchemaYamcs.NamedObjectList.MERGE).build();
-		subscribe(ctx.getRequestId(), subscribeList);
-		break;
+		NamedObjectList subscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
+		return subscribe(ctx.getRequestId(), subscribeList);
 	    case "subscribeAll":
-		StringMessage stringMessage = decoder.decodeMessage(ctx, in, SchemaYamcs.StringMessage.MERGE).build();
-		subscribeAll(ctx.getRequestId(), stringMessage.getMessage());
-		break;
+		StringMessage stringMessage = decoder.decodeMessageData(ctx, SchemaYamcs.StringMessage.MERGE).build();
+		return subscribeAll(ctx.getRequestId(), stringMessage.getMessage());
 	    case "unsubscribe":
-		NamedObjectList unsubscribeList = decoder.decodeMessage(ctx, in, SchemaYamcs.NamedObjectList.MERGE).build();
-		unsubscribe(ctx.getRequestId(), unsubscribeList);
-		break;
+		NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
+		return unsubscribe(ctx.getRequestId(), unsubscribeList);
 	    case "unsubscribeAll":
-		unsubscribeAll(ctx.getRequestId());
-		break;
+		return unsubscribeAll(ctx.getRequestId());
 	    case "subscribeComputations":
-		ComputationDefList cdefList = decoder.decodeMessage(ctx, in, SchemaComp.ComputationDefList.MERGE).build();
-		subscribeComputations(ctx.getRequestId(), cdefList);
-		break;
+		ComputationDefList cdefList = decoder.decodeMessageData(ctx, SchemaComp.ComputationDefList.MERGE).build();
+		return subscribeComputations(ctx.getRequestId(), cdefList);
 	    default:
 		throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
 	}
     }
 
-    private void subscribe(int requestId, NamedObjectList paraList) throws WebSocketException {
+    private WebSocketReplyData subscribe(int requestId, NamedObjectList paraList) throws WebSocketException {
 	//TODO check permissions and subscription limits
 	try {
 	    if(subscriptionId!=-1) {
@@ -87,37 +84,38 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	    } else {
 		subscriptionId=pidrm.addRequest(paraList.getListList());
 	    }
-	    wsHandler.sendAckReply(requestId);
+	    return toAckReply(requestId);
 	} catch (InvalidIdentification e) {
 	    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
-	    throw new StructuredWebSocketException(requestId, "InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+	    WebSocketException ex = new WebSocketException(requestId, e);
+	    ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+	    throw ex;
 	} catch (InvalidRequestIdentification e) {
 	    log.error("got invalid subscription id", e);
 	    throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
 	}
     }
 
-    private void unsubscribe(int requestId, NamedObjectList paraList) throws WebSocketException {
+    private WebSocketReplyData unsubscribe(int requestId, NamedObjectList paraList) throws WebSocketException {
 	//TODO check permissions and subscription limits
 	if(subscriptionId!=-1) {
 	    pidrm.removeItemsFromRequest(subscriptionId, paraList.getListList());
-	    wsHandler.sendAckReply(requestId);
+	    return toAckReply(requestId);
 	} else {
 	    throw new WebSocketException(requestId, "Not subscribed to anything");
 	}
-	wsHandler.sendAckReply(requestId);
     }
 
-    private void subscribeAll(int requestId, String namespace) throws WebSocketException {
+    private WebSocketReplyData subscribeAll(int requestId, String namespace) throws WebSocketException {
 	//TODO check permissions and subscription limits
 	if(subscriptionId!=-1) {
 	    throw new WebSocketException(requestId, "Already subscribed for this client");
 	}
 	subscriptionId=pidrm.subscribeAll(namespace);
-	wsHandler.sendAckReply(requestId);
+	return toAckReply(requestId);
     }
 
-    private void subscribeComputations(int requestId, ComputationDefList cdefList) throws WebSocketException {
+    private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList) throws WebSocketException {
 	//TODO check permissions and subscription limits
 	List<NamedObjectId> argList=new ArrayList<>();
 	for(ComputationDef c: cdefList.getCompDefList()) {
@@ -130,10 +128,11 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	    } else {
 		compSubscriptionId=pidrm.addRequest(argList);
 	    }
-
 	} catch (InvalidIdentification e) {
 	    NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
-	    throw new StructuredWebSocketException(requestId, "InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+	    WebSocketException ex = new WebSocketException(requestId, e);
+	    ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+	    throw ex;
 	}
 
 	try {
@@ -145,18 +144,18 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	    log.warn("Cannot create computation: ", e);
 	    throw new WebSocketException(requestId, "Could not create computation", e);
 	}
-	wsHandler.sendAckReply(requestId);
+	return toAckReply(requestId);
     }
 
-    private void unsubscribeAll(int requestId) throws WebSocketException {
+    private WebSocketReplyData unsubscribeAll(int requestId) throws WebSocketException {
 	if(subscriptionId==-1) {
 	    throw new WebSocketException(requestId, "Not subscribed");
 	}
 	ParameterRequestManager prm=channel.getParameterRequestManager();
 	boolean r=prm.unsubscribeAll(subscriptionId);
 	if(r) {
-	    wsHandler.sendAckReply(requestId);
 	    subscriptionId=-1;
+	    return toAckReply(requestId);
 	} else {
 	    throw new WebSocketException(requestId, "There is no subscribeAll subscription for this client");
 	}

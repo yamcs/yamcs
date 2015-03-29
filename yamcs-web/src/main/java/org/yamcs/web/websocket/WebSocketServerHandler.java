@@ -11,11 +11,14 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.websocketx.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.web.rest.RestException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handles handshakes and messages
@@ -28,12 +31,15 @@ public class WebSocketServerHandler {
     private WebSocketServerHandshaker handshaker;
     private int dataSeqCount=-1;
 
-    private WebSocketDecoder jsonDecoder = new JsonDecoder();
-    private JsonEncoder jsonEncoder = new JsonEncoder();
+    private WebSocketDecoder decoder;
+    private WebSocketEncoder encoder;
     
     //these two are valid after the socket has been upgraded and they are practical final
     Channel channel;
     WebSocketChannelClient channelClient;
+
+    // Provides access to the various resources served through this websocket
+    private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
     
     public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
         //TODO: can we ever reach this twice???
@@ -71,88 +77,82 @@ public class WebSocketServerHandler {
 
     public void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         try {
-            log.debug("received websocket frame {}", frame);
-            // Check for closing frame
-            if (frame instanceof CloseWebSocketFrame) {
-                this.handshaker.close(ctx.getChannel(), (CloseWebSocketFrame) frame);
-                return;
-            } else if (frame instanceof PingWebSocketFrame) {
-                ctx.getChannel().write(new PongWebSocketFrame(frame.getBinaryData()));
-                return;
-            } else if (!(frame instanceof TextWebSocketFrame)) {
-                throw new WebSocketException(WSConstants.NO_REQUEST_ID, String.format("%s frame types not supported", frame.getClass().getName()));
-            }
-
-            ChannelBuffer binary = frame.getBinaryData();
-            if (binary != null) {
-                InputStream in = new ChannelBufferInputStream(binary);
-                WebSocketDecodeContext msg = jsonDecoder.decodeMessageWrapper(in);
-                String resource = msg.getResource();
-                if ("parameter".equals(resource) || "request".equals(resource)) {
-                    channelClient.getParameterClient().processRequest(msg, in);
-                } else if ("cmdhistory".equals(resource)) {
-                    channelClient.getCommandHistoryClient().processRequest(msg, in);
+            try {
+                log.debug("received websocket frame {}", frame);
+                // Check for closing frame
+                if (frame instanceof CloseWebSocketFrame) {
+                    this.handshaker.close(ctx.getChannel(), (CloseWebSocketFrame) frame);
+                    return;
+                } else if (frame instanceof PingWebSocketFrame) {
+                    ctx.getChannel().write(new PongWebSocketFrame(frame.getBinaryData()));
+                    return;
+                } else if (frame instanceof TextWebSocketFrame) {
+                    // We could do something more clever here, but only need to support json and gpb for now
+                    if (decoder == null)
+                        decoder = new JsonDecoder();
+                    if (encoder == null)
+                        encoder = new JsonEncoder();
+                } else if (frame instanceof  BinaryWebSocketFrame) {
+                    if (decoder == null)
+                        decoder = new ProtobufDecoder();
+                    if (encoder == null)
+                        encoder = new ProtobufEncoder();
                 } else {
-                    throw new WebSocketException(msg.getRequestId(), "Invalid message (unsupported resource: '"+resource+"')");
+                    throw new WebSocketException(WSConstants.NO_REQUEST_ID, String.format("%s frame types not supported", frame.getClass().getName()));
                 }
+
+                ChannelBuffer binary = frame.getBinaryData();
+                if (binary != null) {
+                    InputStream in = new ChannelBufferInputStream(binary);
+                    WebSocketDecodeContext msg = decoder.decodeMessage(in);
+                    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
+                    if (resource != null) {
+                        WebSocketReplyData reply = resource.processRequest(msg, decoder);
+                        sendReply(reply);
+                    } else {
+                        throw new WebSocketException(msg.getRequestId(), "Invalid message (unsupported resource: '"+msg.getResource()+"')");
+                    }
+                }
+            } catch (WebSocketException e) {
+                log.debug("Returning nominal exception back to the client", e);
+                sendException(e);
             }
-        } catch (StructuredWebSocketException e) {
-            sendException(e.getRequestId(), e.getMessage(), e.getData(), e.getSchema());
-        } catch (WebSocketException e) {
-            sendException(e.getRequestId(), e.getMessage());
+        } catch (Exception e) {
+            log.error("Internal Server Error while handling incoming web socket frame", e);
+            try { // Gut-shot, at least try to inform the client
+                // TODO should do our best to return a better requestId here
+                sendException(new WebSocketException(WSConstants.NO_REQUEST_ID, "Internal Server Error"));
+            } catch(Exception e2) { // Oh well, we tried.
+                log.warn("Could not inform client of earlier Internal Server Error due to additional exception " + e2, e2);
+            }
         }
     }
 
-    public WebSocketDecoder getJsonDecoder() { // TODO improve
-        return jsonDecoder;
+    void addResource(String name, AbstractWebSocketResource resource) {
+        if (resourcesByName.containsKey(name)) {
+            throw new ConfigurationException("A resource named '" + name + "' is already being served");
+        }
+        resourcesByName.put(name, resource);
     }
 
     private String getWebSocketLocation(String yamcsInstance, HttpRequest req) {
         return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + "/"+ yamcsInstance+"/"+WEBSOCKET_PATH;
     }
-    
-    /**
-     * sends a generic string exception message
-     * @param requestId the request that has generated the exception
-     * @param message the exception message
-     */
-    private void sendException(int requestId, String message) {
-        try {
-            String msg = jsonEncoder.encodeException(requestId, message);
-            channel.write(new TextWebSocketFrame(msg));
-        } catch (WebSocketException e) { // Well, that's embarassing. Send plain text
-            log.error("Could not encode generic JSON exception", e);
-            channel.write(new TextWebSocketFrame("Internal Server Error"));
-        }
+
+    private void sendReply(WebSocketReplyData reply) throws IOException {
+        WebSocketFrame frame = encoder.encodeReply(reply);
+        channel.write(frame);
     }
 
-    /**
-     * writes a structured exception message (e.g. for InvalidIdentificationException 
-     * we want to pass the names of the invalid parameters)
-     */
-    private <T> void sendException(int requestId, String exceptionType, T message, Schema<T> schema) {
-        try {
-            String msg = jsonEncoder.encodeException(requestId, exceptionType, message, schema);
-            channel.write(new TextWebSocketFrame(msg));
-        } catch (WebSocketException e) {
-            log.error("Could not encode structured JSON exception for exception data: " + message + ". Sending generic exception instead");
-            sendException(requestId, e.getMessage());
-        }
-    }
-
-    public void sendAckReply(int requestId) {
-        try {
-            String msg = jsonEncoder.encodeAckReply(requestId);
-            channel.write(new TextWebSocketFrame(msg));
-        } catch (WebSocketException e) {
-            sendException(requestId, e.getMessage());
-        }
+    private void sendException(WebSocketException e) throws IOException {
+        WebSocketFrame frame = encoder.encodeException(e);
+        channel.write(frame);
     }
 
     /**
      * Sends actual data over the web socket
      */
-    public <T> void sendData(ProtoDataType dataType, T data, Schema<T> schema) throws IOException, RestException {
+    public <T> void sendData(ProtoDataType dataType, T data, Schema<T> schema) throws IOException {
         dataSeqCount++;
         if(!channel.isOpen()) throw new IOException("Channel not open");
         
@@ -160,9 +160,8 @@ public class WebSocketServerHandler {
             log.warn("Dropping message because channel is not writable");
             return;
         }
-
-        String msg = jsonEncoder.encodeData(dataSeqCount, dataType, data, schema);
-        channel.write(new TextWebSocketFrame(msg));
+        WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);
+        channel.write(frame);
     }
     
     public void channelDisconnected(Channel c) {

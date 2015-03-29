@@ -16,20 +16,15 @@ import java.io.InputStream;
 public interface WebSocketDecoder {
 
     /**
-     * The source media type that should have been indicated somehow TODO
-     */
-    String getSupportedMediaType();
-
-    /**
      * Decodes the common wrapper fields of an incoming web socket message.
-     *
-     * Implementations SHALL NOT close the inputstream, as it could be used for extracting the
-     * wrapped data further on.
+     * The actual data can be set implementation-specific and does not necessarily need to
+     * be processed here, since a second call will be made with an appropriately determined
+     * schema.
      */
-    WebSocketDecodeContext decodeMessageWrapper(InputStream in) throws WebSocketException;
+    WebSocketDecodeContext decodeMessage(InputStream in) throws WebSocketException;
 
     /**
-     * Decodes the unwrapped contents of an incoming web socket message.
+     * Decodes any data that may be wrapped by the incoming web socket message
      */
-    <T extends MessageLite.Builder> T decodeMessage(WebSocketDecodeContext wrapper, InputStream in, Schema<T> targetSchema) throws WebSocketException;
+    <T extends MessageLite.Builder> T decodeMessageData(WebSocketDecodeContext ctx, Schema<T> dataSchema) throws WebSocketException;
 }

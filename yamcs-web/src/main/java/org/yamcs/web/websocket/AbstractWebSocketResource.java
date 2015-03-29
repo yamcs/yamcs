@@ -1,8 +1,7 @@
 package org.yamcs.web.websocket;
 
 import org.yamcs.Channel;
-
-import java.io.InputStream;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 
 /**
  * A resource bundles a set of logically related operations.
@@ -19,5 +18,12 @@ public abstract class AbstractWebSocketResource {
         this.wsHandler = wsHandler;
     }
 
-    public abstract void processRequest(WebSocketDecodeContext ctx, InputStream in) throws WebSocketException;
+    public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException;
+
+    protected static WebSocketReplyData toAckReply(int requestId) {
+        return WebSocketReplyData.newBuilder()
+                .setProtocolVersion(WSConstants.PROTOCOL_VERSION)
+                .setSequenceNumber(requestId)
+                .build();
+    }
 }

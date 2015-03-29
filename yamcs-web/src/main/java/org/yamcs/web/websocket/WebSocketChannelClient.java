@@ -31,14 +31,6 @@ public class WebSocketChannelClient implements ChannelClient {
         cmdhistClient = new CommandHistoryClient(channel, wsHandler);
     }
 
-    public ParameterClient getParameterClient() {
-        return paraClient;
-    }
-
-    public CommandHistoryClient getCommandHistoryClient() {
-        return cmdhistClient;
-    }
-
     @Override
     public void switchChannel(Channel c) throws ChannelException {
         log.info("switching channel to {}", c);

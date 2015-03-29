@@ -4,71 +4,58 @@ import com.dyuproject.protostuff.JsonIOUtil;
 import com.dyuproject.protostuff.Schema;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
+import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import java.io.IOException;
 import java.io.StringWriter;
 
-public class JsonEncoder {
+public class JsonEncoder implements WebSocketEncoder {
 
     private JsonFactory jsonFactory = new JsonFactory();
 
-    String encodeException(int requestId, String message) throws WebSocketException {
-        try {
-            StringWriter sw = new StringWriter();
-            JsonGenerator g = jsonFactory.createJsonGenerator(sw);
-            writeMessageStart(g, WSConstants.MESSAGE_TYPE_EXCEPTION, requestId);
-            g.writeStartObject();
+    @Override
+    public WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException {
+        StringWriter sw=new StringWriter();
+        JsonGenerator g=jsonFactory.createJsonGenerator(sw);
+        writeMessageStart(g, WSConstants.MESSAGE_TYPE_REPLY, reply.getSequenceNumber());
+        writeMessageEnd(g);
+        return new TextWebSocketFrame(sw.toString());
+    }
+
+    @Override
+    public WebSocketFrame encodeException(WebSocketException e) throws IOException {
+        StringWriter sw = new StringWriter();
+        JsonGenerator g = jsonFactory.createJsonGenerator(sw);
+        writeMessageStart(g, WSConstants.MESSAGE_TYPE_EXCEPTION, e.getRequestId());
+        g.writeStartObject();
+        if (e.getDataType().equals("STRING")) {
             g.writeStringField("et", "STRING");
-            g.writeStringField("msg", message);
-            g.writeEndObject();
-            writeMessageEnd(g);
-            return sw.toString();
-        } catch (IOException e) {
-            throw new WebSocketException(requestId, "Could not encode exception", e);
-        }
-    }
-
-    <T> String encodeException(int requestId, String exceptionType, T message, Schema<T> targetSchema) throws WebSocketException {
-        try {
-            StringWriter sw=new StringWriter();
-            JsonGenerator g=jsonFactory.createJsonGenerator(sw);
-            writeMessageStart(g, WSConstants.MESSAGE_TYPE_EXCEPTION, requestId);
-            g.writeStartObject();
-            g.writeStringField("et", exceptionType);
+            g.writeStringField("msg", e.getMessage());
+        } else {
+            g.writeStringField("et", e.getDataType());
             g.writeFieldName("msg");
-            JsonIOUtil.writeTo(g, message, targetSchema, false);
-            g.writeEndObject();
-            writeMessageEnd(g);
-            return sw.toString();
-        } catch (IOException e) {
-            throw new WebSocketException(requestId, "Could not encode exception", e);
+            JsonIOUtil.writeTo(g, e.getData(), e.getDataSchema(), false);
         }
+        g.writeEndObject();
+        writeMessageEnd(g);
+        return new TextWebSocketFrame(sw.toString());
     }
 
-    String encodeAckReply(int requestId) throws WebSocketException {
-        try {
-            StringWriter sw=new StringWriter();
-            JsonGenerator g=jsonFactory.createJsonGenerator(sw);
-            writeMessageStart(g, WSConstants.MESSAGE_TYPE_REPLY, requestId);
-            writeMessageEnd(g);
-            return sw.toString();
-        } catch (IOException e) {
-            throw new WebSocketException(requestId, "Could not encode ACK reply", e);
-        }
-    }
-
-    <T> String encodeData(int sequenceNumber, ProtoDataType dataType, T message, Schema<T> targetSchema) throws IOException {
+    @Override
+    public <T> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message, Schema<T> schema) throws IOException {
         StringWriter sw=new StringWriter();
         JsonGenerator g=jsonFactory.createJsonGenerator(sw);
         writeMessageStart(g, WSConstants.MESSAGE_TYPE_DATA, sequenceNumber);
         g.writeStartObject();
         g.writeStringField("dt", dataType.name());
         g.writeFieldName("data");
-        JsonIOUtil.writeTo(g, message, targetSchema, false);
+        JsonIOUtil.writeTo(g, message, schema, false);
         g.writeEndObject();
         writeMessageEnd(g);
-        return sw.toString();
+        return new TextWebSocketFrame(sw.toString());
     }
 
     private void writeMessageStart(JsonGenerator g, int messageType, int seqId) throws IOException {

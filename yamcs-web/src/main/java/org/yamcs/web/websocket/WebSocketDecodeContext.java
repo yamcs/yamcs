@@ -2,6 +2,8 @@ package org.yamcs.web.websocket;
 
 /**
  * The common wrapper fields of messages sent over the websocket
+ * The only we still need this if because the javascript handling needs a shared JsonParser to handle processing
+ * the wrapper fields first, and the nested data second.
  */
 public class WebSocketDecodeContext {
 
