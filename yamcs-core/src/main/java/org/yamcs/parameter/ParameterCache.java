@@ -60,14 +60,14 @@ public class ParameterCache {
 			Parameter p = plist.get(i);
 			CacheEntry ce = cache.get(p);
 			if(ce!=null) { //last delivery where this parameter appears
-				ParameterValue pv = ce.pvlist.getNewest(p);
+				ParameterValue pv = ce.pvlist.getLast(p);
 				result.add(pv);
 				bs.clear(i);
 			
 				//find all the other parameters that are in this delivery
 				for (int j = bs.nextSetBit(i+1); j >= 0; j = bs.nextSetBit(j+1)) {
 					p = plist.get(j);
-					pv = ce.pvlist.getNewest(p);
+					pv = ce.pvlist.getLast(p);
 					if(pv!=null) {
 						result.add(pv);
 						bs.clear(j);
@@ -91,7 +91,7 @@ public class ParameterCache {
 		CacheEntry ce = cache.get(p);
 		if(ce==null) return null;
 
-		return ce.pvlist.getNewest(p);
+		return ce.pvlist.getLast(p);
 	}
 	
 	

@@ -1,7 +1,6 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -14,9 +13,13 @@ import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+
+import static  org.yamcs.RefMdbPacketGenerator.*;
 
 public class TestXtceTmExtractor {
 
@@ -41,25 +44,22 @@ public class TestXtceTmExtractor {
         
         //System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         // System.out.println("received: "+received);
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
-        ParameterValue pv=received.get(3);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", pv.getParameter().getQualifiedName());
+        ParameterValueList received=tmExtractor.getParameterResult();
+        Parameter p = xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        ParameterValue pv=received.getLast(p);
         assertEquals(tmGenerator.pIntegerPara1_1, pv.getEngValue().getUint32Value());
 
-        pv=received.get(10);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", pv.getParameter().getQualifiedName());
+        p = xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara11_6");
+        pv=received.getLast(p);
         assertEquals(tmGenerator.pIntegerPara11_6, pv.getEngValue().getUint32Value());
        
-        pv=received.get(11);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_7", pv.getParameter().getQualifiedName());
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara11_7"));
         assertEquals(tmGenerator.pIntegerPara11_7, pv.getEngValue().getUint32Value());
 
-        pv=received.get(12);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_8", pv.getParameter().getQualifiedName());
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara11_8"));
         assertEquals(tmGenerator.pIntegerPara11_8, pv.getEngValue().getUint64Value());
         
-        pv=received.get(13);
-        assertEquals("/REFMDB/SUBSYS1/StringPara11_5", pv.getParameter().getQualifiedName());
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringPara11_5"));
         assertEquals(tmGenerator.pStringPara11_5, pv.getEngValue().getStringValue());
     }
 
@@ -77,64 +77,37 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
         assertEquals( 13, received.size() );
         
         // Fixed size strings
-        ParameterValue pv=received.get( 6 );
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara13_1", pv.getParameter().getQualifiedName());
-        pv=received.get( 7 );
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara13_2", pv.getParameter().getQualifiedName());
-        // Terminated strings
-        pv=received.get( 8 );
-        assertEquals("/REFMDB/SUBSYS1/TerminatedStringPara13_3", pv.getParameter().getQualifiedName());
-        pv=received.get( 9 );
-        assertEquals("/REFMDB/SUBSYS1/TerminatedStringPara13_4", pv.getParameter().getQualifiedName());
-        // Prepended size strings
-        pv=received.get( 10 );
-        assertEquals("/REFMDB/SUBSYS1/PrependedSizeStringPara13_5", pv.getParameter().getQualifiedName());
-        pv=received.get( 11 );
-        assertEquals("/REFMDB/SUBSYS1/PrependedSizeStringPara13_6", pv.getParameter().getQualifiedName());
-        // Final fixed size string of large space
-        pv=received.get( 12 );
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara13_7", pv.getParameter().getQualifiedName());
-    }
-    
-    @Test
-    public void testPKT13StringValues() throws ConfigurationException {
-    	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        //xtcedb.print(System.out);
-
-        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        ParameterValue pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/FixedStringPara13_1"));
+        assertEquals(pFixedStringPara13_1, pv.getEngValue().getStringValue());
+     
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/FixedStringPara13_2"));
+        assertEquals(pFixedStringPara13_2, pv.getEngValue().getStringValue());
         
-        ByteBuffer bb=tmGenerator.generate_PKT13();
-        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
-        
-        //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
-        assertEquals( 13, received.size() );
-        // Fixed size strings
-        ParameterValue pv=received.get( 6 );
-        assertEquals(tmGenerator.pFixedStringPara13_1, pv.getEngValue().getStringValue());
-        pv=received.get( 7 );
-        assertEquals(tmGenerator.pFixedStringPara13_2, pv.getEngValue().getStringValue());
         // Terminated strings
-        pv=received.get( 8 );
-        assertEquals(tmGenerator.pTerminatedStringPara13_3, pv.getEngValue().getStringValue());
-        pv=received.get( 9 );
-        assertEquals(tmGenerator.pTerminatedStringPara13_4, pv.getEngValue().getStringValue());
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/TerminatedStringPara13_3"));
+        assertEquals(pTerminatedStringPara13_3, pv.getEngValue().getStringValue());
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/TerminatedStringPara13_4"));
+        assertEquals(pTerminatedStringPara13_4, pv.getEngValue().getStringValue());
+        
         // Prepended size strings
-        pv=received.get( 10 );
-        assertEquals(tmGenerator.pPrependedSizeStringPara13_5, pv.getEngValue().getStringValue());
-        pv=received.get( 11 );
-        assertEquals(tmGenerator.pPrependedSizeStringPara13_6, pv.getEngValue().getStringValue());
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/PrependedSizeStringPara13_5"));
+        assertEquals(pPrependedSizeStringPara13_5, pv.getEngValue().getStringValue());
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/PrependedSizeStringPara13_6"));
+        assertEquals(pPrependedSizeStringPara13_6, pv.getEngValue().getStringValue());
+        
         // Final fixed size string of large space
-        pv=received.get( 12 );
-        assertEquals(tmGenerator.pFixedStringPara13_7, pv.getEngValue().getStringValue());
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/FixedStringPara13_7"));
+        assertEquals(pFixedStringPara13_7, pv.getEngValue().getStringValue());
     }
-    
+   
+   
     
     @Test
     public void testPKT14StringFloatStructure() throws ConfigurationException {
@@ -149,56 +122,31 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
         
         // Check all the parameters have been parsed
         assertEquals( 12, received.size() );
         // Verify correct names
-        ParameterValue pv=received.get( 6 );
-        assertEquals("/REFMDB/SUBSYS1/StringFloatFSPara14_1", pv.getParameter().getQualifiedName());
-        pv=received.get( 7 );
-        assertEquals("/REFMDB/SUBSYS1/StringFloatTSCPara14_2", pv.getParameter().getQualifiedName());
-        pv=received.get( 8 );
-        assertEquals("/REFMDB/SUBSYS1/StringFloatTSSCPara14_3", pv.getParameter().getQualifiedName());
-        pv=received.get( 9 );
-        assertEquals("/REFMDB/SUBSYS1/StringFloatTSSCPara14_3", pv.getParameter().getQualifiedName());
-        pv=received.get( 10 );
-        assertEquals("/REFMDB/SUBSYS1/StringFloatPSPara14_5", pv.getParameter().getQualifiedName());
-		pv=received.get( 11 );
-		assertEquals("/REFMDB/SUBSYS1/StringFloatFSBPara14_4", pv.getParameter().getQualifiedName());
+        ParameterValue pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatFSPara14_1"));
+        assertEquals( Float.parseFloat(pStringFloatFSPara14_1 ), pv.getEngValue().getFloatValue(), 0.0001 );
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatTSCPara14_2"));
+        assertEquals( Float.parseFloat(pStringFloatTSCPara14_2 ), pv.getEngValue().getFloatValue(), 0.0001 );
+        
+        pv=received.removeLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatTSSCPara14_3"));
+        assertEquals( Float.parseFloat( pStringFloatTSSCPara14_3 ), pv.getEngValue().getFloatValue(), 0.0001 );
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatTSSCPara14_3"));
+        assertEquals( Float.parseFloat(pStringFloatTSSCPara14_3 ), pv.getEngValue().getFloatValue(), 0.0001 );
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatPSPara14_5"));
+        assertEquals( Float.parseFloat(pStringFloatPSPara14_5 ), pv.getEngValue().getFloatValue(), 0.0001 );
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringFloatFSBPara14_4"));
+        assertEquals( Float.parseFloat(pStringFloatFSBPara14_4 ), pv.getEngValue().getFloatValue(), 0.0001 );
     }
-    
-    @Test
-    public void testPKT14StringFloatValues() throws ConfigurationException {
-    	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        //xtcedb.print(System.out);
-
-        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
-        
-        ByteBuffer bb=tmGenerator.generate_PKT14();
-        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
-        
-        //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
-        // Check all the parameters have been parsed
-        assertEquals( 12, received.size() );
-        
-        ParameterValue pv=received.get( 6 );
-		assertEquals( Float.parseFloat( tmGenerator.pStringFloatFSPara14_1 ), pv.getEngValue().getFloatValue(), 0.0001 );
-        pv=received.get( 7 );
-        assertEquals( Float.parseFloat( tmGenerator.pStringFloatTSCPara14_2 ), pv.getEngValue().getFloatValue(), 0.0001 );
-        pv=received.get( 8 );
-        assertEquals( Float.parseFloat( tmGenerator.pStringFloatTSSCPara14_3 ), pv.getEngValue().getFloatValue(), 0.0001 );
-        pv=received.get( 9 );
-        assertEquals( Float.parseFloat( tmGenerator.pStringFloatTSSCPara14_3 ), pv.getEngValue().getFloatValue(), 0.0001 );
-        pv=received.get( 10 );
-        assertEquals( Float.parseFloat( tmGenerator.pStringFloatPSPara14_5 ), pv.getEngValue().getFloatValue(), 0.0001 );
-		pv=received.get( 11 );
-		assertEquals( Float.parseFloat( tmGenerator.pStringFloatFSBPara14_4 ), pv.getEngValue().getFloatValue(), 0.0001 );
-    }
-    
+   
+   
     @Test
     public void testPKT15StringIntStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
@@ -212,52 +160,27 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
         
         // Verify correct names
-        ParameterValue pv=received.get( 6 );
-        assertEquals("/REFMDB/SUBSYS1/StringIntFixedPara15_1", pv.getParameter().getQualifiedName());
-        pv=received.get( 7 );
-        assertEquals("/REFMDB/SUBSYS1/StringIntTermPara15_2", pv.getParameter().getQualifiedName());
-        pv=received.get( 8 );
-        assertEquals("/REFMDB/SUBSYS1/StringIntTermPara15_3", pv.getParameter().getQualifiedName());
-        pv=received.get( 9 );
-        assertEquals("/REFMDB/SUBSYS1/StringIntPrePara15_4", pv.getParameter().getQualifiedName());
-        pv=received.get( 10 );
-        assertEquals("/REFMDB/SUBSYS1/StringIntStrPara15_5", pv.getParameter().getQualifiedName());
+        ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntFixedPara15_1"));
+        assertEquals( Integer.parseInt(pStringIntFixedPara15_1 ), pv.getEngValue().getUint32Value() );
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntTermPara15_2"));
+        assertEquals( Integer.parseInt(pStringIntTermPara15_2 ), pv.getEngValue().getUint32Value() );
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntTermPara15_3"));
+        assertEquals( Integer.parseInt(pStringIntTermPara15_3 ), pv.getEngValue().getUint32Value() );
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntPrePara15_4"));
+        assertEquals( Integer.parseInt(pStringIntPrePara15_4 ), pv.getEngValue().getUint32Value() );
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntStrPara15_5"));
+        assertEquals( Integer.parseInt(pStringIntStrPara15_5 ), pv.getEngValue().getUint32Value() );
     }
     
-    @Test
-    public void testPKT15StringIntValues() throws ConfigurationException {
-    	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
-        //xtcedb.print(System.out);
-
-        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
-        
-        ByteBuffer bb=tmGenerator.generate_PKT15();
-        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
-        
-        //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
-        // Check all the parameters have been parsed
-        assertEquals( 11, received.size() );
-        
-        // Verify correct values
-        ParameterValue pv=received.get( 6 );
-        assertEquals( Integer.parseInt( tmGenerator.pStringIntFixedPara15_1 ), pv.getEngValue().getUint32Value() );
-        pv=received.get( 7 );
-        assertEquals( Integer.parseInt( tmGenerator.pStringIntTermPara15_2 ), pv.getEngValue().getUint32Value() );
-        pv=received.get( 8 );
-        assertEquals( Integer.parseInt( tmGenerator.pStringIntTermPara15_3 ), pv.getEngValue().getUint32Value() );
-        pv=received.get( 9 );
-        assertEquals( Integer.parseInt( tmGenerator.pStringIntPrePara15_4 ), pv.getEngValue().getUint32Value() );
-        pv=received.get( 10 );
-        assertEquals( Integer.parseInt( tmGenerator.pStringIntStrPara15_5 ), pv.getEngValue().getUint32Value() );
-    }
     
     
     @Test
@@ -273,20 +196,25 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT19 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
 
         assertEquals(10, received.size());
-        assertEquals(true, received.get(6).getRawValue().getBooleanValue());
-        assertEquals(true, received.get(6).getEngValue().getBooleanValue());
+        
+        ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara19_1"));
+        assertEquals(true, pv.getRawValue().getBooleanValue());
+        assertEquals(true, pv.getEngValue().getBooleanValue());
 
-        assertEquals(false, received.get(7).getRawValue().getBooleanValue());
-        assertEquals(false, received.get(7).getEngValue().getBooleanValue());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara19_2"));
+        assertEquals(false, pv.getRawValue().getBooleanValue());
+        assertEquals(false, pv.getEngValue().getBooleanValue());
         
-        assertEquals(true, received.get(8).getRawValue().getBooleanValue());
-        assertEquals(true, received.get(8).getEngValue().getBooleanValue());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara19_3"));
+        assertEquals(true, pv.getRawValue().getBooleanValue());
+        assertEquals(true, pv.getEngValue().getBooleanValue());
         
-        assertEquals(1, received.get(9).getRawValue().getUint32Value());
-        assertEquals(true, received.get(9).getEngValue().getBooleanValue());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara19_4"));
+        assertEquals(1, pv.getRawValue().getUint32Value());
+        assertEquals(true, pv.getEngValue().getBooleanValue());
     }
 
     @Test
@@ -335,28 +263,23 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT17 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
 
         assertEquals(11, received.size());
         
-        ParameterValue pv=received.get(6);
-        assertEquals("/REFMDB/SUBSYS1/FloatPara17_1", pv.getParameter().getQualifiedName());
+        ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/FloatPara17_1"));
         assertEquals(-14.928, pv.getEngValue().getFloatValue(), 1e-5);
         
-        pv=received.get(7);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_2", pv.getParameter().getQualifiedName());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara17_2"));
         assertEquals(6, pv.getEngValue().getSint32Value());
         
-        pv=received.get(8);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_3", pv.getParameter().getQualifiedName());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara17_3"));
         assertEquals(-6, pv.getEngValue().getSint32Value());
         
-        pv=received.get(9);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_4", pv.getParameter().getQualifiedName());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara17_4"));
         assertEquals(6, pv.getEngValue().getSint32Value());
         
-        pv=received.get(10);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara17_5", pv.getParameter().getQualifiedName());
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara17_5"));
         assertEquals(-6, pv.getEngValue().getSint32Value());
     }
     
@@ -370,8 +293,8 @@ public class TestXtceTmExtractor {
         ByteBuffer bb=tmGenerator.generate_PKT1_11();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
-        ParameterValue pv=received.get(6);
+        ParameterValueList received=tmExtractor.getParameterResult();
+        ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_11_1"));
         assertEquals(tmGenerator.pIntegerPara1_11_1_unsigned_value/2, pv.getEngValue().getUint32Value()&0xFFFFFFFFL);
     }
     
@@ -387,10 +310,14 @@ public class TestXtceTmExtractor {
         SequenceContainer startContainer = xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT2");
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant(), startContainer);
         
-        ArrayList<ParameterValue> received=tmExtractor.getParameterResult();
+        ParameterValueList received=tmExtractor.getParameterResult();
+        
         assertEquals(2, received.size());
-        assertEquals(tmGenerator.pIntegerPara2_1, received.get(0).getEngValue().getUint32Value());
-        assertEquals(tmGenerator.pIntegerPara2_2, received.get(1).getEngValue().getUint32Value());
+        ParameterValue pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara2_1"));
+        assertEquals(pIntegerPara2_1, pv.getEngValue().getUint32Value());
+        
+        pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara2_2"));
+        assertEquals(pIntegerPara2_2, pv.getEngValue().getUint32Value());
     }
     
     private String byteBufferToHexString(ByteBuffer bb) {

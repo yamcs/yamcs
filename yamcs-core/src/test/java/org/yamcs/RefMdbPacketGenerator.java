@@ -55,30 +55,30 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile int pIntegerPara1_11_1=0xAFFFFFFE; // a uint32 stored in signed java int
     public volatile long pIntegerPara1_11_1_unsigned_value=2952790014L; // the equivalent unsigned value
     
-    public volatile String pFixedStringPara13_1="Ab"; // 16 bits
-    public volatile String pFixedStringPara13_2="A"; // 8 bits
-    public volatile String pTerminatedStringPara13_3="Abcdef"; // Null terminated
-    public volatile String pTerminatedStringPara13_4="Abcdef"; // Comma terminated
-    public volatile String pPrependedSizeStringPara13_5="Abcdefghijklmnopqrstuvwxyz"; // First 16 bits (2 bytes) set size in bits of size tag
-    public volatile String pPrependedSizeStringPara13_6="Abcdef"; // First 8 bits (1 byte) set size in bits of size tag
-    public volatile String pFixedStringPara13_7="Abcdefghijklmnop"; // 128 bits
+    static public final String pFixedStringPara13_1 = "Ab"; // 16 bits
+    static public final String pFixedStringPara13_2 = "A"; // 8 bits
+    static public final String pTerminatedStringPara13_3 = "Abcdef"; // Null terminated
+    static public final String pTerminatedStringPara13_4 = "Abcdef"; // Comma terminated
+    static public final String pPrependedSizeStringPara13_5 = "Abcdefghijklmnopqrstuvwxyz"; // First 16 bits (2 bytes) set size in bits of size tag
+    static public final String pPrependedSizeStringPara13_6 = "Abcdef"; // First 8 bits (1 byte) set size in bits of size tag
+    static public final String pFixedStringPara13_7="Abcdefghijklmnop"; // 128 bits
     
     // Get floats from strings
-    public volatile String pStringFloatFSPara14_1="1.34"; // Fixed size 32 bit
-    public volatile String pStringFloatTSCPara14_2="0.0000001"; // Comma terminated, leading zeros and calibrated
-    public volatile String pStringFloatTSSCPara14_3="0.12"; // Semi-colon terminated, leading zero
-    public volatile String pStringFloatFSBPara14_4="1.34567890123456"; // 128 bit string
-    public volatile String pStringFloatPSPara14_5="1.345678"; // Prepended size string, first 8 bits (1 byte) set size in bits of size tag
+    static public final String pStringFloatFSPara14_1="1.34"; // Fixed size 32 bit
+    static public final String pStringFloatTSCPara14_2="0.0000001"; // Comma terminated, leading zeros and calibrated
+    static public final String pStringFloatTSSCPara14_3="0.12"; // Semi-colon terminated, leading zero
+    static public final String pStringFloatFSBPara14_4="1.34567890123456"; // 128 bit string
+    static public final String pStringFloatPSPara14_5="1.345678"; // Prepended size string, first 8 bits (1 byte) set size in bits of size tag
     
     // Get integers from strings
-    public volatile String pStringIntFixedPara15_1="120"; // Fixed size, 24 bits
-    public volatile String pStringIntTermPara15_2="12"; // Comma terminated
-    public volatile String pStringIntTermPara15_3="12045"; // Semi-colon terminated
-    public volatile String pStringIntPrePara15_4="1204507"; // Prepended size (16 bits)
-    public volatile String pStringIntStrPara15_5="123406789"; // string
+    static public final String pStringIntFixedPara15_1="120"; // Fixed size, 24 bits
+    static public final String pStringIntTermPara15_2="12"; // Comma terminated
+    static public final String pStringIntTermPara15_3="12045"; // Semi-colon terminated
+    static public final String pStringIntPrePara15_4="1204507"; // Prepended size (16 bits)
+    static public final String pStringIntStrPara15_5="123406789"; // string
     
-    public volatile int pIntegerPara2_1 = 123;
-    public volatile int pIntegerPara2_2 = 25;
+    static public final int pIntegerPara2_1 = 123;
+    static public final int pIntegerPara2_2 = 25;
     
     Map<Integer, AtomicInteger> seqCount=new HashMap<Integer, AtomicInteger>();
     

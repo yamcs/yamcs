@@ -11,11 +11,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ContainerProvider;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
@@ -133,7 +133,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	    ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
 	    tmExtractor.processPacket(bb, pwrt.getGenerationTime());
 
-	    ArrayList<ParameterValue> paramResult=tmExtractor.getParameterResult();
+	    ParameterValueList paramResult=tmExtractor.getParameterResult();
 	    ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
 	    
 	    if((parameterRequestManager!=null) &&( paramResult.size()>0)) {

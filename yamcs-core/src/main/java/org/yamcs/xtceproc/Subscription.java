@@ -123,12 +123,6 @@ public class Subscription {
         for(ParameterEntry pe:tpips) {
             addSequenceEntry(pe);
         }
-        Set<Parameter> depSet=parameter.getParameterType().getDependentParameters();
-        if(depSet!=null) {
-            for(Parameter p:depSet) {
-               addParameter(p);
-            }
-        }
     }
     
     private void addContainer2Entry(SequenceContainer sc, SequenceEntry se) {

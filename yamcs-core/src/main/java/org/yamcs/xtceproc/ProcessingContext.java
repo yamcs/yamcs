@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 
 
 /**
@@ -24,7 +24,7 @@ public class ProcessingContext {
 	Subscription subscription;
 	
 	//this is the result of the processing
-	public ArrayList<ParameterValue> paramResult;
+	public ParameterValueList paramResult;
 	public ArrayList<ContainerExtractionResult> containerResult;
 	
 	public long acquisitionTime;
@@ -39,7 +39,7 @@ public class ProcessingContext {
 	public ComparisonProcessor comparisonProcessor;
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
-	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
+		ParameterValueList params, ArrayList<ContainerExtractionResult> containers, 
 	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
 		this.bb = bb;
 		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;

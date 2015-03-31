@@ -64,10 +64,12 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     public ParameterRequestManager(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
 	this.channel=chan;
-	log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
+	log = LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 	tmProcessor.setParameterListener(this);
 	addParameterProvider(tmProcessor);
-	alarmChecker=new AlarmChecker();
+	if(chan.hasAlarmChecker()) {
+	    alarmChecker=new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
+	}
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -190,7 +192,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     public void addItemsToRequest(int subscriptionId, Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
 	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
-	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
+	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
+		&& alarmChecker!=null && alarmChecker.getSubscriptionId()!=subscriptionId) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
 	}
@@ -228,8 +231,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
     private void addItemToRequest(int id, Parameter para, ParameterProvider provider) {
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
-	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ){;
+	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ) {
 	    	provider.startProviding(para);
+	    	if(alarmChecker!=null) {
+	    	    alarmChecker.parameterSubscribed(para);
+		}
 	    }
 	}
 	SubscriptionArray al_req = param2RequestMap.get(para);
@@ -365,7 +371,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	//so first we add to the delivery the parameters just received
 	updateDelivery(delivery, params);
 
-
+	
 	//then if the delivery updates some of the parameters required by the derived values
 	//  compute the derived values
 	for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
@@ -380,6 +386,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
 	    Integer subscriptionId=entry.getKey();
 	    if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
+	    if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
+	    
 	    ArrayList<ParameterValue> al=entry.getValue();
 	    ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
 	    if(consumer==null) {
@@ -397,11 +405,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery, Collection<ParameterValue> params) {
 	if(params==null) return;
-	//first check alarms for these new params
-	if(alarmChecker!=null) {
-	    alarmChecker.performAlarmChecking(params);
-	}
-
+	
 	for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 	    ParameterValue pv=it.next();
 	    Parameter pDef=pv.def;
@@ -432,6 +436,16 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 		al.add(pv);
 	    }
 	}
+	if(alarmChecker!=null) {
+	    //update the alarmChecker and check for alarms
+	    ArrayList<ParameterValue> pvlist = delivery.get(alarmChecker.getSubscriptionId());
+	    if(pvlist!=null) {
+		alarmChecker.updateParameters(pvlist);
+	    }
+	    
+	    alarmChecker.performAlarmChecking(params);
+	}
+
     }
 
     @SuppressWarnings("unchecked")

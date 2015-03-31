@@ -11,38 +11,63 @@ import org.yamcs.xtce.Parameter;
  * 
  * Stores a collection of ParameterValue indexed on Parameter
  * 
- * It's like a HashMap<Parameter, ParameterValue> but stores multiple ParameterValue for the same Parameter 
- * Can be iterated like a list, but the order of insertion is not the order of iteration (maybe it should be...), 
- *  except for ParameterValue of the same Parameter which are iterated in the insertion order.
+ * It works like a LinkedHashMap<Parameter, LinkedList<ParameterValue>>  
+ *
  * 
+ * Not thread safe
  * @author nm
  *
  */
 public class ParameterValueList implements Collection<ParameterValue> {
     Entry[] table;
+
+    Entry head;
     int size;
     int threshold; 
-    float factor = 0.75f;
+    float loadFactor = 0.75f;
     
     public ParameterValueList() {
 	size = 0;
 	table = new Entry[16];
-	threshold = (int)(table.length*factor);
+	threshold = (int)(table.length*loadFactor);
+	initHead();
     }
     
     /**     
      * @param pvs
      */
     public ParameterValueList(Collection<ParameterValue> pvs) {
-	int len = roundUpToPowerOfTwo(pvs.size());
+	int len = (int)(pvs.size()/loadFactor)+ 1;
+	len = roundUpToPowerOfTwo(len);
 	table = new Entry[len];
-	threshold = (int)(len * factor);
+	threshold = (int)(len * loadFactor);
 	size = 0;
+	initHead();
 	for(ParameterValue pv:pvs) {
 	    doAdd(pv);
 	}
     }
     
+   
+    
+    //used for unit tests to ensure max collision
+    ParameterValueList(int capacity, Collection<ParameterValue> pvs) {
+	int len = roundUpToPowerOfTwo(capacity);
+	table = new Entry[len];
+	threshold = (int)(len * loadFactor);
+	size = 0;
+	initHead();
+	
+	for(ParameterValue pv:pvs) {
+	    doAdd(pv);
+	}
+    }
+    
+    private void initHead() {
+   	head = new Entry(null);
+   	head.before = head.after = head;
+       }
+       
     @Override
     public boolean add(ParameterValue pv) {
 	if(pv==null) throw new NullPointerException();
@@ -101,6 +126,11 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	    while(e.next!=null) e=e.next;
 	    e.next = newEntry;
 	}
+	newEntry.after = head;
+	newEntry.before = head.before;
+	head.before.after = newEntry;
+	head.before = newEntry;
+	
 	size++;
     }
 
@@ -120,7 +150,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
      * @param p
      * @return
      */
-    public ParameterValue getNewest(Parameter p) {
+    public ParameterValue getLast(Parameter p) {
 	int index =  getHash(p) & (table.length - 1);
 	ParameterValue r = null;
 	for(Entry e = table[index] ; e!=null; e=e.next) {
@@ -130,7 +160,90 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	}
 	return r;
     }
+    
+    /**
+     * Remove the last inserted value for Parameter p
+     * 
+     * @param p
+     * @return the value removed or null if there was no value for p
+     */
+    public ParameterValue removeLast(Parameter p) {
+	int index =  getHash(p) & (table.length - 1);
+	Entry e = table[index];
+	if(e == null) return null;
+	
+	Entry prev_r = null;
+	
+	Entry prev_e = null;
+	Entry r = null;
+	
+	while(e!=null) {
+	    if(e.pv.getParameter()==p) {
+		prev_r = prev_e;
+		r = e;
+	    }
+	    prev_e = e;
+	    e = e.next;
+	}
+	
+	if(r==null) {
+	    return null;
+	}
+	
+	size--;
+	if(table[index]==r) {
+	    table[index] = r.next;
+	} else {
+	    prev_r.next = r.next;
+	}
+	removeEntryFromLinkedList(r);
+	return r.pv;
+    }
 
+    private void removeEntryFromLinkedList(Entry r) {
+	Entry b = r.before;
+	Entry a = r.after;
+	b.after = a;
+	a.before = b;
+    }
+    /**
+     * Remove the first inserted value for Parameter p
+     * 
+     * @param p
+     * @return the value removed or null if there was no value for p
+     */
+    public ParameterValue removeFirst(Parameter p) {
+	int index =  getHash(p) & (table.length - 1);
+	Entry prev = table[index];
+	if(prev == null) return null;
+	
+	
+	Entry e = prev;
+	Entry r = null;
+	
+	while(e!=null) {
+	    if(e.pv.getParameter()==p) {
+		r = e;
+		break;
+	    }
+	    prev = e;
+	    e = e.next;
+	}
+	
+	if(r==null) {
+	    return null;
+	}
+	
+	size--;
+	if(table[index]==r) {
+	    table[index] = r.next;
+	} else {
+	    prev.next = r.next;
+	}
+	removeEntryFromLinkedList(r);
+
+	return r.pv;
+    }
 
     /**
      * this is copied from http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -166,7 +279,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 	if(newSize>threshold) {
 	    int newCapacity = roundUpToPowerOfTwo(newSize);
 	    ensureCapacity(newCapacity);
-	    threshold = (int) (newCapacity*factor);
+	    threshold = (int) (newCapacity*loadFactor);
 	}
 	
 	for(ParameterValue pv:c) {
@@ -251,11 +364,17 @@ public class ParameterValueList implements Collection<ParameterValue> {
     }
 
     /**
-     * Throws UnsupportedOperationException
+     * Returns a copy of the list as array
      */
     @Override
     public Object[] toArray() {
-	throw new UnsupportedOperationException();
+	ParameterValue[] r = new ParameterValue[size];
+	int i=0;
+	Iterator<ParameterValue> it = iterator();
+	while(it.hasNext()) {
+	    r[i++] = it.next();
+	}
+	return r;
     }
 
 
@@ -270,7 +389,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     static class Entry {
 	final ParameterValue pv;
-	Entry next;
+	Entry next, before, after;
 	Entry(ParameterValue pv) {
 	    this.pv = pv;
 	}
@@ -278,32 +397,19 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     
     private final class Iter implements Iterator<ParameterValue> {
-   	Entry next;
-   	int index;
-
-   	Iter() {
-   	    if(size>0) { //go to the first value
-   		Entry[] t = table;
-   		index=0;
-   		while((index<t.length)&& (next=t[index++])==null);
-   	    }
-   	}
+   	Entry next = head.after;
 
    	@Override
    	public boolean hasNext() {
-   	    return next!=null;
+   	    return next!=head;
    	}
 
    	@Override
    	public ParameterValue next() {
-   	    if(next==null) throw new NoSuchElementException();
-
+   	    if(next==head) throw new NoSuchElementException();
+   	    
    	    Entry r = next;
-   	    next = r.next;
-   	    if(next==null) {
-   		Entry[] t = table;
-   		while((index<t.length)&& (next=t[index++])==null);
-   	    }
+   	    next = r.after;
 
    	    return r.pv;
    	}
