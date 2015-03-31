@@ -20,14 +20,10 @@ for f in pom.xml yamcs-core/pom.xml yamcs-api/pom.xml yamcs-xtce/pom.xml yamcs-w
     mv $f.fixed $f
 done
 
-# fix a few configuration files
-cd yamcs-core/etc
-
-for file in $( find . -name "*.properties" -type f )
-do
-	sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $file > $file.tmp;
-	mv $file.tmp $file	
-done
+# fix the default location of the server logs
+logproperties=yamcs-core/etc/logging.yamcs-server.properties.sample
+sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
+mv $logproperties.tmp $logproperties
 
 cd /tmp
 

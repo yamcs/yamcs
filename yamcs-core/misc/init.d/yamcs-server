@@ -9,13 +9,13 @@
 ### END INIT INFO
 #
 YAMCS_USER=yamcs
-YAMCS_HOME=/opt/yamcs/
-YARCH_BIN=$YAMCS_HOME/bin/yamcs-server.sh
+YAMCS_HOME=/opt/yamcs
+YAMCS_BIN=$YAMCS_HOME/bin/yamcs-server.sh
 PID_FILE=/var/run/yamcs-server.pid
 OUTERR=$YAMCS_HOME/log/yamcs-server.out # standard out and err go here
 
 
-test -x $YARCH_BIN || { echo "$YARCH_BIN not installed"; 
+test -x $YAMCS_BIN || { echo "$YAMCS_BIN not installed";
         if [ "$1" = "stop" ]; then exit 0;
         else exit 5; fi; }
 
@@ -48,7 +48,7 @@ case "$1" in
             for i in 4 3 2 1 0; do
                if [ -f $OUTERR.$i ] ; then mv $OUTERR.$i $OUTERR.$((i+1)) ; fi
             done
-            su - $YAMCS_USER sh -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YARCH_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE"
+            su - $YAMCS_USER sh -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE"
             pid=`cat $PID_FILE`
             i=0
             #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded
@@ -60,7 +60,7 @@ case "$1" in
                         if [ $stat = "success" ] ; then
                             log_success_msg
                         else
-                            echo $yarchstartup | cut -d " " -f 3-
+                            echo $yamcsstartup | cut -d " " -f 3-
                             log_failure_msg
                         fi
                         break
