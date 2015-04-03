@@ -39,7 +39,7 @@ public class AlarmServerTest {
 	
 	ActiveAlarm aa = l.triggered.remove();
 	assertEquals(pv1_0, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
 	ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.WARNING);
@@ -47,7 +47,7 @@ public class AlarmServerTest {
 	assertTrue(l.triggered.isEmpty());
 	aa = l.updated.remove();
 	assertEquals(pv1_1, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
 	ParameterValue pv1_2 = getParameterValue(p1, MonitoringResult.CRITICAL);
@@ -56,18 +56,19 @@ public class AlarmServerTest {
 	assertTrue(l.updated.isEmpty());
 	aa = l.severityIncreased.remove();
 	assertEquals(pv1_2, aa.currentValue);
-	assertEquals(pv1_2, aa.msValue);
+	assertEquals(pv1_2, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
-	as.acknowledge(p1, aa.id);
+	as.acknowledge(p1, aa.id, "test1");
 	assertTrue(l.cleared.isEmpty());
 	
 	ParameterValue pv1_3 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
 	as.update(pv1_3, 1);
 	aa = l.cleared.remove();
 	assertEquals(pv1_3, aa.currentValue);
-	assertEquals(pv1_2, aa.msValue);
+	assertEquals(pv1_2, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
+	assertEquals("test1", aa.usernameThatAcknowledged);
     }
     
     @Test
@@ -80,7 +81,7 @@ public class AlarmServerTest {
 	
 	ActiveAlarm aa = l.triggered.remove();
 	assertEquals(pv1_0, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
 	ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
@@ -88,15 +89,16 @@ public class AlarmServerTest {
 	assertTrue(l.cleared.isEmpty());
 	aa = l.updated.remove();
 	assertEquals(pv1_1, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
-	as.acknowledge(p1, aa.id);
+	as.acknowledge(p1, aa.id, "test2");
 	
 	aa = l.cleared.remove();
 	assertEquals(pv1_1, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
+	assertEquals("test2", aa.usernameThatAcknowledged);
     }    
 
     @Test
@@ -109,7 +111,7 @@ public class AlarmServerTest {
 	
 	ActiveAlarm aa = l.triggered.remove();
 	assertEquals(pv1_0, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
 	
 	ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
@@ -117,7 +119,7 @@ public class AlarmServerTest {
 	
 	aa = l.cleared.remove();
 	assertEquals(pv1_1, aa.currentValue);
-	assertEquals(pv1_0, aa.msValue);
+	assertEquals(pv1_0, aa.mostSevereValue);
 	assertEquals(pv1_0, aa.triggerValue);
     }    
 

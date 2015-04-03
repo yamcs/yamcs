@@ -67,7 +67,8 @@ public class Channel {
     private final String yamcsInstance;
 
     private boolean checkAlarms = true;
-    
+    private boolean alarmServerEnabled = false;
+
     private String creator="system";
     private boolean persistent=false;
 
@@ -96,11 +97,26 @@ public class Channel {
 	this.type=type;
     }
 
-    void init(TcTmService tctms) throws ChannelException, ConfigurationException {
+    @SuppressWarnings("unchecked")
+    void init(TcTmService tctms, Map<String, Object> config) throws ChannelException, ConfigurationException {
 	xtcedb=XtceDbFactory.getInstance(yamcsInstance);
 
 	synchronized(instances) {
 	    if(instances.containsKey(key(yamcsInstance,name))) throw new ChannelException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
+	    if(config!=null) {
+		for(String c: config.keySet()) {
+		    if("alarm".equals(c)) {
+			Object o = config.get(c);
+			if(!(o instanceof Map)) {
+			    throw new ConfigurationException("alarm configuration should be a map");
+			}
+			configureAlarms((Map<String, String>) o);
+		    } else {
+			log.warn("Ignoring unknown config key '"+c+"'");
+		    }
+		}
+	    }
+
 
 	    this.tmPacketProvider=tctms.getTmPacketProvider();
 	    this.commandReleaser=tctms.getCommandReleaser();
@@ -108,7 +124,7 @@ public class Channel {
 	    if(providers!=null) {
 		this.parameterProviders.addAll(providers);
 	    }
-	    
+
 	    synchronous = tctms.isSynchronous();
 
 
@@ -138,6 +154,7 @@ public class Channel {
 		commandingManager=null;
 	    }
 
+
 	    instances.put(key(yamcsInstance,name),this);
 	    for(int i=0; i<listeners.size(); i++) {
 		listeners.get(i).channelAdded(this);
@@ -147,6 +164,19 @@ public class Channel {
     }
 
 
+
+    private void configureAlarms(Map<String,String> alarmConfig) {
+	String v = alarmConfig.get("check");
+	if(v!=null) {
+	    checkAlarms = "true".equalsIgnoreCase(v);
+	}
+
+	v = alarmConfig.get("server");
+	if(v!=null) {
+	    alarmServerEnabled = "enabled".equalsIgnoreCase(v);
+	    if(alarmServerEnabled) checkAlarms=true;
+	}
+    }
 
     private static String key(String instance, String name) {
 	return instance+"."+name;
@@ -183,6 +213,11 @@ public class Channel {
 	    pprov.startAsync();
 	}
 
+	AlarmServer alarmServer = parameterRequestManager.getAlarmServer();
+	if(alarmServer!=null) {
+	    alarmServer.startAsync();
+	}
+	
 	tmPacketProvider.awaitRunning();
 
 	propagateChannelStateChange();
@@ -403,5 +438,9 @@ public class Channel {
 
     public boolean hasAlarmChecker() {
 	return checkAlarms;
+    }
+    
+    public boolean hasAlarmServer() {
+   	return alarmServerEnabled;
     }
 }

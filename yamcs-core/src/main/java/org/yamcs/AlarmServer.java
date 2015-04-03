@@ -2,23 +2,21 @@ package org.yamcs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.archive.PpProviderAdapter;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -29,69 +27,55 @@ import com.google.common.util.concurrent.AbstractService;
  * <p>
  * <b>Must be declared after {@link YarchChannel}</b>
  */
-public class AlarmServer extends AbstractService implements ParameterConsumer {
+public class AlarmServer extends AbstractService {
 
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     // Last value of each param (for detecting changes in value)
     final String yamcsInstance;
-    final String channelName;
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
     private AlarmListener listener;
+    private String streamName;
 
-
-    public AlarmServer(String yamcsInstance) {
-	this(yamcsInstance, "realtime");
-    }
-
-    public AlarmServer(String yamcsInstance, String channelName) {
+    
+    /**
+     * alarm server without a listener (used for unit tests )
+     * @param yamcsInstance
+     */
+    AlarmServer(String yamcsInstance) {
 	this.yamcsInstance = yamcsInstance;
-	this.channelName = channelName;    			
 	eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
 	eventProducer.setSource("AlarmServer");
     }
 
-    public void setListener(AlarmListener listener) {
+    /**
+     * Creates an alarm server that pushes all alarms to a stream
+     * @param yamcsInstance
+     * @param streamName
+     */
+    public AlarmServer(String yamcsInstance, String streamName) {
+	this.yamcsInstance = yamcsInstance;
+	eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
+	eventProducer.setSource("AlarmServer");
+	this.streamName = streamName;
+    }
+
+    
+    void setListener(AlarmListener listener) {
 	this.listener = listener;
     }
-    
-    
+
+
     @Override
     public void doStart() {
-	Channel channel = Channel.getInstance(yamcsInstance, channelName);
-	if(channel==null) {
-	    ConfigurationException e = new ConfigurationException("Cannot find a channel '"+channelName+"' in instance '"+yamcsInstance+"'");
-	    notifyFailed(e);
-	    return;
-	}
-	ParameterRequestManager prm = channel.getParameterRequestManager();
-
-	// Auto-subscribe to parameters with alarms
-	Set<Parameter> requiredParameters=new HashSet<Parameter>();
-	try {
-	    XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-	    for (Parameter parameter:xtcedb.getParameters()) {
-		ParameterType ptype=parameter.getParameterType();
-		if(ptype!=null && ptype.hasAlarm()) {
-		    requiredParameters.add(parameter);
-		    Set<Parameter> dependentParameters = ptype.getDependentParameters();
-		    if(dependentParameters!=null) {
-			requiredParameters.addAll(dependentParameters);
-		    }
-		}
+	if(streamName!=null) {
+	    YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+	    Stream s = ydb.getStream(streamName);
+	    if(s==null) {
+		notifyFailed(new ConfigurationException("Cannot find a stream named '"+streamName+"'"));
+		return;
 	    }
-	} catch(ConfigurationException e) {
-	    notifyFailed(e);
-	    return;
-	}
-
-	if(!requiredParameters.isEmpty()) {
-	    List<Parameter> params=new ArrayList<Parameter>(requiredParameters); // Now that we have uniques..
-	    try {
-		prm.addRequest(params, this);
-	    } catch(InvalidIdentification e) {
-		throw new RuntimeException("Could not register dependencies for alarms", e);
-	    }
+	    listener = new AlarmToStream(s);
 	}
 	notifyStarted();
     }
@@ -99,13 +83,6 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
     @Override
     public void doStop() {
 	notifyStopped();
-    }
-
-    @Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
-	// Nothing. The real business of sending events, happens while checking the alarms
-	// because that's where we have easy access to the XTCE definition of the active
-	// alarm. The PRM is only used to signal the parameter subscriptions.
     }
 
     public void update(ParameterValue pv, int minViolations) {
@@ -150,8 +127,8 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	    if(activeAlarm.violations == minViolations) {
 		listener.notifyTriggered(activeAlarm);
 	    } else {
-		if(moreSevere(pv.monitoringResult, activeAlarm.msValue.monitoringResult)){
-		    activeAlarm.msValue = pv;
+		if(moreSevere(pv.monitoringResult, activeAlarm.mostSevereValue.monitoringResult)){
+		    activeAlarm.mostSevereValue = pv;
 		    listener.notifySeverityIncrease(activeAlarm);
 		} else {
 		    listener.notifyUpdate(activeAlarm);
@@ -163,13 +140,15 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 
     }
 
-    public void acknowledge(Parameter p, int id) {
+    public void acknowledge(Parameter p, int id, String username) {
 	ActiveAlarm aa = activeAlarms.get(p);
 	if(aa.id!=id) {
 	    log.warn("Got acknowledge for parameter "+p+" but the id does not match");
 	    return;
 	}
 	aa.acknoledged = true;
+	aa.usernameThatAcknowledged = username;
+	
 	if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
 	    activeAlarms.remove(p);
 	    listener.notifyCleared(aa);
@@ -184,11 +163,16 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	public void notifySeverityIncrease(ActiveAlarm activeAlarm);
 	public void notifyTriggered(ActiveAlarm activeAlarm) ;
 	public void notifyUpdate(ActiveAlarm activeAlarm);
+	/**
+	 * 
+	 * @param activeAlarm
+	 * @param username - username that cleared the alarm or "autoCleared" if it's auto cleared
+	 */
 	public void notifyCleared(ActiveAlarm activeAlarm);
     }
 
-    
-    
+
+
     public static class ActiveAlarm {
 	static AtomicInteger counter = new AtomicInteger();
 	public int id;
@@ -196,12 +180,12 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 	public boolean acknoledged;
 
 	public boolean autoAcknoledge;
-	
+
 	//the value that triggered the alarm
 	ParameterValue triggerValue;
-	
+
 	//most severe value
-	ParameterValue msValue;
+	ParameterValue mostSevereValue;
 
 	//current value of the parameter
 	ParameterValue currentValue;
@@ -211,19 +195,107 @@ public class AlarmServer extends AbstractService implements ParameterConsumer {
 
 	int violations=1;
 
+	String usernameThatAcknowledged;
 	
 
 	ActiveAlarm(ParameterValue pv) {
-	    this.triggerValue = this.currentValue = this.msValue = pv;
+	    this.triggerValue = this.currentValue = this.mostSevereValue = pv;
 	    id = counter.getAndIncrement();
 	}
-	
+
 	ActiveAlarm(ParameterValue pv, boolean autoAck) {
 	    this(pv);
 	    this.autoAcknoledge = autoAck;
 	}
     }
+    
+    
+    static class AlarmToStream implements AlarmListener {
+	enum AlarmEvent {
+	    TRIGGERED, UPDATED, SEVERITY_INCREASED, CLEARED;
+	}
+	final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+	
+	Stream stream;
+	public AlarmToStream(Stream s) {
+	    this.stream = s;
+	}
+
+	private ArrayList<Object> getTupleKey(ActiveAlarm activeAlarm, AlarmEvent e) {
+	    ArrayList<Object> al=new ArrayList<Object>(7);
+
+	    //triggerTime
+	    al.add(activeAlarm.triggerValue.getGenerationTime());
+	    //parameter
+	    al.add(activeAlarm.triggerValue.getParameter().getQualifiedName());
+	    //seqNum
+	    al.add(activeAlarm.id);
+	    //event
+	    al.add(e.name());
+	    
+	    return al;
+	}
+	@Override
+	public void notifyTriggered(ActiveAlarm activeAlarm) {
+	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
+	    
+	    tdef.addColumn("triggerPV", PpProviderAdapter.PP_DATA_TYPE);
+	    al.add(activeAlarm.triggerValue);
+	    
+	    Tuple t = new Tuple(tdef, al);
+	    stream.emitTuple(t);
+	}
+	
+	@Override
+	public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
+	    
+	    tdef.addColumn("severityIncreasedPV", PpProviderAdapter.PP_DATA_TYPE);
+	    al.add(activeAlarm.mostSevereValue);
+
+	    Tuple t = new Tuple(tdef, al);
+	    stream.emitTuple(t);
+	}
 
 
+	@Override
+	public void notifyUpdate(ActiveAlarm activeAlarm) {	  
+	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
+	    
+	    tdef.addColumn("updatedPV", PpProviderAdapter.PP_DATA_TYPE);
+	    al.add(activeAlarm.currentValue);
 
+	    Tuple t = new Tuple(tdef, al);
+	    stream.emitTuple(t);
+	}
+
+	@Override
+	public void notifyCleared(ActiveAlarm activeAlarm) {
+	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
+	    
+	    tdef.addColumn("clearedPV", PpProviderAdapter.PP_DATA_TYPE);
+	    al.add(activeAlarm.currentValue);
+	    
+	    String username = activeAlarm.usernameThatAcknowledged;
+	    
+	    if(username==null) {
+		if(activeAlarm.autoAcknoledge) {
+		    username = "autoAcknoledged";
+		} else {
+		    username = "unknown";
+		}
+	    }
+	    tdef.addColumn("username", DataType.STRING);
+	    al.add(username);
+	    
+	    Tuple t = new Tuple(tdef, al);
+	    stream.emitTuple(t);
+	    
+	}
+	
+    }
 }

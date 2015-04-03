@@ -10,6 +10,8 @@ import java.util.Map;
 import org.yamcs.archive.PpProviderAdapter;
 import org.yamcs.archive.TcUplinkerAdapter;
 import org.yamcs.archive.TmProviderAdapter;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -38,8 +40,19 @@ public class StreamInitService extends AbstractService{
     static final public String TC="tc";
     static final public String EVENT="event";
     static final public String SQLFILE="sqlFile";
-
-    static public List<String> schemas= Arrays.asList(CMD_HIST, TM, PARAM, TC, EVENT, SQLFILE);
+    static final public String ALARM="alarm";
+    
+    static public final TupleDefinition ALARM_TUPLE_DEFINITION=new TupleDefinition();
+	//user time, parameter name sequence number and event 
+	static {
+	    ALARM_TUPLE_DEFINITION.addColumn("triggerTime", DataType.TIMESTAMP);
+	    ALARM_TUPLE_DEFINITION.addColumn("parameter", DataType.STRING);
+	    ALARM_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
+	    ALARM_TUPLE_DEFINITION.addColumn("event", DataType.STRING);
+	}
+    
+    
+    static public List<String> schemas= Arrays.asList(CMD_HIST, TM, PARAM, TC, EVENT, ALARM, SQLFILE);
 
     YarchDatabase ydb;
     final String instance;
@@ -69,6 +82,8 @@ public class StreamInitService extends AbstractService{
 			createTcStream(streamName);
 		    } else if(EVENT.equalsIgnoreCase(streamType)) {
 			createEventStream(streamName);
+		    } else if(ALARM.equalsIgnoreCase(streamType)) {
+			createAlarmStream(streamName);
 		    } else if(SQLFILE.equalsIgnoreCase(m.getKey())) {
 			loadSqlFile(streamName); //filename in fact
 		    }
@@ -116,7 +131,12 @@ public class StreamInitService extends AbstractService{
 	ydb.execute("create stream "+streamName+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
 
     }
-
+   
+    private void createAlarmStream(String streamName) throws StreamSqlException, ParseException  {
+   	ydb.execute("create stream " + streamName + ALARM_TUPLE_DEFINITION.getStringDefinition());
+    }
+    
+    
     private void loadSqlFile(String filename) throws IOException, StreamSqlException, ParseException {
 	File f = new File(filename);
 	 ExecutionContext context=new ExecutionContext(instance);

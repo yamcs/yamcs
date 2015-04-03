@@ -56,7 +56,8 @@ public class PpProviderAdapter extends AbstractService {
         PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
 
     } 
-
+    
+    static public final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
 
     public PpProviderAdapter(String archiveInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException{
         this.archiveInstance=archiveInstance;

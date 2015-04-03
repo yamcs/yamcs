@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.AlarmServer;
 import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
@@ -57,7 +58,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
-
+    AlarmServer alarmServer;
+    
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
      * specified XtceTmProcessor.
@@ -70,6 +72,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	if(chan.hasAlarmChecker()) {
 	    alarmChecker=new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
 	}
+	if(chan.hasAlarmServer()) {
+	    alarmServer = new AlarmServer(chan.getInstance(), "realtime_alarms");
+	    alarmChecker.enableServer(alarmServer);
+	}
+	
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -470,5 +477,9 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	    sb.append("]\n");
 	}
 	return sb.toString();
+    }
+
+    public AlarmServer getAlarmServer() {
+	return alarmServer;
     }
 }

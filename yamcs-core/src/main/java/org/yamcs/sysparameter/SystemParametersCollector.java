@@ -55,7 +55,6 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     int seqCount = 0;
     final private Logger log;
 
-    final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
     final private String namespace;
     final private String serverId;
 
@@ -149,7 +148,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("duplicate value for "+pv.getId()+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
                 continue;
             }
-            tdef.addColumn(name, PP_DATA_TYPE);
+            tdef.addColumn(name, PpProviderAdapter.PP_DATA_TYPE);
             cols.add(pv);
         }
         Tuple t=new Tuple(tdef, cols);

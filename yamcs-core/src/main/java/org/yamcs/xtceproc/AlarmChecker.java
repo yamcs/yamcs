@@ -6,6 +6,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.AlarmReporter;
+import org.yamcs.AlarmServer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -34,6 +35,9 @@ import org.yamcs.xtce.ParameterType;
 public class AlarmChecker {
 
     private AlarmReporter alarmReporter;
+   
+    private AlarmServer alarmServer;
+    
     private final int subscriptionId;
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -104,6 +108,10 @@ public class AlarmChecker {
     public void enableReporting(AlarmReporter reporter) {
 	this.alarmReporter=reporter;
     }
+
+    public void enableServer(AlarmServer server) {
+   	this.alarmServer = server;
+       }
 
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
@@ -216,7 +224,9 @@ public class AlarmChecker {
 	if(alarmReporter!=null) {
 	    alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
 	}
-
+	if(alarmServer!=null) {
+	    alarmServer.update(pv, minViolations);
+	}
     }
 
     /**
@@ -318,6 +328,9 @@ public class AlarmChecker {
 
 	if(alarmReporter!=null) {
 	    alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
+	}
+	if(alarmServer!=null) {
+	    alarmServer.update(pv, minViolations);
 	}
     }
 

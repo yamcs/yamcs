@@ -43,6 +43,8 @@ public class ChannelFactory {
     static public Channel create(String yamcsInstance, String name, String type, String creator, String spec) throws ChannelException,  ConfigurationException {
 	boolean initialized = false;
 	TcTmService tctms=null;
+	Map<String,Object> channelConfig = null;
+	
 	YConfiguration conf=YConfiguration.getConfiguration("channel");
 	try {
 	    if(conf.containsKey(type,"tmtcpp")) {
@@ -82,6 +84,9 @@ public class ChannelFactory {
 		    tc =  loadObject(commandClass, yamcsInstance, commandArgs, spec);
 		    initialized = true;
 		}
+		if(conf.containsKey(type, "config")) {
+		    channelConfig = (Map<String, Object>) conf.getMap(type, "config");
+		}
 		tctms=new SimpleTcTmService(tm, pps, tc);
 		if(!initialized) {
 		    throw new ConfigurationException("For channel type '"+type+"', none of  telemetryProvider, parameterProviders or commandReleaser specified");
@@ -91,7 +96,7 @@ public class ChannelFactory {
 	    throw new ConfigurationException("Cannot load service",e);
 	}
 
-	return create(yamcsInstance, name, type, tctms, creator);
+	return create(yamcsInstance, name, type, tctms, creator, channelConfig);
     }
     /**
      * loads objects but passes only non null parameters
@@ -109,15 +114,17 @@ public class ChannelFactory {
 	return new YObjectLoader<T>().loadObject(className, params.toArray());
     }
 
-
+    static public Channel create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
+	return create(instance, name, type, tctms, creator, null);
+    }
     /**
      *  Create a Channel by specifying the service.
      *  The type is not used in this case, except for showing it in the yamcs monitor.
      **/
-    static public Channel create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
+    static public Channel create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ChannelException, ConfigurationException {
 	Channel channel=new Channel(instance, name, type, creator);
 
-	channel.init(tctms);
+	channel.init(tctms, config);
 	return channel;
     }
 }
