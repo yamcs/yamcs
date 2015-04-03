@@ -30,6 +30,11 @@ realtime:
        - class: org.yamcs.algorithms.AlgorithmManager
        # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
        - class: org.yamcs.sysparameter.SystemParametersChannelProvider
+    config:
+        #check alarms and also enable the alarm server (that keeps track of unacknoledged alarms)
+        alarm:
+            check: true
+            server: enabled
 
 
 Archive:
