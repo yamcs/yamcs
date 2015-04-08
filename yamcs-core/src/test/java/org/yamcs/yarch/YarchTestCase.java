@@ -47,7 +47,7 @@ public abstract class YarchTestCase {
 	instance = "yarchtest_"+this.getClass().getSimpleName();
 	context=new ExecutionContext(instance);
 
-	File ytdir=new File(dir+"/"+context.getDbName());               
+	File ytdir=new File(dir+"/"+instance);               
 	
 	FileUtils.deleteRecursively(ytdir.toPath());
 
@@ -56,13 +56,7 @@ public abstract class YarchTestCase {
 	ydb=YarchDatabase.getInstance(instance);
     }
 
-    @AfterClass
-    public void cleanUp() throws Exception {
-	YConfiguration config=YConfiguration.getConfiguration("yamcs");
-	String dir=config.getString("dataDir");
-	File ytdir=new File(dir+"/"+context.getDbName());
-	FileUtils.deleteRecursively(ytdir.toPath());
-    }
+    
     
     
     
