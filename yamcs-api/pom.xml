@@ -29,7 +29,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>2.3.0</version>
+      <version>2.5.0</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -51,6 +51,18 @@
       <artifactId>javacsv</artifactId>
       <version>2.0</version>
     </dependency>
+     <dependency>
+         <groupId>com.dyuproject.protostuff</groupId>
+         <artifactId>protostuff-api</artifactId>
+         <version>1.0.7</version>
+     </dependency>
+
+     <dependency>
+         <groupId>com.dyuproject.protostuff</groupId>
+         <artifactId>protostuff-json</artifactId>
+         <version>1.0.7</version>
+     </dependency>
+
     
             
 
