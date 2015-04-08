@@ -3,16 +3,19 @@ package org.yamcs.web.rest;
 import com.dyuproject.protostuff.JsonIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.google.protobuf.MessageLite;
+
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.handler.codec.http.*;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Rest.RestExceptionMessage;
@@ -24,10 +27,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Collects some typical patterns which might be of use for extending classes when dealing with incoming
@@ -46,7 +49,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     private static final String[] DEFAULT_OUTBOUND_MEDIA_TYPES = new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
     private JsonFactory jsonFactory = new JsonFactory();
 
-    public abstract void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException;
+    public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException;
 
     /**
      * Accepted Content-Type headers (in priority order, defaults to first if unspecified).
@@ -70,8 +73,8 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
      * are treated in priority order if no content type was specified.
      */
     String getSourceContentType(HttpRequest httpRequest) {
-        if (httpRequest.containsHeader(Names.CONTENT_TYPE)) {
-            String declaredContentType = httpRequest.getHeader(Names.CONTENT_TYPE);
+        if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
+            String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
             for (String supportedContentType : getSupportedInboundMediaTypes()) {
                 if (supportedContentType.equals(declaredContentType)) {
                     return declaredContentType;
@@ -90,8 +93,8 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
      * else it will revert to the (derived) source content type.
      */
     String getTargetContentType(HttpRequest httpRequest) {
-        if (httpRequest.containsHeader(Names.ACCEPT)) {
-            String acceptedContentType = httpRequest.getHeader(Names.ACCEPT);
+        if (httpRequest.headers().contains(Names.ACCEPT)) {
+            String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
             for (String supportedContentType : getSupportedOutboundMediaTypes()) {
                 if (supportedContentType.equals(acceptedContentType)) {
                     return acceptedContentType;
@@ -114,9 +117,9 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
      * Deserializes the incoming message extracted from the body. This does not care about
      * what the HTTP method is. Any required checks should be done in extending classes.
      */
-    protected <T extends MessageLite.Builder> T readMessage(HttpRequest httpRequest, Schema<T> sourceSchema) throws BadRequestException {
+    protected <T extends MessageLite.Builder> T readMessage(FullHttpRequest httpRequest, Schema<T> sourceSchema) throws BadRequestException {
         String sourceContentType = getSourceContentType(httpRequest);
-        InputStream cin = new ChannelBufferInputStream(httpRequest.getContent());
+        InputStream cin = new ByteBufInputStream(httpRequest.content());
         T msg = sourceSchema.newMessage();
         // Allow for empty body, otherwise user has to specify '{}'
         if (HttpHeaders.getContentLength(httpRequest) > 0) {
@@ -139,10 +142,10 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     /**
      * Writes back a response in one of the supported media types
      */
-    protected <T extends MessageLite> void writeMessage(HttpRequest httpRequest, QueryStringDecoder qsDecoder, MessageEvent evt, T responseMsg, Schema<T> responseSchema) throws RestException {
+    protected <T extends MessageLite> void writeMessage(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, T responseMsg, Schema<T> responseSchema) throws RestException {
         String targetContentType = getTargetContentType(httpRequest);
-        ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
-        ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+        ByteBuf buf = Unpooled.buffer();
+        ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
         try {
             if (BINARY_MIME_TYPE.equals(targetContentType)) {
                 responseMsg.writeTo(channelOut);
@@ -154,13 +157,10 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        HttpResponse httpResponse = new DefaultHttpResponse(HTTP_1_1, OK);
+        HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, buf);
         setContentTypeHeader(httpResponse, targetContentType);
-        setContentLength(httpResponse, buf.readableBytes());
-        httpResponse.setContent(buf);
 
-        Channel ch = evt.getChannel();
-        ChannelFuture writeFuture = ch.write(httpResponse);
+        ChannelFuture writeFuture = ctx.write(httpResponse);
 
         // Decide whether to close the connection or not.
         if (!isKeepAlive(httpRequest)) {
@@ -178,8 +178,8 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
 
     protected JsonGenerator createJsonGenerator(OutputStream out, QueryStringDecoder qsDecoder) throws IOException {
         JsonGenerator generator = jsonFactory.createJsonGenerator(out, JsonEncoding.UTF8);
-        if (qsDecoder.getParameters().containsKey("pretty")) {
-            List<String> pretty = qsDecoder.getParameters().get("pretty");
+        if (qsDecoder.parameters().containsKey("pretty")) {
+            List<String> pretty = qsDecoder.parameters().get("pretty");
             if (pretty != null) {
                 String arg = pretty.get(0);
                 if (arg == null || "".equals(arg) || Boolean.parseBoolean(arg)) {
@@ -194,34 +194,33 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
      * Used for sending back generic exceptions. Clients conventionally should deserialize to this
      * when the status is not 200.
      */
-    protected void sendError(Throwable t, HttpRequest req, QueryStringDecoder qsDecoder, ChannelHandlerContext ctx, HttpResponseStatus status) {
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
+    protected void sendError(Throwable t, FullHttpRequest req, QueryStringDecoder qsDecoder, ChannelHandlerContext ctx, HttpResponseStatus status) {
+        
         String contentType = getTargetContentType(req);
         if (JSON_MIME_TYPE.equals(contentType)) {
             try {
-                ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
-                ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+        	ByteBuf buf = Unpooled.buffer();
+        	ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
                 JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaRest.RestExceptionMessage.WRITE, false);
                 generator.close();
+                HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
-                setContentLength(response, buf.readableBytes());
-                response.setContent(buf);
                 // Close the connection as soon as the error message is sent.
-                ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+                ctx.channel().write(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not create Json Generator", e2);
                 log.debug("Original exception not sent to client", t);
                 sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
             }
         } else if (BINARY_MIME_TYPE.equals(contentType)) {
-            ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
-            ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+            ByteBuf buf = Unpooled.buffer();
+            ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
             try {
                 toException(t).build().writeTo(channelOut);
+                HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, BINARY_MIME_TYPE);
                 setContentLength(response, buf.readableBytes());
-                response.setContent(buf);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);

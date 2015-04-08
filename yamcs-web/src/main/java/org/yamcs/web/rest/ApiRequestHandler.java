@@ -1,10 +1,10 @@
 package org.yamcs.web.rest;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,18 +24,18 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         String[] path = remainingUri.split("/", 2);
         if (path.length == 0) {
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
         } else {
             try {
                 if(ARCHIVE_PATH.equals(path[0])) {
-                    archiveRequestHandler.handleRequest(ctx, req, evt, yamcsInstance, path.length>1? path[1] : null);
+                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
                 } else if(MDB_PATH.equals(path[0])) {
-                    mdbRequestHandler.handleRequest(ctx, req, evt, yamcsInstance, path.length>1? path[1] : null);
+                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
                 } else if(COMMANDING_PATH.equals(path[0])) {
-                    commandingRequestHandler.handleRequest(ctx, req, evt, yamcsInstance, path.length>1? path[1] : null);
+                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
                 }
             } catch (InternalServerErrorException e) {
                 log.error("Reporting internal server error to rest client", e);

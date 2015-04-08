@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Default rest exception. Makes it easier for handlers to not just throw anything upwards, but think about

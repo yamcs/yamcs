@@ -7,8 +7,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,160 +31,160 @@ public class YamcsConnector implements SessionFailureListener {
     static Logger log= LoggerFactory.getLogger(YamcsConnector.class);
 
     public void addConnectionListener(ConnectionListener connectionListener) {
-        this.connectionListeners.add(connectionListener);
+	this.connectionListeners.add(connectionListener);
     }
 
     public List<String> getYamcsInstances() {
-        try{
-        	YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(connectionParams).build();
-            YamcsClient mc=ys.newClientBuilder().setRpc(true).build();
-            YamcsInstances ainst=(YamcsInstances)mc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
-            mc.close();
-            List<String> instances=new ArrayList<String>(ainst.getInstanceCount());
-            for(YamcsInstance ai:ainst.getInstanceList()) {
-                instances.add(ai.getName());
-            }
-            ys.close();
-            return instances;
-        } catch ( HornetQException hqe ) {
-        	// If we don't have permissions, treat as a failed connection
-        	if( hqe.getCode() == HornetQException.SECURITY_EXCEPTION || hqe.getCode() == HornetQException.SESSION_CREATION_REJECTED ) {
-        		String message = "Connection failed with security exception: " + hqe.getMessage();
-        		log.warn( message );
-        		if( connected ) {
-        			disconnect();
-        		}
-        		for(ConnectionListener cl:connectionListeners)
-                    cl.connectionFailed(connectionParams.getUrl(), new YamcsException( message ));
-        	} else {
-        		// Other errors may not be fatal
-        		for(ConnectionListener cl:connectionListeners)
-                    cl.log("failed to retrieve instances: "+hqe);
-        	}
-        } catch (Exception e) {
-            for(ConnectionListener cl:connectionListeners)
-                cl.log("failed to retrieve instances: "+e);
-        }
-        return null;
+	try{
+	    YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(connectionParams).build();
+	    YamcsClient mc=ys.newClientBuilder().setRpc(true).build();
+	    YamcsInstances ainst=(YamcsInstances)mc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
+	    mc.close();
+	    List<String> instances=new ArrayList<String>(ainst.getInstanceCount());
+	    for(YamcsInstance ai:ainst.getInstanceList()) {
+		instances.add(ai.getName());
+	    }
+	    ys.close();
+	    return instances;
+	} catch ( HornetQException hqe ) {
+	    // If we don't have permissions, treat as a failed connection
+	    if( hqe.getType() == HornetQExceptionType.SECURITY_EXCEPTION || hqe.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED ) {
+		String message = "Connection failed with security exception: " + hqe.getMessage();
+		log.warn( message );
+		if( connected ) {
+		    disconnect();
+		}
+		for(ConnectionListener cl:connectionListeners)
+		    cl.connectionFailed(connectionParams.getUrl(), new YamcsException( message ));
+	    } else {
+		// Other errors may not be fatal
+		for(ConnectionListener cl:connectionListeners)
+		    cl.log("failed to retrieve instances: "+hqe);
+	    }
+	} catch (Exception e) {
+	    for(ConnectionListener cl:connectionListeners)
+		cl.log("failed to retrieve instances: "+e);
+	}
+	return null;
     }
 
     public Future<String> connect(YamcsConnectData cp) {
-        this.connectionParams=cp;
-        return doConnect();
+	this.connectionParams=cp;
+	return doConnect();
     }
 
 
     private FutureTask<String> doConnect() {
-        if(connected) disconnect();
-        final String url=connectionParams.getUrl();
+	if(connected) disconnect();
+	final String url=connectionParams.getUrl();
 
-        FutureTask<String> future=new FutureTask<String>(new Runnable() {
-            @Override
-            public void run() {
-                //connect to yamcs
-                int maxAttempts=10;
-                try {
-                    connecting=true;
-                    for(ConnectionListener cl:connectionListeners) {
-                        cl.connecting(url);
-                    }
-                    for(int i=0;i<maxAttempts;i++) {
-                        try {
-                            log.debug("Connecting to {} attempt {}", url, i);
-                            yamcsSession=YamcsSession.newBuilder().setConnectionParams(connectionParams).build();
-                            log.debug("Connection successful");
-                            yamcsSession.session.addFailureListener(YamcsConnector.this);
-                            connected=true;
-                            for(ConnectionListener cl:connectionListeners) {
-                                cl.connected(url);
-                            }
-                            return;
-                        } catch (YamcsApiException e) {
-                        	// If we don't have permissions, treat as a failed connection and don't re-try
-							Throwable cause = e.getCause();
-							if( cause != null && cause instanceof HornetQException && ((HornetQException)cause).getCode() == HornetQException.SECURITY_EXCEPTION ) {
-								String message = "Connection failed with security exception: " + e.getMessage();
-								log.warn( message );
-								if( connected ) {
-				        			disconnect();
-				        		}
-								for(ConnectionListener cl:connectionListeners) {
-			                        cl.connectionFailed(url, new YamcsException( message ));
-								}
-								return;
-							}
-							// For anything other than a security exception, re-try
-                            for(ConnectionListener cl:connectionListeners) {
-                                cl.log("Connection to "+url+" failed: "+e.getMessage());
-                            }
-                            log.warn("Connection to "+url+" failed: ", e);
-                            Thread.sleep(5000);
-                        }
-                    }
-                    connecting=false;
-                    for(ConnectionListener cl:connectionListeners) {
-                        cl.log(maxAttempts+" connection attempts failed, giving up.");
-                        cl.connectionFailed(url, new YamcsException( maxAttempts+" connection attempts failed, giving up." ));
-                    }
-                    log.warn(maxAttempts+" connection attempts failed, giving up.");
-                } catch(InterruptedException e){
-                    for(ConnectionListener cl:connectionListeners)
-                        cl.connectionFailed(url, new YamcsException( "Thread interrupted", e ));
-                }
-            };
-        }, url);
-        new Thread(future).start();
-        return future;
+	FutureTask<String> future=new FutureTask<String>(new Runnable() {
+	    @Override
+	    public void run() {
+		//connect to yamcs
+		int maxAttempts=10;
+		try {
+		    connecting=true;
+		    for(ConnectionListener cl:connectionListeners) {
+			cl.connecting(url);
+		    }
+		    for(int i=0;i<maxAttempts;i++) {
+			try {
+			    log.debug("Connecting to {} attempt {}", url, i);
+			    yamcsSession=YamcsSession.newBuilder().setConnectionParams(connectionParams).build();
+			    log.debug("Connection successful");
+			    yamcsSession.session.addFailureListener(YamcsConnector.this);
+			    connected=true;
+			    for(ConnectionListener cl:connectionListeners) {
+				cl.connected(url);
+			    }
+			    return;
+			} catch (YamcsApiException e) {
+			    // If we don't have permissions, treat as a failed connection and don't re-try
+			    Throwable cause = e.getCause();
+			    if( cause != null && cause instanceof HornetQException && ((HornetQException)cause).getType() == HornetQExceptionType.SECURITY_EXCEPTION ) {
+				String message = "Connection failed with security exception: " + e.getMessage();
+				log.warn( message );
+				if( connected ) {
+				    disconnect();
+				}
+				for(ConnectionListener cl:connectionListeners) {
+				    cl.connectionFailed(url, new YamcsException( message ));
+				}
+				return;
+			    }
+			    // For anything other than a security exception, re-try
+			    for(ConnectionListener cl:connectionListeners) {
+				cl.log("Connection to "+url+" failed: "+e.getMessage());
+			    }
+			    log.warn("Connection to "+url+" failed: ", e);
+			    Thread.sleep(5000);
+			}
+		    }
+		    connecting=false;
+		    for(ConnectionListener cl:connectionListeners) {
+			cl.log(maxAttempts+" connection attempts failed, giving up.");
+			cl.connectionFailed(url, new YamcsException( maxAttempts+" connection attempts failed, giving up." ));
+		    }
+		    log.warn(maxAttempts+" connection attempts failed, giving up.");
+		} catch(InterruptedException e){
+		    for(ConnectionListener cl:connectionListeners)
+			cl.connectionFailed(url, new YamcsException( "Thread interrupted", e ));
+		}
+	    };
+	}, url);
+	new Thread(future).start();
+	return future;
     }
 
     public void disconnect() {
-        if(!connected)return;
-        try {
-            yamcsSession.close();
-            connected=false;
-        } catch (HornetQException e) {
-            for(ConnectionListener cl:connectionListeners)
-                cl.log(e.toString());
-        }
+	if(!connected)return;
+	try {
+	    yamcsSession.close();
+	    connected=false;
+	} catch (HornetQException e) {
+	    for(ConnectionListener cl:connectionListeners)
+		cl.log(e.toString());
+	}
     }
 
     public String getUrl() {
-        return connectionParams.getUrl();
+	return connectionParams.getUrl();
     }
 
     public boolean isConnected() {
-        return connected;
+	return connected;
     }
 
     public boolean isConnecting() {
-        return connecting;
+	return connecting;
     }
 
     @Override
     public void connectionFailed(HornetQException e, boolean failedOver) {
-        connected=false;
-        for(ConnectionListener cl:connectionListeners) {
-            cl.disconnected();
-        }
-        log.warn("Connection to Yamcs lost: ", e);
-        doConnect();
+	connected=false;
+	for(ConnectionListener cl:connectionListeners) {
+	    cl.disconnected();
+	}
+	log.warn("Connection to Yamcs lost: ", e);
+	doConnect();
     }
 
     @Override
     public void beforeReconnect(HornetQException e) {
-        //should not be called because reconnection is not configured in the factory
-        log.warn("Before reconnect: ", e);
+	//should not be called because reconnection is not configured in the factory
+	log.warn("Before reconnect: ", e);
     }
 
     public YamcsSession getSession() {
-        return yamcsSession;
+	return yamcsSession;
     }
 
     public YamcsConnectData getConnectionParams() {
-        return connectionParams;
+	return connectionParams;
     }
 
     public void close() throws HornetQException {
-        yamcsSession.close();
+	yamcsSession.close();
     }
 }

@@ -79,7 +79,7 @@
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-core</artifactId>
+      <artifactId>hornetq-server</artifactId>
       <version>${hornetQVersion}</version>
     </dependency>
     <dependency>

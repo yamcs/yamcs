@@ -1,11 +1,13 @@
 package org.yamcs.web.websocket;
 
 import com.dyuproject.protostuff.Schema;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage;
@@ -58,8 +60,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
 
     private static BinaryWebSocketFrame toFrame(WebSocketServerMessage message) throws IOException {
         // TODO This assumes that the frame is quite small (which it should be, but)
-        ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
-        try (ChannelBufferOutputStream cout = new ChannelBufferOutputStream(buf)) {
+	ByteBuf buf = Unpooled.buffer();
+        try (ByteBufOutputStream cout = new ByteBufOutputStream(buf)) {
             message.writeTo(cout);
         }
         return new BinaryWebSocketFrame(buf);

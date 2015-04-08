@@ -9,28 +9,26 @@ import java.util.Date;
 
 import javax.activation.MimetypesFileTypeMap;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.stream.ChunkedFile;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.stream.ChunkedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class StaticFileRequestHandler extends AbstractRequestHandler {
     public static String WEB_Root;
@@ -48,7 +46,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
     	WEB_Root=YConfiguration.getConfiguration("yamcs").getString("webRoot");
     }
     
-    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String path) throws Exception {
+    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String path) throws Exception {
         path = sanitizePath(path);
         if (path == null) {
             sendError(ctx, FORBIDDEN);
@@ -67,7 +65,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         }
 
         // Cache Validation
-        String ifModifiedSince = req.getHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
+        String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
@@ -95,16 +93,15 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         setContentTypeHeader(response, mimeTypesMap.getContentType(file.getPath()));
         setDateAndCacheHeaders(response, new Date(file.lastModified()));
         
-        Channel ch = e.getChannel();
 
         // Write the initial line and the header.
-        ch.write(response);
+        ctx.write(response);
 
         // Write the content.
         ChannelFuture writeFuture;
         //if (ch.getPipeline().get(SslHandler.class) != null) {
             // Cannot use zero-copy with HTTPS.
-            writeFuture = ch.write(new ChunkedFile(raf, 0, fileLength, 8192));
+            writeFuture = ctx.write(new ChunkedFile(raf, 0, fileLength, 8192));
        /* } else {
             // No encryption - use zero-copy.
             final FileRegion region =  new DefaultFileRegion(raf.getChannel(), 0, fileLength);
@@ -141,7 +138,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         setDateHeader(response);
 
         // Close the connection as soon as the error message is sent.
-        ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().write(response).addListener(ChannelFutureListener.CLOSE);
     }
     
         

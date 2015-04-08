@@ -1,17 +1,20 @@
 package org.yamcs.web.rest;
 
 import com.dyuproject.protostuff.JsonIOUtil;
+
 import org.codehaus.jackson.JsonGenerator;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.handler.codec.http.*;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpHeaders.Values;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -33,8 +36,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /** 
  * Serves archived data through a web api. The Archived data is fetched from the
@@ -54,7 +57,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     }
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         ReplayRequest incomingRequest = readMessage(req, SchemaYamcs.ReplayRequest.MERGE).build();
         if (remainingUri == null) remainingUri = "";
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
@@ -83,19 +86,17 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
       
             // Return base HTTP response, indicating that we'll used chunked encoding
             HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-            response.setChunked(true);
-            response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
+            response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
             String contentType = getTargetContentType(req);
-            response.setHeader(Names.CONTENT_TYPE, contentType);
+            response.headers().set(Names.CONTENT_TYPE, contentType);
             
-            Channel ch=evt.getChannel();
-            ChannelFuture writeFuture=ch.write(response);
+            ChannelFuture writeFuture=ctx.write(response);
             writeFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if(!future.isSuccess()) {
-                        future.getChannel().close();
-                        throw new RuntimeException("Exception while writing data to client", future.getCause());
+                        future.channel().close();
+                        throw new RuntimeException("Exception while writing data to client", future.cause());
                     }
                 }
             });
@@ -106,7 +107,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
                 if (Protocol.endOfStream(msg)) {
                     // Send empty chunk downstream to signal end of response
-                    ChannelFuture chunkWriteFuture=ch.write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER));
+                    ChannelFuture chunkWriteFuture=ctx.write(new DefaultHttpContent(Unpooled.EMPTY_BUFFER));
                     chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
                     log.trace("All chunks were written out");
                     break;
@@ -154,8 +155,8 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 }
 
                 // Finally, write the chunk
-                ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
-                ChannelBufferOutputStream channelOut = new ChannelBufferOutputStream(buf);
+                ByteBuf buf = Unpooled.buffer();
+                ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
                 try {
                     if (BINARY_MIME_TYPE.equals(contentType)) {
                         responseb.build().writeTo(channelOut);
@@ -167,8 +168,8 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 } catch (IOException e) {
                     throw new InternalServerErrorException(e);
                 }
-
-                writeFuture=ch.write(new DefaultHttpChunk(buf));
+                Channel ch = ctx.channel();
+                writeFuture=ch.write(new DefaultHttpContent(buf));
                 try {
                     while (!ch.isWritable() && ch.isOpen()) {
                         writeFuture.await(5, TimeUnit.SECONDS);

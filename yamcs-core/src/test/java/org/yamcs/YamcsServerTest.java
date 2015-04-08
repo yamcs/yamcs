@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
+import org.hornetq.utils.HornetQBufferInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,11 +43,12 @@ public class YamcsServerTest {
         yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
         ClientMessage msg=yc.dataConsumer.receive(5000);
         assertNotNull(msg);
-        ObjectInputStream ois=new ObjectInputStream(new ChannelBufferInputStream(msg.getBodyBuffer().channelBuffer()));
+        ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
         Object o=ois.readObject();
         assertTrue(o instanceof XtceDb);
         XtceDb xtcedb=(XtceDb) o;
         assertNotNull(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT11"));
+        ois.close();
         
         yc.close();
         ys.close();

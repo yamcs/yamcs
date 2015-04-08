@@ -16,7 +16,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
@@ -32,6 +31,7 @@ import org.yamcs.protobuf.Yamcs.MissionDatabase;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
 import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
@@ -114,6 +114,9 @@ public class YamcsServer {
     static YamcsClient ctrlAddressClient;
 
     public static EmbeddedHornetQ setupHornet() throws Exception {
+	//divert hornetq logging
+	System.setProperty("org.jboss.logging.provider ", "sl4j");
+	
 	hornetServer = new EmbeddedHornetQ();
 	hornetServer.setSecurityManager( new HornetQAuthManager() );
 	hornetServer.start();
@@ -229,7 +232,7 @@ public class YamcsServer {
 	    }
 
 	    ClientMessage msg=yamcsSession.session.createMessage(false);
-	    ObjectOutputStream oos=new ObjectOutputStream(new ChannelBufferOutputStream(msg.getBodyBuffer().channelBuffer()));
+	    ObjectOutputStream oos=new ObjectOutputStream(new HornetQBufferOutputStream(msg.getBodyBuffer()));
 	    oos.writeObject(xtcedb);
 	    oos.close();
 	    ctrlAddressClient.sendReply(replyTo, "OK", null);

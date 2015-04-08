@@ -8,26 +8,26 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /** 
  * provides information about available displays
@@ -46,35 +46,33 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
         this.fileRequestHandler=fileRequestHandler;
     }
 
-    void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance, String remainingUri) throws Exception {
+    void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, e, "uss-app.html");
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "uss-app.html");
             return;
         } else if (remainingUri.contains("/")){
             sendError(ctx, BAD_REQUEST);
         } else if("listDisplays".equals(remainingUri)) {
-            handleListDisplays(req, e);
+            handleListDisplays(ctx, req);
         } else {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, e,  "single-display.html");
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "single-display.html");
         }
     }
 
-    private void handleListDisplays(HttpRequest req, MessageEvent e) throws IOException {
-        ChannelBuffer cb=ChannelBuffers.buffer(1024);
-        ChannelBufferOutputStream cbos=new ChannelBufferOutputStream(cb);
+    private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
+	ByteBuf cb=Unpooled.buffer(1024);
+	ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
         JsonGenerator json=jsonFactory.createJsonGenerator(cbos, JsonEncoding.UTF8);
         json.writeStartArray();
         writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root+"/displays"));
         json.close();
         
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, cb);
         setContentTypeHeader(response, JSON_MIME_TYPE);
         setContentLength(response, cb.readableBytes());
-        response.setContent(cb);
         
-        Channel ch = e.getChannel();
-        ChannelFuture writeFuture=ch.write(response);
+        ChannelFuture writeFuture=ctx.write(response);
 
         // Decide whether to close the connection or not.
         if (!isKeepAlive(req)) {

@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;

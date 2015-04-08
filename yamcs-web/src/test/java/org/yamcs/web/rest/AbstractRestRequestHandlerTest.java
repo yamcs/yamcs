@@ -1,12 +1,13 @@
 package org.yamcs.web.rest;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpVersion;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
+
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -74,17 +75,17 @@ public class AbstractRestRequestHandlerTest {
     private static HttpRequest makeHttpRequest(String contentType, String accept) {
         DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         if (contentType != null) {
-            req.setHeader(Names.CONTENT_TYPE, contentType);
+            req.headers().set(Names.CONTENT_TYPE, contentType);
         }
         if (accept != null) {
-            req.setHeader(Names.ACCEPT, accept);
+            req.headers().set(Names.ACCEPT, accept);
         }
         return req;
     }
 
     private static final class MockRestRequestHandler extends AbstractRestRequestHandler {
         @Override
-        public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+        public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException {
             // NOP
         }
     }

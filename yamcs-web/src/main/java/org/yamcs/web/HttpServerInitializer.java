@@ -1,31 +1,26 @@
-package org.yamcs.web.websocket;
+package org.yamcs.web;
 
-import static org.jboss.netty.channel.Channels.*;
-
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
-import org.yamcs.web.HttpSocketServerHandler;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
  */
-public class WebSocketServerPipelineFactory implements ChannelPipelineFactory {
+public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
-    public ChannelPipeline getPipeline() throws Exception {
-        // Create a default pipeline implementation.
-        ChannelPipeline pipeline = pipeline();
+    public void initChannel(SocketChannel ch) {
+        ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("decoder", new HttpRequestDecoder());
-        pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
+        pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
         pipeline.addLast("deflater", new HttpContentCompressor());
         pipeline.addLast("encoder", new HttpResponseEncoder());
         
         pipeline.addLast("streamer", new ChunkedWriteHandler());
         pipeline.addLast("handler", new HttpSocketServerHandler());
-        
-        return pipeline;
     }
 }

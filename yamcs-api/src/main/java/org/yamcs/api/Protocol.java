@@ -2,9 +2,11 @@ package org.yamcs.api;
 
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -16,13 +18,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
+import org.hornetq.utils.HornetQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.utils.HornetQBufferOutputStream;
 
 import com.google.protobuf.MessageLite;
 
@@ -66,6 +66,8 @@ public class Protocol {
     final static public SimpleString YAMCS_SERVER_CONTROL_ADDRESS=new SimpleString("yamcsControl");
     final static public SimpleString REPLYTO_HEADER_NAME=new SimpleString("yamcs-reply-to");
 
+    final public static String IN_VM_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
+    
     /**
      * used to send chunks of data in a stream
      */
@@ -116,12 +118,8 @@ public class Protocol {
 
     public static MessageLite decode(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
 	try {
-	    ChannelBuffer buf = msg.getBodyBuffer().channelBuffer();
-	    if (buf.hasArray()) {
-		return builder.mergeFrom(buf.array(), buf.readerIndex(), msg.getBodySize()).build();
-	    } else {
-		return builder.mergeFrom(new ChannelBufferInputStream(buf)).build();
-	    }
+	    HornetQBuffer buf = msg.getBodyBuffer();
+	    return builder.mergeFrom(new HornetQBufferInputStream(buf)).build();
 	} catch(IOException e) {
 	    throw new YamcsApiException(e.getMessage(), e);
 	}
@@ -129,12 +127,8 @@ public class Protocol {
 
     public static MessageLite.Builder decodeBuilder(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
 	try {
-	    ChannelBuffer buf = msg.getBodyBuffer().channelBuffer();
-	    if (buf.hasArray()) {
-		return builder.mergeFrom(buf.array(), buf.readerIndex(), msg.getBodySize());
-	    } else {
-		return builder.mergeFrom(new ChannelBufferInputStream(buf));
-	    }
+	    HornetQBuffer buf = msg.getBodyBuffer();
+	    return builder.mergeFrom(new HornetQBufferInputStream(buf));
 	} catch(IOException e) {
 	    throw new YamcsApiException(e.getMessage(), e);
 	}
@@ -142,7 +136,7 @@ public class Protocol {
 
     public static void encode(ClientMessage msg, MessageLite ml){
 	try {
-	    ml.writeTo(new ChannelBufferOutputStream(msg.getBodyBuffer().channelBuffer()));
+	    ml.writeTo(new HornetQBufferOutputStream(msg.getBodyBuffer()));
 	} catch (IOException e) {
 	    throw new RuntimeException(e);
 	}
@@ -181,7 +175,7 @@ public class Protocol {
 	 ServerLocator locator;
 	 
 	 ProducerKiller() throws Exception {
-	     locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+	     locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
 	     ClientSessionFactory factory =  locator.createSessionFactory();
 
 	     session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true, true, true, 1);

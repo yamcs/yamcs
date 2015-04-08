@@ -3,34 +3,35 @@ package org.yamcs.web;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
-import org.jboss.netty.util.CharsetUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.CharsetUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.web.rest.ApiRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Handles handshakes and messages
  */
-public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
+public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object> {
 
     //the request to get the list of displays goes here
     public static final String DISPLAYS_PATH = "displays";
@@ -45,21 +46,19 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        Object msg = e.getMessage();
-        if (msg instanceof HttpRequest) {
-            handleHttpRequest(ctx, (HttpRequest) msg, e);
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof FullHttpRequest) {
+            handleHttpRequest(ctx, (FullHttpRequest) msg);
         } else if (msg instanceof WebSocketFrame) {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         }
     }
 
-    private void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e) throws Exception {
+    private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
 
         if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
-            HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
+            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
         String uri;
@@ -67,22 +66,20 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
             uri = URLDecoder.decode(req.getUri(), "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             log.warn("Cannot decode uri", e1);
-            sendHttpResponse(ctx, req, new DefaultHttpResponse(HTTP_1_1, FORBIDDEN));
+            sendNegativeHttpResponse(ctx, req, FORBIDDEN);
             return;
         }
         String[] path=uri.split("/",3); //uri starts with / so path[0] is always empty
         if(path.length==1) {
-            HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
+            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
         if(STATIC_PATH.equals(path[1])) {
             if(path.length==2) { //do not accept "/_static/" (i.e. directory listing) requests 
-                HttpResponse res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN);
-                sendHttpResponse(ctx, req, res);
+                sendNegativeHttpResponse(ctx, req, FORBIDDEN);
                 return;
             }
-            fileRequestHandler.handleStaticFileRequest(ctx, req, e, path[2]);
+            fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         }
 
@@ -90,53 +87,39 @@ public class HttpSocketServerHandler extends SimpleChannelUpstreamHandler {
 
         if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
         	log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
-            HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
+            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
         if((path.length==2) || path[2].isEmpty() || path[2].equals("index.html")) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, e, "index.html");
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
             return;
         }
         
         String[] rpath = path[2].split("/",2);
         String handler=rpath[0];
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
-            webSocketHandler.handleHttpRequest(ctx, req, e, yamcsInstance);
+            webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance);
         } else if(DISPLAYS_PATH.equals(handler)) {
-            displayRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null);
         } else if(API_PATH.equals(handler)) {
-            apiRequestHandler.handleRequest(ctx, req, e, yamcsInstance, path.length>1? rpath[1] : null);
+            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null);
         } else {
         	log.warn("Unknown handler {}", handler);
-            HttpResponse res = new DefaultHttpResponse(HTTP_1_1, NOT_FOUND);
-            sendHttpResponse(ctx, req, res);
+        	sendNegativeHttpResponse(ctx, req, NOT_FOUND);
         }
     }
     
-    private void sendHttpResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse res) {
-        // Generate an error page if response status code is not OK (200).
-        if (res.getStatus().getCode() != 200) {
-            res.setContent(ChannelBuffers.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8));
-            setContentLength(res, res.getContent().readableBytes());
+    private void sendNegativeHttpResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
+        ByteBuf buf = Unpooled.copiedBuffer(status.toString(), CharsetUtil.UTF_8);
+        
+        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
+        if (!isKeepAlive(req)) {
+            setContentLength(res, buf.readableBytes());
         }
 
-        // Send the response and close the connection if necessary.
-        ChannelFuture f = ctx.getChannel().write(res);
-        if (!isKeepAlive(req) || res.getStatus().getCode() != 200) {
+        ChannelFuture f = ctx.write(res);
+        if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        log.warn("caught exception ChannelHandlerContext: "+ctx, e);
-        e.getCause().printStackTrace();
-        e.getChannel().close();
-    }
-    
-    @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        webSocketHandler.channelDisconnected(e.getChannel());
     }
 }

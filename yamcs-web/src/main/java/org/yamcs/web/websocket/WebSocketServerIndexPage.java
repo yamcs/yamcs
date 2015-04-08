@@ -1,8 +1,8 @@
 package org.yamcs.web.websocket;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.util.CharsetUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.util.CharsetUtil;
 
 /**
  * Generates the demo HTML page which is served at http://localhost:8080/
@@ -11,9 +11,8 @@ public final class WebSocketServerIndexPage {
 
     private static final String NEWLINE = "\r\n";
 
-    public static ChannelBuffer getContent(String webSocketLocation) {
-        return ChannelBuffers
-                .copiedBuffer(
+    public static ByteBuf getContent(String webSocketLocation) {
+        return Unpooled.copiedBuffer(
                         "<html><head><title>Web Socket Test</title></head>"
                                 + NEWLINE
                                 + "<body>"

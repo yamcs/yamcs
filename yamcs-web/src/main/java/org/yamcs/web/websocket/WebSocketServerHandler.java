@@ -1,14 +1,16 @@
 package org.yamcs.web.websocket;
 
 import com.dyuproject.protostuff.Schema;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.websocketx.*;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.websocketx.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -41,22 +43,22 @@ public class WebSocketServerHandler {
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
     
-    public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent e, String yamcsInstance) throws Exception {
-        //TODO: can we ever reach this twice???
+    public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws Exception {
+	if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
         if(channelClient==null) {
             String applicationName = determineApplicationName(req);
             this.channelClient=new WebSocketChannelClient(yamcsInstance, this, applicationName);
         }
 
-        this.channel=ctx.getChannel();
+        this.channel=ctx.channel();
 
         // Handshake
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(this.getWebSocketLocation(yamcsInstance, req), null, false);
         this.handshaker = wsFactory.newHandshaker(req);
         if (this.handshaker == null) {
-            wsFactory.sendUnsupportedWebSocketVersionResponse(ctx.getChannel());
+            WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
         } else {
-            this.handshaker.handshake(ctx.getChannel(), req).addListener(WebSocketServerHandshaker.HANDSHAKE_LISTENER);
+            this.handshaker.handshake(ctx.channel(), (FullHttpRequest)req);
         }
     }
 
@@ -66,12 +68,12 @@ public class WebSocketServerHandler {
      * protocol instead.
      */
     private String determineApplicationName(HttpRequest req) {
-        if (req.containsHeader(HttpHeaders.Names.USER_AGENT)) {
-            String userAgent = req.getHeader(HttpHeaders.Names.USER_AGENT);
+        if (req.headers().contains(HttpHeaders.Names.USER_AGENT)) {
+            String userAgent = req.headers().get(HttpHeaders.Names.USER_AGENT);
             return (userAgent.contains("Mozilla")) ? "uss-web" : userAgent;
         } else {
             // Origin is always present, according to spec.
-            return "Unknown (" + req.getHeader(HttpHeaders.Names.ORIGIN) +")";
+            return "Unknown (" + req.headers().get(HttpHeaders.Names.ORIGIN) +")";
         }
     }
 
@@ -81,10 +83,10 @@ public class WebSocketServerHandler {
                 log.debug("received websocket frame {}", frame);
                 // Check for closing frame
                 if (frame instanceof CloseWebSocketFrame) {
-                    this.handshaker.close(ctx.getChannel(), (CloseWebSocketFrame) frame);
+                    this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame);
                     return;
                 } else if (frame instanceof PingWebSocketFrame) {
-                    ctx.getChannel().write(new PongWebSocketFrame(frame.getBinaryData()));
+                    ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
                     return;
                 } else if (frame instanceof TextWebSocketFrame) {
                     // We could do something more clever here, but only need to support json and gpb for now
@@ -101,9 +103,9 @@ public class WebSocketServerHandler {
                     throw new WebSocketException(WSConstants.NO_REQUEST_ID, String.format("%s frame types not supported", frame.getClass().getName()));
                 }
 
-                ChannelBuffer binary = frame.getBinaryData();
+                ByteBuf binary = frame.content();
                 if (binary != null) {
-                    InputStream in = new ChannelBufferInputStream(binary);
+                    InputStream in = new ByteBufInputStream(binary);
                     WebSocketDecodeContext msg = decoder.decodeMessage(in);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
@@ -136,7 +138,7 @@ public class WebSocketServerHandler {
     }
 
     private String getWebSocketLocation(String yamcsInstance, HttpRequest req) {
-        return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + "/"+ yamcsInstance+"/"+WEBSOCKET_PATH;
+        return "ws://" + req.headers().get(HttpHeaders.Names.HOST) + "/"+ yamcsInstance+"/"+WEBSOCKET_PATH;
     }
 
     private void sendReply(WebSocketReplyData reply) throws IOException {
@@ -166,7 +168,7 @@ public class WebSocketServerHandler {
     
     public void channelDisconnected(Channel c) {
         if(channelClient!=null) {
-            log.info("Channel "+c.getRemoteAddress()+" disconnected");
+            log.info("Channel "+c.remoteAddress()+" disconnected");
             channelClient.quit();
         }
     }

@@ -68,7 +68,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
+import org.hornetq.utils.HornetQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -533,7 +533,8 @@ TreeSelectionListener, ParameterRequestManagerIf, ConnectionListener {
             YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
             ClientMessage msg=yc.dataConsumer.receive(5000);
-            ObjectInputStream ois=new ObjectInputStream(new ChannelBufferInputStream(msg.getBodyBuffer().channelBuffer()));
+            
+            ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
             yc.close();

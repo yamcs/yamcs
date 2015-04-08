@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Something really wrong and unexpected occurred on the server. A bug.

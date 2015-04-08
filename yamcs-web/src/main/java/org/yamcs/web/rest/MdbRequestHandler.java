@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Map.Entry;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -31,18 +31,18 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-        if ("parameters".equals(qsDecoder.getPath())) {
+        if ("parameters".equals(qsDecoder.path())) {
             RestListAvailableParametersRequest request = readMessage(httpRequest, SchemaRest.RestListAvailableParametersRequest.MERGE).build();
             RestListAvailableParametersResponse responseMsg = listAvailableParameters(request, yamcsInstance);
-            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestListAvailableParametersResponse.WRITE);
-        } else if ("dump".equals(qsDecoder.getPath())) {
+            writeMessage(ctx, httpRequest, qsDecoder, responseMsg, SchemaRest.RestListAvailableParametersResponse.WRITE);
+        } else if ("dump".equals(qsDecoder.path())) {
             RestDumpRawMdbRequest request = readMessage(httpRequest, SchemaRest.RestDumpRawMdbRequest.MERGE).build();
             RestDumpRawMdbResponse responseMsg = dumpRawMdb(request, yamcsInstance);
-            writeMessage(httpRequest, qsDecoder, evt, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
+            writeMessage(ctx, httpRequest, qsDecoder, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
         } else {
-            log.debug("No match for '" + qsDecoder.getPath() + "'");
+            log.debug("No match for '" + qsDecoder.path() + "'");
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
         }
     }

@@ -11,7 +11,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 
@@ -64,7 +63,7 @@ public class YamcsSession {
         	String username = null;
         	String password = null;
             if(invm) {
-                locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(Protocol.IN_VM_FACTORY));
                 sessionFactory =  locator.createSessionFactory();
                 username = hornetqInvmUser;
             	password = hornetqInvmPass;

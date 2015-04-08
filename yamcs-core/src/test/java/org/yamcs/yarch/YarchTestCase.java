@@ -10,6 +10,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.management.ManagementService;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -53,9 +54,18 @@ public abstract class YarchTestCase {
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
 	YarchDatabase.removeInstance(instance);
 	ydb=YarchDatabase.getInstance(instance);
-
     }
 
+    @AfterClass
+    public void cleanUp() throws Exception {
+	YConfiguration config=YConfiguration.getConfiguration("yamcs");
+	String dir=config.getString("dataDir");
+	File ytdir=new File(dir+"/"+context.getDbName());
+	FileUtils.deleteRecursively(ytdir.toPath());
+    }
+    
+    
+    
     protected StreamSqlResult execute(String cmd) throws StreamSqlException, ParseException {
 	return ydb.execute(cmd);
     }

@@ -3,10 +3,10 @@ package org.yamcs.web.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.QueryStringDecoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
@@ -24,7 +24,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * Handles incoming requests related to Commanding (offset /commanding).
@@ -33,20 +33,20 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(CommandingRequestHandler.class);
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest req, MessageEvent evt, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         org.yamcs.Channel yamcsChannel = org.yamcs.Channel.getInstance(yamcsInstance, "realtime");
         if (!yamcsChannel.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this channel");
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-            if ("validate".equals(qsDecoder.getPath())) {
+            if ("validate".equals(qsDecoder.path())) {
                 RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
                 RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
-                writeMessage(req, qsDecoder, evt, response, SchemaRest.RestValidateCommandResponse.WRITE);
-            } else if ("send".equals(qsDecoder.getPath())) {
+                writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestValidateCommandResponse.WRITE);
+            } else if ("send".equals(qsDecoder.path())) {
                 RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
                 RestSendCommandResponse response = sendCommand(request, yamcsChannel);
-                writeMessage(req, qsDecoder, evt, response, SchemaRest.RestSendCommandResponse.WRITE);
+                writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSendCommandResponse.WRITE);
             } else {
                 sendError(ctx, NOT_FOUND);
             }

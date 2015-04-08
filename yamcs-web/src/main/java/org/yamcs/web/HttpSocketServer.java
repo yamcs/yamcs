@@ -2,14 +2,17 @@ package org.yamcs.web;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.web.websocket.WebSocketServerPipelineFactory;
 
 /**
  * Runs a simple http server based on Netty
@@ -43,14 +46,18 @@ public class HttpSocketServer {
     
     public void run() {
         // Configure the server.
-        //Note that while the thread pools created with this method are unbounded, netty will limit the number
-        //of workers to 2*number of CPU
-        ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-                Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-
-        // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new WebSocketServerPipelineFactory());
-
+	
+	 EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+	 //Note that while the thread pools created with this method are unbounded, netty will limit the number
+	        //of workers to 2*number of CPU
+	 EventLoopGroup workerGroup = new NioEventLoopGroup();
+       
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(bossGroup, workerGroup)
+        	   .channel(NioServerSocketChannel.class)
+        	   .handler(new LoggingHandler(LogLevel.INFO))
+        	   .childHandler(new HttpServerInitializer());
+        
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
 

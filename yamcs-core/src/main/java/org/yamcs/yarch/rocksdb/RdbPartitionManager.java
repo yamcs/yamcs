@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableDefinition;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.yamcs.utils.TimeEncoding;
 
 /**
