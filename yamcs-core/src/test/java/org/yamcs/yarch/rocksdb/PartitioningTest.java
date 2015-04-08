@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,7 @@ public class PartitioningTest extends YarchTestCase {
         
         assertTrue(tdef.hasPartitioning());
         RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
-        Collection<Partition> partitions=pmgr.getPartitions();
+        List<Partition> partitions=pmgr.getPartitions();
         assertEquals(1, partitions.size());
         RdbPartition p1 = (RdbPartition) partitions.iterator().next();
         assertEquals("1999/172/test1", p1.dir);
@@ -184,16 +185,21 @@ public class PartitioningTest extends YarchTestCase {
         assertTrue(tdef.hasPartitioning());
         RdbPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
         
-        Collection<Partition> partitions=pmgr.getPartitions();
+        List<Partition> partitions=pmgr.getPartitions();
         Iterator<Partition>it= partitions.iterator();
         assertEquals(2, partitions.size());
         RdbPartition p1 = (RdbPartition)it.next();
         assertEquals("1999/172/testdp", p1.dir);
-        assertEquals("part1", p1.getValue());
+       
         
         RdbPartition p2 = (RdbPartition)it.next();
         assertEquals("1999/172/testdp",p2.dir);
-        assertEquals("partition2", p2.getValue());
+        
+        Object[] pvalues = new Object[]{p1.getValue(), p2.getValue()};
+        Arrays.sort(pvalues);
+        
+        assertEquals("part1", pvalues[0]);
+        assertEquals("partition2", pvalues[1]);
         
         File f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp");
         assertTrue(f.exists());
@@ -288,13 +294,16 @@ public class PartitioningTest extends YarchTestCase {
         p1 = (RdbPartition) it.next();
         assertEquals("testdp", p1.dir);
         assertEquals((short)0, p1.getValue());
-        
+                
         p2 = (RdbPartition) it.next();
-        assertEquals((short)2, p2.getValue());
-              
         RdbPartition p3 = (RdbPartition) it.next();
         assertEquals("testdp", p3.dir);
-        assertEquals((short)1, p3.getValue());
+        
+        short[] pvalues = new short[] {(Short)p2.getValue(), (Short)p3.getValue()};
+        Arrays.sort(pvalues);
+        assertEquals((short)1, pvalues[0] );
+              
+        assertEquals((short)2, pvalues[1]);
         
 
         ydb.execute("close stream tm_in");

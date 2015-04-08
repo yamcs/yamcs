@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -23,7 +24,6 @@ import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.tokyocabinet.TcPartitionManager;
 import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
-
 import org.yamcs.utils.TimeEncoding;
 
 public class PartitioningTest extends YarchTestCase {
@@ -172,8 +172,11 @@ public class PartitioningTest extends YarchTestCase {
         assertTrue(tdef.hasPartitioning());
         TcPartitionManager pmgr= storageEngine.getPartitionManager(tdef);
         
-        Collection<String> partitions=pmgr.getPartitionFilenames();
+        List<String> partitions=pmgr.getPartitionFilenames();
+        Collections.sort(partitions);
+        
         Iterator<String>it=partitions.iterator();
+        
         assertEquals(2, partitions.size());
         assertEquals("1999/172/testdp#part1.tcb",it.next());
         assertEquals("1999/172/testdp#partition2.tcb",it.next());
@@ -181,12 +184,14 @@ public class PartitioningTest extends YarchTestCase {
         assertTrue(f.exists());
         f=new File(YarchDatabase.getHome()+"/"+context.getDbName()+"/1999/172/testdp#partition2.tcb");
         assertTrue(f.exists());
-
+        
+        
         instant[3]=TimeEncoding.parse("2001-01-01T00:00:00");
         Tuple t3=new Tuple(tpdef, new Object[] {instant[3], 4, "part3", new byte[1000]});
         tm_in.emitTuple(t3);
         partitions=pmgr.getPartitionFilenames();
-        assertEquals(3,partitions.size());
+        Collections.sort(partitions);
+        assertEquals(3, partitions.size());
         it=partitions.iterator();
         assertEquals("1999/172/testdp#part1.tcb",it.next());
         assertEquals("1999/172/testdp#partition2.tcb",it.next());
