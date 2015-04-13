@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import org.yamcs.Channel;
+import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 
 /**

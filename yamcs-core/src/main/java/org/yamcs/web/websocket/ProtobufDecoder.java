@@ -1,8 +1,11 @@
 package org.yamcs.web.websocket;
 
 import io.protostuff.Schema;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
+
+import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketClientMessage;
 
 import java.io.IOException;

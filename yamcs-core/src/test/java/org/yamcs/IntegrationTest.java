@@ -41,8 +41,10 @@ public class IntegrationTest extends YarchTestCase {
 	org.yamcs.yarch.management.ManagementService.setup(false);
 	YamcsServer.setupHornet();
 	YamcsServer.setupYamcsServer();
-	
-	//Logger.getLogger("org.yamcs").setLevel(Level.ALL);
+	boolean debug = false;
+	if(debug) {
+	    Logger.getLogger("org.yamcs").setLevel(Level.ALL);
+	}
     }
 
     @AfterClass

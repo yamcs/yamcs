@@ -2,6 +2,7 @@ package org.yamcs.web.websocket;
 
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
+
 import com.google.protobuf.MessageLite;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonLocation;
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.yamcs.api.ws.WSConstants;
 
 public class JsonDecoder implements WebSocketDecoder {
 
