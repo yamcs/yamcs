@@ -14,9 +14,9 @@ public final class SchemaComp
         public static final org.yamcs.protobuf.SchemaComp.ComputationDef.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaComp.ComputationDef.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDef>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDef>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDef message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDef message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
@@ -53,12 +53,12 @@ public final class SchemaComp
                 return org.yamcs.protobuf.Comp.ComputationDef.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDef message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDef message) throws java.io.IOException {}
             public org.yamcs.protobuf.Comp.ComputationDef newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDef.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDef.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDef.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDef.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -113,7 +113,7 @@ public final class SchemaComp
                 return org.yamcs.protobuf.Comp.ComputationDef.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDef.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDef.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -148,9 +148,9 @@ public final class SchemaComp
         public static final org.yamcs.protobuf.SchemaComp.ComputationDefList.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaComp.ComputationDefList.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDefList>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDefList>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDefList message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDefList message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Comp.ComputationDef compDef : message.getCompDefList())
                     output.writeObject(1, compDef, org.yamcs.protobuf.SchemaComp.ComputationDef.WRITE, true);
@@ -181,12 +181,12 @@ public final class SchemaComp
                 return org.yamcs.protobuf.Comp.ComputationDefList.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDefList message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDefList message) throws java.io.IOException {}
             public org.yamcs.protobuf.Comp.ComputationDefList newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDefList.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Comp.ComputationDefList.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDefList.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Comp.ComputationDefList.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -232,7 +232,7 @@ public final class SchemaComp
                 return org.yamcs.protobuf.Comp.ComputationDefList.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDefList.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDefList.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

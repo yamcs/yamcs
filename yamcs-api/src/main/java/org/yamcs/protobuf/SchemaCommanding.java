@@ -14,9 +14,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandId.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandId.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandId>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandId>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandId message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandId message) throws java.io.IOException
             {
                 if(message.hasGenerationTime())
                     output.writeInt64(1, message.getGenerationTime(), false);
@@ -52,12 +52,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandId.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandId message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandId message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandId newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandId.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandId.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandId.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandId.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -111,7 +111,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandId.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandId.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandId.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -146,9 +146,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueInfo>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueInfo>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueInfo message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueInfo message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -184,12 +184,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueInfo.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueInfo message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueInfo message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandQueueInfo newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -243,7 +243,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueInfo.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -278,9 +278,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandQueueEntry.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandQueueEntry.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueEntry>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueEntry>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueEntry message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueEntry message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -326,12 +326,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueEntry.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueEntry message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueEntry message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandQueueEntry newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -398,7 +398,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueEntry.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -441,9 +441,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandQueueRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandQueueRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueRequest message) throws java.io.IOException
             {
                 if(message.hasQueueInfo())
                     output.writeObject(1, message.getQueueInfo(), org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.WRITE, false);
@@ -479,12 +479,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandQueueRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -537,7 +537,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandQueueRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandQueueRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -570,9 +570,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandHistoryAttribute.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandHistoryAttribute.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryAttribute>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryAttribute>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryAttribute message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryAttribute message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
@@ -605,12 +605,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandHistoryAttribute.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryAttribute message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryAttribute message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandHistoryAttribute newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -659,7 +659,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandHistoryAttribute.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryAttribute.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -690,9 +690,9 @@ public final class SchemaCommanding
         public static final org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryEntry>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryEntry>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryEntry message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryEntry message) throws java.io.IOException
             {
                 if(message.hasCommandId())
                     output.writeObject(1, message.getCommandId(), org.yamcs.protobuf.SchemaCommanding.CommandId.WRITE, false);
@@ -726,12 +726,12 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandHistoryEntry.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryEntry message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryEntry message) throws java.io.IOException {}
             public org.yamcs.protobuf.Commanding.CommandHistoryEntry newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -781,7 +781,7 @@ public final class SchemaCommanding
                 return org.yamcs.protobuf.Commanding.CommandHistoryEntry.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

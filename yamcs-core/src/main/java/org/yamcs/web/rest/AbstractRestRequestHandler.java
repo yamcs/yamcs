@@ -1,12 +1,12 @@
 package org.yamcs.web.rest;
 
-import com.dyuproject.protostuff.JsonIOUtil;
-import com.dyuproject.protostuff.Schema;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 import com.google.protobuf.MessageLite;
 
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;

@@ -1,6 +1,6 @@
 package org.yamcs.web.websocket;
 
-import com.dyuproject.protostuff.Schema;
+import io.protostuff.Schema;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData;
@@ -67,7 +67,9 @@ public class WebSocketException extends Exception {
         resultb.setProtocolVersion(WSConstants.PROTOCOL_VERSION);
         resultb.setSequenceNumber(requestId);
         resultb.setType(dataType);
-        resultb.setMessage(getMessage());
+        String msg = getMessage();
+        if(msg!=null)resultb.setMessage(msg);
+        
         if (!dataType.equals("STRING")) {
             try (ByteString.Output out = ByteString.newOutput()) {
                 data.writeTo(out);

@@ -14,9 +14,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.StringMessage.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.StringMessage.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.StringMessage>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.StringMessage>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.StringMessage message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.StringMessage message) throws java.io.IOException
             {
                 if(message.hasMessage())
                     output.writeString(1, message.getMessage(), false);
@@ -46,12 +46,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.StringMessage.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.StringMessage message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.StringMessage message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.StringMessage newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.StringMessage.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.StringMessage.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.StringMessage.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.StringMessage.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -96,7 +96,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.StringMessage.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.StringMessage.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.StringMessage.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -125,9 +125,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.Void.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.Void.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Void>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Void>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Void message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Void message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.Void message)
@@ -155,12 +155,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Void.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Void message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Void message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.Void newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Void.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Void.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Void.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Void.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -202,7 +202,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Void.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Void.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Void.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -229,9 +229,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.Instant.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.Instant.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Instant>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Instant>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Instant message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Instant message) throws java.io.IOException
             {
                 if(message.hasInstant())
                     output.writeInt64(1, message.getInstant(), false);
@@ -261,12 +261,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Instant.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Instant message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Instant message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.Instant newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Instant.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Instant.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Instant.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Instant.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -311,7 +311,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Instant.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Instant.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Instant.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -340,9 +340,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.MessagingAddress.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.MessagingAddress.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MessagingAddress>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MessagingAddress>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MessagingAddress message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MessagingAddress message) throws java.io.IOException
             {
                 if(message.hasAddress())
                     output.writeString(1, message.getAddress(), false);
@@ -372,12 +372,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MessagingAddress.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MessagingAddress message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MessagingAddress message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.MessagingAddress newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MessagingAddress.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MessagingAddress.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MessagingAddress.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MessagingAddress.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -422,7 +422,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MessagingAddress.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MessagingAddress.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MessagingAddress.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -451,9 +451,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.YamcsInstances.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.YamcsInstances.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstances>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstances>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstances message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstances message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Yamcs.YamcsInstance instance : message.getInstanceList())
                     output.writeObject(1, instance, org.yamcs.protobuf.SchemaYamcs.YamcsInstance.WRITE, true);
@@ -484,12 +484,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.YamcsInstances.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstances message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstances message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.YamcsInstances newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstances.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstances.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstances.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstances.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -535,7 +535,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.YamcsInstances.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstances.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstances.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -564,9 +564,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.YamcsInstance.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.YamcsInstance.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstance>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstance>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstance message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstance message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
@@ -599,12 +599,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.YamcsInstance.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstance message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstance message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.YamcsInstance newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstance.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.YamcsInstance.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstance.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.YamcsInstance.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -653,7 +653,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.YamcsInstance.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstance.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.YamcsInstance.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -684,9 +684,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.MissionDatabase.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.MissionDatabase.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabase>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabase>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabase message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabase message) throws java.io.IOException
             {
                 if(message.hasConfigName())
                     output.writeString(1, message.getConfigName(), false);
@@ -720,12 +720,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MissionDatabase.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabase message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabase message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.MissionDatabase newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabase.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabase.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabase.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabase.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -776,7 +776,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MissionDatabase.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabase.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabase.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -809,9 +809,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.Value.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.Value.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Value>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Value>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Value message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Value message) throws java.io.IOException
             {
                 if(message.hasType())
                     output.writeEnum(1, message.getType().getNumber(), false);
@@ -862,12 +862,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Value.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Value message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Value message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.Value newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Value.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Value.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Value.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Value.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -942,7 +942,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Value.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Value.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Value.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -991,9 +991,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.MissionDatabaseRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.MissionDatabaseRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabaseRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabaseRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest message) throws java.io.IOException
             {
                 if(message.hasDbConfigName())
                     output.writeString(1, message.getDbConfigName(), false);
@@ -1025,12 +1025,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.MissionDatabaseRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1078,7 +1078,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.MissionDatabaseRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1109,9 +1109,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.NamedObjectId.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.NamedObjectId.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectId>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectId>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectId message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectId message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
@@ -1143,12 +1143,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.NamedObjectId.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectId message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectId message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.NamedObjectId newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1196,7 +1196,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.NamedObjectId.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1227,9 +1227,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.NamedObjectList.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.NamedObjectList.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectList>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectList>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectList message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectList message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId list : message.getListList())
                     output.writeObject(1, list, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
@@ -1260,12 +1260,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.NamedObjectList.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectList message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectList message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.NamedObjectList newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectList.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.NamedObjectList.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectList.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.NamedObjectList.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1311,7 +1311,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.NamedObjectList.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectList.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.NamedObjectList.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1340,9 +1340,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.IndexRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.IndexRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexRequest message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -1404,12 +1404,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.IndexRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.IndexRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1500,7 +1500,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.IndexRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1557,9 +1557,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveRecord>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveRecord>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveRecord message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveRecord message) throws java.io.IOException
             {
                 if(message.hasId())
                     output.writeObject(1, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
@@ -1598,12 +1598,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ArchiveRecord.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveRecord message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveRecord message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ArchiveRecord newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1661,7 +1661,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ArchiveRecord.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveRecord.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1698,9 +1698,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.IndexResult.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.IndexResult.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexResult>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexResult>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexResult message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexResult message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -1737,12 +1737,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.IndexResult.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexResult message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexResult message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.IndexResult newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexResult.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.IndexResult.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexResult.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.IndexResult.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1797,7 +1797,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.IndexResult.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexResult.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.IndexResult.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1832,9 +1832,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.TagRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.TagRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagRequest message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -1868,12 +1868,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TagRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.TagRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1924,7 +1924,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TagRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1957,9 +1957,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ArchiveTag.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ArchiveTag.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveTag>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveTag>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveTag message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveTag message) throws java.io.IOException
             {
                 if(message.hasId())
                     output.writeInt32(1, message.getId(), false);
@@ -1999,12 +1999,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ArchiveTag.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveTag message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveTag message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ArchiveTag newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveTag.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ArchiveTag.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2064,7 +2064,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ArchiveTag.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2103,9 +2103,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.TagResult.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.TagResult.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagResult>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagResult>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagResult message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagResult message) throws java.io.IOException
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
@@ -2138,12 +2138,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TagResult.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagResult message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagResult message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.TagResult newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagResult.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TagResult.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagResult.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TagResult.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2192,7 +2192,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TagResult.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagResult.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TagResult.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2223,9 +2223,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.UpsertTagRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.UpsertTagRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.UpsertTagRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.UpsertTagRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.UpsertTagRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.UpsertTagRequest message) throws java.io.IOException
             {
                 if(message.hasOldTag())
                     output.writeObject(1, message.getOldTag(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, false);
@@ -2259,12 +2259,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.UpsertTagRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.UpsertTagRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.UpsertTagRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.UpsertTagRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2314,7 +2314,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.UpsertTagRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.UpsertTagRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2345,9 +2345,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.DeleteTagRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.DeleteTagRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.DeleteTagRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.DeleteTagRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.DeleteTagRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.DeleteTagRequest message) throws java.io.IOException
             {
                 if(message.hasTag())
                     output.writeObject(3, message.getTag(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, false);
@@ -2378,12 +2378,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.DeleteTagRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.DeleteTagRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.DeleteTagRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.DeleteTagRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2429,7 +2429,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.DeleteTagRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.DeleteTagRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2458,9 +2458,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplaySpeed>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplaySpeed>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplaySpeed message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplaySpeed message) throws java.io.IOException
             {
                 if(message.hasType())
                     output.writeEnum(1, message.getType().getNumber(), false);
@@ -2492,12 +2492,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplaySpeed.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplaySpeed message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplaySpeed message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ReplaySpeed newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2545,7 +2545,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplaySpeed.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2576,9 +2576,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayRequest message) throws java.io.IOException
             {
                 if(message.hasStart())
                     output.writeInt64(1, message.getStart(), false);
@@ -2637,12 +2637,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2727,7 +2727,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2778,9 +2778,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ParameterReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ParameterReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ParameterReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ParameterReplayRequest message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId nameFilter : message.getNameFilterList())
                     output.writeObject(1, nameFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
@@ -2815,12 +2815,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ParameterReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ParameterReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ParameterReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ParameterReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2872,7 +2872,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ParameterReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -2905,9 +2905,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.PacketReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId nameFilter : message.getNameFilterList())
                     output.writeObject(1, nameFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
@@ -2938,12 +2938,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.PacketReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -2989,7 +2989,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.PacketReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3018,9 +3018,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.EventReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.EventReplayRequest message)
@@ -3048,12 +3048,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.EventReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3095,7 +3095,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.EventReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3122,9 +3122,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.CommandHistoryReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message)
@@ -3152,12 +3152,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3199,7 +3199,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3226,9 +3226,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException
             {
                 for(String groupNameFilter : message.getGroupNameFilterList())
                     output.writeString(1, groupNameFilter, true);
@@ -3258,12 +3258,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.PpReplayRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3308,7 +3308,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.PpReplayRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3337,9 +3337,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.ReplayStatus.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.ReplayStatus.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayStatus>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayStatus>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayStatus message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayStatus message) throws java.io.IOException
             {
                 if(message.hasState())
                     output.writeEnum(1, message.getState().getNumber(), false);
@@ -3374,12 +3374,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplayStatus.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayStatus message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayStatus message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.ReplayStatus newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayStatus.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.ReplayStatus.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayStatus.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.ReplayStatus.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3431,7 +3431,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.ReplayStatus.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayStatus.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayStatus.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3464,9 +3464,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.TmPacketData.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.TmPacketData.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TmPacketData>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TmPacketData>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TmPacketData message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TmPacketData message) throws java.io.IOException
             {
                 if(message.hasReceptionTime())
                     output.writeInt64(1, message.getReceptionTime(), false);
@@ -3506,12 +3506,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TmPacketData.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TmPacketData message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TmPacketData message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.TmPacketData newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.TmPacketData.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TmPacketData.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.TmPacketData.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TmPacketData.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3569,7 +3569,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.TmPacketData.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.TmPacketData.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TmPacketData.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -3606,9 +3606,9 @@ public final class SchemaYamcs
         public static final org.yamcs.protobuf.SchemaYamcs.Event.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaYamcs.Event.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Event>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Event>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Event message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Event message) throws java.io.IOException
             {
                 if(message.hasSource())
                     output.writeString(1, message.getSource(), false);
@@ -3650,12 +3650,12 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Event.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Event message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Event message) throws java.io.IOException {}
             public org.yamcs.protobuf.Yamcs.Event newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Yamcs.Event.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.Event.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Yamcs.Event.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.Event.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -3718,7 +3718,7 @@ public final class SchemaYamcs
                 return org.yamcs.protobuf.Yamcs.Event.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Yamcs.Event.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Event.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

@@ -14,9 +14,9 @@ public final class SchemaPvalue
         public static final org.yamcs.protobuf.SchemaPvalue.ParameterValue.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaPvalue.ParameterValue.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterValue>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterValue>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterValue message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterValue message) throws java.io.IOException
             {
                 if(message.hasId())
                     output.writeObject(1, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
@@ -87,12 +87,12 @@ public final class SchemaPvalue
                 return org.yamcs.protobuf.Pvalue.ParameterValue.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterValue message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterValue message) throws java.io.IOException {}
             public org.yamcs.protobuf.Pvalue.ParameterValue newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterValue.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterValue.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterValue.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterValue.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -197,7 +197,7 @@ public final class SchemaPvalue
                 return org.yamcs.protobuf.Pvalue.ParameterValue.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterValue.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterValue.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -264,9 +264,9 @@ public final class SchemaPvalue
         public static final org.yamcs.protobuf.SchemaPvalue.ParameterData.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaPvalue.ParameterData.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterData>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterData>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterData message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterData message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Pvalue.ParameterValue parameter : message.getParameterList())
                     output.writeObject(1, parameter, org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, true);
@@ -303,12 +303,12 @@ public final class SchemaPvalue
                 return org.yamcs.protobuf.Pvalue.ParameterData.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterData message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterData message) throws java.io.IOException {}
             public org.yamcs.protobuf.Pvalue.ParameterData newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterData.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterData.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterData.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterData.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -363,7 +363,7 @@ public final class SchemaPvalue
                 return org.yamcs.protobuf.Pvalue.ParameterData.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterData.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterData.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

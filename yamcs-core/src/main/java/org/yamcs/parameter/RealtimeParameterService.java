@@ -46,15 +46,16 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     //maps subscription ids <-> addresses
     BiMap<Integer, SimpleString> subscriptions=Maps.synchronizedBiMap(HashBiMap.<Integer,SimpleString>create());
     ParameterWithIdRequestHelper prh;
-
+    YamcsSession yamcsSession;
+    
     public RealtimeParameterService(Channel channel) throws HornetQException, YamcsApiException {
 	this.channel=channel;
 	prh = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
 
 	log=LoggerFactory.getLogger(RealtimeParameterService.class.getName()+"["+channel.getInstance()+"]");
-	YamcsSession ys=YamcsSession.newBuilder().build();
+	yamcsSession = YamcsSession.newBuilder().build();
 	SimpleString rpcAddress=Protocol.getParameterRealtimeAddress(channel.getInstance());
-	yclient=ys.newClientBuilder().setRpcAddress(rpcAddress).setDataProducer(true).build();
+	yclient=yamcsSession .newClientBuilder().setRpcAddress(rpcAddress).setDataProducer(true).build();
 	yclient.rpcConsumer.setMessageHandler(new MessageHandler() {
 	    @Override
 	    public void onMessage(ClientMessage message) {
@@ -204,5 +205,11 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	}
     }
 
-
+    public void quit() {
+	try {
+	    yamcsSession.close();
+	} catch (HornetQException e) {
+	    log.warn("Error when closing yamcsSession", e);
+	}
+    }
 }

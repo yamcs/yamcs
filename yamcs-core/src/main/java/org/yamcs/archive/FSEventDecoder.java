@@ -47,6 +47,8 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     
     final Stream realtimeTmStream, dumpTmStream; //TM packets come from here
     XtceUtil xtceutil;
+    YamcsSession yamcsSession;
+    
     
     public FSEventDecoder(String instance) throws ConfigurationException {
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
@@ -81,8 +83,8 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
             
             realtimeAddress=new SimpleString(instance+".events_realtime");
             dumpAddress=new SimpleString(instance+".events_dump");
-            YamcsSession ys=YamcsSession.newBuilder().build();
-            msgClient=ys.newClientBuilder().setDataProducer(true).build();
+            yamcsSession = YamcsSession.newBuilder().build();
+            msgClient = yamcsSession.newClientBuilder().setDataProducer(true).build();
         } catch (HornetQException e) {
             throw new ConfigurationException(e.toString());
         } catch (YamcsApiException e) {
@@ -153,6 +155,11 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
 
     @Override
     protected void doStop() {
+	try {
+	    yamcsSession.close();
+	} catch (HornetQException e) {
+	    log.error("error when closing the yamcsSession", e);
+	}
         notifyStopped();        
     }
 }

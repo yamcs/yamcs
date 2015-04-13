@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -53,7 +56,7 @@ import com.google.common.util.concurrent.Service.State;
  */
 public class YamcsServer {
     static EmbeddedHornetQ hornetServer;
-    static List<String> instances=new ArrayList<String>();
+    static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
 
     String instance;
     ReplayServer replay;
@@ -61,7 +64,10 @@ public class YamcsServer {
 
     Logger log;
     static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class.getName());
-
+    
+    /**in the shutdown, allow servies this number of seconds for stopping*/
+    public static int SERVICE_STOP_GRACE_TIME = 10;
+    
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
@@ -115,7 +121,7 @@ public class YamcsServer {
 
     public static EmbeddedHornetQ setupHornet() throws Exception {
 	//divert hornetq logging
-	System.setProperty("org.jboss.logging.provider ", "sl4j");
+	System.setProperty("org.jboss.logging.provider", "slf4j");
 	
 	hornetServer = new EmbeddedHornetQ();
 	hornetServer.setSecurityManager( new HornetQAuthManager() );
@@ -131,10 +137,28 @@ public class YamcsServer {
    	Protocol.closeKiller();
    	hornetServer.stop();
     }
+   
+    public static void shutDown() throws Exception {
+	for(YamcsServer ys: instances.values()) {
+	    ys.stop();
+	}
+    }
     
+    
+    public void stop() {
+	for(int i = serviceList.size()-1; i>=0; i--) {
+	    Service s = serviceList.get(i);
+	    s.stopAsync();
+	    try {
+		s.awaitTerminated(SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
+	    } catch (TimeoutException e) {
+		log.error("Service "+s+" did not stop in "+SERVICE_STOP_GRACE_TIME + " seconds");
+	    }
+	}
+    }
     
     public static boolean hasInstance(String instance) {
-	return instances.contains(instance);
+	return instances.containsKey(instance);
     }
     @SuppressWarnings("unchecked")
     public static void setupYamcsServer() throws Exception  {
@@ -142,10 +166,8 @@ public class YamcsServer {
 	YConfiguration c=YConfiguration.getConfiguration("yamcs");
 	final List<String>instArray=c.getList("instances");
 	for(String inst:instArray) {
-	    new YamcsServer(inst);
-	    instances.add(inst);
+	    instances.put(inst, new YamcsServer(inst));
 	}
-
 	Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 	    @Override
 	    public void uncaughtException(Thread t, Throwable thrown) {
@@ -153,6 +175,7 @@ public class YamcsServer {
 	    }
 	});
 
+	
 	ctrlAddressClient.rpcConsumer.setMessageHandler(new MessageHandler() {
 	    @Override
 	    public void onMessage(ClientMessage msg) {
@@ -189,12 +212,11 @@ public class YamcsServer {
 		}
 	    }
 	});
-	System.out.println("yamcsstartup success");
     }
 
     private static YamcsInstances getYamcsInstances() {
 	YamcsInstances.Builder aisb=YamcsInstances.newBuilder();
-	for(String inst:instances) {
+	for(String inst:instances.keySet()) {
 	    YamcsInstance.Builder aib=YamcsInstance.newBuilder();
 	    aib.setName(inst);
 	    YConfiguration c;

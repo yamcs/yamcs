@@ -29,7 +29,13 @@ public class YamcsConnector implements SessionFailureListener {
     protected YamcsSession yamcsSession;
     protected YamcsConnectData connectionParams;
     static Logger log= LoggerFactory.getLogger(YamcsConnector.class);
-
+    
+    
+  /*  Exception creatorContext;
+    public YamcsConnector() {
+	creatorContext = new Exception();
+    }*/
+    
     public void addConnectionListener(ConnectionListener connectionListener) {
 	this.connectionListeners.add(connectionListener);
     }
@@ -173,6 +179,7 @@ public class YamcsConnector implements SessionFailureListener {
     @Override
     public void beforeReconnect(HornetQException e) {
 	//should not be called because reconnection is not configured in the factory
+	//log.warn("Before reconnect: ", creatorContext);
 	log.warn("Before reconnect: ", e);
     }
 

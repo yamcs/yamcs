@@ -14,9 +14,9 @@ public final class SchemaWebsocket
         public static final org.yamcs.protobuf.SchemaWebsocket.WebSocketClientMessage.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaWebsocket.WebSocketClientMessage.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketClientMessage>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketClientMessage>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketClientMessage message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketClientMessage message) throws java.io.IOException
             {
                 if(message.hasProtocolVersion())
                     output.writeUInt32(1, message.getProtocolVersion(), false);
@@ -55,12 +55,12 @@ public final class SchemaWebsocket
                 return org.yamcs.protobuf.Websocket.WebSocketClientMessage.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketClientMessage message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketClientMessage message) throws java.io.IOException {}
             public org.yamcs.protobuf.Websocket.WebSocketClientMessage newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -117,7 +117,7 @@ public final class SchemaWebsocket
                 return org.yamcs.protobuf.Websocket.WebSocketClientMessage.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketClientMessage.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -157,9 +157,9 @@ public final class SchemaWebsocket
             public static final org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketReplyData.BuilderSchema MERGE =
                 new org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketReplyData.BuilderSchema();
             
-            public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData>
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData>
             {
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData message) throws java.io.IOException
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData message) throws java.io.IOException
                 {
                     if(message.hasProtocolVersion())
                         output.writeUInt32(1, message.getProtocolVersion(), false);
@@ -191,12 +191,12 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.class.getName();
                 }
                 //unused
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData message) throws java.io.IOException {}
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData message) throws java.io.IOException {}
                 public org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData newMessage() { return null; }
             }
-            public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder>
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder>
             {
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder builder) throws java.io.IOException
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder builder) throws java.io.IOException
                 {
                     for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                     {
@@ -244,7 +244,7 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.class.getName();
                 }
                 //unused
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder builder) throws java.io.IOException {}
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData.Builder builder) throws java.io.IOException {}
             }
             public static java.lang.String getFieldName(int number)
             {
@@ -275,9 +275,9 @@ public final class SchemaWebsocket
             public static final org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketExceptionData.BuilderSchema MERGE =
                 new org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketExceptionData.BuilderSchema();
             
-            public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData>
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData>
             {
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData message) throws java.io.IOException
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData message) throws java.io.IOException
                 {
                     if(message.hasProtocolVersion())
                         output.writeUInt32(1, message.getProtocolVersion(), false);
@@ -316,12 +316,12 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.class.getName();
                 }
                 //unused
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData message) throws java.io.IOException {}
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData message) throws java.io.IOException {}
                 public org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData newMessage() { return null; }
             }
-            public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder>
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder>
             {
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder builder) throws java.io.IOException
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder builder) throws java.io.IOException
                 {
                     for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                     {
@@ -378,7 +378,7 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.class.getName();
                 }
                 //unused
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder builder) throws java.io.IOException {}
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData.Builder builder) throws java.io.IOException {}
             }
             public static java.lang.String getFieldName(int number)
             {
@@ -415,9 +415,9 @@ public final class SchemaWebsocket
             public static final org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketSubscriptionData.BuilderSchema MERGE =
                 new org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.WebSocketSubscriptionData.BuilderSchema();
             
-            public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData>
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData>
             {
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message) throws java.io.IOException
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message) throws java.io.IOException
                 {
                     if(message.hasSequenceNumber())
                         output.writeUInt32(1, message.getSequenceNumber(), false);
@@ -455,12 +455,12 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.class.getName();
                 }
                 //unused
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message) throws java.io.IOException {}
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message) throws java.io.IOException {}
                 public org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData newMessage() { return null; }
             }
-            public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder>
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder>
             {
-                public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder builder) throws java.io.IOException
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder builder) throws java.io.IOException
                 {
                     for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                     {
@@ -516,7 +516,7 @@ public final class SchemaWebsocket
                     return org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.class.getName();
                 }
                 //unused
-                public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder builder) throws java.io.IOException {}
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData.Builder builder) throws java.io.IOException {}
             }
             public static java.lang.String getFieldName(int number)
             {
@@ -549,9 +549,9 @@ public final class SchemaWebsocket
         public static final org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaWebsocket.WebSocketServerMessage.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage message) throws java.io.IOException
             {
                 if(message.hasType())
                     output.writeEnum(1, message.getType().getNumber(), false);
@@ -590,12 +590,12 @@ public final class SchemaWebsocket
                 return org.yamcs.protobuf.Websocket.WebSocketServerMessage.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage message) throws java.io.IOException {}
             public org.yamcs.protobuf.Websocket.WebSocketServerMessage newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -652,7 +652,7 @@ public final class SchemaWebsocket
                 return org.yamcs.protobuf.Websocket.WebSocketServerMessage.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Websocket.WebSocketServerMessage.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

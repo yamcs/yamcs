@@ -23,6 +23,8 @@ public class HttpSocketServer {
     private static HttpSocketServer instance;
 
     private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<String, YamcsWebService>();
+    private EventLoopGroup bossGroup;
+    
     
     public synchronized static HttpSocketServer getInstance() throws ConfigurationException {
         if(instance==null) {
@@ -40,6 +42,18 @@ public class HttpSocketServer {
         yamcsInstances.put(yinstance, rps);
     }
     
+    public void unRegisterYamcsInstance(String yinstance) {
+        yamcsInstances.remove(yinstance);
+        if(yamcsInstances.isEmpty()) {
+            instance.shutdown();
+        }
+    }
+    
+    private void shutdown() {
+	bossGroup.shutdownGracefully();
+	
+    }
+
     public boolean isInstanceRegistered( String yamcsInstance) {
         return yamcsInstances.containsKey(yamcsInstance);
     }
@@ -47,7 +61,7 @@ public class HttpSocketServer {
     public void run() {
         // Configure the server.
 	
-	 EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+	 bossGroup = new NioEventLoopGroup(1);
 	 //Note that while the thread pools created with this method are unbounded, netty will limit the number
 	        //of workers to 2*number of CPU
 	 EventLoopGroup workerGroup = new NioEventLoopGroup();

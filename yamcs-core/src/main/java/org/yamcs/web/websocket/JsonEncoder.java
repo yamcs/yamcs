@@ -1,11 +1,14 @@
 package org.yamcs.web.websocket;
 
-import com.dyuproject.protostuff.JsonIOUtil;
-import com.dyuproject.protostuff.Schema;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
@@ -19,7 +22,8 @@ public class JsonEncoder implements WebSocketEncoder {
     @Override
     public WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException {
         StringWriter sw=new StringWriter();
-        JsonGenerator g=jsonFactory.createJsonGenerator(sw);
+        
+        JsonGenerator g=jsonFactory.createGenerator(sw);
         writeMessageStart(g, WSConstants.MESSAGE_TYPE_REPLY, reply.getSequenceNumber());
         writeMessageEnd(g);
         return new TextWebSocketFrame(sw.toString());
@@ -28,7 +32,7 @@ public class JsonEncoder implements WebSocketEncoder {
     @Override
     public WebSocketFrame encodeException(WebSocketException e) throws IOException {
         StringWriter sw = new StringWriter();
-        JsonGenerator g = jsonFactory.createJsonGenerator(sw);
+        JsonGenerator g = jsonFactory.createGenerator(sw);
         writeMessageStart(g, WSConstants.MESSAGE_TYPE_EXCEPTION, e.getRequestId());
         g.writeStartObject();
         if (e.getDataType().equals("STRING")) {
@@ -47,7 +51,7 @@ public class JsonEncoder implements WebSocketEncoder {
     @Override
     public <T> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message, Schema<T> schema) throws IOException {
         StringWriter sw=new StringWriter();
-        JsonGenerator g=jsonFactory.createJsonGenerator(sw);
+        JsonGenerator g=jsonFactory.createGenerator(sw);
         writeMessageStart(g, WSConstants.MESSAGE_TYPE_DATA, sequenceNumber);
         g.writeStartObject();
         g.writeStringField("dt", dataType.name());

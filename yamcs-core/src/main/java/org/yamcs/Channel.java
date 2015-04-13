@@ -110,7 +110,7 @@ public class Channel {
 			if(!(o instanceof Map)) {
 			    throw new ConfigurationException("alarm configuration should be a map");
 			}
-			configureAlarms((Map<String, String>) o);
+			configureAlarms((Map<String, Object>) o);
 		    } else {
 			log.warn("Ignoring unknown config key '"+c+"'");
 		    }
@@ -165,15 +165,22 @@ public class Channel {
 
 
 
-    private void configureAlarms(Map<String,String> alarmConfig) {
-	String v = alarmConfig.get("check");
+    private void configureAlarms(Map<String, Object> alarmConfig) {
+	Object v = alarmConfig.get("check");
 	if(v!=null) {
-	    checkAlarms = "true".equalsIgnoreCase(v);
+	    if(!(v instanceof Boolean)) {
+		throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> check. Boolean expected.");
+	    }
+	    checkAlarms = (Boolean)v;
 	}
 
 	v = alarmConfig.get("server");
 	if(v!=null) {
-	    alarmServerEnabled = "enabled".equalsIgnoreCase(v);
+	    if(!(v instanceof String)) {
+		throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> check. String expected.");
+		
+	    }
+	    alarmServerEnabled = "enabled".equalsIgnoreCase((String)v);
 	    if(alarmServerEnabled) checkAlarms=true;
 	}
     }
@@ -217,7 +224,7 @@ public class Channel {
 	if(alarmServer!=null) {
 	    alarmServer.startAsync();
 	}
-	
+
 	tmPacketProvider.awaitRunning();
 
 	propagateChannelStateChange();
@@ -439,8 +446,8 @@ public class Channel {
     public boolean hasAlarmChecker() {
 	return checkAlarms;
     }
-    
+
     public boolean hasAlarmServer() {
-   	return alarmServerEnabled;
+	return alarmServerEnabled;
     }
 }

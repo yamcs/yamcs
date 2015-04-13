@@ -14,9 +14,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestExceptionMessage.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestExceptionMessage.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestExceptionMessage>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestExceptionMessage>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestExceptionMessage message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestExceptionMessage message) throws java.io.IOException
             {
                 if(message.hasType())
                     output.writeString(1, message.getType(), false);
@@ -48,12 +48,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestExceptionMessage.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestExceptionMessage message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestExceptionMessage message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestExceptionMessage newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestExceptionMessage.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestExceptionMessage.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -101,7 +101,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestExceptionMessage.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestExceptionMessage.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -132,9 +132,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestArgumentType.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestArgumentType.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestArgumentType>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestArgumentType>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestArgumentType message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestArgumentType message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
@@ -166,12 +166,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestArgumentType.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestArgumentType message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestArgumentType message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestArgumentType newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestArgumentType.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestArgumentType.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestArgumentType.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestArgumentType.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -219,7 +219,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestArgumentType.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestArgumentType.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestArgumentType.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -250,9 +250,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestCommandType.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestCommandType.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestCommandType>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestCommandType>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestCommandType message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestCommandType message) throws java.io.IOException
             {
                 if(message.hasOrigin())
                     output.writeString(1, message.getOrigin(), false);
@@ -290,12 +290,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestCommandType.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestCommandType message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestCommandType message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestCommandType newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestCommandType.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestCommandType.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestCommandType.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestCommandType.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -351,7 +351,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestCommandType.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestCommandType.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestCommandType.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -386,9 +386,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestListAvailableParametersRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestListAvailableParametersRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest message) throws java.io.IOException
             {
                 for(String namespaces : message.getNamespacesList())
                     output.writeString(1, namespaces, true);
@@ -418,12 +418,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestListAvailableParametersRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -468,7 +468,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -497,9 +497,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestListAvailableParametersResponse.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestListAvailableParametersResponse.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersResponse>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersResponse>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId ids : message.getIdsList())
                     output.writeObject(2, ids, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
@@ -530,12 +530,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestListAvailableParametersResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -581,7 +581,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -610,9 +610,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestValidateCommandRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestValidateCommandRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandRequest message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Rest.RestCommandType commands : message.getCommandsList())
                     output.writeObject(1, commands, org.yamcs.protobuf.SchemaRest.RestCommandType.WRITE, true);
@@ -643,12 +643,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestValidateCommandRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestValidateCommandRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -694,7 +694,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestValidateCommandRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -723,9 +723,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestValidateCommandResponse.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestValidateCommandResponse.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandResponse>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandResponse>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestValidateCommandResponse message)
@@ -753,12 +753,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestValidateCommandResponse.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestValidateCommandResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -800,7 +800,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestValidateCommandResponse.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -827,9 +827,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestDumpRawMdbRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestDumpRawMdbRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestDumpRawMdbRequest message)
@@ -857,12 +857,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestDumpRawMdbRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -904,7 +904,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -931,9 +931,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestDumpRawMdbResponse.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestDumpRawMdbResponse.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbResponse>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbResponse>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse message) throws java.io.IOException
             {
                 if(message.hasRawMdb())
                     output.writeByteArray(2, message.getRawMdb().toByteArray(), false);
@@ -964,12 +964,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestDumpRawMdbResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1014,7 +1014,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestDumpRawMdbResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1043,9 +1043,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestReplayResponse.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestReplayResponse.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestReplayResponse>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestReplayResponse>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestReplayResponse message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestReplayResponse message) throws java.io.IOException
             {
                 if(message.hasParameterData())
                     output.writeObject(2, message.getParameterData(), org.yamcs.protobuf.SchemaPvalue.ParameterData.WRITE, false);
@@ -1088,12 +1088,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestReplayResponse.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestReplayResponse message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestReplayResponse message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestReplayResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestReplayResponse.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestReplayResponse.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestReplayResponse.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestReplayResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1155,7 +1155,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestReplayResponse.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestReplayResponse.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestReplayResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1192,9 +1192,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException
             {
                 for(org.yamcs.protobuf.Rest.RestCommandType commands : message.getCommandsList())
                     output.writeObject(1, commands, org.yamcs.protobuf.SchemaRest.RestCommandType.WRITE, true);
@@ -1225,12 +1225,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestSendCommandRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1276,7 +1276,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestSendCommandRequest.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
@@ -1305,9 +1305,9 @@ public final class SchemaRest
         public static final org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.BuilderSchema MERGE =
             new org.yamcs.protobuf.SchemaRest.RestSendCommandResponse.BuilderSchema();
         
-        public static class MessageSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse>
         {
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException
             {
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestSendCommandResponse message)
@@ -1335,12 +1335,12 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getName();
             }
             //unused
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException {}
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse message) throws java.io.IOException {}
             public org.yamcs.protobuf.Rest.RestSendCommandResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements com.dyuproject.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder>
         {
-            public void mergeFrom(com.dyuproject.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -1382,7 +1382,7 @@ public final class SchemaRest
                 return org.yamcs.protobuf.Rest.RestSendCommandResponse.class.getName();
             }
             //unused
-            public void writeTo(com.dyuproject.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSendCommandResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

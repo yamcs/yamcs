@@ -1,8 +1,8 @@
 package org.yamcs.web.rest;
 
-import com.dyuproject.protostuff.JsonIOUtil;
+import io.protostuff.JsonIOUtil;
 
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerator;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;

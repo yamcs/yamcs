@@ -9,4 +9,5 @@ protoc --java_out=java rest.proto
 protoc --java_out=java websocket.proto
 
 
-java -jar /tmp/protostuff-compiler-1.0.7-jarjar.jar modules.properties 
+#protosuff is handled from maven with 
+# mvn protostuff:compile

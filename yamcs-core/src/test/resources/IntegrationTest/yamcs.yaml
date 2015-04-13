@@ -1,0 +1,8 @@
+instances:
+ - IntegrationTest
+
+incomingDir: /tmp/yamcs-incoming
+dataDir: /tmp/yamcs-IntegrationTest-data
+webRoot: /tmp/yamcs-web
+webPort: 9190
+

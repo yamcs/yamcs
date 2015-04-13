@@ -1,6 +1,6 @@
 package org.yamcs.web.websocket;
 
-import com.dyuproject.protostuff.Schema;
+import io.protostuff.Schema;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;

@@ -1,6 +1,6 @@
 package org.yamcs.web.websocket;
 
-import com.dyuproject.protostuff.Schema;
+import io.protostuff.Schema;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;

@@ -1,6 +1,6 @@
 package org.yamcs.web.websocket;
 
-import com.dyuproject.protostuff.Schema;
+import io.protostuff.Schema;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 import org.yamcs.protobuf.Websocket.WebSocketClientMessage;
