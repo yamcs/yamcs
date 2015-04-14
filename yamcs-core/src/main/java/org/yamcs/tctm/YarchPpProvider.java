@@ -47,13 +47,6 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     }
     
 
-
-    @Override
-    public String getDetailedStatus() {
-        return "receiving PPs from "+stream;
-    }
-
-
     @Override
     protected void doStart() {
         stream.addSubscriber(this);

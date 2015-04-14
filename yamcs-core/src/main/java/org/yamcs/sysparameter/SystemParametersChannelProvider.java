@@ -169,10 +169,6 @@ public class SystemParametersChannelProvider extends AbstractService implements 
 
     }
 
-    @Override
-    public String getDetailedStatus() {
-        return null;
-    }
 
     @Override
     protected void doStart() {

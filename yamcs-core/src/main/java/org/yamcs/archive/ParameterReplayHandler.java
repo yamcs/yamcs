@@ -381,11 +381,6 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         }
 
         @Override
-        public String getDetailedStatus() {
-            return "unused";
-        }
-
-        @Override
         protected void doStart() {
             notifyStarted();
         }

@@ -28,7 +28,6 @@ import io.netty.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 
 /**
  * Netty-implementation of a Yamcs web socket client

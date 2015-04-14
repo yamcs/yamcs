@@ -182,12 +182,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public String getDetailedStatus() {
-	// TODO Auto-generated method stub
-	return null;
-    }
-
-    @Override
     public void startProvidingAllContainers() {
 	tmExtractor.startProvidingAll();
     }

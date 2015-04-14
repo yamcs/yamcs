@@ -213,13 +213,4 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     protected void doStop() {
 	notifyStopped();
     }
-
-    @Override
-    public String getDetailedStatus() {
-	return "processing "+requestedValues.size()+" out of "+derivedValues.size()+" parameters";
-    }
-
-
-   
-
 }

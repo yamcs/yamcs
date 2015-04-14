@@ -60,7 +60,5 @@ public interface ParameterProvider extends Service {
      */
     public abstract Parameter getParameter(NamedObjectId para) throws InvalidIdentification;
 
-    public abstract String getDetailedStatus();
-
     public abstract boolean canProvide(Parameter param);
 }

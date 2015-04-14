@@ -462,12 +462,4 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 	}
         notifyStopped();
     }
-
-    @Override
-    public String getDetailedStatus() {
-        return String.format("processing %d out of %d parameters",
-                engineByAlgorithm.size(), xtcedb.getAlgorithms().size());
-    }
-
-	
 }
