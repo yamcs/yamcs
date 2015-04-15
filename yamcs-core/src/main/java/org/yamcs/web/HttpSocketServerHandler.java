@@ -117,7 +117,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             setContentLength(res, buf.readableBytes());
         }
 
-        ChannelFuture f = ctx.write(res);
+        ChannelFuture f = ctx.writeAndFlush(res);
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
