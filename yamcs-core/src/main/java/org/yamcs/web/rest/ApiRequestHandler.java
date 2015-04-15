@@ -18,11 +18,13 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
     public static final String ARCHIVE_PATH = "archive";
     public static final String MDB_PATH = "mdb";
     public static final String COMMANDING_PATH = "commanding";
+    public static final String PARAMETER_PATH = "parameter";
 
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
-
+    static ParameterRequestHandler parameterRequestHandler=new ParameterRequestHandler();
+    
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         String[] path = remainingUri.split("/", 2);
@@ -36,6 +38,11 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                     mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
                 } else if(COMMANDING_PATH.equals(path[0])) {
                     commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                } else if(PARAMETER_PATH.equals(path[0])) {
+                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                } else {
+                    log.warn("Unknown request received {}", path[0]);
+                    sendError(ctx, HttpResponseStatus.NOT_FOUND);
                 }
             } catch (InternalServerErrorException e) {
                 log.error("Reporting internal server error to rest client", e);

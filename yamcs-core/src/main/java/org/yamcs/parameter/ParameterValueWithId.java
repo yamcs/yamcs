@@ -13,24 +13,28 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  *
  */
 public class ParameterValueWithId {
-	private ParameterValue pv;
-	private NamedObjectId id;
-	
-	public void setId(NamedObjectId id) {
-		this.id = id;
-	}
-	public NamedObjectId getId() {
-		return id;
-	}
-	public void setParameterValue(ParameterValue pv) {
-		this.pv = pv;
-	}
-	public ParameterValue getParameterValue() {
-		return pv;
-	}
-	
-	@Override
+    private ParameterValue pv;
+    private NamedObjectId id;
+
+    public void setId(NamedObjectId id) {
+	this.id = id;
+    }
+    public NamedObjectId getId() {
+	return id;
+    }
+    public void setParameterValue(ParameterValue pv) {
+	this.pv = pv;
+    }
+    public ParameterValue getParameterValue() {
+	return pv;
+    }
+    
+    public org.yamcs.protobuf.Pvalue.ParameterValue toGbpParameterValue() {
+	return pv.toGpb(id);
+    }
+
+    @Override
     public String toString() {
-        return "id:"+id+", pv:"+pv;
+	return "id:"+id+", pv:"+pv;
     }
 }

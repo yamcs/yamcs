@@ -376,7 +376,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 		param.setParameterType(ptype);
 
 		// create parameter value
-		ParameterValue pv = new ParameterValue(param, false);
+		ParameterValue pv = new ParameterValue(param);
 		pv.setFloatValue((float) value);
 
 		// set monitoring result as specified in xml data (regardless of the

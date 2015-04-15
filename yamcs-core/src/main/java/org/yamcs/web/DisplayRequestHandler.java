@@ -63,7 +63,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 	ByteBuf cb=Unpooled.buffer(1024);
 	ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
-        JsonGenerator json=jsonFactory.createJsonGenerator(cbos, JsonEncoding.UTF8);
+        JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8);
         json.writeStartArray();
         writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root+"/displays"));
         json.close();

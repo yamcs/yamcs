@@ -45,6 +45,15 @@ message RestDumpRawMdbResponse {
   optional bytes rawMdb=2;
 }
 
+message RestSetParameterResponse {
+}
+
+message RestGetParameterRequest {
+    repeated yamcs.NamedObjectId list=1;
+    optional bool fromCache=2;
+    optional uint64 timeout=3; //if not from cache, wait this time (in milliseconds) to receive the parameter
+}
+
 message RestReplayResponse {
   optional pvalue.ParameterData parameterData=2;
   optional yamcs.TmPacketData packetData=3;

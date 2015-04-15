@@ -191,7 +191,7 @@ public class SystemParametersChannelProvider extends AbstractService implements 
     }
     
     private ParameterValue getChannelPV(String name, String value) {
-        ParameterValue pv = new ParameterValue(getSystemParameter(XtceDbFactory.YAMCS_SPACESYSTEM_NAME+"/channel/"+name), false);
+        ParameterValue pv = new ParameterValue(getSystemParameter(XtceDbFactory.YAMCS_SPACESYSTEM_NAME+"/channel/"+name));
         pv.setAcquisitionTime(TimeEncoding.currentInstant());
         pv.setGenerationTime(TimeEncoding.currentInstant());
         pv.setStringValue(value);

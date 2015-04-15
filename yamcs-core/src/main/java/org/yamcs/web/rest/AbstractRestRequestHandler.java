@@ -160,7 +160,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, buf);
         setContentTypeHeader(httpResponse, targetContentType);
 
-        ChannelFuture writeFuture = ctx.write(httpResponse);
+        ChannelFuture writeFuture = ctx.writeAndFlush(httpResponse);
 
         // Decide whether to close the connection or not.
         if (!isKeepAlive(httpRequest)) {
@@ -177,7 +177,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     }
 
     protected JsonGenerator createJsonGenerator(OutputStream out, QueryStringDecoder qsDecoder) throws IOException {
-        JsonGenerator generator = jsonFactory.createJsonGenerator(out, JsonEncoding.UTF8);
+        JsonGenerator generator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
         if (qsDecoder.parameters().containsKey("pretty")) {
             List<String> pretty = qsDecoder.parameters().get("pretty");
             if (pretty != null) {
@@ -207,7 +207,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
                 // Close the connection as soon as the error message is sent.
-                ctx.channel().write(response).addListener(ChannelFutureListener.CLOSE);
+                ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not create Json Generator", e2);
                 log.debug("Original exception not sent to client", t);

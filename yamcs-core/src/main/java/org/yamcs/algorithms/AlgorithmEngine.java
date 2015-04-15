@@ -175,7 +175,7 @@ public class AlgorithmEngine {
 	}
 	
 	private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
-        ParameterValue pval=new ParameterValue(parameter, true);
+        ParameterValue pval=new ParameterValue(parameter);
         ParameterType ptype=parameter.getParameterType();
         if(ptype instanceof EnumeratedParameterType) {
             setRawValue(((EnumeratedParameterType) ptype).getEncoding(), pval, binding.value);

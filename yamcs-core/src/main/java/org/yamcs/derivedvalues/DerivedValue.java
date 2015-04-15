@@ -22,7 +22,7 @@ public abstract class DerivedValue extends ParameterValue {
      * @param argIds
      */
     public DerivedValue(String name, XtceAliasSet aliasSet, Parameter... argIds) {
-	super(new Parameter(name),false);
+	super(new Parameter(name));
 	if(aliasSet!=null) {
 	    getParameter().setAliasSet(aliasSet);
 	}

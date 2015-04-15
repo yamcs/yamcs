@@ -19,10 +19,10 @@ public class ParameterValueListTest {
 	List<ParameterValue> pvalues= new ArrayList<ParameterValue>(n+1);
 	for (int i = 0; i<n; i++) {
 	    params[i] = new Parameter("parameter"+i);
-	    ParameterValue pv = new ParameterValue(params[i], false);
+	    ParameterValue pv = new ParameterValue(params[i]);
 	    pvalues.add(pv);
 	}
-	ParameterValue pv2bis = new ParameterValue(params[2], false);
+	ParameterValue pv2bis = new ParameterValue(params[2]);
 	pvalues.add(pv2bis);
 
 
@@ -66,9 +66,9 @@ public class ParameterValueListTest {
     @Test
     public void testRemove() {
 	Parameter p = new Parameter("parameter");
-	ParameterValue pv1 = new ParameterValue(p, false);
+	ParameterValue pv1 = new ParameterValue(p);
 	pv1.setStringValue("pv1");
-	ParameterValue pv2 = new ParameterValue(p, false);
+	ParameterValue pv2 = new ParameterValue(p);
 	pv2.setStringValue("pv2");
 	
 	ParameterValueList pvlist = new ParameterValueList();
@@ -111,7 +111,7 @@ public class ParameterValueListTest {
 	
 	for(int j=0;j<m; j++) {
 	    for(int i=0;i<2*n; i++) {
-		ParameterValue pv = new ParameterValue(params[i], false);
+		ParameterValue pv = new ParameterValue(params[i]);
 		pv.setStringValue(i+":"+j);
 		pvalues.add(pv);
 	    }
@@ -136,10 +136,10 @@ public class ParameterValueListTest {
     @Test
     public void testIterator() {
 	Parameter p = new Parameter("p1");
-	ParameterValue pv1 = new ParameterValue(p, false);
+	ParameterValue pv1 = new ParameterValue(p);
 	pv1.setStringValue("pv1");
 	
-	ParameterValue pv2 = new ParameterValue(p, false);
+	ParameterValue pv2 = new ParameterValue(p);
 	pv2.setStringValue("pv2");
 	 
 	ParameterValueList pvlist = new ParameterValueList();
@@ -172,11 +172,11 @@ public class ParameterValueListTest {
 	List<ParameterValue> pvalues= new ArrayList<ParameterValue>(n+1);
 	for (int i = 0; i<n; i++) {
 	    params[i] = new Parameter("parameter"+i);
-	    ParameterValue pv = new ParameterValue(params[i], false);
+	    ParameterValue pv = new ParameterValue(params[i]);
 	    pvalues.add(pv);
 	}
 	
-	ParameterValue pv2bis = new ParameterValue(params[2], false);
+	ParameterValue pv2bis = new ParameterValue(params[2]);
 	pvalues.add(pv2bis);
 	
 	ParameterValueList pvlist = new ParameterValueList(pvalues);

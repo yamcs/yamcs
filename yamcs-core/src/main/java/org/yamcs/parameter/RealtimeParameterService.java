@@ -110,7 +110,6 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	}
 	//TODO check permissions and subscription limits
 	try {
-	    ParameterRequestManager prm=channel.getParameterRequestManager();
 	    if(subscriptions.containsValue(dataAddress)) {
 		int subscriptionId=subscriptions.inverse().get(dataAddress);
 		prh.addItemsToRequest(subscriptionId, paraList);
@@ -138,7 +137,6 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	    log.warn("Could not decode the parameter list");
 	    return;
 	}
-	ParameterRequestManager prm=channel.getParameterRequestManager();
 	if(subscriptions.containsValue(dataAddress)) {
 	    int subscriptionId=subscriptions.inverse().get(dataAddress);
 	    prh.removeItemsFromRequest(subscriptionId, paraList);

@@ -30,7 +30,7 @@ public class ParameterValue {
     public MonitoringResult monitoringResult;
     public MonitoringResult deltaMonitoringResult;
 
-    
+
     public FloatRange watchRange=null;
     public FloatRange warningRange=null;
     public FloatRange distressRange=null;
@@ -41,18 +41,13 @@ public class ParameterValue {
     /**
      * Creates a parameter value for a parameter which has critical or warning range associated
      * @param def the parameter definition
-     * @param withRawValue if the parameter contains a raw value or not
      */
-    public ParameterValue(Parameter def, boolean withRawValue) {
+    public ParameterValue(Parameter def) {
 	this.def=def;
 
 	setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
 	setProcessingStatus(true);
 	monitoringResult=MonitoringResult.DISABLED;
-	/*
-		if(withRawValue) {
-			rawValue=new RawValueType();
-		}*/
     }
 
     /**
@@ -177,9 +172,9 @@ public class ParameterValue {
     public void setMonitoringResult(MonitoringResult m) {
 	monitoringResult=m;
     }
-    
+
     public void setDeltaMonitoringResult(MonitoringResult m) {
-   	deltaMonitoringResult=m;
+	deltaMonitoringResult=m;
     }
 
 
@@ -367,7 +362,7 @@ public class ParameterValue {
     }
 
     public static ParameterValue fromGpb(Parameter pdef, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
-	ParameterValue pv=new ParameterValue(pdef, gpv.hasRawValue());
+	ParameterValue pv=new ParameterValue(pdef);
 	pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
 	pv.setAcquisitionTime(gpv.getAcquisitionTime());
 	pv.setEngineeringValue(gpv.getEngValue());

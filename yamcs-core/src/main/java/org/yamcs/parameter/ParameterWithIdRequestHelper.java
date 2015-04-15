@@ -23,7 +23,7 @@ import com.google.common.collect.ListMultimap;
  * 
  * A client can request in fact the same parameter with two different names and they will get it twice each time
  * 
- * TODO: should also check privileges and subscription limits
+ * TODO: check privileges and subscription limits
  * 
  * @author nm
  *
@@ -33,6 +33,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     final ParameterWithIdConsumer listener;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<Parameter, NamedObjectId>>();
+
 
     public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
 	this.prm = prm;
@@ -52,6 +53,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 	return subscriptionId;
     }
+
     public void addItemsToRequest(int subscriptionId,  List<NamedObjectId> idList) throws InvalidIdentification {
 	ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
 	if(subscr==null) {
@@ -99,6 +101,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	prm.removeRequest(subscriptionId);
     }
 
+    
     public void removeItemsFromRequest(int subscriptionId,   List<NamedObjectId> parameterIds) {
 	ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
 	if(subscr==null) {
@@ -158,6 +161,37 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	listener.update(subscriptionId, plist);
     }
 
+    public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList) throws InvalidIdentification {
+	List<Parameter> params = checkNames(idList);
+	
+	ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+	for(int i =0; i<idList.size() ; i++) {
+	    Parameter p = params.get(i);
+	    NamedObjectId id = idList.get(i);
+	    lm.put(p, id);
+	}
+	
+	List<ParameterValue> values = prm.getValuesFromCache(params);
+	List<ParameterValueWithId> plist = new ArrayList<ParameterValueWithId>(values.size());
+
+
+	for(ParameterValue pv: values) {
+	    List<NamedObjectId> l = lm.get(pv.getParameter());
+	    if(l==null) {
+		log.warn("Received values for a parameter not requested: "+pv.getParameter());
+		continue;
+	    }
+
+	    for(NamedObjectId id:l) {
+		ParameterValueWithId pvwi = new ParameterValueWithId();
+		pvwi.setParameterValue(pv);
+		pvwi.setId(id);
+		plist.add(pvwi);
+	    }	    
+	}
+	return plist;
+    }
+
     public void switchPrm(ParameterRequestManager newPrm) throws InvalidIdentification {
 	for(int subscriptionId: subscriptions.keySet()) {
 	    List<Parameter> plist = prm.removeRequest(subscriptionId);
@@ -165,4 +199,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	}
 	prm=newPrm;
     }
+
 }
+

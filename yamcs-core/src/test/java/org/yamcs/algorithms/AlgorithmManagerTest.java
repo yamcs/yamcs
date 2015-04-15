@@ -69,11 +69,7 @@ public class AlgorithmManagerTest {
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         
-        try {
-            c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
     

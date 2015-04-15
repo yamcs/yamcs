@@ -31,7 +31,7 @@ public class ParameterTypeProcessor {
      * @return value of the parameter after extraction
      */
     public ParameterValue extract(ParameterType ptype) {
-        ParameterValue pv=new ParameterValue(null,true);
+        ParameterValue pv=new ParameterValue(null);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
         pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);

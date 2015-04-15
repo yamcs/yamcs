@@ -72,6 +72,9 @@ public class Channel {
     private String creator="system";
     private boolean persistent=false;
 
+    private boolean parameterCacheEnabled = false;
+    private boolean parameterCacheAll = false;
+
     static Logger log=LoggerFactory.getLogger(Channel.class.getName());
     static List<ChannelListener> listeners=new CopyOnWriteArrayList<ChannelListener>(); //send notifications for added and removed channels to this
 
@@ -111,7 +114,13 @@ public class Channel {
 			    throw new ConfigurationException("alarm configuration should be a map");
 			}
 			configureAlarms((Map<String, Object>) o);
-		    } else {
+		    } else if("parameterCache".equals(c)) {
+			Object o = config.get(c);
+			if(!(o instanceof Map)) {
+			    throw new ConfigurationException("parameterCache configuration should be a map");
+			}
+			configureParameterCache((Map<String, Object>) o);
+		    }else {
 			log.warn("Ignoring unknown config key '"+c+"'");
 		    }
 		}
@@ -177,11 +186,30 @@ public class Channel {
 	v = alarmConfig.get("server");
 	if(v!=null) {
 	    if(!(v instanceof String)) {
-		throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> check. String expected.");
-		
+		throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> server. String expected.");
+
 	    }
 	    alarmServerEnabled = "enabled".equalsIgnoreCase((String)v);
 	    if(alarmServerEnabled) checkAlarms=true;
+	}
+    }
+
+    private void configureParameterCache(Map<String, Object> cacheConfig) {
+	Object v = cacheConfig.get("enabled");
+	if(v!=null) {
+	    if(!(v instanceof Boolean)) {
+		throw new ConfigurationException("Unknwon value '"+v+"' for parameterCache -> enabled. Boolean expected.");
+	    }
+	    parameterCacheEnabled = (Boolean)v;
+	}
+	
+	v = cacheConfig.get("cacheAll");
+	if(v!=null) {
+	    if(!(v instanceof Boolean)) {
+		throw new ConfigurationException("Unknwon value '"+v+"' for parameterCache -> cacheAll. Boolean expected.");
+	    }
+	    parameterCacheAll = (Boolean)v;
+	    if(parameterCacheAll) parameterCacheEnabled=true;
 	}
     }
 
@@ -220,11 +248,8 @@ public class Channel {
 	    pprov.startAsync();
 	}
 
-	AlarmServer alarmServer = parameterRequestManager.getAlarmServer();
-	if(alarmServer!=null) {
-	    alarmServer.startAsync();
-	}
-
+	parameterRequestManager.start();
+	
 	tmPacketProvider.awaitRunning();
 
 	propagateChannelStateChange();
@@ -449,5 +474,13 @@ public class Channel {
 
     public boolean hasAlarmServer() {
 	return alarmServerEnabled;
+    }
+    
+    public boolean isParameterCacheEnabled () {
+	return parameterCacheEnabled;
+    }
+
+    public boolean cacheAllParameters() {
+	return parameterCacheAll;
     }
 }

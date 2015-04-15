@@ -25,7 +25,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 49L;
+    private static final long  serialVersionUID   = 50L;
     SpaceSystem rootSystem;
     
     public XtceDb(SpaceSystem spaceSystem) {

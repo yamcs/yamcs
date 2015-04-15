@@ -38,7 +38,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
     private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap= new ConcurrentHashMap<Parameter, SubscriptionArray>();
-    
+
     //Maps the request (subscription id) to the consumer
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
 
@@ -58,7 +58,11 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
+    
+    
     AlarmServer alarmServer;
+    SoftwareParameterManager spm;
+    ParameterCache parameterCache;
     
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
@@ -77,6 +81,10 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	    alarmChecker.enableServer(alarmServer);
 	}
 	
+	if(chan.isParameterCacheEnabled()) {
+	    parameterCache = new ParameterCache();		   
+	}
+	cacheAll = chan.cacheAllParameters();
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -86,6 +94,9 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	    log.debug("Adding parameter provider: "+parameterProvider.getClass());
 	    parameterProvider.setParameterListener(this);
 	    parameterProviders.put(parameterProvider.getClass(), parameterProvider);
+	    if(parameterProvider instanceof SoftwareParameterManager) {
+		spm = (SoftwareParameterManager) parameterProvider;
+	    }
 	}
     }
 
@@ -134,7 +145,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	request2ParameterConsumerMap.put(id, tpc);
 	return id;
     }
-    
+
     /**
      * Creates a request with one parameter
      * @param para
@@ -190,7 +201,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	request2ParameterConsumerMap.put(id, tpc);
 
     }
-    
+
     /**
      * Add items to an request id. 
      * @param subscriptionID
@@ -239,9 +250,9 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
 	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ) {
-	    	provider.startProviding(para);
-	    	if(alarmChecker!=null) {
-	    	    alarmChecker.parameterSubscribed(para);
+		provider.startProviding(para);
+		if(alarmChecker!=null) {
+		    alarmChecker.parameterSubscribed(para);
 		}
 	    }
 	}
@@ -333,7 +344,7 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	throw new NoProviderException("No provider found for "+param);
     }
 
-    
+
     private List<ParameterProvider> getProviders(List<Parameter> itemList)  {
 	List<ParameterProvider> providers=new ArrayList<ParameterProvider>(itemList.size());
 	for(int i=0;i<itemList.size();i++) {
@@ -377,8 +388,8 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 
 	//so first we add to the delivery the parameters just received
 	updateDelivery(delivery, params);
-
 	
+
 	//then if the delivery updates some of the parameters required by the derived values
 	//  compute the derived values
 	for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
@@ -387,14 +398,15 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 		updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
 	    }
 	}
-
-
+	
+	
+	
 	//and finally deliver the delivery :)
 	for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
 	    Integer subscriptionId=entry.getKey();
 	    if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
 	    if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
-	    
+
 	    ArrayList<ParameterValue> al=entry.getValue();
 	    ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
 	    if(consumer==null) {
@@ -412,14 +424,14 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
      */
     private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery, Collection<ParameterValue> params) {
 	if(params==null) return;
-	
+
 	for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
 	    ParameterValue pv=it.next();
 	    Parameter pDef=pv.def;
 	    SubscriptionArray cowal = param2RequestMap.get(pDef); 
 	    //now walk through the requests and add this item to their delivery list
 	    if(cowal==null) continue;
-	    
+
 	    for(int s:cowal.getArray()) {
 		ArrayList<ParameterValue> al = delivery.get(s);
 		if(al==null) {
@@ -433,12 +445,12 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	//update the subscribeAll subscriptions
 	for(int id:subscribeAll.getArray()) {
 	    ArrayList<ParameterValue> al=delivery.get(id);
-	    
+
 	    if(al==null){
 		al = new ArrayList<ParameterValue>();
 		delivery.put(id, al);
 	    }
-	    
+
 	    for(ParameterValue pv: params) {
 		al.add(pv);
 	    }
@@ -449,10 +461,21 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	    if(pvlist!=null) {
 		alarmChecker.updateParameters(pvlist);
 	    }
-	    
+
 	    alarmChecker.performAlarmChecking(params);
 	}
+	
+	if(parameterCache!=null) {
+	    parameterCache.update(params);
+	}
+    }
 
+    /**
+     * 
+     * @return the SoftwareParameterManager or null if not configured
+     */
+    public SoftwareParameterManager getSoftwareParameterManager() {
+	return spm;
     }
 
     @SuppressWarnings("unchecked")
@@ -482,4 +505,24 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
     public AlarmServer getAlarmServer() {
 	return alarmServer;
     }
+
+    public boolean hasParameterCache() {
+	return parameterCache!=null;
+    }
+    
+    public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
+	return parameterCache.getValues(plist);
+    }
+
+    public void start() {
+	if(alarmServer!=null) {
+	    alarmServer.startAsync();
+	}
+	if(cacheAll) {
+	    for(ParameterProvider pp:parameterProviders.values()) {
+		pp.startProvidingAll();
+	    }
+	}
+    }
+    
 }
