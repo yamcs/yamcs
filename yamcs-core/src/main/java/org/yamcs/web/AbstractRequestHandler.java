@@ -30,7 +30,7 @@ public class AbstractRequestHandler {
 
 	response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
-	ctx.channel().write(response).addListener(ChannelFutureListener.CLOSE);
+	ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     /**
