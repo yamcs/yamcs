@@ -9,14 +9,27 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ParameterValue;
+import org.yamcs.YConfiguration;
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class SoftwareParameterManagerTest {
+    @BeforeClass
+    static public void setupTime() {
+	TimeEncoding.setUp();
+	YConfiguration.setup();
+	XtceDbFactory.reset();
+    }
+
+    
     @Test
     public void test() throws Exception {
 	SoftwareParameterManager spm = new SoftwareParameterManager("test");
@@ -37,8 +50,11 @@ public class SoftwareParameterManagerTest {
 	NamedObjectId p1id = NamedObjectId.newBuilder().setName(p1.getQualifiedName()).build();
 	NamedObjectId p2id = NamedObjectId.newBuilder().setName(p2.getQualifiedName()).build();
 	
-	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p1id).build();
-	org.yamcs.protobuf.Pvalue.ParameterValue pv2 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p2id).build();
+	Value p1v = ValueHelper.newValue(3);
+	Value p2v = ValueHelper.newValue(2.72);
+	
+	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p1id).setEngValue(p1v).build();
+	org.yamcs.protobuf.Pvalue.ParameterValue pv2 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p2id).setEngValue(p2v).build();
 	
 	List<org.yamcs.protobuf.Pvalue.ParameterValue> pvList = new ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>();
 	pvList.add(pv1);
@@ -46,6 +62,8 @@ public class SoftwareParameterManagerTest {
 	
 	spm.updateParameters(pvList);
 	Collection<ParameterValue> pvs = consumer.received.poll(5,  TimeUnit.SECONDS);
+	assertNotNull(pvs);
+	
 	assertEquals(1, pvs.size());
 	ParameterValue pv = pvs.iterator().next();
 	assertEquals(p1, pv.getParameter());

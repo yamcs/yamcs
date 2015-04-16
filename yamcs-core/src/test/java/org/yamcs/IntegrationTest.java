@@ -205,12 +205,10 @@ public class IntegrationTest extends YarchTestCase {
 	Value v = ValueHelper.newValue(3.14);
 	HttpClient httpClient = new HttpClient();
 	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE));
-	System.out.println("resp: "+resp);
 	
 	Thread.sleep(1000); //the software parameter manager sets the parameter in another thread so it might not be immediately avaialble
 	httpClient = new HttpClient();
 	resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.GET, null);
-	System.out.println("resp: "+resp);
 	ParameterValue pv = (fromJson(resp, SchemaPvalue.ParameterValue.MERGE)).build();
 	assertEquals(v, pv.getEngValue());
     }
