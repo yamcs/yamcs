@@ -1,11 +1,12 @@
 package org.yamcs.api.ws;
 
 import java.net.URI;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -26,13 +27,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Netty-implementation of a Yamcs web socket client
  */
-
 public class WebSocketClient {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
@@ -46,43 +43,13 @@ public class WebSocketClient {
     private AtomicBoolean enableReconnection = new AtomicBoolean(true);
     private AtomicInteger seqId = new AtomicInteger(1);
 
-    // Stores ws subscriptions to be sent to the server once ws-connection is established
-    private BlockingQueue<WebSocketRequest> pendingRequests = new LinkedBlockingQueue<>();
-
-    // Sends outgoing subscriptions to the web socket
-    // private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
     private ConcurrentHashMap<Integer, WebSocketRequest> upstreamRequestBySeqId = new ConcurrentHashMap<>();
 
-    // TODO we should actually wait for the ACK to arrive, before sending the next request
     public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallbackListener callback) {
 	this.uri = yprops.webSocketURI();
 	this.callback = callback;
-	(new Thread(){
-	    public void run(){
-		try {
-		    WebSocketRequest evt;
-		    while ((evt = pendingRequests.take()) != null) {
-			// We now have at least one event to handle
-			Thread.sleep(500); // Wait for more events, before going into synchronized block
-			synchronized (pendingRequests) {
-			    while (pendingRequests.peek() != null
-				    && evt.canMergeWith(pendingRequests.peek())) {
-				WebSocketRequest otherEvt = pendingRequests.poll();
-				evt = evt.mergeWith(otherEvt); // This is to counter bursts.
-			    }
-			}
-
-			// Good, send the merged result
-			doSendRequest(evt);
-		    }
-		} catch (InterruptedException e) {
-		    log.error("OOPS, got interrupted", e);
-		}
-	    }
-	}).start();
     }
 
     /**
@@ -150,14 +117,15 @@ public class WebSocketClient {
 
     /**
      * Adds said event to the queue. As soon as the web socket is established, queue will be
-     * iterated and if possible, similar events will be merged.
+     * iterated.
      */
-    public void sendRequest(WebSocketRequest request) {
-	// sync, because the consumer will try to merge multiple outgoing events of the same type
-	// using multiple operations on the queue.
-	synchronized (pendingRequests) {
-	    pendingRequests.offer(request);
-	}
+    public void sendRequest(final WebSocketRequest request) {
+    	group.execute(new Runnable() {
+	    @Override
+	    public void run() {
+		doSendRequest(request);
+	    }
+	});
     }
 
     /**
@@ -174,7 +142,7 @@ public class WebSocketClient {
 	return upstreamRequestBySeqId.get(seqId);
     }
 
-    void forgetUpstreamRquest(int seqId) {
+    void forgetUpstreamRequest(int seqId) {
 	upstreamRequestBySeqId.remove(seqId);
     }
 
@@ -200,7 +168,6 @@ public class WebSocketClient {
      * @return the Future which is notified when the executor has been terminated.
      */
     public Future<?> shutdown() {
-	// exec.shutdown();
 	return group.shutdownGracefully();
     }
 }
