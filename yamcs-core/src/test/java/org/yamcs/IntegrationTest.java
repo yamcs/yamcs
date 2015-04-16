@@ -23,9 +23,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.api.ws.ParameterSubscribeRequest;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallbackListener;
+import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -92,8 +92,8 @@ public class IntegrationTest extends YarchTestCase {
 	assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
 	NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
 	 
-	ParameterSubscribeRequest prs = new ParameterSubscribeRequest(invalidSubscrList);
-	wsClient.sendRequest(prs);
+	WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
+	wsClient.sendRequest(wsr);
 	
 	NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
 	assertNotNull(invalidId);

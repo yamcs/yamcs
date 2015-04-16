@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -146,19 +147,19 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	    NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
 	    int reqId = exceptionData.getSequenceNumber();
 	    
-	    
 	    WebSocketRequest req = client.getUpstreamRequest(exceptionData.getSequenceNumber());
 
 	    if(req==null) {
 		log.warn("Received an InvalidIdentification exception for a request I did not send (or was already finished) seqNum: {}", reqId);
 		return;
 	    }
-	    if(!(req instanceof ParameterSubscribeRequest)) {
-		log.warn("Received an InvalidIdentification exception for a request that is not ParameterSubscribeRequest, seqNum: {}", reqId);
+	    if(!req.getResource().equals("parameter") || !req.getOperation().equals("subscribe")) {
+		log.warn("Received an InvalidIdentification exception for a request that is not a parameter/subscribe request, seqNum: {}", reqId);
 		return;
 	    }
 
-	    Set<NamedObjectId> requestedIds = ((ParameterSubscribeRequest)req).getRequestedIds();
+	    NamedObjectList requestedIdList = (NamedObjectList) req.getRequestData();
+	    Set<NamedObjectId> requestedIds = new HashSet<>(requestedIdList.getListList());
 	    for (NamedObjectId invalidId : invalidList.getListList()) {
 		// Notify downstream channels
 		callback.onInvalidIdentification(invalidId);
@@ -171,7 +172,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	    if(!requestedIds.isEmpty()) {
 		// And have another go at it
 		NamedObjectList nol = NamedObjectList.newBuilder().addAllList(requestedIds).build();
-		client.sendRequest(new ParameterSubscribeRequest(nol));
+		client.sendRequest(new WebSocketRequest("parameter", "subscribe", nol));
 	    }
 	} else {
 	    // TODO we should throw this up based on seqNr.
