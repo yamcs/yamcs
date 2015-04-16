@@ -54,7 +54,8 @@ public abstract class WebSocketRequest {
         msg.setOperation(getOperation());
 
         Message data = getRequestData();
-        msg.setData(data.toByteString());
+        if (data != null)
+            msg.setData(data.toByteString());
 
         ByteBuf buf = Unpooled.buffer();
         try (ByteBufOutputStream bout = new ByteBufOutputStream(buf)) {
