@@ -19,7 +19,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class SoftwareParameterManagerTest {
     @Test
     public void test() throws Exception {
-	SoftwareParameterManager spm = new SoftwareParameterManager();
+	SoftwareParameterManager spm = new SoftwareParameterManager("test");
 	XtceDb xtceDb = XtceDbFactory.getInstanceByConfig("refmdb");
 	MyParamConsumer consumer = new MyParamConsumer();
 	

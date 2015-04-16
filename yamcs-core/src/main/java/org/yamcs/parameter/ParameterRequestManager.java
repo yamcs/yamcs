@@ -250,7 +250,9 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	if(!param2RequestMap.contains(para)) {
 	    //this parameter is not requested by any other request
 	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ) {
-		provider.startProviding(para);
+		if(!cacheAll) {
+		    provider.startProviding(para);
+		}
 		if(alarmChecker!=null) {
 		    alarmChecker.parameterSubscribed(para);
 		}
@@ -399,8 +401,6 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	    }
 	}
 	
-	
-	
 	//and finally deliver the delivery :)
 	for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
 	    Integer subscriptionId=entry.getKey();
@@ -514,15 +514,19 @@ public class ParameterRequestManager implements ParameterRequestManagerIf {
 	return parameterCache.getValues(plist);
     }
 
+    public ParameterValue getValueFromCache(Parameter param) {
+   	return parameterCache.getValue(param);
+    }
+    
     public void start() {
 	if(alarmServer!=null) {
 	    alarmServer.startAsync();
 	}
+	
 	if(cacheAll) {
 	    for(ParameterProvider pp:parameterProviders.values()) {
 		pp.startProvidingAll();
 	    }
 	}
     }
-    
 }

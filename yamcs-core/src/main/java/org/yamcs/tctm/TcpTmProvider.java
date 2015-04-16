@@ -17,10 +17,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProvider;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.sysparameter.SystemParametersCollector;
-import org.yamcs.sysparameter.SystemParametersProvider;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 

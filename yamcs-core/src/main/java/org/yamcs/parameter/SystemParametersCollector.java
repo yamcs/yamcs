@@ -1,4 +1,4 @@
-package org.yamcs.sysparameter;
+package org.yamcs.parameter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

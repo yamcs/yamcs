@@ -29,6 +29,7 @@ public class ParameterCache {
      * @param parameterList
      */
     public void update(Collection<ParameterValue> pvs) {
+	//System.out.println("ParameterCache ------- updated with "+pvs);
 	ParameterValueList  pvlist = new ParameterValueList(pvs);
 	CacheEntry ce = new CacheEntry(System.currentTimeMillis(), pvlist);
 	for (ParameterValue pv:pvs) {

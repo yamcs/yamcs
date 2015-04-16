@@ -15,9 +15,12 @@ import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
 
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimap;
 
 public class ParameterTypeProcessor {
     ProcessingContext pcontext;
@@ -26,6 +29,17 @@ public class ParameterTypeProcessor {
         this.pcontext=pcontext;
     }
 
+    static Multimap<Class<? extends ParameterType>, Value.Type> allowedAssignments = 
+	    new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, Value.Type>()
+	    	   .putAll(BinaryParameterType.class, Value.Type.BINARY)
+	           .putAll(BooleanParameterType.class, Value.Type.BOOLEAN)
+	    	   .putAll(EnumeratedParameterType.class, Value.Type.STRING)
+	           .putAll(FloatParameterType.class, Value.Type.FLOAT, Value.Type.DOUBLE)
+	           .putAll(IntegerParameterType.class, Value.Type.UINT32, Value.Type.SINT32, Value.Type.SINT64, Value.Type.UINT64)
+	           .putAll(StringParameterType.class, Value.Type.STRING)
+	           .build();
+	    
+    
     /**
      *  Extracts the parameter from the packet.
      * @return value of the parameter after extraction
@@ -203,5 +217,20 @@ public class ParameterTypeProcessor {
         } else {
             pval.setDoubleValue(doubleCalValue);
         }
+    }
+    
+    /**
+     * Checks that a value can be assigned to a parameter
+     * Throws an IllegalArgumentException if not
+     * 
+     * TODO: we should infact assign a new value
+     * @param p
+     * @param gpv
+     */
+    public static void checkEngValueAssignment(Parameter p, Value engValue) {
+	ParameterType ptype = p.getParameterType();
+	if(!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
+	    throw new IllegalArgumentException("Cannot assign "+ptype.getTypeAsString()+" from "+engValue.getType());
+	}
     }
 }

@@ -1,4 +1,4 @@
-package org.yamcs.sysparameter;
+package org.yamcs.parameter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +16,6 @@ import org.yamcs.ParameterValue;
 
 import com.google.common.util.concurrent.AbstractService;
 
-import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;

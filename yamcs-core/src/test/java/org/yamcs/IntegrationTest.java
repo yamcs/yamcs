@@ -2,9 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.*;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
-import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -20,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
@@ -30,9 +28,12 @@ import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -44,7 +45,8 @@ import org.yamcs.yarch.YarchTestCase;
 import com.google.protobuf.MessageLite;
 
 public class IntegrationTest extends YarchTestCase {
-   
+    PacketProvider packetProvider;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
 	setupYamcs();
@@ -56,7 +58,6 @@ public class IntegrationTest extends YarchTestCase {
     }
     
     private static void setupYamcs() throws Exception {
-	System.out.println("in setupYamcs");
 	File dataDir=new File("/tmp/yamcs-IntegrationTest-data");               
 
 	FileUtils.deleteRecursively(dataDir.toPath());
@@ -76,14 +77,14 @@ public class IntegrationTest extends YarchTestCase {
 	YamcsServer.stopHornet();
     }
 
-
+    @Before
+    public void before() {
+	 packetProvider = PacketProvider.instance;
+	 assertNotNull(packetProvider);
+    }
+    
     @Test
-    public void test() throws Exception {
-	PacketProvider packetProvider = PacketProvider.instance;
-	
-	assertNotNull(packetProvider);
-
-	
+    public void testWsParameter() throws Exception {	
 	//subscribe to parameters
 	YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
 	MyWsListener wsListener = new MyWsListener();
@@ -109,10 +110,11 @@ public class IntegrationTest extends YarchTestCase {
 	
 	checkPdata(pdata, packetProvider);
 	
-	
-	
+    }
+    @Test
+    public void testRestParameterGet() throws Exception {	
 	////// gets parameters from cache via REST - first attempt with one invalid parameter
-	
+	NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
 	 HttpClient httpClient = new HttpClient();
 	RestGetParameterRequest req = RestGetParameterRequest.newBuilder()
 		.setFromCache(true).addAllList(invalidSubscrList.getListList()).build();
@@ -129,7 +131,7 @@ public class IntegrationTest extends YarchTestCase {
 		.setFromCache(true).addAllList(validSubscrList.getListList()).build();
 	
 	response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
-	pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
+	ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
 	checkPdata(pdata, packetProvider);
 	
 	/////// gets parameters from via REST - waiting for update - first test the timeout in case no update is coming
@@ -157,15 +159,81 @@ public class IntegrationTest extends YarchTestCase {
 	checkPdata(pdata, packetProvider);
 	
 	
-	
-	//perform a replay
-
-	//retrieve data
-
-	//retrieve index
-
-	//send a TC
     }
+    
+    @Test
+    public void testRestParameterSetInvalidParam() throws Exception {
+	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
+		.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_6"))
+		.setEngValue(ValueHelper.newValue(3.14)).build();
+	ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
+	HttpClient httpClient = new HttpClient();
+	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE));
+	assertTrue(resp.contains("Cannot find a local(software)"));		
+    }
+    
+    @Test
+    public void testRestParameterSetInvalidType() throws Exception {
+	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
+		.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
+		.setEngValue(ValueHelper.newValue("blablab")).build();
+	ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
+	HttpClient httpClient = new HttpClient();
+	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE));
+	assertTrue(resp.contains("Cannot assign"));		
+    }
+
+    @Test
+    public void testRestParameterSet() throws Exception {
+	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
+		.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
+		.setEngValue(ValueHelper.newValue(5)).build();
+	ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
+	HttpClient httpClient = new HttpClient();
+	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE));
+	
+	Thread.sleep(1000); //the software parameter manager sets the parameter in another thread so it might not be immediately avaialble
+	httpClient = new HttpClient();
+	resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara1", HttpMethod.GET, null);
+	ParameterValue pv = (fromJson(resp, SchemaPvalue.ParameterValue.MERGE)).build();
+	assertEquals(pv1.getEngValue(), pv.getEngValue());
+    }
+
+    @Test
+    public void testRestParameterSet2() throws Exception {
+	//test simple set just for the value	
+	Value v = ValueHelper.newValue(3.14);
+	HttpClient httpClient = new HttpClient();
+	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE));
+	System.out.println("resp: "+resp);
+	
+	Thread.sleep(1000); //the software parameter manager sets the parameter in another thread so it might not be immediately avaialble
+	httpClient = new HttpClient();
+	resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.GET, null);
+	System.out.println("resp: "+resp);
+	ParameterValue pv = (fromJson(resp, SchemaPvalue.ParameterValue.MERGE)).build();
+	assertEquals(v, pv.getEngValue());
+    }
+    
+    
+    @Test
+    public void testReplay() throws Exception {
+    }
+    
+    @Test
+    public void testRetrieveDataFromArchive() throws Exception {
+    }
+    
+    @Test
+    public void testRetrieveIndex() throws Exception {
+    }
+
+
+    @Test
+    public void testSendCommand() throws Exception {
+    }
+
+
     private void checkPdata(ParameterData pdata, RefMdbPacketGenerator packetProvider) {
 	assertNotNull(pdata);
 	
@@ -212,23 +280,6 @@ public class IntegrationTest extends YarchTestCase {
 	return msg;
     }
     
-    
-    @Test
-    public void test1() throws Exception {
-	
-	//gets parameters from cache via REST
-	NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
-	RestGetParameterRequest req = RestGetParameterRequest.newBuilder()
-		.setFromCache(true).addAllList(subscrList.getListList()).build();
-	
-		
-	String body = toJson(req, SchemaRest.RestGetParameterRequest.WRITE);
-	System.out.println("body: "+body);
-	HttpClient httpClient = new HttpClient();
-	String result = httpClient.doRequest("http://localhost", HttpMethod.GET, body);
-	System.out.println("result: "+result);
-	
-    }
     
     private NamedObjectList getSubscription(String... pfqname) {
 	NamedObjectList.Builder b = NamedObjectList.newBuilder();

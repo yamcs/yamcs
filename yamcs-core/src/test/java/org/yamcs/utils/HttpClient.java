@@ -68,8 +68,12 @@ public class HttpClient  extends SimpleChannelInboundHandler<HttpObject> {
 	});
 
 	Channel ch = b.connect(host, port).sync().channel();
-
-	ByteBuf content = Unpooled.copiedBuffer(body, CharsetUtil.UTF_8);
+	ByteBuf content = null;
+	if(body!=null) {
+	    content = Unpooled.copiedBuffer(body, CharsetUtil.UTF_8);
+	} else {
+	    content = Unpooled.EMPTY_BUFFER;
+	}
 
 	HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, uri.getRawPath(), content);
 	request.headers().set(HttpHeaders.Names.HOST, host);
