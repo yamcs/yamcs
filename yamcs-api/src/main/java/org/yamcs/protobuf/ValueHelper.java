@@ -28,7 +28,7 @@ public class ValueHelper {
 	 * @param x
 	 * @return
 	 */
-	static public Value newValue(Double x) {
+	static public Value newValue(double x) {
 		return Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(x).build();
 	}
 	
@@ -37,7 +37,7 @@ public class ValueHelper {
 	 * @param x
 	 * @return
 	 */
-	static public Value newValue(Float x) {
+	static public Value newValue(float x) {
 		return Value.newBuilder().setType(Type.FLOAT).setFloatValue(x).build();
 	}
 	
