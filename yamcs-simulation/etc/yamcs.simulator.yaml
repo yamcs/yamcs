@@ -21,7 +21,7 @@ services:
 #    - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
-    - org.yamcs.sysparameter.SystemParametersCollector
+    - org.yamcs.parameter.SystemParametersCollector
     # create a realtime channel
     - class: org.yamcs.ChannelCreatorService
       args: 
