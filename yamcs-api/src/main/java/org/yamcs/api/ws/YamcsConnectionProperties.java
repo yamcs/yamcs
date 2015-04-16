@@ -1,6 +1,9 @@
 package org.yamcs.api.ws;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.yamcs.ConfigurationException;
 
 public class YamcsConnectionProperties {
     private String host;
@@ -20,7 +23,7 @@ public class YamcsConnectionProperties {
         try {
             return new URI("http://" + host + ":" + port + "/" + instance + relativePath);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new ConfigurationException("Invalid URL", e);
         }
     }
 
@@ -28,7 +31,7 @@ public class YamcsConnectionProperties {
         try {
             return new URI("ws://" + host + ":" + port + "/" + instance + "/_websocket");
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new ConfigurationException("Invalid URL", e);
         }
     }
 }
