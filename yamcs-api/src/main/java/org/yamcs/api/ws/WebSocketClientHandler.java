@@ -109,7 +109,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	    WebSocketServerMessage message = WebSocketServerMessage.newBuilder().mergeFrom(new ByteBufInputStream(frame.content())).build();
 	    switch (message.getType()) {
 	    case REPLY:
-		client.forgetUpstreamRquest(message.getReply().getSequenceNumber());
+		client.forgetUpstreamRequest(message.getReply().getSequenceNumber());
 		break;
 	    case EXCEPTION:
 		processExceptionData(message.getException());
@@ -152,14 +152,13 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	    if(req==null) {
 		log.warn("Received an InvalidIdentification exception for a request I did not send (or was already finished) seqNum: {}", reqId);
 		return;
-	    } 
-	    Set<NamedObjectId> requestedIds = null;
+	    }
 	    if(!(req instanceof ParameterSubscribeRequest)) {
 		log.warn("Received an InvalidIdentification exception for a request that is not ParameterSubscribeRequest, seqNum: {}", reqId);
 		return;
 	    }
 
-	    requestedIds = ((ParameterSubscribeRequest)req).getRequestedIds(); 	
+	    Set<NamedObjectId> requestedIds = ((ParameterSubscribeRequest)req).getRequestedIds();
 	    for (NamedObjectId invalidId : invalidList.getListList()) {
 		// Notify downstream channels
 		callback.onInvalidIdentification(invalidId);
@@ -167,10 +166,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	    }
 
 	    // Get rid of the current pending request
-	    client.forgetUpstreamRquest(reqId);
+	    client.forgetUpstreamRequest(reqId);
 	    
 	    if(!requestedIds.isEmpty()) {
-		// 	And have another go at it
+		// And have another go at it
 		NamedObjectList nol = NamedObjectList.newBuilder().addAllList(requestedIds).build();
 		client.sendRequest(new ParameterSubscribeRequest(nol));
 	    }

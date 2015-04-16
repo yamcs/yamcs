@@ -1,4 +1,5 @@
 package org.yamcs.api.ws;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -13,29 +14,31 @@ import com.google.protobuf.Message;
 
 
 /**
- * Tags anything to be sent upstream on an established websocket. Enables extending classes to
- * declare whether they can 'merge' with the 'next' event (events are queued while there is no
- * connection). This type of behaviour would allow the web-socket client to limit the amount of
- * events sent, while keeping everything interleaved.
+ * Tags anything to be sent upstream on an established websocket. Can be extended do add
+ * additional structured data.
  */
-public abstract class WebSocketRequest {
+public class WebSocketRequest {
+
+    private String resource;
+    private String operation;
+
+    public WebSocketRequest(String resource, String operation) {
+        this.resource = resource;
+        this.operation = operation;
+    }
 
     /**
      * @return the type of the resource.
      */
-    public abstract String getResource();
+    public String getResource() {
+        return resource;
+    }
 
     /**
      * @return the operation on the resource
      */
-    public abstract String getOperation();
-
-    public boolean canMergeWith(WebSocketRequest otherEvent) {
-        return false;
-    }
-
-    public WebSocketRequest mergeWith(WebSocketRequest otherEvent) {
-        throw new UnsupportedOperationException();
+    public String getOperation() {
+        return operation;
     }
 
     /**
