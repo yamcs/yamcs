@@ -159,6 +159,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         }
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, buf);
         setContentTypeHeader(httpResponse, targetContentType);
+        setContentLength(httpResponse, buf.readableBytes());
 
         ChannelFuture writeFuture = ctx.writeAndFlush(httpResponse);
 
@@ -206,6 +207,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 generator.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
+                setContentLength(response, buf.readableBytes());
                 // Close the connection as soon as the error message is sent.
                 ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
