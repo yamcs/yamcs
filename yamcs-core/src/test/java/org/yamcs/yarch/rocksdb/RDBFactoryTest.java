@@ -65,7 +65,7 @@ public class RDBFactoryTest {
 	    assertTrue(isOpen(dbs[i]));
 	}
 	//cleanup
-	for(int i=0;i<RDBFactory.maxOpenDbs;i++) {
+	for(int i=0; i<2*RDBFactory.maxOpenDbs; i++) {
 	    File d=new File("/tmp/rdbfactorytest"+i);     
 	    FileUtils.deleteRecursively(d.toPath());
 	}
