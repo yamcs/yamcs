@@ -4304,34 +4304,44 @@ public final class Commanding {
   public interface CommandHistoryAttributeOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required string name = 1;
+    // optional string name = 1;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     boolean hasName();
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     java.lang.String getName();
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // required .yamcs.Value value = 2;
+    // optional .yamcs.Value value = 2;
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     boolean hasValue();
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     org.yamcs.protobuf.Yamcs.Value getValue();
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder();
+
+    // optional int64 time = 3;
+    /**
+     * <code>optional int64 time = 3;</code>
+     */
+    boolean hasTime();
+    /**
+     * <code>optional int64 time = 3;</code>
+     */
+    long getTime();
   }
   /**
    * Protobuf type {@code commanding.CommandHistoryAttribute}
@@ -4402,6 +4412,11 @@ public final class Commanding {
               bitField0_ |= 0x00000002;
               break;
             }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              time_ = input.readInt64();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4442,17 +4457,17 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // required string name = 1;
+    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public java.lang.String getName() {
       java.lang.Object ref = name_;
@@ -4469,7 +4484,7 @@ public final class Commanding {
       }
     }
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public com.google.protobuf.ByteString
         getNameBytes() {
@@ -4485,48 +4500,59 @@ public final class Commanding {
       }
     }
 
-    // required .yamcs.Value value = 2;
+    // optional .yamcs.Value value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Yamcs.Value value_;
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     public boolean hasValue() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     public org.yamcs.protobuf.Yamcs.Value getValue() {
       return value_;
     }
     /**
-     * <code>required .yamcs.Value value = 2;</code>
+     * <code>optional .yamcs.Value value = 2;</code>
      */
     public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder() {
       return value_;
     }
 
+    // optional int64 time = 3;
+    public static final int TIME_FIELD_NUMBER = 3;
+    private long time_;
+    /**
+     * <code>optional int64 time = 3;</code>
+     */
+    public boolean hasTime() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int64 time = 3;</code>
+     */
+    public long getTime() {
+      return time_;
+    }
+
     private void initFields() {
       name_ = "";
       value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
+      time_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasValue()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!getValue().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
+      if (hasValue()) {
+        if (!getValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -4540,6 +4566,9 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeMessage(2, value_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, time_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -4557,6 +4586,10 @@ public final class Commanding {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, value_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, time_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4683,6 +4716,8 @@ public final class Commanding {
           valueBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
+        time_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -4723,6 +4758,10 @@ public final class Commanding {
         } else {
           result.value_ = valueBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.time_ = time_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4747,22 +4786,19 @@ public final class Commanding {
         if (other.hasValue()) {
           mergeValue(other.getValue());
         }
+        if (other.hasTime()) {
+          setTime(other.getTime());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasName()) {
-          
-          return false;
-        }
-        if (!hasValue()) {
-          
-          return false;
-        }
-        if (!getValue().isInitialized()) {
-          
-          return false;
+        if (hasValue()) {
+          if (!getValue().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -4786,16 +4822,16 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // required string name = 1;
+      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public java.lang.String getName() {
         java.lang.Object ref = name_;
@@ -4809,7 +4845,7 @@ public final class Commanding {
         }
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public com.google.protobuf.ByteString
           getNameBytes() {
@@ -4825,7 +4861,7 @@ public final class Commanding {
         }
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder setName(
           java.lang.String value) {
@@ -4838,7 +4874,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder clearName() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -4847,7 +4883,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
@@ -4860,18 +4896,18 @@ public final class Commanding {
         return this;
       }
 
-      // required .yamcs.Value value = 2;
+      // optional .yamcs.Value value = 2;
       private org.yamcs.protobuf.Yamcs.Value value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public boolean hasValue() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public org.yamcs.protobuf.Yamcs.Value getValue() {
         if (valueBuilder_ == null) {
@@ -4881,7 +4917,7 @@ public final class Commanding {
         }
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public Builder setValue(org.yamcs.protobuf.Yamcs.Value value) {
         if (valueBuilder_ == null) {
@@ -4897,7 +4933,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public Builder setValue(
           org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
@@ -4911,7 +4947,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public Builder mergeValue(org.yamcs.protobuf.Yamcs.Value value) {
         if (valueBuilder_ == null) {
@@ -4930,7 +4966,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public Builder clearValue() {
         if (valueBuilder_ == null) {
@@ -4943,7 +4979,7 @@ public final class Commanding {
         return this;
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public org.yamcs.protobuf.Yamcs.Value.Builder getValueBuilder() {
         bitField0_ |= 0x00000002;
@@ -4951,7 +4987,7 @@ public final class Commanding {
         return getValueFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder() {
         if (valueBuilder_ != null) {
@@ -4961,7 +4997,7 @@ public final class Commanding {
         }
       }
       /**
-       * <code>required .yamcs.Value value = 2;</code>
+       * <code>optional .yamcs.Value value = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
@@ -4975,6 +5011,39 @@ public final class Commanding {
           value_ = null;
         }
         return valueBuilder_;
+      }
+
+      // optional int64 time = 3;
+      private long time_ ;
+      /**
+       * <code>optional int64 time = 3;</code>
+       */
+      public boolean hasTime() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int64 time = 3;</code>
+       */
+      public long getTime() {
+        return time_;
+      }
+      /**
+       * <code>optional int64 time = 3;</code>
+       */
+      public Builder setTime(long value) {
+        bitField0_ |= 0x00000004;
+        time_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 time = 3;</code>
+       */
+      public Builder clearTime() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        time_ = 0L;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:commanding.CommandHistoryAttribute)
@@ -6050,19 +6119,19 @@ public final class Commanding {
       "\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tqueueIn" +
       "fo\030\001 \001(\0132\034.commanding.CommandQueueInfo\0221" +
       "\n\nqueueEntry\030\002 \001(\0132\035.commanding.CommandQ" +
-      "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"D\n\027Com" +
-      "mandHistoryAttribute\022\014\n\004name\030\001 \002(\t\022\033\n\005va" +
-      "lue\030\002 \002(\0132\014.yamcs.Value\"r\n\023CommandHistor" +
-      "yEntry\022(\n\tcommandId\030\001 \002(\0132\025.commanding.C" +
-      "ommandId\0221\n\004attr\030\003 \003(\0132#.commanding.Comm" +
-      "andHistoryAttribute*4\n\nQueueState\022\013\n\007BLO",
-      "CKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001\n\023Co" +
-      "mmandQueueControl\022:\n\rSetQueueState\022\034.com" +
-      "manding.CommandQueueInfo\032\013.yamcs.Void\022;\n" +
-      "\013SendCommand\022\037.commanding.CommandQueueRe" +
-      "quest\032\013.yamcs.Void\022;\n\rRejectCommand\022\035.co" +
-      "mmanding.CommandQueueEntry\032\013.yamcs.VoidB" +
-      "\024\n\022org.yamcs.protobuf"
+      "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"R\n\027Com" +
+      "mandHistoryAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005va" +
+      "lue\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n" +
+      "\023CommandHistoryEntry\022(\n\tcommandId\030\001 \002(\0132" +
+      "\025.commanding.CommandId\0221\n\004attr\030\003 \003(\0132#.c" +
+      "ommanding.CommandHistoryAttribute*4\n\nQue",
+      "ueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007EN" +
+      "ABLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQu" +
+      "eueState\022\034.commanding.CommandQueueInfo\032\013" +
+      ".yamcs.Void\022;\n\013SendCommand\022\037.commanding." +
+      "CommandQueueRequest\032\013.yamcs.Void\022;\n\rReje" +
+      "ctCommand\022\035.commanding.CommandQueueEntry" +
+      "\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6098,7 +6167,7 @@ public final class Commanding {
           internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandHistoryAttribute_descriptor,
-              new java.lang.String[] { "Name", "Value", });
+              new java.lang.String[] { "Name", "Value", "Time", });
           internal_static_commanding_CommandHistoryEntry_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new

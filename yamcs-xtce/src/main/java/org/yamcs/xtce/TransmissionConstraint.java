@@ -1,7 +1,9 @@
 package org.yamcs.xtce;
 
-public class TransmissionConstraint {
-    
+import java.io.Serializable;
+
+public class TransmissionConstraint implements Serializable {
+    private static final long serialVersionUID = 1L;
     /**
      * XTCE: A specialised form of MatchCriteria for transmission constraint that may be suspendable or time out.
      * 

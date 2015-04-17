@@ -103,7 +103,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 		if(!cqr.hasQueueEntry()) throw new YamcsException("rejectCommand requires a queueEntry");
 		CommandQueueEntry cqe=cqr.getQueueEntry();
 		CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getChannelName());
-		cqm.rejectCommand(cqe.getCmdId());
+		cqm.rejectCommand(cqe.getCmdId(), "username");
 		queueControlServer.sendReply(replyto, "OK", null);
 	    } else  {
 		throw new YamcsException("Unknown request '"+req+"'");

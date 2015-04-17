@@ -579,6 +579,8 @@ public final class SchemaCommanding
                 if(message.hasValue())
                     output.writeObject(2, message.getValue(), org.yamcs.protobuf.SchemaYamcs.Value.WRITE, false);
 
+                if(message.hasTime())
+                    output.writeInt64(3, message.getTime(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandHistoryAttribute message)
             {
@@ -625,6 +627,9 @@ public final class SchemaCommanding
                             builder.setValue(input.mergeObject(org.yamcs.protobuf.Yamcs.Value.newBuilder(), org.yamcs.protobuf.SchemaYamcs.Value.MERGE));
 
                             break;
+                        case 3:
+                            builder.setTime(input.readInt64());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -667,6 +672,7 @@ public final class SchemaCommanding
             {
                 case 1: return "name";
                 case 2: return "value";
+                case 3: return "time";
                 default: return null;
             }
         }
@@ -680,6 +686,7 @@ public final class SchemaCommanding
         {
             fieldMap.put("name", 1);
             fieldMap.put("value", 2);
+            fieldMap.put("time", 3);
         }
     }
 

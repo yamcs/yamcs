@@ -83,7 +83,8 @@ public class WebSocketServerHandler {
 		log.debug("received websocket frame {}", frame);
 		// Check for closing frame
 		if (frame instanceof CloseWebSocketFrame) {
-		    this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame);
+		    channelClient.quit();
+		    this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
 		    return;
 		} else if (frame instanceof PingWebSocketFrame) {
 		    ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));

@@ -86,9 +86,6 @@ public class Channel {
     @GuardedBy("this")
     HashSet<ChannelClient> connectedClients= new HashSet<ChannelClient>();
 
-
-
-
     public Channel(String yamcsInstance, String name, String type, String creator) throws ChannelException {
 	if((name==null) || "".equals(name)) {
 	    throw new ChannelException("The channel name can not be empty");
@@ -242,7 +239,9 @@ public class Channel {
 	tmPacketProvider.startAsync();
 	if(commandReleaser!=null) {
 	    commandReleaser.startAsync();
+	    commandReleaser.awaitRunning();
 	    commandHistoryRequestManager.startAsync();
+	    
 	}
 	for(ParameterProvider pprov: parameterProviders) {
 	    pprov.startAsync();

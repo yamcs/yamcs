@@ -43,8 +43,9 @@ public class YarchTcCommandReleaser extends AbstractService implements CommandRe
 	if(stream==null) {
 	    ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
 	    notifyFailed(e);
+	} else {
+	    notifyStarted();
 	}
-	notifyStarted();
     }
 
 

@@ -36,7 +36,9 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         org.yamcs.Channel yamcsChannel = org.yamcs.Channel.getInstance(yamcsInstance, "realtime");
         if (!yamcsChannel.hasCommanding()) {
-            throw new BadRequestException("Commanding not activated for this channel");
+            BadRequestException e = new BadRequestException("Commanding not activated for this channel");
+            log.warn("Throwing bad request: {}", e.getMessage());
+            throw e;
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
             if ("validate".equals(qsDecoder.path())) {
@@ -48,6 +50,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 RestSendCommandResponse response = sendCommand(request, yamcsChannel);
                 writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSendCommandResponse.WRITE);
             } else {
+        	log.warn("Invalid path called: '{}'", qsDecoder.path());
                 sendError(ctx, NOT_FOUND);
             }
         }

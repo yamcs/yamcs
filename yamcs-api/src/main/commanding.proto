@@ -53,8 +53,9 @@ service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
 /********************* Command History ***********************/
 
 message CommandHistoryAttribute {
-    required string name = 1;
-    required yamcs.Value value = 2;
+    optional string name = 1;
+    optional yamcs.Value value = 2;
+    optional int64 time =3;
 }
 
 message CommandHistoryEntry {

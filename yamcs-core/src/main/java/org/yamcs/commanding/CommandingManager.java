@@ -54,6 +54,7 @@ public class CommandingManager {
 
 	pc.setBinary(b);
 	pc.setUsername(username);
+	pc.setMetaCommand(mc);
 
 	return pc;
     }

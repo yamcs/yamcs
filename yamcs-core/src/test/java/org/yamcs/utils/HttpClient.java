@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class HttpClient  extends SimpleChannelInboundHandler<HttpObject> {
+public class HttpClient {
     URI uri;
     Exception exception;
     StringBuilder result = new StringBuilder();
@@ -63,7 +63,7 @@ public class HttpClient  extends SimpleChannelInboundHandler<HttpObject> {
 		ChannelPipeline p = ch.pipeline();
 		p.addLast(new HttpClientCodec());
 		p.addLast(new HttpContentDecompressor());
-		p.addLast(HttpClient.this);
+		p.addLast(new MyChannelHandler());
 	    }
 	});
 
@@ -83,47 +83,48 @@ public class HttpClient  extends SimpleChannelInboundHandler<HttpObject> {
 	ch.writeAndFlush(request).await(1, TimeUnit.SECONDS);
 
 	ResultFuture rf = new ResultFuture(ch.closeFuture());
-	
+
 	return rf;
     }
-    
-    
+
+
     public String doRequest(String url, HttpMethod httpMethod, String body) throws Exception {
 	Future<String> f = doAsyncRequest(url, httpMethod, body);
 	return f.get(5, TimeUnit.SECONDS);
     }
 
 
-    @Override
-    public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-	if (msg instanceof HttpResponse) {
-	    // HttpResponse response = (HttpResponse) msg;
-	}
-	if (msg instanceof HttpContent) {
-	    HttpContent content = (HttpContent) msg;
-	    result.append(content.content().toString(CharsetUtil.UTF_8));
+    class MyChannelHandler extends SimpleChannelInboundHandler<HttpObject> { 
+	@Override
+	public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
+	    if (msg instanceof HttpResponse) {
+		// HttpResponse response = (HttpResponse) msg;
+	    }
+	    if (msg instanceof HttpContent) {
+		HttpContent content = (HttpContent) msg;
+		result.append(content.content().toString(CharsetUtil.UTF_8));
 
-	    if (content instanceof LastHttpContent) {
-		ctx.close();
+		if (content instanceof LastHttpContent) {
+		    ctx.close();
+		}
 	    }
 	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+	    if(cause instanceof Exception) {
+		exception = (Exception)cause;
+	    } else {
+		exception = new RuntimeException(cause);
+	    }
+	    cause.printStackTrace();
+	    ctx.close();
+	}
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-	if(cause instanceof Exception) {
-	    exception = (Exception)cause;
-	} else {
-	    exception = new RuntimeException(cause);
-	}
-	cause.printStackTrace();
-	ctx.close();
-    }
-    
-    
     class ResultFuture implements Future<String> {
 	ChannelFuture closeFuture;
-	
+
 	public ResultFuture(ChannelFuture closeFuture) {
 	    this.closeFuture = closeFuture;
 	}

@@ -23,7 +23,6 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtceproc.ComparisonProcessor;
 
@@ -116,7 +115,7 @@ public class CommandQueueManager implements ParameterConsumer {
     /**
      * Called from the CommandingImpl to add a command to the queue
      * First the command is added to the command history
-     * Depending on the status of the queue, the command is rejected by setting the FSC=NACK in the command history 
+     * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history 
      *  added to the queue or directly sent using the uplinker
      * 
      * @param pc
@@ -126,7 +125,7 @@ public class CommandQueueManager implements ParameterConsumer {
 
 	CommandQueue q=getQueue(pc);
 	if(q.state==QueueState.DISABLED) {
-	    nackCommand(q, pc, false);
+	    failedCommand(q, pc, "Commanding Queue disabled", false);
 	} else if(q.state==QueueState.BLOCKED) {
 	    q.commands.add(pc);
 	    notifyAdded(q, pc);
@@ -172,7 +171,7 @@ public class CommandQueueManager implements ParameterConsumer {
 	if(status==TCStatus.OK) {
 	    releaseCommand(q, pc, true, false);
 	} else if(status == TCStatus.TIMED_OUT) {
-	    nackCommand(q, pc, true);    
+	    failedCommand(q, pc, "Transmission constraints check failed",true);    
 	}
     }
 
@@ -195,10 +194,9 @@ public class CommandQueueManager implements ParameterConsumer {
      * @param pc the prepared command for which the negative ack is sent
      * @param notify notify or not the monitoring clients.
      */
-    private void nackCommand(CommandQueue cq, PreparedCommand pc, boolean notify) {
+    private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
 	try {
-	    commandHistoryListener.updateStringKey(pc.getCommandId(), "Acknowledge_FSC_Status","NACK: Queue disabled");
-	    commandHistoryListener.updateTimeKey(pc.getCommandId(), "Acknowledge_FSC_Time", TimeEncoding.currentInstant());
+	    commandHistoryListener.updateStringKey(pc.getCommandId(), CommandHistory.CommandFailed_KEY, reason);
 	} catch (InvalidCommandId e1) {
 	    log.warn("got invalid commandId when nacking command "+pc.getCommandId());
 	}
@@ -224,6 +222,7 @@ public class CommandQueueManager implements ParameterConsumer {
 				return;
 			}*/
 	}
+	System.out.println("releasing command: "+pc.getCmdName());
 	commandReleaser.releaseCommand(pc);
 	//Notify the monitoring clients
 	if(notify) {
@@ -268,7 +267,7 @@ public class CommandQueueManager implements ParameterConsumer {
      * @throws CommandQueueException 
      * @throws InsufficientPrivileges 
      */
-    public synchronized PreparedCommand rejectCommand(CommandId commandId) {
+    public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
 	log.info("called to remove command: "+commandId);
 	PreparedCommand pc=null;
 	CommandQueue queue=null;
@@ -282,7 +281,7 @@ public class CommandQueueManager implements ParameterConsumer {
 	    }
 	}
 	if(pc!=null) {
-	    nackCommand(queue, pc, true);
+	    failedCommand(queue, pc, "Commmand rejected by "+username, true);
 	    queue.commands.remove(pc);
 	} else {
 	    log.warn("command not found in any queue");
@@ -346,7 +345,7 @@ public class CommandQueueManager implements ParameterConsumer {
 	}
 	if(queue.state==QueueState.DISABLED) {
 	    for(PreparedCommand pc:queue.commands) {
-		nackCommand(queue, pc,true);
+		failedCommand(queue, pc, "Commanding Queue disabled", true);
 	    }
 	    queue.commands.clear(); 
 	}

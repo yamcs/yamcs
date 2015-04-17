@@ -2,7 +2,6 @@ package org.yamcs.api;
 
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

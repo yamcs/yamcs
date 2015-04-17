@@ -41,7 +41,7 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                 } else if(PARAMETER_PATH.equals(path[0])) {
                     parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
                 } else {
-                    log.warn("Unknown request received {}", path[0]);
+                    log.warn("Unknown request received: '{}'", path[0]);
                     sendError(ctx, HttpResponseStatus.NOT_FOUND);
                 }
             } catch (InternalServerErrorException e) {
