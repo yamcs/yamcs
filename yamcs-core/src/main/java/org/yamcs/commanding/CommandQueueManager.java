@@ -222,7 +222,6 @@ public class CommandQueueManager implements ParameterConsumer {
 				return;
 			}*/
 	}
-	System.out.println("releasing command: "+pc.getCmdName());
 	commandReleaser.releaseCommand(pc);
 	//Notify the monitoring clients
 	if(notify) {
