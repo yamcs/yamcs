@@ -1,0 +1,19 @@
+The following curl requests query the Yamcs Archive REST API for parameters.
+They request the result to be provided in the CSV format.
+
+
+=====
+Request specifying parameters in body request:
+
+curl -H "Accept:text/csv" -XGET http://localhost:8090/simulator/api/archive -d '{"start":0,"stop":2000000000000, "parameterRequest": {  "nameFilter" : {    "name": "SIMULATOR_BatteryTemperature1",   "namespace": "MDB:OPS Name"  },  "nameFilter" : {    "name":"SIMULATOR_BatteryCapacity1",    "namespace": "MDB:OPS Name"  }}}'
+
+
+=====
+Requests using a profile:
+
+curl -H "Accept:text/csv" -XGET http://localhost:8090/simulator/api/archive/?profile=systems -d '{"start":0,"stop":2000000000000, "parameterRequest": {}}'
+
+curl -H "Accept:text/csv" -XGET http://localhost:8090/simulator/api/archive/?profile=propulsion -d '{"start":0,"stop":2000000000000, "parameterRequest": {}}'
+
+
+
