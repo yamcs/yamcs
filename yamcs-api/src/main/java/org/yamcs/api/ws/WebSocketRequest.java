@@ -21,10 +21,17 @@ public class WebSocketRequest {
 
     private String resource;
     private String operation;
+    private Message requestData;
 
     public WebSocketRequest(String resource, String operation) {
         this.resource = resource;
         this.operation = operation;
+    }
+
+    public WebSocketRequest(String resource, String operation, Message requestData) {
+        this.resource = resource;
+        this.operation = operation;
+        this.requestData = requestData;
     }
 
     /**
@@ -42,11 +49,10 @@ public class WebSocketRequest {
     }
 
     /**
-     * Specify the proto message that dictates how the request data will be serialized. By default
-     * this returns null, meaning no request data will be added.
+     * @return the proto message that dictates how the request data (if any) will be serialized
      */
     public Message getRequestData() {
-        return null;
+        return requestData;
     }
 
     WebSocketFrame toWebSocketFrame(int seqId) {
