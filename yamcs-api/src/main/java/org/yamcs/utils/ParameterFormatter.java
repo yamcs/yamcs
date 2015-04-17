@@ -2,6 +2,8 @@ package org.yamcs.utils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -24,6 +27,7 @@ public class ParameterFormatter {
     protected BufferedWriter writer;
     protected boolean printTime=true;
     protected boolean printRaw=false;
+    protected boolean printMonitoring=false;
     protected boolean printUnique=false;
     protected boolean keepValues=false; //if set to true print the latest known value of a parameter even for parameters not retrieved in a packet
     protected boolean allParametersPresent = false; // true = print only those lines that contain all parameters' values
@@ -38,6 +42,7 @@ public class ParameterFormatter {
     protected boolean first=true;
     static char DEFAULT_COLUMN_SEPARATOR = '\t';
     CsvWriter csvWriter;
+    char columnSeparator = DEFAULT_COLUMN_SEPARATOR;
     
     public ParameterFormatter(BufferedWriter writer, Collection<NamedObjectId> paramList) {
         this(writer, paramList, DEFAULT_COLUMN_SEPARATOR);
@@ -48,11 +53,26 @@ public class ParameterFormatter {
         for(NamedObjectId id:paramList){
             subscribedParameters.put(id,null);
         }
-        csvWriter = new CsvWriter(writer, columnSeparator);
+        this.columnSeparator = columnSeparator;
+        if(writer != null)
+            csvWriter = new CsvWriter(writer, this.columnSeparator);
+    }
+
+    public void updateWriter(OutputStream outputStream, Charset charset)
+    {
+        if(csvWriter != null)
+        {
+            csvWriter.close();
+        }
+        csvWriter = new CsvWriter(outputStream, columnSeparator, charset);
     }
 
     public void setPrintRaw(boolean printRaw) {
         this.printRaw = printRaw;
+    }
+
+    public void setPrintMonitoring(boolean printMonitoring) {
+        this.printMonitoring = printMonitoring;
     }
 
     public void setPrintTime(boolean printTime) {
@@ -88,6 +108,7 @@ public class ParameterFormatter {
         for(NamedObjectId noid:subscribedParameters.keySet()) {
             h.add(noid.getName());
             if(printRaw) h.add(noid.getName() + "_RAW");
+            if(printMonitoring) h.add(noid.getName() + "_MONITORING");
         }
         csvWriter.writeRecord(h.toArray(new String[0]));
     }
@@ -148,6 +169,15 @@ public class ParameterFormatter {
                         l.add("");
                     }
                 }
+                if(printMonitoring) {
+                    Pvalue.MonitoringResult mr=pv.getMonitoringResult();
+                    if(mr!=null) {
+                        sb.append(mr.name());
+                        l.add(mr.name());
+                    } else {
+                        l.add("");
+                    }
+                }
             } else {
                 if (allParametersPresent) {
                     skip = true;
@@ -168,6 +198,7 @@ public class ParameterFormatter {
                     l.add(0, TimeEncoding.toString(lastLineInstant));
                 }
                 csvWriter.writeRecord(l.toArray(new String[0]));
+                csvWriter.flush();
                 previousLine=line;
                 linesSaved++;
             } else {
@@ -177,9 +208,10 @@ public class ParameterFormatter {
         unsavedLineCount = 0;
     }
 
+
     public void close() throws IOException {
        writeParameters();//write the remaining parameters
-       writer.close();
+       csvWriter.close();
     }
 
     public int getLinesSaved() {
