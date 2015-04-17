@@ -16,15 +16,15 @@ import com.google.common.util.concurrent.Service;
  *
  */
 public interface CommandReleaser extends Service {
-	/**
-	 * release a command. 
-	 * @param preparedCommand
-	 */
-	void releaseCommand(PreparedCommand preparedCommand);
-	
-	/**
-	 * the command releaser has to add the command to the history when it is released. 
-	 * @param commandHistory
-	 */
-	void setCommandHistory(CommandHistory commandHistory);
+    /**
+     * release a command. 
+     * @param preparedCommand
+     */
+    void releaseCommand(PreparedCommand preparedCommand);
+
+    /**
+     * the command releaser has to add the command to the history when it is released. 
+     * @param commandHistory
+     */
+    void setCommandHistory(CommandHistory commandHistory);
 }

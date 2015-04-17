@@ -115,9 +115,8 @@ public class IntegrationTest extends YarchTestCase {
     public void testRestParameterGet() throws Exception {	
 	////// gets parameters from cache via REST - first attempt with one invalid parameter
 	NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
-	 HttpClient httpClient = new HttpClient();
-	RestGetParameterRequest req = RestGetParameterRequest.newBuilder()
-		.setFromCache(true).addAllList(invalidSubscrList.getListList()).build();
+	HttpClient httpClient = new HttpClient();
+	RestGetParameterRequest req = RestGetParameterRequest.newBuilder().setFromCache(true).addAllList(invalidSubscrList.getListList()).build();
 	
 	String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
 	assertTrue(response.contains("Invalid parameters"));
@@ -215,6 +214,32 @@ public class IntegrationTest extends YarchTestCase {
     
     
     @Test
+    public void testSendCommandNoTransmissionConstraint() throws Exception {
+	//first subscribe to command history
+	YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
+	MyWsListener wsListener = new MyWsListener();
+	WebSocketClient wsClient = new WebSocketClient(ycp, wsListener);
+	wsClient.connect();
+	assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
+	
+	
+	HttpClient httpClient = new HttpClient();
+	String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/command/", HttpMethod.GET, null);
+	 
+    }
+    
+    @Test
+    public void testSendCommandFailedTransmissionConstraint() throws Exception {
+	
+    }
+
+    @Test
+    public void testSendCommandSucceedTransmissionConstraint() throws Exception {
+	
+    }
+
+    
+    @Test
     public void testReplay() throws Exception {
     }
     
@@ -227,9 +252,7 @@ public class IntegrationTest extends YarchTestCase {
     }
 
 
-    @Test
-    public void testSendCommand() throws Exception {
-    }
+   
 
 
     private void checkPdata(ParameterData pdata, RefMdbPacketGenerator packetProvider) {
@@ -292,6 +315,7 @@ public class IntegrationTest extends YarchTestCase {
 	Semaphore onConnect = new Semaphore(0);
 	LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<NamedObjectId>();
 	LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<ParameterData>();
+	LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
 	
 	@Override
 	public void onConnect() {
@@ -302,7 +326,6 @@ public class IntegrationTest extends YarchTestCase {
 	@Override
 	public void onDisconnect() {
 	    // TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -317,7 +340,7 @@ public class IntegrationTest extends YarchTestCase {
 
 	@Override
 	public void onCommandHistoryData(CommandHistoryEntry cmdhistData) {
-	    System.out.println("onCommandHistoryData");
+	    cmdHistoryDataList.add(cmdhistData);
 	}
     }
     

@@ -19,43 +19,43 @@ public class YarchTcCommandReleaser extends AbstractService implements CommandRe
     Stream stream;
     String streamName;
     String yamcsInstance; 
-    
+
     volatile long sentTcCount;
-    
+
     public YarchTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
-		this.yamcsInstance = yamcsInstance;
-		if(!config.containsKey("stream")) {
-			throw new ConfigurationException("Please specify the stream in the config (args)");
-		}
-		this.streamName = config.get("stream");
+	this.yamcsInstance = yamcsInstance;
+	if(!config.containsKey("stream")) {
+	    throw new ConfigurationException("Please specify the stream in the config (args)");
+	}
+	this.streamName = config.get("stream");
     }
 
-	@Override
-	public void releaseCommand(PreparedCommand pc) {
-		stream.emitTuple(pc.toTuple());
-        sentTcCount++;
-	}
-	
     @Override
-	protected void doStart() {
-    	YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
-    	stream = ydb.getStream(streamName);
-    	if(stream==null) {
-    		ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
-    		notifyFailed(e);
-    	}
-    	notifyStarted();
+    public void releaseCommand(PreparedCommand pc) {
+	stream.emitTuple(pc.toTuple());
+	sentTcCount++;
+    }
+
+    @Override
+    protected void doStart() {
+	YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+	stream = ydb.getStream(streamName);
+	if(stream==null) {
+	    ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
+	    notifyFailed(e);
 	}
-    
+	notifyStarted();
+    }
+
 
     @Override
     public void setCommandHistory(CommandHistory commandHistoryListener) {
-        
+
     }
 
     @Override
     protected void doStop() {
-        notifyStopped();
+	notifyStopped();
     }
 
 

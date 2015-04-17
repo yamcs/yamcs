@@ -52,6 +52,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static String SHEET_LIMITS="Limits"; // Deprecated. Use alarms
     protected final static String SHEET_ALARMS="Alarms";
     protected final static String SHEET_COMMANDS="Commands";
+    protected final static String SHEET_COMMANDOPTIONS="CommandOptions";
 
     //columns in the parameters sheet (including local parameters)
     final static int IDX_PARAM_OPSNAME=0;
@@ -65,7 +66,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     final static int IDX_PARAM_LOWCRITICALLIMIT=8;
     final static int IDX_PARAM_HIGHCRITICALLIMIT=9;
 
- 
+
     //columns in the containers sheet
     final static int IDX_CONT_NAME=0;
     final static int IDX_CONT_PARENT=1;
@@ -112,7 +113,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_PP_GROUP=1;
     protected final static int IDX_PP_ALIAS=2;
 
-    //column in the command sheet
+    //columns in the command sheet
     protected final static int IDX_CMD_NAME = 0;
     protected final static int IDX_CMD_PARENT = 1;
     protected final static int IDX_CMD_ARG_ASSIGNMENT = 2;
@@ -129,8 +130,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMD_RANGEHIGH = 13;
     protected final static int IDX_CMD_DESCRIPTION = 14;
 
+    
+    //columns in the command options sheet
+    protected final static int IDX_CMDOPT_NAME = 0;
+    protected final static int IDX_CMDOPT_TXCONST = 1;
+    protected final static int IDX_CMDOPT_TXCONST_TIMEOUT = 2;
+    
+    
+    
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="2.1";
+    final static String FORMAT_VERSION="2.2";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{ "1.6", "1.7", "2.0", FORMAT_VERSION };
 
@@ -199,6 +208,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	loadAlgorithmsSheet(false);
 	loadAlarmsSheet(false);
 	loadCommandSheet(false);
+	loadCommandOptionsSheet(false);
     }
 
     @Override
@@ -967,7 +977,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			    throw new SpreadsheetLoadException(ctx, "Little endian not supported for parameter "+param);
 			}
 		    }
-		  
+
 		    // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
 		    if (absoluteoffset == -1) {
 			se = new ParameterEntry(counter, container, relpos, ReferenceLocationType.previousEntry, param);
@@ -1067,9 +1077,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
 		continue;
 	    }
-	    // at this point, cells contains the data (name, path, ...) of either
-	    //		a) a sub-container (inherits from another packet)
-	    //		b) an aggregate container (which will be used as if it were a measurement, by other (sub)containers)
+	  
 	    String name = cells[IDX_CMD_NAME].getContents();
 	    String parent=null;
 	    String argAssignment=null;
@@ -1206,6 +1214,58 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    container.setAliasSet(xas);
 
 	    spaceSystem.addMetaCommand(cmd);
+	}
+    }
+
+    
+
+    protected void loadCommandOptionsSheet(boolean required) {
+	Sheet sheet = switchToSheet(SHEET_COMMANDOPTIONS, required);
+	if(sheet==null) return;
+
+
+	for (int i = 1; i < sheet.getRows(); i++) {
+	    // search for a new command definition, starting from row i 
+	    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
+	    Cell[] cells = jumpToRow(sheet, i);
+	    if (cells == null || cells.length<1) {
+		log.debug("Ignoring line {} because it's empty", ctx.row);
+		continue;
+	    }
+	    if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+		continue;
+	    }
+	  
+	    String cmdName = cells[IDX_CMDOPT_NAME].getContents();
+	    MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
+	    if(cmd == null) {
+		throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
+	    }
+	    
+	    i++;
+	    int cmdEnd = i + 1;
+	    while (cmdEnd < sheet.getRows()) {
+		cells = jumpToRow(sheet, cmdEnd);
+		if (hasColumn(cells, IDX_CMDOPT_NAME))  break;
+		cmdEnd++;
+	    }
+	    
+	    while (i<cmdEnd) {
+		cells = jumpToRow(sheet, i);
+		if(hasColumn(cells, IDX_CMDOPT_TXCONST)) {
+		    String condition = cells[IDX_CMDOPT_TXCONST].getContents();
+		    MatchCriteria criteria=toMatchCriteria(condition);
+		    long timeout = 0;
+		    if(hasColumn(cells, IDX_CMDOPT_TXCONST_TIMEOUT)) {
+			timeout = Long.parseLong(cells[IDX_CMDOPT_TXCONST_TIMEOUT].getContents());
+		    }
+
+		    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
+		    cmd.addTransmissionConstrain(constraint);
+		}
+		i++;
+	    }
 	}
     }
 
@@ -2001,8 +2061,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		pref.setUseCalibratedValue(true);
 		ucomp=new Comparison(pref, value, opType);
 	    }
-	    spaceSystem.addUnresolvedReference(new NameReference(pname,
-		    Type.PARAMETER, new ResolvedAction() {
+	    spaceSystem.addUnresolvedReference(new NameReference(pname, Type.PARAMETER, new ResolvedAction() {
 		@Override
 		public boolean resolved(NameDescription nd) {
 		    pref.setParameter((Parameter) nd);

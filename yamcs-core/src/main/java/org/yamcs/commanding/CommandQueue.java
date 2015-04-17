@@ -40,4 +40,17 @@ public class CommandQueue {
     public int getCommandCount() {
         return commands.size();
     }
+
+    public boolean contains(PreparedCommand pc) {
+	return commands.contains(pc);
+    }
+
+    /**
+     * remove the command from the queue and return true if it has been removed
+     * @param pc
+     * @return
+     */
+    public boolean remove(PreparedCommand pc) {
+	return commands.remove(pc);
+    }
 }
