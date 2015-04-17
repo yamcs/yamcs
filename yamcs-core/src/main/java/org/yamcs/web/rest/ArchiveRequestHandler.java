@@ -51,7 +51,6 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.AbstractRequestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
@@ -105,33 +104,33 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         rrb.setEndAction(EndAction.QUIT);
-        rrb.setParameterRequest(request.getParameterRequest());
-        rrb.setPacketRequest(request.getPacketRequest());
-        rrb.setEventRequest(request.getEventRequest());
-        rrb.setCommandHistoryRequest(request.getCommandHistoryRequest());
-        rrb.setPpRequest(request.getPpRequest());
+        if (request.hasParameterRequest())
+            rrb.setParameterRequest(request.getParameterRequest());
+        if (request.hasPacketRequest())
+            rrb.setPacketRequest(request.getPacketRequest());
+        if (request.hasEventRequest())
+            rrb.setEventRequest(request.getEventRequest());
+        if (request.hasCommandHistoryRequest())
+            rrb.setCommandHistoryRequest(request.getCommandHistoryRequest());
+        if (request.hasPpRequest())
+            rrb.setPpRequest(request.getPpRequest());
         ReplayRequest replayRequest = rrb.build();
 
-        boolean stream = (request.hasStream() && request.getStream());
 
-        if (stream && !AbstractRequestHandler.BINARY_MIME_TYPE.equals(contentType)) {
-            throw new ForbiddenException("Cannot stream delimited responses for ContentType " + contentType);
-        }
-
-        if (stream) {
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
+        if (request.hasStream() && request.getStream()) {
             try {
-                streamResponse(ctx, req, yamcsInstance, replayRequest, contentType);
+                streamResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
             } catch (Exception e) {
                 // Not throwing RestException up, since we are probably a few chunks in already.
                 log.error("Could not write entire chunked response", e);
             }
         } else {
-            QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
             writeAggregatedResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
         }
     }
 
-    private void streamResponse(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, ReplayRequest replayRequest, String contentType)
+    private void streamResponse(ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String yamcsInstance, ReplayRequest replayRequest, String contentType)
     throws IOException, URISyntaxException, HornetQException, YamcsException, YamcsApiException {
         YamcsSession ys = null;
         YamcsClient msgClient = null;
@@ -171,13 +170,20 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     continue;
                 }
 
-                MessageLite restMessage = fromReplayMessage(dataType, msg).message;
-                mergeMessage(dataType, restMessage, builder);
+                MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
+                mergeMessage(dataType, restMessage.message, builder);
 
-                // Write a chunk
+                // Write a chunk containing a delimited message
                 ByteBuf buf = Unpooled.buffer();
                 ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
-                builder.build().writeDelimitedTo(channelOut);
+
+                if (BINARY_MIME_TYPE.equals(contentType)) {
+                    builder.build().writeDelimitedTo(channelOut);
+                } else {
+                    JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
+                    JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
+                    generator.close();
+                }
 
                 Channel ch = ctx.channel();
                 writeFuture = ctx.write(new DefaultHttpContent(buf));
@@ -205,7 +211,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
      * Current implementation seems sub-optimal, because every message is encoded twice.
      * Once for getting a decent byte size estimate, and a second time for writing the aggregate result.
      * However, since we hard-limit to about 1MB and since we expect most clients that fetch from the
-     * archive to stream the response in http chunks instead, I don't consider this a problem at this stage.
+     * archive to stream the response instead, I don't consider this a problem at this stage.
      * This method is mostly here for small interactive requests through tools like curl.
      */
     private void writeAggregatedResponse(ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String yamcsInstance, ReplayRequest replayRequest, String contentType) throws RestException {
@@ -250,7 +256,6 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                         JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                         generator.close();
                         sizeEstimate += tempOut.toByteArray().length;
-
                     }
                 } catch (IOException e) {
                     throw new InternalServerErrorException(e);
