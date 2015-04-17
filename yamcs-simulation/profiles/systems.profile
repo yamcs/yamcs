@@ -1,0 +1,1 @@
+SIMULATOR_MemoryRate
