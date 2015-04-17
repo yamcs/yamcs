@@ -121,7 +121,7 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
 				 *  
 				 *  The time in the "TMR header" is the reception time. It looks like the CCSDS GPS but is generated locally so it's UNIX time in fact
 				 */
-				if(datagram.getLength()<16) { //10 for the TMR header plus 6 for the primary CCSDS header 
+				if(datagram.getLength()<26) { //10 for the TMR header plus 6 for the primary CCSDS header plus 10 for secondary CCSDS header
 					log.warn("Incomplete packet received on the multicast, discarded: "+datagram);
 					continue;
 				}

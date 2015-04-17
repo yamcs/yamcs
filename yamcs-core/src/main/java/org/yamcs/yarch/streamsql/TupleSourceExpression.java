@@ -1,6 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import org.slf4j.Logger;
@@ -11,10 +12,9 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.HistogramReaderStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TcTableReaderStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-
+import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.NoneSpecifiedException;
 import org.yamcs.yarch.streamsql.ResourceNotFoundException;
@@ -90,9 +90,9 @@ class TupleSourceExpression {
         
     }
     
-    AbstractStream execute(ExecutionContext c) throws StreamSqlException{
+    AbstractStream execute(ExecutionContext c) throws StreamSqlException {
         AbstractStream stream;
-        if(streamExpression!=null) {
+        if(streamExpression!=null) {        	
             stream=streamExpression.execute(c);
         } else if (objectName!=null) {
             YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
@@ -100,9 +100,14 @@ class TupleSourceExpression {
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {
-                    stream=new TcTableReaderStream(ydb, tbl);
+                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl);
                 } else {
-                    HistogramReaderStream histoStream=new HistogramReaderStream(ydb, tbl, histoColumn, definition);
+                    HistogramReaderStream histoStream;
+					try {
+						histoStream = new HistogramReaderStream(ydb, tbl, histoColumn, definition);
+					} catch (YarchException e) {
+						throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
+					}
                     if(histogramMergeTime!=null) {
                         histoStream.setMergeTime(histogramMergeTime.longValue());
                     }
@@ -115,6 +120,8 @@ class TupleSourceExpression {
         } else {
             throw new NoneSpecifiedException();
         }
+        
+        
         return stream;
     }
 

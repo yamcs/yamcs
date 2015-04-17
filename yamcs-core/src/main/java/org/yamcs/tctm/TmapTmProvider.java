@@ -15,7 +15,8 @@ import org.yamcs.utils.TimeEncoding;
  * 
  */
 public class TmapTmProvider extends TcpTmProvider {
-	public TmapTmProvider(String spec, String name) throws ConfigurationException {
+	public TmapTmProvider(String instance, String name, String spec) throws ConfigurationException {
+	    super(instance, name);
 		YConfiguration c=YConfiguration.getConfiguration("tmaptcap");
 		host=c.getString(spec, "tmHost");
 		port=c.getInt(spec, "tmPort");
@@ -38,7 +39,7 @@ public class TmapTmProvider extends TcpTmProvider {
 			try {
 				if (tmSocket==null) {
 					openSocket();
-					log.info("Tmap connection estabilished to "+host+" port "+port);
+					log.info("Tmap connection established to "+host+" port "+port);
 				} 
 				if(!readWithBlocking(tmaphdr,0,32)) continue;
 				if(!readWithBlocking(hdr,0,6)) continue;

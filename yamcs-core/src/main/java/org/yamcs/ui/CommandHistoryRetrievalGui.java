@@ -177,7 +177,7 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 	    }
 	    try {
 	        CommandHistoryEntry che=(CommandHistoryEntry)decode(msg, CommandHistoryEntry.newBuilder());
-	        int progr=(int)((che.getCmdId().getGenerationTime() - startInstant)/1000);
+	        int progr=(int)((che.getCommandId().getGenerationTime() - startInstant)/1000);
 	        count++;
 	        if(count%100==0) progressMonitor.setNote(count+" packets received");
 	        progressMonitor.setProgress(progr);

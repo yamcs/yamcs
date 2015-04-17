@@ -7,7 +7,6 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
-
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -22,6 +21,8 @@ public class CreateTableStatement extends StreamSqlStatement {
     ArrayList<String> histoColumns;
     PartitioningSpec partitioningSpec;;
     String dataDir;
+    String engine;
+    
     private boolean compressed=false;
     
 	public CreateTableStatement(String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
@@ -53,8 +54,8 @@ public class CreateTableStatement extends StreamSqlStatement {
     
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
-        synchronized(dict) {
+        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+        synchronized(ydb) {
             TableDefinition tableDefinition=new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
             
@@ -62,22 +63,35 @@ public class CreateTableStatement extends StreamSqlStatement {
                 tableDefinition.setDataDir(dataDir);
                 tableDefinition.setCustomDataDir(true);
             } else {
-                tableDefinition.setDataDir(dict.getRoot());
+                tableDefinition.setDataDir(ydb.getRoot());
                 tableDefinition.setCustomDataDir(false);
             }
+            if(engine!=null) {
+            	tableDefinition.setStorageEngineName(engine);
+            } else {
+            	tableDefinition.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
+            }
+            
             tableDefinition.setCompressed(compressed);
             if(partitioningSpec!=null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
+            } else {
+            	tableDefinition.setPartitioningSpec(PartitioningSpec.noneSpec());
             }
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
+            
             try {
-                dict.addTable(tableDefinition);
+                ydb.createTable(tableDefinition);
                 return new StreamSqlResult();
             } catch(YarchException e) {
                 throw new GenericStreamSqlException("Cannot create table: "+e.getMessage());
             }
         }
     }
+
+	public void setEngine(String engine) {
+		this.engine=engine;		
+	}
 }

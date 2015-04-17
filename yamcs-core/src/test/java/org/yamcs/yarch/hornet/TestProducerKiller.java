@@ -28,7 +28,11 @@ public class TestProducerKiller {
         hornetServer.setSecurityManager( new HornetQAuthManager() );
         hornetServer.start();
     }
-
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        hornetServer.stop();
+    }
+    
     @Test
     public void testProducerKiller() throws Exception{
         final YamcsSession ys=YamcsSession.newBuilder().setConnectionParams("localhost", 15445).build();
@@ -36,7 +40,7 @@ public class TestProducerKiller {
         dataClient.dataConsumer.setMessageHandler(new MessageHandler() {
             @Override
             public void onMessage(ClientMessage msg) {
-                System.out.println(Thread.currentThread()+" received the first message: "+msg+", closing connection");
+            //    System.out.println(Thread.currentThread()+" received the first message: "+msg+", closing connection");
                 NettyConnection nc=(NettyConnection)((DelegatingSession)ys.session).getConnection().getTransportConnection();
                 nc.close();
             }
@@ -67,10 +71,7 @@ public class TestProducerKiller {
         t.start();
         t.join(10*60*1000);
         assertFalse(t.isAlive());
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        hornetServer.stop();
+        ys1.close();
+        ys.close();
     }
 }

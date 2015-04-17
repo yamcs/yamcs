@@ -57,10 +57,11 @@ public class XtceUtil {
                 ComparisonList clist = (ComparisonList)crit;
                 for (Comparison comp:clist.getComparisonList()) {
                     Parameter parameter = comp.getParameter();
-                    if (parameter.getName().equals("ccsds-apid")) {
+                    String name = parameter.getName();
+                    if (name.equals("ccsds-apid")) {
                         apid = (int)comp.getLongValue();
                     }
-                    if (parameter.getName().equals("col-packet_id")) {
+                    if (name.equals("col-packet_id") || name.equals("packet-id")) {
                         packetid = (int)comp.getLongValue();
                     }
                 }

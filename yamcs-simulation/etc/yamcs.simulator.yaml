@@ -1,0 +1,71 @@
+############################################ testinst configuration  ############################################################################
+services:
+    #creates a number of streams required by the other services
+    #the streams are of predefined type "tm", "tc", "cmdHist" or "event"
+    # in addition - stream sql files can also be loaded by adding sqlFile: key
+    - class: org.yamcs.StreamInitService
+      args:
+           tm: ["tm_realtime", "tm_dump"]
+           cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+           event: ["events_realtime", "events_dump"]
+           param: ["sys_param"]
+           alarm: ["alarms_realtime"]
+
+    #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
+    - org.yamcs.archive.TmProviderAdapter
+#    - org.yamcs.archive.PpProviderAdapter
+    - org.yamcs.archive.TcUplinkerAdapter
+    - org.yamcs.archive.XtceTmRecorder
+    - org.yamcs.archive.FSEventDecoder
+#    - org.yamcs.archive.PpRecorder
+#    - org.yamcs.archive.EventRecorder
+    - org.yamcs.archive.ReplayServer
+    - org.yamcs.archive.IndexServer
+    - org.yamcs.parameter.SystemParametersCollector
+    # create a realtime channel
+    - class: org.yamcs.ChannelCreatorService
+      args: 
+         name: "realtime"
+         type: "realtime"
+
+    #this one sets up the recording of the command history 
+    - org.yamcs.cmdhistory.CommandHistoryRecorder
+    - class: org.yamcs.hornetq.HornetQTmService
+      args: [tm_realtime]
+    #- com.spaceapplications.soar.MavlinkService
+    #- com.spaceapplications.soar.CAService
+    - org.yamcs.web.YamcsWebService
+
+#name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
+#tmIndexer: 
+
+#name of the class that is used to to generate events from the streams
+eventDecoders: []
+
+#config the tm providers started by the TmProviderAdapter
+tmProviders:
+    - class: org.yamcs.tctm.TcpTmProvider
+      spec: local
+      stream: tm_realtime
+      #if enabledAtStartup is false, the provider will be started but disabled (can be enabled manually in yamcs monitor). Default is to start enabled.
+      #enabledAtStartup: true 
+
+#config the pp providers started by the PpProviderAdapter
+ppProviders: []
+     #- class: org.yamcs.tctm.MulticastPpProvider
+     #  spec: cdmcs-s
+     #  stream: pp_realtime
+     #  enabledAtStartup: false
+
+
+# config the tc uplinkers
+tcUplinkers: 
+    - class: org.yamcs.tctm.TcpTcUplinker
+      spec: local
+      stream: tc_realtime
+
+#Specify which MDB configuration to use, references a named section in mdb.yaml 
+mdb: simulator
+
+mavlink:
+   waypoints: "lib/waypoints.csv"

@@ -21,7 +21,8 @@ import org.yamcs.yarch.TupleDefinition;
  *
  */
 public class DynamicSchemaTableTest extends YarchTestCase {
-
+	static final String engine="rocksdb"; 
+	
     private void emit(Stream s, long key, String colName, int colValue) {
         TupleDefinition tdef=new TupleDefinition();
         tdef.addColumn("t",DataType.TIMESTAMP);
@@ -32,7 +33,10 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     
     @Test
     public void testInsert() throws Exception {
-        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t))");
+    	
+        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+       
+        
         ydb.execute("create stream test_insert_in (t timestamp)");
         ydb.execute("insert into test_insert select * from test_insert_in");
         
@@ -51,7 +55,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
         
-        System.out.println("tableDef: "+tblDef);
+       // System.out.println("tableDef: "+tblDef);
         
         
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();
@@ -91,13 +95,12 @@ public class DynamicSchemaTableTest extends YarchTestCase {
 
     @Test
     public void testInsertAppend() throws Exception {
-        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t))");
+        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
         ydb.execute("create stream test_inserta_in (t timestamp)");
         ydb.execute("insert_append into test_inserta select * from test_inserta_in");
         
         TableDefinition tblDef=ydb.getTable("test_inserta");
         
-        System.out.println("tableDef: "+tblDef);
         TupleDefinition keyDef=tblDef.getKeyDefinition();
         ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
@@ -110,8 +113,6 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v2", 2);
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 30);
-        
-        System.out.println("tableDef: "+tblDef);
         
         
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();

@@ -120,8 +120,7 @@ public class HornetChannelManagement implements ChannelListener {
                 throw new YamcsException("Unknown request '"+req+"'");
             }
         } catch (YamcsException e) {
-        	e.printStackTrace();
-            log.warn("Sending error reply ", e);
+            log.warn("Sending error reply "+ e);
             channelControlServer.sendErrorReply(replyto, e.getMessage());
         } 
     }
@@ -271,6 +270,16 @@ public class HornetChannelManagement implements ChannelListener {
         } catch (HornetQException e) {
            log.error("exception when sedning client event: ", e);
         }
+    }
+
+
+
+    public void close() {
+	try {
+	    ysession.close();
+	} catch (HornetQException e) {
+	    log.error("Failed to close the yamcs session", e);
+	}
     }
 
 }

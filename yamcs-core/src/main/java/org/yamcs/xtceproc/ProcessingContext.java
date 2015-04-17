@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 
 
 /**
@@ -16,11 +16,15 @@ public class ProcessingContext {
 	
 	ByteBuffer bb;
 	public int bitPosition;
-	int containerAbsoluteByteOffset; //keeps track of the absolute offset of the container where the processing takes place. Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
+	
+	//Keeps track of the absolute offset of the container where the processing takes place. 
+	//Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
+	int containerAbsoluteByteOffset; 	
+	
 	Subscription subscription;
 	
 	//this is the result of the processing
-	public ArrayList<ParameterValue> paramResult;
+	public ParameterValueList paramResult;
 	public ArrayList<ContainerExtractionResult> containerResult;
 	
 	public long acquisitionTime;
@@ -30,12 +34,12 @@ public class ProcessingContext {
 	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
 	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
 	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	public DataEncodingProcessor dataEncodingProcessor=new DataEncodingProcessor(this);
+	public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
 	public ComparisonProcessor comparisonProcessor;
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
-	        ArrayList<ParameterValue> params, ArrayList<ContainerExtractionResult> containers, 
+		ParameterValueList params, ArrayList<ContainerExtractionResult> containers, 
 	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
 		this.bb = bb;
 		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;

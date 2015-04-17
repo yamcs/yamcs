@@ -1,4 +1,5 @@
-package org.yamcs.protobuf;
+package pvalue;
+option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
 
@@ -33,27 +34,36 @@ enum MonitoringResult {
       SEVERE=19;
       SEVERE_LOW=20;
       SEVERE_HIGH=21;
-};
+}
 
 /*the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
  this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
 */
 message ParameterValue {
-    optional NamedObjectId id=1;
-  	optional Value rawValue=2;
-	optional Value engValue=3;
+    optional yamcs.NamedObjectId id=1;
+  	optional yamcs.Value rawValue=2;
+	optional yamcs.Value engValue=3;
 	optional int64 acquisitionTime=4;
 	optional int64 generationTime=5;
 	optional AcquisitionStatus acquisitionStatus=6;
 	optional bool processingStatus=7;
 	optional MonitoringResult monitoringResult=8;
 
-	//optional FloatRange warningRange=9; TODO
-	//optional FloatRange criticalRange=10; TODO
+    //to be used as alternative to the ones above for clients that do not understand internal yamcs time encoding
+    optional string acquisitionTimeUTC = 11;
+    optional string generationTimeUTC = 12;
 
-   //to be used as alternative to the ones above for clients that do not understand internal yamcs time encoding
-   optional string acquisitionTimeUTC = 11;
-   optional string generationTimeUTC = 12;
+    // Not transferring xtce.FloatRange to proto since we actually have some logic there
+    optional double watchLow = 13;
+    optional double watchHigh = 14;
+    optional double warningLow = 15;
+    optional double warningHigh = 16;
+    optional double distressLow = 17;
+    optional double distressHigh = 18;
+    optional double criticalLow = 19;
+    optional double criticalHigh = 20;
+    optional double severeLow = 21;
+    optional double severeHigh = 22;
 }
 
 message ParameterData {

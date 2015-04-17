@@ -44,7 +44,7 @@ public class WindowBufferTest {
     
     private static ParameterValue toPval(long generationTime, String value) {
         Parameter def=new Parameter("something");
-        ParameterValue pval = new ParameterValue(def, false);
+        ParameterValue pval = new ParameterValue(def);
         pval.setGenerationTime(generationTime);
         pval.setStringValue(value);
         return pval;

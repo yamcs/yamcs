@@ -1,4 +1,5 @@
-package org.yamcs.protobuf;
+package commanding;
+option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
 
@@ -43,9 +44,9 @@ message CommandQueueRequest {
    optional bool rebuild=3[default=false]; //if rebuild is true, the binary packet will be recreated to include new time and sequence count
 }
 service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
-  rpc SetQueueState(CommandQueueInfo) returns (Void);
-  rpc SendCommand(CommandQueueRequest) returns (Void);
-  rpc RejectCommand(CommandQueueEntry) returns (Void);
+  rpc SetQueueState(CommandQueueInfo) returns (yamcs.Void);
+  rpc SendCommand(CommandQueueRequest) returns (yamcs.Void);
+  rpc RejectCommand(CommandQueueEntry) returns (yamcs.Void);
 }
 
 
@@ -53,11 +54,11 @@ service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
 
 message CommandHistoryAttribute {
     required string name = 1;
-    required Value value = 2;
+    required yamcs.Value value = 2;
 }
 
 message CommandHistoryEntry {
-    required CommandId cmdId = 1;
-    required string cmdName = 2;
+    required CommandId commandId = 1;
+    //required string cmdName = 2; //removed because it's part of the CommandId
     repeated CommandHistoryAttribute attr = 3 ;
 }

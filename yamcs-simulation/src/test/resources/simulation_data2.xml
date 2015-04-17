@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ppSimulation startDate="12-May-2014" stepLengthMs="2">
+
+  <!-- 
+       Reproduce issue at the end of an LOS phase:
+       - SOLAR parameter is not received since the end of the LOS
+       - Ground parameter is once after the LOS, and then repeated with the same generation time
+       
+       => Expected result: The SOLAR_Ground_timeDiff shoudl be computed when the first ground parameter is received, and not computed for other occurences  
+  -->
+  <parameterSequence repeat="10" stepOffset="0">
+    <parameter spaceSystem="/APM/"     paraName="SOLAR_PH_Sequence_Count" valueType="def" value="3.1" generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da"       valueType="def" value="1.2" generationStep="1" aquisitionStep="1"/> 
+  </parameterSequence>
+  <parameterSequence stepOffset="15" >
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="0"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="1"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="2"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="3"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="4"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="5"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="6"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="7"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="8"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="9"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="10"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da" valueType="def"  value="1"  generationStep="0" aquisitionStep="11"/>
+  </parameterSequence> 
+  <parameterSequence repeat="10" >
+    <parameter spaceSystem="/APM/"     paraName="SOLAR_PH_Sequence_Count" valueType="def" value="1.1" generationStep="0" aquisitionStep="1"/>
+    <parameter spaceSystem="/DaSS_PP/" paraName="umi_0xc00000087da"       valueType="def" value="1.2" generationStep="1" aquisitionStep="1"/> 
+  </parameterSequence>
+
+</ppSimulation>

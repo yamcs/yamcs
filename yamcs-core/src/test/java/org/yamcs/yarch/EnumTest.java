@@ -55,6 +55,6 @@ public class EnumTest extends YarchTestCase {
             assertEquals(i*1000l, (long)(Long)t.getColumn(0));
             assertEquals("pn"+(i%10), (String)t.getColumn(1));
         }
-    }    
+    }
 
 }

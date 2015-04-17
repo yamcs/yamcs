@@ -1,8 +1,5 @@
 package org.yamcs.tctm;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -11,19 +8,16 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ParameterValue;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-
-import com.google.common.util.concurrent.AbstractService;
-
+import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.hornetq.StreamAdapter;
+
+import com.google.common.util.concurrent.AbstractService;
 
 
 /**
@@ -33,7 +27,7 @@ import org.yamcs.hornetq.StreamAdapter;
  *
  */
 public class HornetQPpProvider extends  AbstractService implements PpProvider, MessageHandler {
-	protected volatile long packetcount = 0;
+	protected volatile long totalPpCount = 0;
 	protected volatile boolean disabled=false;
 
 	protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
@@ -43,7 +37,7 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
     final XtceDb ppdb;
     
 	public HornetQPpProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
-        SimpleString queue=new SimpleString(hornetAddress+"-HornetQTmProvider");
+        SimpleString queue=new SimpleString(hornetAddress+"-HornetQPpProvider");
         ppdb=XtceDbFactory.getInstance(instance);
         
         try {
@@ -99,7 +93,7 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
 
     @Override
     public long getDataCount() {
-        return packetcount;
+        return totalPpCount;
     }
     
     
@@ -108,24 +102,8 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
         if(disabled) return;
         try {
             ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
-            List<ParameterValue> params=new ArrayList<ParameterValue>();
-            for( org.yamcs.protobuf.Pvalue.ParameterValue gpv : pd.getParameterList() ) {
-                String processedParameterName = gpv.getId().getName();
-                Parameter ppdef=ppdb.getParameter(processedParameterName);
-                if(ppdef==null) continue;
-                
-                if( processedParameterName == null || "".equals( processedParameterName ) ) {
-                    throw new InvalidParameterException( "Processed Parameter must have a name." );
-                }
-                ParameterValue pv = ParameterValue.fromGpb(ppdef, gpv);
-                params.add(pv);
-            }
-            
-            
-            packetcount++;
-            ppListener.updatePps(pd.getGenerationTime(), pd.getGroup(), pd.getSeqNum(), params);
-            //System.out.println("mark 1: message received: "+msg);
-            //ppListener.processPacket(pwt);
+            totalPpCount += pd.getParameterCount();
+            ppListener.updateParams(pd.getGenerationTime(), pd.getGroup(), pd.getSeqNum(), pd.getParameterList());
         } catch(YamcsApiException e){
             log.warn( "{} for message: {}", e.getMessage(), msg);
         }

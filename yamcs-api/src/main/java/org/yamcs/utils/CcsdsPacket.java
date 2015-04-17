@@ -3,8 +3,6 @@ package org.yamcs.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 
 import org.yamcs.utils.TimeEncoding;
 
@@ -54,9 +52,16 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public static short getAPID(ByteBuffer bb) {
 		return (short)(bb.getShort(0)& 0x07FF);
 	}
+	
+	/*returns the length written in the ccsds header*/
+    public static int getCccsdsPacketLength(ByteBuffer bb) {
+        return bb.getShort(4)&0xFFFF;
+    }
+    
+	
 	/*returns the length written in the ccsds header*/
 	public int getCccsdsPacketLength() {
-		return bb.getShort(4)&0xFFFF;
+		return getCccsdsPacketLength(bb);
 	}
 	
     public void setCccsdsPacketLength(short length) {
@@ -89,6 +94,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public long getCoarseTime() {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
+	public int getTimeId() {
+		return (bb.get(11) &0xFF)>>6;
+	}
 	
 	public void setCoarseTime(int time) {
 	    bb.putInt(6, time);
@@ -97,7 +105,7 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	public static long getCoarseTime(ByteBuffer bb) {
 		return bb.getInt(6)&0xFFFFFFFFL;
 	}
-
+	
 	public int getFineTime() {
 		return bb.get(10)&0xFF;
 	}
@@ -178,6 +186,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	    return getAPID(ByteBuffer.wrap(packet));
 	}
 	
+	public static int getCccsdsPacketLength(byte[] buf) {       
+        return getCccsdsPacketLength(ByteBuffer.wrap(buf));
+    }
 
     /*comparison based on time*/
     @Override
@@ -214,16 +225,10 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 			}
 		}
 		sb.append("\n\n");
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("output"));
-            out.write(sb.toString());
-            out.close();
-        } catch (IOException e) {
-        }
 		return sb.toString();
 	}
 
-   
-
-    
+    public static int getPacketID(byte[] buf) {
+        return getPacketID(ByteBuffer.wrap(buf));
+    }    
 }

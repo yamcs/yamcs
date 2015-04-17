@@ -85,8 +85,8 @@ class YarchReplay implements StreamSubscriber, Runnable {
         }
 
         setRequest(rr);
-        ysession=YamcsSession.newBuilder().build();
-        yclient=ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
+        ysession = YamcsSession.newBuilder().build();
+        yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
         Protocol.killProducerOnConsumerClosed(yclient.dataProducer, dataAddress);
     }
 
@@ -176,6 +176,10 @@ class YarchReplay implements StreamSubscriber, Runnable {
 //                break;
             case CMD_HISTORY:
                 handlers.put(rdp, new CommandHistoryReplayHandler(instance));
+                break;
+            default:
+        	log.debug("Ignoring request for type "+rdp);
+                    
             }
         }
         

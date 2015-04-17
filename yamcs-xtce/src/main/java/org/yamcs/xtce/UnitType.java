@@ -11,11 +11,16 @@ public class UnitType implements Serializable {
     String description;
     double power = 1;
     String factor = "1";
+    String unit;
 
-    public UnitType(String description) {
-        this.description = description;
+    public UnitType(String unit) {
+        this.unit = unit;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
     public String getDescription() {
         return description;
     }
@@ -38,6 +43,6 @@ public class UnitType implements Serializable {
     
     @Override
     public String toString() {
-        return "desc: "+description+", power: "+power+", factor: "+factor;
+        return "unit:"+unit+" desc: "+description+", power: "+power+", factor: "+factor;
     }
 }

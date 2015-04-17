@@ -52,8 +52,9 @@ public class TestEventRecording extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        hornetServer.stop();
+	YamcsServer.stopHornet();
     }
+    
     private void checkEvent(int i, Event ev) {
         assertEquals(i, ev.getSeqNumber());
         assertEquals(i*1000, ev.getGenerationTime());
@@ -64,8 +65,11 @@ public class TestEventRecording extends YarchTestCase {
     
     @Test
     public void testRecording() throws Exception {
+	ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+	ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+	EventRecorder eventRecorder = new EventRecorder(context.getDbName());
         final int n=100;
-        (new EventRecorder(context.getDbName())).start();
+        eventRecorder.startAsync();
         YamcsSession ys=YamcsSession.newBuilder().build();
         ClientBuilder pcb=ys.newClientBuilder();
         SimpleString address=new SimpleString("events_realtime");
@@ -128,7 +132,7 @@ public class TestEventRecording extends YarchTestCase {
         
         //and now try remotely using replay
         ReplayServer replay=new ReplayServer(ydb.getName());
-        replay.start();
+        replay.startAsync();
         msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
         
@@ -152,10 +156,11 @@ public class TestEventRecording extends YarchTestCase {
         assertNotNull(msg);
         ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
         assertEquals(ProtoDataType.STATE_CHANGE, dt);
-        System.out.println("msgClientAddress="+msgClient.rpcAddress);
         
+        eventRecorder.stopAsync();
         streamAdapter.quit();
+        ys.close();
         msgClient.close();
-        replay.stop();
+        replay.stopAsync();
     }
 }

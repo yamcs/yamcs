@@ -37,7 +37,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  *
  */
 public class XtceTmRecorder extends AbstractExecutionThreadService implements Runnable, StreamSubscriber {
-    private long totalNoPackets;
+    private long totalNumPackets;
     protected Logger log;
     LinkedBlockingQueue<Tuple> tmQueue=new LinkedBlockingQueue<Tuple>(100000);
     
@@ -78,13 +78,13 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
         
         Stream s=ydb.getStream(REALTIME_TM_STREAM_NAME);
         if(s==null) {
-            s=TmProviderAdapter.createTmStream(ydb, REALTIME_TM_STREAM_NAME);
+           throw new ConfigurationException("Cannot find stream '"+REALTIME_TM_STREAM_NAME+"'");
         }
         realtimeStream=s;
         
         s=ydb.getStream(DUMP_TM_STREAM_NAME);
         if(s==null) {
-            s=TmProviderAdapter.createTmStream(ydb, DUMP_TM_STREAM_NAME);
+            throw new ConfigurationException("Cannot find stream '"+DUMP_TM_STREAM_NAME+"'");
         }
         dumpStream=s;
         
@@ -133,6 +133,12 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
     }
 
     @Override
+    protected void triggerShutdown() {
+	quit();
+    }
+    
+    
+    @Override
     public void run() {
         try {
             Tuple t;
@@ -147,6 +153,9 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
         }
     }
     
+    public long getNumProcessedPackets() {
+	return totalNumPackets;
+    }
     
     /**receives a TM tuple. The definition is in  * TmProviderAdapter
      * 
@@ -156,7 +165,7 @@ public class XtceTmRecorder extends AbstractExecutionThreadService implements Ru
     protected void saveTuple(Tuple t) {
         long gentime=(Long)t.getColumn(0);
         byte[] packet=(byte[])t.getColumn(3);
-        totalNoPackets++;
+        totalNumPackets++;
         
         ByteBuffer bb=ByteBuffer.wrap(packet);
         tmExtractor.processPacket(bb, gentime);

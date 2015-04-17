@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.yarch.YBDB;
-import org.yamcs.yarch.YBDBCUR;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.tokyocabinet.YBDB;
+import org.yamcs.yarch.tokyocabinet.YBDBCUR;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;

@@ -41,6 +41,11 @@ cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 cp -a yamcs-web/target/yamcs-web*.jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-web/target/dependency/*.jar %{buildroot}/%{prefix}/lib/
+cp -a yamcs-web/src/main/uss*  %{buildroot}/%{prefix}/web/
+
+cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
+cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
+
 
 %clean
 rm -rf %{buildroot}
@@ -61,6 +66,7 @@ fi
 %config %{prefix}/mdb
 %config %{prefix}/etc
 %{prefix}/lib
+%{prefix}/web
 %exclude %{prefix}/lib/ext
 %exclude %{prefix}/lib/xtce
 
@@ -76,6 +82,8 @@ fi
 %post
 
 %changelog
+* Wed Sep 24 2014 nm
+- added css and html files for yamcs-web
 * Fri Dec 14 2012 nm
 - removed the yamcs-dass, yamcs-cdmcs, yamcs-busoc, yamcs-erasmus 
 * Thu Apr 12 2012 nm

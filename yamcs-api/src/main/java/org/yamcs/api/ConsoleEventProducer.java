@@ -12,14 +12,8 @@ import org.yamcs.protobuf.Yamcs.Event;
 public class ConsoleEventProducer extends AbstractEventProducer {
     Queue<Event> mockupQueue;
 
-    public ConsoleEventProducer(Queue<Event> mockupQueue) {
-        this.mockupQueue=mockupQueue;
-    }
-    
-
     @Override
     public void sendEvent(Event event) {
-        if(mockupQueue!=null) mockupQueue.add(event);
         System.out.println(event);
     }
 

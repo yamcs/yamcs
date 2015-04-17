@@ -1,7 +1,7 @@
-#instances (or domains). One yarch database will be created for each of them 
-# instance specific properties go into the file yamcs.{instance}.yaml
+
+#the instance list is empty here but YarchTestCase creates anyway an instance based on the UnitTest class name
 instances:
-  - testinst
+   - testinst
 
 #where to find the web directory with ccs, js etc
 # for the moment the displays are also loaded from here but in the future we should have the possibility to specify per instance
@@ -11,10 +11,10 @@ webPort: 8090
 
 #the location of the data and the incoming files
 # inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
-dataDir: /storage/yamcs-data
-incomingDir: /storage/yamcs-incoming
+dataDir: /tmp/yamcs-data
+incomingDir: /tmp/yamcs-incoming
 
 #max length of the data of type binary(e.g. tm packets)
 maxBinaryLength: 1048576
 
-
+storageEngines: [rocksdb, tokyocabinet]

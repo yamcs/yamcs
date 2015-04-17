@@ -13,13 +13,20 @@ public class ContainerExtractionResult {
     private SequenceContainer container;
     private ByteBuffer containerContent;
     private int locationInContainerInBits;
+    
+    private long acquisitionTime;
+    private long generationTime;
 	
     public ContainerExtractionResult(SequenceContainer container,
                     ByteBuffer containerContent,
-                    int locationInContainerInBits) {
+                    int locationInContainerInBits,
+                    long acquisitionTime,
+                    long generationTime) {
 		this.container = container;
 		this.containerContent = containerContent;
 		this.locationInContainerInBits = locationInContainerInBits;
+		this.acquisitionTime = acquisitionTime;
+		this.generationTime = generationTime;
 		
 		containerContent.position(0);
 	}
@@ -34,6 +41,14 @@ public class ContainerExtractionResult {
 	
 	public int getLocationInContainerInBits() {
 	    return locationInContainerInBits;
+	}
+	
+	public long getAcquisitionTime() {
+	    return acquisitionTime;
+	}
+	
+	public long getGenerationTime() {
+	    return generationTime;
 	}
 	
 	@Override

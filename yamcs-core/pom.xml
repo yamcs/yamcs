@@ -3,11 +3,10 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>0.26.1.SNAPSHOT</version>
+    <version>0.28.0</version>
     <relativePath>..</relativePath>
   </parent>
 
-  <groupId>org.yamcs</groupId>
   <artifactId>yamcs-core</artifactId>
   <packaging>jar</packaging>
   <name>YAMCS - Yet Another Mission Control System</name>
@@ -80,13 +79,13 @@
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-core</artifactId>
+      <artifactId>hornetq-server</artifactId>
       <version>${hornetQVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>r09</version>
+      <version>18.0</version>
     </dependency>
 
     <!-- Dependencies in the spaceapps repo -->
@@ -95,6 +94,12 @@
       <groupId>tokyocabinet</groupId>
       <artifactId>tokyocabinet</artifactId>
       <version>1.18</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.rocksdb</groupId>
+      <artifactId>rocksdbjni</artifactId>
+      <version>3.10.0</version>
     </dependency>
   </dependencies>
 
@@ -113,13 +118,6 @@
     </testResources>
     <finalName>${project.artifactId}-${project.version}</finalName>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -167,6 +165,7 @@
             <configuration>
               <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
+              <includeScope>runtime</includeScope>
               <!-- <excludeGroupIds>com.spaceapplications.yamcs</excludeGroupIds> -->
             </configuration>
           </execution>
@@ -223,9 +222,24 @@
     </plugins>
   </reporting>
 
-  <licenses>
-    <license>
-      <name>SpaceApps License</name>
-    </license>
-  </licenses>
+
+    <!-- If we are running in Jenkins use cobertura. -->
+    <profiles>
+        <profile>
+            <id>jenkins</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

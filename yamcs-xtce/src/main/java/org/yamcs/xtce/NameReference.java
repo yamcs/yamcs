@@ -16,7 +16,7 @@ package org.yamcs.xtce;
  *    The ResolvAction.resolv will be called once the reference is resolved in {@link: org.yamcs.xtce.XtceDb}
  */
 public class NameReference {
-    public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE};
+    public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE, META_COMMAND};
     public interface ResolvedAction {
         /**
          * pushes the NameDescription through and returns true if the name reference is resolved and false otherwise

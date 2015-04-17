@@ -1,7 +1,0 @@
-#all the supported channel types
-types: [Archive]
-
-
-Archive:
-    tm: org.yamcs.tctm.ReplayService
-

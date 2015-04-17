@@ -34,7 +34,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SpreadsheetLoader;
-import org.yamcs.xtce.SystemVariable;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.XtceLoader;
 
@@ -203,7 +203,7 @@ public class XtceDbFactory {
      * @param fqname
      * @return
      */
-    private static SystemVariable getSystemVariable(SpaceSystem yamcsSs, String fqname) {
+    private static SystemParameter getSystemVariable(SpaceSystem yamcsSs, String fqname) {
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
 
         SpaceSystem ss = yamcsSs;
@@ -215,10 +215,10 @@ public class XtceDbFactory {
             }
             ss=sss;
         }
-        SystemVariable sv = (SystemVariable)ss.getParameter(a[a.length-1]);
+        SystemParameter sv = (SystemParameter)ss.getParameter(a[a.length-1]);
 
         if(sv==null) {
-            sv = SystemVariable.getForFullyQualifiedName(fqname);
+            sv = SystemParameter.getForFullyQualifiedName(fqname);
             log.debug("adding new system variable for "+fqname+" in system "+ss);
             ss.addParameter(sv);
         }
@@ -298,6 +298,8 @@ public class XtceDbFactory {
             return (NameDescription) ss.getParameterType(name);
         case SEQUENCE_CONTAINTER:
             return ss.getSequenceContainer(name);
+        case META_COMMAND:
+        	return ss.getMetaCommand(name);
         }
         //shouldn't arrive here
         return null;
@@ -320,6 +322,7 @@ public class XtceDbFactory {
         if (type.equals("xtce")) {
             l= new XtceLoader((String)args);
         } else if (type.equals("sheet")) {
+            if(args==null) throw new ConfigurationException("No argument specified for loading the XTCE spreadhseet in mdb.yaml section: "+m);
             l=new SpreadsheetLoader((String)args);
         } else {
             // custom class
@@ -406,7 +409,7 @@ public class XtceDbFactory {
         XtceDb db = (XtceDb) in.readObject();
         in.close();
         log.info("Loaded xtce database with " + db.getSequenceContainers().size()
-                + " containers and " + db.getParameterNames().size() + " parameters");
+                + " containers, " + db.getParameterNames().size() + " parameters and "+db.getMetaCommands().size()+" commands");
         return db;
     }
 

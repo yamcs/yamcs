@@ -9,8 +9,9 @@ import java.util.Set;
 
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.parameter.ParameterConsumer;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
@@ -33,52 +34,58 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter=new HashMap<Parameter, ParameterValue>();
+    final String yamcsInstance;
+    final String channelName;
     
     public AlarmReporter(String yamcsInstance) {
         this(yamcsInstance, "realtime");
     }
     
     public AlarmReporter(String yamcsInstance, String channelName) {
+    	this.yamcsInstance = yamcsInstance;
+    	this.channelName = channelName;    			
         eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("AlarmChecker");
-        
-        Channel channel = Channel.getInstance(yamcsInstance, channelName);
-        ParameterRequestManager prm = channel.getParameterRequestManager();
-        prm.getAlarmChecker().enableReporting(this);
-        
-        // Auto-subscribe to parameters with alarms
-        Set<Parameter> requiredParameters=new HashSet<Parameter>();
-        try {
-            XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-            for (Parameter parameter:xtcedb.getParameters()) {
-                ParameterType ptype=parameter.getParameterType();
-                if(ptype.hasAlarm()) {
-                    requiredParameters.add(parameter);
-                    Set<Parameter> dependentParameters = ptype.getDependentParameters();
-                    if(dependentParameters!=null) {
-                        requiredParameters.addAll(dependentParameters);
-                    }
-                }
-            }
-        } catch(ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-        
-        if(!requiredParameters.isEmpty()) {
-            List<NamedObjectId> paramNames=new ArrayList<NamedObjectId>(); // Now that we have uniques..
-            for(Parameter p:requiredParameters) {
-                paramNames.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
-            }
-            try {
-                prm.addRequest(paramNames, this);
-            } catch(InvalidIdentification e) {
-                throw new RuntimeException("Could not register dependencies for alarms", e);
-            }
-        }
     }
     
     @Override
     public void doStart() {
+    	 Channel channel = Channel.getInstance(yamcsInstance, channelName);
+    	 if(channel==null) {
+    		 ConfigurationException e = new ConfigurationException("Cannot find a channel '"+channelName+"' in instance '"+yamcsInstance+"'");
+    		 notifyFailed(e);
+    		 return;
+    	 }
+         ParameterRequestManager prm = channel.getParameterRequestManager();
+         prm.getAlarmChecker().enableReporting(this);
+         
+         // Auto-subscribe to parameters with alarms
+         Set<Parameter> requiredParameters=new HashSet<Parameter>();
+         try {
+             XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
+             for (Parameter parameter:xtcedb.getParameters()) {
+                 ParameterType ptype=parameter.getParameterType();
+                 if(ptype!=null && ptype.hasAlarm()) {
+                     requiredParameters.add(parameter);
+                     Set<Parameter> dependentParameters = ptype.getDependentParameters();
+                     if(dependentParameters!=null) {
+                         requiredParameters.addAll(dependentParameters);
+                     }
+                 }
+             }
+         } catch(ConfigurationException e) {
+        	 notifyFailed(e);
+    		 return;
+         }
+         
+         if(!requiredParameters.isEmpty()) {
+             List<Parameter> params=new ArrayList<Parameter>(requiredParameters); // Now that we have uniques..
+             try {
+                 prm.addRequest(params, this);
+             } catch(InvalidIdentification e) {
+                 throw new RuntimeException("Could not register dependencies for alarms", e);
+             }
+         }
         notifyStarted();
     }
     
@@ -88,7 +95,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     }
     
     @Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValueWithId> items) {
+    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
         // Nothing. The real business of sending events, happens while checking the alarms
         // because that's where we have easy access to the XTCE definition of the active
         // alarm. The PRM is only used to signal the parameter subscriptions.
@@ -140,7 +147,16 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     }
     
     public void reportEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
-        boolean sendUpdateEvent=(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE);
+        boolean sendUpdateEvent=false;
+        
+        if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
+            ParameterValue oldPv=lastValuePerParameter.get(pv.def);
+            if(oldPv!=null && hasChanged(oldPv, pv)) {
+                sendUpdateEvent=true;
+            }
+            lastValuePerParameter.put(pv.def, pv);
+        }
+        
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             if(activeAlarms.containsKey(pv.getParameter())) {
                 eventProducer.sendInfo("NORMAL", "Parameter "+pv.getParameter().getQualifiedName()+" is back to a normal state ("+pv.getEngValue().getStringValue()+")");
@@ -209,7 +225,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
             break;
         case IN_LIMITS:
-            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to state ("+pv.getEngValue().getStringValue()+")");
+            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
             break;
         default:
             throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());

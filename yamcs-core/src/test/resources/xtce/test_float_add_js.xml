@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <SpaceSystem xmlns="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://archive.astro.umd.edu/omg/trunk/SpaceSystemV1.1.xsd" name="TEST for javascript derived values">
+ xsi:schemaLocation="http://archive.astro.umd.edu/omg/trunk/SpaceSystemV1.1.xsd" name="DV">
 	<TelemetryMetaData>
 		<AlgorithmSet>
 			<CustomAlgorithm name="test_float_add_js">

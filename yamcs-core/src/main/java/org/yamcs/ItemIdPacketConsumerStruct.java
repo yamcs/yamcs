@@ -16,7 +16,18 @@ public class ItemIdPacketConsumerStruct {
     public NamedObjectId id;
     public PacketConsumer consumer;
     public SequenceContainer def;
+    
+    public long generationTime;
+    public long acquisitionTime;
 
+    public ItemIdPacketConsumerStruct(PacketConsumer consumer, NamedObjectId id, SequenceContainer def, long acquisitionTime, long generationTime) {
+        this.id = id;
+        this.consumer = consumer;
+        this.def = def;
+        this.acquisitionTime = acquisitionTime;
+        this.generationTime = generationTime;
+    }
+    
     public ItemIdPacketConsumerStruct(PacketConsumer consumer, NamedObjectId id, SequenceContainer def) {
         this.id = id;
         this.consumer = consumer;
@@ -25,6 +36,6 @@ public class ItemIdPacketConsumerStruct {
 
     @Override
     public String toString() {
-        return String.format("(consumer=%s, id=%s, def=%s)", consumer, id, def);
+        return String.format("(consumer=%s, id=%s, def=%s, acq=%s, gen=%s)", consumer, id, def, acquisitionTime, generationTime);
     }
 }

@@ -17,7 +17,6 @@ public class EnumeratedDataType extends BaseDataType {
 	protected Vector<ValueEnumerationRange>  ranges = null;
 	
 	protected String initialValue = null;
-	protected String defaultValue = null;
 	
 	/**
 	 * Set initial value
@@ -48,14 +47,6 @@ public class EnumeratedDataType extends BaseDataType {
 	    }
 	    return null;
 	}
-	
-	/**
-     * Set default value
-     * @param initialValue
-     */
-    public void setDefaultValue(String defaultValue) {
-      this.defaultValue = defaultValue;
-    }
 	
 	/**
 	 * Add value to enumeration list

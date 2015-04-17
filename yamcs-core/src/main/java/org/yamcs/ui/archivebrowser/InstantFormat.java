@@ -41,7 +41,7 @@ public class InstantFormat extends DefaultFormatter {
     public void install(final JFormattedTextField ftf) {
         int savedCaretPos = ftf.getCaretPosition();
         super.install(ftf);
-        if(savedCaretPos>=ftf.getText().length())
+        if(savedCaretPos<ftf.getText().length())
             ftf.setCaretPosition(savedCaretPos);
     }
 }

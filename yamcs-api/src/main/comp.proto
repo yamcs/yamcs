@@ -1,0 +1,16 @@
+package comp;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+
+//used to define a computation on the server (for the moment implemented only in yamcs-web)
+message ComputationDef {
+    required string name = 1;
+    required string expression = 2;
+    repeated yamcs.NamedObjectId argument = 3;
+    optional string language = 4; //for USS this is jformula, in the future default should probably be javascript
+}
+
+message ComputationDefList {
+    repeated ComputationDef compDef=1;
+}

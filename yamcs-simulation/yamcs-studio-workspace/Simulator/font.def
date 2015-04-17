@@ -1,0 +1,21 @@
+//Default Title Font. It will used in case the OS specified font macro was not defined.
+Example Title = Arial-bold-18
+MCSTab text = Arial-bold-11
+MCSLabel Text = Arial-bold-10
+MCSLabel value = Arial-regular-10
+MCSlabeltextshort = Arial-bold-10
+
+MCSTOPBAR = Arial-regular-11
+
+//Title Font for Linux GTK 
+Example Title(linux_gtk) = Sans-bold-18
+
+//Title Font for MacOS
+Example Title(macosx) = Lucida Grande-bold-18
+
+Example Text = SystemDefault-regular-10
+
+Example LinkText = SystemDefault-italic-10
+
+Group title bold = Arial-bold-12
+

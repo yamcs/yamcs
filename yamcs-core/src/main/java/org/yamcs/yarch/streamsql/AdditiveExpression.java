@@ -24,9 +24,7 @@ public class AdditiveExpression extends Expression {
 
     @Override
     public void doBind() throws StreamSqlException {
-        // TODO Auto-generated method stub
         type=children[0].getType();
-        System.out.println("resulting type is "+type+" from "+children[0]);
     }
 
     @Override

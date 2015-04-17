@@ -1,13 +1,26 @@
 <chapter><title>Introduction</title>
 
-<para>Yamcs, (Yet Another Mission Control System) is a software package for handling
-long term payload operations. The package consists of a server (<xref linkend="yamcs-server"/>)
+<para>Yamcs is a software package for handling
+long term payload or spacecraft operations. The package consists of a server (<xref linkend="yamcs-server"/>)
 for handling telemetry (TM) and telecommands (TC), and client applications for managing the
 server (<xref linkend="monitor"/>), accessing live and archived data (<xref linkend="archive-browser"/>), and monitoring
 events (<xref linkend="eventviewer"/>).</para>
 
 <para>The core of Yamcs is Open Source under the GNU AFFERO General Public License (version 3) <xref linkend="RD1"></xref>, with some additional USOC oriented proprietary packages. Yamcs software is available from <ulink url="https://github.com/yamcs/yamcs">github.com/yamcs</ulink></para>
 
+<section><title>Typical Deployment</title>
+<figure><title>Typical Yamcs Deployment</title>
+    <mediaobject>
+      <imageobject> <imagedata width="100%" fileref="images/typical-deployment.png" format="PNG"/> </imageobject>
+    </mediaobject>
+</figure>
+<para> The figure above presents a typical deployment of Yamcs. It consists of the yamcs-server connecting to a TM/TC frontend or to a simulator. The TM/TC frontend is the interface to the payload. It can be either a ground station during the operations or some EGSE equipment during the development. Or it could be a simulator used for development and test of the ground software or for training purposes. </para>
+<para>The data aquired from the TM/TC frontend is interpreted based on the Mission Database. The Mission Database can be as simple as an excel spreadsheet or can be a engineering database used when developing the payload/spacecraft.</para>
+<para>Connected to Yamcs are a number of workstations which run end-user applications such as displays or commanding tools. Together with the end-user applications, there can be other mission specific applications connected to Yamcs for performing mission planning, science data processing and various other tasks</para>
+<para>Yamcs offers a web friendly REST interface which can be used to integrate data from Yamcs into web applications or to retrieve data remotely from Internet. As security is usually a concern, a second Yamcs server can be deployed in a DMZ network and selected data mirrored there for Internet access.</para>
+<para>Yamcs uses an embedded key-value database for storing all the received TM and sent TC. This helps to keep the deployment dependencies at a minimum. There are however plans for implementing support for distributed "big data" databases such as Apache HBase.</para>
+<para> For development purposes, all the software can run on a developer computer or laptop.</para>
+</section>
 
 <section><title>Features</title>
 
@@ -21,10 +34,10 @@ possible.</para>
 <itemizedlist>
 	<listitem>Acquisition of telemetry and dispatching of commands using different protocols: 
 		<itemizedlist>
-			<listitem>CD-MCS multicast,</listitem>
-			<listitem>raw packets over TCP,</listitem>
-			<listitem>DaSS (Columbus Ground Segment specific protocol),</listitem>
-			<listitem> PaCTS (EGSE software used by some of the Columbus payloads)</listitem>
+			<listitem>Raw packets over UDP unicast or multicast,</listitem>
+			<listitem>Raw packets over TCP,</listitem>
+			<listitem>HornetQ relaying from another Yamcs server,</listitem>
+			<listitem>Various other project specific protocols like DaSS (Columbus Ground Segment specific protocol), PaCTS (EGSE software used by some of the Columbus payloads)</listitem>
 		</itemizedlist>
 	</listitem>
 	<listitem>Custom protocols can be easily added.</listitem>

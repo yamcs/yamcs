@@ -3,3 +3,4 @@ instances:
  - ChannelsTest1
 
 incomingDir: /tmp/yamcs-incoming
+dataDir: /tmp/yamcs-data

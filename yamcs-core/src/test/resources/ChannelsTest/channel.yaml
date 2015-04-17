@@ -1,0 +1,11 @@
+#all the supported channel types
+types: [dummy, Archive]
+
+dummy:
+    telemetryProvider: 
+        class: org.yamcs.tctm.DummyTmProvider
+
+
+Archive:
+    tm: org.yamcs.tctm.ReplayService
+

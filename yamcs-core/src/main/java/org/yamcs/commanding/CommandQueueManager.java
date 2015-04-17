@@ -14,10 +14,8 @@ import org.yamcs.Privilege;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistory;
-import org.yamcs.tctm.TcUplinker;
 
 
-import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.utils.TimeEncoding;
@@ -38,7 +36,7 @@ import org.yamcs.utils.TimeEncoding;
 public class CommandQueueManager {
 	@GuardedBy("this")
 	private HashMap<String,CommandQueue> queues=new HashMap<String,CommandQueue>();
-	TcUplinker uplinker;
+	CommandReleaser commandReleaser;
 	CommandHistory commandHistoryListener;
 	CommandingManager commandingManager;
 	ConcurrentLinkedQueue<CommandQueueListener> monitoringClients=new ConcurrentLinkedQueue<CommandQueueListener>();
@@ -50,7 +48,7 @@ public class CommandQueueManager {
 	 * Constructs a Command Queue Manager having the given history manager and tc uplinker.
 	 *  The parameters have to be not null.
 	 * @param commandHistoryListener
-	 * @param uplinker
+	 * @param commandReleaser
 	 * @throws ConfigurationException in case there is an error in the configuration file. 
 	 *         Note: if the configuration file doesn't exist, this exception is not thrown.
 	 */
@@ -60,7 +58,7 @@ public class CommandQueueManager {
 		Channel chan=commandingManager.getChannel();
 		log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 		this.commandHistoryListener=chan.getCommandHistoryListener();
-		this.uplinker=chan.getTcUplinker();
+		this.commandReleaser=chan.getCommandReleaser();
 		this.instance=chan.getInstance();
 		this.channelName=chan.getName();
 		
@@ -120,7 +118,6 @@ public class CommandQueueManager {
 		} else if(q.state==QueueState.BLOCKED) {
 			q.commands.add(pc);
 			//	Notify the monitoring clients
-			System.out.println("going to notify "+monitoringClients.size()+" clients that command is added into queue"+q.name);
 			for(CommandQueueListener m:monitoringClients) {
 				try {
 					m.commandAdded(q, pc);
@@ -131,7 +128,7 @@ public class CommandQueueManager {
 				}
 			}
 		} else if(q.state==QueueState.ENABLED) {
-			uplinkCommand(q, pc, false, false);	
+			releaseCommand(q, pc, false, false);	
 		}
 	}
 	
@@ -161,16 +158,16 @@ public class CommandQueueManager {
 		}
 	}
 	
-	private void uplinkCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
+	private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
 		if(rebuild) {
-			try {
+	/*		try {
 				pc=commandingManager.buildCommand(pc.source, pc.getCommandId().toBuilder());
 			} catch (YamcsException e) {
 				log.warn("Got Exception for a command already in the queue: ", e);
 				return;
-			}
+			}*/
 		}
-		uplinker.sendTc(pc);
+		commandReleaser.releaseCommand(pc);
 		//Notify the monitoring clients
 		if(notify) {
 			for(CommandQueueListener m:monitoringClients) {
@@ -256,7 +253,7 @@ public class CommandQueueManager {
 		}
 		if(command!=null) {
 		    queue.commands.remove(command);
-		    uplinkCommand(queue, command, true, rebuild);
+		    releaseCommand(queue, command, true, rebuild);
 		}
 		return command;
 	}
@@ -280,7 +277,7 @@ public class CommandQueueManager {
 		queue.state=newState;
 		if(queue.state==QueueState.ENABLED) {
 			for(PreparedCommand pc:queue.commands) {
-				uplinkCommand(queue, pc,true, rebuild);
+				releaseCommand(queue, pc,true, rebuild);
 			}
 			queue.commands.clear();
 		}

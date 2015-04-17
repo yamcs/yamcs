@@ -1,97 +1,31 @@
 package org.yamcs.ui.yamcsmonitor;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableRowSorter;
-import javax.swing.text.JTextComponent;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsVersion;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.ui.ChannelControlClient;
-import org.yamcs.ui.ChannelListener;
-import org.yamcs.ui.CommandQueueControlClient;
-import org.yamcs.ui.LinkControlClient;
-import org.yamcs.ui.LinkListener;
-import org.yamcs.ui.YamcsArchiveIndexReceiver;
+import org.yamcs.api.*;
+import org.yamcs.protobuf.YamcsManagement.*;
+import org.yamcs.ui.*;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 public class YamcsMonitor implements ChannelListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
@@ -100,11 +34,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	LinkTableModel linkTableModel=new LinkTableModel(timer);
 	ClientTableModel clientTableModel;
 	DefaultTableModel statsTableModel;
-	LinkCellRenderer linkInfoRenderer = new LinkCellRenderer();
 	JFrame frame;
 	CommandQueueControlClient commandQueueControl;
 	
-	ArchiveReplay archiveReplay;
+	ArchiveBrowserSelector archiveBrowserSelector;
 
 	private JTextArea logTextArea;
 	private JMenuItem miConnect, dcmi;//, queueControl;
@@ -113,9 +46,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	JTabbedPane channelStatusPanel;
 	private JMenu clientsPopupMenu;
 	private JTable linkTable, channelTable, clientsTable;
-	private JComboBox newChannelType;
+	private JComboBox channelChooser;
 	private JTextField newChannelName;
-	private ArchiveChannel archiveChannel;
 	CommandQueueDisplay commandQueueDisplay;
 	JScrollPane linkTableScroll, channelTableScroll;
 	private Set<String> allChannels=new HashSet<String>();//stores instance.channelName for all channels to populate the connectToChannel popup menu
@@ -162,8 +94,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		linkControl.setLinkListener(this);
 		
 		indexReceiver=new YamcsArchiveIndexReceiver(yconnector);
-		archiveReplay = new ArchiveReplay(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
-		indexReceiver.setIndexListener(archiveReplay);
+		archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
+		indexReceiver.setIndexListener(archiveBrowserSelector);
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -188,7 +120,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		menu.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(menu);
 
-		miConnect = new JMenuItem("Connect");
+		miConnect = new JMenuItem("Connect to Yamcs...");
+        miConnect.setMnemonic(KeyEvent.VK_C);
+        miConnect.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
 		miConnect.addActionListener(this);
 		miConnect.setActionCommand("connect");
 		menu.add(miConnect);
@@ -232,8 +166,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
 		JSplitPane phoriz = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dsp, csp);
 		phoriz.setResizeWeight(0.5);
+		phoriz.setContinuousLayout(true);
 		JSplitPane pvert = new JSplitPane(JSplitPane.VERTICAL_SPLIT, phoriz, scroll);
 		pvert.setResizeWeight(1.0);
+		pvert.setContinuousLayout(true);
 		frame.getContentPane().add(pvert, BorderLayout.CENTER);
 
 		//Display the window.
@@ -244,21 +180,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	
 	private Component buildLinkTable() {
 	    //build the table showing the links
-        linkTable=new JTable(linkTableModel) {
-            @Override
-            public String getToolTipText(MouseEvent e) {
-                int row = rowAtPoint(e.getPoint());
-                if (row == -1) return "";
-                row = convertRowIndexToModel(row);
-                return linkTableModel.getLinkInfo(row).getDetailedStatus();
-            }
-            @Override
-            public TableCellRenderer getCellRenderer(int row, int column) {
-                return linkInfoRenderer;
-           }
-        };
-        linkTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        linkTable.setAutoCreateRowSorter(true);
+        linkTable=new LinkTable(linkTableModel);
 
         if(hasAdminRights) {
             final JPopupMenu popupLinks = new JPopupMenu();
@@ -381,7 +303,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                 int selectedRow = channelTable.getSelectedRow();
                 if (selectedRow == -1) {
                     commandQueueDisplay.setChannel(null, null);
-                    archiveReplay.archivePanel.replayPanel.clearReplayPanel();
+                    archiveBrowserSelector.archivePanel.replayPanel.clearReplayPanel();
                     if (dcmi != null) dcmi.setEnabled(false);
                 } else {
                     selectedRow = channelTable.convertRowIndexToModel(selectedRow);
@@ -391,9 +313,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
                     // show replay transport control if applicable
                     if (ci.hasReplayRequest()) {
-                        archiveReplay.archivePanel.replayPanel.setupReplayPanel(ci);
+                        archiveBrowserSelector.archivePanel.replayPanel.setupReplayPanel(ci);
                     } else {
-                        archiveReplay.archivePanel.replayPanel.clearReplayPanel();
+                        archiveBrowserSelector.archivePanel.replayPanel.clearReplayPanel();
                     }
                 }
             }
@@ -540,10 +462,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	private Component buildCreateChannelPanel() {
 	 // "create channel" panel
         GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints  c = new GridBagConstraints();
+        GridBagConstraints c = new GridBagConstraints();
         JPanel createPanel = new JPanel(gridbag);
         createPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "New Channel"));
-        JLabel  label = new JLabel("Name:");
+        JLabel label = new JLabel("Name:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
@@ -559,15 +481,33 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
         
-        archiveChannel = new ArchiveChannel(archiveReplay);
-
-        ChannelType[] types;
-        types = new ChannelType[] {archiveChannel};
+        ArrayList<ChannelWidget> widgets = new ArrayList<ChannelWidget>();
+        try {
+            YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
+            if(yconf.containsKey("channelWidgets")) {
+                @SuppressWarnings("rawtypes")
+                List ywidgets = yconf.getList("channelWidgets");
+                for(Object ywidget : ywidgets) {
+                    @SuppressWarnings("rawtypes")
+                    Map m = (Map) ywidget;
+                    String channelType = YConfiguration.getString(m, "type");
+                    String widgetClass = YConfiguration.getString(m, "class");
+                    ChannelWidget widget = new YObjectLoader<ChannelWidget>().loadObject(widgetClass, channelType);
+                    widgets.add(widget);
+                }
+            } else {
+                widgets.add(new ArchiveChannelWidget("Archive"));
+            }
+        } catch(ConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         
-        newChannelType = new JComboBox(types);
+        channelChooser = new JComboBox(widgets.toArray());
         
-        c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(newChannelType, c);
-        createPanel.add(newChannelType);
+        c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(channelChooser, c);
+        createPanel.add(channelChooser);
         
         label = new JLabel("Spec:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
@@ -582,17 +522,17 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH; gridbag.setConstraints(specPanel, c);
         createPanel.add(specPanel);
-        for ( ChannelType type:types ) {
-            type.setSuggestedNameComponent(newChannelName);
-            specPanel.add(type.getDetailsComponent(), type.toString());
+        for (ChannelWidget widget:widgets) {
+            widget.setSuggestedNameComponent(newChannelName);
+            specPanel.add(widget.createConfigurationPanel(), widget.channelType);
         }
-        // when a channel type is selected, bring the appropriate spec panel to front
-        newChannelType.addActionListener(new ActionListener() {
+        // when a channel type is selected, bring the appropriate widget to the front
+        channelChooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed( ActionEvent ae ) {
-                specLayout.show(specPanel, newChannelType.getSelectedItem().toString());
-                ChannelType type = (ChannelType)newChannelType.getSelectedItem();
-                type.activate();
+                specLayout.show(specPanel, channelChooser.getSelectedItem().toString());
+                ChannelWidget widget = (ChannelWidget)channelChooser.getSelectedItem();
+                widget.activate();
             }
         });
 
@@ -645,6 +585,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         channelTableModel.clear();
         channelControl.receiveInitialConfig();
         commandQueueDisplay.update();
+        setTitle("connected to "+yconnector.getUrl().replaceFirst("[^/]+$", selectedInstance));
         updateBorders();
 	}
     
@@ -660,6 +601,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 				frame.setTitle("Yamcs Monitor ("+title+")");
 			}
 		});
+	}
+	
+	void showArchiveBrowserSelector() {
+	    archiveBrowserSelector.setVisible(true);
 	}
 
 
@@ -688,7 +633,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			return;
 		}
 		String name=newChannelName.getText();
-		ChannelType type = (ChannelType)newChannelType.getSelectedItem();
+		ChannelWidget type = (ChannelWidget)channelChooser.getSelectedItem();
 		String spec = type.getSpec();
 		if(hasAdminRights) {
 			persistent=persistentCheckBox.isSelected();
@@ -803,7 +748,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		channelTableModel.clear();
 		clientTableModel.clear();
 		updateStatistics(null);
-		archiveReplay.archivePanel.disconnected();
+		archiveBrowserSelector.archivePanel.disconnected();
 	}
 
 
@@ -813,6 +758,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	}
 
 	//------------- end of interface ConnectionListener
+	
+    public ChannelWidget getActiveChannelWidget() {
+        return (ChannelWidget) channelChooser.getSelectedItem();
+    }
 
 	private void connect(final YamcsConnectData ycd)	{
 		yconnector.connect(ycd);
@@ -828,41 +777,9 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		});
 	}
 
-
-	class LinkCellRenderer extends DefaultTableCellRenderer {
-		final Border selectedBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
-		@Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			final int modelRow = linkTable.convertRowIndexToModel(row);
-			final LinkInfo info = linkTableModel.getLinkInfo(modelRow);
-			if (info != null) {
-				if (isSelected) {
-					setBorder(selectedBorder);
-				}
-				if(info.getDisabled()) {
-				    setBackground(Color.LIGHT_GRAY);
-				} else {
-				    if ("OK".equals(info.getStatus())) {
-				        if(linkTableModel.isDataCountIncreasing(modelRow)) {
-				            setBackground(Color.GREEN);
-				        } else {
-				            setBackground(Color.WHITE);
-				        }
-					}  else
-					    setBackground(Color.RED);
-				}
-			}
-			return this;
-		}
-	}
-
-
-
 	/**
 	 * Called when a row is selected in the channel table. 
 	 *  Populates the tm statistics panel with information about the selected channel
-	 * @param selectedRow the number of the row containing the selected row
 	 */
 	@Override
     public void updateStatistics(final Statistics stats)	{
@@ -903,7 +820,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 						}
 						if (ci.hasReplayRequest()) {
 							if (modelSelectedRow < channelTableModel.getRowCount()) {
-								archiveReplay.archivePanel.replayPanel.updateStatistics(stats);
+								archiveBrowserSelector.archivePanel.replayPanel.updateStatistics(stats);
 							}
 						}
 					}
@@ -967,7 +884,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                 if(!ci.getInstance().equals(selectedInstance)) return;
                 boolean added=channelTableModel.upsertChannel(ci);
                 buildClientListPopup();
-                archiveReplay.archivePanel.replayPanel.updateChannelInfol(ci);
+                archiveBrowserSelector.archivePanel.replayPanel.updateChannelInfol(ci);
                 if(added && ci.getHasCommanding() && hasAdminRights) {
                     commandQueueDisplay.addChannel(ci.getInstance(), ci.getName());
                 }
@@ -1067,198 +984,3 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		});
 	}
 }
-
-
-//===============================================================================================================
-
-
-
-
-
-
-//-------------------------------------------------------------------------------------------------------------------
-
-interface ChannelType {
-	public JComponent getDetailsComponent(); // returns the component to be displayed
-	public void setSuggestedNameComponent( JTextComponent nameComp );
-	public void activate(); // invoked when the channel panel is brought to the front
-	public String getSpec(); //returns the spec string forwarded to createChannel()
-}
-
-
-class ArchiveChannel extends JPanel implements ChannelType {
-	String archiveInstance;
-	long start, stop;
-	JList packetList;
-	JLabel startLabel, stopLabel, instanceLabel;
-	JCheckBox loopButton;
-	JRadioButton speedRealtimeRadio, speedFixedRadio;
-
-	
-	protected JTextComponent nameComp;
-	@Override
-    public void setSuggestedNameComponent( JTextComponent nameComp ) { this.nameComp = nameComp; }
-	@Override
-    public String toString() { return "Archive"; }
-
-	ArchiveChannel(final ArchiveReplay archiveWindow) {
-		super();
-		archiveWindow.archiveChannel=this;
-		GridBagLayout gridbag = new GridBagLayout();
-		GridBagConstraints gbc = new GridBagConstraints();
-		setLayout(gridbag);
-
-		JButton button = new JButton("Open Archive Selector");
-		button.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed ( ActionEvent ae ) {
-				archiveWindow.setVisible(true);
-			}
-		});
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(button, gbc);
-		add(button);
-
-		JLabel label = new JLabel("Start:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		startLabel = new JLabel();
-		startLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, startLabel.getMaximumSize().height));
-		startLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(startLabel, gbc);
-		add(startLabel);
-
-		label = new JLabel("Stop:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		stopLabel = new JLabel();
-		stopLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, stopLabel.getMaximumSize().height));
-		stopLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(stopLabel, gbc);
-		add(stopLabel);
-
-		label = new JLabel("Instance:", SwingConstants.RIGHT);
-		label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 0.0; gbc.weighty = 0.0; gbc.gridwidth = 1;
-		gridbag.setConstraints(label, gbc);
-		add(label);
-
-		instanceLabel = new JLabel();
-		instanceLabel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-		gbc.weightx = 1.0; gbc.weighty = 0.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(instanceLabel, gbc);
-		add(instanceLabel);
-
-		// TM packet list
-
-		packetList = new JList();
-		packetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		packetList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
-		packetList.getActionMap().put("delete", new AbstractAction() {
-			@Override
-            public void actionPerformed( ActionEvent ae ) {
-				Vector<Object> vec = new Vector<Object>();
-				ListModel lm = packetList.getModel();
-				for ( int i = 0; i < lm.getSize(); ++i ) {
-					if ( !packetList.isSelectedIndex(i) ) {
-						vec.add(lm.getElementAt(i));
-					}
-				}
-				packetList.setListData(vec);
-			}
-		});
-		JScrollPane scrollPane = new JScrollPane(packetList);
-		scrollPane.setPreferredSize(new Dimension(150, 80));
-		scrollPane.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		gbc.weightx = 1.0; gbc.weighty = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gridbag.setConstraints(scrollPane, gbc);
-		add(scrollPane);
-
-		// playback speed
-
-		Box hbox = Box.createHorizontalBox();
-		gbc.weightx = 0.0; gbc.weighty = 0.0;
-		gbc.fill = GridBagConstraints.NONE;
-		gridbag.setConstraints(hbox, gbc);
-		add(hbox);
-
-		label = new JLabel("Speed:");
-		hbox.add(label);
-		speedRealtimeRadio = new JRadioButton("Realtime");
-		speedRealtimeRadio.setToolTipText("Play telemetry at a speed according to their CCSDS timestamps.");
-		hbox.add(speedRealtimeRadio);
-		speedFixedRadio = new JRadioButton("Fixed");
-		speedFixedRadio.setToolTipText("Play telemetry at 1 packet per second, ignoring CCSDS timestamps.");
-		speedFixedRadio.setSelected(true);
-		hbox.add(speedFixedRadio);
-		ButtonGroup group = new ButtonGroup();
-		group.add(speedRealtimeRadio);
-		group.add(speedFixedRadio);
-
-		// loop replay
-
-		loopButton = new JCheckBox("Loop Replay");
-		loopButton.setToolTipText("When checked, replay restarts after it has ended. Otherwise it is stopped.");
-		gbc.weightx = 0.0; gbc.weighty = 0.0;
-		gbc.fill = GridBagConstraints.NONE;
-		gridbag.setConstraints(loopButton, gbc);
-		add(loopButton);
-
-		// for testing
-		//String[] packets = { "SOLAR_Tlm_Pkt_HK" };
-		//apply(new Date((long)1101855600 * 1000), new Date((long)1101942000 * 1000), packets);
-	}
-
-	@Override
-    public JComponent getDetailsComponent()	{
-		return this;
-	}
-
-	void apply(String archiveInstance, long start, long stop, String[] packets) {
-		this.archiveInstance=archiveInstance;
-		this.start = start;
-		this.stop = stop;
-
-		startLabel.setText(TimeEncoding.toOrdinalDateTime(start));
-		stopLabel.setText(TimeEncoding.toOrdinalDateTime(stop));
-		instanceLabel.setText(archiveInstance);
-		packetList.setListData(packets);
-
-		nameComp.setText("Archive");
-	}
-
-	@Override
-    public void activate() {
-		// do nothing
-	}
-
-	@Override
-    public String getSpec()	{
-		if ( start < 0 ) {
-			YamcsMonitor.theApp.showMessage("Please specify a start date and a stop date first.");
-			return null;
-		}
-
-		StringBuffer spec = new StringBuffer(archiveInstance+" "+start + " " + stop + " ");
-		spec.append(loopButton.isSelected() ? "LOOP" : "STOP");
-		if ( speedRealtimeRadio.isSelected() ) { spec.append(" REALTIME 1"); }
-		else if ( speedFixedRadio.isSelected() ) { spec.append(" FIXED_DELAY 200"); }
-		else { spec.append(" AFAP"); } // should never happen
-		ListModel model = packetList.getModel();
-		for ( int i = 0; i < model.getSize(); ++i ) {
-			spec.append(" ");
-			spec.append(model.getElementAt(i));
-		}
-		return spec.toString();
-	}
-}
-

@@ -49,7 +49,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        hornetServer.stop();
+	YamcsServer.stopHornet();
     }
  
     
@@ -57,8 +57,8 @@ public class TestCmdHistoryRecording extends YarchTestCase {
     public void testRecording() throws Exception {
         final int n=100;
         ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
-        
-        (new CommandHistoryRecorder(ydb.getName())).start();
+        CommandHistoryRecorder cmdHistRecorder =new CommandHistoryRecorder(ydb.getName()); 
+        cmdHistRecorder.startAsync();
        
         Stream rtstream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         assertNotNull(rtstream);
@@ -68,7 +68,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
                 .setGenerationTime(i).setSequenceNumber(0).build();
             PreparedCommand pc=new PreparedCommand(id);
             pc.setSource("test1(blabla)");
-            pc.binary=new byte[20];
+            pc.setBinary(new byte[20]);
             pc.setUsername("nico");
             Tuple t=pc.toTuple();
             rtstream.emitTuple(t);
@@ -100,7 +100,7 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         
         //and now try remotely using replay
         ReplayServer replay=new ReplayServer(ydb.getName());
-        replay.start();
+        replay.startAsync();
         
         YamcsSession ysession=YamcsSession.newBuilder().build();
         YamcsClient yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
@@ -120,8 +120,8 @@ public class TestCmdHistoryRecording extends YarchTestCase {
             ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
             assertEquals(ProtoDataType.CMD_HISTORY, dt);
             CommandHistoryEntry cmd=(CommandHistoryEntry)decode(msg, CommandHistoryEntry.newBuilder());
-            assertEquals(i, cmd.getCmdId().getGenerationTime());
-            assertEquals("test"+i, cmd.getCmdName());
+            assertEquals(i, cmd.getCommandId().getGenerationTime());
+            assertEquals("test"+i, cmd.getCommandId().getCommandName());
         }
         ClientMessage msg=yclient.dataConsumer.receive(5000);
         assertNotNull(msg);
@@ -130,6 +130,8 @@ public class TestCmdHistoryRecording extends YarchTestCase {
         
         yclient.close();
         ysession.close();
-        replay.stop();
+        replay.stopAsync();
+        
+        cmdHistRecorder.stopAsync();
     }
 }

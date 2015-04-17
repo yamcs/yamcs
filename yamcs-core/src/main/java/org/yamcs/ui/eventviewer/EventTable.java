@@ -1,6 +1,5 @@
 package org.yamcs.ui.eventviewer;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.prefs.Preferences;
@@ -17,15 +16,13 @@ import javax.swing.table.TableColumn;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.UiColors;
 
 public class EventTable extends JTable {
     private static final long serialVersionUID = 1L;
     private static final ImageIcon INFO_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/blank.png"));
     private static final ImageIcon WARNING_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/warn.png"));
     private static final ImageIcon ERROR_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/error.png"));
-    static final Color COLOR_ERROR_BG=new Color(255, 221, 221);
-    static final Color COLOR_WARNING_BG=new Color(248, 238, 199);
-    static final Color BORDER_COLOR = new Color(216, 216, 216);
     private final EventTableRenderer renderer = new EventTableRenderer();
     private boolean inLayout;
     private Preferences uiPrefs;
@@ -55,14 +52,14 @@ public class EventTable extends JTable {
             int modelRow = convertRowIndexToModel(row);
             Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
             if(event.getSeverity()==EventSeverity.WARNING) {
-                c.setBackground(COLOR_WARNING_BG);
+                c.setBackground(UiColors.WARNING_FAINT_BG);
                 //setSelectedTextColor(COLOR_WARNING_BG);
                 //setDisabledTextColor(COLOR_WARNING_BG);
             } else if(event.getSeverity()==EventSeverity.ERROR) {
-                c.setBackground(COLOR_ERROR_BG);
+                c.setBackground(UiColors.ERROR_FAINT_BG);
             }
         }
-        ((JComponent) c).setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, BORDER_COLOR));
+        ((JComponent) c).setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, UiColors.BORDER_COLOR));
         return c;
     }
 

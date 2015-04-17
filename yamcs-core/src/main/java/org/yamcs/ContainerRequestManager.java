@@ -140,7 +140,8 @@ public class ContainerRequestManager implements ContainerListener {
                     // Return with the same name as used for subscription 
                     if (nameMapping.def.equals(def)) {
                         ItemIdPacketConsumerStruct struct = new ItemIdPacketConsumerStruct(
-                                        subscriber, nameMapping.id, def);
+                                        subscriber, nameMapping.id, def,
+                                        result.getAcquisitionTime(), result.getGenerationTime());
                         subscriber.processPacket(struct, result.getContainerContent());
                     }
                 }
@@ -152,13 +153,6 @@ public class ContainerRequestManager implements ContainerListener {
         return tmProcessor;
     }
 
-    public void start() {
-        tmProcessor.start();
-    }
-    
-    public void quit() {
-        tmPacketProvider.stop();
-    }
     
     private static class ContainerWithId {
         SequenceContainer def; // The definition of the container

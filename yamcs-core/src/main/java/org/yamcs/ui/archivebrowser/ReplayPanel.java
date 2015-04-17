@@ -1,26 +1,18 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.yamcs.ui.ChannelControlClient;
-
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
+import org.yamcs.ui.ChannelControlClient;
 import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Panel containing the replay controls (start/stop, start/stop/current time)
@@ -31,23 +23,28 @@ public class ReplayPanel extends JPanel {
     protected JLabel replayStartLabel, replayCurrentLabel, replayStopLabel, channelNameLabel, replayStatusLabel, replaySpeedLabel;
     protected ImageIcon replayStartIcon, replayStopIcon;
     protected JButton playStopButton;
+    public JButton applySelectionButton;
     protected ChannelInfo currentChannelInfo;
     int replayButtonFunction;
     static final int STOP = 0;
     static final int PLAY = 1;
-    IndexBox tmBox;
+    DataViewer dataViewer;
     
     ChannelControlClient channelControl;
     long currentInstant;
     
-    public ReplayPanel(GridBagLayout lay) {
-        super(lay);
+    public ReplayPanel() {
+        super(new BorderLayout());
+
+        GridBagLayout lay = new GridBagLayout();
+        JPanel centerPanel = new JPanel(lay);
+
      // playing/stopped status
         GridBagConstraints gbc=new GridBagConstraints();
         replayStatusLabel = new JLabel();
         gbc.weightx = 1.0; gbc.gridwidth = 1;
         lay.setConstraints(replayStatusLabel, gbc);
-        add(replayStatusLabel);
+        centerPanel.add(replayStatusLabel);
 
         // replay: channel name
 
@@ -55,21 +52,23 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         channelNameLabel = new JLabel();
         channelNameLabel.setPreferredSize(new Dimension(150, channelNameLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(channelNameLabel, gbc);
-        add(channelNameLabel);
+        centerPanel.add(channelNameLabel);
 
         // play/stop button
 
         replayStartIcon = ArchivePanel.getIcon("start.gif");
         replayStopIcon = ArchivePanel.getIcon("stop.gif");
         playStopButton = new JButton(replayStopIcon); // the Play/Stop button
+        playStopButton.setEnabled(false);
         playStopButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed( ActionEvent ae ) {
                 playOrStopPressed();
             }
@@ -77,7 +76,7 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.weighty = 1.0; gbc.gridwidth = 1; gbc.gridheight = 4; gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.NONE;
         lay.setConstraints(playStopButton, gbc);
-        add(playStopButton);
+        centerPanel.add(playStopButton);
 
         // replay: start time
 
@@ -85,14 +84,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1; gbc.gridheight = 1;
         gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayStartLabel = new JLabel();
         replayStartLabel.setPreferredSize(new Dimension(150, replayStartLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayStartLabel, gbc);
-        add(replayStartLabel);
+        centerPanel.add(replayStartLabel);
 
         // replay: current time
 
@@ -100,14 +99,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayCurrentLabel = new JLabel();
         replayCurrentLabel.setPreferredSize(new Dimension(150, replayCurrentLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayCurrentLabel, gbc);
-        add(replayCurrentLabel);
+        centerPanel.add(replayCurrentLabel);
 
         // replay: stop time
 
@@ -115,14 +114,14 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replayStopLabel = new JLabel();
         replayStopLabel.setPreferredSize(new Dimension(150, replayStopLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replayStopLabel, gbc);
-        add(replayStopLabel);
+        centerPanel.add(replayStopLabel);
 
         // replay: speed
 
@@ -130,18 +129,34 @@ public class ReplayPanel extends JPanel {
         gbc.weightx = 0.0; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         lay.setConstraints(lab, gbc);
-        add(lab);
+        centerPanel.add(lab);
 
         replaySpeedLabel = new JLabel();
         replaySpeedLabel.setPreferredSize(new Dimension(150, replaySpeedLabel.getPreferredSize().height));
         gbc.weightx = 1.0; gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.WEST;
         lay.setConstraints(replaySpeedLabel, gbc);
-        add(replaySpeedLabel);
-        
+        centerPanel.add(replaySpeedLabel);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        Box buttonPanel = Box.createVerticalBox();
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
+        applySelectionButton = new JButton("Apply Selection");
+        applySelectionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        applySelectionButton.setEnabled(false);
+        applySelectionButton.setToolTipText("Apply the selection to the replay");
+        applySelectionButton.setActionCommand("apply");
+
+        buttonPanel.add(Box.createVerticalGlue());
+        buttonPanel.add(applySelectionButton);
+        buttonPanel.add(Box.createVerticalGlue());
+
+        add(buttonPanel, BorderLayout.EAST);
     }
-    public void setTmBox(IndexBox tmBox) {
-        this.tmBox=tmBox;
+
+    public void setDataViewer(DataViewer dataViewer) {
+        this.dataViewer=dataViewer;
     }
     
     public void setChannelControlClient(ChannelControlClient cc) {
@@ -158,7 +173,6 @@ public class ReplayPanel extends JPanel {
         }
     }
     
-    
     public void clearReplayPanel() {
         currentChannelInfo = null;
 
@@ -171,9 +185,9 @@ public class ReplayPanel extends JPanel {
         replayCurrentLabel.setText("");
         //replayStartLabel.setPreferredSize(new Dimension(150, replayStartLabel.getPreferredSize().height));
 
-        tmBox.setStartLocator(tmBox.DO_NOT_DRAW);
-        tmBox.setStopLocator(tmBox.DO_NOT_DRAW);
-        tmBox.setCurrentLocator(tmBox.DO_NOT_DRAW);
+        dataViewer.getDataView().setStartLocator(dataViewer.getDataView().DO_NOT_DRAW);
+        dataViewer.getDataView().setStopLocator(dataViewer.getDataView().DO_NOT_DRAW);
+        dataViewer.getDataView().setCurrentLocator(dataViewer.getDataView().DO_NOT_DRAW);
     }
     /**
      * called by the yamcs monitor when a channelinfo update is received from the server
@@ -196,9 +210,9 @@ public class ReplayPanel extends JPanel {
         if(ci.hasReplayRequest()) {
             currentChannelInfo = ci;
             if ( isVisible() ) {
-                playStopButton.setEnabled(false);
+                playStopButton.setEnabled(true);
                 replayCurrentLabel.setText("");
-                tmBox.setCurrentLocator(tmBox.DO_NOT_DRAW);
+                dataViewer.getDataView().setCurrentLocator(dataViewer.getDataView().DO_NOT_DRAW);
                 for ( Component c:getComponents() ) {
                     c.setEnabled(true);
                 }
@@ -235,8 +249,8 @@ public class ReplayPanel extends JPanel {
         channelNameLabel.setText(currentChannelInfo.getName());
 
         // draw start/stop locators
-        tmBox.setStartLocator(rr.getStart());
-        tmBox.setStopLocator(rr.getStop());
+        dataViewer.getDataView().setStartLocator(rr.getStart());
+        dataViewer.getDataView().setStopLocator(rr.getStop());
     }
     
     private String getSpeedLabel(ReplaySpeed speed) {
@@ -267,7 +281,7 @@ public class ReplayPanel extends JPanel {
             currentInstant=pos;
 
             replayCurrentLabel.setText(TimeEncoding.toString(currentInstant));
-            tmBox.setCurrentLocator(currentInstant);
+            dataViewer.getDataView().setCurrentLocator(currentInstant);
         }
     }
 

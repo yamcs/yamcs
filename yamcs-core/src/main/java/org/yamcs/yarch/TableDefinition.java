@@ -22,7 +22,6 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import org.yamcs.utils.StringConvertors;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * A table definition consists of a (key,value) pair of tuple definitions.
@@ -56,13 +55,13 @@ public class TableDefinition {
     private YarchDatabase ydb; 
     
     private boolean customDataDir=false; //if not null, dataDir represents a directory different than the YarchDatabase root. 
-                                         //It will not be discarded after serialization.
+                                         //It will not be discarded after serialisation.
     private String dataDir; 
     
     private boolean compressed;
     private PartitioningSpec partitioningSpec;
     
-    transient PartitionManager partitionManager=null;
+    private String storageEngineName="tokyocabinet";
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
@@ -81,7 +80,7 @@ public class TableDefinition {
      * @param primaryKey
      * @throws StreamSqlException
      */
-    public TableDefinition(String name, TupleDefinition tdef, ArrayList<String> primaryKey) throws StreamSqlException {
+    public TableDefinition(String name, TupleDefinition tdef, List<String> primaryKey) throws StreamSqlException {
         keyDef=new TupleDefinition();
         this.name=name;
         for(String s:primaryKey) {
@@ -165,9 +164,8 @@ public class TableDefinition {
             }
             pspec.valueColumnType=c.getType();
         }
-        this.partitioningSpec=pspec;
-        partitionManager=new PartitionManager(this);
         
+        this.partitioningSpec=pspec;
     }
  
     private void computeTupleDef() {
@@ -197,7 +195,9 @@ public class TableDefinition {
     }
 
     /**
-     * setds both the customDataDir and dataDir to the value
+     * sets the customDataDir 
+     *   - if true, the dataDir will not be discarded after serialisation, so the next time the server is restarted it will stay to the set value.
+     *   - if false, at restart the dataDir will be set to the YarchDatabase.dataDir
      * @param dataDir
      */
     public void setCustomDataDir(boolean b) {
@@ -214,7 +214,7 @@ public class TableDefinition {
     }
 
     /**
-     * sets customDataDir to null and dataDir to this value
+     * sets dataDir to this value
      * @param dataDir
      */
     public void setDataDir(String dataDir) {
@@ -272,9 +272,12 @@ public class TableDefinition {
         computeTupleDef();
     }
 
-   //add a value to a enum and writes the table definition to disk
-   // we first modify the serializedEnumValues to make sure that nobody else sees the new enum id
-   // before the serialization is finished (i.e. flushed on disk)
+   /**
+    * Adds a value to a enum and writes the table definition to disk
+    * we first modify the serializedEnumValues to make sure that nobody else sees the new enum id
+    * before the serialization is finished (i.e. flushed on disk)
+    * 
+    */
    synchronized void addEnumValue(ColumnSerializer cs, String v) {
        String columnName=cs.getColumnName();
        BiMap<String, Short> b;
@@ -294,7 +297,28 @@ public class TableDefinition {
        enumValues=serializedEmumValues;
        cs.setEnumValues(b2);
    }
-   
+
+   /**
+    * get the enum value corresponding to a column, creating it if it does not exist
+    * @param valueColumn
+    * @param value
+    * @return
+    */
+   public Short addAndGetEnumValue(String columnName, String value) {
+       Short enumValue;
+       Short v1;
+       BiMap<String, Short>  b;
+       if((enumValues==null) || ((b=enumValues.get(columnName))==null) || (v1=b.get(value))==null) {
+           ColumnSerializer cs=getColumnSerializer(columnName);
+           addEnumValue(cs, value);
+           enumValue=enumValues.get(columnName).get(value);
+       } else {
+           enumValue = v1;
+       }
+       return enumValue;
+   }
+
+  
     /**
      * Transform the value part of the tuple into a byte array to be written on disk. 
      * Each column is preceded by a tag (the column index).
@@ -377,7 +401,7 @@ public class TableDefinition {
     
     /**
      * Returns true if this is the first column of the key
-     * @param type
+     * @param channelType
      * @return
      */
     public boolean isIndexedByKey(String cname) {
@@ -390,10 +414,6 @@ public class TableDefinition {
         return null;
     }
 
-    public PartitionManager getPartitionManager() {
-        return partitionManager;
-    }
-
     public boolean hasPartitioning() {
         return (partitioningSpec!=null);
     }
@@ -404,10 +424,6 @@ public class TableDefinition {
 
     public void setCompressed(boolean compressed) {
         this.compressed=compressed;
-    }
-
-    public void setPartitionManager(PartitionManager pm) {
-        this.partitionManager=pm;
     }
     
     public void setHistogramColumns(List<String> histoColumns) throws StreamSqlException {
@@ -425,40 +441,6 @@ public class TableDefinition {
 
     public boolean hasHistogram() {
         return histoColumns!=null;
-    }
-    /**
-     * get the filename where the tuple would fit (can be a partition)
-     * @param t
-     * @return
-     * @throws IOException if there was an error while creating the directories where the file should be located
-     */
-    public String getDbFilename(Tuple t) throws IOException {
-        if(partitioningSpec==null) return getDataDir()+"/"+getName();
-        long time=TimeEncoding.INVALID_INSTANT;
-        Object value=null;
-        if(partitioningSpec.timeColumn!=null) {
-            time =(Long)t.getColumn(partitioningSpec.timeColumn);
-        }
-        if(partitioningSpec.valueColumn!=null) {
-            value=t.getColumn(partitioningSpec.valueColumn);
-            ColumnDefinition cd=getColumnDefinition(partitioningSpec.valueColumn);
-            if(cd.getType()==DataType.ENUM) {
-                ColumnSerializer cs=getColumnSerializer(partitioningSpec.valueColumn);
-                Object v1;
-                BiMap<String, Short>  b;
-                if((enumValues==null) || ((b=enumValues.get(partitioningSpec.valueColumn))==null) || (v1=b.get(value))==null) {
-                    addEnumValue(cs, (String)value);
-                    value=enumValues.get(partitioningSpec.valueColumn).get(value);
-                } else {
-                    value=v1;
-                }
-            }
-        }
-        return partitionManager.createAndGetPartition(time, value);
-    }
-    
-    public String getHistogramDbFilename(String columnName) {
-        return getDataDir()+"/"+getName()+"-histo#"+columnName;
     }
     
     public BiMap<String, Short> getEnumValues(String columnName) {
@@ -496,6 +478,13 @@ public class TableDefinition {
         }
     }
 
-   
+    public String getStorageEngineName() {
+        return storageEngineName;
+    }
+
+    public void setStorageEngineName(String storageEngineName) {
+        this.storageEngineName = storageEngineName;
+    }
+
 }
 

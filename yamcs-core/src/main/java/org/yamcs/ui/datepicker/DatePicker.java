@@ -1,23 +1,19 @@
 package org.yamcs.ui.datepicker;
 
+import net.sourceforge.jdatepicker.JDateComponentFactory;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilCalendarModel;
+import org.yamcs.TimeInterval;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField.AbstractFormatter;
-import javax.swing.BoxLayout;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import org.yamcs.TimeInterval;
-import org.yamcs.utils.TimeEncoding;
-
-import net.sourceforge.jdatepicker.JDateComponentFactory;
-import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
-import net.sourceforge.jdatepicker.impl.UtilCalendarModel;
 
 import static java.util.Calendar.*;
 /**
@@ -43,10 +39,16 @@ public final class DatePicker extends JPanel {
             public void actionPerformed(final ActionEvent e) {
                 int idx = fixedRangesComboBox.getSelectedIndex();
                 if (idx != 0) {
-                	end.setTime(null);
-                	Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.MONTH, -3*(1<<(idx-1)));
-                    start.setTime(cal);
+                	Calendar startCal = Calendar.getInstance();
+                    startCal.set(Calendar.HOUR_OF_DAY, 0);
+                    startCal.set(Calendar.MINUTE, 0);
+                    startCal.set(Calendar.SECOND, 0);
+                    startCal.set(Calendar.MILLISECOND, 0);
+                    startCal.add(Calendar.DAY_OF_MONTH, 1);
+                    end.setTime(startCal);
+                	Calendar endCal = Calendar.getInstance();
+                    endCal.add(Calendar.MONTH, -3*(1<<(idx-1)));
+                    start.setTime(endCal);
                 }
             }
         });

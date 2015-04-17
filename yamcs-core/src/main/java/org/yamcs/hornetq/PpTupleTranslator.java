@@ -23,12 +23,19 @@ public class PpTupleTranslator implements TupleTranslator {
 
 	@Override
 	public ClientMessage buildMessage( ClientMessage msg, Tuple tuple ) {
-		msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, (Long)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_GENTIME) );
-		msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP, (String)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_PPGROUP) );
+	    long genTime = (Long)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_GENTIME);
+		msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, genTime);
+		
+		String ppGroup =(String)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_PPGROUP); 
+		msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP,  ppGroup);
+		
+		
 		msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, (Integer)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM) );
 		msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_RECTIME, (Long)tuple.getColumn(PpProviderAdapter.PP_TUPLE_COL_RECTIME) );
 
 		Builder b = ParameterData.newBuilder();
+		b.setGenerationTime(genTime);
+		b.setGroup(ppGroup);
 		for( int i = 4; i < tuple.size(); i++ ) {
 			// PP name is part of the instance
 			ParameterValue ppValue = (ParameterValue)tuple.getColumn(i);

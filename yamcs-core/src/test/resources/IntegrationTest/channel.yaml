@@ -1,0 +1,48 @@
+# this file defines the diferrent channels
+# channel is where TM/TC processing happends inside Yamcs.
+#
+# each channel uses a source of TM packets, one or more sources of parameters and a command releaser
+#  all of these are optional
+#
+# Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
+#
+#
+#all the supported channel types
+# 
+types: [realtime, Archive]
+
+
+
+realtime:
+    telemetryProvider: 
+       class: org.yamcs.tctm.YarchTmPacketProvider
+       args: 
+           stream: "tm_realtime"
+    commandReleaser:
+       class: org.yamcs.tctm.YarchTcCommandReleaser
+       args:
+           stream: "tc_realtime"
+    parameterProviders:
+#       - class: org.yamcs.tctm.YarchPpProvider
+#         args:
+#           stream: "pp_realtime"
+       # implements XTCE algorithms
+       - class: org.yamcs.algorithms.AlgorithmManager
+         args:
+            libraries:
+              - mdb/algolib.js      
+       - class: org.yamcs.parameter.SystemParametersChannelProvider
+       - class: org.yamcs.parameter.SoftwareParameterManager
+    config:
+        #check alarms and also enable the alarm server (that keeps track of unacknoledged alarms)
+        alarm:
+            check: true
+            server: enabled
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
+
+Archive:
+    tm: 
+       class: org.yamcs.tctm.ReplayService

@@ -1,6 +1,6 @@
 package org.yamcs.utils;
 
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -35,14 +35,17 @@ public class ValueUtility {
         case STRING:
             return getStringValue((String)v);
         case TIMESTAMP:
-            return getTimestampValue((Long)v);
+            return ValueHelper.newTimestampValue((Long)v);
         case BINARY:
             return getBinaryValue((byte[])v);
+        case BOOLEAN:
+        	return ValueHelper.newValue((Boolean)v);
         }
         throw new RuntimeException("cannot convert type to value "+cd.getType());
     }
+
     
-    public static Object getYarchValue(Value v) {
+	public static Object getYarchValue(Value v) {
         switch(v.getType()) {
         case BINARY:
             return v.getBinaryValue().toByteArray();
@@ -80,5 +83,4 @@ public class ValueUtility {
         }
         throw new RuntimeException("cannot values of type "+v.getType());
     }
-
 }

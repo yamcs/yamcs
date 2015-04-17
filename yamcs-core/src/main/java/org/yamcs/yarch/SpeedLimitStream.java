@@ -87,7 +87,6 @@ public class SpeedLimitStream extends AbstractStream implements StreamSubscriber
 
     @Override
     protected void doClose() {
-        System.out.println("closing input "+input);
         input.close(); //TODO replace with removeSubscriber
     }
 }

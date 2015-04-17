@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
@@ -16,44 +17,41 @@ import com.google.protobuf.ByteString;
  *
  */
 public class ParameterValue {
-	public Parameter def;
-	ParameterEntry entry;
-	int absoluteBitOffset, bitSize;
-	
-	public Value rawValue;
-	private Value engValue;
-	private long acquisitionTime;
-	private long generationTime;
-	private AcquisitionStatus acquisitionStatus;
-	private boolean processingStatus;
-	public MonitoringResult monitoringResult;
+    public Parameter def;
+    ParameterEntry entry;
+    int absoluteBitOffset, bitSize;
 
-	public FloatRange watchRange=null;
-	public FloatRange warningRange=null;
-	public FloatRange distressRange=null;
-	public FloatRange criticalRange=null;
-	public FloatRange severeRange=null;
-	
-	
-	/**
-	 * Creates a parameter value for a parameter which has critical or warning range associated
-	 * @param def the parameter definition
-	 * @param withRawValue if the parameter contains a raw value or not
-	 */
-	public ParameterValue(Parameter def, boolean withRawValue) {
-		this.def=def;
-		
-		setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
-		setProcessingStatus(true);
-		monitoringResult=MonitoringResult.DISABLED;
-		/*
-		if(withRawValue) {
-			rawValue=new RawValueType();
-		}*/
-	}
+    public Value rawValue;
+    private Value engValue;
+    private long acquisitionTime;
+    private long generationTime;
+    private AcquisitionStatus acquisitionStatus;
+    private boolean processingStatus;
+    public MonitoringResult monitoringResult;
+    public MonitoringResult deltaMonitoringResult;
 
-	/**
-	 * Called only from the cascading provider 
+
+    public FloatRange watchRange=null;
+    public FloatRange warningRange=null;
+    public FloatRange distressRange=null;
+    public FloatRange criticalRange=null;
+    public FloatRange severeRange=null;
+
+
+    /**
+     * Creates a parameter value for a parameter which has critical or warning range associated
+     * @param def the parameter definition
+     */
+    public ParameterValue(Parameter def) {
+	this.def=def;
+
+	setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
+	setProcessingStatus(true);
+	monitoringResult=MonitoringResult.DISABLED;
+    }
+
+    /**
+     * Called only from the cascading provider 
 	public ParameterValue(Parameter def, TelemetryItemProperty[] itemProps) {
 		this.def=def;
 		for(TelemetryItemProperty ip:itemProps) {
@@ -78,271 +76,311 @@ public class ParameterValue {
 				warningRangeLow=ip; break;
 			case TelemetryItemProperties._PROCESSING_STATUS:
 				processingStatus=ip;break;
-				
+
 			}
 		}
 	}
-*/
-	public int getAbsoluteBitOffset() {
-		return absoluteBitOffset;
-	}
+     */
+    public int getAbsoluteBitOffset() {
+	return absoluteBitOffset;
+    }
 
-	public void setAbsoluteBitOffset(int absoluteBitOffset) {
-		this.absoluteBitOffset = absoluteBitOffset;
-	}
+    public void setAbsoluteBitOffset(int absoluteBitOffset) {
+	this.absoluteBitOffset = absoluteBitOffset;
+    }
 
-	public int getBitSize() {
-		return bitSize;
-	}
+    public int getBitSize() {
+	return bitSize;
+    }
 
-	public void setBitSize(int bitSize) {
-		this.bitSize = bitSize;
-	}
+    public void setBitSize(int bitSize) {
+	this.bitSize = bitSize;
+    }
 
-	public void setParameterEntry(ParameterEntry entry) {
-		this.entry = entry;
-	}
+    public void setParameterEntry(ParameterEntry entry) {
+	this.entry = entry;
+    }
 
-	public ParameterEntry getParameterEntry() {
-		return entry;
-	}
+    public ParameterEntry getParameterEntry() {
+	return entry;
+    }
 
-	public void setParameter(Parameter parameter) {
-		this.def=parameter;
-	}
-	
-	public void setAcquisitionStatus(AcquisitionStatus a) {
-		acquisitionStatus=a;
-	}
-	
-	public void setAcquisitionTime(long instant) {
-		acquisitionTime=instant;
-	}
-	
-	public void setGenerationTime(long instant) {
-		generationTime=instant;
-	}
-	
-	public Value getEngValue() {
-		return engValue;
-	}
+    public void setParameter(Parameter parameter) {
+	this.def=parameter;
+    }
 
-	public Value getRawValue() {
-		return rawValue;
-	}
-	
-	public void setWatchRange(FloatRange range) {
-	    watchRange=range;
-	}
-	
-	public FloatRange getWatchRange() {
-	    return watchRange;
-	}
+    public void setAcquisitionStatus(AcquisitionStatus a) {
+	acquisitionStatus=a;
+    }
 
-	public void setWarningRange(FloatRange range) {
-	    warningRange=range;
-	}
+    public void setAcquisitionTime(long instant) {
+	acquisitionTime=instant;
+    }
 
-	public FloatRange getWarningRange() {
-		return warningRange;
-	}
-	
-	public void setDistressRange(FloatRange range) {
-	    distressRange=range;
-	}
-	
-	public FloatRange getDistressRange() {
-	    return distressRange;
-	}
+    public void setGenerationTime(long instant) {
+	generationTime=instant;
+    }
 
-	public void setCriticalRange(FloatRange range) {
-	    criticalRange=range;
-	}
+    public Value getEngValue() {
+	return engValue;
+    }
 
-	public FloatRange getCriticalRange() {
-		return criticalRange;
-	}
-	
-	public void setSevereRange(FloatRange range) {
-	    severeRange=range;
-	}
-	
-	public FloatRange getSevereRange() {
-	    return severeRange;
-	}
-	
-	public void setMonitoringResult(MonitoringResult m) {
-		monitoringResult=m;
-	}
+    public Value getRawValue() {
+	return rawValue;
+    }
 
-	
-	public void setProcessingStatus(boolean p) {
-		processingStatus=p;
-	}
+    public void setWatchRange(FloatRange range) {
+	watchRange=range;
+    }
 
-	
-		/**
-	 * Retrieve the parameter definition for this parameter value
-	 * @return parameter definition
-	 */
-	public Parameter getParameter() {
-		return def;
-	}
-	
-	public long getGenerationTime() {
-		return generationTime;
-	}
-	
-	public MonitoringResult getMonitoringResult() {
-		return monitoringResult;
-	}
+    public FloatRange getWatchRange() {
+	return watchRange;
+    }
+
+    public void setWarningRange(FloatRange range) {
+	warningRange=range;
+    }
+
+    public FloatRange getWarningRange() {
+	return warningRange;
+    }
+
+    public void setDistressRange(FloatRange range) {
+	distressRange=range;
+    }
+
+    public FloatRange getDistressRange() {
+	return distressRange;
+    }
+
+    public void setCriticalRange(FloatRange range) {
+	criticalRange=range;
+    }
+
+    public FloatRange getCriticalRange() {
+	return criticalRange;
+    }
+
+    public void setSevereRange(FloatRange range) {
+	severeRange=range;
+    }
+
+    public FloatRange getSevereRange() {
+	return severeRange;
+    }
+
+    public void setMonitoringResult(MonitoringResult m) {
+	monitoringResult=m;
+    }
+
+    public void setDeltaMonitoringResult(MonitoringResult m) {
+	deltaMonitoringResult=m;
+    }
+
+
+    public void setProcessingStatus(boolean p) {
+	processingStatus=p;
+    }
+
+
+    /**
+     * Retrieve the parameter definition for this parameter value
+     * @return parameter definition
+     */
+    public Parameter getParameter() {
+	return def;
+    }
+
+    public long getGenerationTime() {
+	return generationTime;
+    }
+
+    public MonitoringResult getMonitoringResult() {
+	return monitoringResult;
+    }
 
     public long getAcquisitionTime() {
-        return acquisitionTime;
+	return acquisitionTime;
     }
 
     public AcquisitionStatus getAcquisitionStatus() {
-        return acquisitionStatus;
+	return acquisitionStatus;
     }
 
     public boolean getProcessingStatus() {
-        return processingStatus;
+	return processingStatus;
     }
 
-   
+
     public void setRawValue(Value rv) {
-        this.rawValue=rv;
+	this.rawValue=rv;
     }
-    
+
     public void setRawValue(byte[] b) {
-       rawValue=Value.newBuilder().setType(Value.Type.BINARY)
-           .setBinaryValue(ByteString.copyFrom(b)).build();
+	rawValue=Value.newBuilder().setType(Value.Type.BINARY)
+		.setBinaryValue(ByteString.copyFrom(b)).build();
     }
-    
+
     public void setRawValue(float f) {
-        rawValue=Value.newBuilder().setType(Value.Type.FLOAT)
-            .setFloatValue(f).build();
+	rawValue=Value.newBuilder().setType(Value.Type.FLOAT)
+		.setFloatValue(f).build();
     }
-    
+
     public void setRawValue(double d) {
-        rawValue=Value.newBuilder().setType(Value.Type.DOUBLE)
-            .setDoubleValue(d).build();
+	rawValue=Value.newBuilder().setType(Value.Type.DOUBLE)
+		.setDoubleValue(d).build();
     }
-    
+
     public void setRawValue(boolean b) {
-        rawValue=Value.newBuilder().setType(Value.Type.BOOLEAN)
-                .setBooleanValue(b).build();
+	rawValue=Value.newBuilder().setType(Value.Type.BOOLEAN)
+		.setBooleanValue(b).build();
     }
-    
+
     public void setRawValue(String s) {
-        rawValue=Value.newBuilder().setType(Value.Type.STRING)
-                .setStringValue(s).build();
+	rawValue=Value.newBuilder().setType(Value.Type.STRING)
+		.setStringValue(s).build();
     }
-    
+
     public void setRawSignedInteger(int x) {
-        rawValue=Value.newBuilder().setType(Value.Type.SINT32)
-            .setSint32Value(x).build();
+	rawValue=Value.newBuilder().setType(Value.Type.SINT32)
+		.setSint32Value(x).build();
     }
-    
+
     public void setRawUnsignedInteger(int x) {
-        rawValue=Value.newBuilder().setType(Value.Type.UINT32)
-            .setUint32Value(x).build();
+	rawValue=Value.newBuilder().setType(Value.Type.UINT32)
+		.setUint32Value(x).build();
     }
-    
+
     public void setRawSignedLong(long x) {
-        rawValue=Value.newBuilder().setType(Value.Type.SINT64)
-            .setSint64Value(x).build();
+	rawValue=Value.newBuilder().setType(Value.Type.SINT64)
+		.setSint64Value(x).build();
     }
-    
+
     public void setRawUnsignedLong(long x) {
-        rawValue=Value.newBuilder().setType(Value.Type.UINT64)
-            .setUint64Value(x).build();
+	rawValue=Value.newBuilder().setType(Value.Type.UINT64)
+		.setUint64Value(x).build();
     }
-    
+
     public void setStringValue(String s) {
-        engValue=Value.newBuilder().setType(Value.Type.STRING)
-            .setStringValue(s).build();
+	engValue=Value.newBuilder().setType(Value.Type.STRING)
+		.setStringValue(s).build();
     }
 
     public void setBinaryValue(byte[] v) {
-        engValue = Value.newBuilder().setType(Value.Type.BINARY)
-            .setBinaryValue(ByteString.copyFrom(v)).build();
+	engValue = Value.newBuilder().setType(Value.Type.BINARY)
+		.setBinaryValue(ByteString.copyFrom(v)).build();
     }
-    
+
     public void setBooleanValue(boolean b) {
-        engValue = Value.newBuilder().setType(Value.Type.BOOLEAN)
-            .setBooleanValue(b).build();
+	engValue = Value.newBuilder().setType(Value.Type.BOOLEAN)
+		.setBooleanValue(b).build();
     }
-    
+
     public void setDoubleValue(double v) {
-        engValue = Value.newBuilder().setType(Value.Type.DOUBLE)
-            .setDoubleValue(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.DOUBLE)
+		.setDoubleValue(v).build();
     }
 
     public void setFloatValue(float v) {
-        engValue = Value.newBuilder().setType(Value.Type.FLOAT)
-            .setFloatValue(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.FLOAT)
+		.setFloatValue(v).build();
     }
-    
+
     public void setSignedIntegerValue(int v) {
-        engValue = Value.newBuilder().setType(Value.Type.SINT32)
-            .setSint32Value(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.SINT32)
+		.setSint32Value(v).build();
     }
-    
+
     public void setUnsignedIntegerValue(int v) {
-        engValue = Value.newBuilder().setType(Value.Type.UINT32)
-            .setUint32Value(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.UINT32)
+		.setUint32Value(v).build();
     }
-    
+
     public void setSignedLongValue(long v) {
-        engValue = Value.newBuilder().setType(Value.Type.SINT64)
-            .setSint64Value(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.SINT64)
+		.setSint64Value(v).build();
     }
-    
+
     public void setUnsignedLongValue(long v) {
-        engValue = Value.newBuilder().setType(Value.Type.UINT64)
-            .setUint64Value(v).build();
+	engValue = Value.newBuilder().setType(Value.Type.UINT64)
+		.setUint64Value(v).build();
     }
 
     public void setEngineeringValue(Value ev) {
-        this.engValue=ev;
+	this.engValue=ev;
     }
 
-    
+
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
-        org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-        .setAcquisitionStatus(getAcquisitionStatus())
-        .setAcquisitionTime(getAcquisitionTime())
-        .setEngValue(getEngValue())
-        .setGenerationTime(getGenerationTime())
-        .setMonitoringResult(getMonitoringResult())
-        .setProcessingStatus(getProcessingStatus());
-        
-        if(id!=null) gpvb.setId(id);
-        if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
-        return gpvb.build();
+	org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
+		.setAcquisitionStatus(getAcquisitionStatus())
+		.setAcquisitionTime(getAcquisitionTime())
+		.setEngValue(getEngValue())
+		.setGenerationTime(getGenerationTime())
+		.setMonitoringResult(getMonitoringResult())
+		.setProcessingStatus(getProcessingStatus());
+
+	// TODO make this optional
+	gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+	gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
+
+	// TODO make this optional
+	if (watchRange != null) {
+	    if (!Double.isInfinite(watchRange.getMinInclusive()))
+		gpvb.setWatchLow(watchRange.getMinInclusive());
+	    if (!Double.isInfinite(watchRange.getMaxInclusive()))
+		gpvb.setWatchHigh(watchRange.getMaxInclusive());
+	}
+	if (warningRange != null) {
+	    if (!Double.isInfinite(warningRange.getMinInclusive()))
+		gpvb.setWarningLow(warningRange.getMinInclusive());
+	    if (!Double.isInfinite(warningRange.getMaxInclusive()))
+		gpvb.setWarningHigh(warningRange.getMaxInclusive());
+	}
+	if(distressRange != null) {
+	    if (!Double.isInfinite(distressRange.getMinInclusive()))
+		gpvb.setDistressLow(distressRange.getMinInclusive());
+	    if (!Double.isInfinite(distressRange.getMaxInclusive()))
+		gpvb.setDistressHigh(distressRange.getMaxInclusive());
+	}
+	if(criticalRange != null) {
+	    if (!Double.isInfinite(criticalRange.getMinInclusive()))
+		gpvb.setCriticalLow(criticalRange.getMinInclusive());
+	    if (!Double.isInfinite(criticalRange.getMaxInclusive()))
+		gpvb.setCriticalHigh(criticalRange.getMaxInclusive());
+	}
+	if(severeRange!=null) {
+	    if (!Double.isInfinite(severeRange.getMinInclusive()))
+		gpvb.setSevereLow(severeRange.getMinInclusive());
+	    if (!Double.isInfinite(severeRange.getMaxInclusive()))
+		gpvb.setSevereHigh(severeRange.getMaxInclusive());
+	}
+
+	if(id!=null) gpvb.setId(id);
+	if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
+	return gpvb.build();
     }
-    
+
     public static ParameterValue fromGpb(Parameter pdef, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
-        ParameterValue pv=new ParameterValue(pdef, gpv.hasRawValue());
-        pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
-        pv.setAcquisitionTime(gpv.getAcquisitionTime());
-        pv.setEngineeringValue(gpv.getEngValue());
-        pv.setGenerationTime(gpv.getGenerationTime());
-        pv.setMonitoringResult(gpv.getMonitoringResult());
-        pv.setProcessingStatus(gpv.getProcessingStatus());
-        if(gpv.hasRawValue()) {
-            pv.setRawValue(gpv.getRawValue());
-        }
-        return pv;
+	ParameterValue pv=new ParameterValue(pdef);
+	pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
+	pv.setAcquisitionTime(gpv.getAcquisitionTime());
+	pv.setEngineeringValue(gpv.getEngValue());
+	pv.setGenerationTime(gpv.getGenerationTime());
+	pv.setMonitoringResult(gpv.getMonitoringResult());
+	pv.setProcessingStatus(gpv.getProcessingStatus());
+	if(gpv.hasRawValue()) {
+	    pv.setRawValue(gpv.getRawValue());
+	}
+	return pv;
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb=new StringBuilder();
-        sb.append("name: ").append(def.getName());
-        if(rawValue!=null) sb.append(" rawValue: {").append(rawValue.toString()).append("}");
-        if(engValue!=null) sb.append(" engValue: {").append(engValue.toString()).append("}");
-        return sb.toString();
+	StringBuilder sb=new StringBuilder();
+	sb.append("name: ").append(def.getName());
+	if(rawValue!=null) sb.append(" rawValue: {").append(rawValue.toString()).append("}");
+	if(engValue!=null) sb.append(" engValue: {").append(engValue.toString()).append("}");
+	return sb.toString();
     }
 }

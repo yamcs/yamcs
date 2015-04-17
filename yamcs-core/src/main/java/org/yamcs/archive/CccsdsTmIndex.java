@@ -12,11 +12,11 @@ import org.yamcs.NotThreadSafe;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.TCBFactory;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YBDB;
-import org.yamcs.yarch.YBDBCUR;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.tokyocabinet.TCBFactory;
+import org.yamcs.yarch.tokyocabinet.YBDB;
+import org.yamcs.yarch.tokyocabinet.YBDBCUR;
 
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;

@@ -1,318 +1,264 @@
 package org.yamcs.yarch;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TimeZone;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.yarch.PartitioningSpec._type;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jboss.netty.util.internal.ConcurrentHashMap;
-
-import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 
 /**
- * Keeps track of table partitions. 
- * Types of partitions that are supported:
- *  time          - creates files of shape yyyy/ddd/tblname
- *  time,value    - creates files of shape yyyy/ddd/tblname#value
- *  value         - creates files of shape tblname#value
+ * Keeps track of partitions. This class is used and by the engines (TokyoCabinets, RocksDB) where the partitioning is kept track inside yamcs.
+ * If the StorageEngine has built-in partitioning (e.g. mysql), there is no need for this.
+ * 
  * @author nm
+ *
  */
-public class PartitionManager {
-	final String tblName;
-	final PartitioningSpec partitioningSpec;
-	final String dataDir;
-	
-	private NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
-	
-	//pcache is a cache of the last interval where data has been inserted
-	// in case of value based partition, it is basically the list of all partitions
-	Interval pcache;
-	
-	static Logger log=LoggerFactory.getLogger(PartitionManager.class.getName());
-	
-	public PartitionManager(TableDefinition def) {
-	    this(def.getName(), def.getPartitioningSpec(), def.getDataDir());
+public abstract class PartitionManager {
+    final protected TableDefinition tableDefinition;
+    final protected PartitioningSpec partitioningSpec;
+
+
+
+    protected NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
+    //pcache is a cache of the last interval where data has been inserted
+    // in case of value based partition, it is basically the list of all partitions
+    Interval pcache;
+
+
+    public PartitionManager(TableDefinition tableDefinition) {
+	this.tableDefinition=tableDefinition;
+	this.partitioningSpec=tableDefinition.getPartitioningSpec();
+	if(partitioningSpec.type==_type.NONE || partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
+	    pcache=new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
+	    intervals.put(TimeEncoding.MIN_INSTANT, pcache);
 	}
+    }
+    /**
+     * Returns an iterator which at each step gives the list of partition corresponding to a time interval (so when we do a replay those partitions have to be played in parallel).
+     * The iterator returns intervals sorted on time.
+     * 
+     *  
+     * @param partitionValueFilter - return only partitions whose value are in the filter. If null, return all partitions;
+     * @return
+     */	
+    Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
+	PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionValueFilter);
+	return pi;
+    }
 
-	public PartitionManager(String tblName, PartitioningSpec partitioningSpec, String dataDir) {
-        this.tblName=tblName;
-        this.partitioningSpec=partitioningSpec;
-        this.dataDir=dataDir;
-        if(partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
-            pcache=new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
-            pcache.dir=null;
-            intervals.put(TimeEncoding.MIN_INSTANT, pcache);
-        }
+    /**
+     * Same as above only start from a specific start time
+     * @param start
+     * @param partitionValueFilter values
+     * 
+     */
+    public Iterator<List<Partition>> iterator(long start, Set<Object> partitionValueFilter) {
+	PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionValueFilter);
+	pi.jumpToStart(start);
+	return pi;
     }
-	/**
-	 * 
-	 * @return partition filenames (relative to the data directory of the table, and without the .tcb extension)
-	 */
-    public Collection<String> getPartitions() {
-        List<String> filenames=new ArrayList<String>();
-        for(Entry<Long,Interval> entry:intervals.entrySet()) {
-            Interval intv=entry.getValue();
-            if(partitioningSpec.type==_type.TIME) {
-                filenames.add(intv.dir+"/"+tblName);
-            } else {
-                for(Object o:entry.getValue().values) {
-                    String fn=((intv.dir!=null) ?intv.dir+"/":"")+tblName+"#"+o; 
-                    filenames.add(fn);
-                }
-            }
-        }
-        return filenames;
-    }
-    
-	/**
-	 * Creates (if not already existing) and returns the partition in which the instance,value (one of them can be invalid) should be written.
-	 * It creates all directories necessary.
-	 * 
-	 * @return an absolute filename, without the ".tcb" extension
-	 */
-	public synchronized String createAndGetPartition(long instant, Object value) throws IOException {
+
+    /**
+     * Creates (if not already existing) and returns the partition in which the instant,value should be written.
+     * instant can be invalid (in case value only or no partitioning)
+     * value can be null (in case 
+     *  
+     * @return a Partition
+     */
+    public synchronized Partition createAndGetPartition(long instant, Object value) throws IOException {
+	Partition partition;
+	if(partitioningSpec.timeColumn!=null) {
+	    if((pcache==null) || (pcache.start>instant) || (pcache.getEnd()<=instant)) {
+
+		Entry<Long, Interval>entry=intervals.floorEntry(instant);
+		if((entry!=null) && (instant<entry.getValue().getEnd())) {
+		    pcache=entry.getValue();		               
+		} else {//no partition in this interval.
+		    PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+		    pcache=new Interval(pinfo.partitionStart, pinfo.partitionEnd);		                
+		    intervals.put(pcache.start, pcache);
+		}
+	    }			
+	} 
+	partition = pcache.get(value);
+	if(partition == null) {
 	    if(partitioningSpec.timeColumn!=null) {
-	        if((pcache==null) || (pcache.start>instant) || (pcache.end<=instant)) {
-	            Entry<Long, Interval>entry=intervals.floorEntry(instant);
-	            if((entry!=null) && (instant<entry.getValue().end)) {
-	                pcache=entry.getValue();
-	                if(value!=null) pcache.values.add(value);
-	            } else {//no partition in this interval. Find the start and end and create the directory
-	                DateTimeComponents dtc =TimeEncoding.toUtc(instant);
-	                Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-	                cal.clear();
-	                cal.set(Calendar.YEAR, dtc.year);
-	                cal.set(Calendar.DAY_OF_YEAR, dtc.doy);
-	                long dayStartInstant = TimeEncoding.fromCalendar(cal);
-	                cal.add(Calendar.DAY_OF_YEAR, 1);
-	                long nextDayStartInstant = TimeEncoding.fromCalendar(cal);
+		PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+		partition = createPartition(pinfo, value);
+	    } else {
+		partition = createPartition(value);
+	    }
+	    pcache.add(value, partition);
+	}		
+	return partition;
+    }
 
-	                pcache=new Interval(dayStartInstant, nextDayStartInstant);
-	                pcache.dir=String.format("%4d/%03d", dtc.year, dtc.doy);
-	                if(value!=null) pcache.values.add(value);
-	                File f=new File(dataDir+"/"+pcache.dir);
-	                if(!f.exists()) { 
-	                    f.mkdirs(); //we don't check the return of mkdirs because maybe another thread creates the directory in the same time
-	                    if(!f.exists()) {
-	                        log.error("Failed to create directories for "+f);
-	                        throw new IOException("failed to create directories for "+f);
-	                    }
-	                }
-	                intervals.put(pcache.start, pcache);
-	            }
-	        } else { //instant fits into the existing pcache
-	            if(value!=null) pcache.values.add(value);
-	        }
-	        
-	        if(value!=null) {
-	            return dataDir+"/"+pcache.dir+"/"+tblName+"#"+valueToPartition(value);
-	        } else {
-                return dataDir+"/"+pcache.dir+"/"+tblName;
-	        }
-	    } else { //partitioning based on values only
-	        pcache.values.add(value);
-	        return dataDir+"/"+tblName+"#"+valueToPartition(value);
+    /**
+     * Gets partition where tuple has to be written. Creates the partition if necessary.
+     * @param t
+     * @return
+     * @throws IOException 
+     */
+    public synchronized Partition getPartitionForTuple(Tuple t) throws IOException {
+
+	//	  if(partitioningSpec==null) return tableDefinition.getDataDir()+"/"+tableDefinition.getName();
+
+	long time=TimeEncoding.INVALID_INSTANT;
+	Object value=null;
+	if(partitioningSpec.timeColumn!=null) {
+	    time =(Long)t.getColumn(partitioningSpec.timeColumn);
+	}
+	if(partitioningSpec.valueColumn!=null) {
+	    value=t.getColumn(partitioningSpec.valueColumn);
+	    ColumnDefinition cd=tableDefinition.getColumnDefinition(partitioningSpec.valueColumn);
+	    if(cd.getType()==DataType.ENUM) {
+		value = tableDefinition.addAndGetEnumValue(partitioningSpec.valueColumn, (String) value);                
 	    }
 	}
-	
-	
-	private String valueToPartition(Object value) {
-		if(value.getClass()==Integer.class) {
-			return value.toString();
-		} else if(value.getClass()==Short.class) {
-			return value.toString();
-		} else if(value.getClass()==Byte.class) {
-			return value.toString();
-		} else if(value.getClass()==String.class) {
-			return (String)value;
-		} else {
-			 throw new IllegalArgumentException("partition on values of type "+value.getClass()+" not supported");
-		}
+	return createAndGetPartition(time, value);
+    }
+    /**
+     * Create a partition for time (and possible value) based partitioning
+     * @param pinfo
+     * @param value
+     * @return
+     * @throws IOException 
+     */
+    protected abstract Partition createPartition(PartitionInfo pinfo, Object value) throws IOException;
+
+    /**
+     * Create a partition for value based partitioning
+     * @param value
+     * @return
+     * @throws IOException 
+     */
+    protected abstract Partition createPartition(Object value) throws IOException;
+
+
+    /**
+     * returns a collection of all existing partitions
+     * @return
+     */
+    public List<Partition> getPartitions() {
+	List<Partition> plist = new ArrayList<Partition>();
+	for(Interval interval: intervals.values()) {
+	    plist.addAll(interval.partitions.values());
 	}
-	
-	private Object partitionToValue(String part, DataType dt) {
-		 switch(dt.val) {
-		 case INT:
-             return Integer.valueOf(part);
-		 case SHORT:
-		 case ENUM:
-             return Short.valueOf(part);
-         case BYTE:
-             return Byte.valueOf(part);
-         case STRING:
-        	 return part;
-         default:
-             throw new IllegalArgumentException("partition on values of type "+dt+" not supported");
-		 }
-	}
-	/**
-	 * Reads the partitions from disk
-	 */
-	public void readPartitions() {
-		String[] years=(new File(dataDir)).list();
-		for(String y:years) {
-			if(y.matches("\\d{4,5}")) {
-			    int year=Integer.parseInt(y);
-			    if(year>1900)
-			        readYear(y,year);
-			}
-		}
+	return plist;
+    }
+
+    class PartitionIterator implements Iterator<List<Partition>> {
+	final Iterator<Entry<Long,Interval>> it;
+	final Set<Object> partitionValueFilter;
+	List<Partition> next;
+	long start;
+	boolean jumpToStart=false;
+
+	PartitionIterator(Iterator<Entry<Long,Interval>> it, Set<Object> partitionFilter){
+	    this.it=it;
+	    this.partitionValueFilter=partitionFilter;
 	}
 
-	private void readYear(String dir, int year) {
-		String[] days=new File(dataDir+"/"+dir).list();
-		Pattern p=Pattern.compile(tblName+"#([\\-\\s\\w]+)\\.tcb");
-		for(String d:days) {
-		    if(!d.matches("\\d{3,3}")) continue;
-		    int day=Integer.parseInt(d);
-		    if((day<0)||day>366)continue;
-		    String[] files=new File(dataDir+"/"+dir+"/"+d).list();
-		    for(String f:files) {
-		        if(partitioningSpec.type==_type.TIME) {
-		            if(f.equals(tblName+".tcb")) {
-		                addPartition(year, day, dir+"/"+d, null);
-		            }
-		        } else {
-		            Matcher m=p.matcher(f);
-		            if(m.matches()) {
-		                String so=m.group(1);
-		                DataType reqType=partitioningSpec.valueColumnType;
-		                try {
-		                    Object o=partitionToValue(so, reqType);
-		                    addPartition(year, day, dir+"/"+d, o);
-		                } catch(IllegalArgumentException e) {
-		                    log.error("cannot cast string '"+so+"' to type "+reqType+": "+e.getMessage());
-		                    continue;
-		                }
-		            }
-		        }
+	void jumpToStart(long startInstant) {
+	    this.start=startInstant;
+	    jumpToStart=true;
+	}
+
+
+	@Override
+	public boolean hasNext() {
+	    if(next!=null) return true;
+	    next=new ArrayList<Partition>();
+
+	    while(it.hasNext()) {
+		Entry<Long,Interval> entry=it.next();
+		Interval intv=entry.getValue();
+		if(jumpToStart && (intv.getEnd()<=start)) {
+		    continue;
+		} else {
+		    jumpToStart=false;
+		}
+		if(partitioningSpec.type==_type.TIME) { 
+		    next.add(intv.partitions.values().iterator().next());
+		} else {
+		    for(Partition p:intv.partitions.values()) {
+			if((partitionValueFilter==null) || (partitionValueFilter.contains(p.getValue()))) {
+			    next.add(p);
+			}
 		    }
 		}
-	}
-	
-	private void addPartition(int year, int day, String dir, Object o) {
-	    Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-	    cal.clear();
-	    cal.set(Calendar.YEAR, year);
-	    cal.set(Calendar.DAY_OF_YEAR, day);
-	    long start=TimeEncoding.fromCalendar(cal);
-	    Interval intv=intervals.get(start);
-	    if(intv==null) {
-	        cal.add(Calendar.DAY_OF_YEAR, 1);
-	        long end=TimeEncoding.fromCalendar(cal);
-	        intv=new Interval(start, end);
-	        intervals.put(start, intv);
-	   }
-	   intv.dir=dir;
-	   if(o!=null) intv.values.add(o);
-	}
-	
-	public Iterator<List<String>> iterator(Set<Object> partitionFilter) {
-	    PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionFilter);
-        return pi;
-   }
-	
-	public Iterator<List<String>> iterator(long start, Set<Object> partitionFilter) {
-	    PartitionIterator pi=new PartitionIterator(intervals.entrySet().iterator(), partitionFilter);
-	     pi.jumpToStart(start);
-	     return pi;
-	}
-
-	class PartitionIterator implements Iterator<List<String>> {
-	    final Iterator<Entry<Long,Interval>> it;
-	    final Set<Object> partitionFilter;
-	    List<String> next;
-	    long start;
-	    boolean jumpToStart=false;
-	    
-	    PartitionIterator(Iterator<Entry<Long,Interval>> it, Set<Object> partitionFilter){
-	        this.it=it;
-	        this.partitionFilter=partitionFilter;
+		if(!next.isEmpty()) {
+		    break;
+		}
 	    }
-	    
-	    void jumpToStart(long startInstant) {
-	        this.start=startInstant;
-	        jumpToStart=true;
-	    }
-	 
-	    
-	    @Override
-	    public boolean hasNext() {
-	        if(next!=null) return true;
-	        next=new ArrayList<String>();
-	        
-	        while(it.hasNext()) {
-                Entry<Long,Interval> entry=it.next();
-                Interval intv=entry.getValue();
-                if(jumpToStart && (intv.end<=start)) {
-                    continue;
-                } else {
-                    jumpToStart=false;
-                }
-                String base=dataDir+"/"+(intv.dir!=null?intv.dir+"/":"")+tblName;
-                if(partitioningSpec.type==_type.TIME) { 
-                    next.add(base);
-                } else {
-                    for(Object o:entry.getValue().values) {
-                        if((partitionFilter==null) || (partitionFilter.contains(o))) {
-                            next.add(base+"#"+valueToPartition(o));
-                        }
-                    }
-                }
-                if(!next.isEmpty()) {
-                    break;
-                }
-            }
-	        if(next.isEmpty()) {
-	            next=null;
-	            return false;
-	        } else {
-	            return true;
-	        }
-        }
-
-	    @Override
-	    public List<String> next() {
-	        List<String> ret=next;
-	        next=null;
-	        return ret;
-	    }
-
-	    @Override
-	    public void remove() {
-	        throw new UnsupportedOperationException("cannot remove partitions like this");
+	    if(next.isEmpty()) {
+		next=null;
+		return false;
+	    } else {
+		return true;
 	    }
 	}
-}
 
-class Interval {
-    long start,  end;
-    String dir;
-    Set<Object> values=Collections.newSetFromMap(new ConcurrentHashMap<Object, Boolean>());
-    
-    public Interval(long start, long end) {
-        this.start=start;
-        this.end=end;
+	@Override
+	public List<Partition> next() {
+	    List<Partition> ret=next;
+	    next=null;
+	    return ret;
+	}
+
+	@Override
+	public void remove() {
+	    throw new UnsupportedOperationException("cannot remove partitions like this");
+	}
     }
-    
-    @Override
-    public String toString() {
-        return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(end)+"] dir:"+dir+" values: "+values;
+
+    public static class Interval {
+	static final Object NON_NULL=new Object(); //we use this as a key in the ConcurrentHashMap in case value is null (i.e. time only partitioning)
+
+	long start;
+
+	private long end;
+	Map<Object, Partition> partitions=new ConcurrentHashMap<Object, Partition>();
+
+	public Interval(long start, long end) {
+	    this.start=start;
+	    this.end = end;
+	}
+
+	public Partition get(Object value) {
+	    if(value==null) return partitions.get(NON_NULL);
+	    else return partitions.get(value);
+	}
+
+	public void add(Object value, Partition partition) {
+	    if(value!=null) {
+		partitions.put(value, partition);
+	    } else {
+		partitions.put(NON_NULL, partition);
+	    }
+	}
+
+	public Map<Object, Partition> getPartitions() {
+	    return Collections.unmodifiableMap(partitions);
+	}
+
+	public long getEnd() {
+	    return end;
+	}
+
+	@Override
+	public String toString() {
+	    return "["+TimeEncoding.toString(start)+"("+start+") - "+TimeEncoding.toString(end)+"("+end+")] values: "+partitions;
+	}		
     }
 }

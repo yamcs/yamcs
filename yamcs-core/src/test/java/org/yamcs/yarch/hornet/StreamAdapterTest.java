@@ -37,7 +37,7 @@ public class StreamAdapterTest extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        hornetServer.stop();
+	YamcsServer.stopHornet();
     }
 
     
@@ -96,7 +96,7 @@ public class StreamAdapterTest extends YarchTestCase {
         assertTrue(semaphore.tryAcquire(5000, TimeUnit.SECONDS));
     //    long t1=System.currentTimeMillis();
   //      System.out.println("pushed "+n+" tuples around, speed: "+1000L*n/(t1-t0)+" tuples/sec");
-        msgClient.close();
+        ys.close();
         streamAdapter.quit();
         execute("close stream tests2h");
     }
@@ -160,7 +160,7 @@ public class StreamAdapterTest extends YarchTestCase {
         assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS));
      //   long t1=System.currentTimeMillis();
  //       System.out.println("pushed "+n+" messages around, speed: "+1000L*n/(t1-t0)+" messages/sec");
-        indMsgClient.close();
+        ys.close();
         msg1Client.close();
         streamAdapter.quit();
         execute("close stream testh2s");

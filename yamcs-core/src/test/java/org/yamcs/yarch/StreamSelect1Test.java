@@ -69,10 +69,8 @@ public class StreamSelect1Test extends YarchTestCase {
         if(k==n) finished.release();
       }
     });
-    long t0=System.currentTimeMillis();
     s.start();
     finished.acquire();
-    System.out.println("Read "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
     execute("close stream stream_in");
   }
 
@@ -99,10 +97,10 @@ public class StreamSelect1Test extends YarchTestCase {
         if(k>=n-5) finished.release();
       }
     });
-    long t0=System.currentTimeMillis();
+    //long t0=System.currentTimeMillis();
     s.start();
     finished.acquire();
-    System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+    //System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
     execute("close stream stream_in");
     
   }
@@ -130,10 +128,10 @@ public class StreamSelect1Test extends YarchTestCase {
           if(k>=n-5) finished.release();
         }
       });
-      long t0=System.currentTimeMillis();
+      //long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+      //System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
     }
   
@@ -161,10 +159,10 @@ public class StreamSelect1Test extends YarchTestCase {
           if(k>=n-5) finished.release();
         }
       });
-      long t0=System.currentTimeMillis();
+   //   long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+ //     System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
     }
   
@@ -193,10 +191,10 @@ public class StreamSelect1Test extends YarchTestCase {
           if(k>=n-5) finished.release();
         }
       });
-      long t0=System.currentTimeMillis();
+    //  long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+  //    System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
     }
   
@@ -223,10 +221,10 @@ public class StreamSelect1Test extends YarchTestCase {
           if(k>=n-5) finished.release();
         }
       });
-      long t0=System.currentTimeMillis();
+      //long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+    //  System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
     }
   
@@ -253,10 +251,10 @@ public class StreamSelect1Test extends YarchTestCase {
               if(k>=n-5) finished.release();
           }
       });
-      long t0=System.currentTimeMillis();
+      //long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+     // System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
   }
  
@@ -291,10 +289,10 @@ public class StreamSelect1Test extends YarchTestCase {
               if(k>=n-5) finished.release();
           }
       });
-      long t0=System.currentTimeMillis();
+      //long t0=System.currentTimeMillis();
       s.start();
       finished.acquire();
-      System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
+    //  System.out.println("Pushed "+n+" tuples in "+(System.currentTimeMillis()-t0)+" ms");
       execute("close stream stream_in");
   }
 

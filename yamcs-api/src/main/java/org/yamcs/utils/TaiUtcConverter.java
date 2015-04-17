@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * It only works correctly with the times after 1972 when the difference between TAI and UTC is an integer number of seconds.
  * 
  * Most of the code is copied or inspired from the TAI C library http://cr.yp.to/libtai.html
- * @author mache
+ *
  *
  */
 public class TaiUtcConverter {
@@ -166,20 +166,22 @@ public class TaiUtcConverter {
 		int leap;
 		long s;
 
-		/* XXX: check for overfow? */
-
 		u = t/1000;
 		dtc.millisec = (int)( t % 1000);
-		
+
 		//leap = leapsecs_sub(&t2);
 		leap = 0;
 		int ls = diffTaiUtc;
-		for(int i = timesecs.length -1 ; i>=0; i--){
+	
+		for(int i = timesecs.length -1 ; i>=0; i--){			
 		    if (u > timesecs[i]) break;
 		    if (u == timesecs[i]) { leap = 1; break;}
 		    ls--;
 		 }
 		u-=ls;
+		
+
+		u+=86400L; //to avoid u being negative
 		
 		s = u % 86400L;
 		dtc.second = (int)((s % 60) + leap); s /= 60;
@@ -187,8 +189,7 @@ public class TaiUtcConverter {
 		dtc.hour = (int)s;
 
 		u /= 86400L;
-		long mjd = 40587+u;
-		//long mjd = u - 53375995543064L;
+		long mjd = 40586+u;
 		
 		caldateFromMjd(dtc, mjd);
 		
@@ -256,7 +257,7 @@ public class TaiUtcConverter {
 	
 	public static class DateTimeComponents {
 		public int year;
-		public int month;
+		public int month; //month starting with 1
         public int day;
         public int hour;
         public int minute;
@@ -305,21 +306,7 @@ public class TaiUtcConverter {
 		}
 
         public String toIso8860String() {
-            return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", year, month, day, hour, minute,second,millisec);
+            return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", year, month, day, hour, minute, second, millisec);
         }
-	}
-	
-	
-	public static void main(String[] args) throws Exception {
-		DateTimeComponents dtc;// new DateTimeComponents(2013, 10, 24, 0, 5, 9, 0);
-		TaiUtcConverter te = new TaiUtcConverter();
-		//caltime_utc(dtc, 0x400000002a2b2c2dL);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
-		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-		String[] sa = new String[] {"2012.07.01 00:00:00.323", "2012.07.01 00:00:35.323" , "2012.07.01 00:00:34.323", "2012.07.01 00:00:33.323", "2012.07.02 00:00:00.323" };
-		for(String s:sa) {
-			Date d = sdf.parse(s);
-			dtc = te.instantToUtc(d.getTime());
-		}		
-	}
+	}		
 }

@@ -2,14 +2,12 @@ package org.yamcs.yarch;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 import org.junit.Test;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.yarch.PartitioningSpec._type;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.BiMap;
@@ -34,8 +32,8 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
             assertEquals(ps1in.timeColumn, ps1out.timeColumn);
             assertEquals(ps1in.valueColumn, ps1out.valueColumn);
             break;
-        
-            
+        case NONE:
+        	break;
         }
         
     }
@@ -43,22 +41,15 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
     @Test
     public void testPartitioningSpecSerialization() {
         Yaml yaml=new Yaml(new TableDefinitionConstructor(), new TableDefinitionRepresenter());
-        PartitioningSpec ps1in=new PartitioningSpec();
-        ps1in.type=_type.TIME;
-        ps1in.timeColumn="ttt1";
+        PartitioningSpec ps1in=PartitioningSpec.timeSpec("ttt1");
         PartitioningSpec ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
-        ps1in=new PartitioningSpec();
-        ps1in.type=_type.VALUE;
-        ps1in.valueColumn="vvv2";
+        ps1in = PartitioningSpec.valueSpec("vvv2");
         ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
-        ps1in=new PartitioningSpec();
-        ps1in.type=_type.TIME_AND_VALUE;
-        ps1in.timeColumn="ttt3";
-        ps1in.timeColumn="vvv4";
+        ps1in = PartitioningSpec.timeAndValueSpec("ttt3", "vvv4");
         ps1out=(PartitioningSpec) yaml.load(yaml.dump(ps1in));
         assertPsEquals(ps1in, ps1out);
         
@@ -68,8 +59,13 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
     @Test
 	public void testTableDefinitionSerialization() throws Exception {
-		ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1) table_format=compressed");
+		ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1('YYYY')) table_format=compressed");
 		TableDefinition td1=ydb.getTable("abcde1");
+		
+		PartitioningSpec pspec = td1.getPartitioningSpec();
+		assertNotNull(pspec);		
+		assertEquals(TimePartitionSchema.YYYY.class , pspec.timePartitioningSchema.getClass() );
+		
 		TupleDefinition tplDef=td1.getTupleDefinition().copy();
 		tplDef.addColumn("bbv1", DataType.DOUBLE);
 		Tuple t=new Tuple(tplDef, new Object[]{1000, 10, "aaaa", new byte[0], "xyz", 3.3d});
@@ -99,6 +95,9 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 	    PartitioningSpec ps=td2.getPartitioningSpec();
 	    assertEquals(PartitioningSpec._type.TIME, ps.type);
 	    assertEquals("aak1", ps.timeColumn);
+		assertEquals(TimePartitionSchema.YYYY.class , ps.timePartitioningSchema.getClass() );
+		
+	    
 	    
 	    BiMap<String, Short>ev =td2.getEnumValues("aav3");
 	    assertNotNull(ev);
@@ -131,9 +130,9 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         ev =td3.getEnumValues("aav3");
         assertNotNull(ev);
         assertEquals((short)1, (short)(Short)ev.get("aav3-second"));
-        
-       
     }
+    
+    
     
     
     @Test

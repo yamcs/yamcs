@@ -125,7 +125,13 @@ public class HornetManagement {
         }
     }
 
-    
+    public void stop() {
+	try {
+	    ysession.close();
+	} catch (HornetQException e) {
+	    log.error("Failed to close the yamcs session",e);
+	}
+    }
 
     public void unRegisterLink(String instance, String name) {
         // TODO Auto-generated method stub
@@ -154,4 +160,7 @@ public class HornetManagement {
             }
         }
     }
+
+
+   
 }

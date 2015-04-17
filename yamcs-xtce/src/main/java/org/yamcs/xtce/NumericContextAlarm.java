@@ -25,6 +25,6 @@ public class NumericContextAlarm extends NumericAlarm {
     
     @Override
     public String toString() {
-        return "NumericContextAlarm(contextMatch:"+getContextMatch()+", alarm:"+getStaticAlarmRanges()+")";
+        return "NumericContextAlarm(contextMatch:"+getContextMatch()+", alarm:"+getStaticAlarmRanges()+", minViolations: "+getMinViolations()+")";
     }
 }

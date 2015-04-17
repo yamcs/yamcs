@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TimeInterval;
 import org.yamcs.yarch.HistogramDb.HistogramIterator;
-import org.yamcs.yarch.HistogramDb.Record;
 import org.yamcs.yarch.streamsql.ColumnExpression;
 import org.yamcs.yarch.streamsql.RelOp;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -21,9 +20,10 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  */
 public class HistogramReaderStream extends AbstractStream implements Runnable, DbReaderStream {
     //this is the table and the column on which we run the histogram
-    private final TableDefinition tableDefinition;
     final private ColumnSerializer histoColumnSerializer;
-
+    HistogramDb histoDb;
+    
+    
     //filter conditions
     TimeInterval interval = new TimeInterval();
 
@@ -32,10 +32,10 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     static AtomicInteger count=new AtomicInteger(0);
     volatile boolean quit=false;
 
-    public HistogramReaderStream(YarchDatabase dict, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) {
-        super(dict, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
-        this.tableDefinition=tblDef;
+    public HistogramReaderStream(YarchDatabase ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
+        super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer=tblDef.getColumnSerializer(histoColumnName);
+        this.histoDb = ydb.getStorageEngine(tblDef).getHistogramDb(tblDef);
     }
 
     @Override 
@@ -48,10 +48,8 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
         log.debug("starting a historgram stream for interval {}, mergeTime: {})", interval, mergeTime);
 
         try {
-            String filename=tableDefinition.getHistogramDbFilename(histoColumnSerializer.getColumnName())+".tcb";
-            HistogramDb db=HistogramDb.getInstance(ydb, filename);
-            HistogramIterator iter=db.getIterator(interval, mergeTime);
-            Record r;
+            HistogramIterator iter=histoDb.getIterator(histoColumnSerializer.getColumnName(), interval, mergeTime);
+            HistogramRecord r;
             while (!quit && (r=iter.getNextRecord())!=null) {
                 emit(r);
             }
@@ -64,7 +62,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
         }
     }
 
-    private void emit(Record r) throws IOException {
+    private void emit(HistogramRecord r) throws IOException {
         Object cvalue=histoColumnSerializer.fromByteArray(r.columnv);
         Tuple t=new Tuple(getDefinition(), new Object[]{cvalue, r.start, r.stop, r.num});
         emitTuple(t);

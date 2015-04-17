@@ -284,7 +284,7 @@ class XtceDbCellRenderer extends DefaultTreeCellRenderer {
 			Parameter p = ((ParameterEntry)value).getParameter();
 			tooltipBody = "Type: "+p.getParameterType().toString().replaceFirst( " encoding:", "<br />Encoding:" );
 		} else if ( value instanceof ContainerEntry ) {
-			super.getTreeCellRendererComponent(tree, "("+((ContainerEntry)value).getLocation()+") "+((ContainerEntry)value).getRefContainer().getOpsName(), selected, expanded, leaf, row, hasFocus);
+			super.getTreeCellRendererComponent(tree, "("+((ContainerEntry)value).getLocationInContainerInBits()+") "+((ContainerEntry)value).getRefContainer().getOpsName(), selected, expanded, leaf, row, hasFocus);
 			tooltipBody = ((ContainerEntry)value).getRefContainer().getOpsName();
 		} else {
 			super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);

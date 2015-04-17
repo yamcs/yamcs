@@ -40,7 +40,6 @@ public abstract class CompilableAggregateExpression extends AggregateExpression 
         aggregateFillCode_clear(code);
         code.append("\t}\n")
         .append("}");
-        System.out.println("for "+this+" got source:\n"+code);
 
         try {
             SimpleCompiler compiler=new SimpleCompiler();

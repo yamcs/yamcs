@@ -1,8 +1,11 @@
 package org.yamcs.tctm;
 
+import java.util.Map;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.archive.TmProviderAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -20,8 +23,13 @@ public class YarchTmPacketProvider extends AbstractService implements TmPacketPr
     TmProcessor tmProcessor;
     volatile boolean disabled=false;
     
-    public YarchTmPacketProvider(String archiveInstance, String streamName) throws ConfigurationException {
+    public YarchTmPacketProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+        if(!config.containsKey("stream")) {
+        	throw new ConfigurationException("the config(args) fo rYarchTmPacketProvider has to contain a parameter 'stream' - stream name for retrieving telemetry from");
+        }
+        String streamName = config.get("stream");
+        
         stream=ydb.getStream(streamName);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
     }
@@ -80,9 +88,9 @@ public class YarchTmPacketProvider extends AbstractService implements TmPacketPr
     @Override
     public void onTuple(Stream s, Tuple tuple) {
         //the definition of tuple is in TmProviderAdapter
-        long rectime = (Long)tuple.getColumn("rectime");
-        long gentime = (Long)tuple.getColumn("gentime");
-        byte[] packet=(byte[])tuple.getColumn("packet");
+        long rectime = (Long)tuple.getColumn(TmProviderAdapter.RECTIME_COLUMN);
+        long gentime = (Long)tuple.getColumn(TmProviderAdapter.GENTIME_COLUMN);
+        byte[] packet=(byte[])tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
         PacketWithTime pwrt=new PacketWithTime(rectime,  gentime, packet);
         tmProcessor.processPacket(pwrt);
     }

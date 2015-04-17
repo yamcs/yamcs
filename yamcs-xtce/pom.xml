@@ -5,7 +5,8 @@
 	<parent>
 		<artifactId>yamcs</artifactId>
 		<groupId>org.yamcs</groupId>
-		<version>0.26.1.SNAPSHOT</version>
+		<version>0.28.0</version>
+                <relativePath>..</relativePath>
 	</parent>
 
 	<artifactId>yamcs-xtce</artifactId>

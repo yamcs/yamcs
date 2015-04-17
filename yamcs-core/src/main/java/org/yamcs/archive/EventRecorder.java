@@ -26,35 +26,36 @@ public class EventRecorder extends AbstractService {
     static final public String TABLE_NAME="events";
     static final public String REALTIME_EVENT_STREAM_NAME="events_realtime";
     static final public String DUMP_EVENT_STREAM_NAME="events_dump";
-    
-    public EventRecorder(String instance) throws StreamSqlException, ParseException, HornetQException, YamcsApiException {
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
-        if(ydb.getTable(TABLE_NAME)==null) {
-            ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source) partition by time(gentime) table_format=compressed");
-        }
-        eventTpdef=ydb.getTable("events").getTupleDefinition();
-       
-        ydb.execute("create stream "+REALTIME_EVENT_STREAM_NAME+eventTpdef.getStringDefinition());
-        ydb.execute("create stream "+DUMP_EVENT_STREAM_NAME+eventTpdef.getStringDefinition());
-        ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_EVENT_STREAM_NAME);
-        ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_EVENT_STREAM_NAME);
 
-        Stream realtimeEventStream=ydb.getStream(REALTIME_EVENT_STREAM_NAME);
-        new StreamAdapter(realtimeEventStream, new SimpleString(instance+".events_realtime"), new EventTupleTranslator());
-        
-        Stream dumpEventStream=ydb.getStream(DUMP_EVENT_STREAM_NAME);
-        new StreamAdapter(dumpEventStream, new SimpleString(instance+".events_dump"), new EventTupleTranslator());
+    StreamAdapter rtStreamAdapter, dumpStreamAdapter;
+
+    public EventRecorder(String instance) throws StreamSqlException, ParseException, HornetQException, YamcsApiException {
+	YarchDatabase ydb=YarchDatabase.getInstance(instance);
+	if(ydb.getTable(TABLE_NAME)==null) {
+	    ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source) partition by time(gentime) table_format=compressed");
+	}
+	eventTpdef=ydb.getTable("events").getTupleDefinition();
+
+	ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_EVENT_STREAM_NAME);
+	ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_EVENT_STREAM_NAME);
+
+	Stream realtimeEventStream=ydb.getStream(REALTIME_EVENT_STREAM_NAME);
+	rtStreamAdapter = new StreamAdapter(realtimeEventStream, new SimpleString(instance+".events_realtime"), new EventTupleTranslator());
+
+	Stream dumpEventStream=ydb.getStream(DUMP_EVENT_STREAM_NAME);
+	dumpStreamAdapter = new StreamAdapter(dumpEventStream, new SimpleString(instance+".events_dump"), new EventTupleTranslator());
     }
 
     @Override
     protected void doStart() {
-        notifyStarted();
+	notifyStarted();
     }
 
     @Override
     protected void doStop() {
-        // TODO Auto-generated method stub
-        
+	rtStreamAdapter.quit();
+	dumpStreamAdapter.quit();
+	notifyStopped();
     }
 
 }

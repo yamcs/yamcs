@@ -1,23 +1,5 @@
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
@@ -28,13 +10,17 @@ import org.yamcs.api.YamcsConnectDialog;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.ui.CommandHistoryRetrievalGui;
-import org.yamcs.ui.PacketRetrievalGui;
-import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
-import org.yamcs.ui.archivebrowser.TagBox.TagEvent;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Standalone Archive Browser (useful for browsing the index, retrieving telemetry packets and parameters).
@@ -45,35 +31,40 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     private static final long serialVersionUID = 1L;
     ArchiveIndexReceiver indexReceiver;
     public ArchivePanel archivePanel;
-    static boolean showDownload = false;
-    JButton packetRetrieval, parameterRetrieval, cmdHistRetrieval, newTagButton;
-    PacketRetrievalGui packetGui;
-    CommandHistoryRetrievalGui cmdHistGui;
-    ParameterRetrievalGui parameterGui;
+    public JMenuBar menuBar;
+
     JMenuItem connectMenuItem;
     
     YamcsConnector yconnector;
+
+    private String instance;
     
     private long lastErrorDialogTime = 0;
     
-    public ArchiveBrowser(YamcsConnector yconnector, ArchiveIndexReceiver ir, boolean replayEnabled)	{
+    public ArchiveBrowser(YamcsConnector yconnector, ArchiveIndexReceiver ir, boolean replayEnabled) throws IOException, ConfigurationException {
         super("Archive Browser");
         this.yconnector=yconnector;
         this.indexReceiver = ir;
         
-        //menus and toolbar
-        JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
         setIconImage(ArchivePanel.getIcon("yamcs-32x32.png").getImage());
+        
+        /*
+         * MENU
+         */
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
 
-        JMenu menu = new JMenu("Archive Browser");
+        // File menu
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
 
         connectMenuItem=new JMenuItem();
-        connectMenuItem=new JMenuItem();
-        connectMenuItem.setText("Connect");
-        menu.add(connectMenuItem);
+        connectMenuItem.setText("Connect to Yamcs...");
+        connectMenuItem.setMnemonic(KeyEvent.VK_C);
+        connectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        fileMenu.add(connectMenuItem);
 
-        menu.addSeparator();
+        fileMenu.addSeparator();
 
         JMenuItem closeMenuItem=new JMenuItem();
         closeMenuItem.setMnemonic(KeyEvent.VK_Q);
@@ -81,61 +72,41 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         closeMenuItem.setText("Quit");
         closeMenuItem.setActionCommand("exit");
         closeMenuItem.addActionListener(this);
-        menu.add(closeMenuItem);
+        fileMenu.add(closeMenuItem);
 
-        menuBar.add(menu);
+        menuBar.add(getToolsMenu());
    
+        /*
+         * BUTTONS
+         */
         archivePanel = new ArchivePanel(this, replayEnabled);
-        archivePanel.reloadButton.addActionListener(this);
-        archivePanel.addActionListener(this);
+        archivePanel.prefs.reloadButton.addActionListener(this);
 
-        if(ir==null || ir.supportsTags()) {
-            newTagButton=new JButton("New Tag");
-            newTagButton.setEnabled(false);
-            newTagButton.setToolTipText("Define a new tag for the current selection");
-            newTagButton.addActionListener(this);
-            newTagButton.setActionCommand("new-tag-button");
-            archivePanel.buttonToolbar.addSeparator();
-            archivePanel.buttonToolbar.add(newTagButton);
-        }
-        
-        packetRetrieval = new JButton("Packet Retrieval");
-        packetRetrieval.setEnabled(false);
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
-        packetRetrieval.addActionListener(this);
-        packetRetrieval.setActionCommand("start-packet-retrieval");
-        archivePanel.buttonToolbar.addSeparator();
-        archivePanel.buttonToolbar.add(packetRetrieval);
-
-        parameterRetrieval = new JButton("Parameter Retrieval");
-        parameterRetrieval.setEnabled(false);
-        parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
-        parameterRetrieval.addActionListener(this);
-        parameterRetrieval.setActionCommand("start-parameter-retrieval");
-        archivePanel.buttonToolbar.add(parameterRetrieval);
-        
-        cmdHistRetrieval = new JButton("CmdHist Retrieval");
-        cmdHistRetrieval.setEnabled(false);
-        cmdHistRetrieval.setToolTipText("Start command history retrieval for the selected time interval");
-        cmdHistRetrieval.addActionListener(this);
-        cmdHistRetrieval.setActionCommand("start-cmdhist-retrieval");
-        archivePanel.buttonToolbar.add(cmdHistRetrieval);
+        // While resizing, only update active item (slight performance gain)
+        // When done resizing, update all
+        getRootPane().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                archivePanel.onWindowResizing();
+            }
+        });
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                archivePanel.onWindowResized();
+            }
+        });
         
         setContentPane(archivePanel);
-
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
     }
-
-
 
     protected JMenu getToolsMenu() throws ConfigurationException, IOException {
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         List<Map<String, String>> tools=config.getList("archiveBrowserTools");
         
         JMenu toolsMenu = new JMenu("Tools");
-       
-
         for(Map<String, String> m:tools) {
             JMenuItem menuItem = new JMenuItem(m.get("name"));
             toolsMenu.add(menuItem);
@@ -152,11 +123,17 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         return toolsMenu;
     }
     
-    
     protected void showMessage(String msg) {
         JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.PLAIN_MESSAGE);
     }
-
+    
+    protected void showInfo(String msg) {
+        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    protected void showError(String msg) {
+        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.ERROR_MESSAGE);
+    }
 
     @Override
     public void connecting(String url) {
@@ -217,21 +194,16 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     @Override
     public void receiveArchiveRecordsFinished() {
         if(indexReceiver.supportsTags()) {
-            String instance=archivePanel.getInstance();
             TimeInterval interval = archivePanel.getRequestedDataInterval();
             indexReceiver.getTag(instance, interval);
         } else {
-            archivePanel.dataLoadFinished();
+            archivePanel.archiveLoadFinished();
         }
-       /* if (archivePanel.histoBox.tmData.isEmpty()) {
-            if(isVisible())
-                JOptionPane.showMessageDialog(this, "No index data available for the selected interval");
-        }*/
     }
 
     @Override
     public void receiveTagsFinished() {
-        archivePanel.dataLoadFinished();
+        archivePanel.archiveLoadFinished();
     }
     
     @Override
@@ -239,26 +211,8 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         final String cmd = ae.getActionCommand();
         if(cmd.equalsIgnoreCase("reload")) {
             requestData();
-        } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
-            if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
-        } else if (cmd.toLowerCase().endsWith("selection_finished")) {
-            if((newTagButton!=null) && indexReceiver.supportsTags()) newTagButton.setEnabled(true);
-            packetRetrieval.setEnabled(true);
-            parameterRetrieval.setEnabled(true);
-           if(cmd.startsWith("pp") | cmd.startsWith("tm")) { 
-               packetRetrieval.setEnabled(true);
-               parameterRetrieval.setEnabled(true);
-           } else if (cmd.startsWith("cmdhist")) {
-               cmdHistRetrieval.setEnabled(true);
-           }
-        } else  if(cmd.equalsIgnoreCase("selection_reset")) {
-            if(newTagButton!=null) newTagButton.setEnabled(false);
-            packetRetrieval.setEnabled(false);
-            parameterRetrieval.setEnabled(false);
-            cmdHistRetrieval.setEnabled(false);
         }  else if (cmd.equals("hide_resp")) {
             //  buildPopup();
-
         } else if (cmd.equals("show-dass-arc")) {
             /*
             Selection s = tmBox.getSelection();
@@ -293,64 +247,23 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
                 showClipboardDialog(sb.toString());
             }
              */
-        }  else if (cmd.equals("start-packet-retrieval")) {
-            List<String> packets=archivePanel.getSelectedPackets("tm");
-            Selection sel = archivePanel.getSelection();
-            if(packetGui==null) {
-                packetGui=new PacketRetrievalGui(yconnector.getConnectionParams(), this);
-            }
-            packetGui.setValues(archivePanel.getInstance(), packets, sel.getStartInstant(), sel.getStopInstant());
-            packetGui.setVisible(true);
-       
-        } else if (cmd.equals("start-parameter-retrieval")) {
-            Selection sel = archivePanel.getSelection();
-            if(parameterGui==null) {
-                parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), this);
-            }
-            parameterGui.setValues(archivePanel.getInstance(), sel.getStartInstant(), sel.getStopInstant());
-            parameterGui.setVisible(true);
-        } else if (cmd.equals("start-cmdhist-retrieval")) {
-            
-            Selection sel = archivePanel.getSelection();
-            if(cmdHistGui==null) {
-                cmdHistGui=new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), this);
-            }
-            cmdHistGui.setValues(archivePanel.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
-            cmdHistGui.setVisible(true);
-        } else if (cmd.equalsIgnoreCase("new-tag-button")) {
-            Selection sel = archivePanel.getSelection();
-            archivePanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
-        } else if(cmd.equalsIgnoreCase("insert-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.insertTag(archivePanel.getInstance(), te.newTag);
-        } else if(cmd.equalsIgnoreCase("update-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.updateTag(archivePanel.getInstance(), te.oldTag, te.newTag);
-        } else if(cmd.equalsIgnoreCase("delete-tag")) {
-            TagEvent te=(TagEvent)ae;
-            indexReceiver.deleteTag(archivePanel.getInstance(), te.oldTag);
         } else if(cmd.equalsIgnoreCase("exit")) {
             System.exit(0);
         }
-        
     }
-
 
     private void requestData() {
         //debugLog("requestData() mark 1 "+new Date());
         archivePanel.startReloading();
         TimeInterval interval = archivePanel.getRequestedDataInterval();
-        String instance=archivePanel.getInstance();
         indexReceiver.getIndex(instance, interval);
     }
 
-
-
     private static void printUsageAndExit() {
-        System.err.println("Usage: archive-browser.sh [-h] [-url url]");
+        System.err.println("Usage: archive-browser.sh [-h] [url]");
         System.err.println("-h:\tShow this help text");
-        System.err.println("-url:\tConnect at startup to the given url");
-        System.err.println("Example to yamcs archive:\n\t archive-browser.sh -url yamcs://localhost:5445/");
+        System.err.println("url:\tConnect at startup to the given url");
+        System.err.println("Example to yamcs archive:\n\t archive-browser.sh yamcs://localhost:5445/");
         System.exit(1);
     }
 
@@ -360,7 +273,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-			    archivePanel.tagBox.addTags(tagList);
+			    archivePanel.tagsAdded(tagList);
 			}
 		});
 	}
@@ -370,7 +283,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.addTag(ntag);
+                archivePanel.tagAdded(ntag);
             }
         });
     }
@@ -381,7 +294,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.removeTag(rtag);
+                archivePanel.tagRemoved(rtag);
             }
         });
     }
@@ -391,21 +304,28 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                archivePanel.tagBox.updateTag(oldTag, newTag);
+                archivePanel.tagChanged(oldTag, newTag);
             }
         });
         
     }
 
-    public static void main(String[] args) throws URISyntaxException, ConfigurationException {
-        String initialUrl = null;
+    public String getInstance() {
+        return instance;
+    }
+
+    public void setInstance(String instance) {
+        this.instance=instance;
+    }
+
+    public static void main(String[] args) throws URISyntaxException, ConfigurationException, IOException {
         YamcsConnectData params=null;
         for(int i=0;i<args.length;i++) {
             if(args[i].equals("-h")) {
                 printUsageAndExit();
             } else {
                 if(args.length!=i+1) printUsageAndExit();
-                initialUrl=args[i];
+                String initialUrl=args[i];
                 if(initialUrl.startsWith("yamcs://")){
                     params=YamcsConnectData.parse(initialUrl);
                  } else {

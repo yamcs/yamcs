@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0">
+  <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+  </macros>
+  <wuid>-4a6725d4:1389ff63d20:-7ed8</wuid>
+  <boy_version>3.1.1.qualifier</boy_version>
+  <scripts />
+  <show_ruler>false</show_ruler>
+  <height>300</height>
+  <name>Table</name>
+  <snap_to_geometry>false</snap_to_geometry>
+  <show_grid>true</show_grid>
+  <background_color>
+    <color red="240" green="240" blue="240" />
+  </background_color>
+  <foreground_color>
+    <color red="192" green="192" blue="192" />
+  </foreground_color>
+  <widget_type>Display</widget_type>
+  <show_close_button>true</show_close_button>
+  <width>300</width>
+  <rules />
+  <show_edit_range>true</show_edit_range>
+  <grid_space>6</grid_space>
+  <auto_scale_widgets>
+    <auto_scale_widgets>true</auto_scale_widgets>
+    <min_width>-1</min_width>
+    <min_height>-1</min_height>
+  </auto_scale_widgets>
+  <actions hook="false" hook_all="false" />
+  <y>0</y>
+  <x>0</x>
+  <widget typeId="org.csstudio.opibuilder.widgets.NativeButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <wuid>-4a6725d4:1389ff63d20:-7d3b</wuid>
+    <scripts />
+    <height>37</height>
+    <name>Action Button</name>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <pv_name></pv_name>
+    <foreground_color>
+      <color red="0" green="0" blue="128" />
+    </foreground_color>
+    <widget_type>Button</widget_type>
+    <enabled>true</enabled>
+    <text>Go Home</text>
+    <font>
+      <opifont.name fontName="Sans" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>127</width>
+    <border_style>0</border_style>
+    <push_action_index>0</push_action_index>
+    <image>../../pictures/home-16x16.png</image>
+    <rules />
+    <pv_value />
+    <toggle_button>false</toggle_button>
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>240</y>
+    <actions hook="true" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>../Widgets_m.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+        </macros>
+        <replace>1</replace>
+        <description></description>
+      </action>
+    </actions>
+    <tooltip></tooltip>
+    <x>84</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.table" version="1.0">
+    <visible>true</visible>
+    <wuid>2b59412f:138a0499f72:-6748</wuid>
+    <default_content />
+    <scripts>
+      <path pathString="../../scripts/DisplayPVValuesInTable.py" checkConnect="false" sfe="false" seoe="false">
+        <pv trig="true">sim://noise</pv>
+        <pv trig="true">sim://ramp</pv>
+        <pv trig="true">sim://ramp(0,100,1,0.1)</pv>
+        <pv trig="true">sim://sine(-100,100,100,0.1)</pv>
+        <pv trig="true">sim://noise(-10, 10, 0.2)</pv>
+      </path>
+    </scripts>
+    <height>217</height>
+    <name>Table              </name>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <foreground_color>
+      <color red="192" green="192" blue="192" />
+    </foreground_color>
+    <column_header_visible>true</column_header_visible>
+    <widget_type>Table</widget_type>
+    <enabled>true</enabled>
+    <font>
+      <opifont.name fontName="Sans" height="10" style="0">Default</opifont.name>
+    </font>
+    <width>289</width>
+    <border_style>0</border_style>
+    <column_headers>
+      <row>
+        <col>PV Name</col>
+        <col>180</col>
+      </row>
+      <row>
+        <col>Value</col>
+        <col>100</col>
+      </row>
+      <row>
+        <col>Time Stamp</col>
+        <col>180</col>
+      </row>
+      <row>
+        <col>Status</col>
+        <col>100</col>
+      </row>
+      <row>
+        <col>Severity</col>
+        <col>60</col>
+      </row>
+    </column_headers>
+    <editable>false</editable>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <columns_count>5</columns_count>
+    <actions hook="false" hook_all="false" />
+    <y>6</y>
+    <tooltip>I'm&#xD;
+the&#xD;
+tooltip.</tooltip>
+    <x>6</x>
+  </widget>
+</display>

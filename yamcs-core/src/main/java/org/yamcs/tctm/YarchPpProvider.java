@@ -2,12 +2,14 @@ package org.yamcs.tctm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.yamcs.Channel;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterListener;
-import org.yamcs.ParameterProvider;
 import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -28,23 +30,22 @@ import com.google.common.util.concurrent.AbstractService;
 public class YarchPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
     PpListener ppListener;
-    ParameterListener paraListener;
+    ParameterRequestManagerIf paraListener;
     final XtceDb xtceDb;
     
-    public YarchPpProvider(String archiveInstance, String streamName) throws ConfigurationException {
+    public YarchPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+        
+        if(!config.containsKey("stream")) {
+        	throw new ConfigurationException("the config(args) for YarchPpProvider has to contain a parameter 'stream' - stream name for retrieving parameters from");
+        }
+        String streamName = config.get("stream");
+        
         stream=ydb.getStream(streamName);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
         xtceDb=XtceDbFactory.getInstance(archiveInstance);
     }
     
-
-
-    @Override
-    public String getDetailedStatus() {
-        return "receiving PPs from "+stream;
-    }
-
 
     @Override
     protected void doStart() {
@@ -79,7 +80,7 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
 
 
     @Override
-    public void setParameterListener(ParameterListener paraListener) {
+    public void setParameterListener(ParameterRequestManagerIf paraListener) {
         this.paraListener=paraListener;
     }
 
@@ -92,6 +93,11 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     public boolean canProvide(NamedObjectId id) {
         if(xtceDb.getParameter(id)!=null) return true;
         else return false;
+    }
+    
+    @Override
+    public boolean canProvide(Parameter p) {
+        return xtceDb.getParameter(p.getQualifiedName())!=null;
     }
     
     @Override
@@ -112,4 +118,11 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
     public void startProvidingAll() {
         // TODO Auto-generated method stub
     }
+
+
+
+	@Override
+	public void init(Channel channel) {
+		//nothing to be done here
+	}
 }

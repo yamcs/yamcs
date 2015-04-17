@@ -1,50 +1,25 @@
-/**
- * 
- */
 package org.yamcs.ui.archivebrowser;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Point;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.ToolTipManager;
-import javax.swing.WindowConstants;
-import javax.swing.border.BevelBorder;
-
-
-
-import org.yamcs.ui.archivebrowser.ArchivePanel.ZoomSpec;
-
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-
-public class TagBox extends Box implements MouseListener{
+public class TagBox extends Box implements MouseListener {
     private static final long serialVersionUID = 1L;
-    private final ArchivePanel archivePanel;
-    int startX, stopX, deltaX;
+    private DataView dataView;
     boolean drawPreviewLocator;
-    float previewLocatorAlpha;
-    int dragButton, previewLocatorX;
-    long startLocator, stopLocator, currentLocator, previewLocator;
+    long startLocator, stopLocator, currentLocator;
 
     final long DO_NOT_DRAW = Long.MIN_VALUE;
-
 
     JLabel tagLabelItem;
     JPopupMenu editTagPopup, newTagPopup;
@@ -64,12 +39,13 @@ public class TagBox extends Box implements MouseListener{
         }
     }
 
-    TagBox(ArchivePanel archivePanel) {
+    TagBox(DataView dataView) {
         super(BoxLayout.PAGE_AXIS);
-        this.archivePanel = archivePanel;
+        this.dataView = dataView;
 
         startLocator = stopLocator = currentLocator = DO_NOT_DRAW;
         drawPreviewLocator = false;
+        setOpaque(false);
 
         ToolTipManager ttmgr = ToolTipManager.sharedInstance();
         ttmgr.setInitialDelay(0);
@@ -124,17 +100,23 @@ public class TagBox extends Box implements MouseListener{
     protected void buildPopup() {
         editTagPopup = new JPopupMenu();
         tagLabelItem = new JLabel();
-        editTagPopup.insert(tagLabelItem, 0);
+        tagLabelItem.setEnabled(false);
+        Box hbox = Box.createHorizontalBox();
+        hbox.add(Box.createHorizontalGlue());
+        hbox.add(tagLabelItem);
+        hbox.add(Box.createHorizontalGlue());
+        editTagPopup.insert(hbox, 0);
         editTagPopup.addSeparator();
         editTagMenuItem = new JMenuItem("Edit Tag");
         editTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 buildTagEditDialog();
                 ArchiveTag selectedTag=tags.get(selectedRow).get(selectedIndex);
                 tagEditDialog.fillFrom(selectedTag);
                 tagEditDialog.setVisible(true);
                 if(tagEditDialog.ok) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "update-tag", selectedTag, tagEditDialog.getTag()));
+                    dataView.emitActionEvent(new TagEvent(this, "update-tag", selectedTag, tagEditDialog.getTag()));
                 }
             }
         });
@@ -142,11 +124,12 @@ public class TagBox extends Box implements MouseListener{
 
         removeTagMenuItem = new JMenuItem("Remove Tag");
         removeTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ArchiveTag selectedTag=tags.get(selectedRow).get(selectedIndex);
                 int answer=JOptionPane.showConfirmDialog(null, "Remove "+selectedTag.getName()+" ?", "Are you sure?", JOptionPane.YES_NO_OPTION);
                 if(answer==JOptionPane.YES_OPTION) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "delete-tag", selectedTag, null));
+                    dataView.emitActionEvent(new TagEvent(this, "delete-tag", selectedTag, null));
                 }
             }
         });
@@ -155,11 +138,12 @@ public class TagBox extends Box implements MouseListener{
         newTagPopup = new JPopupMenu();
         JMenuItem newTagMenuItem = new JMenuItem("New Tag");
         newTagMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 buildTagEditDialog();
                 tagEditDialog.setVisible(true);
                 if(tagEditDialog.ok) {
-                    archivePanel.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
+                    dataView.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
                 }
             }
         });
@@ -173,7 +157,7 @@ public class TagBox extends Box implements MouseListener{
         tagEditDialog.setVisible(true);
 
         if(tagEditDialog.ok) {
-            archivePanel.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
+            dataView.emitActionEvent(new TagEvent(this, "insert-tag", null, tagEditDialog.getTag()));
         }
     }
     
@@ -183,7 +167,7 @@ public class TagBox extends Box implements MouseListener{
         if(e.isPopupTrigger()) {
             showPopup(e);
         } else if(e.getButton()==MouseEvent.BUTTON1 && selectedRow!=-1 && selectedIndex !=-1) {
-            archivePanel.selectedTag(tags.get(selectedRow).get(selectedIndex));
+            dataView.selectedTag(tags.get(selectedRow).get(selectedIndex));
         }
     }
 
@@ -217,49 +201,24 @@ public class TagBox extends Box implements MouseListener{
      */
 
 
+    @Override
     public Point getToolTipLocation(MouseEvent event) {
         return new Point(event.getX() - 94, event.getY() + 20);
     }
-
-
-    void setMouseLabel(MouseEvent e) {
-        setToolTipText("uhu");
-    }
-
-    void setStartLocator(long position) {
-        startLocator = position;
-    }
-
-    void setStopLocator(long position) {
-        stopLocator = position;
-    }
-
-    void setCurrentLocator(long position) {
-        currentLocator = position;
-        repaint();
-    }
+    
     void setToZoom(ZoomSpec zoom) {
         this.zoom=zoom;
         redrawTags();
     }
     
-    void redrawTags() {
+    void redrawTags() { // Draw reverse, so that 'most' tags stick to scale
         removeAll();
-        if(tags.isEmpty()) {
-            JLabel notag=new JLabel("No tags defined");
-            Font f=new Font("SansSerif", Font.ITALIC, 20);
-            notag.setFont(f);
-            notag.setForeground(Color.lightGray);
-            Box b=Box.createHorizontalBox();
-            b.add(notag);
-            b.add(Box.createHorizontalGlue());
-            add(b);
-            notag.addMouseListener(this);
-        } else {
-            int row=0;
+        if(!tags.isEmpty()) {
+            int row=tags.size()-1;
             Insets in=this.getInsets();
-            for(List<ArchiveTag> lat:tags) {
-                TagTimeline tt=new TagTimeline(this, lat, zoom, row++, in.left);
+            for(ListIterator<List<ArchiveTag>> it=tags.listIterator(tags.size()); it.hasPrevious();) {
+                List<ArchiveTag> lat=it.previous();
+                TagTimeline tt=new TagTimeline(this, lat, zoom, row--, in.left);
                 add(tt);
             }
         }
@@ -270,14 +229,11 @@ public class TagBox extends Box implements MouseListener{
     public void mousePressed(MouseEvent e) {
         doMousePressed(e, -1, -1);
     }
-    @Override
-    public void mouseReleased(MouseEvent e) {            }
-    @Override
-    public void mouseExited(MouseEvent e) {             }
-    @Override
-    public void mouseEntered(MouseEvent e) {            }
-    @Override
-    public void mouseClicked(MouseEvent e) {                }
+
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseClicked(MouseEvent e) {}
     
     static public void main(String[] args) {
         TimeEncoding.setUp();
@@ -303,6 +259,9 @@ public class TagBox extends Box implements MouseListener{
     public void addTags(List<ArchiveTag> tagList) {
        for(ArchiveTag tag:tagList) {
            insertTag(tag);
+       }
+       if (!dataView.zoomStack.empty()) {
+           redrawTags();
        }
     }
 

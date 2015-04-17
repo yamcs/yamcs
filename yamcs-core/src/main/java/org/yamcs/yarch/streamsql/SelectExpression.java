@@ -247,6 +247,7 @@ class SelectExpression implements StreamExpression {
 		            caggInputList, windowProc,
 		            cselectList, outputDef, minOutputDef);
 		} 
+		
 		return stream;
 	}
 }
