@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpHeaders.Values;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.protostuff.JsonIOUtil;
@@ -120,8 +121,9 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
      */
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+        if (req.getMethod() != HttpMethod.GET)
+            throw new MethodNotAllowedException(req.getMethod());
         RestDumpArchiveRequest request = readMessage(req, SchemaRest.RestDumpArchiveRequest.MERGE).build();
-        if (remainingUri == null) remainingUri = "";
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
 
         // Check if a profile has been specified in the request
@@ -184,8 +186,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             throw new InternalServerErrorException(e);
         } finally {
             if (msgClient != null) {
-                try { msgClient.close(); } catch (HornetQException e) {
-                    System.err.println("Caught .... on msgClient close"); e.printStackTrace(); }
+                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
             }
             if (ys != null) {
                 try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }

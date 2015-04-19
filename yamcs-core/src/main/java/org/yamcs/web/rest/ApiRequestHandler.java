@@ -32,14 +32,16 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
         } else {
             try {
+                // Chop off first path segment (incl. any '/') while keeping querystring in place
+                String choppedUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
                 if(path[0].startsWith(ARCHIVE_PATH)) {
-                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else if(path[0].startsWith(MDB_PATH)) {
-                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else if(path[0].startsWith(COMMANDING_PATH)) {
-                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else if(path[0].startsWith(PARAMETER_PATH)) {
-                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else {
                     log.warn("Unknown request received: '{}'", path[0]);
                     sendError(ctx, HttpResponseStatus.NOT_FOUND);

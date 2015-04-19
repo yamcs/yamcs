@@ -1,11 +1,12 @@
 package org.yamcs.web.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +42,22 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             throw e;
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-            if ("validate".equals(qsDecoder.path())) {
-                RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
-                RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
-                writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestValidateCommandResponse.WRITE);
-            } else if ("send".equals(qsDecoder.path())) {
-                RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
-                RestSendCommandResponse response = sendCommand(request, yamcsChannel);
-                writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSendCommandResponse.WRITE);
+            if ("".equals(qsDecoder.path())) {
+                if (req.getMethod() == HttpMethod.POST) {
+                    RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
+                    RestSendCommandResponse response = sendCommand(request, yamcsChannel);
+                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSendCommandResponse.WRITE);
+                } else {
+                    throw new MethodNotAllowedException(req.getMethod());
+                }
+            } else if ("validator".equals(qsDecoder.path())) {
+                if (req.getMethod() == HttpMethod.POST) {
+                    RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
+                    RestValidateCommandResponse response = validateCommand(request, yamcsChannel);
+                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestValidateCommandResponse.WRITE);
+                } else {
+                    throw new MethodNotAllowedException(req.getMethod());
+                }
             } else {
         	log.warn("Invalid path called: '{}'", qsDecoder.path());
                 sendError(ctx, NOT_FOUND);
@@ -57,7 +66,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     }
 
     /**
-     * Validates commands sent by POST
+     * Validates commands
      */
     private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
@@ -69,7 +78,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             if(mc==null) {
             	throw new BadRequestException("Unknown command: "+restCommand.getId());
             }
-            List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
+            List<ArgumentAssignment> assignments = new ArrayList<>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
@@ -78,7 +87,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             int seqId = restCommand.getSequenceNumber(); // will default to 0 if not set, which is fine for validation
             String user = "anonymous"; // TODO
             try {
-                PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
+                yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
             } catch (NoPermissionException e) {
                 throw new ForbiddenException(e);
             } catch (ErrorInCommand e) {
@@ -92,7 +101,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     }
 
     /**
-     * Validates and sends commands sent by POST
+     * Validates and sends commands
      */
     private RestSendCommandResponse sendCommand(RestSendCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
@@ -100,10 +109,10 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
         RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();
 
         // Validate all first
-        List<PreparedCommand> validated = new ArrayList<PreparedCommand>();
+        List<PreparedCommand> validated = new ArrayList<>();
         for (RestCommandType restCommand : request.getCommandsList()) {
             MetaCommand mc = required(xtcedb.getMetaCommand(restCommand.getId()), "Unknown command: " + restCommand.getId());
-            List<ArgumentAssignment> assignments = new ArrayList<ArgumentAssignment>();
+            List<ArgumentAssignment> assignments = new ArrayList<>();
             for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
@@ -118,19 +127,19 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, user);
             	//make the source - should perhaps come from the client
                 StringBuilder sb = new StringBuilder();
-        		sb.append(restCommand.getId().getName());
-        		sb.append("(");
-        		boolean first = true;
-        		for(ArgumentAssignment aa:assignments) {
-        			if(!first) {
-        				sb.append(", ");
-        			} else {
-        				first = false;
-        			}
-        			sb.append(aa.getArgumentName()+": "+aa.getArgumentValue());
-        		}
-        		sb.append(")");
-        		cmd.setSource(sb.toString());
+                sb.append(restCommand.getId().getName());
+                sb.append("(");
+                boolean first = true;
+                for(ArgumentAssignment aa:assignments) {
+                    if(!first) {
+                        sb.append(", ");
+                    } else {
+                        first = false;
+                    }
+                    sb.append(aa.getArgumentName()).append(": ").append(aa.getArgumentValue());
+                }
+                sb.append(")");
+                cmd.setSource(sb.toString());
         		
                 validated.add(cmd);
             } catch (NoPermissionException e) {
