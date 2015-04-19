@@ -152,6 +152,11 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             rrb.setPpRequest(request.getPpRequest());
         ReplayRequest replayRequest = rrb.build();
 
+        if(CSV_MIME_TYPE.equals(contentType))
+        {
+            initCsvGenerator(replayRequest);
+        }
+
         if (request.hasStream() && request.getStream()) {
             try {
                 streamResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
@@ -213,7 +218,14 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
                 if (BINARY_MIME_TYPE.equals(contentType)) {
                     builder.build().writeDelimitedTo(channelOut);
-                } else {
+                }
+                else if (CSV_MIME_TYPE.equals(contentType))
+                {
+                    if(csvGenerator != null) {
+                        csvGenerator.insertRows(builder.build(), channelOut);
+                    }
+                }
+                else {
                     JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
                     JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                     generator.close();
@@ -266,14 +278,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             response.headers().set(Names.CONTENT_TYPE, contentType);
             RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
 
-            CsvFormater csvFormater = null;
-            if(CSV_MIME_TYPE.equals(contentType))
-            {
-                if(replayRequest.hasParameterRequest()) {
-                    csvFormater = new CsvFormater();
-                    csvFormater.initParameterFormatter(replayRequest.getParameterRequest().getNameFilterList());
-                }
-            }
+
 
             while(true) {
                 ClientMessage msg = msgClient.dataConsumer.receive();
@@ -294,11 +299,6 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 try {
                     if (BINARY_MIME_TYPE.equals(contentType)) {
                         sizeEstimate += restMessage.message.getSerializedSize();
-                    } else if (CSV_MIME_TYPE.equals(contentType))
-                    {
-                        ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
-                        if(csvFormater != null)
-                            csvFormater.insertRows(builder, tempOut);
                     } else {
                         ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
                         JsonGenerator generator = createJsonGenerator(tempOut, qsDecoder);

@@ -18,8 +18,10 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.RestExceptionMessage;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.web.AbstractRequestHandler;
 
 import java.io.IOException;
@@ -48,6 +50,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     private static final String[] DEFAULT_INBOUND_MEDIA_TYPES = new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
     private static final String[] DEFAULT_OUTBOUND_MEDIA_TYPES = new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
     private JsonFactory jsonFactory = new JsonFactory();
+    protected CsvGenerator csvGenerator = null;
 
     public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException;
 
@@ -149,7 +152,14 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         try {
             if (BINARY_MIME_TYPE.equals(targetContentType)) {
                 responseMsg.writeTo(channelOut);
-            } else {
+            }
+            else if (CSV_MIME_TYPE.equals(targetContentType))
+            {
+                if(csvGenerator != null && responseMsg.getClass() == Rest.RestDumpArchiveResponse.class) {
+                    csvGenerator.insertRows((Rest.RestDumpArchiveResponse) responseMsg, channelOut);
+                }
+            }
+            else {
                 JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
                 JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
                 generator.close();
@@ -189,6 +199,18 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
             }
         }
         return generator;
+    }
+
+    /**
+     *  csv generator should be created only once per request since its insert a header in first row
+     */
+    protected void initCsvGenerator(Yamcs.ReplayRequest replayRequest)
+    {
+        csvGenerator = null;
+        if(replayRequest.hasParameterRequest()) {
+            csvGenerator = new CsvGenerator();
+            csvGenerator.initParameterFormatter(replayRequest.getParameterRequest().getNameFilterList());
+        }
     }
 
     /**
