@@ -48,7 +48,7 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                 log.error("Reporting internal server error to rest client", e);
                 sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
             } catch (RestException e) {
-                log.trace("Sending nominal exception back to rest client", e);
+                log.debug("Sending nominal exception back to rest client", e);
                 sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
             } catch (Exception e) {
                 log.error("Unexpected error " + e, e);
