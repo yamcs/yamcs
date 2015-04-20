@@ -42,7 +42,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             throw e;
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-            if ("".equals(qsDecoder.path())) {
+            if ("queue".equals(qsDecoder.path())) {
                 if (req.getMethod() == HttpMethod.POST) {
                     RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
                     RestSendCommandResponse response = sendCommand(request, yamcsChannel);

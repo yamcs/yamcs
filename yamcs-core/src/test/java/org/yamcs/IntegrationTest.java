@@ -230,7 +230,7 @@ public class IntegrationTest extends YarchTestCase {
         wsClient.sendRequest(wsr);
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", 5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/send", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE));
+        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE));
         assertEquals("{}", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -247,7 +247,7 @@ public class IntegrationTest extends YarchTestCase {
         wsClient.sendRequest(wsr);
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 6, "p1", "2");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/send", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE));
+        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE));
         assertEquals("{}", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
