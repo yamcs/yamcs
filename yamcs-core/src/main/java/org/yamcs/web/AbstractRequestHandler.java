@@ -1,11 +1,5 @@
 package org.yamcs.web;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
-
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,6 +9,13 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -31,7 +32,7 @@ public class AbstractRequestHandler {
 
 		response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
-		ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+	ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
 	}
 
 	/**

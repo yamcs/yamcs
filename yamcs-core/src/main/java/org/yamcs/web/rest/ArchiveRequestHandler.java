@@ -227,7 +227,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             mergeMessage(dataType, restMessage.message, builder);
 
             // Write a chunk containing a delimited message
-            ByteBuf buf = Unpooled.buffer();
+            ByteBuf buf = ctx.alloc().buffer();
             ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
 
             if (BINARY_MIME_TYPE.equals(contentType)) {
