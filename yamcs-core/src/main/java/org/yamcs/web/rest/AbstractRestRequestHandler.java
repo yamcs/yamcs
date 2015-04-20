@@ -250,6 +250,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, BINARY_MIME_TYPE);
                 setContentLength(response, buf.readableBytes());
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
