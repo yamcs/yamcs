@@ -25,6 +25,8 @@ public class ParameterValueListTest {
 	ParameterValue pv2bis = new ParameterValue(params[2]);
 	pvalues.add(pv2bis);
 
+	
+	
 
 	//bulk create
 	ParameterValueList pvlist1 = new ParameterValueList(pvalues);
@@ -35,8 +37,9 @@ public class ParameterValueListTest {
 
 	ParameterValue pv2 = pvlist1.getLast(params[2]);
 	assertEquals(pvalues.get(n), pv2);
-
-
+	assertEquals(1, pvlist1.count(params[0]));
+	assertEquals(2, pvlist1.count(params[2]));
+	
 	List<ParameterValue> pvalues1 = new ArrayList<ParameterValue>(pvalues);
 	pvalues1.removeAll(pvlist1);
 	assertTrue(pvalues1.isEmpty());
