@@ -1534,18 +1534,7 @@ public class XtceStaxReader {
                 Parameter p=(Parameter)nd;
                 instanceRef.setParameter((Parameter) nd);
                 if(p.getParameterType()==null) return false;
-
-                // currently lets support only integer and float comparison 
-                if (p.getParameterType() instanceof FloatParameterType) {
-                    double doubleValue = Double.parseDouble(finalc.getStringValue());
-                    finalc.setDoubleValue(doubleValue);
-                } else if (p.getParameterType() instanceof IntegerParameterType) {
-                    long longValue = Long.parseLong(finalc.getStringValue());
-                    finalc.setLongValue(longValue);
-                } else if (p.getParameterType() instanceof EnumeratedParameterType) {
-                    long longValue = Long.parseLong(finalc.getStringValue());
-                    finalc.setLongValue(longValue);
-                }
+                finalc.resolveValueType();
                 return true;
             }
         });

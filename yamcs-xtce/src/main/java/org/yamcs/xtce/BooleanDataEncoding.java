@@ -6,13 +6,18 @@ package org.yamcs.xtce;
  * This creates an inconsistency when algorithms output uncalibrated boolean values.
  */
 public class BooleanDataEncoding extends DataEncoding {
-	private static final long serialVersionUID=200805131551L;
-	public BooleanDataEncoding(String name) {
-		super(name, 1);
-	}
-	
-	@Override
+    private static final long serialVersionUID=200805131551L;
+    public BooleanDataEncoding(String name) {
+        super(name, 1);
+    }
+
+    @Override
     public String toString() {
-		return "BooleanDataEncoding(sizeInBits:"+sizeInBits+")";
-	}
+        return "BooleanDataEncoding(sizeInBits:"+sizeInBits+")";
+    }
+
+    @Override
+    public Object parseString(String stringValue) {
+        return Boolean.parseBoolean(stringValue);
+    }
 }

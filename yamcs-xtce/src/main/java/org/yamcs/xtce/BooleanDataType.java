@@ -12,4 +12,12 @@ public class BooleanDataType extends BaseDataType {
     public String toString(){ 
         return "BooleanData encoding: " + encoding;
     }
+    
+    
+    /**
+     * Returns {@link Boolean.parseBoolean(stringValue)}
+     */
+    public Object parseString(String stringValue) {
+        return Boolean.parseBoolean(stringValue);
+    }
 }

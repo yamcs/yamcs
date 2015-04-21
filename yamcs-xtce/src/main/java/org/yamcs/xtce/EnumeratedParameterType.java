@@ -7,44 +7,44 @@ import java.util.Set;
 
 
 public class EnumeratedParameterType extends EnumeratedDataType implements ParameterType {
-	private static final long serialVersionUID = 200805301432L;
-	
-	EnumerationAlarm defaultAlarm=null;
-	ArrayList<EnumerationContextAlarm> contextAlarmList=null;
-	
-	public EnumeratedParameterType(String name){
-		super(name);
-	}
-	
+    private static final long serialVersionUID = 200805301432L;
+
+    EnumerationAlarm defaultAlarm=null;
+    ArrayList<EnumerationContextAlarm> contextAlarmList=null;
+
+    public EnumeratedParameterType(String name){
+        super(name);
+    }
+
     @Override
     public boolean hasAlarm() {
         return defaultAlarm!=null || (contextAlarmList!=null && !contextAlarmList.isEmpty());
     }
 
-	@Override
+    @Override
     public Set<Parameter> getDependentParameters() {
-		if(contextAlarmList==null)
-			return null;
-		Set<Parameter>dependentParameters=new HashSet<Parameter>();
-		for(EnumerationContextAlarm eca:contextAlarmList)
-			dependentParameters.addAll(eca.getContextMatch().getDependentParameters());
-		return dependentParameters;
-	}
-	
-	public EnumerationAlarm getDefaultAlarm() {
-	    return defaultAlarm;
-	}
-	
-	public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
+        if(contextAlarmList==null)
+            return null;
+        Set<Parameter>dependentParameters=new HashSet<Parameter>();
+        for(EnumerationContextAlarm eca:contextAlarmList)
+            dependentParameters.addAll(eca.getContextMatch().getDependentParameters());
+        return dependentParameters;
+    }
+
+    public EnumerationAlarm getDefaultAlarm() {
+        return defaultAlarm;
+    }
+
+    public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
         this.defaultAlarm=enumerationAlarm;
     }	
-	
-	public void addContextAlarm(EnumerationContextAlarm nca) {
-		if(contextAlarmList==null) contextAlarmList=new ArrayList<EnumerationContextAlarm>();
-		contextAlarmList.add(nca);
-	}
-	
-	public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
+
+    public void addContextAlarm(EnumerationContextAlarm nca) {
+        if(contextAlarmList==null) contextAlarmList=new ArrayList<EnumerationContextAlarm>();
+        contextAlarmList.add(nca);
+    }
+
+    public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
         if(contextAlarmList==null) return null;
         for(EnumerationContextAlarm eca:contextAlarmList) {
             if(eca.getContextMatch().equals(contextMatch)) {
@@ -52,8 +52,8 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
             }
         }
         return null;
-	}
-	
+    }
+
     /**
      * Adds a new contextual alarm for the specified value
      * @param contextMatch use <tt>null</tt> for the default context
@@ -61,7 +61,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     public void addAlarm(MatchCriteria contextMatch, ValueEnumeration enumValue, AlarmLevels level) {
         createOrGetAlarm(contextMatch).addAlarm(enumValue, level);
     }
-    
+
     public EnumerationAlarm createOrGetAlarm(MatchCriteria contextMatch) {
         if(contextMatch==null) {
             if(defaultAlarm==null) {
@@ -78,28 +78,27 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
             return eca;
         }
     }
-	
-	public List<EnumerationContextAlarm> getContextAlarmList() {
-	    return contextAlarmList;
-	}	
 
-	public String calibrate(long raw) {
-		ValueEnumeration v = enumeration.get(raw);
-		return v == null ? "UNDEF" : v.label;
-	}
+    public List<EnumerationContextAlarm> getContextAlarmList() {
+        return contextAlarmList;
+    }	
 
-	public String getCalibrationDescription() {
-		return "EnumeratedParameterType: "+enumeration;
-	}
+    public String calibrate(long raw) {
+        ValueEnumeration v = enumeration.get(raw);
+        return v == null ? "UNDEF" : v.label;
+    }
+
+    public String getCalibrationDescription() {
+        return "EnumeratedParameterType: "+enumeration;
+    }
 
     @Override
     public String getTypeAsString() {
         return "enumeration";
     }
-    
-	@Override
+
+    @Override
     public String toString() {
         return "EnumeratedParameterType: "+enumeration+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"")+((contextAlarmList!=null)?contextAlarmList:"");
     }
-
 }

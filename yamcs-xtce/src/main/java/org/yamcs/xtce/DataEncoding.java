@@ -41,4 +41,10 @@ public abstract class DataEncoding extends NameDescription implements Serializab
         if(o==0) byteOrder=ByteOrder.BIG_ENDIAN;
         else byteOrder=ByteOrder.LITTLE_ENDIAN;
     }
+
+    /**
+     * parses the string into a java object of the correct type
+     * Has to match the DataEncodingDecoder (so probably it should be moved there somehow: TODO)
+     */
+    public abstract Object parseString(String stringValue);
 }

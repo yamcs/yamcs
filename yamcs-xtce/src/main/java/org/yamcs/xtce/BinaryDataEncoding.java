@@ -7,13 +7,18 @@ package org.yamcs.xtce;
  *
  */
 public class BinaryDataEncoding extends DataEncoding {
-	private static final long serialVersionUID=200805131551L;
-	public BinaryDataEncoding(String name, int sizeInBits) {
-		super(name, sizeInBits);
-	}
-		
-	@Override
+    private static final long serialVersionUID=200805131551L;
+    public BinaryDataEncoding(String name, int sizeInBits) {
+        super(name, sizeInBits);
+    }
+
+    @Override
     public String toString() {
-		return "BinaryDataEncoding(sizeInBits:"+sizeInBits+")";
-	}
+        return "BinaryDataEncoding(sizeInBits:"+sizeInBits+")";
+    }
+
+    @Override
+    public Object parseString(String stringValue) {
+        return BinaryDataType.hexStringToArray(stringValue);
+    }
 }

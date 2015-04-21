@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 public abstract class BaseDataType extends NameDescription {
-    private static final long serialVersionUID = 200805131551L;
+    private static final long serialVersionUID = 3L;
     List<UnitType> unitSet = new ArrayList<UnitType>();
     DataEncoding encoding;
 
@@ -31,5 +31,11 @@ public abstract class BaseDataType extends NameDescription {
 
     public void addAllUnits(Collection<UnitType> units) {
 	unitSet.addAll(units);
+    }
+    
+    public abstract Object parseString(String stringValue);
+    
+    public Object parseStringForRawValue(String stringValue) {
+        return encoding.parseString(stringValue);
     }
 }
