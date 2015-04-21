@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
@@ -241,7 +242,11 @@ public class Channel {
 	    commandReleaser.startAsync();
 	    commandReleaser.awaitRunning();
 	    commandHistoryRequestManager.startAsync();
-	    
+	    commandingManager.startAsync();
+	    commandingManager.awaitRunning();
+	    CommandQueueManager cqm = commandingManager.getCommandQueueManager();
+	    cqm.startAsync();
+	    cqm.awaitRunning();
 	}
 	for(ParameterProvider pprov: parameterProviders) {
 	    pprov.startAsync();

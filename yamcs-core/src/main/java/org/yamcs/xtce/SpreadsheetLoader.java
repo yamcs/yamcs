@@ -1222,21 +1222,22 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected void loadCommandOptionsSheet(boolean required) {
 	Sheet sheet = switchToSheet(SHEET_COMMANDOPTIONS, required);
 	if(sheet==null) return;
-
-
-	for (int i = 1; i < sheet.getRows(); i++) {
+	int i = 1;
+	while(i<sheet.getRows()) {
 	    // search for a new command definition, starting from row i 
 	    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
 	    Cell[] cells = jumpToRow(sheet, i);
 	    if (cells == null || cells.length<1) {
 		log.debug("Ignoring line {} because it's empty", ctx.row);
+		i++;
 		continue;
 	    }
 	    if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
 		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+		i++;
 		continue;
 	    }
-	  
+	    
 	    String cmdName = cells[IDX_CMDOPT_NAME].getContents();
 	    MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
 	    if(cmd == null) {
@@ -1250,7 +1251,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		if (hasColumn(cells, IDX_CMDOPT_NAME))  break;
 		cmdEnd++;
 	    }
-	    
 	    while (i<cmdEnd) {
 		cells = jumpToRow(sheet, i);
 		if(hasColumn(cells, IDX_CMDOPT_TXCONST)) {
@@ -2032,6 +2032,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
 	if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
 	String pname=m.group(1).trim();
+	boolean useCalibrated=true;
+	int idx = pname.indexOf('.');
+	if(idx!=-1) {
+	    String t = pname.substring(idx+1);
+	    if("raw".equals(t)) {
+	        pname = pname.substring(0, idx);
+	        useCalibrated = false;
+	    } else {
+	        throw new SpreadsheetLoadException(ctx, "Cannot parse parameter for comparison '"+pname+"'. Use parameterName or parameterName.raw");
+	    }
+	}
+	
 	String op=m.group(2);
 	String value=m.group(3).trim();
 
@@ -2045,26 +2057,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 	Parameter compareParam = spaceSystem.getParameter(pname);
 	if (compareParam != null) {
-	    ParameterInstanceRef pref=new ParameterInstanceRef(compareParam, false);
-	    try {
-		return new Comparison(pref, Integer.decode(value), opType);
-	    } catch(NumberFormatException e) {
-		pref.setUseCalibratedValue(true);
-		return new Comparison(pref, value, opType);
-	    }
+	    ParameterInstanceRef pref=new ParameterInstanceRef(compareParam, useCalibrated);
+	    Comparison comp = new Comparison(pref, value, opType);
+	    comp.resolveValueType();
+	    return comp;
 	} else {
 	    final ParameterInstanceRef pref=new ParameterInstanceRef(false);
-	    Comparison ucomp;
-	    try {
-		ucomp=new Comparison(pref, Integer.decode(value), opType);
-	    } catch(NumberFormatException e) {
-		pref.setUseCalibratedValue(true);
-		ucomp=new Comparison(pref, value, opType);
-	    }
+	    final Comparison ucomp = new Comparison(pref, Integer.decode(value), opType);
 	    spaceSystem.addUnresolvedReference(new NameReference(pname, Type.PARAMETER, new ResolvedAction() {
 		@Override
 		public boolean resolved(NameDescription nd) {
 		    pref.setParameter((Parameter) nd);
+		    ucomp.resolveValueType();
 		    return true;
 		}
 	    }));

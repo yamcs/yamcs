@@ -15,12 +15,14 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtceproc.MetaCommandProcessor;
+
+import com.google.common.util.concurrent.AbstractService;
 /**
  * Responsible for parsing and tc packet composition.
  * @author nm
  *
  */
-public class CommandingManager {
+public class CommandingManager extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private Channel channel;
     private CommandQueueManager commandQueueManager; 
@@ -66,5 +68,15 @@ public class CommandingManager {
 
     public Channel getChannel() {
 	return channel;
+    }
+
+    @Override
+    protected void doStart() {
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+       notifyStopped();
     }
 }

@@ -61,7 +61,6 @@ public class IntegrationTest extends YarchTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         setupYamcs();
-
         boolean debug = false;
         if(debug) {
             Logger.getLogger("org.yamcs").setLevel(Level.ALL);
@@ -260,16 +259,51 @@ public class IntegrationTest extends YarchTestCase {
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistory.TransmissionContraints_KEY, cha.getName());
+        assertEquals("NOK", cha.getValue().getStringValue());
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistory.CommandFailed_KEY, cha.getName());
         assertEquals("Transmission constraints check failed", cha.getValue().getStringValue());
     }
 
     @Test
     public void testSendCommandSucceedTransmissionConstraint() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
+        wsClient.sendRequest(wsr);
 
+        RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC2", 6, "p1", "2");
+        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/send", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE));
+        assertEquals("{}", resp);
+
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+
+        assertNotNull(cmdhist);
+        CommandId cmdid = cmdhist.getCommandId();
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC2", cmdid.getCommandName());
+        assertEquals(6, cmdid.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdid.getOrigin());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
+        assertNull(cmdhist);
+        
+        Value v = ValueHelper.newValue(true);
+        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/AllowCriticalTC2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE));
+        cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        
+        assertEquals(1, cmdhist.getAttrCount());
+        
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistory.TransmissionContraints_KEY, cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
     }
 
 
