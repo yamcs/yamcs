@@ -17,7 +17,9 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -33,15 +35,12 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.*;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
 import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
-import org.yamcs.protobuf.SchemaCommanding;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -50,10 +49,13 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
+import org.yamcs.yarch.YarchDatabase;
+
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -85,8 +87,30 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
     @Override
     public String[] getSupportedOutboundMediaTypes() {
-        return new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE };
+        return new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE, CSV_MIME_TYPE };
     }
+
+    // Check if a profile has been specified in the request
+    // Currently, profiles apply only for Parameter requests
+    // Returns null if no profile is specified
+    private Yamcs.NamedObjectList getParametersProfile(QueryStringDecoder qsDecoder, String yamcsInstance) throws InternalServerErrorException {
+        Yamcs.NamedObjectList requestedProfile = null;
+        if(qsDecoder.parameters().containsKey("profile"))
+        {
+            try {
+                String profile = qsDecoder.parameters().get("profile").get(0);
+                String filename = YarchDatabase.getHome() + "/" + yamcsInstance + "/profiles/" + profile + ".profile";
+                requestedProfile = Yamcs.NamedObjectList.newBuilder().addAllList(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(filename)))).build();
+            }
+            catch (Exception e)
+            {
+                log.error("Unable to open requested profile.", e);
+                throw new InternalServerErrorException("Unable to open requested profile.", e);
+            }
+        }
+        return requestedProfile;
+    }
+
 
     /**
      * Sends a replay request to the ReplayServer, and from that returns either a normal
@@ -98,14 +122,26 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
         RestDumpArchiveRequest request = readMessage(req, SchemaRest.RestDumpArchiveRequest.MERGE).build();
         if (remainingUri == null) remainingUri = "";
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
+
+        // Check if a profile has been specified in the request
+        // Currently, profiles apply only for Parameter requests
+        Yamcs.NamedObjectList requestedProfile = getParametersProfile(qsDecoder, yamcsInstance);
 
         String contentType = getTargetContentType(req);
 
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         rrb.setEndAction(EndAction.QUIT);
-        if (request.hasParameterRequest())
-            rrb.setParameterRequest(request.getParameterRequest());
+        if (request.hasParameterRequest()) {
+            if(requestedProfile != null)
+            {
+                Yamcs.ParameterReplayRequest prr = rrb.getParameterRequest().newBuilderForType().addAllNameFilter(requestedProfile.getListList()).build();
+                rrb.setParameterRequest(prr);
+            } else {
+                rrb.setParameterRequest(request.getParameterRequest());
+            }
+        }
         if (request.hasPacketRequest())
             rrb.setPacketRequest(request.getPacketRequest());
         if (request.hasEventRequest())
@@ -116,8 +152,11 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             rrb.setPpRequest(request.getPpRequest());
         ReplayRequest replayRequest = rrb.build();
 
+        if(CSV_MIME_TYPE.equals(contentType))
+        {
+            initCsvGenerator(replayRequest);
+        }
 
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if (request.hasStream() && request.getStream()) {
             try {
                 streamResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
@@ -179,7 +218,14 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
                 if (BINARY_MIME_TYPE.equals(contentType)) {
                     builder.build().writeDelimitedTo(channelOut);
-                } else {
+                }
+                else if (CSV_MIME_TYPE.equals(contentType))
+                {
+                    if(csvGenerator != null) {
+                        csvGenerator.insertRows(builder.build(), channelOut);
+                    }
+                }
+                else {
                     JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
                     JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                     generator.close();
@@ -231,6 +277,9 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
             response.headers().set(Names.CONTENT_TYPE, contentType);
             RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+
+
+
             while(true) {
                 ClientMessage msg = msgClient.dataConsumer.receive();
 

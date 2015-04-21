@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -52,6 +53,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 	XtceDb xtceDb;
 
 	Random rand = new Random();
+	private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
+			1);
+
 
 	public SimulationPpProvider(String yamcsInstance, String name,
 			LinkedHashMap args) throws ConfigurationException {
@@ -165,6 +169,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 	// Process the speceificed simulation scenario
 	//
 	public Date simulationStartTime;
+	public Date simulationRealStartTime;
 	public int simulationStepLengthMs;
 	public long simutationStep = 0;
 	public boolean loopSimulation = false;
@@ -177,6 +182,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 					.toGregorianCalendar().getTime();
 		else
 			simulationStartTime = new Date();
+		simulationRealStartTime = new Date();
 		simutationStep = 0;
 
 		// get length of a simulation step
@@ -311,8 +317,11 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 		ppListener.updatePps(new Date().getTime(), groupName, (int) datacount,
 				pvs);
 
+
+		Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
+		Long delayBeforeNextStep = nextStepDate - new Date().getTime();
 		try {
-			Thread.sleep(simulationStepLengthMs);
+			Thread.sleep(delayBeforeNextStep);
 		} catch (Exception e) {
 			log.error(e.toString());
 		}
@@ -363,9 +372,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 		if (xtceDb != null) {
 			param = xtceDb.getParameter(parameterName);
 			if (param == null) {
-				log.error("Unable to get parameter " + parameterName
+				log.warn("Unable to get parameter " + parameterName
 						+ " from xtceDb.");
-				return null;
+				param = new Parameter(parameterName);
 			}
 		} else {
 			param = new Parameter(parameterName);

@@ -59,7 +59,10 @@ ln -fs $YAMCS_HOME/yamcs-simulation/etc/yamcs.simulator.yaml $TARGET/etc
 
 cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
-
+YAMCS_DATA=/storage/yamcs-data/
+# create the yamcs_data directory and add the simulator profiles
+mkdir -p $YAMCS_DATA/simulator/profiles
+cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
 
 
 if [ -f make-live-devel-local.sh ] ; then
