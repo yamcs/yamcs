@@ -59,10 +59,10 @@ public class XtceUtil {
                     Parameter parameter = comp.getParameter();
                     String name = parameter.getName();
                     if (name.equals("ccsds-apid")) {
-                        apid = (int)comp.getLongValue();
+                        apid = ((Number)comp.getValue()).intValue();
                     }
                     if (name.equals("col-packet_id") || name.equals("packet-id")) {
-                        packetid = (int)comp.getLongValue();
+                        packetid = ((Number)comp.getValue()).intValue();
                     }
                 }
             }
