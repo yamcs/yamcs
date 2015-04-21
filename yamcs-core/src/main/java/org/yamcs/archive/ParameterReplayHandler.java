@@ -18,8 +18,8 @@ import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -47,7 +47,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
     static AtomicInteger counter=new AtomicInteger(); 
     XtceTmProcessor tmProcessor;
     ParameterWithIdRequestHelper pidrm;
-    ParameterRequestManager prm;
+    ParameterRequestManagerImpl prm;
     ArrayList<ParameterValueWithId> paramList=new ArrayList<ParameterValueWithId>();
     final Set<String> tmPartitions=new HashSet<String>();
     Set<String>ppGroups=new HashSet<String>();
@@ -342,7 +342,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 			
 		}
         @Override
-        public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
+        public void setParameterListener(ParameterRequestManager parameterRequestManager) {
         }
 
         @Override

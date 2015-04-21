@@ -23,7 +23,7 @@ import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
@@ -122,7 +122,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if(!paramsToSubscribe.isEmpty()) {
-            ParameterRequestManager prm = chan.getParameterRequestManager();
+            ParameterRequestManagerImpl prm = chan.getParameterRequestManager();
             try {
                 paramSubscriptionRequestId = prm.addRequest(new ArrayList<Parameter>(paramsToSubscribe), this);
             } catch (InvalidIdentification e) {
@@ -138,7 +138,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     public void doStop() {
         if(paramSubscriptionRequestId!=-1) {
-            ParameterRequestManager prm = chan.getParameterRequestManager();
+            ParameterRequestManagerImpl prm = chan.getParameterRequestManager();
             prm.removeRequest(paramSubscriptionRequestId);
         }
         notifyStopped();

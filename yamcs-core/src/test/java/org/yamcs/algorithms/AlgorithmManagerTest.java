@@ -29,7 +29,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -50,7 +50,7 @@ public class AlgorithmManagerTest {
     private XtceDb db;
     private Channel c;
     private RefMdbPacketGenerator tmGenerator;
-    private ParameterRequestManager prm;
+    private ParameterRequestManagerImpl prm;
     private Queue<Event> q;
     
     @Before

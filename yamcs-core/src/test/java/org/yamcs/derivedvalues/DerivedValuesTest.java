@@ -24,7 +24,7 @@ import org.yamcs.derivedvalues.DerivedValuesProvider;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -63,7 +63,7 @@ public class DerivedValuesTest {
 	assertNotNull(fp);
 
 	Channel c=  createChannel("testFloatAdd");
-	ParameterRequestManager prm=c.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add"));
 	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
@@ -104,7 +104,7 @@ public class DerivedValuesTest {
 	assertNotNull(fp);
 
 	Channel c=  createChannel("testJavascriptFloatAdd");
-	ParameterRequestManager prm=c.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add_js"));
 	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
@@ -142,7 +142,7 @@ public class DerivedValuesTest {
 	assertNotNull(fp);
 	Channel c=  createChannel("testJavascriptPerformanceFloatAdd");
 
-	ParameterRequestManager prm=c.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("test_float_ypr_js"));
 	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));

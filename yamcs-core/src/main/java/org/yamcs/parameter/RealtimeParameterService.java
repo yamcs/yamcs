@@ -174,7 +174,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	    yclient.sendErrorReply(replyto, "not subscribed for this address");
 	    return;
 	}
-	ParameterRequestManager prm=channel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
 	int subscriptionId=subscriptions.inverse().get(dataAddress);
 	boolean r=prm.unsubscribeAll(subscriptionId);
 	if(r) {

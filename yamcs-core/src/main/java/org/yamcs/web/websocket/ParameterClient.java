@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.*;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -151,7 +151,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	if(subscriptionId==-1) {
 	    throw new WebSocketException(requestId, "Not subscribed");
 	}
-	ParameterRequestManager prm=channel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
 	boolean r=prm.unsubscribeAll(subscriptionId);
 	if(r) {
 	    subscriptionId=-1;
@@ -207,7 +207,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
      * unsubscribe all parameters
      */
     public void quit() {
-	ParameterRequestManager prm=channel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
 	if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
 	if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }

@@ -88,7 +88,7 @@ public class SoftwareParameterManagerTest {
 	assertNull(pvs);
     }
 
-    class MyParamConsumer implements ParameterRequestManagerIf {
+    class MyParamConsumer implements ParameterRequestManager {
 	BlockingQueue<Collection<ParameterValue>> received = new LinkedBlockingQueue<Collection<ParameterValue>>();
 
 	@Override

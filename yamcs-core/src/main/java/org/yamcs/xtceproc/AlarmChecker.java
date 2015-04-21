@@ -9,7 +9,7 @@ import org.yamcs.AlarmReporter;
 import org.yamcs.AlarmServer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.AlarmLevels;
@@ -39,14 +39,14 @@ public class AlarmChecker {
     private AlarmServer alarmServer;
     
     private final int subscriptionId;
-    ParameterRequestManager prm;
+    ParameterRequestManagerImpl prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     //keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on some other parameters)
     ParameterValueList lastValues = new ParameterValueList();
 
 
-    public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
+    public AlarmChecker(ParameterRequestManagerImpl prm, int subscriptionId) {
 	this.subscriptionId = subscriptionId;
 	this.prm = prm;
     }

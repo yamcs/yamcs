@@ -17,8 +17,8 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NamedDescriptionIndex;
@@ -44,7 +44,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     NamedDescriptionIndex<Parameter> dvIndex=new NamedDescriptionIndex<Parameter>();
 
     ArrayList<DerivedValue> requestedValues=new ArrayList<DerivedValue>();
-    ParameterRequestManager parameterRequestManager;
+    ParameterRequestManagerImpl parameterRequestManager;
 
     public DerivedValuesManager(String yamcsInstance) {
 	//do nothing here, all the work is done in init
@@ -200,7 +200,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
 	// do nothing,  everything is done in the updateDerivedValues method
     }
 

@@ -10,7 +10,7 @@ import java.util.Set;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.AlarmReportType;
@@ -56,7 +56,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     		 notifyFailed(e);
     		 return;
     	 }
-         ParameterRequestManager prm = channel.getParameterRequestManager();
+         ParameterRequestManagerImpl prm = channel.getParameterRequestManager();
          prm.getAlarmChecker().enableReporting(this);
          
          // Auto-subscribe to parameters with alarms

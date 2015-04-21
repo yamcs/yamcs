@@ -19,7 +19,7 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
@@ -48,7 +48,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  */
 public class Channel {
     static private Map<String,Channel>instances=Collections.synchronizedMap(new HashMap<String,Channel>());
-    private ParameterRequestManager parameterRequestManager;
+    private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
     private CommandHistory commandHistoryPublisher;
 
@@ -139,7 +139,7 @@ public class Channel {
 	    tmProcessor = new XtceTmProcessor(this);
 	    tmPacketProvider.setTmProcessor(tmProcessor);
 	    containerRequestManager=new ContainerRequestManager(this, tmProcessor);
-	    parameterRequestManager=new ParameterRequestManager(this, tmProcessor);
+	    parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
 
 	    containerRequestManager.setPacketProvider(tmPacketProvider);
 
@@ -219,7 +219,7 @@ public class Channel {
 	return commandHistoryPublisher;
     }
 
-    public ParameterRequestManager getParameterRequestManager() {
+    public ParameterRequestManagerImpl getParameterRequestManager() {
 	return parameterRequestManager;
     }
 

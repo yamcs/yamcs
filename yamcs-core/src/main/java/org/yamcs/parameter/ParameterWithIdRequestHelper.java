@@ -29,13 +29,13 @@ import com.google.common.collect.ListMultimap;
  *
  */
 public class ParameterWithIdRequestHelper implements ParameterConsumer {
-    ParameterRequestManager prm;
+    ParameterRequestManagerImpl prm;
     final ParameterWithIdConsumer listener;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<Parameter, NamedObjectId>>();
 
 
-    public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
+    public ParameterWithIdRequestHelper(ParameterRequestManagerImpl prm, ParameterWithIdConsumer listener) {
 	this.prm = prm;
 	this.listener = listener;
     }
@@ -124,7 +124,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	}
     }
 
-    public ParameterRequestManager getPrm() {
+    public ParameterRequestManagerImpl getPrm() {
 	return prm;
     }
 
@@ -192,7 +192,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	return plist;
     }
 
-    public void switchPrm(ParameterRequestManager newPrm) throws InvalidIdentification {
+    public void switchPrm(ParameterRequestManagerImpl newPrm) throws InvalidIdentification {
 	for(int subscriptionId: subscriptions.keySet()) {
 	    List<Parameter> plist = prm.removeRequest(subscriptionId);
 	    newPrm.addRequest(subscriptionId, plist, this);

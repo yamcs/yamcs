@@ -14,7 +14,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Container;
@@ -38,7 +38,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
 
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private ParameterRequestManagerIf parameterRequestManager;
+    private ParameterRequestManager parameterRequestManager;
     private ContainerListener containerRequestManager;
 
     public final Channel channel;
@@ -70,7 +70,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf p) {
+    public void setParameterListener(ParameterRequestManager p) {
 	this.parameterRequestManager=p;
     }
 

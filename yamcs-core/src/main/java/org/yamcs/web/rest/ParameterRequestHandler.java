@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 
 import org.yamcs.Channel;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -79,7 +79,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
     private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, Channel yamcsChannel) throws BadRequestException {
 	//TODO permissions
-	ParameterRequestManager prm = yamcsChannel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
 	if(!prm.hasParameterCache()) {
 	    throw new BadRequestException("ParameterCache not activated for this channel");
 	}
@@ -133,7 +133,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 	    throw new BadRequestException("Empty parameter list");
 	}
 	//TODO permissions
-	ParameterRequestManager prm = yamcsChannel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
 	MyConsumer myConsumer = new MyConsumer();
 	ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
 	List<NamedObjectId> idList = request.getListList();

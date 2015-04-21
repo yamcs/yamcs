@@ -83,7 +83,7 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
@@ -107,7 +107,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 public class PacketViewer extends JFrame implements ActionListener,
-TreeSelectionListener, ParameterRequestManagerIf, ConnectionListener {
+TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     private static final long serialVersionUID = 1L;
     private static final Logger log=LoggerFactory.getLogger(PacketViewer.class);
     static PacketViewer theApp;

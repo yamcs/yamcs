@@ -9,7 +9,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -30,7 +30,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class YarchPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
     PpListener ppListener;
-    ParameterRequestManagerIf paraListener;
+    ParameterRequestManager paraListener;
     final XtceDb xtceDb;
     
     public YarchPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
@@ -80,7 +80,7 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
 
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf paraListener) {
+    public void setParameterListener(ParameterRequestManager paraListener) {
         this.paraListener=paraListener;
     }
 

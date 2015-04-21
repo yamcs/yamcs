@@ -25,7 +25,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -46,7 +46,7 @@ public class AlgorithmManagerPyTest {
     private XtceDb db;
     private Channel c;
     private RefMdbPacketGenerator tmGenerator;
-    private ParameterRequestManager prm;
+    private ParameterRequestManagerImpl prm;
     
     @Before
     public void beforeEachTest() throws ConfigurationException, ChannelException {

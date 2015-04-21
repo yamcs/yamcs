@@ -25,7 +25,7 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerIf;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Instant;
@@ -67,7 +67,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     static Logger log=LoggerFactory.getLogger(ReplayService.class.getName());
     ReplayRequest replayRequest;
     private HashSet<Parameter> subscribedParameters=new HashSet<Parameter>();
-    private ParameterRequestManagerIf parameterRequestManager;
+    private ParameterRequestManager parameterRequestManager;
     final YamcsClient yclient;
     final YamcsSession ysession;
     TmProcessor tmProcessor;
@@ -324,7 +324,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
 	this.parameterRequestManager = parameterRequestManager;
     }
 

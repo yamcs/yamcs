@@ -27,7 +27,7 @@ public interface ParameterProvider extends Service {
      * 
      * @param parameterListener
      */
-    public abstract void setParameterListener(ParameterRequestManagerIf parameterListener);
+    public abstract void setParameterListener(ParameterRequestManager parameterListener);
 
     /**
      * Adds a new parameter to the list  of parameters that have to provided 

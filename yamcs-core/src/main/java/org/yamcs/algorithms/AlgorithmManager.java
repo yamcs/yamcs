@@ -28,8 +28,8 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterRequestManagerIf;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
@@ -82,7 +82,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     ArrayList<Algorithm> executionOrder=new ArrayList<Algorithm>();
     HashSet<Parameter> requiredInParams=new HashSet<Parameter>(); // required by this class
     ArrayList<Parameter> requestedOutParams=new ArrayList<Parameter>(); // requested by clients
-    ParameterRequestManager parameterRequestManager;
+    ParameterRequestManagerImpl parameterRequestManager;
 
     // For storing a window of previous parameter instances
     HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
@@ -445,7 +445,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
         // do nothing, we're more interested in a ParameterRequestManager, which we're
         // getting from the constructor
     }

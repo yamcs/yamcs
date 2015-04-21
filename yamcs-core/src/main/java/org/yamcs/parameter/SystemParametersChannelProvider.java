@@ -37,7 +37,7 @@ import org.yamcs.yarch.YarchDatabase;
  * 
  */
 public class SystemParametersChannelProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
-    private ParameterRequestManagerIf parameterListener;
+    private ParameterRequestManager parameterListener;
 
     volatile private Map<String, SystemParameter> variables = new HashMap<String, SystemParameter>(); 
     Logger log;
@@ -162,7 +162,7 @@ public class SystemParametersChannelProvider extends AbstractService implements 
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManagerIf parameterRequestManager) {
+    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
         this.parameterListener = parameterRequestManager; 
 
     }
