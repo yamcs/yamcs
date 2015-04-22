@@ -11,34 +11,34 @@ import java.util.Set;
  *
  */
 public class ComparisonList implements MatchCriteria {
-	private static final long serialVersionUID = 200805131551L;
-	ArrayList<Comparison> comparisons=new ArrayList<Comparison>();
-	
-	public void addComparison(Comparison comparison) {
-	    comparisons.add(comparison);
-	}
-	
-	
-	
-	@Override
-	public Set<Parameter> getDependentParameters() {
-		Set<Parameter> pset=new HashSet<Parameter>();
-		for(Comparison c:comparisons) {
-			pset.addAll(c.getDependentParameters());
-		}
-		return pset;
-	}
-	public List<Comparison> getComparisonList() {
-		return comparisons;
-	}
-	
-	@Override
+    private static final long serialVersionUID = 200805131551L;
+    ArrayList<Comparison> comparisons=new ArrayList<Comparison>();
+
+    public void addComparison(Comparison comparison) {
+        comparisons.add(comparison);
+    }
+
+
+
+    @Override
+    public Set<Parameter> getDependentParameters() {
+        Set<Parameter> pset=new HashSet<Parameter>();
+        for(Comparison c:comparisons) {
+            pset.addAll(c.getDependentParameters());
+        }
+        return pset;
+    }
+    public List<Comparison> getComparisonList() {
+        return comparisons;
+    }
+
+    @Override
     public String toString() {
-		StringBuilder sb=new StringBuilder();
-		sb.append("ComparisonList: ");
-		for(Comparison c:comparisons) {
-			sb.append(c.toString()).append(" ");
-		}
-		return sb.toString();
-	}
+        StringBuilder sb=new StringBuilder();
+        sb.append("ComparisonList: ");
+        for(Comparison c:comparisons) {
+            sb.append(c.toString()).append(" ");
+        }
+        return sb.toString();
+    }
 }
