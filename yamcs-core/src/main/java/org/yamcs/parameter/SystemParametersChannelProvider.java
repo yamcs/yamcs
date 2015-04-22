@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -43,7 +43,7 @@ public class SystemParametersChannelProvider extends AbstractService implements 
     Logger log;
     Stream stream;
     XtceDb xtceDb;
-    Channel channel;
+    YProcessor channel;
     ArrayList<ParameterValue> channelParams = new ArrayList<ParameterValue>();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     ParameterValue channelModePv;
@@ -52,7 +52,7 @@ public class SystemParametersChannelProvider extends AbstractService implements 
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
     }
     
-    public void init(Channel channel) throws ConfigurationException {
+    public void init(YProcessor channel) throws ConfigurationException {
         String instance = channel.getInstance();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+channel.getName()+"]");
         YarchDatabase ydb=YarchDatabase.getInstance(instance);

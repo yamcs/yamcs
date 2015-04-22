@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -37,7 +37,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
-	org.yamcs.Channel yamcsChannel = org.yamcs.Channel.getInstance(yamcsInstance, "realtime");
+	org.yamcs.YProcessor yamcsChannel = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
 
 	QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
 	if ("_get".equals(qsDecoder.path())) {
@@ -77,7 +77,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
 
 
-    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, Channel yamcsChannel) throws BadRequestException {
+    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, YProcessor yamcsChannel) throws BadRequestException {
 	//TODO permissions
 	ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
 	if(!prm.hasParameterCache()) {
@@ -92,7 +92,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets single parameter
      */
-    private RestSetParameterResponse setParameter(Parameter p, Value v, Channel yamcsChannel) throws BadRequestException {
+    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor yamcsChannel) throws BadRequestException {
 	SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
 	if(spm==null) {
 	    throw new BadRequestException("SoftwareParameterManager not activated for this channel");
@@ -109,7 +109,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets multiple parameters parameters
      */
-    private RestSetParameterResponse setParameters(ParameterData pdata, org.yamcs.Channel yamcsChannel) throws RestException {
+    private RestSetParameterResponse setParameters(ParameterData pdata, org.yamcs.YProcessor yamcsChannel) throws RestException {
 	//TODO permissions
 	
 	SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
@@ -128,7 +128,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * Gets parameter values
      */
-    private ParameterData getParameters(RestGetParameterRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
+    private ParameterData getParameters(RestGetParameterRequest request, org.yamcs.YProcessor yamcsChannel) throws RestException {
 	if(request.getListCount()==0) {
 	    throw new BadRequestException("Empty parameter list");
 	}

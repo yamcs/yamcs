@@ -2,7 +2,7 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
 import org.yamcs.management.ManagementService;
@@ -25,14 +25,14 @@ public class WebSocketChannelClient implements ChannelClient {
         this.applicationName = applicationName;
         log = LoggerFactory.getLogger(WebSocketChannelClient.class.getName() + "[" + yamcsInstance + "]");
 
-        Channel channel = Channel.getInstance(yamcsInstance, "realtime");
+        YProcessor channel = YProcessor.getInstance(yamcsInstance, "realtime");
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, channel.getName(), this);
         paraClient = new ParameterClient(channel, wsHandler);
         cmdhistClient = new CommandHistoryClient(channel, wsHandler);
     }
 
     @Override
-    public void switchChannel(Channel c) throws ChannelException {
+    public void switchChannel(YProcessor c) throws ChannelException {
         log.info("switching channel to {}", c);
         paraClient.switchChannel(c);
         cmdhistClient.switchChannel(c);

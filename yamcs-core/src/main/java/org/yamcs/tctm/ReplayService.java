@@ -12,7 +12,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
@@ -157,7 +157,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     }
 
     @Override
-    public void init(Channel channel) throws ConfigurationException {
+    public void init(YProcessor channel) throws ConfigurationException {
     }
 
     @Override

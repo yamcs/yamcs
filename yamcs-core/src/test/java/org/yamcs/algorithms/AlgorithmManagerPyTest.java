@@ -13,9 +13,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelException;
-import org.yamcs.ChannelFactory;
+import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -44,7 +44,7 @@ public class AlgorithmManagerPyTest {
     }
     static String instance = "refmdb-py";
     private XtceDb db;
-    private Channel c;
+    private YProcessor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
     
@@ -65,7 +65,7 @@ public class AlgorithmManagerPyTest {
         
         
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
-        c=ChannelFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
+        c=YProcFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
     
@@ -81,7 +81,7 @@ public class AlgorithmManagerPyTest {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
         prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
         	params.addAll(items);
             }
         });
@@ -102,7 +102,7 @@ public class AlgorithmManagerPyTest {
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome4")
         ), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -121,7 +121,7 @@ public class AlgorithmManagerPyTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivision"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });

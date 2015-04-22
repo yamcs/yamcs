@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelListener;
 import org.yamcs.HornetQAuthPrivilege;
 import org.yamcs.Privilege;
@@ -42,7 +42,7 @@ public class HornetChannelManagement implements ChannelListener {
     YamcsSession ysession;
     YamcsClient yclient, channelControlServer, linkControlServer;
     static Logger log=LoggerFactory.getLogger(HornetChannelManagement.class.getName());
-    Map<Channel, Statistics> channels=new ConcurrentHashMap<Channel, Statistics>();
+    Map<YProcessor, Statistics> channels=new ConcurrentHashMap<YProcessor, Statistics>();
     ManagementService mservice;
     
     static Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setChannelName("null").build();//we use this one because ConcurrentHashMap does not support null values
@@ -102,17 +102,17 @@ public class HornetChannelManagement implements ChannelListener {
             } else if("pauseReplay".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
                 mservice.connectToChannel(cr, priv);
-                Channel c=Channel.getInstance(cr.getInstance(), cr.getName());
+                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 c.pause();
                 channelControlServer.sendReply(replyto, "OK", null);
             } else if("resumeReplay".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
-                Channel c=Channel.getInstance(cr.getInstance(), cr.getName());
+                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 c.resume();
                 channelControlServer.sendReply(replyto, "OK", null);
             } else if("seekReplay".equalsIgnoreCase(req)) {
                 ChannelRequest cr=(ChannelRequest)Protocol.decode(msg, ChannelRequest.newBuilder());
-                Channel c=Channel.getInstance(cr.getInstance(), cr.getName());
+                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 if(!cr.hasSeekTime()) throw new YamcsException("seekReplay requested without a seektime");
                 c.seek(cr.getSeekTime());
                 channelControlServer.sendReply(replyto, "OK", null);
@@ -127,7 +127,7 @@ public class HornetChannelManagement implements ChannelListener {
 
    
     @Override
-    public void channelAdded(Channel channel) {
+    public void channelAdded(YProcessor channel) {
         try {
             ChannelInfo ci=getChannelInfo(channel);
             sendChannelEvent("channelUpdated", ci, false);
@@ -139,14 +139,14 @@ public class HornetChannelManagement implements ChannelListener {
     
     
     @Override
-    public void channelClosed(Channel channel) {
+    public void channelClosed(YProcessor channel) {
         ChannelInfo ci=getChannelInfo(channel);
         sendChannelEvent("channelClosed", ci, true);
         channels.remove(channel);
     }
 
     @Override
-    public void channelStateChanged(Channel channel) {
+    public void channelStateChanged(YProcessor channel) {
         try {
             ChannelInfo ci=getChannelInfo(channel);
             sendChannelEvent("channelUpdated", ci, false);
@@ -175,8 +175,8 @@ public class HornetChannelManagement implements ChannelListener {
     
     public void updateStatistics() {
         try {
-            for(Entry<Channel,Statistics> entry:channels.entrySet()) {
-                Channel channel=entry.getKey();
+            for(Entry<YProcessor,Statistics> entry:channels.entrySet()) {
+                YProcessor channel=entry.getKey();
                 Statistics stats=entry.getValue();
                 ProcessingStatistics ps=channel.getTmProcessor().getStatistics();
                 if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
@@ -194,7 +194,7 @@ public class HornetChannelManagement implements ChannelListener {
     }
 
     
-    private Statistics buildStats(Channel channel) {
+    private Statistics buildStats(YProcessor channel) {
         ProcessingStatistics ps=channel.getTmProcessor().getStatistics();
         Statistics.Builder statsb=Statistics.newBuilder();
         statsb.setLastUpdated(ps.getLastUpdated());
@@ -214,7 +214,7 @@ public class HornetChannelManagement implements ChannelListener {
         return statsb.build();
     }
     
-    private void sendChannelStatistics(Channel channel, Statistics stats) {
+    private void sendChannelStatistics(YProcessor channel, Statistics stats) {
         try {
             ClientMessage msg=ysession.session.createMessage(false);
             String lvn=channel.getInstance()+"."+channel.getName();
@@ -227,7 +227,7 @@ public class HornetChannelManagement implements ChannelListener {
         }
     }
 
-    private ChannelInfo getChannelInfo(Channel channel) {
+    private ChannelInfo getChannelInfo(YProcessor channel) {
         ChannelInfo.Builder cib=ChannelInfo.newBuilder().setInstance(channel.getInstance())
         .setName(channel.getName()).setType(channel.getType())
         .setCreator(channel.getCreator()).setHasCommanding(channel.hasCommanding())

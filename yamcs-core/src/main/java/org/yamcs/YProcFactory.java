@@ -20,8 +20,8 @@ import org.yamcs.utils.YObjectLoader;
  * @author mache
  *
  */
-public class ChannelFactory {
-    static Logger log=LoggerFactory.getLogger(Channel.class.getName());
+public class YProcFactory {
+    static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
 
     /**
      * Create a channel with the give name, type, creator and spec
@@ -40,12 +40,12 @@ public class ChannelFactory {
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    static public Channel create(String yamcsInstance, String name, String type, String creator, String spec) throws ChannelException,  ConfigurationException {
+    static public YProcessor create(String yamcsInstance, String name, String type, String creator, String spec) throws ChannelException,  ConfigurationException {
 	boolean initialized = false;
 	TcTmService tctms=null;
 	Map<String,Object> channelConfig = null;
 	
-	YConfiguration conf=YConfiguration.getConfiguration("channel");
+	YConfiguration conf=YConfiguration.getConfiguration("yprocessor");
 	try {
 	    if(conf.containsKey(type,"tmtcpp")) {
 		Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "tmtcpp");            	
@@ -64,7 +64,7 @@ public class ChannelFactory {
 		    tm = loadObject(tmClass, yamcsInstance, tmArgs, spec);
 		    initialized = true;
 		} else {//TODO: it should work without telemetryProvider (currently causes a NPE in Channel.java)
-		    throw new ConfigurationException("No telemetryProvider specified for channel of type '"+type+"' in channel.yaml");
+		    throw new ConfigurationException("No telemetryProvider specified for channel of type '"+type+"' in yprocessor.yaml");
 		}
 
 		if(conf.containsKey(type,"parameterProviders")) {
@@ -114,15 +114,15 @@ public class ChannelFactory {
 	return new YObjectLoader<T>().loadObject(className, params.toArray());
     }
 
-    static public Channel create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
 	return create(instance, name, type, tctms, creator, null);
     }
     /**
      *  Create a Channel by specifying the service.
      *  The type is not used in this case, except for showing it in the yamcs monitor.
      **/
-    static public Channel create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ChannelException, ConfigurationException {
-	Channel channel=new Channel(instance, name, type, creator);
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ChannelException, ConfigurationException {
+	YProcessor channel=new YProcessor(instance, name, type, creator);
 
 	channel.init(tctms, config);
 	return channel;

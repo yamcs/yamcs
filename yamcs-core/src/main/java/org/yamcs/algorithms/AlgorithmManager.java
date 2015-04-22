@@ -21,7 +21,7 @@ import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -89,7 +89,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer;
-    Channel chan;
+    YProcessor chan;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
     	this(yamcsInstance, null);
@@ -143,7 +143,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
     
     @Override
-	public void init(Channel channel) {
+	public void init(YProcessor channel) {
     	this.chan = channel;
     	this.parameterRequestManager = chan.getParameterRequestManager();
     	xtcedb = chan.getXtceDb();

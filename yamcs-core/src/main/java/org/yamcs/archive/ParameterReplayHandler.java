@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
-import org.yamcs.ChannelFactory;
+import org.yamcs.YProcessor;
+import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -53,7 +53,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
     Set<String>ppGroups=new HashSet<String>();
     Set<Parameter> ppSet=new HashSet<Parameter>();
 
-    Channel channel;
+    YProcessor channel;
     String instance;
     boolean hasTm, hasPp;
 
@@ -82,7 +82,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         MyTcTmService tctms=new MyTcTmService();
 
         try {
-            channel = ChannelFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
+            channel = YProcFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
         } catch (Exception e) {
             throw new YamcsException("cannot create channel", e);
         }
@@ -338,7 +338,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         Set<Parameter> subscribedParams = new HashSet<Parameter>();
         
         @Override
-		public void init(Channel channel) throws ConfigurationException {
+		public void init(YProcessor channel) throws ConfigurationException {
 			
 		}
         @Override

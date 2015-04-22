@@ -36,7 +36,7 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to a newly
      * created XtceTmProcessor.
      */
-    public ContainerRequestManager(Channel yamcsChannel) {
+    public ContainerRequestManager(YProcessor yamcsChannel) {
         this(yamcsChannel, new XtceTmProcessor(yamcsChannel));
     }
     
@@ -44,7 +44,7 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to the
      * specified XtceTmProcessor.
      */
-    public ContainerRequestManager(Channel yamcsChannel, XtceTmProcessor tmProcessor) {
+    public ContainerRequestManager(YProcessor yamcsChannel, XtceTmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
         log = LoggerFactory.getLogger(getClass().getName() + "[" + yamcsChannel.getName() + "]");
         tmProcessor.setContainerListener(this);

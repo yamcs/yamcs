@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ContainerProvider;
@@ -41,11 +41,11 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     private ParameterRequestManager parameterRequestManager;
     private ContainerListener containerRequestManager;
 
-    public final Channel channel;
+    public final YProcessor channel;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
 
-    public XtceTmProcessor(Channel chan) {
+    public XtceTmProcessor(YProcessor chan) {
 	log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
 	this.channel=chan;
 	this.xtcedb=chan.getXtceDb();
@@ -65,7 +65,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public void init(Channel channel) throws ConfigurationException {
+    public void init(YProcessor channel) throws ConfigurationException {
 
     }
 

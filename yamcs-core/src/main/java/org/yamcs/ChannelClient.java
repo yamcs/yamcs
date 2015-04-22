@@ -11,7 +11,7 @@ public interface ChannelClient {
      * @param newChannel
      */
     
-    public void switchChannel(Channel c) throws ChannelException;
+    public void switchChannel(YProcessor c) throws ChannelException;
     /**
      * called when the channel is closing down
      */

@@ -7,12 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidCommandId;
@@ -61,13 +62,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<TransmissionConstraintChecker>();
     
-    private final String instance,channelName;
+    private final String instance,yprocName;
 
     ParameterValueList pvList = new ParameterValueList(); 
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-    Channel chan;
+    
+    YProcessor yproc;
     int paramSubscriptionRequestId = -1;
-
+    
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     /**
      * Constructs a Command Queue Manager having the given history manager and tc uplinker.
      *  The parameters have to be not null.
@@ -79,14 +81,15 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public CommandQueueManager(CommandingManager commandingManager) throws ConfigurationException {
         this.commandingManager=commandingManager;
 
-        chan=commandingManager.getChannel();
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
-        this.commandHistoryListener=chan.getCommandHistoryListener();
-        this.commandReleaser=chan.getCommandReleaser();
-        this.instance=chan.getInstance();
-        this.channelName=chan.getName();
+        yproc=commandingManager.getChannel();
+        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
+        this.commandHistoryListener = yproc.getCommandHistoryListener();
+        this.commandReleaser = yproc.getCommandReleaser();
+        this.instance = yproc.getInstance();
+        this.yprocName = yproc.getName();
 
-        CommandQueue cq=new CommandQueue(chan, "default");
+        
+        CommandQueue cq=new CommandQueue(yproc, "default");
         queues.put("default", cq);
 
         YConfiguration config=YConfiguration.getConfiguration("command-queue");
@@ -98,7 +101,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         queueList=config.getList("queueNames");
         for(String qn:queueList) {
             if(!queues.containsKey(qn)) {
-                queues.put(qn,new CommandQueue(chan, qn));
+                queues.put(qn,new CommandQueue(yproc, qn));
             }
             CommandQueue q=queues.get(qn);
             String state=config.getString(qn, "state");
@@ -111,7 +114,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * called at channel startup, subscribe all parameters required for checking command constraints
      */
     public void doStart() {
-        XtceDb xtcedb = chan.getXtceDb();
+        XtceDb xtcedb = yproc.getXtceDb();
         Set<Parameter> paramsToSubscribe = new HashSet<Parameter>();
         for(MetaCommand mc: xtcedb.getMetaCommands()) {
             if(mc.hasTransmissionConstraints()) {
@@ -122,7 +125,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if(!paramsToSubscribe.isEmpty()) {
-            ParameterRequestManagerImpl prm = chan.getParameterRequestManager();
+            ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
             try {
                 paramSubscriptionRequestId = prm.addRequest(new ArrayList<Parameter>(paramsToSubscribe), this);
             } catch (InvalidIdentification e) {
@@ -138,7 +141,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     public void doStop() {
         if(paramSubscriptionRequestId!=-1) {
-            ParameterRequestManagerImpl prm = chan.getParameterRequestManager();
+            ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
             prm.removeRequest(paramSubscriptionRequestId);
         }
         notifyStopped();
@@ -427,10 +430,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     public String getChannelName() {
-        return channelName;
+        return yprocName;
     }
 
-    private void doUpdateItems(final ArrayList<ParameterValue> items) {
+    private void doUpdateItems(final List<ParameterValue> items) {
         pvList.addAll(items);
         //remove old parameter values
         for(ParameterValue pv:items) {
@@ -464,7 +467,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
     
     @Override
-    public void updateItems(int subscriptionId, final ArrayList<ParameterValue> items) {
+    public void updateItems(int subscriptionId, final List<ParameterValue> items) {
         executor.execute(new Runnable() {
             @Override
             public void run() {

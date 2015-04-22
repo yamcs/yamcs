@@ -15,7 +15,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.ParameterValue;
@@ -40,7 +40,7 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
  *
  */
 public class RealtimeParameterService implements ParameterWithIdConsumer {
-    Channel channel;
+    YProcessor channel;
     YamcsClient yclient;
     Logger log;
     //maps subscription ids <-> addresses
@@ -48,7 +48,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
     
-    public RealtimeParameterService(Channel channel) throws HornetQException, YamcsApiException {
+    public RealtimeParameterService(YProcessor channel) throws HornetQException, YamcsApiException {
 	this.channel=channel;
 	prh = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
 

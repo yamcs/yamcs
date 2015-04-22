@@ -10,9 +10,9 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelException;
-import org.yamcs.ChannelFactory;
+import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
@@ -46,12 +46,12 @@ public class DerivedValuesTest {
 	xtceDb = XtceDbFactory.getInstance(instance);
     }
 
-    Channel createChannel(String channelName) throws ChannelException, ConfigurationException {
+    YProcessor createChannel(String channelName) throws ChannelException, ConfigurationException {
 	tmGenerator=new RefMdbPacketGenerator();
 	DerivedValuesManager dvm = new DerivedValuesManager("dvtest");
 	List<ParameterProvider> provList = new ArrayList<ParameterProvider>();
 	provList.add(dvm);
-	Channel c=ChannelFactory.create(instance, channelName, "dvtest", 
+	YProcessor c=YProcFactory.create(instance, channelName, "dvtest", 
 		new SimpleTcTmService(tmGenerator, provList, null), "dvtest");
 
 	return c;
@@ -62,7 +62,7 @@ public class DerivedValuesTest {
 	Parameter fp=xtceDb.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
 	assertNotNull(fp);
 
-	Channel c=  createChannel("testFloatAdd");
+	YProcessor c=  createChannel("testFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add"));
@@ -72,7 +72,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   ArrayList<ParameterValue> items) {
+	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});
@@ -103,7 +103,7 @@ public class DerivedValuesTest {
 	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
 	assertNotNull(fp);
 
-	Channel c=  createChannel("testJavascriptFloatAdd");
+	YProcessor c=  createChannel("testJavascriptFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add_js"));
@@ -114,7 +114,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   ArrayList<ParameterValue> items) {
+	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});
@@ -140,7 +140,7 @@ public class DerivedValuesTest {
 	XtceDb db=XtceDbFactory.getInstance(instance);
 	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
 	assertNotNull(fp);
-	Channel c=  createChannel("testJavascriptPerformanceFloatAdd");
+	YProcessor c=  createChannel("testJavascriptPerformanceFloatAdd");
 
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
@@ -152,7 +152,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   ArrayList<ParameterValue> items) {
+	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});

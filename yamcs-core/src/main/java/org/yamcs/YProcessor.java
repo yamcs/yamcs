@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +35,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 
 /**
- * This class helps keeping track of the different objects used in a channel - i.e. all the 
+ * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the 
  *  objects required to have a TM/TC processing chain (either realtime or playback).
  *  
  * There are two ways in which parameter and packet delivery is performed:
@@ -46,8 +49,8 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  * @author mache
  *
  */
-public class Channel {
-    static private Map<String,Channel>instances=Collections.synchronizedMap(new HashMap<String,Channel>());
+public class YProcessor {
+    static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
     private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
     private CommandHistory commandHistoryPublisher;
@@ -76,7 +79,7 @@ public class Channel {
     private boolean parameterCacheEnabled = false;
     private boolean parameterCacheAll = false;
 
-    static Logger log=LoggerFactory.getLogger(Channel.class.getName());
+    static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
     static List<ChannelListener> listeners=new CopyOnWriteArrayList<ChannelListener>(); //send notifications for added and removed channels to this
 
     private boolean quitting;
@@ -84,10 +87,13 @@ public class Channel {
     private boolean synchronous=false;
     XtceTmProcessor tmProcessor;
 
+    //unless very good performance reasons, we should try to serialize all the processing in this thread
+    final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    
     @GuardedBy("this")
     HashSet<ChannelClient> connectedClients= new HashSet<ChannelClient>();
 
-    public Channel(String yamcsInstance, String name, String type, String creator) throws ChannelException {
+    public YProcessor(String yamcsInstance, String name, String type, String creator) throws ChannelException {
 	if((name==null) || "".equals(name)) {
 	    throw new ChannelException("The channel name can not be empty");
 	}
@@ -98,6 +104,7 @@ public class Channel {
 	this.type=type;
     }
 
+  
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws ChannelException, ConfigurationException {
 	xtcedb=XtceDbFactory.getInstance(yamcsInstance);
@@ -170,7 +177,9 @@ public class Channel {
 	}
     }
 
-
+    public ExecutorService getExecutor() {
+        return executor;
+    }
 
     private void configureAlarms(Map<String, Object> alarmConfig) {
 	Object v = alarmConfig.get("check");
@@ -318,7 +327,7 @@ public class Channel {
 	return connectedClients.size();
     }
 
-    public static Channel getInstance(String yamcsInstance, String name) {
+    public static YProcessor getInstance(String yamcsInstance, String name) {
 	return instances.get(key(yamcsInstance,name));
     }
     /**
@@ -327,8 +336,8 @@ public class Channel {
      * @return the channel where with the given name
      * @throws ChannelException
      */
-    public static Channel connect(String yamcsInstance, String name, ChannelClient s) throws ChannelException {
-	Channel ds=instances.get(key(yamcsInstance,name));
+    public static YProcessor connect(String yamcsInstance, String name, ChannelClient s) throws ChannelException {
+	YProcessor ds=instances.get(key(yamcsInstance,name));
 	if(ds==null) throw new ChannelException("There is no channel named '"+name+"'");
 	ds.connect(s);
 	return ds;
@@ -361,7 +370,7 @@ public class Channel {
     }
 
 
-    public static Collection<Channel> getChannels() {
+    public static Collection<YProcessor> getChannels() {
 	return instances.values();
     }
 

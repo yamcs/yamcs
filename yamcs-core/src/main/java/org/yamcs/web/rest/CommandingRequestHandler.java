@@ -35,7 +35,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
 
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
-        org.yamcs.Channel yamcsChannel = org.yamcs.Channel.getInstance(yamcsInstance, "realtime");
+        org.yamcs.YProcessor yamcsChannel = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
         if (!yamcsChannel.hasCommanding()) {
             BadRequestException e = new BadRequestException("Commanding not activated for this channel");
             log.warn("Throwing bad request: {}", e.getMessage());
@@ -68,7 +68,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     /**
      * Validates commands
      */
-    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
+    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
@@ -103,7 +103,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
     /**
      * Validates and sends commands
      */
-    private RestSendCommandResponse sendCommand(RestSendCommandRequest request, org.yamcs.Channel yamcsChannel) throws RestException {
+    private RestSendCommandResponse sendCommand(RestSendCommandRequest request, org.yamcs.YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
         RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();

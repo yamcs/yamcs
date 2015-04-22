@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -53,7 +53,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     @SuppressWarnings("unchecked")
     @Override
-    public void init(Channel channel) throws ConfigurationException {
+    public void init(YProcessor channel) throws ConfigurationException {
 	this.parameterRequestManager = channel.getParameterRequestManager();
 
 	try {

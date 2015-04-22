@@ -3,6 +3,7 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Queue;
 
@@ -31,7 +32,7 @@ public class AlarmTest {
     }
     
     private XtceDb db;
-    private Channel c;
+    private YProcessor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
     private Queue<Event> q;
@@ -48,7 +49,7 @@ public class AlarmTest {
         tmGenerator=new RefMdbPacketGenerator();
         SimpleTcTmService tctms = new SimpleTcTmService(tmGenerator, null, null);
         try {
-            c=ChannelFactory.create(yamcsInstance, "AlarmTest", "refmdb", tctms, "test");
+            c=YProcFactory.create(yamcsInstance, "AlarmTest", "refmdb", tctms, "test");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,7 +70,7 @@ public class AlarmTest {
         prm.addRequest(p,
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });
@@ -145,7 +146,7 @@ public class AlarmTest {
         prm.addRequest(p, 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });
@@ -208,7 +209,7 @@ public class AlarmTest {
         prm.addRequest(p, 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });

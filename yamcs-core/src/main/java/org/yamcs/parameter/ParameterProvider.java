@@ -3,7 +3,7 @@ package org.yamcs.parameter;
 
 import com.google.common.util.concurrent.Service;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -19,7 +19,7 @@ public interface ParameterProvider extends Service {
      * @param channel
      * @throws ConfigurationException 
      */
-    public abstract void init(Channel channel) throws ConfigurationException;
+    public abstract void init(YProcessor channel) throws ConfigurationException;
 
     /**
      * Send parameters to this listener.

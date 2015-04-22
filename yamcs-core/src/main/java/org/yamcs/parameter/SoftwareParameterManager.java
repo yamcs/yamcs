@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -57,7 +57,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     @Override
-    public void init(Channel channel) throws ConfigurationException {
+    public void init(YProcessor channel) throws ConfigurationException {
 	init(channel.getXtceDb());
 
     }

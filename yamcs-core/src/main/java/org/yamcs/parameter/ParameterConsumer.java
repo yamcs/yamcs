@@ -1,6 +1,6 @@
 package org.yamcs.parameter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.yamcs.ParameterValue;
 
@@ -11,7 +11,5 @@ import org.yamcs.ParameterValue;
  *
  */
 public interface ParameterConsumer {
-
-	void updateItems(int subscriptionId, ArrayList<ParameterValue> items);
-
+    void updateItems(int subscriptionId, List<ParameterValue> items);
 }

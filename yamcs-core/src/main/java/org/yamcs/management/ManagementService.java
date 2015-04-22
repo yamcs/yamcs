@@ -8,10 +8,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
-import org.yamcs.ChannelFactory;
+import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Privilege;
 import org.yamcs.commanding.CommandQueue;
@@ -68,7 +68,7 @@ public class ManagementService {
                 hornetMgr=new HornetManagement(this, timer);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
                 hornetChannelMgr=new HornetChannelManagement(this, timer);
-                Channel.addChannelListener(hornetChannelMgr);
+                YProcessor.addChannelListener(hornetChannelMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
                 hornetEnabled=false;
@@ -79,7 +79,7 @@ public class ManagementService {
 
     public void shutdown() {
 	if(hornetEnabled) {
-	    Channel.removeChannelListner(hornetChannelMgr);
+	    YProcessor.removeChannelListner(hornetChannelMgr);
 	    hornetMgr.stop();
 	    hornetCmdQueueMgr.stop();
 	    hornetChannelMgr.close();
@@ -138,7 +138,7 @@ public class ManagementService {
     }
 
 
-    public void registerChannel(Channel channel) {
+    public void registerChannel(YProcessor channel) {
         try {
             ChannelControlImpl cci = new ChannelControlImpl(channel);
             if(jmxEnabled) {
@@ -149,7 +149,7 @@ public class ManagementService {
         }
     }
 
-    public void unregisterChannel(Channel channel) {
+    public void unregisterChannel(YProcessor channel) {
         if(jmxEnabled) {
             try {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+channel.getInstance()+":type=channels,name="+channel.getName()));
@@ -162,7 +162,7 @@ public class ManagementService {
     public int registerClient(String instance, String channelName,  ChannelClient client) {
         int id=clientId.incrementAndGet();
         try {
-            Channel c=Channel.getInstance(instance, channelName);
+            YProcessor c=YProcessor.getInstance(instance, channelName);
             if(c==null) throw new YamcsException("Unexisting channel ("+instance+", "+channelName+") specified");
             ClientControlImpl cci = new ClientControlImpl(instance, id, client.getUsername(), client.getApplicationName(), channelName, client);
             clients.put(cci.getClientInfo().getId(), cci);
@@ -196,7 +196,7 @@ public class ManagementService {
         }
     }
 
-    private void switchChannel(ClientControlImpl cci, Channel chan) throws ChannelException {
+    private void switchChannel(ClientControlImpl cci, YProcessor chan) throws ChannelException {
         ClientInfo oldci=cci.getClientInfo();
         cci.switchChannel(chan);
         ClientInfo ci=cci.getClientInfo();
@@ -242,8 +242,8 @@ public class ManagementService {
 
         try {
             int n=0;
-            Channel chan;
-            chan = ChannelFactory.create(cr.getInstance(), cr.getName(), cr.getType(), cr.getSpec(),"unknown");
+            YProcessor chan;
+            chan = YProcFactory.create(cr.getInstance(), cr.getName(), cr.getType(), cr.getSpec(),"unknown");
             chan.setPersistent(cr.getPersistent());
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
@@ -271,7 +271,7 @@ public class ManagementService {
 
 
     public void connectToChannel(ChannelRequest cr, Privilege priv) throws YamcsException {
-        Channel chan=Channel.getInstance(cr.getInstance(), cr.getName());
+        YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
         if(chan==null) throw new YamcsException("Unexisting channel ("+cr.getInstance()+", "+cr.getName()+") specified");
 
 

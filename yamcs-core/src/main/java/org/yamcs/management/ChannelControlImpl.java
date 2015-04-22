@@ -4,7 +4,7 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 
 import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -15,11 +15,11 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
  *
  */
 public class ChannelControlImpl extends StandardMBean  implements ChannelControl {
-    Channel channel;
+    YProcessor channel;
     ChannelInfo ci;
     Statistics stats;
     
-    public ChannelControlImpl(Channel channel)  throws NotCompliantMBeanException {
+    public ChannelControlImpl(YProcessor channel)  throws NotCompliantMBeanException {
         super(ChannelControl.class);
         this.channel=channel;
     }

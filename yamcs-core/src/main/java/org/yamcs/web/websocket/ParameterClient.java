@@ -46,7 +46,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterClient(Channel channel, WebSocketServerHandler wsHandler) {
+    public ParameterClient(YProcessor channel, WebSocketServerHandler wsHandler) {
 	super(channel, wsHandler);
 	log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + channel.getInstance() + "]");
 	pidrm = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
@@ -212,7 +212,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
 
-    public void switchChannel(Channel c) throws ChannelException {
+    public void switchChannel(YProcessor c) throws ChannelException {
 	try {
 	    pidrm.switchPrm(c.getParameterRequestManager());
 	} catch (InvalidIdentification e) {

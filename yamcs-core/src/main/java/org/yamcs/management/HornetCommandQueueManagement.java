@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -154,7 +154,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
     }
 
     private void sendCommandEvent(String eventName, CommandQueue q, PreparedCommand pc, boolean expire) {
-	Channel c=q.getChannel();
+	YProcessor c=q.getChannel();
 	CommandQueueEntry cqe=CommandQueueEntry.newBuilder()
 		.setInstance(c.getInstance()).setChannelName(c.getName()).setQueueName(q.getName())
 		.setCmdId(pc.getCommandId()).setSource(pc.getSource()).setBinary(ByteString.copyFrom(pc.getBinary()))
@@ -180,7 +180,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 
     @Override
     public void updateQueue(CommandQueue queue) {
-	Channel c=queue.getChannel();
+	YProcessor c=queue.getChannel();
 	CommandQueueInfo cqi=CommandQueueInfo.newBuilder()
 		.setInstance(c.getInstance()).setChannelName(c.getName())
 		.setName(queue.getName()).setState(queue.getState()).build();

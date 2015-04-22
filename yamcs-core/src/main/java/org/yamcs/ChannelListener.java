@@ -2,9 +2,9 @@ package org.yamcs;
 
 public interface ChannelListener {
 
-    void channelAdded(Channel channel);
+    void channelAdded(YProcessor channel);
 
-    void channelClosed(Channel channel);
+    void channelClosed(YProcessor channel);
 
-    void channelStateChanged(Channel channel);
+    void channelStateChanged(YProcessor channel);
 }

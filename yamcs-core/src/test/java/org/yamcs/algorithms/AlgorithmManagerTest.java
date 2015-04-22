@@ -17,9 +17,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelException;
-import org.yamcs.ChannelFactory;
+import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -48,7 +48,7 @@ public class AlgorithmManagerTest {
     }
     
     private XtceDb db;
-    private Channel c;
+    private YProcessor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
     private Queue<Event> q;
@@ -69,7 +69,7 @@ public class AlgorithmManagerTest {
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         
-        c=ChannelFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
+        c=YProcFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
     
@@ -86,7 +86,7 @@ public class AlgorithmManagerTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(Arrays.asList(floatPara, floatAddition), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId,   ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId,   List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -118,7 +118,7 @@ public class AlgorithmManagerTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(paraList, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId,   ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId,   List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -139,7 +139,7 @@ public class AlgorithmManagerTest {
         final List<ParameterValue> params = new ArrayList<ParameterValue>();
         prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -203,7 +203,7 @@ public class AlgorithmManagerTest {
         Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build());
         prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -220,7 +220,7 @@ public class AlgorithmManagerTest {
         Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build());
         int subscriptionId=prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -252,7 +252,7 @@ public class AlgorithmManagerTest {
                 prm.getParameter("/REFMDB/SUBSYS1/IntegerPara11_1")
         ), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -296,7 +296,7 @@ public class AlgorithmManagerTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationEnum"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -316,7 +316,7 @@ public class AlgorithmManagerTest {
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoBooleanFalseOutcome")
         ), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -336,7 +336,7 @@ public class AlgorithmManagerTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationFloat"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -353,7 +353,7 @@ public class AlgorithmManagerTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoSeparateUpdateOutcome"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -381,7 +381,7 @@ public class AlgorithmManagerTest {
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoUpdatedOut"),
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoUnupdatedOut")), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -401,7 +401,7 @@ public class AlgorithmManagerTest {
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoSelectiveOut"), 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
                         params.addAll(items);
                     }
         });
@@ -429,7 +429,7 @@ public class AlgorithmManagerTest {
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/OnPeriodicRateOut"), 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
                         params.addAll(items);
                     }
         });

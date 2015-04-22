@@ -1,6 +1,6 @@
 package org.yamcs.web.websocket;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 
@@ -10,11 +10,11 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
  */
 public abstract class AbstractWebSocketResource {
 
-    protected Channel channel;
+    protected YProcessor channel;
     protected WebSocketServerHandler wsHandler;
 
 
-    public AbstractWebSocketResource(Channel channel, WebSocketServerHandler wsHandler) {
+    public AbstractWebSocketResource(YProcessor channel, WebSocketServerHandler wsHandler) {
         this.channel = channel;
         this.wsHandler = wsHandler;
     }

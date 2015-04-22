@@ -135,7 +135,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 
     @Override
-    public void updateItems(int subscriptionId, ArrayList<ParameterValue> items) {
+    public void updateItems(int subscriptionId, List<ParameterValue> items) {
 	ListMultimap<Parameter, NamedObjectId> subscription = subscriptions.get(subscriptionId);
 	if(subscription==null) { //probably the subscription has just been removed
 	    log.debug("Recevied an updateItems for an unknown subscription "+subscriptionId);

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -122,7 +122,7 @@ public class YarchPpProvider extends AbstractService implements StreamSubscriber
 
 
 	@Override
-	public void init(Channel channel) {
+	public void init(YProcessor channel) {
 		//nothing to be done here
 	}
 }

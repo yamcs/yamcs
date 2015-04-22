@@ -13,26 +13,26 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ChannelCreatorService extends AbstractService {
+public class YProcessorCreatorService extends AbstractService {
     String channelName;
     String channelType;
     String channelSpec;
 
-    Channel channel;
+    YProcessor yproc;
     String yamcsInstance;
 
     RealtimeParameterService realtimeParameterService;
     
     
-    public ChannelCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, ChannelException, ParseException {
+    public YProcessorCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, ChannelException, ParseException {
 	this.yamcsInstance = yamcsInstance;
 
 	if(!config.containsKey("type")) {
-	    throw new ConfigurationException("Did not specify the channel type");
+	    throw new ConfigurationException("Did not specify the yproc type");
 	}
 	this.channelType = config.get("type");
 	if(!config.containsKey("name")) {
-	    throw new ConfigurationException("Did not specify the channel name");
+	    throw new ConfigurationException("Did not specify the yproc name");
 	}
 	this.channelName = config.get("name");
 
@@ -44,10 +44,10 @@ public class ChannelCreatorService extends AbstractService {
     @Override
     protected void doStart() {
 	try {
-	    channel =  ChannelFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
-	    channel.setPersistent(true);
-	    realtimeParameterService = new RealtimeParameterService(channel);
-	    channel.start();
+	    yproc =  YProcFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
+	    yproc.setPersistent(true);
+	    realtimeParameterService = new RealtimeParameterService(yproc);
+	    yproc.start();
 	    notifyStarted();
 	} catch (Exception e) {
 	    notifyFailed(e);
@@ -56,7 +56,7 @@ public class ChannelCreatorService extends AbstractService {
 
     @Override
     protected void doStop() {
-	channel.quit();
+	yproc.quit();
 	realtimeParameterService.quit();
 	notifyStopped();
     }

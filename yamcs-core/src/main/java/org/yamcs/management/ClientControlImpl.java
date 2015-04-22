@@ -3,7 +3,7 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
 
@@ -36,7 +36,7 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         return client;
     }
 
-    public void switchChannel(Channel chan) throws ChannelException {
+    public void switchChannel(YProcessor chan) throws ChannelException {
         client.switchChannel(chan);
         
         clientInfo=ClientInfo.newBuilder().mergeFrom(clientInfo)

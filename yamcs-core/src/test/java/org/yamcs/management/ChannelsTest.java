@@ -11,7 +11,7 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelClient;
 import org.yamcs.ChannelException;
 import org.yamcs.YConfiguration;
@@ -80,7 +80,7 @@ public class ChannelsTest {
         ccc.createChannel("ChannelsTest1", "channel1", "dummy", "", true, new int[0]);
         
         MyChannelClient client=new MyChannelClient();
-        Channel chan=Channel.getInstance("ChannelsTest1", "channel1");
+        YProcessor chan=YProcessor.getInstance("ChannelsTest1", "channel1");
         assertNotNull(chan);
         
         chan.connect(client);
@@ -211,10 +211,10 @@ public class ChannelsTest {
     }
 
     static class MyChannelClient implements ChannelClient {
-        Channel channel;
+        YProcessor channel;
 
         @Override
-        public void switchChannel(Channel c) throws ChannelException {
+        public void switchChannel(YProcessor c) throws ChannelException {
             channel.disconnect(this);
             c.connect(this);
             channel=c;

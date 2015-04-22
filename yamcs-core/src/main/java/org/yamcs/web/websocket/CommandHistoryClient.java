@@ -2,7 +2,7 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ChannelException;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
@@ -23,7 +23,7 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
     Logger log;
     int subscriptionId=-1;
 
-    public CommandHistoryClient(Channel channel, WebSocketServerHandler wsHandler) {
+    public CommandHistoryClient(YProcessor channel, WebSocketServerHandler wsHandler) {
 	super(channel, wsHandler);
 	log = LoggerFactory.getLogger(CommandHistoryClient.class.getName() + "[" + channel.getInstance() + "]");
 	wsHandler.addResource("cmdhistory", this);
@@ -54,7 +54,7 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
 	chrm.unsubscribeCommandHistory(subscriptionId);
     }
 
-    public void switchChannel(Channel c) throws ChannelException {
+    public void switchChannel(YProcessor c) throws ChannelException {
 	if(subscriptionId == -1) return;
 
 	CommandHistoryRequestManager chrm = channel.getCommandHistoryManager();

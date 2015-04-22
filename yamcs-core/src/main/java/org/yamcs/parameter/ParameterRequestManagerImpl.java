@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,12 +9,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.AlarmServer;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -54,7 +57,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
 
     private static AtomicInteger lastSubscriptionId= new AtomicInteger();
-    public final Channel channel;
+    public final YProcessor yproc;
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
@@ -63,28 +66,30 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     AlarmServer alarmServer;
     SoftwareParameterManager spm;
     ParameterCache parameterCache;
+    final private ExecutorService executor ;
     
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
      * specified XtceTmProcessor.
      */
-    public ParameterRequestManagerImpl(Channel chan, XtceTmProcessor tmProcessor) throws ConfigurationException {
-	this.channel=chan;
-	log = LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
+    public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
+	this.yproc = yproc;
+	log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
 	tmProcessor.setParameterListener(this);
 	addParameterProvider(tmProcessor);
-	if(chan.hasAlarmChecker()) {
+	if(yproc.hasAlarmChecker()) {
 	    alarmChecker=new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
 	}
-	if(chan.hasAlarmServer()) {
-	    alarmServer = new AlarmServer(chan.getInstance(), "realtime_alarms");
+	if(yproc.hasAlarmServer()) {
+	    alarmServer = new AlarmServer(yproc.getInstance(), "realtime_alarms");
 	    alarmChecker.enableServer(alarmServer);
 	}
 	
-	if(chan.isParameterCacheEnabled()) {
+	if(yproc.isParameterCacheEnabled()) {
 	    parameterCache = new ParameterCache();		   
 	}
-	cacheAll = chan.cacheAllParameters();
+	cacheAll = yproc.cacheAllParameters();
+	executor = yproc.getExecutor();
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -131,8 +136,12 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public boolean unsubscribeAll(int subscriptionId) {
 	return subscribeAll.remove(subscriptionId);
     }
+    
+    public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) throws InvalidIdentification {
+        return addRequest(paraList, tpc, false);
+    }
 
-    public int addRequest(List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
+    public int addRequest(List<Parameter> paraList, ParameterConsumer tpc, boolean firstFromCache) throws InvalidIdentification {
 	List<ParameterProvider> providers = getProviders(paraList);
 	int id=lastSubscriptionId.incrementAndGet();
 	log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
@@ -153,7 +162,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @return
      * @throws InvalidIdentification
      */
-    public int addRequest(Parameter para, ParameterConsumer tpc) throws InvalidIdentification {
+    
+    
+    public int addRequest(Parameter para, ParameterConsumer tpc, boolean firstFromCache) throws InvalidIdentification {
 	ParameterProvider provider=getProvider(para);
 	int id=lastSubscriptionId.incrementAndGet();
 	log.debug("new request with subscriptionId "+id+" for parameter: "+para);
@@ -161,7 +172,10 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	request2ParameterConsumerMap.put(id, tpc);
 	return id;
     }
-
+    
+    public int addRequest(Parameter para, ParameterConsumer tpc) throws InvalidIdentification {
+        return addRequest(para, tpc, false);
+    }
 
     /**
      * Creates a new request with a list of parameters
@@ -199,7 +213,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	    //log.info("afterwards the subscription looks like: "+toString());
 	}
 	request2ParameterConsumerMap.put(id, tpc);
-
     }
 
     /**
@@ -208,26 +221,43 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @param itemList
      * @throws InvalidIdentification
      */
-    public void addItemsToRequest(int subscriptionId, Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
+    public void addItemsToRequest(final int subscriptionId, final Parameter para, boolean firstFromCache) throws InvalidIdentification, InvalidRequestIdentification {
 	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
-	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
+	final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
+	if((consumer==null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
 		&& alarmChecker!=null && alarmChecker.getSubscriptionId()!=subscriptionId) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
 	}
 	ParameterProvider provider=getProvider(para);
 	addItemToRequest(subscriptionId, para, provider);
+	
+	if(firstFromCache) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if(consumer!=null) {
+                        ParameterValue pv = getValueFromCache(para);
+                        if(pv!=null)  consumer.updateItems(subscriptionId, Arrays.asList(pv));
+                    }
+                }
+            });
+        }
     }
 
+    public void addItemsToRequest(int subscriptionId, Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
+        addItemsToRequest(subscriptionId, para, false);
+    }
     /**
      * Add items to an request id. 
      * @param subscriptionID
      * @param itemList
      * @throws InvalidIdentification
      */
-    public void addItemsToRequest(int subscriptionId, List<Parameter> paraList) throws InvalidIdentification, InvalidRequestIdentification {
+    public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList, boolean firstFromCache) throws InvalidIdentification, InvalidRequestIdentification {
 	log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
-	if(!request2ParameterConsumerMap.containsKey(subscriptionId) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
+	final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
+	if((consumer==null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
 	    log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
 	    throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
 	}
@@ -235,9 +265,51 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	for(int i=0;i<paraList.size();i++) {
 	    addItemToRequest(subscriptionId, paraList.get(i), providers.get(i));
 	}
+	
+	if(firstFromCache) {
+	    executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if(consumer!=null) {
+                        List<ParameterValue> pvlist = getValuesFromCache(paraList);
+                        consumer.updateItems(subscriptionId, pvlist);
+                    }
+                }
+            });
+	}
     }
 
+    public void addItemsToRequest(int subscriptionId, List<Parameter> paraList) throws InvalidIdentification, InvalidRequestIdentification {
+        addItemsToRequest(subscriptionId, paraList, false);
+    }
+    
     /**
+     * Removes a parameter from a rquest. If it is not part of the request, the operation will have no effect.
+     * @param subscriptionID
+     * @param param
+     * @throws InvalidIdentification
+     */
+    public void removeItemsFromRequest(int subscriptionID, Parameter param) throws InvalidIdentification {
+        ParameterProvider provider = getProvider(param);
+        removeItemFromRequest(subscriptionID, param, provider);
+    }
+    /**
+     * Removes a list of parameters from a request.
+     * Any parameter specified that is not in the subscription will be ignored.
+     * 
+     * @param subscriptionID
+     * @param paraList
+     */
+    public void removeItemsFromRequest(int subscriptionID, List<Parameter> paraList) {
+        List<ParameterProvider> providers=getProviders(paraList);
+        for(int i=0;i<paraList.size();i++) {
+            removeItemFromRequest(subscriptionID, paraList.get(i), providers.get(i));
+        }
+    }
+    
+    /**
+     * 
+     * 
      * Adds a new item to an existing request. There is no check if the item is already there, 
      *  so there can be duplicates (observed in the CGS CIS).
      *  This call also works with a new id
@@ -262,29 +334,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	al_req.add(id);
     }
 
-    /**
-     * Removes a parameter from a rquest. If it is not part of the request, the operation will have no effect.
-     * @param subscriptionID
-     * @param param
-     * @throws InvalidIdentification
-     */
-    public void removeItemsFromRequest(int subscriptionID, Parameter param) throws InvalidIdentification {
-	ParameterProvider provider = getProvider(param);
-	removeItemFromRequest(subscriptionID, param, provider);
-    }
-    /**
-     * Removes a list of parameters from a request.
-     * Any parameter specified that is not in the subscription will be ignored.
-     * 
-     * @param subscriptionID
-     * @param paraList
-     */
-    public void removeItemsFromRequest(int subscriptionID, List<Parameter> paraList) {
-	List<ParameterProvider> providers=getProviders(paraList);
-	for(int i=0;i<paraList.size();i++) {
-	    removeItemFromRequest(subscriptionID, paraList.get(i), providers.get(i));
-	}
-    }
+   
+    
 
     private void removeItemFromRequest(int subscriptionId, Parameter para, ParameterProvider provider) {
 	if(param2RequestMap.containsKey(para)) { //is there really any request associated to this parameter?

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Channel;
+import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
@@ -24,14 +24,14 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class CommandingManager extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private Channel channel;
+    private YProcessor channel;
     private CommandQueueManager commandQueueManager; 
 
     /**
      * Keeps a reference to the channel and creates the queue manager
      * @param channel 
      */
-    public CommandingManager(Channel channel) throws ConfigurationException{
+    public CommandingManager(YProcessor channel) throws ConfigurationException{
 	this.channel=channel;
 	this.commandQueueManager=new CommandQueueManager(this);
 	ManagementService.getInstance().registerCommandQueueManager(channel.getInstance(), channel.getName(), commandQueueManager);
@@ -66,7 +66,7 @@ public class CommandingManager extends AbstractService {
 	commandQueueManager.addCommand(pc);
     }
 
-    public Channel getChannel() {
+    public YProcessor getChannel() {
 	return channel;
     }
 
