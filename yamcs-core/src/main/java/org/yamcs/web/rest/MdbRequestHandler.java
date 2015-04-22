@@ -13,10 +13,12 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.protobuf.Rest.RestDataSource;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbRequest;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
 import org.yamcs.protobuf.Rest.RestListAvailableParametersRequest;
 import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
+import org.yamcs.protobuf.Rest.RestParameter;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
@@ -57,9 +59,9 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         XtceDb mdb = loadMdb(yamcsInstance);
         RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
         if (request.getNamespacesCount() == 0) { // Send all, if no namespace specified
-            for(Parameter parameter : mdb.getParameters()) {
-                for (Entry<String,String> entry : parameter.getAliasSet().getAliases().entrySet()) {
-                    responseb.addIds(NamedObjectId.newBuilder().setNamespace(entry.getKey()).setName(entry.getValue()));
+            for(Parameter p : mdb.getParameters()) {
+                for (Entry<String,String> entry : p.getAliasSet().getAliases().entrySet()) {
+                    responseb.addParameters(toRestParameter(entry.getKey(), entry.getValue(), p));
                 }
             }
         } else {
@@ -67,12 +69,18 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
                 for (String namespace : request.getNamespacesList()) {
                     String alias = p.getAlias(namespace);
                     if (alias != null) {
-                        responseb.addIds(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias));
+                        responseb.addParameters(toRestParameter(namespace, alias, p));
                     }
                 }
             }
         }
         return responseb.build();
+    }
+
+    private static RestParameter.Builder toRestParameter(String namespace, String value, Parameter parameter) {
+        RestDataSource ds = RestDataSource.valueOf(parameter.getDataSource().name()); // I know, i know
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(value).build();
+        return RestParameter.newBuilder().setDataSource(ds).setId(id);
     }
 
     private RestDumpRawMdbResponse dumpRawMdb(RestDumpRawMdbRequest request, String yamcsInstance) throws RestException {
