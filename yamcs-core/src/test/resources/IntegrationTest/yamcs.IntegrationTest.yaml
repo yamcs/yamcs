@@ -19,7 +19,7 @@ services:
     - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
-    - class: org.yamcs.ChannelCreatorService
+    - class: org.yamcs.YProcessorCreatorService
       args: 
          name: "realtime"
          type: "realtime"

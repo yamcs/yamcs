@@ -23,7 +23,7 @@ services:
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
     # create a realtime channel
-    - class: org.yamcs.ChannelCreatorService
+    - class: org.yamcs.YProcessorCreatorService
       args: 
          name: "realtime"
          type: "realtime"
