@@ -490,6 +490,126 @@ public final class SchemaRest
         }
     }
 
+    public static final class RestParameter
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestParameter.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestParameter.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestParameter.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestParameter.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestParameter>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestParameter message) throws java.io.IOException
+            {
+                if(message.hasId())
+                    output.writeObject(1, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+
+                if(message.hasDataSource())
+                    output.writeEnum(2, message.getDataSource().getNumber(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestParameter message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestParameter.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestParameter.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestParameter> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestParameter message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestParameter newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestParameter.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestParameter.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        case 2:
+                            builder.setDataSource(org.yamcs.protobuf.Rest.RestDataSource.valueOf(input.readEnum()));
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestParameter.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestParameter.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestParameter.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestParameter.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestParameter.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestParameter.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestParameter.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "id";
+                case 2: return "dataSource";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("id", 1);
+            fieldMap.put("dataSource", 2);
+        }
+    }
+
     public static final class RestListAvailableParametersResponse
     {
         public static final org.yamcs.protobuf.SchemaRest.RestListAvailableParametersResponse.MessageSchema WRITE =
@@ -501,8 +621,8 @@ public final class SchemaRest
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Yamcs.NamedObjectId ids : message.getIdsList())
-                    output.writeObject(2, ids, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+                for(org.yamcs.protobuf.Rest.RestParameter parameters : message.getParametersList())
+                    output.writeObject(1, parameters, org.yamcs.protobuf.SchemaRest.RestParameter.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestListAvailableParametersResponse message)
@@ -543,8 +663,8 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
-                        case 2:
-                            builder.addIds(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+                        case 1:
+                            builder.addParameters(input.mergeObject(org.yamcs.protobuf.Rest.RestParameter.newBuilder(), org.yamcs.protobuf.SchemaRest.RestParameter.MERGE));
 
                             break;
                         default:
@@ -587,7 +707,7 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 2: return "ids";
+                case 1: return "parameters";
                 default: return null;
             }
         }
@@ -599,7 +719,7 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("ids", 2);
+            fieldMap.put("parameters", 1);
         }
     }
 

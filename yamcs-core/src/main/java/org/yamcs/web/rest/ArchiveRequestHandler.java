@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpHeaders.Values;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.protostuff.JsonIOUtil;
@@ -120,8 +121,9 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
      */
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+        if (req.getMethod() != HttpMethod.GET)
+            throw new MethodNotAllowedException(req.getMethod());
         RestDumpArchiveRequest request = readMessage(req, SchemaRest.RestDumpArchiveRequest.MERGE).build();
-        if (remainingUri == null) remainingUri = "";
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
 
         // Check if a profile has been specified in the request
@@ -157,20 +159,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             initCsvGenerator(replayRequest);
         }
 
-        if (request.hasStream() && request.getStream()) {
-            try {
-                streamResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
-            } catch (Exception e) {
-                // Not throwing RestException up, since we are probably a few chunks in already.
-                log.error("Could not write entire chunked response", e);
-            }
-        } else {
-            writeAggregatedResponse(ctx, req, qsDecoder, yamcsInstance, replayRequest, contentType);
-        }
-    }
-
-    private void streamResponse(ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String yamcsInstance, ReplayRequest replayRequest, String contentType)
-    throws IOException, URISyntaxException, HornetQException, YamcsException, YamcsApiException {
+        // Start a short-lived replay
         YamcsSession ys = null;
         YamcsClient msgClient = null;
         try {
@@ -183,72 +172,85 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             SimpleString replayAddress=new SimpleString(answer.getMessage());
             msgClient.executeRpc(replayAddress, "start", null, null);
 
-            // Return base HTTP response, indicating that we'll used chunked encoding
-            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-            response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
-            response.headers().set(Names.CONTENT_TYPE, contentType);
-
-            ChannelFuture writeFuture=ctx.write(response);
-            writeFuture.addListener(CLOSE_ON_FAILURE);
-
-            while(true) {
-                ClientMessage msg = msgClient.dataConsumer.receive();
-
-                if (Protocol.endOfStream(msg)) {
-                    // Send empty chunk downstream to signal end of response
-                    ChannelFuture chunkWriteFuture = ctx.write(new DefaultHttpContent(Unpooled.EMPTY_BUFFER));
-                    chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
-                    log.trace("All chunks were written out");
-                    break;
-                }
-
-                RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
-                ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-                if (dataType == null) {
-                    log.trace("Ignoring hornetq message of type null");
-                    continue;
-                }
-
-                MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
-                mergeMessage(dataType, restMessage.message, builder);
-
-                // Write a chunk containing a delimited message
-                ByteBuf buf = Unpooled.buffer();
-                ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
-
-                if (BINARY_MIME_TYPE.equals(contentType)) {
-                    builder.build().writeDelimitedTo(channelOut);
-                }
-                else if (CSV_MIME_TYPE.equals(contentType))
-                {
-                    if(csvGenerator != null) {
-                        csvGenerator.insertRows(builder.build(), channelOut);
-                    }
-                }
-                else {
-                    JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
-                    JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
-                    generator.close();
-                }
-
-                Channel ch = ctx.channel();
-                writeFuture = ctx.write(new DefaultHttpContent(buf));
+            if (request.hasStream() && request.getStream()) {
                 try {
-                    while (!ch.isWritable() && ch.isOpen()) {
-                        writeFuture.await(5, TimeUnit.SECONDS);
-                    }
-                } catch (InterruptedException e) {
-                    log.warn("Interrupted while waiting for channel to become writable", e);
-                    // TODO return? throw up?
+                    streamResponse(msgClient, ctx, req, qsDecoder, contentType);
+                } catch (Exception e) {
+                    // Not throwing RestException up, since we are likely a few chunks in already.
+                    log.error("Skipping chunk", e);
                 }
+            } else {
+                writeAggregatedResponse(msgClient, ctx, req, qsDecoder, contentType);
             }
+        } catch (YamcsException | URISyntaxException | YamcsApiException | HornetQException e) {
+            throw new InternalServerErrorException(e);
         } finally {
             if (msgClient != null) {
-                try { msgClient.close(); } catch (HornetQException e) {
-                    System.err.println("Caught .... on msgClient close"); e.printStackTrace(); }
+                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
             }
             if (ys != null) {
                 try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }
+            }
+        }
+    }
+
+    private void streamResponse(YamcsClient msgClient, ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String contentType)
+    throws HornetQException, YamcsApiException, IOException {
+
+        // Return base HTTP response, indicating that we'll used chunked encoding
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+        response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
+        response.headers().set(Names.CONTENT_TYPE, contentType);
+
+        ChannelFuture writeFuture=ctx.write(response);
+        writeFuture.addListener(CLOSE_ON_FAILURE);
+
+        while(true) {
+            ClientMessage msg = msgClient.dataConsumer.receive();
+
+            if (Protocol.endOfStream(msg)) {
+                // Send empty chunk downstream to signal end of response
+                ChannelFuture chunkWriteFuture = ctx.writeAndFlush(new DefaultHttpContent(Unpooled.EMPTY_BUFFER));
+                chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
+                log.trace("All chunks were written out");
+                break;
+            }
+
+            RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+            ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
+            if (dataType == null) {
+                log.trace("Ignoring hornetq message of type null");
+                continue;
+            }
+
+            MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
+            mergeMessage(dataType, restMessage.message, builder);
+
+            // Write a chunk containing a delimited message
+            ByteBuf buf = ctx.alloc().buffer();
+            ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
+
+            if (BINARY_MIME_TYPE.equals(contentType)) {
+                builder.build().writeDelimitedTo(channelOut);
+            } else if (CSV_MIME_TYPE.equals(contentType)) {
+                if(csvGenerator != null) {
+                    csvGenerator.insertRows(builder.build(), channelOut);
+                }
+            } else {
+                JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
+                JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
+                generator.close();
+            }
+
+            Channel ch = ctx.channel();
+            writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
+            try {
+                while (!ch.isWritable() && ch.isOpen()) {
+                    writeFuture.await(5, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException e) {
+                log.warn("Interrupted while waiting for channel to become writable", e);
+                // TODO return? throw up?
             }
         }
     }
@@ -260,72 +262,48 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
      * archive to stream the response instead, I don't consider this a problem at this stage.
      * This method is mostly here for small interactive requests through tools like curl.
      */
-    private void writeAggregatedResponse(ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String yamcsInstance, ReplayRequest replayRequest, String contentType) throws RestException {
-        YamcsSession ys = null;
-        YamcsClient msgClient = null;
+    private void writeAggregatedResponse(YamcsClient msgClient, ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String contentType)
+    throws RestException, HornetQException, YamcsApiException {
         int sizeEstimate = 0;
-        try {
-            ys = YamcsSession.newBuilder().setConnectionParams("yamcs://localhost:5445/"+yamcsInstance).build();
-            msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(yamcsInstance);
-            StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+        response.headers().set(Names.CONTENT_TYPE, contentType);
+        RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+        while(true) {
+            ClientMessage msg = msgClient.dataConsumer.receive();
 
-            // Server is good to go, start the replay
-            SimpleString replayAddress=new SimpleString(answer.getMessage());
-            msgClient.executeRpc(replayAddress, "start", null, null);
-
-            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-            response.headers().set(Names.CONTENT_TYPE, contentType);
-            RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
-
-
-
-            while(true) {
-                ClientMessage msg = msgClient.dataConsumer.receive();
-
-                if (Protocol.endOfStream(msg)) {
-                    log.trace("All done. Send to client");
-                    writeMessage(ctx, req, qsDecoder, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
-                    break;
-                }
-
-                ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-                if (dataType == null) {
-                    log.trace("Ignoring hornetq message of type null");
-                    continue;
-                }
-
-                MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
-                try {
-                    if (BINARY_MIME_TYPE.equals(contentType)) {
-                        sizeEstimate += restMessage.message.getSerializedSize();
-                    } else {
-                        ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
-                        JsonGenerator generator = createJsonGenerator(tempOut, qsDecoder);
-                        JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
-                        generator.close();
-                        sizeEstimate += tempOut.toByteArray().length;
-                    }
-                } catch (IOException e) {
-                    throw new InternalServerErrorException(e);
-                }
-
-                // Verify whether we still abide by the max byte size (aproximation)
-                if (sizeEstimate > MAX_BYTE_SIZE)
-                    throw new ForbiddenException("Response too large. Add more precise filters or use 'stream'-option.");
-
-                // If we got this far, append this replay message to our aggregated rest response
-                mergeMessage(dataType, restMessage.message, builder);
+            if (Protocol.endOfStream(msg)) {
+                log.trace("All done. Send to client");
+                writeMessage(ctx, req, qsDecoder, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
+                break;
             }
-        } catch (YamcsException | URISyntaxException | YamcsApiException | HornetQException e) {
-            throw new InternalServerErrorException(e);
-        } finally {
-            if (msgClient != null) {
-                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
+
+            ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
+            if (dataType == null) {
+                log.trace("Ignoring hornetq message of type null");
+                continue;
             }
-            if (ys != null) {
-                try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }
+
+            MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
+            try {
+                if (BINARY_MIME_TYPE.equals(contentType)) {
+                    sizeEstimate += restMessage.message.getSerializedSize();
+                } else {
+                    ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
+                    JsonGenerator generator = createJsonGenerator(tempOut, qsDecoder);
+                    JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
+                    generator.close();
+                    sizeEstimate += tempOut.toByteArray().length;
+                }
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
             }
+
+            // Verify whether we still abide by the max byte size (aproximation)
+            if (sizeEstimate > MAX_BYTE_SIZE)
+                throw new ForbiddenException("Response too large. Add more precise filters or use 'stream'-option.");
+
+            // If we got this far, append this replay message to our aggregated rest response
+            mergeMessage(dataType, restMessage.message, builder);
         }
     }
 

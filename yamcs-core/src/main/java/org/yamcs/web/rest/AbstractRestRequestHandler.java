@@ -1,20 +1,26 @@
 package org.yamcs.web.rest;
 
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
-import com.google.protobuf.MessageLite;
-
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.handler.codec.http.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +30,10 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.web.AbstractRequestHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.protobuf.MessageLite;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -147,7 +152,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
      */
     protected <T extends MessageLite> void writeMessage(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, T responseMsg, Schema<T> responseSchema) throws RestException {
         String targetContentType = getTargetContentType(httpRequest);
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = ctx.alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
         try {
             if (BINARY_MIME_TYPE.equals(targetContentType)) {
@@ -222,7 +227,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
         String contentType = getTargetContentType(req);
         if (JSON_MIME_TYPE.equals(contentType)) {
             try {
-        	ByteBuf buf = Unpooled.buffer();
+        	ByteBuf buf = ctx.alloc().buffer();
         	ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
                 JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaRest.RestExceptionMessage.WRITE, false);
@@ -231,20 +236,21 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
                 // Close the connection as soon as the error message is sent.
-                ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not create Json Generator", e2);
                 log.debug("Original exception not sent to client", t);
                 sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
             }
         } else if (BINARY_MIME_TYPE.equals(contentType)) {
-            ByteBuf buf = Unpooled.buffer();
+            ByteBuf buf = ctx.alloc().buffer();
             ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
             try {
                 toException(t).build().writeTo(channelOut);
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, BINARY_MIME_TYPE);
                 setContentLength(response, buf.readableBytes());
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);

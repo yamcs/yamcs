@@ -23,12 +23,24 @@ message RestCommandType {
   repeated RestArgumentType arguments=4;
 }
 
+enum RestDataSource {
+  TELEMETERED=0;
+  DERIVED=1;
+  CONSTANT=2;
+  LOCAL=3;
+}
+
 message RestListAvailableParametersRequest {
   repeated string namespaces=1; // if not available, all the namespaces
 }
 
+message RestParameter {
+  optional yamcs.NamedObjectId id=1;
+  optional RestDataSource dataSource=2;
+}
+
 message RestListAvailableParametersResponse {
-  repeated yamcs.NamedObjectId ids=2;
+  repeated RestParameter parameters=1;
 }
 
 message RestValidateCommandRequest {

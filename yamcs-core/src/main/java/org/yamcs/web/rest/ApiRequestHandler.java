@@ -32,14 +32,16 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
         } else {
             try {
-                if(ARCHIVE_PATH.equals(path[0])) {
-                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
-                } else if(MDB_PATH.equals(path[0])) {
-                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
-                } else if(COMMANDING_PATH.equals(path[0])) {
-                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
-                } else if(PARAMETER_PATH.equals(path[0])) {
-                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? path[1] : null);
+                // Chop off first path segment (incl. any '/') while keeping querystring in place
+                String choppedUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+                if(path[0].startsWith(ARCHIVE_PATH)) {
+                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                } else if(path[0].startsWith(MDB_PATH)) {
+                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                } else if(path[0].startsWith(COMMANDING_PATH)) {
+                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                } else if(path[0].startsWith(PARAMETER_PATH)) {
+                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else {
                     log.warn("Unknown request received: '{}'", path[0]);
                     sendError(ctx, HttpResponseStatus.NOT_FOUND);
@@ -48,7 +50,7 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                 log.error("Reporting internal server error to rest client", e);
                 sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
             } catch (RestException e) {
-                log.trace("Sending nominal exception back to rest client", e);
+                log.debug("Sending nominal exception back to rest client", e);
                 sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
             } catch (Exception e) {
                 log.error("Unexpected error " + e, e);
