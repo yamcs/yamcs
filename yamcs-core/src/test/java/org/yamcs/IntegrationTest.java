@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.ws.WebSocketClient;
@@ -103,32 +104,63 @@ public class IntegrationTest extends YarchTestCase {
         wsClient.disconnect();
         assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
     }
+    
+    @Ignore
+    @Test
+    public void testWsParameterSubscriPerformance() throws Exception {    
+        //subscribe to parameters
+        long t0 = System.currentTimeMillis();
+        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6"); 
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
+        wsClient.sendRequest(wsr);
+        
+        for (int i=0;i <1000000; i++) packetProvider.generate_PKT11();
+        System.out.println("total time: "+(System.currentTimeMillis()-t0));
+   }
 
 
     @Test
     public void testWsParameter() throws Exception {	
         //subscribe to parameters
-
+        long t0 = System.currentTimeMillis();
+        
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
 
+       System.out.println("t1: "+(System.currentTimeMillis()-t0));
+       
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
         NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
         assertNotNull(invalidId);
         assertEquals("/REFMDB/SUBSYS1/InvalidParaName", invalidId.getName());
-
+        System.out.println("t20: "+(System.currentTimeMillis()-t0));
         //TODO: because there is an invalid parameter, the request is sent back so we have to wait a little; 
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
-
+        System.out.println("t30: "+(System.currentTimeMillis()-t0));
         //generate some TM packets and monitor realtime reception
-        packetProvider.generate_PKT11();
+        for (int i=0;i <1000; i++) packetProvider.generate_PKT11();
+        System.out.println("t35: "+(System.currentTimeMillis()-t0));
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
-
+        System.out.println("t40: "+(System.currentTimeMillis()-t0));
         checkPdata(pdata, packetProvider);
-
+        
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6"); 
+        System.out.println("t50: "+(System.currentTimeMillis()-t0));
+        wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
+        wsClient.sendRequest(wsr);
+    
+        //we subscribe again and should get the previous values from the cache
+        wsr = new WebSocketRequest("parameter", "subscribe", subscrList);       
+        wsClient.sendRequest(wsr);
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        System.out.println("pdata: "+pdata);
+        checkPdata(pdata, packetProvider);
     }
+
+    
+    
     @Test
     public void testRestParameterGet() throws Exception {	
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
@@ -395,6 +427,7 @@ public class IntegrationTest extends YarchTestCase {
         LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<ParameterData>();
         LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
 
+        int count =0;
         @Override
         public void onConnect() {
             onConnect.release();
@@ -413,6 +446,11 @@ public class IntegrationTest extends YarchTestCase {
 
         @Override
         public void onParameterData(ParameterData pdata) {
+            count++;
+            if((count %1000) ==0 ){
+                System.out.println("received pdata "+count);
+            }
+           
             parameterDataList.add(pdata);
         }
 

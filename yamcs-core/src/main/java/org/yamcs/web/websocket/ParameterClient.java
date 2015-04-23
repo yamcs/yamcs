@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.web.Computation;
 import org.yamcs.web.ComputationFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,13 +79,21 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 
     private WebSocketReplyData subscribe(int requestId, NamedObjectList paraList) throws WebSocketException {
 	//TODO check permissions and subscription limits
+        List<NamedObjectId> idlist = paraList.getListList();
 	try {
 	    if(subscriptionId!=-1) {
-		pidrm.addItemsToRequest(subscriptionId, paraList.getListList());
+		pidrm.addItemsToRequest(subscriptionId, idlist);
 	    } else {
-		subscriptionId=pidrm.addRequest(paraList.getListList());
+		subscriptionId=pidrm.addRequest(idlist);
 	    }
-	    return toAckReply(requestId);
+	    WebSocketReplyData reply = toAckReply(requestId);
+	    wsHandler.sendReply(reply);
+	    List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idlist);
+	    if(!pvlist.isEmpty()) {
+	        update(subscriptionId, pvlist);
+	    }
+	    
+	    return null;
 	} catch (InvalidIdentification e) {
 	    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
 	    WebSocketException ex = new WebSocketException(requestId, e);
@@ -93,6 +102,9 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	} catch (InvalidRequestIdentification e) {
 	    log.error("got invalid subscription id", e);
 	    throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+	} catch (IOException e) {
+	    log.error("Exception when sending data", e);
+	    return null;
 	}
     }
 

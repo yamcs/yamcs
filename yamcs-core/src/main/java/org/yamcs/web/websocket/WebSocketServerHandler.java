@@ -111,7 +111,9 @@ public class WebSocketServerHandler {
 		    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
 		    if (resource != null) {
 			WebSocketReplyData reply = resource.processRequest(msg, decoder);
-			sendReply(reply);
+			if(reply!=null) {
+			    sendReply(reply);
+			}
 		    } else {
 			throw new WebSocketException(msg.getRequestId(), "Invalid message (unsupported resource: '"+msg.getResource()+"')");
 		    }
@@ -142,7 +144,13 @@ public class WebSocketServerHandler {
 	return "ws://" + req.headers().get(HttpHeaders.Names.HOST) + "/"+ yamcsInstance+"/"+WEBSOCKET_PATH;
     }
 
-    private void sendReply(WebSocketReplyData reply) throws IOException {
+    public void sendReply(WebSocketReplyData reply) throws IOException {
+        if(!channel.isOpen()) throw new IOException("Channel not open");
+        if(!channel.isWritable()) {
+            log.warn("Dropping replay message because channel is not writable");
+            return;
+        }
+        
 	WebSocketFrame frame = encoder.encodeReply(reply);
 	channel.write(frame);
     }

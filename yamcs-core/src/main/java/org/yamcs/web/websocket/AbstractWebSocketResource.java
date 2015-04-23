@@ -19,6 +19,16 @@ public abstract class AbstractWebSocketResource {
         this.wsHandler = wsHandler;
     }
 
+    /**
+     * Process a request and return a reply.
+     * The reply can be null if the implementor of the resource takes care itself of sending the reply 
+     *   - this has been added because the parameterClient wants to send immediately after the replay some data
+     * 
+     * @param ctx
+     * @param decoder
+     * @return
+     * @throws WebSocketException
+     */
     public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException;
 
     protected static WebSocketReplyData toAckReply(int requestId) {
