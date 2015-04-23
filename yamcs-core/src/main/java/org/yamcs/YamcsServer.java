@@ -276,7 +276,7 @@ public class YamcsServer {
      * @param args
      * @throws ConfigurationException 
      * @throws IOException 
-     * @throws ChannelException 
+     * @throws YProcessorException 
      * @throws InvalidName 
      * @throws AdapterInactive 
      * @throws WrongPolicy 

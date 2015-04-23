@@ -212,7 +212,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
 
-    public void switchChannel(YProcessor c) throws ChannelException {
+    public void switchYProcessor(YProcessor c) throws YProcessorException {
 	try {
 	    pidrm.switchPrm(c.getParameterRequestManager());
 	} catch (InvalidIdentification e) {

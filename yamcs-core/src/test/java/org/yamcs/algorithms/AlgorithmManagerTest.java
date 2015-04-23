@@ -18,7 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.YProcessor;
-import org.yamcs.ChannelException;
+import org.yamcs.YProcessorException;
 import org.yamcs.YProcFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
@@ -54,7 +54,7 @@ public class AlgorithmManagerTest {
     private Queue<Event> q;
     
     @Before
-    public void beforeEachTest() throws ConfigurationException, ChannelException {
+    public void beforeEachTest() throws ConfigurationException, YProcessorException {
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
         

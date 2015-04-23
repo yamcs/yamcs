@@ -25,8 +25,6 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Generates realtime alarm events automatically, by subscribing to all relevant
  * parameters.
- * <p>
- * <b>Must be declared after {@link YarchChannel}</b>
  */
 public class AlarmReporter extends AbstractService implements ParameterConsumer {
     
@@ -35,28 +33,28 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter=new HashMap<Parameter, ParameterValue>();
     final String yamcsInstance;
-    final String channelName;
+    final String yprocName;
     
     public AlarmReporter(String yamcsInstance) {
         this(yamcsInstance, "realtime");
     }
     
-    public AlarmReporter(String yamcsInstance, String channelName) {
+    public AlarmReporter(String yamcsInstance, String yprocName) {
     	this.yamcsInstance = yamcsInstance;
-    	this.channelName = channelName;    			
+    	this.yprocName = yprocName;    			
         eventProducer=EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("AlarmChecker");
     }
     
     @Override
     public void doStart() {
-    	 YProcessor channel = YProcessor.getInstance(yamcsInstance, channelName);
-    	 if(channel==null) {
-    		 ConfigurationException e = new ConfigurationException("Cannot find a channel '"+channelName+"' in instance '"+yamcsInstance+"'");
+    	 YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
+    	 if(yproc==null) {
+    		 ConfigurationException e = new ConfigurationException("Cannot find a yproc '"+yprocName+"' in instance '"+yamcsInstance+"'");
     		 notifyFailed(e);
     		 return;
     	 }
-         ParameterRequestManagerImpl prm = channel.getParameterRequestManager();
+         ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
          prm.getAlarmChecker().enableReporting(this);
          
          // Auto-subscribe to parameters with alarms

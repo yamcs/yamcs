@@ -4,82 +4,81 @@ package org.yamcs.ui;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
-import org.yamcs.protobuf.YamcsManagement.ChannelRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.YProcessorRequest;
 
-import static org.yamcs.api.Protocol.CHANNEL_INFO_ADDRESS;
-import static org.yamcs.api.Protocol.CHANNEL_CONTROL_ADDRESS;
-import static org.yamcs.api.Protocol.CHANNEL_STATISTICS_ADDRESS;
+import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
+import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
+import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
 
 /**
- * controls channels in yamcs server via hornetq
+ * controls yprocessors in yamcs server via hornetq
  * @author nm
  *
  */
-public class ChannelControlClient implements ConnectionListener {
+public class YProcessorControlClient implements ConnectionListener {
     YamcsConnector yconnector;
-    ChannelListener yamcsMonitor;
+    YProcessorListener yamcsMonitor;
     YamcsClient yclient;
 
-    public ChannelControlClient(YamcsConnector yconnector) {
+    public YProcessorControlClient(YamcsConnector yconnector) {
         this.yconnector=yconnector;
         yconnector.addConnectionListener(this);
     }
 
-    public void setChannelListener(ChannelListener yamcsMonitor) {
+    public void setYProcessorListener(YProcessorListener yamcsMonitor) {
         this.yamcsMonitor=yamcsMonitor;
     }
 
-    public void destroyChannel(String name) throws YamcsApiException {
+    public void destroyYProcessor(String name) throws YamcsApiException {
         // TODO Auto-generated method stub
 
     }
 
-    public void createChannel(String instance, String name, String type, String spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
-        ChannelRequest.Builder crb=ChannelRequest.newBuilder()
+    public void createYProcessor(String instance, String name, String type, String spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
+        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
         .setInstance(instance).setName(name)
         .setType(type).setSpec(spec).setPersistent(persistent);
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(CHANNEL_CONTROL_ADDRESS, "createChannel", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "createYProcessor", crb.build(), null);
     }
 
-    public void connectToChannel(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
-        ChannelRequest.Builder crb=ChannelRequest.newBuilder()
+    public void connectToYProcessor(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
+        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(CHANNEL_CONTROL_ADDRESS, "connectToChannel", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "connectToYProcessor", crb.build(), null);
     }
 
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
-        ChannelRequest.Builder crb=ChannelRequest.newBuilder()
+        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(CHANNEL_CONTROL_ADDRESS, "pauseReplay", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "pauseReplay", crb.build(), null);
     }
 
     public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
-        ChannelRequest.Builder crb=ChannelRequest.newBuilder()
+        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(CHANNEL_CONTROL_ADDRESS, "resumeReplay", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "resumeReplay", crb.build(), null);
     }
 
 
     public void seekArchiveReplay(String instance, String name, long newPosition) throws YamcsApiException, YamcsException  {
-        ChannelRequest.Builder crb=ChannelRequest.newBuilder()
+        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
         .setInstance(instance).setName(name).setSeekTime(newPosition);
-        yclient.executeRpc(CHANNEL_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
     }
 
 
@@ -90,14 +89,14 @@ public class ChannelControlClient implements ConnectionListener {
         try {
             if(yclient==null) {
                 yclient=yconnector.getSession().newClientBuilder()
-                .setRpc(true).setDataConsumer(CHANNEL_INFO_ADDRESS, null).build();
+                .setRpc(true).setDataConsumer(YPROCESSOR_INFO_ADDRESS, null).build();
             } else {
                 yclient.dataConsumer.setMessageHandler(null);
             }
 
-            YamcsClient browser=yconnector.getSession().newClientBuilder().setDataConsumer(CHANNEL_INFO_ADDRESS, CHANNEL_INFO_ADDRESS).setBrowseOnly(true).build();
+            YamcsClient browser=yconnector.getSession().newClientBuilder().setDataConsumer(YPROCESSOR_INFO_ADDRESS, YPROCESSOR_INFO_ADDRESS).setBrowseOnly(true).build();
             yclient=yconnector.getSession().newClientBuilder()
-            .setRpc(true).setDataConsumer(CHANNEL_INFO_ADDRESS, null).build();
+            .setRpc(true).setDataConsumer(YPROCESSOR_INFO_ADDRESS, null).build();
 
             ClientMessage m1;
             while((m1=browser.dataConsumer.receiveImmediate())!=null) {//send all the messages from the queue first
@@ -112,7 +111,7 @@ public class ChannelControlClient implements ConnectionListener {
                     sendUpdate(msg);
                 }
             });
-            YamcsClient yclientStats=yconnector.getSession().newClientBuilder().setDataConsumer(CHANNEL_STATISTICS_ADDRESS, null).build();
+            YamcsClient yclientStats=yconnector.getSession().newClientBuilder().setDataConsumer(YPROCESSOR_STATISTICS_ADDRESS, null).build();
             yclientStats.dataConsumer.setMessageHandler(new MessageHandler() {
                 @Override
                 public void onMessage(ClientMessage msg) {
@@ -134,12 +133,12 @@ public class ChannelControlClient implements ConnectionListener {
     private void sendUpdate(ClientMessage msg) {
         try {
             String eventName=msg.getStringProperty(Protocol.HDR_EVENT_NAME);
-            if("channelUpdated".equals(eventName)) {
-                ChannelInfo ci = (ChannelInfo)Protocol.decode(msg, ChannelInfo.newBuilder());
-                yamcsMonitor.channelUpdated(ci);
-            } else if("channelClosed".equals(eventName)) {
-                ChannelInfo ci = (ChannelInfo)Protocol.decode(msg, ChannelInfo.newBuilder());
-                yamcsMonitor.channelClosed(ci);
+            if("yprocUpdated".equals(eventName)) {
+                YProcessorInfo ci = (YProcessorInfo)Protocol.decode(msg, YProcessorInfo.newBuilder());
+                yamcsMonitor.yProcessorUpdated(ci);
+            } else if("yprocClosed".equals(eventName)) {
+                YProcessorInfo ci = (YProcessorInfo)Protocol.decode(msg, YProcessorInfo.newBuilder());
+                yamcsMonitor.yProcessorClosed(ci);
             } else if("clientUpdated".equals(eventName)) {
                 ClientInfo ci=(ClientInfo)Protocol.decode(msg, ClientInfo.newBuilder());
                 yamcsMonitor.clientUpdated(ci);

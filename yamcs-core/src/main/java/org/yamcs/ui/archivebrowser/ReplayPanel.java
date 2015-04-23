@@ -3,10 +3,10 @@ package org.yamcs.ui.archivebrowser;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
+import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.ui.ChannelControlClient;
+import org.yamcs.ui.YProcessorControlClient;
 import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
@@ -24,13 +24,13 @@ public class ReplayPanel extends JPanel {
     protected ImageIcon replayStartIcon, replayStopIcon;
     protected JButton playStopButton;
     public JButton applySelectionButton;
-    protected ChannelInfo currentChannelInfo;
+    protected YProcessorInfo currentYProcInfo;
     int replayButtonFunction;
     static final int STOP = 0;
     static final int PLAY = 1;
     DataViewer dataViewer;
     
-    ChannelControlClient channelControl;
+    YProcessorControlClient channelControl;
     long currentInstant;
     
     public ReplayPanel() {
@@ -159,12 +159,12 @@ public class ReplayPanel extends JPanel {
         this.dataViewer=dataViewer;
     }
     
-    public void setChannelControlClient(ChannelControlClient cc) {
+    public void setChannelControlClient(YProcessorControlClient cc) {
         this.channelControl=cc;
     }
 
     void playOrStopPressed() {
-        if ( currentChannelInfo != null ) {
+        if ( currentYProcInfo != null ) {
             if ( replayButtonFunction == STOP ) {
                 pauseReplay();
             } else {
@@ -174,7 +174,7 @@ public class ReplayPanel extends JPanel {
     }
     
     public void clearReplayPanel() {
-        currentChannelInfo = null;
+        currentYProcInfo = null;
 
         for ( Component c:getComponents() ) {
             c.setEnabled(false);
@@ -193,12 +193,12 @@ public class ReplayPanel extends JPanel {
      * called by the yamcs monitor when a channelinfo update is received from the server
      * @param ci
      */
-    public void updateChannelInfol(ChannelInfo ci) {
-        if((currentChannelInfo==null)
-                || !ci.getInstance().equals(currentChannelInfo.getInstance()) 
-                || !ci.getName().equals(currentChannelInfo.getName())
+    public void updateChannelInfol(YProcessorInfo ci) {
+        if((currentYProcInfo==null)
+                || !ci.getInstance().equals(currentYProcInfo.getInstance()) 
+                || !ci.getName().equals(currentYProcInfo.getName())
                 || !ci.hasReplayRequest()) return ;
-        currentChannelInfo = ci;
+        currentYProcInfo = ci;
         updateReplayPanel();
     }
 
@@ -206,9 +206,9 @@ public class ReplayPanel extends JPanel {
      * called by yamcs monitor when the selected channel has changed
      * @param ci
      */
-    public void setupReplayPanel(ChannelInfo ci) {
+    public void setupReplayPanel(YProcessorInfo ci) {
         if(ci.hasReplayRequest()) {
-            currentChannelInfo = ci;
+            currentYProcInfo = ci;
             if ( isVisible() ) {
                 playStopButton.setEnabled(true);
                 replayCurrentLabel.setText("");
@@ -224,7 +224,7 @@ public class ReplayPanel extends JPanel {
     }
 
     private void updateReplayPanel() {
-        if ( currentChannelInfo.getReplayState()==ReplayState.RUNNING ) {
+        if ( currentYProcInfo.getReplayState()==ReplayState.RUNNING ) {
             if ( replayStopIcon == null ) {
                 playStopButton.setText("Stop");
             } else {
@@ -242,11 +242,11 @@ public class ReplayPanel extends JPanel {
             replayButtonFunction = PLAY;
         }
 
-        ReplayRequest rr=currentChannelInfo.getReplayRequest();
+        ReplayRequest rr=currentYProcInfo.getReplayRequest();
         replayStartLabel.setText(TimeEncoding.toString(rr.getStart()));
         replayStopLabel.setText(TimeEncoding.toString(rr.getStop()));
         replaySpeedLabel.setText(getSpeedLabel(rr.getSpeed()));
-        channelNameLabel.setText(currentChannelInfo.getName());
+        channelNameLabel.setText(currentYProcInfo.getName());
 
         // draw start/stop locators
         dataViewer.getDataView().setStartLocator(rr.getStart());
@@ -268,10 +268,10 @@ public class ReplayPanel extends JPanel {
     public void updateStatistics(Statistics stats) {
         // invoked frequently by YamcsMonitor.updateTmStatsTable()
 
-        if ((currentChannelInfo != null) &&
-            currentChannelInfo.hasReplayRequest() &&
-            currentChannelInfo.getInstance().equals(stats.getInstance()) &&
-            currentChannelInfo.getName().equals(stats.getChannelName())) {
+        if ((currentYProcInfo != null) &&
+            currentYProcInfo.hasReplayRequest() &&
+            currentYProcInfo.getInstance().equals(stats.getInstance()) &&
+            currentYProcInfo.getName().equals(stats.getYProcessorName())) {
 
             // find the timestamp of the most recent packet received
             long pos = 0;
@@ -289,32 +289,32 @@ public class ReplayPanel extends JPanel {
 
     void pauseReplay() {
         try {
-            channelControl.pauseArchiveReplay(currentChannelInfo.getInstance(), currentChannelInfo.getName());
+            channelControl.pauseArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
         } catch (Exception e) {
-            debugLog("exception when stopping replay for channel "+currentChannelInfo.getName()+" :"+e.getMessage());
+            debugLog("exception when stopping replay for channel "+currentYProcInfo.getName()+" :"+e.getMessage());
         }
     }
 
    
     void resumeReplay() {
         if ( currentInstant == TimeEncoding.INVALID_INSTANT ) {
-            debugLog("start replay from " + TimeEncoding.toString(currentChannelInfo.getReplayRequest().getStart()));
+            debugLog("start replay from " + TimeEncoding.toString(currentYProcInfo.getReplayRequest().getStart()));
         } else {
             debugLog("start replay from " + TimeEncoding.toString(currentInstant));
         }
         try {
-            channelControl.resumeArchiveReplay(currentChannelInfo.getInstance(), currentChannelInfo.getName());
+            channelControl.resumeArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
         } catch (Exception e) {
-            debugLog("exception when starting replay for channel "+currentChannelInfo.getInstance()+"."+currentChannelInfo.getName()+" :"+e.getMessage());
+            debugLog("exception when starting replay for channel "+currentYProcInfo.getInstance()+"."+currentYProcInfo.getName()+" :"+e.getMessage());
         }
     }
 
     void seekReplay(long newPosition) {
         debugLog("seeking replay to " + TimeEncoding.toString(newPosition));
         try {
-            channelControl.seekArchiveReplay(currentChannelInfo.getInstance(), currentChannelInfo.getName(), newPosition);
+            channelControl.seekArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName(), newPosition);
         } catch (Exception e) {
-            debugLog("exception when starting replay for channel "+currentChannelInfo.getInstance()+"."+currentChannelInfo.getName()+" :"+e.getMessage());
+            debugLog("exception when starting replay for channel "+currentYProcInfo.getInstance()+"."+currentYProcInfo.getName()+" :"+e.getMessage());
         }
     }
     
@@ -322,8 +322,8 @@ public class ReplayPanel extends JPanel {
         System.err.println(string);
         
     }
-    public void channelStateChanged(ChannelInfo ci) {
-        currentChannelInfo=ci;
+    public void channelStateChanged(YProcessorInfo ci) {
+        currentYProcInfo=ci;
         updateReplayPanel();
     }
 }

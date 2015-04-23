@@ -1,7 +1,7 @@
 package org.yamcs.management;
 
 
-public interface ChannelControl {
+public interface YProcessorControl {
 	public String getName();
 	public String getType();
 	public String getCreator();

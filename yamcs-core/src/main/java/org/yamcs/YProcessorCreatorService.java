@@ -24,7 +24,7 @@ public class YProcessorCreatorService extends AbstractService {
     RealtimeParameterService realtimeParameterService;
     
     
-    public YProcessorCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, ChannelException, ParseException {
+    public YProcessorCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, YProcessorException, ParseException {
 	this.yamcsInstance = yamcsInstance;
 
 	if(!config.containsKey("type")) {

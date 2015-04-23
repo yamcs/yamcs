@@ -13,7 +13,7 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.ChannelException;
+import org.yamcs.YProcessorException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -74,7 +74,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     volatile long dataCount=0;
     XtceDb xtceDb;
 
-    public ReplayService(String instance, String spec) throws ChannelException, ConfigurationException {
+    public ReplayService(String instance, String spec) throws YProcessorException, ConfigurationException {
 	xtceDb = XtceDbFactory.getInstance(instance);
 	try {
 	    String[] parts = spec.split(" ");
@@ -86,7 +86,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 		start = Long.parseLong(parts[1]);
 		stop = Long.parseLong(parts[2]);
 	    } catch (NumberFormatException e) {
-		throw new ChannelException("could not parse:" +e);
+		throw new YProcessorException("could not parse:" +e);
 	    }
 	    try {
 		if("STOP".equals(parts[3])) {
@@ -95,7 +95,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 		    endAction=EndAction.valueOf(parts[3]);
 		}
 	    } catch (IllegalArgumentException e) {
-		throw new ChannelException(e.getMessage());
+		throw new YProcessorException(e.getMessage());
 	    }
 
 	    int cnt=4;
@@ -111,7 +111,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 		cnt++;
 		speed=ReplaySpeed.newBuilder().setType(ReplaySpeedType.FIXED_DELAY).setParam(Float.parseFloat(parts[cnt++])).build();
 	    } else {
-		throw new ChannelException("speed has to be one of REALTIME, AFAP or FIXED_DELAY");
+		throw new YProcessorException("speed has to be one of REALTIME, AFAP or FIXED_DELAY");
 	    }
 
 	    if ( parts.length > cnt ) {
@@ -120,7 +120,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 		    packets[i - cnt] = parts[i];
 		}
 	    } else {
-		throw new ChannelException("no packets specified");
+		throw new YProcessorException("no packets specified");
 	    }
 
 	    ReplayRequest.Builder rrbuilder=ReplayRequest.newBuilder().setStart(start).setStop(stop).
@@ -148,11 +148,11 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 	    yclient.dataConsumer.setMessageHandler(this);
 
 	} catch (HornetQException e) {
-	    throw new ChannelException(e.toString());
+	    throw new YProcessorException(e.toString());
 	} catch (YamcsException e) {
-	    throw new ChannelException(e.toString());
+	    throw new YProcessorException(e.toString());
 	} catch (YamcsApiException e) {
-	    throw new ChannelException(e.getMessage(), e);
+	    throw new YProcessorException(e.getMessage(), e);
 	}
     }
 

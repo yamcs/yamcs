@@ -44,7 +44,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class SystemParametersCollector extends AbstractService implements Runnable {
     static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
     static long frequencyMillisec=1000;
-    List<SystemParametersProvider> providers = new CopyOnWriteArrayList<SystemParametersProvider>();
+    List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
     final static String PP_GROUP =  "yamcs";
     final static String STREAM_NAME="sys_param";
     final static public String SERVER_ID_KEY="serverId";
@@ -124,7 +124,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     @Override
     public void run() {
         Collection<ParameterValue> params = new ArrayList<ParameterValue>();
-        for(SystemParametersProvider p: providers) {
+        for(SystemParametersProducer p: providers) {
             try {
                 Collection<ParameterValue> pvc =p.getSystemParameters();
                 params.addAll(pvc);
@@ -155,7 +155,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         stream.emitTuple(t);
     }
 
-    public void registerProvider(SystemParametersProvider p, Collection<Parameter> params) {
+    public void registerProvider(SystemParametersProducer p, Collection<Parameter> params) {
         log.debug("Registering system variables provider {}", p);
         providers.add(p);
     }

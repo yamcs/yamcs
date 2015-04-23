@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
-public class YamcsMonitor implements ChannelListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
-	ChannelTableModel channelTableModel=new ChannelTableModel();
+public class YamcsMonitor implements YProcessorListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
+	YProcTableModel channelTableModel=new YProcTableModel();
 	ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
 	LinkTableModel linkTableModel=new LinkTableModel(timer);
 	ClientTableModel clientTableModel;
@@ -47,7 +47,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	private JMenu clientsPopupMenu;
 	private JTable linkTable, channelTable, clientsTable;
 	private JComboBox channelChooser;
-	private JTextField newChannelName;
+	private JTextField newYProcName;
 	CommandQueueDisplay commandQueueDisplay;
 	JScrollPane linkTableScroll, channelTableScroll;
 	private Set<String> allChannels=new HashSet<String>();//stores instance.channelName for all channels to populate the connectToChannel popup menu
@@ -64,7 +64,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	private YamcsConnector yconnector;
 	private LinkControlClient linkControl;
     private ArchiveIndexReceiver indexReceiver;
-    private ChannelControlClient channelControl;
+    private YProcessorControlClient channelControl;
 
 
 	static YamcsMonitor theApp;
@@ -88,8 +88,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		yconnector.addConnectionListener(this);
 		
 		
-		channelControl = new ChannelControlClient(yconnector);
-		channelControl.setChannelListener(this);
+		channelControl = new YProcessorControlClient(yconnector);
+		channelControl.setYProcessorListener(this);
 		linkControl=new LinkControlClient(yconnector);
 		linkControl.setLinkListener(this);
 		
@@ -307,7 +307,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                     if (dcmi != null) dcmi.setEnabled(false);
                 } else {
                     selectedRow = channelTable.convertRowIndexToModel(selectedRow);
-                    final ChannelInfo ci = channelTableModel.getChannelInfo(selectedRow);
+                    final YProcessorInfo ci = channelTableModel.getYProcessorInfo(selectedRow);
                     commandQueueDisplay.setChannel(ci.getInstance(), ci.getName());
                     if (dcmi != null) dcmi.setEnabled(!"lounge".equalsIgnoreCase(ci.getType()));
 
@@ -470,10 +470,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
-        newChannelName = new JTextField();
+        newYProcName = new JTextField();
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill=GridBagConstraints.HORIZONTAL; c.weightx = 1.0;
-        gridbag.setConstraints(newChannelName, c);
-        createPanel.add(newChannelName);
+        gridbag.setConstraints(newYProcName, c);
+        createPanel.add(newYProcName);
         
         label = new JLabel("Type:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
@@ -481,7 +481,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
         
-        ArrayList<ChannelWidget> widgets = new ArrayList<ChannelWidget>();
+        ArrayList<YProcessorWidget> widgets = new ArrayList<YProcessorWidget>();
         try {
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
             if(yconf.containsKey("channelWidgets")) {
@@ -492,11 +492,11 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
                     Map m = (Map) ywidget;
                     String channelType = YConfiguration.getString(m, "type");
                     String widgetClass = YConfiguration.getString(m, "class");
-                    ChannelWidget widget = new YObjectLoader<ChannelWidget>().loadObject(widgetClass, channelType);
+                    YProcessorWidget widget = new YObjectLoader<YProcessorWidget>().loadObject(widgetClass, channelType);
                     widgets.add(widget);
                 }
             } else {
-                widgets.add(new ArchiveChannelWidget("Archive"));
+                widgets.add(new ArchiveYProcWidget("Archive"));
             }
         } catch(ConfigurationException e) {
             throw new RuntimeException(e);
@@ -522,8 +522,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH; gridbag.setConstraints(specPanel, c);
         createPanel.add(specPanel);
-        for (ChannelWidget widget:widgets) {
-            widget.setSuggestedNameComponent(newChannelName);
+        for (YProcessorWidget widget:widgets) {
+            widget.setSuggestedNameComponent(newYProcName);
             specPanel.add(widget.createConfigurationPanel(), widget.channelType);
         }
         // when a channel type is selected, bring the appropriate widget to the front
@@ -531,7 +531,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
             @Override
             public void actionPerformed( ActionEvent ae ) {
                 specLayout.show(specPanel, channelChooser.getSelectedItem().toString());
-                ChannelWidget widget = (ChannelWidget)channelChooser.getSelectedItem();
+                YProcessorWidget widget = (YProcessorWidget)channelChooser.getSelectedItem();
                 widget.activate();
             }
         });
@@ -619,7 +619,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	protected void destroyChannel( int selectedRow ) {
 		String name=(String)channelTableModel.getValueAt(selectedRow, 0);
 		try {
-			channelControl.destroyChannel(name);
+			channelControl.destroyYProcessor(name);
 		} catch (YamcsApiException e) {
 			showMessage("Cannot destroy channel '"+name+" because the channel was already closed");
 		}
@@ -632,8 +632,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			showMessage("Please select at least one client to create the channel for.");
 			return;
 		}
-		String name=newChannelName.getText();
-		ChannelWidget type = (ChannelWidget)channelChooser.getSelectedItem();
+		String name=newYProcName.getText();
+		YProcessorWidget type = (YProcessorWidget)channelChooser.getSelectedItem();
 		String spec = type.getSpec();
 		if(hasAdminRights) {
 			persistent=persistentCheckBox.isSelected();
@@ -646,7 +646,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 		}
 		try {
 		//	archiveWindow.setBusyPointer();
-			channelControl.createChannel(selectedInstance, name, type.toString(), spec, persistent, clients);
+			channelControl.createYProcessor(selectedInstance, name, type.toString(), spec, persistent, clients);
 		} catch (Exception e) {
 			showMessage(e.getMessage());
 		}
@@ -759,8 +759,8 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 
 	//------------- end of interface ConnectionListener
 	
-    public ChannelWidget getActiveChannelWidget() {
-        return (ChannelWidget) channelChooser.getSelectedItem();
+    public YProcessorWidget getActiveChannelWidget() {
+        return (YProcessorWidget) channelChooser.getSelectedItem();
     }
 
 	private void connect(final YamcsConnectData ycd)	{
@@ -794,10 +794,10 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 			statsTableModel.setRowCount(0);
 		} else {
 			final int modelSelectedRow = channelTable.convertRowIndexToModel(selectedRow);
-			final ChannelInfo ci = channelTableModel.getChannelInfo(modelSelectedRow);
+			final YProcessorInfo ci = channelTableModel.getYProcessorInfo(modelSelectedRow);
 			
 			//should perhaps setup a mechanism to send stats only for the selected channel
-			if(!ci.getInstance().equals(stats.getInstance()) || !ci.getName().equals(stats.getChannelName())) return;
+			if(!ci.getInstance().equals(stats.getInstance()) || !ci.getName().equals(stats.getYProcessorName())) return;
 			
 
 			try {
@@ -849,7 +849,7 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 				}
 				try {
 				    String[] in=instanceDotName.split("\\.",2);
-				    channelControl.connectToChannel(in[0], in[1], clients);
+				    channelControl.connectToYProcessor(in[0], in[1], clients);
 				} catch (Exception e) {
 					showMessage(e.toString());
 				}
@@ -876,13 +876,13 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	 * Called by the server when a channel has been added or changed
 	 */
 	@Override
-    public void channelUpdated(final ChannelInfo ci) {
+    public void yProcessorUpdated(final YProcessorInfo ci) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 allChannels.add(ci.getInstance()+"."+ci.getName());
                 if(!ci.getInstance().equals(selectedInstance)) return;
-                boolean added=channelTableModel.upsertChannel(ci);
+                boolean added=channelTableModel.upsertYProc(ci);
                 buildClientListPopup();
                 archiveBrowserSelector.archivePanel.replayPanel.updateChannelInfol(ci);
                 if(added && ci.getHasCommanding() && hasAdminRights) {
@@ -895,13 +895,13 @@ public class YamcsMonitor implements ChannelListener, ConnectionListener, Action
 	 * Called by the server when a channel has been closed
 	 */
 	@Override
-    public void channelClosed(final ChannelInfo ci) {
+    public void yProcessorClosed(final YProcessorInfo ci) {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 		    @Override
 		    public void run() {
                 allChannels.remove(ci.getInstance()+"."+ci.getName());
                 if(!ci.getInstance().equals(selectedInstance)) return;
-                channelTableModel.removeChannel(ci.getInstance(), ci.getName());
+                channelTableModel.removeYProc(ci.getInstance(), ci.getName());
                 commandQueueDisplay.removeChannel(ci.getInstance(), ci.getName());
 				buildClientListPopup();
 			}

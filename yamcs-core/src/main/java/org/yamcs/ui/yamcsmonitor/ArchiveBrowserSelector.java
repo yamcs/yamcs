@@ -2,7 +2,7 @@ package org.yamcs.ui.yamcsmonitor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.ui.ChannelControlClient;
+import org.yamcs.ui.YProcessorControlClient;
 import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;
@@ -28,7 +28,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
 
-    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ChannelControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
+    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, YProcessorControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
 
@@ -120,9 +120,9 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 showError("Select the range you want to apply. Then try again");
             } else {
                 List<String> packets = archivePanel.getSelectedPackets("tm");
-                ChannelWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
-                if(widget instanceof ArchiveChannelWidget) {
-                    ((ArchiveChannelWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
+                YProcessorWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
+                if(widget instanceof ArchiveYProcWidget) {
+                    ((ArchiveYProcWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
                     showInfo("A new HRDP selection was applied.\n" +
                             "Look at the \"New Channel\" section in the Yamcs Monitor window to check.");
                 } else {

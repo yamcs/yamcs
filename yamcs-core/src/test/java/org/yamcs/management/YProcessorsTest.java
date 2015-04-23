@@ -12,18 +12,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YProcessor;
-import org.yamcs.ChannelClient;
-import org.yamcs.ChannelException;
+import org.yamcs.YProcessorClient;
+import org.yamcs.YProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.ui.ChannelControlClient;
-import org.yamcs.ui.ChannelListener;
+import org.yamcs.ui.YProcessorControlClient;
+import org.yamcs.ui.YProcessorListener;
 
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
+import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -31,11 +31,11 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import static org.junit.Assert.*;
 
 
-public class ChannelsTest {
+public class YProcessorsTest {
    static EmbeddedHornetQ hornetServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
-        YConfiguration.setup("ChannelsTest");
+        YConfiguration.setup("YProcessorsTest");
         hornetServer=YamcsServer.setupHornet();
         ManagementService.setup(true,true);
     }
@@ -52,109 +52,109 @@ public class ChannelsTest {
     }
     
     @Test
-    public void createChannelWithoutClient() throws Exception {
+    public void createYProcessorWithoutClient() throws Exception {
         YamcsConnector yconnector=new YamcsConnector();
-        ChannelControlClient ccc=new ChannelControlClient(yconnector);
-        ccc.setChannelListener(new MyListener("ChannelsTest"));
+        YProcessorControlClient ccc=new YProcessorControlClient(yconnector);
+        ccc.setYProcessorListener(new MyListener("YProcessorsTest"));
         yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
 
         try {
-            ccc.createChannel("ChannelsTest0", "test1", "dummy", "test", false, new int[]{10,14});
+            ccc.createYProcessor("yproctest0", "test1", "dummy", "test", false, new int[]{10,14});
             assertTrue("YamcsException was expected", false);
         } catch(YamcsException e) {
-            assertEquals("createChannel invoked with a list full of invalid client ids", e.getMessage());
+            assertEquals("createYProcessor invoked with a list full of invalid client ids", e.getMessage());
         }
         ccc.close();
         yconnector.disconnect();
     }
 
     @Test
-    public void createAndSwitchChannel() throws Exception {
+    public void createAndSwitchYProc() throws Exception {
         YamcsConnector yconnector=new YamcsConnector();
-        ChannelControlClient ccc=new ChannelControlClient(yconnector);
-        MyListener ml=new MyListener("ChannelsTest1");
-        ccc.setChannelListener(ml);
+        YProcessorControlClient ccc=new YProcessorControlClient(yconnector);
+        MyListener ml=new MyListener("yproctest1");
+        ccc.setYProcessorListener(ml);
         Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
         f.get(5, TimeUnit.SECONDS);
         
-        ccc.createChannel("ChannelsTest1", "channel1", "dummy", "", true, new int[0]);
+        ccc.createYProcessor("yproctest1", "yproc1", "dummy", "", true, new int[0]);
         
-        MyChannelClient client=new MyChannelClient();
-        YProcessor chan=YProcessor.getInstance("ChannelsTest1", "channel1");
-        assertNotNull(chan);
+        MyYProcClient client=new MyYProcClient();
+        YProcessor yp=YProcessor.getInstance("yproctest1", "yproc1");
+        assertNotNull(yp);
         
-        chan.connect(client);
-        client.channel=chan;
+        yp.connect(client);
+        client.yproc=yp;
         
-        ManagementService.getInstance().registerClient("ChannelsTest1", "channel1", client);
+        ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
         
-        ccc.createChannel("ChannelsTest1", "channel2", "dummy", "", false, new int[]{1});
+        ccc.createYProcessor("yproctest1", "yproc2", "dummy", "", false, new int[]{1});
         
-        Thread.sleep(3000); //to make sure that this event will not overwrite the previous ChannelsTest1,channel1 one 
-        ccc.connectToChannel("ChannelsTest1", "channel1", new int[]{1}); //this one should trigger the closing of non permanent channel2 because no more client connected
-        chan.disconnect(client);
+        Thread.sleep(3000); //to make sure that this event will not overwrite the previous yproctest1,yproc1 one 
+        ccc.connectToYProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
+        yp.disconnect(client);
         ManagementService.getInstance().unregisterClient(1);
-        chan.quit();
+        yp.quit();
         
         Thread.sleep(3000);//to allow for events to come
         ccc.close();
         yconnector.disconnect();
         
-        assertEquals(2, ml.channelUpdated.size());
-        ChannelInfo ci=ml.channelUpdated.get("channel1");
-        assertEquals("ChannelsTest1",ci.getInstance());
-        assertEquals("channel1",ci.getName());
+        assertEquals(2, ml.yprocUpdated.size());
+        YProcessorInfo ci=ml.yprocUpdated.get("yproc1");
+        assertEquals("yproctest1",ci.getInstance());
+        assertEquals("yproc1",ci.getName());
         assertEquals("dummy",ci.getType());
         assertEquals(ServiceState.RUNNING, ci.getState());
         
-        ci=ml.channelUpdated.get("channel2");
-        assertEquals("ChannelsTest1",ci.getInstance());
-        assertEquals("channel2",ci.getName());
+        ci=ml.yprocUpdated.get("yproc2");
+        assertEquals("yproctest1",ci.getInstance());
+        assertEquals("yproc2",ci.getName());
         assertEquals("dummy",ci.getType());
         assertEquals("",ci.getSpec());
         assertEquals(ServiceState.RUNNING, ci.getState());
         
         
-        assertEquals(2, ml.channelClosedList.size());
-        ci=ml.channelClosedList.get(0);
-        assertEquals("ChannelsTest1",ci.getInstance());
-        assertEquals("channel2",ci.getName());
+        assertEquals(2, ml.yprocClosedList.size());
+        ci=ml.yprocClosedList.get(0);
+        assertEquals("yproctest1",ci.getInstance());
+        assertEquals("yproc2",ci.getName());
         
-        ci=ml.channelClosedList.get(1);
-        assertEquals("ChannelsTest1",ci.getInstance());
-        assertEquals("channel1",ci.getName());
+        ci=ml.yprocClosedList.get(1);
+        assertEquals("yproctest1",ci.getInstance());
+        assertEquals("yproc1",ci.getName());
         
         
         assertEquals(3, ml.clientUpdatedList.size());
         
         ClientInfo cli=ml.clientUpdatedList.get(0);
-        assertEquals("ChannelsTest1",cli.getInstance());
-        assertEquals("channel1",cli.getChannelName());
+        assertEquals("yproctest1",cli.getInstance());
+        assertEquals("yproc1",cli.getYProcessorName());
         assertEquals(1,cli.getId());
         assertEquals("random-test-user",cli.getUsername());
         assertEquals("random-app-name",cli.getApplicationName());
         
         cli=ml.clientUpdatedList.get(1);
-        assertEquals("ChannelsTest1",cli.getInstance());
-        assertEquals("channel2",cli.getChannelName());
+        assertEquals("yproctest1",cli.getInstance());
+        assertEquals("yproc2",cli.getYProcessorName());
         assertEquals(1,cli.getId());
         
         cli=ml.clientUpdatedList.get(2);
-        assertEquals("ChannelsTest1",cli.getInstance());
-        assertEquals("channel1",cli.getChannelName());
+        assertEquals("yproctest1",cli.getInstance());
+        assertEquals("yproc1",cli.getYProcessorName());
         assertEquals(1,cli.getId());
         
         assertEquals(1,ml.clientDisconnectedList.size());
         cli=ml.clientDisconnectedList.get(0);
-        assertEquals("ChannelsTest1",cli.getInstance());
-        assertEquals("channel1",cli.getChannelName());
+        assertEquals("yproctest1",cli.getInstance());
+        assertEquals("yproc1",cli.getYProcessorName());
         assertEquals(1,cli.getId());
        
     }
     
-    static class MyListener implements ChannelListener {
-        Map<String, ChannelInfo> channelUpdated=Collections.synchronizedMap(new HashMap<String,ChannelInfo>());
-        List<ChannelInfo> channelClosedList=Collections.synchronizedList(new ArrayList<ChannelInfo>());
+    static class MyListener implements YProcessorListener {
+        Map<String, YProcessorInfo> yprocUpdated=Collections.synchronizedMap(new HashMap<String,YProcessorInfo>());
+        List<YProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<YProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         List<ClientInfo> clientDisconnectedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         String instance;
@@ -177,16 +177,16 @@ public class ChannelsTest {
         }
 
         @Override
-        public void channelUpdated(ChannelInfo ci) {
+        public void yProcessorUpdated(YProcessorInfo ci) {
             if(instance.equals(ci.getInstance())) {
-                channelUpdated.put(ci.getName(), ci);
+                yprocUpdated.put(ci.getName(), ci);
             }
         }
 
         @Override
-        public void channelClosed(ChannelInfo ci) {
+        public void yProcessorClosed(YProcessorInfo ci) {
             if(instance.equals(ci.getInstance()))
-                channelClosedList.add(ci);
+                yprocClosedList.add(ci);
         }
 
         @Override
@@ -210,18 +210,18 @@ public class ChannelsTest {
         }
     }
 
-    static class MyChannelClient implements ChannelClient {
-        YProcessor channel;
+    static class MyYProcClient implements YProcessorClient {
+        YProcessor yproc;
 
         @Override
-        public void switchChannel(YProcessor c) throws ChannelException {
-            channel.disconnect(this);
+        public void switchYProcessor(YProcessor c) throws YProcessorException {
+            yproc.disconnect(this);
             c.connect(this);
-            channel=c;
+            yproc=c;
         }
 
         @Override
-        public void channelQuit() {
+        public void yProcessorQuit() {
             // TODO Auto-generated method stub
             
         }
@@ -235,12 +235,5 @@ public class ChannelsTest {
         public String getApplicationName() {
             return "random-app-name";
         }
-/*
-        @Override
-        public void connectToChannel(Channel c) throws ChannelException {
-            this.channel=c;
-            c.connect(this);
-        }
-  */      
     }
 }

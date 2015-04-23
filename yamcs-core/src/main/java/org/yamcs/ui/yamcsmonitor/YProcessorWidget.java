@@ -4,15 +4,15 @@ import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 
 /**
- * Component to be displayed when the matching channel type is selected from
+ * Component to be displayed when the matching yproc type is selected from
  * within the Yamcs Monitor
  */
-public abstract class ChannelWidget {
+public abstract class YProcessorWidget {
     
     protected String channelType;
     protected JTextComponent nameComponent;
     
-    public ChannelWidget(String channelType) {
+    public YProcessorWidget(String channelType) {
         this.channelType = channelType;
     }
 

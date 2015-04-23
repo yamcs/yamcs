@@ -13,11 +13,11 @@ public class CommandQueueControlImpl extends StandardMBean  implements CommandQu
     CommandQueueManager cqm;
     CommandQueueInfo cqi;
     
-    public CommandQueueControlImpl(String instance, String channelName, CommandQueueManager cqm, CommandQueue queue)  throws NotCompliantMBeanException {
+    public CommandQueueControlImpl(String instance, String yprocName, CommandQueueManager cqm, CommandQueue queue)  throws NotCompliantMBeanException {
         super(CommandQueueControl.class);
         this.queue=queue;
         this.cqm=cqm;
-        cqi=CommandQueueInfo.newBuilder().setInstance(instance).setChannelName(channelName)
+        cqi=CommandQueueInfo.newBuilder().setInstance(instance).setYProcessorName(yprocName)
             .setName(queue.getName()).setState(queue.getState()).build();
     }
 

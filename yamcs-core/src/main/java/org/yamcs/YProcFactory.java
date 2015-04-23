@@ -36,11 +36,11 @@ public class YProcFactory {
      * @param creator
      * @param spec
      * @return
-     * @throws ChannelException
+     * @throws YProcessorException
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    static public YProcessor create(String yamcsInstance, String name, String type, String creator, String spec) throws ChannelException,  ConfigurationException {
+    static public YProcessor create(String yamcsInstance, String name, String type, String creator, String spec) throws YProcessorException,  ConfigurationException {
 	boolean initialized = false;
 	TcTmService tctms=null;
 	Map<String,Object> channelConfig = null;
@@ -114,14 +114,14 @@ public class YProcFactory {
 	return new YObjectLoader<T>().loadObject(className, params.toArray());
     }
 
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ChannelException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws YProcessorException, ConfigurationException {
 	return create(instance, name, type, tctms, creator, null);
     }
     /**
      *  Create a Channel by specifying the service.
      *  The type is not used in this case, except for showing it in the yamcs monitor.
      **/
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ChannelException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws YProcessorException, ConfigurationException {
 	YProcessor channel=new YProcessor(instance, name, type, creator);
 
 	channel.init(tctms, config);

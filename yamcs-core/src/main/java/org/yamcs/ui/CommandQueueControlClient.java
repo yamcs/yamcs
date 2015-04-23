@@ -23,7 +23,7 @@ import org.yamcs.protobuf.Commanding.CommandQueueRequest;
 
 /**
  * Controls yamcs command queues via Hornet
- * Allows to register one CommandQueueListener per (instance, channel)
+ * Allows to register one CommandQueueListener per (instance, yprocessor)
  * 
  * @author nm
  *
@@ -112,11 +112,6 @@ public class CommandQueueControlClient implements ConnectionListener {
      * Send a message to the server to change the queue state.
      * If newState=ENABLED, then changing the queue state may result in some commands being sent.
      *  The rebuild flag indicates that the command shall be rebuild (new timestamp, new pvt checks, etc)
-     * @param instance
-     * @param channelName
-     * @param name
-     * @param newState
-     * @param rebuild
      */
     public void setQueueState(CommandQueueInfo cqi, boolean rebuild) throws YamcsApiException, YamcsException {
     	 CommandQueueRequest cqr=CommandQueueRequest.newBuilder().setQueueInfo(cqi).setRebuild(rebuild).build();

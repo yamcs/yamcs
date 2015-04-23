@@ -33,7 +33,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     final ParameterWithIdConsumer listener;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<Parameter, NamedObjectId>>();
-
+    
+    
 
     public ParameterWithIdRequestHelper(ParameterRequestManagerImpl prm, ParameterWithIdConsumer listener) {
 	this.prm = prm;

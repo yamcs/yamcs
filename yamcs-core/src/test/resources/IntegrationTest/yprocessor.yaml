@@ -31,7 +31,7 @@ realtime:
          args:
             libraries:
               - mdb/algolib.js      
-       - class: org.yamcs.parameter.SystemParametersChannelProvider
+       - class: org.yamcs.parameter.SystemParametersProvider
        - class: org.yamcs.parameter.SoftwareParameterManager
     config:
         #check alarms and also enable the alarm server (that keeps track of unacknoledged alarms)

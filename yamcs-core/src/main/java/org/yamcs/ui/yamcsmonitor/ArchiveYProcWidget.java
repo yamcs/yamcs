@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 
-public class ArchiveChannelWidget extends ChannelWidget {
+public class ArchiveYProcWidget extends YProcessorWidget {
     String archiveInstance;
     long start, stop;
     JList packetList;
@@ -18,7 +18,7 @@ public class ArchiveChannelWidget extends ChannelWidget {
     JCheckBox loopButton;
     JRadioButton speedRealtimeRadio, speedFixedRadio;
     
-    public ArchiveChannelWidget(String channelType) {
+    public ArchiveYProcWidget(String channelType) {
         super(channelType);
     }
 

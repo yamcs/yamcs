@@ -53,7 +53,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
     Set<String>ppGroups=new HashSet<String>();
     Set<Parameter> ppSet=new HashSet<Parameter>();
 
-    YProcessor channel;
+    YProcessor yproc;
     String instance;
     boolean hasTm, hasPp;
 
@@ -82,11 +82,11 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         MyTcTmService tctms=new MyTcTmService();
 
         try {
-            channel = YProcFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
+            yproc = YProcFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
         } catch (Exception e) {
             throw new YamcsException("cannot create channel", e);
         }
-        prm = channel.getParameterRequestManager();
+        prm = yproc.getParameterRequestManager();
         pidrm= new ParameterWithIdRequestHelper(prm, this);
 
         //add all parameters to the ParameterManager and later one query which tm packets or pp groups are subscribed
@@ -99,7 +99,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         }
 
         if(xtcedb!=null) {
-            tmProcessor=channel.getTmProcessor();
+            tmProcessor=yproc.getTmProcessor();
             Subscription subscription=tmProcessor.getSubscription();
             Collection<SequenceContainer> containers =subscription.getInheritingContainers(xtcedb.getRootSequenceContainer());
 
@@ -128,7 +128,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         hasTm=!tmPartitions.isEmpty();
         hasPp=!ppGroups.isEmpty();
 
-        channel.start();
+        yproc.start();
     }
 
     @Override
@@ -225,9 +225,9 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
     @Override
     public void reset() {
-        if(channel!=null) {
-            channel.quit();
-            channel=null;
+        if(yproc!=null) {
+            yproc.quit();
+            yproc=null;
         }
     }
 

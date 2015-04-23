@@ -38,7 +38,7 @@ public class WebSocketServerHandler {
 
     //these two are valid after the socket has been upgraded and they are practical final
     Channel channel;
-    WebSocketChannelClient channelClient;
+    WebSocketYProcClient channelClient;
 
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
@@ -47,7 +47,7 @@ public class WebSocketServerHandler {
 	if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
 	if(channelClient==null) {
 	    String applicationName = determineApplicationName(req);
-	    this.channelClient=new WebSocketChannelClient(yamcsInstance, this, applicationName);
+	    this.channelClient=new WebSocketYProcClient(yamcsInstance, this, applicationName);
 	}
 
 	this.channel=ctx.channel();

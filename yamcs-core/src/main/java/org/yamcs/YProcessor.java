@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +79,7 @@ public class YProcessor {
     private boolean parameterCacheAll = false;
 
     static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
-    static List<ChannelListener> listeners=new CopyOnWriteArrayList<ChannelListener>(); //send notifications for added and removed channels to this
+    static List<YProcessorListener> listeners=new CopyOnWriteArrayList<YProcessorListener>(); //send notifications for added and removed channels to this
 
     private boolean quitting;
     //a synchronous channel waits for all the clients to deliver tm packets and parameters
@@ -91,11 +90,11 @@ public class YProcessor {
     final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     
     @GuardedBy("this")
-    HashSet<ChannelClient> connectedClients= new HashSet<ChannelClient>();
+    HashSet<YProcessorClient> connectedClients= new HashSet<YProcessorClient>();
 
-    public YProcessor(String yamcsInstance, String name, String type, String creator) throws ChannelException {
+    public YProcessor(String yamcsInstance, String name, String type, String creator) throws YProcessorException {
 	if((name==null) || "".equals(name)) {
-	    throw new ChannelException("The channel name can not be empty");
+	    throw new YProcessorException("The channel name can not be empty");
 	}
 	log.info("creating a new channel name="+name+" type="+type);
 	this.yamcsInstance=yamcsInstance;
@@ -106,11 +105,11 @@ public class YProcessor {
 
   
     @SuppressWarnings("unchecked")
-    void init(TcTmService tctms, Map<String, Object> config) throws ChannelException, ConfigurationException {
+    void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
 	xtcedb=XtceDbFactory.getInstance(yamcsInstance);
 
 	synchronized(instances) {
-	    if(instances.containsKey(key(yamcsInstance,name))) throw new ChannelException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
+	    if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
 	    if(config!=null) {
 		for(String c: config.keySet()) {
 		    if("alarm".equals(c)) {
@@ -171,9 +170,9 @@ public class YProcessor {
 
 	    instances.put(key(yamcsInstance,name),this);
 	    for(int i=0; i<listeners.size(); i++) {
-		listeners.get(i).channelAdded(this);
+		listeners.get(i).yProcessorAdded(this);
 	    }
-	    ManagementService.getInstance().registerChannel(this);
+	    ManagementService.getInstance().registerYProcessor(this);
 	}
     }
 
@@ -280,7 +279,7 @@ public class YProcessor {
 
     private void propagateChannelStateChange() {
 	for(int i=0; i<listeners.size(); i++) {
-	    listeners.get(i).channelStateChanged(this);
+	    listeners.get(i).yProcessorStateChanged(this);
 	}
     }
     public void seek(long instant) {
@@ -334,11 +333,11 @@ public class YProcessor {
      * Increase with one the number of connected clients to the named channel and return the channel.
      * @param name
      * @return the channel where with the given name
-     * @throws ChannelException
+     * @throws YProcessorException
      */
-    public static YProcessor connect(String yamcsInstance, String name, ChannelClient s) throws ChannelException {
+    public static YProcessor connect(String yamcsInstance, String name, YProcessorClient s) throws YProcessorException {
 	YProcessor ds=instances.get(key(yamcsInstance,name));
-	if(ds==null) throw new ChannelException("There is no channel named '"+name+"'");
+	if(ds==null) throw new YProcessorException("There is no channel named '"+name+"'");
 	ds.connect(s);
 	return ds;
     }
@@ -346,9 +345,9 @@ public class YProcessor {
     /**
      * Increase with one the number of connected clients
      */
-    public synchronized void connect(ChannelClient s) throws ChannelException {
+    public synchronized void connect(YProcessorClient s) throws YProcessorException {
 	log.debug("Session "+name+" has one more user: " +s);
-	if(quitting) throw new ChannelException("This channel has been closed");
+	if(quitting) throw new YProcessorException("This channel has been closed");
 	connectedClients.add(s);
     }
 
@@ -356,7 +355,7 @@ public class YProcessor {
      * Disconnects a client from this channel. If the channel has no more clients, quit.
      *
      */
-    public void disconnect(ChannelClient s) {
+    public void disconnect(YProcessorClient s) {
 	if(quitting) return;
 	boolean hasToQuit=false;
 	synchronized(this) {
@@ -394,21 +393,21 @@ public class YProcessor {
 	if(commandReleaser!=null) commandReleaser.stopAsync();
 	log.info("Channel "+name+" is out of business");
 	for(int i=0; i<listeners.size(); i++) {
-	    listeners.get(i).channelClosed(this);
+	    listeners.get(i).yProcessorClosed(this);
 	}
-	ManagementService.getInstance().unregisterChannel(this);
+	ManagementService.getInstance().unregisterYProcessor(this);
 	synchronized(this) {
-	    for(ChannelClient s:connectedClients) {
-		s.channelQuit();
+	    for(YProcessorClient s:connectedClients) {
+		s.yProcessorQuit();
 	    }
 	}
     }
 
 
-    public static void addChannelListener(ChannelListener channelListener) {
+    public static void addYProcListener(YProcessorListener channelListener) {
 	listeners.add(channelListener);
     }
-    public static void removeChannelListner(ChannelListener channelListener) {
+    public static void removeYProcListner(YProcessorListener channelListener) {
 	listeners.remove(channelListener);
     }
 

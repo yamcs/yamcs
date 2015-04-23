@@ -86,15 +86,15 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     // For storing a window of previous parameter instances
     HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
-    
+
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer;
-    YProcessor chan;
+    YProcessor yproc;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
-    	this(yamcsInstance, null);
+        this(yamcsInstance, null);
     }
-    
+
     @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
@@ -122,7 +122,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     log.debug("Loading library "+lib);
                     File f=new File(lib);
                     if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
-                    
+
                     scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
                     if (f.isFile()) {
                         scriptEngine.eval(new FileReader(f));
@@ -135,30 +135,30 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             } catch(ScriptException e) { // Force exit. User should fix this before continuing
                 throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
             }
-            
+
             // Put engine bindings in shared global scope
             Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
             scriptEngineManager.setBindings(commonBindings);
         }        
     }
-    
+
     @Override
-	public void init(YProcessor channel) {
-    	this.chan = channel;
-    	this.parameterRequestManager = chan.getParameterRequestManager();
-    	xtcedb = chan.getXtceDb();
+    public void init(YProcessor yproc) {
+        this.yproc = yproc;
+        this.parameterRequestManager = yproc.getParameterRequestManager();
+        xtcedb = yproc.getXtceDb();
         try {
             subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
         } catch (InvalidIdentification e) {
             log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
         }
-    	
-    	for(Algorithm algo : xtcedb.getAlgorithms()) {
+
+        for(Algorithm algo : xtcedb.getAlgorithms()) {
             loadAlgorithm(algo);
         }
-	}
+    }
 
-    
+
     private void loadAlgorithm(Algorithm algo) {
         for(OutputParameter oParam:algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
@@ -168,7 +168,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         if(algo.getOutputSet().isEmpty() && !engineByAlgorithm.containsKey(algo)) {
             activateAlgorithm(algo);
         }
-        
+
         List<OnPeriodicRateTrigger> timedTriggers = algo.getTriggerSet().getOnPeriodicRateTriggers();
         if(!timedTriggers.isEmpty()) {
             // acts as a fixed-size pool
@@ -214,10 +214,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             return;
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
-        
+
         ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(scriptLanguage);
-        scriptEngine.put("Yamcs", new AlgorithmUtils(chan, xtcedb, algorithm.getName()));
-        
+        scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
+
         AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
         engineByAlgorithm.put(algorithm, engine);
         try {
@@ -275,12 +275,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     public void stopProviding(Parameter paramDef) {
-	    if(requestedOutParams.remove(paramDef)) {
-	        // Remove algorithm engine (and any that are no longer needed as a consequence)
-	        // We need to clean-up three more internal structures: requiredInParams, executionOrder and engineByAlgorithm
-	        HashSet<Parameter> stillRequired=new HashSet<Parameter>(); // parameters still required by any other algorithm
-	        for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
-	            Algorithm algo=it.next();
+        if(requestedOutParams.remove(paramDef)) {
+            // Remove algorithm engine (and any that are no longer needed as a consequence)
+            // We need to clean-up three more internal structures: requiredInParams, executionOrder and engineByAlgorithm
+            HashSet<Parameter> stillRequired=new HashSet<Parameter>(); // parameters still required by any other algorithm
+            for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
+                Algorithm algo=it.next();
                 boolean doRemove=true;
 
                 // Don't remove if any other output parameters are still subscribed to
@@ -290,26 +290,26 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                         break;
                     }
                 }
-                
-	            if(!algo.canProvide(paramDef)) { // Clean-up unused engines
-	                // For any of its outputs, check if it's still used by any algorithm
-	                for(OutputParameter op:algo.getOutputSet()) {
-	                    if(requestedOutParams.contains(op.getParameter())) {
-	                        doRemove=false;
-	                        break;
-	                    }
-	                    for(Algorithm otherAlgo:engineByAlgorithm.keySet()) {
-	                        for(InputParameter ip:otherAlgo.getInputSet()) {
-	                            if(ip.getParameterInstance().getParameter()==op.getParameter()) {
-	                                doRemove=false;
-	                                break;
-	                            }
-	                        }
+
+                if(!algo.canProvide(paramDef)) { // Clean-up unused engines
+                    // For any of its outputs, check if it's still used by any algorithm
+                    for(OutputParameter op:algo.getOutputSet()) {
+                        if(requestedOutParams.contains(op.getParameter())) {
+                            doRemove=false;
+                            break;
+                        }
+                        for(Algorithm otherAlgo:engineByAlgorithm.keySet()) {
+                            for(InputParameter ip:otherAlgo.getInputSet()) {
+                                if(ip.getParameterInstance().getParameter()==op.getParameter()) {
+                                    doRemove=false;
+                                    break;
+                                }
+                            }
                             if(!doRemove) break;
                         }
                     }
-	            }
-	            
+                }
+
                 if(doRemove) {
                     it.remove();
                     engineByAlgorithm.remove(algo);
@@ -318,17 +318,17 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                         stillRequired.add(p.getParameterInstance().getParameter());
                     }
                 }
-	        }
-	        requiredInParams.retainAll(stillRequired);
-	    }
-	}
+            }
+            requiredInParams.retainAll(stillRequired);
+        }
+    }
 
     @Override
     public boolean canProvide(Parameter p) {
-	return (outParamIndex.get(p.getQualifiedName())!=null);
+        return (outParamIndex.get(p.getQualifiedName())!=null);
     }
 
-    
+
     @Override
     public boolean canProvide(NamedObjectId itemId) {
         try {
@@ -367,7 +367,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items) {
-        
+
         ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
         ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
         for(Algorithm algorithm:executionOrder) {
@@ -394,7 +394,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     }
                 }
             }
-            
+
             // But run it only, if this satisfies an onParameterUpdate trigger
             boolean triggered=false;
             for(OnParameterUpdateTrigger trigger:algorithm.getTriggerSet().getOnParameterUpdateTriggers()) {
@@ -432,7 +432,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
         updateHistoryWindows(r);
-        
+
         return r;
     }
 
@@ -457,9 +457,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     protected void doStop() {
-	if(timer!=null) {
-	    timer.shutdownNow();
-	}
+        if(timer!=null) {
+            timer.shutdownNow();
+        }
         notifyStopped();
     }
 }

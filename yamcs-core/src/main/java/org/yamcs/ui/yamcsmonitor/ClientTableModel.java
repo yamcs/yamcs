@@ -82,7 +82,7 @@ class ClientTableModel extends AbstractTableModel {
 		case 1:	o=c.getUsername(); break;
 		case 2:	o=c.getApplicationName(); break;
 		case 3: o=c.getInstance(); break;
-		case 4:	o=c.getChannelName();
+		case 4:	o=c.getYProcessorName();
 		}
 		return o;
 	}

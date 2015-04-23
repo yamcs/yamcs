@@ -6,7 +6,7 @@ import javax.management.StandardMBean;
 
 import org.yamcs.YProcessor;
 
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
+import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 /**
@@ -14,14 +14,14 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
  * @author nm
  *
  */
-public class ChannelControlImpl extends StandardMBean  implements ChannelControl {
+public class YProcessorControlImpl extends StandardMBean  implements YProcessorControl {
     YProcessor channel;
-    ChannelInfo ci;
+    YProcessorInfo ci;
     Statistics stats;
     
-    public ChannelControlImpl(YProcessor channel)  throws NotCompliantMBeanException {
-        super(ChannelControl.class);
-        this.channel=channel;
+    public YProcessorControlImpl(YProcessor yproc)  throws NotCompliantMBeanException {
+        super(YProcessorControl.class);
+        this.channel=yproc;
     }
     @Override
     public String getName() {

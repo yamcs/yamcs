@@ -1,19 +1,19 @@
 package org.yamcs.ui;
 
-import org.yamcs.protobuf.YamcsManagement.ChannelInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
 
 
 
-public interface ChannelListener {
+public interface YProcessorListener {
 
     public void log(String text);
 
     public void popup(String text);
 
-    public void channelUpdated(ChannelInfo ci);
-    public void channelClosed(ChannelInfo ci);
+    public void yProcessorUpdated(YProcessorInfo ci);
+    public void yProcessorClosed(YProcessorInfo ci);
     public void clientDisconnected(ClientInfo ci);
     public void clientUpdated(ClientInfo ci);
     public void updateStatistics(Statistics s);
