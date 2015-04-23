@@ -35,6 +35,9 @@ realtime:
         alarm:
             check: true
             server: enabled
+        parameterCache:
+            enabled: true
+            cacheAll: false
 
 
 Archive:
