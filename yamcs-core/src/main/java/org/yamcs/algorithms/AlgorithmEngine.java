@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -58,7 +60,8 @@ import com.google.protobuf.ByteString;
 public class AlgorithmEngine {
     static final Logger log=LoggerFactory.getLogger(AlgorithmEngine.class);
 
-    ScriptEngine scriptEngine; // Not shared with other algorithm engines 
+    ScriptEngine scriptEngine; // Not shared with other algorithm engines
+    CompiledScript compiledScript;
     Algorithm def;
 
     // Keep only unique arguments (for subscription purposes)
@@ -76,6 +79,7 @@ public class AlgorithmEngine {
 	this.def=algorithmDef;
 	this.scriptEngine=scriptEngine;
 
+	
 	for(InputParameter inputParameter:algorithmDef.getInputSet()) {
 	    requiredParameters.add(inputParameter.getParameterInstance().getParameter());
 
@@ -100,6 +104,14 @@ public class AlgorithmEngine {
 	    }
 	    scriptEngine.put(scriptName, valueBinding);
 	}
+	
+	if(scriptEngine instanceof Compilable) {
+            try {
+                compiledScript = ((Compilable)scriptEngine).compile(def.getAlgorithmText());
+            } catch (ScriptException e) {
+                log.warn("Error while compiling algorithm "+algorithmDef.getName()+": "+e.getMessage(), e);
+            }
+        }
     }
 
     public Algorithm getAlgorithm() {
@@ -148,7 +160,12 @@ public class AlgorithmEngine {
     public List<ParameterValue> runAlgorithm() {
 	log.trace("Running algorithm '{}'",def.getName());
 	try {
-	    scriptEngine.eval(def.getAlgorithmText());
+	    if(compiledScript!=null) {
+	        System.out.println("running compiled script");
+	        compiledScript.eval();
+	    } else {
+	        scriptEngine.eval(def.getAlgorithmText());
+	    }
 	} catch (ScriptException e) {
 	    log.warn("Error while executing algorithm: "+e.getMessage(), e);
 	    return Collections.emptyList();

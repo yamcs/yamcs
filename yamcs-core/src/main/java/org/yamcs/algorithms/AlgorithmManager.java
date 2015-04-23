@@ -88,7 +88,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
 
     // For scheduling OnPeriodicRate algorithms
-    ScheduledExecutorService timer;
+    ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);;
     YProcessor yproc;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
@@ -172,7 +172,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         List<OnPeriodicRateTrigger> timedTriggers = algo.getTriggerSet().getOnPeriodicRateTriggers();
         if(!timedTriggers.isEmpty()) {
             // acts as a fixed-size pool
-            timer = Executors.newScheduledThreadPool(Math.min(timedTriggers.size(), 10));
             activateAlgorithm(algo);
             final AlgorithmEngine engine = engineByAlgorithm.get(algo);
             for(OnPeriodicRateTrigger trigger:timedTriggers) {

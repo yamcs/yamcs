@@ -139,9 +139,9 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     
     
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="2.2";
+    final static String FORMAT_VERSION="3.0";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{ "1.6", "1.7", "2.0", FORMAT_VERSION };
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION };
 
 
     protected Workbook workbook;
@@ -1787,8 +1787,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
 	    cells = jumpToRow(sheet, start); // Jump back to algorithm row (for getting error msgs right)
 	    String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
-	    if(!"".equals(triggerText)) {
-		if(triggerText.startsWith("OnParameterUpdate")) {
+	    if(triggerText.startsWith("OnParameterUpdate")) {
 		    Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
 		    if(matcher.matches()) {
 			for(String s:matcher.group(1).split(",")) {
@@ -1812,7 +1811,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    } else {
 			throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnParameterUpdate trigger");
 		    }
-		} else if(triggerText.startsWith("OnPeriodicRate")) {
+	    } else if(triggerText.startsWith("OnPeriodicRate")) {
 		    Matcher matcher = FIRERATE_PATTERN.matcher(triggerText);
 		    if(matcher.matches()) {
 			long fireRateMs = Long.parseLong(matcher.group(1), 10);
@@ -1821,10 +1820,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    } else {
 			throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
 		    }
-		} else {
-		    throw new SpreadsheetLoadException(ctx, "Trigger '"+triggerText+"' not supported.");
-		}
-	    } else {
+		
+	    } else if (triggerText.startsWith("OnInputParameterUpdate")) {
 		// default to all in parameters
 		for(String paraRef:inputParameterRefs) {
 		    Parameter para=spaceSystem.getParameter(paraRef);
@@ -1843,7 +1840,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 			spaceSystem.addUnresolvedReference(nr);
 		    }
 		}
-	    }
+	    } else if(triggerText.isEmpty() || triggerText.startsWith("none")) {
+	        //do nothing, we run with an empty trigger set
+            } else {        
+                throw new SpreadsheetLoadException(ctx, "Trigger '"+triggerText+"' not supported.");
+            }
 	    algorithm.setTriggerSet(triggerSet);
 
 	    spaceSystem.addAlgorithm(algorithm);
