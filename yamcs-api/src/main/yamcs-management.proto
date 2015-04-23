@@ -16,12 +16,12 @@ enum ServiceState {
    FAILED = 5;
 }
 
-/************** Channel Control service *********************/
-/* The ChannelInfo and ClientInfo events are posted on the channelInfo address. 
+/************** YProcessor Control service *********************/
+/* The YProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
  * There is also a queue with the same name containing the last values
- * The name of the events are channelUpdated (means added or updated),
- * channelRemoved, clientUpdated (means connected or updated) clientDisconnected */
-message ChannelInfo {
+ * The name of the events are yProcessorUpdated (means added or updated),
+ * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
+message YProcessorInfo {
     required string instance=1;//yamcs instance 
     required string name=2;
     optional string type=3;
@@ -29,8 +29,8 @@ message ChannelInfo {
     optional string creator=5;
     optional bool hasCommanding=6;
     optional ServiceState state=7;
-    optional yamcs.ReplayRequest replayRequest=8; //in case of replay channels
-    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay channels
+    optional yamcs.ReplayRequest replayRequest=8; //in case of replay 
+    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay 
 }
 
 message ClientInfo {
@@ -38,7 +38,7 @@ message ClientInfo {
     required int32 id=2;
     optional string username=3;
     optional string applicationName=4;
-    optional string channelName=5;
+    optional string yProcessorName=5;
 }
 message TmStatistics {
     required string packetName=1;
@@ -50,27 +50,27 @@ message TmStatistics {
 
 message Statistics {
     required string instance=1;
-    required string channelName=2;
+    required string yProcessorName=2;
     repeated TmStatistics tmstats=3;
     optional int64 lastUpdated=4; //java local time of the last update
 }
 
-message ChannelRequest { //this is used for ChannelControl service
+message YProcessorRequest { //this is used for YProcessorControl service
     required string instance=1;
     required string name=2;
-    optional string type=3; //only for CreateChannel
-    optional string spec=4; //only for CreateChannel
-    optional bool persistent=5[default=false]; //only for CreateChannel
-    repeated int32 clientId=6; //for CreateChannel and ConnectToChannel
-    optional int64 seekTime=7; //for SeekChannel
+    optional string type=3; //only for CreateYProcessor
+    optional string spec=4; //only for CreateYProcessor
+    optional bool persistent=5[default=false]; //only for CreateYProcessor
+    repeated int32 clientId=6; //for CreateYProcessor and ConnectToYProcessor
+    optional int64 seekTime=7; //for SeekYProcessor
 }
 
-service ChannelControl {
-  rpc CreateChannel(ChannelRequest) returns (yamcs.Void);
-  rpc ConnectToChannel(ChannelRequest) returns (yamcs.Void);
-  rpc PauseChannel(ChannelRequest) returns (yamcs.Void);
-  rpc ResumeChannel(ChannelRequest) returns (yamcs.Void);
-  rpc SeekChannel(ChannelRequest) returns (yamcs.Void);
+service YProcessorControl {
+  rpc CreateYProcessor(YProcessorRequest) returns (yamcs.Void);
+  rpc ConnectToYProcessor(YProcessorRequest) returns (yamcs.Void);
+  rpc PauseYProcessor(YProcessorRequest) returns (yamcs.Void);
+  rpc ResumeYProcessor(YProcessorRequest) returns (yamcs.Void);
+  rpc SeekYProcessor(YProcessorRequest) returns (yamcs.Void);
 }
 
 /************** Link Control ****************************/

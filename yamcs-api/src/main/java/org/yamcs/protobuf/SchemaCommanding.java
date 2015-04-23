@@ -152,8 +152,8 @@ public final class SchemaCommanding
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
-                if(message.hasChannelName())
-                    output.writeString(2, message.getChannelName(), false);
+                if(message.hasYProcessorName())
+                    output.writeString(2, message.getYProcessorName(), false);
                 if(message.hasName())
                     output.writeString(3, message.getName(), false);
                 if(message.hasState())
@@ -201,7 +201,7 @@ public final class SchemaCommanding
                             builder.setInstance(input.readString());
                             break;
                         case 2:
-                            builder.setChannelName(input.readString());
+                            builder.setYProcessorName(input.readString());
                             break;
                         case 3:
                             builder.setName(input.readString());
@@ -250,7 +250,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "instance";
-                case 2: return "channelName";
+                case 2: return "yProcessorName";
                 case 3: return "name";
                 case 4: return "state";
                 default: return null;
@@ -265,7 +265,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("instance", 1);
-            fieldMap.put("channelName", 2);
+            fieldMap.put("yProcessorName", 2);
             fieldMap.put("name", 3);
             fieldMap.put("state", 4);
         }
@@ -284,8 +284,8 @@ public final class SchemaCommanding
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
-                if(message.hasChannelName())
-                    output.writeString(2, message.getChannelName(), false);
+                if(message.hasYProcessorName())
+                    output.writeString(2, message.getYProcessorName(), false);
                 if(message.hasQueueName())
                     output.writeString(3, message.getQueueName(), false);
                 if(message.hasCmdId())
@@ -343,7 +343,7 @@ public final class SchemaCommanding
                             builder.setInstance(input.readString());
                             break;
                         case 2:
-                            builder.setChannelName(input.readString());
+                            builder.setYProcessorName(input.readString());
                             break;
                         case 3:
                             builder.setQueueName(input.readString());
@@ -405,7 +405,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "instance";
-                case 2: return "channelName";
+                case 2: return "yProcessorName";
                 case 3: return "queueName";
                 case 4: return "cmdId";
                 case 5: return "source";
@@ -424,7 +424,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("instance", 1);
-            fieldMap.put("channelName", 2);
+            fieldMap.put("yProcessorName", 2);
             fieldMap.put("queueName", 3);
             fieldMap.put("cmdId", 4);
             fieldMap.put("source", 5);

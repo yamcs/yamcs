@@ -91,17 +91,17 @@ public class Protocol {
      * address where all the Channels are registered
      * there is also a queue with the same name that can be browsed to get the initial list
      */
-    final static public SimpleString CHANNEL_INFO_ADDRESS=new SimpleString("channelInfo");
+    final static public SimpleString YPROCESSOR_INFO_ADDRESS=new SimpleString("channelInfo");
 
     /**
      * address where channel control commands can be sent
      */
-    final static public SimpleString CHANNEL_CONTROL_ADDRESS=new SimpleString("channelControl");
+    final static public SimpleString YPROCESSOR_CONTROL_ADDRESS=new SimpleString("channelControl");
 
     /**
      * address where channel statistics are published regularly
      */
-    final static public SimpleString CHANNEL_STATISTICS_ADDRESS=new SimpleString("channelStatistics");
+    final static public SimpleString YPROCESSOR_STATISTICS_ADDRESS=new SimpleString("channelStatistics");
 
     /**
      * address where all the Command Queues and command stationed in the Queues are registered

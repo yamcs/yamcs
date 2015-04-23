@@ -20,7 +20,7 @@ enum QueueState {
 
 message CommandQueueInfo {
     required string instance=1;
-    required string channelName=2;
+    required string yProcessorName=2;
     required string name=3;
     optional QueueState state=4;
 }
@@ -28,7 +28,7 @@ message CommandQueueInfo {
 /*One entry (command) in the command queue*/
 message CommandQueueEntry {
    required string instance=1;
-   required string channelName=2;
+   required string yProcessorName=2;
    required string queueName=3;
    required CommandId cmdId=4;
    optional string source=5;

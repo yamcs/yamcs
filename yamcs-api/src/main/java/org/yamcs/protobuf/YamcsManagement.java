@@ -130,7 +130,7 @@ public final class YamcsManagement {
     // @@protoc_insertion_point(enum_scope:yamcsmanagement.ServiceState)
   }
 
-  public interface ChannelInfoOrBuilder
+  public interface YProcessorInfoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // required string instance = 1;
@@ -245,7 +245,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     boolean hasReplayRequest();
@@ -253,7 +253,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.ReplayRequest getReplayRequest();
@@ -261,7 +261,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplayRequestOrBuilder();
@@ -271,7 +271,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     boolean hasReplayState();
@@ -279,37 +279,37 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState getReplayState();
   }
   /**
-   * Protobuf type {@code yamcsmanagement.ChannelInfo}
+   * Protobuf type {@code yamcsmanagement.YProcessorInfo}
    *
    * <pre>
-   * The ChannelInfo and ClientInfo events are posted on the channelInfo address. 
+   * The YProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
    * There is also a queue with the same name containing the last values
-   * The name of the events are channelUpdated (means added or updated),
-   * channelRemoved, clientUpdated (means connected or updated) clientDisconnected 
+   * The name of the events are yProcessorUpdated (means added or updated),
+   * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected 
    * </pre>
    */
-  public static final class ChannelInfo extends
+  public static final class YProcessorInfo extends
       com.google.protobuf.GeneratedMessage
-      implements ChannelInfoOrBuilder {
-    // Use ChannelInfo.newBuilder() to construct.
-    private ChannelInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements YProcessorInfoOrBuilder {
+    // Use YProcessorInfo.newBuilder() to construct.
+    private YProcessorInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private ChannelInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private YProcessorInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final ChannelInfo defaultInstance;
-    public static ChannelInfo getDefaultInstance() {
+    private static final YProcessorInfo defaultInstance;
+    public static YProcessorInfo getDefaultInstance() {
       return defaultInstance;
     }
 
-    public ChannelInfo getDefaultInstanceForType() {
+    public YProcessorInfo getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -319,7 +319,7 @@ public final class YamcsManagement {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private ChannelInfo(
+    private YProcessorInfo(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -421,28 +421,28 @@ public final class YamcsManagement {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorInfo_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.YamcsManagement.ChannelInfo.class, org.yamcs.protobuf.YamcsManagement.ChannelInfo.Builder.class);
+              org.yamcs.protobuf.YamcsManagement.YProcessorInfo.class, org.yamcs.protobuf.YamcsManagement.YProcessorInfo.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<ChannelInfo> PARSER =
-        new com.google.protobuf.AbstractParser<ChannelInfo>() {
-      public ChannelInfo parsePartialFrom(
+    public static com.google.protobuf.Parser<YProcessorInfo> PARSER =
+        new com.google.protobuf.AbstractParser<YProcessorInfo>() {
+      public YProcessorInfo parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ChannelInfo(input, extensionRegistry);
+        return new YProcessorInfo(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ChannelInfo> getParserForType() {
+    public com.google.protobuf.Parser<YProcessorInfo> getParserForType() {
       return PARSER;
     }
 
@@ -713,7 +713,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     public boolean hasReplayRequest() {
@@ -723,7 +723,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     public org.yamcs.protobuf.Yamcs.ReplayRequest getReplayRequest() {
@@ -733,7 +733,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplayRequestOrBuilder() {
@@ -747,7 +747,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     public boolean hasReplayState() {
@@ -757,7 +757,7 @@ public final class YamcsManagement {
      * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
      *
      * <pre>
-     *in case of replay channels
+     *in case of replay 
      * </pre>
      */
     public org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState getReplayState() {
@@ -885,53 +885,53 @@ public final class YamcsManagement {
       return super.writeReplace();
     }
 
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(byte[] data)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseDelimitedFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelInfo parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -940,7 +940,7 @@ public final class YamcsManagement {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.ChannelInfo prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.YProcessorInfo prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -952,31 +952,31 @@ public final class YamcsManagement {
       return builder;
     }
     /**
-     * Protobuf type {@code yamcsmanagement.ChannelInfo}
+     * Protobuf type {@code yamcsmanagement.YProcessorInfo}
      *
      * <pre>
-     * The ChannelInfo and ClientInfo events are posted on the channelInfo address. 
+     * The YProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
      * There is also a queue with the same name containing the last values
-     * The name of the events are channelUpdated (means added or updated),
-     * channelRemoved, clientUpdated (means connected or updated) clientDisconnected 
+     * The name of the events are yProcessorUpdated (means added or updated),
+     * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected 
      * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.YamcsManagement.ChannelInfoOrBuilder {
+       implements org.yamcs.protobuf.YamcsManagement.YProcessorInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorInfo_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.YamcsManagement.ChannelInfo.class, org.yamcs.protobuf.YamcsManagement.ChannelInfo.Builder.class);
+                org.yamcs.protobuf.YamcsManagement.YProcessorInfo.class, org.yamcs.protobuf.YamcsManagement.YProcessorInfo.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.YamcsManagement.ChannelInfo.newBuilder()
+      // Construct using org.yamcs.protobuf.YamcsManagement.YProcessorInfo.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1028,23 +1028,23 @@ public final class YamcsManagement {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelInfo_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorInfo_descriptor;
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelInfo getDefaultInstanceForType() {
-        return org.yamcs.protobuf.YamcsManagement.ChannelInfo.getDefaultInstance();
+      public org.yamcs.protobuf.YamcsManagement.YProcessorInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.YProcessorInfo.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelInfo build() {
-        org.yamcs.protobuf.YamcsManagement.ChannelInfo result = buildPartial();
+      public org.yamcs.protobuf.YamcsManagement.YProcessorInfo build() {
+        org.yamcs.protobuf.YamcsManagement.YProcessorInfo result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelInfo buildPartial() {
-        org.yamcs.protobuf.YamcsManagement.ChannelInfo result = new org.yamcs.protobuf.YamcsManagement.ChannelInfo(this);
+      public org.yamcs.protobuf.YamcsManagement.YProcessorInfo buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.YProcessorInfo result = new org.yamcs.protobuf.YamcsManagement.YProcessorInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1093,16 +1093,16 @@ public final class YamcsManagement {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.YamcsManagement.ChannelInfo) {
-          return mergeFrom((org.yamcs.protobuf.YamcsManagement.ChannelInfo)other);
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.YProcessorInfo) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.YProcessorInfo)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ChannelInfo other) {
-        if (other == org.yamcs.protobuf.YamcsManagement.ChannelInfo.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.YProcessorInfo other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.YProcessorInfo.getDefaultInstance()) return this;
         if (other.hasInstance()) {
           bitField0_ |= 0x00000001;
           instance_ = other.instance_;
@@ -1166,11 +1166,11 @@ public final class YamcsManagement {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.YamcsManagement.ChannelInfo parsedMessage = null;
+        org.yamcs.protobuf.YamcsManagement.YProcessorInfo parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.YamcsManagement.ChannelInfo) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.YProcessorInfo) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1652,7 +1652,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public boolean hasReplayRequest() {
@@ -1662,7 +1662,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplayRequest getReplayRequest() {
@@ -1676,7 +1676,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder setReplayRequest(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
@@ -1696,7 +1696,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder setReplayRequest(
@@ -1714,7 +1714,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder mergeReplayRequest(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
@@ -1737,7 +1737,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder clearReplayRequest() {
@@ -1754,7 +1754,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplayRequestBuilder() {
@@ -1766,7 +1766,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplayRequestOrBuilder() {
@@ -1780,7 +1780,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
@@ -1803,7 +1803,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public boolean hasReplayState() {
@@ -1813,7 +1813,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState getReplayState() {
@@ -1823,7 +1823,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder setReplayState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState value) {
@@ -1839,7 +1839,7 @@ public final class YamcsManagement {
        * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
        *
        * <pre>
-       *in case of replay channels
+       *in case of replay 
        * </pre>
        */
       public Builder clearReplayState() {
@@ -1849,15 +1849,15 @@ public final class YamcsManagement {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:yamcsmanagement.ChannelInfo)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.YProcessorInfo)
     }
 
     static {
-      defaultInstance = new ChannelInfo(true);
+      defaultInstance = new YProcessorInfo(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:yamcsmanagement.ChannelInfo)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.YProcessorInfo)
   }
 
   public interface ClientInfoOrBuilder
@@ -1918,20 +1918,20 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getApplicationNameBytes();
 
-    // optional string channelName = 5;
+    // optional string yProcessorName = 5;
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
-    boolean hasChannelName();
+    boolean hasYProcessorName();
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
-    java.lang.String getChannelName();
+    java.lang.String getYProcessorName();
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
     com.google.protobuf.ByteString
-        getChannelNameBytes();
+        getYProcessorNameBytes();
   }
   /**
    * Protobuf type {@code yamcsmanagement.ClientInfo}
@@ -2006,7 +2006,7 @@ public final class YamcsManagement {
             }
             case 42: {
               bitField0_ |= 0x00000010;
-              channelName_ = input.readBytes();
+              yProcessorName_ = input.readBytes();
               break;
             }
           }
@@ -2194,20 +2194,20 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string channelName = 5;
-    public static final int CHANNELNAME_FIELD_NUMBER = 5;
-    private java.lang.Object channelName_;
+    // optional string yProcessorName = 5;
+    public static final int YPROCESSORNAME_FIELD_NUMBER = 5;
+    private java.lang.Object yProcessorName_;
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
-    public boolean hasChannelName() {
+    public boolean hasYProcessorName() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
-    public java.lang.String getChannelName() {
-      java.lang.Object ref = channelName_;
+    public java.lang.String getYProcessorName() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -2215,22 +2215,22 @@ public final class YamcsManagement {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          channelName_ = s;
+          yProcessorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string channelName = 5;</code>
+     * <code>optional string yProcessorName = 5;</code>
      */
     public com.google.protobuf.ByteString
-        getChannelNameBytes() {
-      java.lang.Object ref = channelName_;
+        getYProcessorNameBytes() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        channelName_ = b;
+        yProcessorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -2242,7 +2242,7 @@ public final class YamcsManagement {
       id_ = 0;
       username_ = "";
       applicationName_ = "";
-      channelName_ = "";
+      yProcessorName_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2277,7 +2277,7 @@ public final class YamcsManagement {
         output.writeBytes(4, getApplicationNameBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(5, getChannelNameBytes());
+        output.writeBytes(5, getYProcessorNameBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2306,7 +2306,7 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, getChannelNameBytes());
+          .computeBytesSize(5, getYProcessorNameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2432,7 +2432,7 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000004);
         applicationName_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        channelName_ = "";
+        yProcessorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
@@ -2481,7 +2481,7 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.channelName_ = channelName_;
+        result.yProcessorName_ = yProcessorName_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2516,9 +2516,9 @@ public final class YamcsManagement {
           applicationName_ = other.applicationName_;
           onChanged();
         }
-        if (other.hasChannelName()) {
+        if (other.hasYProcessorName()) {
           bitField0_ |= 0x00000010;
-          channelName_ = other.channelName_;
+          yProcessorName_ = other.yProcessorName_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -2811,76 +2811,76 @@ public final class YamcsManagement {
         return this;
       }
 
-      // optional string channelName = 5;
-      private java.lang.Object channelName_ = "";
+      // optional string yProcessorName = 5;
+      private java.lang.Object yProcessorName_ = "";
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
-      public boolean hasChannelName() {
+      public boolean hasYProcessorName() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
-      public java.lang.String getChannelName() {
-        java.lang.Object ref = channelName_;
+      public java.lang.String getYProcessorName() {
+        java.lang.Object ref = yProcessorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          channelName_ = s;
+          yProcessorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
       public com.google.protobuf.ByteString
-          getChannelNameBytes() {
-        java.lang.Object ref = channelName_;
+          getYProcessorNameBytes() {
+        java.lang.Object ref = yProcessorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          channelName_ = b;
+          yProcessorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
-      public Builder setChannelName(
+      public Builder setYProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000010;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
-      public Builder clearChannelName() {
+      public Builder clearYProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000010);
-        channelName_ = getDefaultInstance().getChannelName();
+        yProcessorName_ = getDefaultInstance().getYProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string channelName = 5;</code>
+       * <code>optional string yProcessorName = 5;</code>
        */
-      public Builder setChannelNameBytes(
+      public Builder setYProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000010;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
@@ -3717,20 +3717,20 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string channelName = 2;
+    // required string yProcessorName = 2;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    boolean hasChannelName();
+    boolean hasYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    java.lang.String getChannelName();
+    java.lang.String getYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     com.google.protobuf.ByteString
-        getChannelNameBytes();
+        getYProcessorNameBytes();
 
     // repeated .yamcsmanagement.TmStatistics tmstats = 3;
     /**
@@ -3833,7 +3833,7 @@ public final class YamcsManagement {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              channelName_ = input.readBytes();
+              yProcessorName_ = input.readBytes();
               break;
             }
             case 26: {
@@ -3935,20 +3935,20 @@ public final class YamcsManagement {
       }
     }
 
-    // required string channelName = 2;
-    public static final int CHANNELNAME_FIELD_NUMBER = 2;
-    private java.lang.Object channelName_;
+    // required string yProcessorName = 2;
+    public static final int YPROCESSORNAME_FIELD_NUMBER = 2;
+    private java.lang.Object yProcessorName_;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public boolean hasChannelName() {
+    public boolean hasYProcessorName() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public java.lang.String getChannelName() {
-      java.lang.Object ref = channelName_;
+    public java.lang.String getYProcessorName() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -3956,22 +3956,22 @@ public final class YamcsManagement {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          channelName_ = s;
+          yProcessorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getChannelNameBytes() {
-      java.lang.Object ref = channelName_;
+        getYProcessorNameBytes() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        channelName_ = b;
+        yProcessorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -4040,7 +4040,7 @@ public final class YamcsManagement {
 
     private void initFields() {
       instance_ = "";
-      channelName_ = "";
+      yProcessorName_ = "";
       tmstats_ = java.util.Collections.emptyList();
       lastUpdated_ = 0L;
     }
@@ -4053,7 +4053,7 @@ public final class YamcsManagement {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasChannelName()) {
+      if (!hasYProcessorName()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -4074,7 +4074,7 @@ public final class YamcsManagement {
         output.writeBytes(1, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getChannelNameBytes());
+        output.writeBytes(2, getYProcessorNameBytes());
       }
       for (int i = 0; i < tmstats_.size(); i++) {
         output.writeMessage(3, tmstats_.get(i));
@@ -4097,7 +4097,7 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getChannelNameBytes());
+          .computeBytesSize(2, getYProcessorNameBytes());
       }
       for (int i = 0; i < tmstats_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -4226,7 +4226,7 @@ public final class YamcsManagement {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        channelName_ = "";
+        yProcessorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         if (tmstatsBuilder_ == null) {
           tmstats_ = java.util.Collections.emptyList();
@@ -4271,7 +4271,7 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.channelName_ = channelName_;
+        result.yProcessorName_ = yProcessorName_;
         if (tmstatsBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004)) {
             tmstats_ = java.util.Collections.unmodifiableList(tmstats_);
@@ -4306,9 +4306,9 @@ public final class YamcsManagement {
           instance_ = other.instance_;
           onChanged();
         }
-        if (other.hasChannelName()) {
+        if (other.hasYProcessorName()) {
           bitField0_ |= 0x00000002;
-          channelName_ = other.channelName_;
+          yProcessorName_ = other.yProcessorName_;
           onChanged();
         }
         if (tmstatsBuilder_ == null) {
@@ -4349,7 +4349,7 @@ public final class YamcsManagement {
           
           return false;
         }
-        if (!hasChannelName()) {
+        if (!hasYProcessorName()) {
           
           return false;
         }
@@ -4455,76 +4455,76 @@ public final class YamcsManagement {
         return this;
       }
 
-      // required string channelName = 2;
-      private java.lang.Object channelName_ = "";
+      // required string yProcessorName = 2;
+      private java.lang.Object yProcessorName_ = "";
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public boolean hasChannelName() {
+      public boolean hasYProcessorName() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public java.lang.String getChannelName() {
-        java.lang.Object ref = channelName_;
+      public java.lang.String getYProcessorName() {
+        java.lang.Object ref = yProcessorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          channelName_ = s;
+          yProcessorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getChannelNameBytes() {
-        java.lang.Object ref = channelName_;
+          getYProcessorNameBytes() {
+        java.lang.Object ref = yProcessorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          channelName_ = b;
+          yProcessorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelName(
+      public Builder setYProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder clearChannelName() {
+      public Builder clearYProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        channelName_ = getDefaultInstance().getChannelName();
+        yProcessorName_ = getDefaultInstance().getYProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelNameBytes(
+      public Builder setYProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
@@ -4829,7 +4829,7 @@ public final class YamcsManagement {
     // @@protoc_insertion_point(class_scope:yamcsmanagement.Statistics)
   }
 
-  public interface ChannelRequestOrBuilder
+  public interface YProcessorRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // required string instance = 1;
@@ -4867,7 +4867,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     boolean hasType();
@@ -4875,7 +4875,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     java.lang.String getType();
@@ -4883,7 +4883,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -4894,7 +4894,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     boolean hasSpec();
@@ -4902,7 +4902,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     java.lang.String getSpec();
@@ -4910,7 +4910,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -4921,7 +4921,7 @@ public final class YamcsManagement {
      * <code>optional bool persistent = 5 [default = false];</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     boolean hasPersistent();
@@ -4929,7 +4929,7 @@ public final class YamcsManagement {
      * <code>optional bool persistent = 5 [default = false];</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     boolean getPersistent();
@@ -4939,7 +4939,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     java.util.List<java.lang.Integer> getClientIdList();
@@ -4947,7 +4947,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     int getClientIdCount();
@@ -4955,7 +4955,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     int getClientId(int index);
@@ -4965,7 +4965,7 @@ public final class YamcsManagement {
      * <code>optional int64 seekTime = 7;</code>
      *
      * <pre>
-     *for SeekChannel
+     *for SeekYProcessor
      * </pre>
      */
     boolean hasSeekTime();
@@ -4973,34 +4973,34 @@ public final class YamcsManagement {
      * <code>optional int64 seekTime = 7;</code>
      *
      * <pre>
-     *for SeekChannel
+     *for SeekYProcessor
      * </pre>
      */
     long getSeekTime();
   }
   /**
-   * Protobuf type {@code yamcsmanagement.ChannelRequest}
+   * Protobuf type {@code yamcsmanagement.YProcessorRequest}
    *
    * <pre>
-   *this is used for ChannelControl service
+   *this is used for YProcessorControl service
    * </pre>
    */
-  public static final class ChannelRequest extends
+  public static final class YProcessorRequest extends
       com.google.protobuf.GeneratedMessage
-      implements ChannelRequestOrBuilder {
-    // Use ChannelRequest.newBuilder() to construct.
-    private ChannelRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements YProcessorRequestOrBuilder {
+    // Use YProcessorRequest.newBuilder() to construct.
+    private YProcessorRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private ChannelRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private YProcessorRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final ChannelRequest defaultInstance;
-    public static ChannelRequest getDefaultInstance() {
+    private static final YProcessorRequest defaultInstance;
+    public static YProcessorRequest getDefaultInstance() {
       return defaultInstance;
     }
 
-    public ChannelRequest getDefaultInstanceForType() {
+    public YProcessorRequest getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -5010,7 +5010,7 @@ public final class YamcsManagement {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private ChannelRequest(
+    private YProcessorRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5101,28 +5101,28 @@ public final class YamcsManagement {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.YamcsManagement.ChannelRequest.class, org.yamcs.protobuf.YamcsManagement.ChannelRequest.Builder.class);
+              org.yamcs.protobuf.YamcsManagement.YProcessorRequest.class, org.yamcs.protobuf.YamcsManagement.YProcessorRequest.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<ChannelRequest> PARSER =
-        new com.google.protobuf.AbstractParser<ChannelRequest>() {
-      public ChannelRequest parsePartialFrom(
+    public static com.google.protobuf.Parser<YProcessorRequest> PARSER =
+        new com.google.protobuf.AbstractParser<YProcessorRequest>() {
+      public YProcessorRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ChannelRequest(input, extensionRegistry);
+        return new YProcessorRequest(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ChannelRequest> getParserForType() {
+    public com.google.protobuf.Parser<YProcessorRequest> getParserForType() {
       return PARSER;
     }
 
@@ -5220,7 +5220,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public boolean hasType() {
@@ -5230,7 +5230,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public java.lang.String getType() {
@@ -5251,7 +5251,7 @@ public final class YamcsManagement {
      * <code>optional string type = 3;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -5275,7 +5275,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public boolean hasSpec() {
@@ -5285,7 +5285,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public java.lang.String getSpec() {
@@ -5306,7 +5306,7 @@ public final class YamcsManagement {
      * <code>optional string spec = 4;</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -5330,7 +5330,7 @@ public final class YamcsManagement {
      * <code>optional bool persistent = 5 [default = false];</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public boolean hasPersistent() {
@@ -5340,7 +5340,7 @@ public final class YamcsManagement {
      * <code>optional bool persistent = 5 [default = false];</code>
      *
      * <pre>
-     *only for CreateChannel
+     *only for CreateYProcessor
      * </pre>
      */
     public boolean getPersistent() {
@@ -5354,7 +5354,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     public java.util.List<java.lang.Integer>
@@ -5365,7 +5365,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     public int getClientIdCount() {
@@ -5375,7 +5375,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateChannel and ConnectToChannel
+     *for CreateYProcessor and ConnectToYProcessor
      * </pre>
      */
     public int getClientId(int index) {
@@ -5389,7 +5389,7 @@ public final class YamcsManagement {
      * <code>optional int64 seekTime = 7;</code>
      *
      * <pre>
-     *for SeekChannel
+     *for SeekYProcessor
      * </pre>
      */
     public boolean hasSeekTime() {
@@ -5399,7 +5399,7 @@ public final class YamcsManagement {
      * <code>optional int64 seekTime = 7;</code>
      *
      * <pre>
-     *for SeekChannel
+     *for SeekYProcessor
      * </pre>
      */
     public long getSeekTime() {
@@ -5510,53 +5510,53 @@ public final class YamcsManagement {
       return super.writeReplace();
     }
 
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(byte[] data)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseDelimitedFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.ChannelRequest parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.YProcessorRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5565,7 +5565,7 @@ public final class YamcsManagement {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.ChannelRequest prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.YProcessorRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -5577,28 +5577,28 @@ public final class YamcsManagement {
       return builder;
     }
     /**
-     * Protobuf type {@code yamcsmanagement.ChannelRequest}
+     * Protobuf type {@code yamcsmanagement.YProcessorRequest}
      *
      * <pre>
-     *this is used for ChannelControl service
+     *this is used for YProcessorControl service
      * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.YamcsManagement.ChannelRequestOrBuilder {
+       implements org.yamcs.protobuf.YamcsManagement.YProcessorRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.YamcsManagement.ChannelRequest.class, org.yamcs.protobuf.YamcsManagement.ChannelRequest.Builder.class);
+                org.yamcs.protobuf.YamcsManagement.YProcessorRequest.class, org.yamcs.protobuf.YamcsManagement.YProcessorRequest.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.YamcsManagement.ChannelRequest.newBuilder()
+      // Construct using org.yamcs.protobuf.YamcsManagement.YProcessorRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5641,23 +5641,23 @@ public final class YamcsManagement {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_ChannelRequest_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsmanagement_YProcessorRequest_descriptor;
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelRequest getDefaultInstanceForType() {
-        return org.yamcs.protobuf.YamcsManagement.ChannelRequest.getDefaultInstance();
+      public org.yamcs.protobuf.YamcsManagement.YProcessorRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.YProcessorRequest.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelRequest build() {
-        org.yamcs.protobuf.YamcsManagement.ChannelRequest result = buildPartial();
+      public org.yamcs.protobuf.YamcsManagement.YProcessorRequest build() {
+        org.yamcs.protobuf.YamcsManagement.YProcessorRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.YamcsManagement.ChannelRequest buildPartial() {
-        org.yamcs.protobuf.YamcsManagement.ChannelRequest result = new org.yamcs.protobuf.YamcsManagement.ChannelRequest(this);
+      public org.yamcs.protobuf.YamcsManagement.YProcessorRequest buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.YProcessorRequest result = new org.yamcs.protobuf.YamcsManagement.YProcessorRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -5695,16 +5695,16 @@ public final class YamcsManagement {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.YamcsManagement.ChannelRequest) {
-          return mergeFrom((org.yamcs.protobuf.YamcsManagement.ChannelRequest)other);
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.YProcessorRequest) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.YProcessorRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ChannelRequest other) {
-        if (other == org.yamcs.protobuf.YamcsManagement.ChannelRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.YProcessorRequest other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.YProcessorRequest.getDefaultInstance()) return this;
         if (other.hasInstance()) {
           bitField0_ |= 0x00000001;
           instance_ = other.instance_;
@@ -5761,11 +5761,11 @@ public final class YamcsManagement {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.YamcsManagement.ChannelRequest parsedMessage = null;
+        org.yamcs.protobuf.YamcsManagement.YProcessorRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.YamcsManagement.ChannelRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.YProcessorRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -5930,7 +5930,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public boolean hasType() {
@@ -5940,7 +5940,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public java.lang.String getType() {
@@ -5958,7 +5958,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -5978,7 +5978,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder setType(
@@ -5995,7 +5995,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder clearType() {
@@ -6008,7 +6008,7 @@ public final class YamcsManagement {
        * <code>optional string type = 3;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder setTypeBytes(
@@ -6028,7 +6028,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public boolean hasSpec() {
@@ -6038,7 +6038,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public java.lang.String getSpec() {
@@ -6056,7 +6056,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -6076,7 +6076,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder setSpec(
@@ -6093,7 +6093,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder clearSpec() {
@@ -6106,7 +6106,7 @@ public final class YamcsManagement {
        * <code>optional string spec = 4;</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder setSpecBytes(
@@ -6126,7 +6126,7 @@ public final class YamcsManagement {
        * <code>optional bool persistent = 5 [default = false];</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public boolean hasPersistent() {
@@ -6136,7 +6136,7 @@ public final class YamcsManagement {
        * <code>optional bool persistent = 5 [default = false];</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public boolean getPersistent() {
@@ -6146,7 +6146,7 @@ public final class YamcsManagement {
        * <code>optional bool persistent = 5 [default = false];</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder setPersistent(boolean value) {
@@ -6159,7 +6159,7 @@ public final class YamcsManagement {
        * <code>optional bool persistent = 5 [default = false];</code>
        *
        * <pre>
-       *only for CreateChannel
+       *only for CreateYProcessor
        * </pre>
        */
       public Builder clearPersistent() {
@@ -6181,7 +6181,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public java.util.List<java.lang.Integer>
@@ -6192,7 +6192,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public int getClientIdCount() {
@@ -6202,7 +6202,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public int getClientId(int index) {
@@ -6212,7 +6212,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public Builder setClientId(
@@ -6226,7 +6226,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public Builder addClientId(int value) {
@@ -6239,7 +6239,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public Builder addAllClientId(
@@ -6253,7 +6253,7 @@ public final class YamcsManagement {
        * <code>repeated int32 clientId = 6;</code>
        *
        * <pre>
-       *for CreateChannel and ConnectToChannel
+       *for CreateYProcessor and ConnectToYProcessor
        * </pre>
        */
       public Builder clearClientId() {
@@ -6269,7 +6269,7 @@ public final class YamcsManagement {
        * <code>optional int64 seekTime = 7;</code>
        *
        * <pre>
-       *for SeekChannel
+       *for SeekYProcessor
        * </pre>
        */
       public boolean hasSeekTime() {
@@ -6279,7 +6279,7 @@ public final class YamcsManagement {
        * <code>optional int64 seekTime = 7;</code>
        *
        * <pre>
-       *for SeekChannel
+       *for SeekYProcessor
        * </pre>
        */
       public long getSeekTime() {
@@ -6289,7 +6289,7 @@ public final class YamcsManagement {
        * <code>optional int64 seekTime = 7;</code>
        *
        * <pre>
-       *for SeekChannel
+       *for SeekYProcessor
        * </pre>
        */
       public Builder setSeekTime(long value) {
@@ -6302,7 +6302,7 @@ public final class YamcsManagement {
        * <code>optional int64 seekTime = 7;</code>
        *
        * <pre>
-       *for SeekChannel
+       *for SeekYProcessor
        * </pre>
        */
       public Builder clearSeekTime() {
@@ -6312,15 +6312,15 @@ public final class YamcsManagement {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:yamcsmanagement.ChannelRequest)
+      // @@protoc_insertion_point(builder_scope:yamcsmanagement.YProcessorRequest)
     }
 
     static {
-      defaultInstance = new ChannelRequest(true);
+      defaultInstance = new YProcessorRequest(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:yamcsmanagement.ChannelRequest)
+    // @@protoc_insertion_point(class_scope:yamcsmanagement.YProcessorRequest)
   }
 
   public interface LinkInfoOrBuilder
@@ -7919,10 +7919,10 @@ public final class YamcsManagement {
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_yamcsmanagement_ChannelInfo_descriptor;
+    internal_static_yamcsmanagement_YProcessorInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable;
+      internal_static_yamcsmanagement_YProcessorInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcsmanagement_ClientInfo_descriptor;
   private static
@@ -7939,10 +7939,10 @@ public final class YamcsManagement {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yamcsmanagement_Statistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_yamcsmanagement_ChannelRequest_descriptor;
+    internal_static_yamcsmanagement_YProcessorRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable;
+      internal_static_yamcsmanagement_YProcessorRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcsmanagement_LinkInfo_descriptor;
   private static
@@ -7958,60 +7958,61 @@ public final class YamcsManagement {
   static {
     java.lang.String[] descriptorData = {
       "\n\026yamcs-management.proto\022\017yamcsmanagemen" +
-      "t\032\013yamcs.proto\"\202\002\n\013ChannelInfo\022\020\n\010instan" +
-      "ce\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004" +
-      "spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\025\n\rhasComman" +
-      "ding\030\006 \001(\010\022,\n\005state\030\007 \001(\0162\035.yamcsmanagem" +
-      "ent.ServiceState\022+\n\rreplayRequest\030\010 \001(\0132" +
-      "\024.yamcs.ReplayRequest\0224\n\013replayState\030\t \001" +
-      "(\0162\037.yamcs.ReplayStatus.ReplayState\"j\n\nC" +
-      "lientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022" +
-      "\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004 \001",
-      "(\t\022\023\n\013channelName\030\005 \001(\t\"\213\001\n\014TmStatistics" +
-      "\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030" +
-      "\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026\n\016lastPacke" +
-      "tTime\030\004 \001(\003\022 \n\030subscribedParameterCount\030" +
-      "\005 \001(\005\"x\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\023\n" +
-      "\013channelName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.ya" +
-      "mcsmanagement.TmStatistics\022\023\n\013lastUpdate" +
-      "d\030\004 \001(\003\"\213\001\n\016ChannelRequest\022\020\n\010instance\030\001" +
-      " \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec" +
-      "\030\004 \001(\t\022\031\n\npersistent\030\005 \001(\010:\005false\022\020\n\010cli",
-      "entId\030\006 \003(\005\022\020\n\010seekTime\030\007 \001(\003\"\243\001\n\010LinkIn" +
-      "fo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004ty" +
-      "pe\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020" +
-      "\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdata" +
-      "Count\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014S" +
-      "erviceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RU" +
-      "NNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n" +
-      "\006FAILED\020\0052\313\002\n\016ChannelControl\022=\n\rCreateCh" +
-      "annel\022\037.yamcsmanagement.ChannelRequest\032\013" +
-      ".yamcs.Void\022@\n\020ConnectToChannel\022\037.yamcsm",
-      "anagement.ChannelRequest\032\013.yamcs.Void\022<\n" +
-      "\014PauseChannel\022\037.yamcsmanagement.ChannelR" +
-      "equest\032\013.yamcs.Void\022=\n\rResumeChannel\022\037.y" +
-      "amcsmanagement.ChannelRequest\032\013.yamcs.Vo" +
-      "id\022;\n\013SeekChannel\022\037.yamcsmanagement.Chan" +
-      "nelRequest\032\013.yamcs.VoidB\024\n\022org.yamcs.pro" +
-      "tobuf"
+      "t\032\013yamcs.proto\"\205\002\n\016YProcessorInfo\022\020\n\010ins" +
+      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
+      "\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\025\n\rhasCom" +
+      "manding\030\006 \001(\010\022,\n\005state\030\007 \001(\0162\035.yamcsmana" +
+      "gement.ServiceState\022+\n\rreplayRequest\030\010 \001" +
+      "(\0132\024.yamcs.ReplayRequest\0224\n\013replayState\030" +
+      "\t \001(\0162\037.yamcs.ReplayStatus.ReplayState\"m" +
+      "\n\nClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002" +
+      "(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030",
+      "\004 \001(\t\022\026\n\016yProcessorName\030\005 \001(\t\"\213\001\n\014TmStat" +
+      "istics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPa" +
+      "ckets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026\n\016las" +
+      "tPacketTime\030\004 \001(\003\022 \n\030subscribedParameter" +
+      "Count\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instance\030\001 " +
+      "\002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmstats\030\003" +
+      " \003(\0132\035.yamcsmanagement.TmStatistics\022\023\n\013l" +
+      "astUpdated\030\004 \001(\003\"\216\001\n\021YProcessorRequest\022\020" +
+      "\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003" +
+      " \001(\t\022\014\n\004spec\030\004 \001(\t\022\031\n\npersistent\030\005 \001(\010:\005",
+      "false\022\020\n\010clientId\030\006 \003(\005\022\020\n\010seekTime\030\007 \001(" +
+      "\003\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name" +
+      "\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006st" +
+      "ream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007" +
+      " \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatu" +
+      "s\030\t \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STAR" +
+      "TING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTER" +
+      "MINATED\020\004\022\n\n\006FAILED\020\0052\354\002\n\021YProcessorCont" +
+      "rol\022C\n\020CreateYProcessor\022\".yamcsmanagemen" +
+      "t.YProcessorRequest\032\013.yamcs.Void\022F\n\023Conn",
+      "ectToYProcessor\022\".yamcsmanagement.YProce" +
+      "ssorRequest\032\013.yamcs.Void\022B\n\017PauseYProces" +
+      "sor\022\".yamcsmanagement.YProcessorRequest\032" +
+      "\013.yamcs.Void\022C\n\020ResumeYProcessor\022\".yamcs" +
+      "management.YProcessorRequest\032\013.yamcs.Voi" +
+      "d\022A\n\016SeekYProcessor\022\".yamcsmanagement.YP" +
+      "rocessorRequest\032\013.yamcs.VoidB\024\n\022org.yamc" +
+      "s.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_yamcsmanagement_ChannelInfo_descriptor =
+          internal_static_yamcsmanagement_YProcessorInfo_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_yamcsmanagement_ChannelInfo_fieldAccessorTable = new
+          internal_static_yamcsmanagement_YProcessorInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_yamcsmanagement_ChannelInfo_descriptor,
+              internal_static_yamcsmanagement_YProcessorInfo_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Creator", "HasCommanding", "State", "ReplayRequest", "ReplayState", });
           internal_static_yamcsmanagement_ClientInfo_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_yamcsmanagement_ClientInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsmanagement_ClientInfo_descriptor,
-              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ChannelName", });
+              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "YProcessorName", });
           internal_static_yamcsmanagement_TmStatistics_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_yamcsmanagement_TmStatistics_fieldAccessorTable = new
@@ -8023,12 +8024,12 @@ public final class YamcsManagement {
           internal_static_yamcsmanagement_Statistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsmanagement_Statistics_descriptor,
-              new java.lang.String[] { "Instance", "ChannelName", "Tmstats", "LastUpdated", });
-          internal_static_yamcsmanagement_ChannelRequest_descriptor =
+              new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", });
+          internal_static_yamcsmanagement_YProcessorRequest_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_yamcsmanagement_ChannelRequest_fieldAccessorTable = new
+          internal_static_yamcsmanagement_YProcessorRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_yamcsmanagement_ChannelRequest_descriptor,
+              internal_static_yamcsmanagement_YProcessorRequest_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Persistent", "ClientId", "SeekTime", });
           internal_static_yamcsmanagement_LinkInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);

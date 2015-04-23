@@ -966,20 +966,20 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string channelName = 2;
+    // required string yProcessorName = 2;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    boolean hasChannelName();
+    boolean hasYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    java.lang.String getChannelName();
+    java.lang.String getYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     com.google.protobuf.ByteString
-        getChannelNameBytes();
+        getYProcessorNameBytes();
 
     // required string name = 3;
     /**
@@ -1064,7 +1064,7 @@ public final class Commanding {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              channelName_ = input.readBytes();
+              yProcessorName_ = input.readBytes();
               break;
             }
             case 26: {
@@ -1166,20 +1166,20 @@ public final class Commanding {
       }
     }
 
-    // required string channelName = 2;
-    public static final int CHANNELNAME_FIELD_NUMBER = 2;
-    private java.lang.Object channelName_;
+    // required string yProcessorName = 2;
+    public static final int YPROCESSORNAME_FIELD_NUMBER = 2;
+    private java.lang.Object yProcessorName_;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public boolean hasChannelName() {
+    public boolean hasYProcessorName() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public java.lang.String getChannelName() {
-      java.lang.Object ref = channelName_;
+    public java.lang.String getYProcessorName() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -1187,22 +1187,22 @@ public final class Commanding {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          channelName_ = s;
+          yProcessorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getChannelNameBytes() {
-      java.lang.Object ref = channelName_;
+        getYProcessorNameBytes() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        channelName_ = b;
+        yProcessorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -1270,7 +1270,7 @@ public final class Commanding {
 
     private void initFields() {
       instance_ = "";
-      channelName_ = "";
+      yProcessorName_ = "";
       name_ = "";
       state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
     }
@@ -1283,7 +1283,7 @@ public final class Commanding {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasChannelName()) {
+      if (!hasYProcessorName()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1302,7 +1302,7 @@ public final class Commanding {
         output.writeBytes(1, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getChannelNameBytes());
+        output.writeBytes(2, getYProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getNameBytes());
@@ -1325,7 +1325,7 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getChannelNameBytes());
+          .computeBytesSize(2, getYProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1453,7 +1453,7 @@ public final class Commanding {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        channelName_ = "";
+        yProcessorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -1494,7 +1494,7 @@ public final class Commanding {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.channelName_ = channelName_;
+        result.yProcessorName_ = yProcessorName_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -1524,9 +1524,9 @@ public final class Commanding {
           instance_ = other.instance_;
           onChanged();
         }
-        if (other.hasChannelName()) {
+        if (other.hasYProcessorName()) {
           bitField0_ |= 0x00000002;
-          channelName_ = other.channelName_;
+          yProcessorName_ = other.yProcessorName_;
           onChanged();
         }
         if (other.hasName()) {
@@ -1546,7 +1546,7 @@ public final class Commanding {
           
           return false;
         }
-        if (!hasChannelName()) {
+        if (!hasYProcessorName()) {
           
           return false;
         }
@@ -1650,76 +1650,76 @@ public final class Commanding {
         return this;
       }
 
-      // required string channelName = 2;
-      private java.lang.Object channelName_ = "";
+      // required string yProcessorName = 2;
+      private java.lang.Object yProcessorName_ = "";
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public boolean hasChannelName() {
+      public boolean hasYProcessorName() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public java.lang.String getChannelName() {
-        java.lang.Object ref = channelName_;
+      public java.lang.String getYProcessorName() {
+        java.lang.Object ref = yProcessorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          channelName_ = s;
+          yProcessorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getChannelNameBytes() {
-        java.lang.Object ref = channelName_;
+          getYProcessorNameBytes() {
+        java.lang.Object ref = yProcessorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          channelName_ = b;
+          yProcessorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelName(
+      public Builder setYProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder clearChannelName() {
+      public Builder clearYProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        channelName_ = getDefaultInstance().getChannelName();
+        yProcessorName_ = getDefaultInstance().getYProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelNameBytes(
+      public Builder setYProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
@@ -1863,20 +1863,20 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string channelName = 2;
+    // required string yProcessorName = 2;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    boolean hasChannelName();
+    boolean hasYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    java.lang.String getChannelName();
+    java.lang.String getYProcessorName();
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     com.google.protobuf.ByteString
-        getChannelNameBytes();
+        getYProcessorNameBytes();
 
     // required string queueName = 3;
     /**
@@ -2019,7 +2019,7 @@ public final class Commanding {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              channelName_ = input.readBytes();
+              yProcessorName_ = input.readBytes();
               break;
             }
             case 26: {
@@ -2143,20 +2143,20 @@ public final class Commanding {
       }
     }
 
-    // required string channelName = 2;
-    public static final int CHANNELNAME_FIELD_NUMBER = 2;
-    private java.lang.Object channelName_;
+    // required string yProcessorName = 2;
+    public static final int YPROCESSORNAME_FIELD_NUMBER = 2;
+    private java.lang.Object yProcessorName_;
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public boolean hasChannelName() {
+    public boolean hasYProcessorName() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
-    public java.lang.String getChannelName() {
-      java.lang.Object ref = channelName_;
+    public java.lang.String getYProcessorName() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -2164,22 +2164,22 @@ public final class Commanding {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          channelName_ = s;
+          yProcessorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string channelName = 2;</code>
+     * <code>required string yProcessorName = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getChannelNameBytes() {
-      java.lang.Object ref = channelName_;
+        getYProcessorNameBytes() {
+      java.lang.Object ref = yProcessorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        channelName_ = b;
+        yProcessorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -2371,7 +2371,7 @@ public final class Commanding {
 
     private void initFields() {
       instance_ = "";
-      channelName_ = "";
+      yProcessorName_ = "";
       queueName_ = "";
       cmdId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
       source_ = "";
@@ -2388,7 +2388,7 @@ public final class Commanding {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasChannelName()) {
+      if (!hasYProcessorName()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -2415,7 +2415,7 @@ public final class Commanding {
         output.writeBytes(1, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getChannelNameBytes());
+        output.writeBytes(2, getYProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getQueueNameBytes());
@@ -2450,7 +2450,7 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getChannelNameBytes());
+          .computeBytesSize(2, getYProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2599,7 +2599,7 @@ public final class Commanding {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        channelName_ = "";
+        yProcessorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         queueName_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -2652,7 +2652,7 @@ public final class Commanding {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.channelName_ = channelName_;
+        result.yProcessorName_ = yProcessorName_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -2702,9 +2702,9 @@ public final class Commanding {
           instance_ = other.instance_;
           onChanged();
         }
-        if (other.hasChannelName()) {
+        if (other.hasYProcessorName()) {
           bitField0_ |= 0x00000002;
-          channelName_ = other.channelName_;
+          yProcessorName_ = other.yProcessorName_;
           onChanged();
         }
         if (other.hasQueueName()) {
@@ -2740,7 +2740,7 @@ public final class Commanding {
           
           return false;
         }
-        if (!hasChannelName()) {
+        if (!hasYProcessorName()) {
           
           return false;
         }
@@ -2852,76 +2852,76 @@ public final class Commanding {
         return this;
       }
 
-      // required string channelName = 2;
-      private java.lang.Object channelName_ = "";
+      // required string yProcessorName = 2;
+      private java.lang.Object yProcessorName_ = "";
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public boolean hasChannelName() {
+      public boolean hasYProcessorName() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public java.lang.String getChannelName() {
-        java.lang.Object ref = channelName_;
+      public java.lang.String getYProcessorName() {
+        java.lang.Object ref = yProcessorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          channelName_ = s;
+          yProcessorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getChannelNameBytes() {
-        java.lang.Object ref = channelName_;
+          getYProcessorNameBytes() {
+        java.lang.Object ref = yProcessorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          channelName_ = b;
+          yProcessorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelName(
+      public Builder setYProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder clearChannelName() {
+      public Builder clearYProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        channelName_ = getDefaultInstance().getChannelName();
+        yProcessorName_ = getDefaultInstance().getYProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string channelName = 2;</code>
+       * <code>required string yProcessorName = 2;</code>
        */
-      public Builder setChannelNameBytes(
+      public Builder setYProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        channelName_ = value;
+        yProcessorName_ = value;
         onChanged();
         return this;
       }
@@ -6108,30 +6108,31 @@ public final class Commanding {
       "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
       "oto\"`\n\tCommandId\022\026\n\016generationTime\030\001 \002(\003" +
       "\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumber\030\003 \002(\005" +
-      "\022\023\n\013commandName\030\004 \001(\t\"n\n\020CommandQueueInf" +
-      "o\022\020\n\010instance\030\001 \002(\t\022\023\n\013channelName\030\002 \002(\t" +
-      "\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.commandi" +
-      "ng.QueueState\"\275\001\n\021CommandQueueEntry\022\020\n\010i" +
-      "nstance\030\001 \002(\t\022\023\n\013channelName\030\002 \002(\t\022\021\n\tqu" +
-      "eueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.commandin" +
-      "g.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006binary\030\006 ",
-      "\001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generationTime\030" +
-      "\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tqueueIn" +
-      "fo\030\001 \001(\0132\034.commanding.CommandQueueInfo\0221" +
-      "\n\nqueueEntry\030\002 \001(\0132\035.commanding.CommandQ" +
-      "ueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"R\n\027Com" +
-      "mandHistoryAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005va" +
-      "lue\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n" +
-      "\023CommandHistoryEntry\022(\n\tcommandId\030\001 \002(\0132" +
-      "\025.commanding.CommandId\0221\n\004attr\030\003 \003(\0132#.c" +
-      "ommanding.CommandHistoryAttribute*4\n\nQue",
-      "ueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007EN" +
-      "ABLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQu" +
-      "eueState\022\034.commanding.CommandQueueInfo\032\013" +
-      ".yamcs.Void\022;\n\013SendCommand\022\037.commanding." +
-      "CommandQueueRequest\032\013.yamcs.Void\022;\n\rReje" +
-      "ctCommand\022\035.commanding.CommandQueueEntry" +
-      "\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "\022\023\n\013commandName\030\004 \001(\t\"q\n\020CommandQueueInf" +
+      "o\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 " +
+      "\002(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comma" +
+      "nding.QueueState\"\300\001\n\021CommandQueueEntry\022\020" +
+      "\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t" +
+      "\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.com" +
+      "manding.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006bin",
+      "ary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generatio" +
+      "nTime\030\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tq" +
+      "ueueInfo\030\001 \001(\0132\034.commanding.CommandQueue" +
+      "Info\0221\n\nqueueEntry\030\002 \001(\0132\035.commanding.Co" +
+      "mmandQueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"" +
+      "R\n\027CommandHistoryAttribute\022\014\n\004name\030\001 \001(\t" +
+      "\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 " +
+      "\001(\003\"r\n\023CommandHistoryEntry\022(\n\tcommandId\030" +
+      "\001 \002(\0132\025.commanding.CommandId\0221\n\004attr\030\003 \003" +
+      "(\0132#.commanding.CommandHistoryAttribute*",
+      "4\n\nQueueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002" +
+      "\022\013\n\007ENABLED\020\0032\313\001\n\023CommandQueueControl\022:\n" +
+      "\rSetQueueState\022\034.commanding.CommandQueue" +
+      "Info\032\013.yamcs.Void\022;\n\013SendCommand\022\037.comma" +
+      "nding.CommandQueueRequest\032\013.yamcs.Void\022;" +
+      "\n\rRejectCommand\022\035.commanding.CommandQueu" +
+      "eEntry\032\013.yamcs.VoidB\024\n\022org.yamcs.protobu" +
+      "f"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6149,13 +6150,13 @@ public final class Commanding {
           internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "ChannelName", "Name", "State", });
+              new java.lang.String[] { "Instance", "YProcessorName", "Name", "State", });
           internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueEntry_descriptor,
-              new java.lang.String[] { "Instance", "ChannelName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", });
+              new java.lang.String[] { "Instance", "YProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", });
           internal_static_commanding_CommandQueueRequest_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_commanding_CommandQueueRequest_fieldAccessorTable = new
