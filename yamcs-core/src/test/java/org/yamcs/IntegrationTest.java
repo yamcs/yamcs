@@ -122,11 +122,8 @@ public class IntegrationTest extends YarchTestCase {
     @Test
     public void testWsParameter() throws Exception {	
         //subscribe to parameters
-        long t0 = System.currentTimeMillis();
-        
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName"); 
 
-       System.out.println("t1: "+(System.currentTimeMillis()-t0));
        
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
@@ -134,20 +131,15 @@ public class IntegrationTest extends YarchTestCase {
         NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
         assertNotNull(invalidId);
         assertEquals("/REFMDB/SUBSYS1/InvalidParaName", invalidId.getName());
-        System.out.println("t20: "+(System.currentTimeMillis()-t0));
         //TODO: because there is an invalid parameter, the request is sent back so we have to wait a little; 
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
-        System.out.println("t30: "+(System.currentTimeMillis()-t0));
         //generate some TM packets and monitor realtime reception
         for (int i=0;i <1000; i++) packetProvider.generate_PKT11();
-        System.out.println("t35: "+(System.currentTimeMillis()-t0));
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
-        System.out.println("t40: "+(System.currentTimeMillis()-t0));
         checkPdata(pdata, packetProvider);
         
         NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6"); 
-        System.out.println("t50: "+(System.currentTimeMillis()-t0));
         wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
         wsClient.sendRequest(wsr);
     

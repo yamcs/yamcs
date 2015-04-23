@@ -161,7 +161,6 @@ public class AlgorithmEngine {
 	log.trace("Running algorithm '{}'",def.getName());
 	try {
 	    if(compiledScript!=null) {
-	        System.out.println("running compiled script");
 	        compiledScript.eval();
 	    } else {
 	        scriptEngine.eval(def.getAlgorithmText());
