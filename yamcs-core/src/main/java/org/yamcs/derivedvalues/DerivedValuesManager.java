@@ -21,8 +21,10 @@ import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -53,17 +55,17 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     @SuppressWarnings("unchecked")
     @Override
-    public void init(YProcessor channel) throws ConfigurationException {
-	this.parameterRequestManager = channel.getParameterRequestManager();
+    public void init(YProcessor yproc) throws ConfigurationException {
+	this.parameterRequestManager = yproc.getParameterRequestManager();
 
 	try {
 	    subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 	} catch (InvalidIdentification e) {
 	    log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
 	}
-
-	addAll(new DerivedValues_XTCE(channel.getXtceDb()).getDerivedValues());
-	YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+channel.getInstance());
+	XtceDb xtcedb = yproc.getXtceDb();
+	addAll(new DerivedValues_XTCE(xtcedb).getDerivedValues());
+	YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+yproc.getInstance());
 	String mdbconfig=yconf.getString("mdb");
 	YConfiguration conf=YConfiguration.getConfiguration("mdb");
 	if(conf.containsKey(mdbconfig+"_derivedValuesProviders")) {
@@ -71,15 +73,10 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 	    for(String p:providers) {
 		Class<DerivedValuesProvider> c;
 		try {
-		    c = (Class<DerivedValuesProvider>) Class.forName(p);
-		    DerivedValuesProvider provider=c.newInstance();
+		    YObjectLoader<DerivedValuesProvider> loader = new YObjectLoader<>();
+		    DerivedValuesProvider provider = loader.loadObject(p, xtcedb);
 		    addAll(provider.getDerivedValues());
-		} catch (ClassNotFoundException e) {
-		    throw new ConfigurationException("Cannot load derived value provider from class "+p, e);
-		} catch (InstantiationException e) {
-		    e.printStackTrace();
-		    throw new ConfigurationException("Cannot load derived value provider from class "+p, e);
-		} catch (IllegalAccessException e) {
+		} catch (Exception e) {
 		    throw new ConfigurationException("Cannot load derived value provider from class "+p, e);
 		}
 	    }

@@ -32,6 +32,7 @@ import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
+
 public class DerivedValues_XTCE implements DerivedValuesProvider {
     private static final Logger log = LoggerFactory.getLogger(DerivedValues_XTCE.class);
     ArrayList<DerivedValue> derivedValues = new ArrayList<DerivedValue>();
@@ -263,12 +264,11 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	return params;
     }
 
-    class Algorithm extends MdbDerivedValue {
+    class Algorithm extends DerivedValue {
 	String programCode;
 	ScriptEngine engine;
 
-	Algorithm(ScriptEngine engine, String programCode,
-		String[] inputParams, String outputParam) {
+	Algorithm(ScriptEngine engine, String programCode, String[] inputParams, String outputParam) {
 	    super(outputParam, getParameters(inputParams));
 	    this.engine = engine;
 	    this.programCode = programCode;
