@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +28,27 @@ public class XtceLoader implements SpaceSystemLoader {
     /**
      * Logger
      */
-    transient static Logger             log         = LoggerFactory.getLogger(XtceLoader.class.getName());
-
+    transient static Logger log = LoggerFactory.getLogger(XtceLoader.class.getName());
+    
+    Set<String> excludedContainers;
+    
     /**
      * Constructor
      */
     public XtceLoader(String xtceFileName) {
         this.xtceFileName=xtceFileName;
         initialize();
+    }
+
+    @SuppressWarnings("unchecked")
+    public XtceLoader(Map<String, Object> config) {
+        this.xtceFileName = (String) config.get("file");
+        Object o = config.get("excludeTmContainers");
+        if(o instanceof List<?>)  {
+            excludedContainers = new HashSet<String>((List<String>)o);    
+        } else {
+            throw new ConfigurationException("Excluded containers has to be a list. In the current config it is a "+o.getClass());
+        }
     }
 
     /**
@@ -88,6 +105,9 @@ public class XtceLoader implements SpaceSystemLoader {
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         try {
             xtceReader = new XtceStaxReader();
+            if(excludedContainers!=null) {
+                xtceReader.setExcludedContainers(excludedContainers);
+            }
             return xtceReader.readXmlDocument(xtceFileName);
         } catch (FileNotFoundException e) {
             throw new ConfigurationException("XTCE file not found: " + xtceFileName);

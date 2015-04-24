@@ -9,9 +9,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.BinaryDataEncoding;
@@ -172,6 +175,7 @@ public class XtceStaxReader {
      * Statistics about the skipped sections. (good for overview about unimplemented features)
      */
     private Map<String, Integer> xtceSkipStatistics             = new HashMap<String, Integer>();
+    private Set<String> excludedContainers = new HashSet<String>();
 
     /**
      * Constructor
@@ -1276,7 +1280,11 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_SequenceContainer)) {
                 SequenceContainer sc=readXtceSequenceContainer();
-                spaceSystem.addSequenceContainer(sc);
+                if(excludedContainers.contains(sc.getName())) {
+                    log.debug("Not adding '"+sc.getName()+"' to the SpaceSystem because excluded by configuration");
+                } else {
+                    spaceSystem.addSequenceContainer(sc);
+                }
                 if((sc.getBaseContainer()==null) && (spaceSystem.getRootSequenceContainer()==null)) {
                     spaceSystem.setRootSequenceContainer(sc);
                 }
@@ -1327,23 +1335,26 @@ public class XtceStaxReader {
 
         String refName = readAttribute("containerRef", xmlEvent.asStartElement());
         if (refName != null) {
-            // find base container in the set of already defined containers
-            SequenceContainer baseContainer = spaceSystem.getSequenceContainer(refName);
-            if (baseContainer != null) {
-                seqContainer.setBaseContainer(baseContainer);
-            } else { //must come from somwhere else
-                final SequenceContainer finalsc=seqContainer;
-                NameReference nr=new NameReference(refName, Type.SEQUENCE_CONTAINTER,
-                        new ResolvedAction() {
-                    @Override
-                    public boolean resolved(NameDescription nd) {
-                        finalsc.setBaseContainer((SequenceContainer) nd);
-                        return true;
-                    }
-                });
-                spaceSystem.addUnresolvedReference(nr);
+            if(excludedContainers.contains(refName)) {
+                log.debug("adding "+seqContainer.getName()+" to the list of the excluded containers because its parent is excluded");
+                excludedContainers.add(seqContainer.getName());
+            } else {
+                // find base container in the set of already defined containers
+                SequenceContainer baseContainer = spaceSystem.getSequenceContainer(refName);
+                if (baseContainer != null) {
+                    seqContainer.setBaseContainer(baseContainer);
+                } else { //must come from somwhere else
+                    final SequenceContainer finalsc=seqContainer;
+                    NameReference nr=new NameReference(refName, Type.SEQUENCE_CONTAINTER, new ResolvedAction() {
+                        @Override
+                        public boolean resolved(NameDescription nd) {
+                            finalsc.setBaseContainer((SequenceContainer) nd);
+                            return true;
+                        }
+                    });
+                    spaceSystem.addUnresolvedReference(nr);
+                }
             }
-
         } else {
             throw new XMLStreamException("Reference on base container is missing");
         }
@@ -1772,5 +1783,10 @@ public class XtceStaxReader {
             System.out.println("Wrong arguments, exactly one argument allowed");
         }
 
+    }
+
+
+    public void setExcludedContainers(Set<String> excludedContainers) {
+        this.excludedContainers = excludedContainers;
     }
 }
