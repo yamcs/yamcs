@@ -8,8 +8,8 @@ print "connected"
 print " subcribing to parameters...",
 
 ws.send('[1,1,3, {"parameter": "subscribe", "data": { "list" : [ \
-           {"name": "/SIMULATOR/SIMULATOR/Alpha"},\
-           {"name": "/SIMULATOR/SIMULATOR/Heading"}, \
+           {"name": "/YSS/SIMULATOR/Alpha"},\
+           {"name": "/YSS/SIMULATOR/Heading"}, \
            {"name": "SIMULATOR_PrimBusVoltage1", "namespace": "MDB:OPS Name"}\
         ]}}]')
 print "subscribed"
