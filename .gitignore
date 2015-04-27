@@ -10,7 +10,6 @@ bin/
 
 target/
 yamcs-core/lib/
-yamcs-core/src/main/java/org/yamcs/YamcsVersion.java
 live
 doc/yamcs-manual.fo
 doc/yamcs-manual.pdf
