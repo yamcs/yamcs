@@ -178,7 +178,7 @@ public class DerivedValuesTest {
     static public class MyDerivedValuesProvider implements DerivedValuesProvider {
 	Collection<DerivedValue> dvalues=new ArrayList<DerivedValue>(1);
 
-	public MyDerivedValuesProvider() {
+	public MyDerivedValuesProvider(XtceDb xtcedb) {
 	    FloatAddDv dv1=new FloatAddDv("test_float_add", new String[]{"/REFMDB/SUBSYS1/FloatPara11_2", "/REFMDB/SUBSYS1/FloatPara11_3"});
 	    dv1.def.setQualifiedName("/DV/test_float_add");
 	    dvalues.add(dv1);
