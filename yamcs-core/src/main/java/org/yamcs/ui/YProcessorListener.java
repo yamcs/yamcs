@@ -2,7 +2,7 @@ package org.yamcs.ui;
 
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 
 
 
@@ -12,8 +12,8 @@ public interface YProcessorListener {
 
     public void popup(String text);
 
-    public void yProcessorUpdated(YProcessorInfo ci);
-    public void yProcessorClosed(YProcessorInfo ci);
+    public void processorUpdated(ProcessorInfo ci);
+    public void yProcessorClosed(ProcessorInfo ci);
     public void clientDisconnected(ClientInfo ci);
     public void clientUpdated(ClientInfo ci);
     public void updateStatistics(Statistics s);

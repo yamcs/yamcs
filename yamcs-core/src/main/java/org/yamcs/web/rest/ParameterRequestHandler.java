@@ -40,29 +40,29 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
-        org.yamcs.YProcessor yamcsChannel = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
+        org.yamcs.YProcessor yproc = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
 
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("_get".equals(qsDecoder.path())) {
             RestGetParameterRequest request = readMessage(req, SchemaRest.RestGetParameterRequest.MERGE).build();
-            ParameterData pdata = getParameters(request, yamcsChannel);
+            ParameterData pdata = getParameters(request, yproc);
             writeMessage(ctx, req, qsDecoder, pdata, SchemaPvalue.ParameterData.WRITE);
         } else if ("_set".equals(qsDecoder.path())) {
             ParameterData pdata = readMessage(req, SchemaPvalue.ParameterData.MERGE).build();
-            RestSetParameterResponse response = setParameters(pdata, yamcsChannel);
+            RestSetParameterResponse response = setParameters(pdata, yproc);
 
             writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSetParameterResponse.WRITE);
         } else {
             String fqname = "/"+qsDecoder.path();
             NamedObjectId id = NamedObjectId.newBuilder().setName(fqname).build();
-            Parameter p = yamcsChannel.getXtceDb().getParameter(id);
+            Parameter p = yproc.getXtceDb().getParameter(id);
             if(p==null) {
                 log.warn("Invalid parameter requested: {}", id);
                 sendError(ctx, NOT_FOUND);
                 return;
             }
             if(req.getMethod()==HttpMethod.GET) {
-                ParameterValue pv = getParameterFromCache(id, p, yamcsChannel);
+                ParameterValue pv = getParameterFromCache(id, p, yproc);
                 if(pv==null) {
                     log.debug("No value found in cache for parameter: {}", id);
                     sendError(ctx, NOT_FOUND);
@@ -71,7 +71,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
                 }
             } else if(req.getMethod()==HttpMethod.POST) {
                 Value v = readMessage(req, SchemaYamcs.Value.MERGE).build();
-                RestSetParameterResponse response = setParameter(p, v, yamcsChannel);
+                RestSetParameterResponse response = setParameter(p, v, yproc);
                 writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSetParameterResponse.WRITE);
             } else {
                 throw new BadRequestException("Only GET and POST methods supported for parameter");

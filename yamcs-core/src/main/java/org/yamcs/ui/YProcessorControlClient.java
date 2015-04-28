@@ -6,14 +6,15 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
+import org.yamcs.api.Constants;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.YProcessorRequest;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
 import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
 import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
@@ -43,40 +44,40 @@ public class YProcessorControlClient implements ConnectionListener {
 
     }
 
-    public void createYProcessor(String instance, String name, String type, String spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
-        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
+    public void createProcessor(String instance, String name, String type, String spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
+        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name)
         .setType(type).setSpec(spec).setPersistent(persistent);
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "createYProcessor", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_createProcessor, crb.build(), null);
     }
 
     public void connectToYProcessor(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
-        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
+        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "connectToYProcessor", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_connectToProcessor, crb.build(), null);
     }
 
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
-        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
+        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "pauseReplay", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_pauseReplay, crb.build(), null);
     }
 
     public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
-        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
+        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "resumeReplay", crb.build(), null);
+        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_resumeReplay, crb.build(), null);
     }
 
 
     public void seekArchiveReplay(String instance, String name, long newPosition) throws YamcsApiException, YamcsException  {
-        YProcessorRequest.Builder crb=YProcessorRequest.newBuilder()
+        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name).setSeekTime(newPosition);
         yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
     }
@@ -134,10 +135,10 @@ public class YProcessorControlClient implements ConnectionListener {
         try {
             String eventName=msg.getStringProperty(Protocol.HDR_EVENT_NAME);
             if("yprocUpdated".equals(eventName)) {
-                YProcessorInfo ci = (YProcessorInfo)Protocol.decode(msg, YProcessorInfo.newBuilder());
-                yamcsMonitor.yProcessorUpdated(ci);
+                ProcessorInfo ci = (ProcessorInfo)Protocol.decode(msg, ProcessorInfo.newBuilder());
+                yamcsMonitor.processorUpdated(ci);
             } else if("yprocClosed".equals(eventName)) {
-                YProcessorInfo ci = (YProcessorInfo)Protocol.decode(msg, YProcessorInfo.newBuilder());
+                ProcessorInfo ci = (ProcessorInfo)Protocol.decode(msg, ProcessorInfo.newBuilder());
                 yamcsMonitor.yProcessorClosed(ci);
             } else if("clientUpdated".equals(eventName)) {
                 ClientInfo ci=(ClientInfo)Protocol.decode(msg, ClientInfo.newBuilder());

@@ -209,8 +209,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     /**
      *  csv generator should be created only once per request since its insert a header in first row
      */
-    protected void initCsvGenerator(Yamcs.ReplayRequest replayRequest)
-    {
+    protected void initCsvGenerator(Yamcs.ReplayRequest replayRequest) {
         csvGenerator = null;
         if(replayRequest.hasParameterRequest()) {
             csvGenerator = new CsvGenerator();

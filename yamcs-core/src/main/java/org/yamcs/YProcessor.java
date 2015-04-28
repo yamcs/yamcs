@@ -79,7 +79,7 @@ public class YProcessor {
     private boolean parameterCacheAll = false;
 
     static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
-    static List<YProcessorListener> listeners=new CopyOnWriteArrayList<YProcessorListener>(); //send notifications for added and removed channels to this
+    static List<YProcessorListener> listeners=new CopyOnWriteArrayList<YProcessorListener>(); //send notifications for added and removed processors to this
 
     private boolean quitting;
     //a synchronous channel waits for all the clients to deliver tm packets and parameters
@@ -170,7 +170,7 @@ public class YProcessor {
 
 	    instances.put(key(yamcsInstance,name),this);
 	    for(int i=0; i<listeners.size(); i++) {
-		listeners.get(i).yProcessorAdded(this);
+		listeners.get(i).processorAdded(this);
 	    }
 	    ManagementService.getInstance().registerYProcessor(this);
 	}
@@ -279,7 +279,7 @@ public class YProcessor {
 
     private void propagateChannelStateChange() {
 	for(int i=0; i<listeners.size(); i++) {
-	    listeners.get(i).yProcessorStateChanged(this);
+	    listeners.get(i).processorStateChanged(this);
 	}
     }
     public void seek(long instant) {

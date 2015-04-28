@@ -23,7 +23,7 @@ import org.yamcs.ui.YProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -59,7 +59,7 @@ public class YProcessorsTest {
         yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
 
         try {
-            ccc.createYProcessor("yproctest0", "test1", "dummy", "test", false, new int[]{10,14});
+            ccc.createProcessor("yproctest0", "test1", "dummy", "test", false, new int[]{10,14});
             assertTrue("YamcsException was expected", false);
         } catch(YamcsException e) {
             assertEquals("createYProcessor invoked with a list full of invalid client ids", e.getMessage());
@@ -77,7 +77,7 @@ public class YProcessorsTest {
         Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
         f.get(5, TimeUnit.SECONDS);
         
-        ccc.createYProcessor("yproctest1", "yproc1", "dummy", "", true, new int[0]);
+        ccc.createProcessor("yproctest1", "yproc1", "dummy", "", true, new int[0]);
         
         MyYProcClient client=new MyYProcClient();
         YProcessor yp=YProcessor.getInstance("yproctest1", "yproc1");
@@ -88,7 +88,7 @@ public class YProcessorsTest {
         
         ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
         
-        ccc.createYProcessor("yproctest1", "yproc2", "dummy", "", false, new int[]{1});
+        ccc.createProcessor("yproctest1", "yproc2", "dummy", "", false, new int[]{1});
         
         Thread.sleep(3000); //to make sure that this event will not overwrite the previous yproctest1,yproc1 one 
         ccc.connectToYProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
@@ -101,7 +101,7 @@ public class YProcessorsTest {
         yconnector.disconnect();
         
         assertEquals(2, ml.yprocUpdated.size());
-        YProcessorInfo ci=ml.yprocUpdated.get("yproc1");
+        ProcessorInfo ci=ml.yprocUpdated.get("yproc1");
         assertEquals("yproctest1",ci.getInstance());
         assertEquals("yproc1",ci.getName());
         assertEquals("dummy",ci.getType());
@@ -153,8 +153,8 @@ public class YProcessorsTest {
     }
     
     static class MyListener implements YProcessorListener {
-        Map<String, YProcessorInfo> yprocUpdated=Collections.synchronizedMap(new HashMap<String,YProcessorInfo>());
-        List<YProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<YProcessorInfo>());
+        Map<String, ProcessorInfo> yprocUpdated=Collections.synchronizedMap(new HashMap<String, ProcessorInfo>());
+        List<ProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         List<ClientInfo> clientDisconnectedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         String instance;
@@ -177,14 +177,14 @@ public class YProcessorsTest {
         }
 
         @Override
-        public void yProcessorUpdated(YProcessorInfo ci) {
+        public void processorUpdated(ProcessorInfo ci) {
             if(instance.equals(ci.getInstance())) {
                 yprocUpdated.put(ci.getName(), ci);
             }
         }
 
         @Override
-        public void yProcessorClosed(YProcessorInfo ci) {
+        public void yProcessorClosed(ProcessorInfo ci) {
             if(instance.equals(ci.getInstance()))
                 yprocClosedList.add(ci);
         }

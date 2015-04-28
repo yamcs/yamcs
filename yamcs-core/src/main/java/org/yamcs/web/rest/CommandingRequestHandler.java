@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YamcsException;
+import org.yamcs.api.Constants;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
@@ -42,7 +43,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             throw e;
         } else {
             QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-            if ("queue".equals(qsDecoder.path())) {
+            if (Constants.CMD_queue.equals(qsDecoder.path())) {
                 if (req.getMethod() == HttpMethod.POST) {
                     RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
                     RestSendCommandResponse response = sendCommand(request, yamcsChannel);
@@ -50,7 +51,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 } else {
                     throw new MethodNotAllowedException(req.getMethod());
                 }
-            } else if ("validator".equals(qsDecoder.path())) {
+            } else if (Constants.CMD_validator.equals(qsDecoder.path())) {
                 if (req.getMethod() == HttpMethod.POST) {
                     RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
                     RestValidateCommandResponse response = validateCommand(request, yamcsChannel);

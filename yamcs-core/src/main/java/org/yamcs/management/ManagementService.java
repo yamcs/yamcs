@@ -28,13 +28,13 @@ import javax.management.ObjectName;
 
 import com.google.common.util.concurrent.Service;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.YamcsManagement.YProcessorRequest;
+import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 
 public class ManagementService {
     final MBeanServer mbeanServer;
     HornetManagement hornetMgr;
-    HornetYProcessorManagement hornetYProcMgr;
+    HornetProcessorManagement hornetYProcMgr;
     HornetCommandQueueManagement hornetCmdQueueMgr;
 
     final boolean jmxEnabled, hornetEnabled;
@@ -67,7 +67,7 @@ public class ManagementService {
                 ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
                 hornetMgr=new HornetManagement(this, timer);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
-                hornetYProcMgr=new HornetYProcessorManagement(this, timer);
+                hornetYProcMgr=new HornetProcessorManagement(this, timer);
                 YProcessor.addYProcListener(hornetYProcMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
@@ -215,7 +215,7 @@ public class ManagementService {
 
     }
 
-    public void createYProcessor(YProcessorRequest cr, Privilege priv) throws YamcsException{
+    public void createProcessor(ProcessorRequest cr, Privilege priv) throws YamcsException{
         log.info("Creating a new yproc instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
         String currentUser=priv.getCurrentUser();
         if(currentUser==null) currentUser="unknown";
@@ -269,7 +269,7 @@ public class ManagementService {
     }
 
 
-    public void connectToYProcessor(YProcessorRequest cr, Privilege priv) throws YamcsException {
+    public void connectToProcessor(ProcessorRequest cr, Privilege priv) throws YamcsException {
         YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
         if(chan==null) throw new YamcsException("Unexisting yproc ("+cr.getInstance()+", "+cr.getName()+") specified");
 

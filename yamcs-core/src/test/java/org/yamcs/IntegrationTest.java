@@ -177,6 +177,8 @@ public class IntegrationTest extends YarchTestCase {
         long t0 = System.currentTimeMillis();
         req = RestGetParameterRequest.newBuilder()
                 .setTimeout(2000).addAllList(validSubscrList.getListList()).build();
+        System.out.println("sending request :" +toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
+        
         Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
 
         pdata = (fromJson(responseFuture.get(), SchemaPvalue.ParameterData.MERGE)).build();
@@ -194,8 +196,6 @@ public class IntegrationTest extends YarchTestCase {
         pdata = (fromJson(responseFuture.get(), SchemaPvalue.ParameterData.MERGE)).build();
 
         checkPdata(pdata, packetProvider);
-
-
     }
 
     @Test

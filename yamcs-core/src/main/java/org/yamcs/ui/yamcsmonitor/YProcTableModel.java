@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 
 class YProcTableModel extends AbstractTableModel {
-    private ArrayList<YProcessorInfo> yprocs=new ArrayList<YProcessorInfo>();
+    private ArrayList<ProcessorInfo> yprocs=new ArrayList<ProcessorInfo>();
 
     public void removeYProc(String instance, String name) {
         for ( int i = 0; i < yprocs.size(); ++i ) {
-            YProcessorInfo ci = yprocs.get(i);
+            ProcessorInfo ci = yprocs.get(i);
             if(ci.getInstance().equals(instance) && ci.getName().equals(name)) {
                 yprocs.remove(i);
                 fireTableRowsDeleted(i, i);
@@ -22,10 +22,10 @@ class YProcTableModel extends AbstractTableModel {
 
     //inserts or updates a yprocessor
     //returns true if the yprocessor was not in the table before
-    public boolean upsertYProc(YProcessorInfo ci) {
+    public boolean upsertYProc(ProcessorInfo ci) {
         boolean found=false;
         for ( int i = 0; i < yprocs.size(); ++i ) {
-            YProcessorInfo ci1 = yprocs.get(i);
+            ProcessorInfo ci1 = yprocs.get(i);
             if(ci.getInstance().equals(ci1.getInstance())&& ci.getName().equals(ci1.getName())) {
                 yprocs.set(i, ci);
                 fireTableRowsUpdated(i, i);
@@ -40,7 +40,7 @@ class YProcTableModel extends AbstractTableModel {
         }
         return !found;
     }
-    public YProcessorInfo getYProcessorInfo(int index) {
+    public ProcessorInfo getYProcessorInfo(int index) {
         return ((index >= 0) && (index < yprocs.size())) ? yprocs.get(index) : null;
     }
 
@@ -58,7 +58,7 @@ class YProcTableModel extends AbstractTableModel {
     public int getRowCount() { return yprocs.size(); }
     public int getColumnCount() { return columnNames.length; }
     public Object getValueAt(int row, int col) {
-        YProcessorInfo c = yprocs.get(row);
+        ProcessorInfo c = yprocs.get(row);
         Object o=null;
         switch (col) {
         case 0: o=c.getName(); break;

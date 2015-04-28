@@ -3,7 +3,7 @@ package org.yamcs.ui.archivebrowser;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.ui.YProcessorControlClient;
@@ -24,7 +24,7 @@ public class ReplayPanel extends JPanel {
     protected ImageIcon replayStartIcon, replayStopIcon;
     protected JButton playStopButton;
     public JButton applySelectionButton;
-    protected YProcessorInfo currentYProcInfo;
+    protected ProcessorInfo currentYProcInfo;
     int replayButtonFunction;
     static final int STOP = 0;
     static final int PLAY = 1;
@@ -193,7 +193,7 @@ public class ReplayPanel extends JPanel {
      * called by the yamcs monitor when a channelinfo update is received from the server
      * @param ci
      */
-    public void updateChannelInfol(YProcessorInfo ci) {
+    public void updateChannelInfol(ProcessorInfo ci) {
         if((currentYProcInfo==null)
                 || !ci.getInstance().equals(currentYProcInfo.getInstance()) 
                 || !ci.getName().equals(currentYProcInfo.getName())
@@ -206,7 +206,7 @@ public class ReplayPanel extends JPanel {
      * called by yamcs monitor when the selected channel has changed
      * @param ci
      */
-    public void setupReplayPanel(YProcessorInfo ci) {
+    public void setupReplayPanel(ProcessorInfo ci) {
         if(ci.hasReplayRequest()) {
             currentYProcInfo = ci;
             if ( isVisible() ) {
@@ -322,7 +322,7 @@ public class ReplayPanel extends JPanel {
         System.err.println(string);
         
     }
-    public void channelStateChanged(YProcessorInfo ci) {
+    public void channelStateChanged(ProcessorInfo ci) {
         currentYProcInfo=ci;
         updateReplayPanel();
     }

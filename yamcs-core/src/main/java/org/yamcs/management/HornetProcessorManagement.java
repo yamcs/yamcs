@@ -23,32 +23,34 @@ import org.hornetq.api.core.client.MessageHandler;
 import static org.yamcs.api.Protocol.*;
 
 import org.yamcs.YamcsException;
+import org.yamcs.api.Constants;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.YamcsManagement.YProcessorRequest;
+import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.protobuf.YamcsManagement.YProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 
 /**
  * provides yprocessor management services via hornetq
  * @author nm
  *
  */
-public class HornetYProcessorManagement implements YProcessorListener {
+public class HornetProcessorManagement implements YProcessorListener {
     YamcsSession ysession;
     YamcsClient yclient, yprocControlServer, linkControlServer;
-    static Logger log=LoggerFactory.getLogger(HornetYProcessorManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(HornetProcessorManagement.class.getName());
     Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     ManagementService mservice;
     
     static Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
     
+    static public final String YPR_createProcessor = "createProcessor";
     
-    public HornetYProcessorManagement(ManagementService mservice, ScheduledThreadPoolExecutor timer) throws YamcsApiException, HornetQException {
+    public HornetProcessorManagement(ManagementService mservice, ScheduledThreadPoolExecutor timer) throws YamcsApiException, HornetQException {
         this.mservice=mservice;
         timer.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -69,7 +71,7 @@ public class HornetYProcessorManagement implements YProcessorListener {
             @Override
             public void onMessage(ClientMessage message) {
                 try {
-                    processYProcControlMessage(message);
+                    processControlMessage(message);
                 } catch (Exception e) {
                     log.error("Error when processing request");
                     e.printStackTrace();
@@ -80,7 +82,7 @@ public class HornetYProcessorManagement implements YProcessorListener {
     
     
     
-    private void processYProcControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
+    private void processControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
         Privilege priv = HornetQAuthPrivilege.getInstance(msg);
         
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
@@ -91,27 +93,26 @@ public class HornetYProcessorManagement implements YProcessorListener {
         try {
             String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
             log.debug("Received a new request: "+req);
-            if("createYProcessor".equalsIgnoreCase(req)) {
-                YProcessorRequest cr=(YProcessorRequest)Protocol.decode(msg, YProcessorRequest.newBuilder());
-                mservice.createYProcessor(cr, priv);
+            if(Constants.YPR_createProcessor.equalsIgnoreCase(req)) {
+                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                mservice.createProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
-            } else if("connectToYProcessor".equalsIgnoreCase(req)) {
-                YProcessorRequest cr=(YProcessorRequest)Protocol.decode(msg, YProcessorRequest.newBuilder());
-                mservice.connectToYProcessor(cr, priv);
+            } else if(Constants.YPR_connectToProcessor.equalsIgnoreCase(req)) {
+                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                mservice.connectToProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
-            } else if("pauseReplay".equalsIgnoreCase(req)) {
-                YProcessorRequest cr=(YProcessorRequest)Protocol.decode(msg, YProcessorRequest.newBuilder());
-                mservice.connectToYProcessor(cr, priv);
+            } else if(Constants.YPR_pauseReplay.equalsIgnoreCase(req)) {
+                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
                 YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 c.pause();
                 yprocControlServer.sendReply(replyto, "OK", null);
-            } else if("resumeReplay".equalsIgnoreCase(req)) {
-                YProcessorRequest cr=(YProcessorRequest)Protocol.decode(msg, YProcessorRequest.newBuilder());
+            } else if(Constants.YPR_resumeReplay.equalsIgnoreCase(req)) {
+                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
                 YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 c.resume();
                 yprocControlServer.sendReply(replyto, "OK", null);
-            } else if("seekReplay".equalsIgnoreCase(req)) {
-                YProcessorRequest cr=(YProcessorRequest)Protocol.decode(msg, YProcessorRequest.newBuilder());
+            } else if(Constants.YPR_seekReplay.equalsIgnoreCase(req)) {
+                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
                 YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
                 if(!cr.hasSeekTime()) throw new YamcsException("seekReplay requested without a seektime");
                 c.seek(cr.getSeekTime());
@@ -127,10 +128,10 @@ public class HornetYProcessorManagement implements YProcessorListener {
 
    
     @Override
-    public void yProcessorAdded(YProcessor yproc) {
+    public void processorAdded(YProcessor yproc) {
         try {
-            YProcessorInfo ci=getYProcInfo(yproc);
-            sendYProcEvent("yprocUpdated", ci, false);
+            ProcessorInfo ci=getProcessorInfo(yproc);
+            sendEvent("yprocUpdated", ci, false);
             yprocs.put(yproc, STATS_NULL);
         } catch (Exception e) {
             log.error("Exception when registering yproc: ", e);
@@ -140,23 +141,23 @@ public class HornetYProcessorManagement implements YProcessorListener {
     
     @Override
     public void yProcessorClosed(YProcessor yprocl) {
-        YProcessorInfo ci=getYProcInfo(yprocl);
-        sendYProcEvent("yprocClosed", ci, true);
+        ProcessorInfo ci=getProcessorInfo(yprocl);
+        sendEvent("yprocClosed", ci, true);
         yprocs.remove(yprocl);
     }
 
     @Override
-    public void yProcessorStateChanged(YProcessor yproc) {
+    public void processorStateChanged(YProcessor yproc) {
         try {
-            YProcessorInfo ci=getYProcInfo(yproc);
-            sendYProcEvent("yprocUpdated", ci, false);
+            ProcessorInfo ci=getProcessorInfo(yproc);
+            sendEvent("yprocUpdated", ci, false);
         } catch (Exception e) {
             log.error("Exception when sending yprocUpdated event: ", e);
         }
     }
 
 
-    private void sendYProcEvent(String eventName, YProcessorInfo ci, boolean expire) {
+    private void sendEvent(String eventName, ProcessorInfo ci, boolean expire) {
         ClientMessage msg=ysession.session.createMessage(false);
         String lvn=ci.getInstance()+"."+ci.getName();
         msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
@@ -227,8 +228,8 @@ public class HornetYProcessorManagement implements YProcessorListener {
         }
     }
 
-    private YProcessorInfo getYProcInfo(YProcessor yproc) {
-        YProcessorInfo.Builder cib=YProcessorInfo.newBuilder().setInstance(yproc.getInstance())
+    private ProcessorInfo getProcessorInfo(YProcessor yproc) {
+        ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
         .setName(yproc.getName()).setType(yproc.getType())
         .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
         .setState(yproc.getState());

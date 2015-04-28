@@ -19,11 +19,13 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
     public static final String MDB_PATH = "mdb";
     public static final String COMMANDING_PATH = "commanding";
     public static final String PARAMETER_PATH = "parameter";
+    public static final String PROCESSOR_PATH = "processor";
 
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     static ParameterRequestHandler parameterRequestHandler=new ParameterRequestHandler();
+    static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
@@ -42,6 +44,8 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                     commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else if(path[0].startsWith(PARAMETER_PATH)) {
                     parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                } else if(path[0].startsWith(PROCESSOR_PATH)) {
+                    processorRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
                 } else {
                     log.warn("Unknown request received: '{}'", path[0]);
                     sendError(ctx, HttpResponseStatus.NOT_FOUND);

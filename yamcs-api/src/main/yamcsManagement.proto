@@ -16,12 +16,12 @@ enum ServiceState {
    FAILED = 5;
 }
 
-/************** YProcessor Control service *********************/
-/* The YProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
+/************** Yamcs Processor Control service *********************/
+/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
  * There is also a queue with the same name containing the last values
  * The name of the events are yProcessorUpdated (means added or updated),
  * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
-message YProcessorInfo {
+message ProcessorInfo {
     required string instance=1;//yamcs instance 
     required string name=2;
     optional string type=3;
@@ -55,22 +55,32 @@ message Statistics {
     optional int64 lastUpdated=4; //java local time of the last update
 }
 
-message YProcessorRequest { //this is used for YProcessorControl service
-    required string instance=1;
-    required string name=2;
-    optional string type=3; //only for CreateYProcessor
-    optional string spec=4; //only for CreateYProcessor
-    optional bool persistent=5[default=false]; //only for CreateYProcessor
-    repeated int32 clientId=6; //for CreateYProcessor and ConnectToYProcessor
-    optional int64 seekTime=7; //for SeekYProcessor
+message ProcessorRequest { //this is used for ProcessorControl service
+    enum Operation {
+         CREATE = 0;
+         CONNECT_TO_PROCESSOR = 1;
+         PAUSE = 2;
+         RESUME = 3;
+         SEEK = 4;
+    }
+    required string instance=1; //yamcs instance
+    required string name=2; //processor name
+    optional string type=3; //only for CREATE
+    optional string spec=4; //only for CREATE
+    optional bool persistent=5[default=false]; //only for CREATE
+    repeated int32 clientId=6; //for CreateProcessor and CONNECT_TO_PROCESSOR
+    optional int64 seekTime=7; //for SEEK
+    optional Operation operation = 8;
 }
 
-service YProcessorControl {
-  rpc CreateYProcessor(YProcessorRequest) returns (yamcs.Void);
-  rpc ConnectToYProcessor(YProcessorRequest) returns (yamcs.Void);
-  rpc PauseYProcessor(YProcessorRequest) returns (yamcs.Void);
-  rpc ResumeYProcessor(YProcessorRequest) returns (yamcs.Void);
-  rpc SeekYProcessor(YProcessorRequest) returns (yamcs.Void);
+//this is obsolete (but still implemented in HornetQ)
+// the operations shall be specified using the ProcessorRequest.Operation defined above
+service ProcessorControl {
+  rpc CreateProcessor(ProcessorRequest) returns (yamcs.Void);
+  rpc ConnectToProcessor(ProcessorRequest) returns (yamcs.Void);
+  rpc PauseProcessor(ProcessorRequest) returns (yamcs.Void);
+  rpc ResumeProcessor(ProcessorRequest) returns (yamcs.Void);
+  rpc SeekProcessor(ProcessorRequest) returns (yamcs.Void);
 }
 
 /************** Link Control ****************************/

@@ -29,157 +29,157 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 public class YamcsMonitor implements YProcessorListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
-	YProcTableModel channelTableModel=new YProcTableModel();
-	ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
-	LinkTableModel linkTableModel=new LinkTableModel(timer);
-	ClientTableModel clientTableModel;
-	DefaultTableModel statsTableModel;
-	JFrame frame;
-	CommandQueueControlClient commandQueueControl;
-	
-	ArchiveBrowserSelector archiveBrowserSelector;
+    YProcTableModel channelTableModel=new YProcTableModel();
+    ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
+    LinkTableModel linkTableModel=new LinkTableModel(timer);
+    ClientTableModel clientTableModel;
+    DefaultTableModel statsTableModel;
+    JFrame frame;
+    CommandQueueControlClient commandQueueControl;
 
-	private JTextArea logTextArea;
-	private JMenuItem miConnect, dcmi;//, queueControl;
-	private JLabel tmQuickStatus, tcQuickStatus;
-	TitledBorder channelStatusBorder;
-	JTabbedPane channelStatusPanel;
-	private JMenu clientsPopupMenu;
-	private JTable linkTable, channelTable, clientsTable;
-	private JComboBox channelChooser;
-	private JTextField newYProcName;
-	CommandQueueDisplay commandQueueDisplay;
-	JScrollPane linkTableScroll, channelTableScroll;
-	private Set<String> allChannels=new HashSet<String>();//stores instance.channelName for all channels to populate the connectToChannel popup menu
-	
-	static boolean hasAdminRights=true;
-	static String initialUrl=null;
+    ArchiveBrowserSelector archiveBrowserSelector;
 
-	private JButton createChannelButton;
-	private JCheckBox persistentCheckBox;
-	
-	public YamcsConnectData connectionParams = null;
-	
-	
-	private YamcsConnector yconnector;
-	private LinkControlClient linkControl;
+    private JTextArea logTextArea;
+    private JMenuItem miConnect, dcmi;//, queueControl;
+    private JLabel tmQuickStatus, tcQuickStatus;
+    TitledBorder channelStatusBorder;
+    JTabbedPane channelStatusPanel;
+    private JMenu clientsPopupMenu;
+    private JTable linkTable, channelTable, clientsTable;
+    private JComboBox channelChooser;
+    private JTextField newYProcName;
+    CommandQueueDisplay commandQueueDisplay;
+    JScrollPane linkTableScroll, channelTableScroll;
+    private Set<String> allChannels=new HashSet<String>();//stores instance.channelName for all channels to populate the connectToChannel popup menu
+
+    static boolean hasAdminRights=true;
+    static String initialUrl=null;
+
+    private JButton createChannelButton;
+    private JCheckBox persistentCheckBox;
+
+    public YamcsConnectData connectionParams = null;
+
+
+    private YamcsConnector yconnector;
+    private LinkControlClient linkControl;
     private ArchiveIndexReceiver indexReceiver;
     private YProcessorControlClient channelControl;
 
 
-	static YamcsMonitor theApp;
-	
-	HashMap<String, Statistics> channelStats=new HashMap<String, Statistics>();
+    static YamcsMonitor theApp;
 
-	static final SimpleDateFormat format_yyyyddd = new SimpleDateFormat("yyyy/DDD HH:mm:ss");
+    HashMap<String, Statistics> channelStats=new HashMap<String, Statistics>();
+
+    static final SimpleDateFormat format_yyyyddd = new SimpleDateFormat("yyyy/DDD HH:mm:ss");
 
     private JMenuItem instanceMenuItem;
-	private String selectedInstance;
-	boolean authenticationEnabled = false;
-	
-	public YamcsMonitor() throws ConfigurationException, IOException{
-		theApp = this;
+    private String selectedInstance;
+    boolean authenticationEnabled = false;
+
+    public YamcsMonitor() throws ConfigurationException, IOException{
+        theApp = this;
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
-		
-		yconnector=new YamcsConnector();
-		yconnector.addConnectionListener(this);
-		
-		
-		channelControl = new YProcessorControlClient(yconnector);
-		channelControl.setYProcessorListener(this);
-		linkControl=new LinkControlClient(yconnector);
-		linkControl.setLinkListener(this);
-		
-		indexReceiver=new YamcsArchiveIndexReceiver(yconnector);
-		archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
-		indexReceiver.setIndexListener(archiveBrowserSelector);
-		
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
+
+        yconnector=new YamcsConnector();
+        yconnector.addConnectionListener(this);
+
+
+        channelControl = new YProcessorControlClient(yconnector);
+        channelControl.setYProcessorListener(this);
+        linkControl=new LinkControlClient(yconnector);
+        linkControl.setLinkListener(this);
+
+        indexReceiver=new YamcsArchiveIndexReceiver(yconnector);
+        archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, channelControl, hasAdminRights);
+        indexReceiver.setIndexListener(archiveBrowserSelector);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
             public void run() {
-				yconnector.disconnect();
-			}
-		});
-	}
+                yconnector.disconnect();
+            }
+        });
+    }
 
-	
-	private void createAndShowGUI() {
-		frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setIconImage(getIcon("yamcs-monitor-32.png").getImage());
 
-		JMenuBar menuBar = new JMenuBar();
-		
+    private void createAndShowGUI() {
+        frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setIconImage(getIcon("yamcs-monitor-32.png").getImage());
+
+        JMenuBar menuBar = new JMenuBar();
+
         // Ctrl on win/linux, Command on mac
         int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-		JMenu menu = new JMenu("File");
-		menu.setMnemonic(KeyEvent.VK_F);
-		menuBar.add(menu);
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(menu);
 
-		miConnect = new JMenuItem("Connect to Yamcs...");
+        miConnect = new JMenuItem("Connect to Yamcs...");
         miConnect.setMnemonic(KeyEvent.VK_C);
         miConnect.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
-		miConnect.addActionListener(this);
-		miConnect.setActionCommand("connect");
-		menu.add(miConnect);
+        miConnect.addActionListener(this);
+        miConnect.setActionCommand("connect");
+        menu.add(miConnect);
 
-		menu.addSeparator();
+        menu.addSeparator();
 
-		JMenuItem menuItem = new JMenuItem("Quit",KeyEvent.VK_Q);
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
-		menuItem.getAccessibleContext().setAccessibleDescription("Quit Yamcs Monitor");
-		menuItem.addActionListener(this);
-		menuItem.setActionCommand("exit");
-		menu.add(menuItem);
-		frame.setJMenuBar(menuBar);
+        JMenuItem menuItem = new JMenuItem("Quit",KeyEvent.VK_Q);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
+        menuItem.getAccessibleContext().setAccessibleDescription("Quit Yamcs Monitor");
+        menuItem.addActionListener(this);
+        menuItem.setActionCommand("exit");
+        menu.add(menuItem);
+        frame.setJMenuBar(menuBar);
 
-		menu = new JMenu("Help");
-		menu.setMnemonic(KeyEvent.VK_H);
-		menuBar.add(menu);
+        menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H);
+        menuBar.add(menu);
 
-		menuItem = new JMenuItem("About Yamcs Monitor");
-		menuItem.addActionListener(this);
-		menuItem.setActionCommand("about");
-		menu.add(menuItem);
-		
-		instanceMenuItem=new JMenu("Instance");
-		menuBar.add(instanceMenuItem);
+        menuItem = new JMenuItem("About Yamcs Monitor");
+        menuItem.addActionListener(this);
+        menuItem.setActionCommand("about");
+        menu.add(menuItem);
 
-		// build GUI
-		Box dsp=Box.createVerticalBox();
-	    dsp.add(buildLinkTable());
-		dsp.add(buildChannelTable());
-		dsp.add(buildChannelStatusPanel());
+        instanceMenuItem=new JMenu("Instance");
+        menuBar.add(instanceMenuItem);
+
+        // build GUI
+        Box dsp=Box.createVerticalBox();
+        dsp.add(buildLinkTable());
+        dsp.add(buildChannelTable());
+        dsp.add(buildChannelStatusPanel());
 
         Box csp=Box.createVerticalBox();
         csp.add(buildClientTable());
-		csp.add(buildCreateChannelPanel());
+        csp.add(buildCreateChannelPanel());
 
-		logTextArea=new JTextArea(5,20);
-		logTextArea.setEditable(false);
-		JScrollPane scroll = new JScrollPane(logTextArea);
-		scroll.setBorder(BorderFactory.createEtchedBorder());
+        logTextArea=new JTextArea(5,20);
+        logTextArea.setEditable(false);
+        JScrollPane scroll = new JScrollPane(logTextArea);
+        scroll.setBorder(BorderFactory.createEtchedBorder());
 
-		JSplitPane phoriz = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dsp, csp);
-		phoriz.setResizeWeight(0.5);
-		phoriz.setContinuousLayout(true);
-		JSplitPane pvert = new JSplitPane(JSplitPane.VERTICAL_SPLIT, phoriz, scroll);
-		pvert.setResizeWeight(1.0);
-		pvert.setContinuousLayout(true);
-		frame.getContentPane().add(pvert, BorderLayout.CENTER);
+        JSplitPane phoriz = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dsp, csp);
+        phoriz.setResizeWeight(0.5);
+        phoriz.setContinuousLayout(true);
+        JSplitPane pvert = new JSplitPane(JSplitPane.VERTICAL_SPLIT, phoriz, scroll);
+        pvert.setResizeWeight(1.0);
+        pvert.setContinuousLayout(true);
+        frame.getContentPane().add(pvert, BorderLayout.CENTER);
 
-		//Display the window.
-		setTitle("not connected");
-		frame.pack();
-		frame.setVisible(true);
-	}
-	
-	private Component buildLinkTable() {
-	    //build the table showing the links
+        //Display the window.
+        setTitle("not connected");
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    private Component buildLinkTable() {
+        //build the table showing the links
         linkTable=new LinkTable(linkTableModel);
 
         if(hasAdminRights) {
@@ -225,7 +225,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                     }
                 }
             });
-            
+
             linkTable.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
@@ -246,12 +246,12 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         linkTable.setPreferredScrollableViewportSize(new Dimension(500, 100));
         linkTableScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Data Links"));
         return linkTableScroll;
-	}
+    }
 
-	private Component buildChannelTable() {
-	       //build the table showing the channels
+    private Component buildChannelTable() {
+        //build the table showing the channels
         channelTable=new JTable(channelTableModel) {
-        /*  public String getToolTipText(MouseEvent e) {
+            /*  public String getToolTipText(MouseEvent e) {
                 int row = rowAtPoint(e.getPoint());
                 if (row == -1) return "";
                 row = convertRowIndexToModel(row);
@@ -259,7 +259,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             }*/
             //public TableCellRenderer getCellRenderer(int row, int column) {
             //  return channelRenderer;
-        //  }
+            //  }
         };
         channelTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         channelTable.setAutoCreateRowSorter(true);
@@ -307,7 +307,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                     if (dcmi != null) dcmi.setEnabled(false);
                 } else {
                     selectedRow = channelTable.convertRowIndexToModel(selectedRow);
-                    final YProcessorInfo ci = channelTableModel.getYProcessorInfo(selectedRow);
+                    final ProcessorInfo ci = channelTableModel.getYProcessorInfo(selectedRow);
                     commandQueueDisplay.setChannel(ci.getInstance(), ci.getName());
                     if (dcmi != null) dcmi.setEnabled(!"lounge".equalsIgnoreCase(ci.getType()));
 
@@ -325,17 +325,17 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         channelTable.setPreferredScrollableViewportSize(new Dimension(500, 100));
         channelTableScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Channels"));
         return channelTableScroll;
-	}
-	
-	
-	private Component buildChannelStatusPanel() {
-	       //build the channel information panel composed of a few statuses (in one grid panel)
+    }
+
+
+    private Component buildChannelStatusPanel() {
+        //build the channel information panel composed of a few statuses (in one grid panel)
         // and a table showing the tm statistics
         channelStatusPanel = new JTabbedPane();
         channelStatusBorder = BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Channel Information");
         channelStatusPanel.setBorder(channelStatusBorder);
         //channelStatusPanel.setPreferredSize(new Dimension(400, 300));
-    
+
 
 
         GridBagLayout gridbag = new GridBagLayout();
@@ -362,8 +362,8 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                 "Number of times this packet has been received",
                 "Local time of last received packet",
                 "Generation time of last received packet",
-                "The number of parameters contained in this packet subscribed when the packet has been last received"};
-        
+        "The number of parameters contained in this packet subscribed when the packet has been last received"};
+
         final String[] cols = { "Packet Name", "Count", "Last Recv'd", "CCSDS Time", "Parameters" };
         statsTableModel = new DefaultTableModel(cols,0);
         JTable table = new JTable(statsTableModel) {
@@ -413,10 +413,10 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         tcPanel.add(commandQueueDisplay);
 
         return channelStatusPanel;
-	}
+    }
 
-	
-	private Component buildClientTable() {
+
+    private Component buildClientTable() {
 
         // build the table showing the clients
 
@@ -457,10 +457,10 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             }
         });
         return scroll;
-	}
-	
-	private Component buildCreateChannelPanel() {
-	 // "create channel" panel
+    }
+
+    private Component buildCreateChannelPanel() {
+        // "create channel" panel
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         JPanel createPanel = new JPanel(gridbag);
@@ -474,13 +474,13 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill=GridBagConstraints.HORIZONTAL; c.weightx = 1.0;
         gridbag.setConstraints(newYProcName, c);
         createPanel.add(newYProcName);
-        
+
         label = new JLabel("Type:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
-        
+
         ArrayList<YProcessorWidget> widgets = new ArrayList<YProcessorWidget>();
         try {
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
@@ -503,12 +503,12 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         channelChooser = new JComboBox(widgets.toArray());
-        
+
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(channelChooser, c);
         createPanel.add(channelChooser);
-        
+
         label = new JLabel("Spec:");
         label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -536,23 +536,23 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             }
         });
 
-        
+
         if(hasAdminRights) {        
-            
+
             label = new JLabel("Persistent:");
             label.setBorder(BorderFactory.createEmptyBorder(0,2,0,2));
             label.setHorizontalAlignment(SwingConstants.RIGHT);
             c.weightx = 0.0; c.gridwidth = 1; c.anchor = GridBagConstraints.NORTH;
             gridbag.setConstraints(label, c);
             createPanel.add(label);
-            
+
             persistentCheckBox=new JCheckBox();
             c.weightx = 1.0; c.gridwidth = GridBagConstraints.REMAINDER;
             gridbag.setConstraints(persistentCheckBox,c);
             createPanel.add(persistentCheckBox);
-            
+
         }
-        
+
         createChannelButton=new JButton("Create");
         createChannelButton.addActionListener(new ActionListener() {
             @Override
@@ -573,13 +573,13 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             }
         });
         return createPanel;
-	}
+    }
 
-	
-	private void changeSelectedInstance(String newInstance) {
+
+    private void changeSelectedInstance(String newInstance) {
         selectedInstance=newInstance;
         commandQueueDisplay.setSelectedInstance(newInstance);
-        
+
         linkTableModel.clear();
         linkControl.receiveInitialConfig();
         channelTableModel.clear();
@@ -587,136 +587,136 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         commandQueueDisplay.update();
         setTitle("connected to "+yconnector.getUrl().replaceFirst("[^/]+$", selectedInstance));
         updateBorders();
-	}
-    
-	private void updateBorders() {
+    }
+
+    private void updateBorders() {
         linkTableScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Data Links ("+selectedInstance+")"));
         channelTableScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Channels ("+selectedInstance+")"));
-	}
-	
-	void setTitle(final String title) {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			@Override
+    }
+
+    void setTitle(final String title) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-				frame.setTitle("Yamcs Monitor ("+title+")");
-			}
-		});
-	}
-	
-	void showArchiveBrowserSelector() {
-	    archiveBrowserSelector.setVisible(true);
-	}
+                frame.setTitle("Yamcs Monitor ("+title+")");
+            }
+        });
+    }
+
+    void showArchiveBrowserSelector() {
+        archiveBrowserSelector.setVisible(true);
+    }
 
 
-	void showMessage(String msg) {
-		showMessage(msg, frame);
-	}
+    void showMessage(String msg) {
+        showMessage(msg, frame);
+    }
 
-	static void showMessage(String msg, Component parent) {
-		JOptionPane.showMessageDialog(parent, msg, YamcsMonitor.theApp.frame.getTitle(), JOptionPane.PLAIN_MESSAGE);
-	}
+    static void showMessage(String msg, Component parent) {
+        JOptionPane.showMessageDialog(parent, msg, YamcsMonitor.theApp.frame.getTitle(), JOptionPane.PLAIN_MESSAGE);
+    }
 
-	protected void destroyChannel( int selectedRow ) {
-		String name=(String)channelTableModel.getValueAt(selectedRow, 0);
-		try {
-			channelControl.destroyYProcessor(name);
-		} catch (YamcsApiException e) {
-			showMessage("Cannot destroy channel '"+name+" because the channel was already closed");
-		}
-	}
-	
-	protected void createChannel( int[] selectedRows ) {
-		boolean persistent=false;
-		if(hasAdminRights) persistent=persistentCheckBox.isSelected();
-		if (!persistent && selectedRows.length == 0 ) {
-			showMessage("Please select at least one client to create the channel for.");
-			return;
-		}
-		String name=newYProcName.getText();
-		YProcessorWidget type = (YProcessorWidget)channelChooser.getSelectedItem();
-		String spec = type.getSpec();
-		if(hasAdminRights) {
-			persistent=persistentCheckBox.isSelected();
-		}
-		
-		if ( spec == null ) return;
-		int[] clients=new int[selectedRows.length];
-		for(int i=0;i<selectedRows.length;i++) {
-			clients[i]=(Integer) clientTableModel.getValueAt(clientsTable.convertRowIndexToModel(selectedRows[i]), 0);
-		}
-		try {
-		//	archiveWindow.setBusyPointer();
-			channelControl.createYProcessor(selectedInstance, name, type.toString(), spec, persistent, clients);
-		} catch (Exception e) {
-			showMessage(e.getMessage());
-		}
-	//	ArchivePanel.setNormalPointer(frame);
-	}
+    protected void destroyChannel( int selectedRow ) {
+        String name=(String)channelTableModel.getValueAt(selectedRow, 0);
+        try {
+            channelControl.destroyYProcessor(name);
+        } catch (YamcsApiException e) {
+            showMessage("Cannot destroy channel '"+name+" because the channel was already closed");
+        }
+    }
 
-	@Override
+    protected void createChannel( int[] selectedRows ) {
+        boolean persistent=false;
+        if(hasAdminRights) persistent=persistentCheckBox.isSelected();
+        if (!persistent && selectedRows.length == 0 ) {
+            showMessage("Please select at least one client to create the channel for.");
+            return;
+        }
+        String name=newYProcName.getText();
+        YProcessorWidget type = (YProcessorWidget)channelChooser.getSelectedItem();
+        String spec = type.getSpec();
+        if(hasAdminRights) {
+            persistent=persistentCheckBox.isSelected();
+        }
+
+        if ( spec == null ) return;
+        int[] clients=new int[selectedRows.length];
+        for(int i=0;i<selectedRows.length;i++) {
+            clients[i]=(Integer) clientTableModel.getValueAt(clientsTable.convertRowIndexToModel(selectedRows[i]), 0);
+        }
+        try {
+            //	archiveWindow.setBusyPointer();
+            channelControl.createProcessor(selectedInstance, name, type.toString(), spec, persistent, clients);
+        } catch (Exception e) {
+            showMessage(e.getMessage());
+        }
+        //	ArchivePanel.setNormalPointer(frame);
+    }
+
+    @Override
     public void actionPerformed( ActionEvent ae ) {
-		String cmd = ae.getActionCommand();
-		if ( cmd.equals("connect") ) {
-		    connectionParams= YamcsConnectDialog.showDialog(frame, false, authenticationEnabled);
-			if ( connectionParams.isOk ) {
-				logTextArea.removeAll();
-				yconnector.connect(connectionParams);
-			}
-		} else if ( cmd.equals("exit") ) {
-			System.exit(0);
-		} else if ( cmd.equals("about") ) {
-			showAbout();
-		}
-	}
+        String cmd = ae.getActionCommand();
+        if ( cmd.equals("connect") ) {
+            connectionParams= YamcsConnectDialog.showDialog(frame, false, authenticationEnabled);
+            if ( connectionParams.isOk ) {
+                logTextArea.removeAll();
+                yconnector.connect(connectionParams);
+            }
+        } else if ( cmd.equals("exit") ) {
+            System.exit(0);
+        } else if ( cmd.equals("about") ) {
+            showAbout();
+        }
+    }
 
-	public void showAbout()	{
-		JTextPane pane = new JTextPane();
-		pane.setContentType("text/html");
-		pane.setEditable(false);
-		pane.setText("<center>" +
-			"<h2>Yamcs Monitor</h2>" +
-			"<h3>&copy; Space Applications Services</h3>" +
-			"<h3>Version " + YamcsVersion.version + "</h3>" +
-			"<p>This program is used to manage channels in a Yamcs server " +
-			"and clients connected to it." +
-			"</center>"
-			);
-		pane.setPreferredSize(new Dimension(350, 180));
+    public void showAbout()	{
+        JTextPane pane = new JTextPane();
+        pane.setContentType("text/html");
+        pane.setEditable(false);
+        pane.setText("<center>" +
+                "<h2>Yamcs Monitor</h2>" +
+                "<h3>&copy; Space Applications Services</h3>" +
+                "<h3>Version " + YamcsVersion.version + "</h3>" +
+                "<p>This program is used to manage channels in a Yamcs server " +
+                "and clients connected to it." +
+                "</center>"
+                );
+        pane.setPreferredSize(new Dimension(350, 180));
 
-		JOptionPane.showMessageDialog(frame, pane, "Yamcs Monitor", JOptionPane.PLAIN_MESSAGE, getIcon("yamcs-64x64.png"));
-	}
+        JOptionPane.showMessageDialog(frame, pane, "Yamcs Monitor", JOptionPane.PLAIN_MESSAGE, getIcon("yamcs-64x64.png"));
+    }
 
-	public ImageIcon getIcon(String imagename) {
-		return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
-	}
+    public ImageIcon getIcon(String imagename) {
+        return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
+    }
 
-	//----------- interface ConnectionListener
+    //----------- interface ConnectionListener
 
-	@Override
+    @Override
     public void connecting(String corbaUrl) {
-	    log("connecting to "+corbaUrl);
-	}
+        log("connecting to "+corbaUrl);
+    }
 
-	@Override
+    @Override
     public void connectionFailed(String corbaUrl, YamcsException exception) {
-	    log("connection to "+corbaUrl+" failed: "+exception);
-	    connectionParams=null;
-	    disconnected();
-	}
+        log("connection to "+corbaUrl+" failed: "+exception);
+        connectionParams=null;
+        disconnected();
+    }
 
-	@Override
+    @Override
     public void connected(String url) {
-		log("connected to "+url);
-	    final List<String> instances = yconnector.getYamcsInstances();
-		setTitle("connected to "+url);
-		if( instances == null ) {
-	    	log( "Failed to get instances from "+url );
-	    	return;
-	    }
-		selectedInstance=instances.get(0);
-		commandQueueDisplay.setSelectedInstance(selectedInstance);
-		
-		SwingUtilities.invokeLater(new Runnable() {
+        log("connected to "+url);
+        final List<String> instances = yconnector.getYamcsInstances();
+        setTitle("connected to "+url);
+        if( instances == null ) {
+            log( "Failed to get instances from "+url );
+            return;
+        }
+        selectedInstance=instances.get(0);
+        commandQueueDisplay.setSelectedInstance(selectedInstance);
+
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 instanceMenuItem.removeAll();
@@ -730,153 +730,153 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                         }
                     });
                 }
-                    
+
                 buildClientListPopup();
                 linkTableModel.clear();
                 channelTableModel.clear();
                 clientTableModel.clear();
-                
+
                 updateBorders();
             }
         });
-	}
+    }
 
-	@Override
+    @Override
     public void disconnected() {
-		setTitle("not connected");
-	    linkTableModel.clear();
-		channelTableModel.clear();
-		clientTableModel.clear();
-		updateStatistics(null);
-		archiveBrowserSelector.archivePanel.disconnected();
-	}
+        setTitle("not connected");
+        linkTableModel.clear();
+        channelTableModel.clear();
+        clientTableModel.clear();
+        updateStatistics(null);
+        archiveBrowserSelector.archivePanel.disconnected();
+    }
 
 
-	@Override
+    @Override
     public void popup(String text) {
-		showMessage(text);
-	}
+        showMessage(text);
+    }
 
-	//------------- end of interface ConnectionListener
-	
+    //------------- end of interface ConnectionListener
+
     public YProcessorWidget getActiveChannelWidget() {
         return (YProcessorWidget) channelChooser.getSelectedItem();
     }
 
-	private void connect(final YamcsConnectData ycd)	{
-		yconnector.connect(ycd);
-	}
+    private void connect(final YamcsConnectData ycd)	{
+        yconnector.connect(ycd);
+    }
 
-	@Override
+    @Override
     public void log(final String s) {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			@Override
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-				logTextArea.append(s+"\n");
-			}
-		});
-	}
+                logTextArea.append(s+"\n");
+            }
+        });
+    }
 
-	/**
-	 * Called when a row is selected in the channel table. 
-	 *  Populates the tm statistics panel with information about the selected channel
-	 */
-	@Override
+    /**
+     * Called when a row is selected in the channel table. 
+     *  Populates the tm statistics panel with information about the selected channel
+     */
+    @Override
     public void updateStatistics(final Statistics stats)	{
-		if (statsTableModel == null) return;
+        if (statsTableModel == null) return;
 
-		final int selectedRow = channelTable.getSelectedRow();
-		if ((selectedRow == -1) || !yconnector.isConnected()) {
-			channelStatusBorder.setTitle("Channel Statistics");
-			channelStatusPanel.repaint();
-			tmQuickStatus.setText("");
-			tcQuickStatus.setText("");
-			statsTableModel.setRowCount(0);
-		} else {
-			final int modelSelectedRow = channelTable.convertRowIndexToModel(selectedRow);
-			final YProcessorInfo ci = channelTableModel.getYProcessorInfo(modelSelectedRow);
-			
-			//should perhaps setup a mechanism to send stats only for the selected channel
-			if(!ci.getInstance().equals(stats.getInstance()) || !ci.getName().equals(stats.getYProcessorName())) return;
-			
+        final int selectedRow = channelTable.getSelectedRow();
+        if ((selectedRow == -1) || !yconnector.isConnected()) {
+            channelStatusBorder.setTitle("Channel Statistics");
+            channelStatusPanel.repaint();
+            tmQuickStatus.setText("");
+            tcQuickStatus.setText("");
+            statsTableModel.setRowCount(0);
+        } else {
+            final int modelSelectedRow = channelTable.convertRowIndexToModel(selectedRow);
+            final ProcessorInfo ci = channelTableModel.getYProcessorInfo(modelSelectedRow);
 
-			try {
-				final List<TmStatistics> tmstats = stats.getTmstatsList();
-				channelStatusBorder.setTitle("Channel Information: " + ci.getName());
-				channelStatusPanel.repaint();
+            //should perhaps setup a mechanism to send stats only for the selected channel
+            if(!ci.getInstance().equals(stats.getInstance()) || !ci.getName().equals(stats.getYProcessorName())) return;
 
-				javax.swing.SwingUtilities.invokeLater(new Runnable() {
-					@Override
+
+            try {
+                final List<TmStatistics> tmstats = stats.getTmstatsList();
+                channelStatusBorder.setTitle("Channel Information: " + ci.getName());
+                channelStatusPanel.repaint();
+
+                javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-						statsTableModel.setRowCount(0);
-						for(TmStatistics ts:tmstats) {
-							Object[] r=new Object[5];
-							r[0]=ts.getPacketName();
-							r[1]=ts.getReceivedPackets();
-							r[2]=TimeEncoding.toCombinedFormat(ts.getLastReceived());
-							r[3]=TimeEncoding.toCombinedFormat(ts.getLastPacketTime());
-							r[4]=ts.getSubscribedParameterCount();
-							statsTableModel.addRow(r);
-						}
-						if (ci.hasReplayRequest()) {
-							if (modelSelectedRow < channelTableModel.getRowCount()) {
-								archiveBrowserSelector.archivePanel.replayPanel.updateStatistics(stats);
-							}
-						}
-					}
-				});
+                        statsTableModel.setRowCount(0);
+                        for(TmStatistics ts:tmstats) {
+                            Object[] r=new Object[5];
+                            r[0]=ts.getPacketName();
+                            r[1]=ts.getReceivedPackets();
+                            r[2]=TimeEncoding.toCombinedFormat(ts.getLastReceived());
+                            r[3]=TimeEncoding.toCombinedFormat(ts.getLastPacketTime());
+                            r[4]=ts.getSubscribedParameterCount();
+                            statsTableModel.addRow(r);
+                        }
+                        if (ci.hasReplayRequest()) {
+                            if (modelSelectedRow < channelTableModel.getRowCount()) {
+                                archiveBrowserSelector.archivePanel.replayPanel.updateStatistics(stats);
+                            }
+                        }
+                    }
+                });
 
-			} catch (Exception e) {
-			    e.printStackTrace();
-			    showMessage(e.getMessage());
-			}
-			
-		}
-	}
+            } catch (Exception e) {
+                e.printStackTrace();
+                showMessage(e.getMessage());
+            }
 
-	
+        }
+    }
 
-	void buildClientListPopup() {
-		final ActionListener ai = new ActionListener() {
-			@Override
+
+
+    void buildClientListPopup() {
+        final ActionListener ai = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ae) {
-				String instanceDotName = ae.getActionCommand();
-				int[] selectedRows = clientsTable.getSelectedRows();
-				int[] clients = new int[selectedRows.length];
-				for(int i = 0; i < selectedRows.length; i++) {
-					ClientInfo ci = clientTableModel.get(clientsTable.convertRowIndexToModel(selectedRows[i]));
-					clients[i]=ci.getId();
-				}
-				try {
-				    String[] in=instanceDotName.split("\\.",2);
-				    channelControl.connectToYProcessor(in[0], in[1], clients);
-				} catch (Exception e) {
-					showMessage(e.toString());
-				}
-			}
-		};
+                String instanceDotName = ae.getActionCommand();
+                int[] selectedRows = clientsTable.getSelectedRows();
+                int[] clients = new int[selectedRows.length];
+                for(int i = 0; i < selectedRows.length; i++) {
+                    ClientInfo ci = clientTableModel.get(clientsTable.convertRowIndexToModel(selectedRows[i]));
+                    clients[i]=ci.getId();
+                }
+                try {
+                    String[] in=instanceDotName.split("\\.",2);
+                    channelControl.connectToYProcessor(in[0], in[1], clients);
+                } catch (Exception e) {
+                    showMessage(e.toString());
+                }
+            }
+        };
 
-		clientsPopupMenu.removeAll();
-		for ( String instanceDotName:allChannels ) {
-			JMenuItem mi = new JMenuItem(instanceDotName);
-			mi.addActionListener(ai);
-			mi.setActionCommand(instanceDotName);
-			clientsPopupMenu.add(mi);
-		}
-		//clientsPopupMenu.revalidate();
-	}
+        clientsPopupMenu.removeAll();
+        for ( String instanceDotName:allChannels ) {
+            JMenuItem mi = new JMenuItem(instanceDotName);
+            mi.addActionListener(ai);
+            mi.setActionCommand(instanceDotName);
+            clientsPopupMenu.add(mi);
+        }
+        //clientsPopupMenu.revalidate();
+    }
 
 
-	@Override
-	public void itemStateChanged(ItemEvent arg0) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void itemStateChanged(ItemEvent arg0) {
+        // TODO Auto-generated method stub
+    }
 
-	/**
-	 * Called by the server when a channel has been added or changed
-	 */
-	@Override
-    public void yProcessorUpdated(final YProcessorInfo ci) {
+    /**
+     * Called by the server when a channel has been added or changed
+     */
+    @Override
+    public void processorUpdated(final ProcessorInfo ci) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -890,38 +890,38 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                 }
             }
         });
-	}
-	/**
-	 * Called by the server when a channel has been closed
-	 */
-	@Override
-    public void yProcessorClosed(final YProcessorInfo ci) {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-		    @Override
-		    public void run() {
+    }
+    /**
+     * Called by the server when a channel has been closed
+     */
+    @Override
+    public void yProcessorClosed(final ProcessorInfo ci) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
                 allChannels.remove(ci.getInstance()+"."+ci.getName());
                 if(!ci.getInstance().equals(selectedInstance)) return;
                 channelTableModel.removeYProc(ci.getInstance(), ci.getName());
                 commandQueueDisplay.removeChannel(ci.getInstance(), ci.getName());
-				buildClientListPopup();
-			}
-		});
-	}
+                buildClientListPopup();
+            }
+        });
+    }
 
-	/**
-	 * Called by the server when a new client has disconnected
-	 */
-	@Override
-	public void clientDisconnected(final ClientInfo ci) {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			@Override
+    /**
+     * Called by the server when a new client has disconnected
+     */
+    @Override
+    public void clientDisconnected(final ClientInfo ci) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-				clientTableModel.removeClient(ci.getId());
-			}
-		});
-	}
-	
-	/**
+                clientTableModel.removeClient(ci.getId());
+            }
+        });
+    }
+
+    /**
      * Called by the server when a client has changed channel
      */
     @Override
@@ -944,43 +944,43 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             }
         });
     }
-    
-    private static void printUsageAndExit() {
-		System.err.println("Usage: yamcs-monitor.sh [-na] [-h] [url]");
-		System.err.println("-na:\tRun in non-admin mode - hide some options which will raise no permission exception (as to not confuse the user)");
-		System.err.println("url:\tConnect at startup to the given yamcs url");
-		System.err.println("-h:\tShow this help text");
-		System.err.println("Example:\n\t yamcs-monitor.sh yamcs://yamcs:5445/");
-		System.exit(1);
-	}
 
-	
+    private static void printUsageAndExit() {
+        System.err.println("Usage: yamcs-monitor.sh [-na] [-h] [url]");
+        System.err.println("-na:\tRun in non-admin mode - hide some options which will raise no permission exception (as to not confuse the user)");
+        System.err.println("url:\tConnect at startup to the given yamcs url");
+        System.err.println("-h:\tShow this help text");
+        System.err.println("Example:\n\t yamcs-monitor.sh yamcs://yamcs:5445/");
+        System.exit(1);
+    }
+
+
     public static void main(String[] args) throws IOException, URISyntaxException, ConfigurationException {
-		for(int i=0;i<args.length;i++) {
-			if("-na".equals(args[i])) {
-				hasAdminRights=false;
-			} else if(args[i].equals("-h")) {
-				printUsageAndExit();
-			} else if(args[i].startsWith("yamcs://")) {
+        for(int i=0;i<args.length;i++) {
+            if("-na".equals(args[i])) {
+                hasAdminRights=false;
+            } else if(args[i].equals("-h")) {
+                printUsageAndExit();
+            } else if(args[i].startsWith("yamcs://")) {
                 initialUrl=args[i];
-			} else {
-				printUsageAndExit();
-			}
-		} 
-		YConfiguration.setup();
-		final YamcsMonitor app=new YamcsMonitor();
-		
-		final YamcsConnectData ycd=(initialUrl==null)?null:YamcsConnectData.parse(initialUrl);
-		//Schedule a job for the event-dispatching thread:
-		//creating and showing this application's GUI.
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			@Override
+            } else {
+                printUsageAndExit();
+            }
+        } 
+        YConfiguration.setup();
+        final YamcsMonitor app=new YamcsMonitor();
+
+        final YamcsConnectData ycd=(initialUrl==null)?null:YamcsConnectData.parse(initialUrl);
+        //Schedule a job for the event-dispatching thread:
+        //creating and showing this application's GUI.
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-				app.createAndShowGUI();
-				if(ycd!=null) {
-				    app.connect(ycd);
-				}
-			}
-		});
-	}
+                app.createAndShowGUI();
+                if(ycd!=null) {
+                    app.connect(ycd);
+                }
+            }
+        });
+    }
 }
