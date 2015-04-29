@@ -46,8 +46,12 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.HttpClient;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.websocket.ManagementClient;
 import org.yamcs.yarch.YarchTestCase;
 
 import com.google.protobuf.MessageLite;
@@ -94,9 +98,11 @@ public class IntegrationTest extends YarchTestCase {
         assertNotNull(packetProvider);
         wsListener = new MyWsListener();
         wsClient = new WebSocketClient(ycp, wsListener);
+        wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
         httpClient = new HttpClient();
+        packetProvider.setGenerationTime(TimeEncoding.INVALID_INSTANT);
     }
 
     @After
@@ -332,9 +338,56 @@ public class IntegrationTest extends YarchTestCase {
 
 
     @Test
+    public void testWsManagement() throws Exception {
+        ClientInfo cinfo = getClientInfo();
+        assertEquals("IntegrationTest", cinfo.getInstance());
+        assertEquals("realtime", cinfo.getProcessorName());
+        assertEquals("it-junit", cinfo.getApplicationName());
+        
+        ProcessorInfo pinfo = getProcessorInfo();
+        assertEquals("IntegrationTest", pinfo.getInstance());
+        assertEquals("realtime", pinfo.getName());
+        assertEquals("realtime", pinfo.getType());
+        assertEquals("system", pinfo.getCreator());
+    }
+    
+    
+    
+    @Test
     public void testReplay() throws Exception {
+        generateData("2015-01-01T10:00:00", 1000);
+        ClientInfo cinfo = getClientInfo();
+        //create a parameter reply via REST
+        
+        
     }
 
+    private ClientInfo getClientInfo() throws InterruptedException {
+        WebSocketRequest wsr = new WebSocketRequest("management", ManagementClient.OP_getClientInfo);
+        wsClient.sendRequest(wsr);
+        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(cinfo);
+        return cinfo;
+    }
+    
+
+    private ProcessorInfo getProcessorInfo() throws InterruptedException {
+        WebSocketRequest wsr = new WebSocketRequest("management", ManagementClient.OP_getProcessorInfo);
+        wsClient.sendRequest(wsr);
+        ProcessorInfo pinfo = wsListener.processorInfoList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pinfo);
+        return pinfo;
+    }
+    
+    private void generateData(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i=0;i <numPackets; i++) {
+            packetProvider.setGenerationTime(t0+1000*i);
+            packetProvider.generate_PKT11();
+            packetProvider.generate_PKT13();
+        }
+    }
+    
     @Test
     public void testRetrieveDataFromArchive() throws Exception {
     }
@@ -418,7 +471,10 @@ public class IntegrationTest extends YarchTestCase {
         LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<NamedObjectId>();
         LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<ParameterData>();
         LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
-
+        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<ClientInfo>();
+        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<ProcessorInfo>();
+        
+        
         int count =0;
         @Override
         public void onConnect() {
@@ -449,6 +505,16 @@ public class IntegrationTest extends YarchTestCase {
         @Override
         public void onCommandHistoryData(CommandHistoryEntry cmdhistData) {
             cmdHistoryDataList.add(cmdhistData);
+        }
+
+        @Override
+        public void onClientInfoData(ClientInfo clientInfo) {
+            clientInfoList.add(clientInfo);
+        }
+
+        @Override
+        public void onProcessorInfoData(ProcessorInfo processorInfo) {
+            processorInfoList.add(processorInfo);
         }
     }
 

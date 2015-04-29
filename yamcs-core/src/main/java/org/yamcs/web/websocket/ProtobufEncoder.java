@@ -1,7 +1,6 @@
 package org.yamcs.web.websocket;
 
 import io.protostuff.Schema;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -15,6 +14,8 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.MessageType;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 
 import java.io.IOException;
 
@@ -47,6 +48,10 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setCommand((CommandHistoryEntry) message);
         } else if (dataType == ProtoDataType.PARAMETER) {
             responseb.setParameterData((ParameterData) message);
+        } else if (dataType == ProtoDataType.PROCESSOR_INFO) {
+            responseb.setProcessorInfo((ProcessorInfo) message);
+        } else if (dataType == ProtoDataType.CLIENT_INFO) {
+            responseb.setClientInfo((ClientInfo) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }

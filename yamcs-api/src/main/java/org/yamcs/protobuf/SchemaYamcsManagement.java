@@ -195,8 +195,8 @@ public final class SchemaYamcsManagement
                     output.writeString(3, message.getUsername(), false);
                 if(message.hasApplicationName())
                     output.writeString(4, message.getApplicationName(), false);
-                if(message.hasYProcessorName())
-                    output.writeString(5, message.getYProcessorName(), false);
+                if(message.hasProcessorName())
+                    output.writeString(5, message.getProcessorName(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ClientInfo message)
             {
@@ -249,7 +249,7 @@ public final class SchemaYamcsManagement
                             builder.setApplicationName(input.readString());
                             break;
                         case 5:
-                            builder.setYProcessorName(input.readString());
+                            builder.setProcessorName(input.readString());
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -295,7 +295,7 @@ public final class SchemaYamcsManagement
                 case 2: return "id";
                 case 3: return "username";
                 case 4: return "applicationName";
-                case 5: return "yProcessorName";
+                case 5: return "processorName";
                 default: return null;
             }
         }
@@ -311,7 +311,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("id", 2);
             fieldMap.put("username", 3);
             fieldMap.put("applicationName", 4);
-            fieldMap.put("yProcessorName", 5);
+            fieldMap.put("processorName", 5);
         }
     }
 

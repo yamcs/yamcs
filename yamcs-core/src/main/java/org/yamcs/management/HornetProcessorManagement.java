@@ -228,7 +228,7 @@ public class HornetProcessorManagement implements YProcessorListener {
         }
     }
 
-    private ProcessorInfo getProcessorInfo(YProcessor yproc) {
+    public static ProcessorInfo getProcessorInfo(YProcessor yproc) {
         ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
         .setName(yproc.getName()).setType(yproc.getType())
         .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())

@@ -40,7 +40,7 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
     }
 
     private WebSocketReplyData subscribe(int requestId) {
-	CommandHistoryRequestManager chrm = channel.getCommandHistoryManager();
+	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
 	subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
 	return toAckReply(requestId);
     }
@@ -50,19 +50,19 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
      */
     public void quit() {
 	if(subscriptionId == -1) return;
-	CommandHistoryRequestManager chrm = channel.getCommandHistoryManager();
+	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
 	chrm.unsubscribeCommandHistory(subscriptionId);
     }
 
     public void switchYProcessor(YProcessor c) throws YProcessorException {
 	if(subscriptionId == -1) return;
 
-	CommandHistoryRequestManager chrm = channel.getCommandHistoryManager();
+	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
 	CommandHistoryFilter filter = chrm.unsubscribeCommandHistory(subscriptionId);
 
-	this.channel = c;
+	this.yproc = c;
 
-	chrm = channel.getCommandHistoryManager();
+	chrm = yproc.getCommandHistoryManager();
 	chrm.addSubscription(filter, this);
     }
 

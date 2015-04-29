@@ -10,12 +10,12 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
  */
 public abstract class AbstractWebSocketResource {
 
-    protected YProcessor channel;
+    protected YProcessor yproc;
     protected WebSocketServerHandler wsHandler;
 
 
-    public AbstractWebSocketResource(YProcessor channel, WebSocketServerHandler wsHandler) {
-        this.channel = channel;
+    public AbstractWebSocketResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
+        this.yproc = yproc;
         this.wsHandler = wsHandler;
     }
 

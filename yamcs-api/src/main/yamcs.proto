@@ -215,18 +215,20 @@ message ReplaySpeed {
 //the first two are not data but status information and perhaps should be moved to a different field
 enum ProtoDataType {
        //error in replay
-       DT_ERROR=1;
+       DT_ERROR = 1;
 
        //the replay status has changed (e.g.  stopped or closed) the body contains a ReplayStatus
-       STATE_CHANGE=2; 
+       STATE_CHANGE = 2; 
 
-       TM_PACKET=3; 
-       PP=4;
-       EVENT=5;
-       ARCHIVE_INDEX=6;
-       ARCHIVE_TAG=7;
-       PARAMETER=8;
-       CMD_HISTORY=9;
+       TM_PACKET = 3; 
+       PP = 4;
+       EVENT = 5;
+       ARCHIVE_INDEX = 6;
+       ARCHIVE_TAG = 7;
+       PARAMETER = 8;
+       CMD_HISTORY = 9;
+       PROCESSOR_INFO = 10;
+       CLIENT_INFO = 11;
 };
 
 //used to replay (concurrently) TM packets, parameters and events

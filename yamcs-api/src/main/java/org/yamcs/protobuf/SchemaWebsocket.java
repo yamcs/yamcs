@@ -429,6 +429,12 @@ public final class SchemaWebsocket
                     if(message.hasCommand())
                         output.writeObject(4, message.getCommand(), org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.WRITE, false);
 
+                    if(message.hasProcessorInfo())
+                        output.writeObject(5, message.getProcessorInfo(), org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.WRITE, false);
+
+                    if(message.hasClientInfo())
+                        output.writeObject(6, message.getClientInfo(), org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -482,6 +488,14 @@ public final class SchemaWebsocket
                                 builder.setCommand(input.mergeObject(org.yamcs.protobuf.Commanding.CommandHistoryEntry.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandHistoryEntry.MERGE));
 
                                 break;
+                            case 5:
+                                builder.setProcessorInfo(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.MERGE));
+
+                                break;
+                            case 6:
+                                builder.setClientInfo(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ClientInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -526,6 +540,8 @@ public final class SchemaWebsocket
                     case 2: return "type";
                     case 3: return "parameterData";
                     case 4: return "command";
+                    case 5: return "processorInfo";
+                    case 6: return "clientInfo";
                     default: return null;
                 }
             }
@@ -541,6 +557,8 @@ public final class SchemaWebsocket
                 fieldMap.put("type", 2);
                 fieldMap.put("parameterData", 3);
                 fieldMap.put("command", 4);
+                fieldMap.put("processorInfo", 5);
+                fieldMap.put("clientInfo", 6);
             }
         }
 

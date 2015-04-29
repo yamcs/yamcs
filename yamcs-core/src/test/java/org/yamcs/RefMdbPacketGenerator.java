@@ -82,6 +82,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     Map<Integer, AtomicInteger> seqCount=new HashMap<Integer, AtomicInteger>();
 
+    
+    private long generationTime = TimeEncoding.INVALID_INSTANT;
     /**
      * Constructor called when RefMdbPacketGenerator is declared in tmProviderList in yamcs.instance.yaml
      */
@@ -184,7 +186,17 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 sendToTmProcessor(bb);
 	 return bb;
      }
-
+     
+     /**
+      * set the generation time used to send the packets. 
+      * If TimeEncoding.INVALID_INSTANT is used, the current time will be sent
+      * @param genTime
+      */
+     public void setGenerationTime(long genTime) {
+         this.generationTime = genTime;
+     }
+     
+     
      private void fill_CcsdsHeader(ByteBuffer bb, int apid, int packetId) {
 	 short xs;
 	 //Primary header:
@@ -383,7 +395,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      }
 
      private void sendToTmProcessor(ByteBuffer bb) {
-	 sendToTmProcessor(bb, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
+         long gentime = generationTime;
+         if(gentime==TimeEncoding.INVALID_INSTANT) {
+             gentime = TimeEncoding.currentInstant();
+         }
+	 sendToTmProcessor(bb, TimeEncoding.currentInstant(), gentime);
      }
 
      private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {

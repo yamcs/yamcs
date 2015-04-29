@@ -78,14 +78,14 @@ public class ManagementService {
     }
 
     public void shutdown() {
-	if(hornetEnabled) {
-	    YProcessor.removeYProcListner(hornetYProcMgr);
-	    hornetMgr.stop();
-	    hornetCmdQueueMgr.stop();
-	    hornetYProcMgr.close();
-	}
+        if(hornetEnabled) {
+            YProcessor.removeYProcListner(hornetYProcMgr);
+            hornetMgr.stop();
+            hornetCmdQueueMgr.stop();
+            hornetYProcMgr.close();
+        }
     }
-    
+
     public void registerService(String instance, String serviceName, Service service) {
         if(jmxEnabled) {
             ServiceControlImpl sci;
@@ -186,7 +186,7 @@ public class ManagementService {
         ClientInfo ci=cci.getClientInfo();
         try {
             if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getYProcessorName()+",id="+id));
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+id));
             }
             if(hornetEnabled) {
                 hornetYProcMgr.unregisterClient(ci);
@@ -203,8 +203,8 @@ public class ManagementService {
 
         try {
             if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,yproc="+oldci.getYProcessorName()+",id="+ci.getId()));
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getYProcessorName()+",id="+ci.getId()));
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,yproc="+oldci.getProcessorName()+",id="+ci.getId()));
+                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+ci.getId()));
             }
             if(hornetEnabled) {
                 hornetYProcMgr.clientInfoChanged(ci);
@@ -278,8 +278,8 @@ public class ManagementService {
         if(currentUser==null) currentUser="unknown";
 
         log.debug("User "+ currentUser+" wants to connect clients "+cr.getClientIdList()+" to yproc "+cr.getName());
-        
-        
+
+
         if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlYProcessor") &&
                 !((chan.isPersistent() || chan.getCreator().equals(currentUser)))) {
             log.warn("User "+currentUser+" is not allowed to connect users to yproc "+cr.getName() );
@@ -320,5 +320,9 @@ public class ManagementService {
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
         }
+    }
+
+    public ClientInfo getClientInfo(int clientId) {
+        return clients.get(clientId).getClientInfo();
     }
 }

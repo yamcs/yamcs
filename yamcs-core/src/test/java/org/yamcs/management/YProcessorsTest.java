@@ -129,25 +129,25 @@ public class YProcessorsTest {
         
         ClientInfo cli=ml.clientUpdatedList.get(0);
         assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getYProcessorName());
+        assertEquals("yproc1",cli.getProcessorName());
         assertEquals(1,cli.getId());
         assertEquals("random-test-user",cli.getUsername());
         assertEquals("random-app-name",cli.getApplicationName());
         
         cli=ml.clientUpdatedList.get(1);
         assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc2",cli.getYProcessorName());
+        assertEquals("yproc2",cli.getProcessorName());
         assertEquals(1,cli.getId());
         
         cli=ml.clientUpdatedList.get(2);
         assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getYProcessorName());
+        assertEquals("yproc1",cli.getProcessorName());
         assertEquals(1,cli.getId());
         
         assertEquals(1,ml.clientDisconnectedList.size());
         cli=ml.clientDisconnectedList.get(0);
         assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getYProcessorName());
+        assertEquals("yproc1",cli.getProcessorName());
         assertEquals(1,cli.getId());
        
     }

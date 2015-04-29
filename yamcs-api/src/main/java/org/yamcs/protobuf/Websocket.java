@@ -2687,6 +2687,34 @@ public final class Websocket {
        * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
        */
       org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder getCommandOrBuilder();
+
+      // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      boolean hasProcessorInfo();
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessorInfo();
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorInfoOrBuilder();
+
+      // optional .yamcsManagement.ClientInfo clientInfo = 6;
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      boolean hasClientInfo();
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo();
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder();
     }
     /**
      * Protobuf type {@code websocket.WebSocketServerMessage.WebSocketSubscriptionData}
@@ -2785,6 +2813,32 @@ public final class Websocket {
                   command_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000008;
+                break;
+              }
+              case 42: {
+                org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                  subBuilder = processorInfo_.toBuilder();
+                }
+                processorInfo_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(processorInfo_);
+                  processorInfo_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000010;
+                break;
+              }
+              case 50: {
+                org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000020) == 0x00000020)) {
+                  subBuilder = clientInfo_.toBuilder();
+                }
+                clientInfo_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.ClientInfo.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(clientInfo_);
+                  clientInfo_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000020;
                 break;
               }
             }
@@ -2903,11 +2957,57 @@ public final class Websocket {
         return command_;
       }
 
+      // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
+      public static final int PROCESSORINFO_FIELD_NUMBER = 5;
+      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_;
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      public boolean hasProcessorInfo() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessorInfo() {
+        return processorInfo_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorInfoOrBuilder() {
+        return processorInfo_;
+      }
+
+      // optional .yamcsManagement.ClientInfo clientInfo = 6;
+      public static final int CLIENTINFO_FIELD_NUMBER = 6;
+      private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_;
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      public boolean hasClientInfo() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo() {
+        return clientInfo_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder() {
+        return clientInfo_;
+      }
+
       private void initFields() {
         sequenceNumber_ = 0;
         type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
         parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
         command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
+        processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+        clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -2922,6 +3022,18 @@ public final class Websocket {
         }
         if (hasCommand()) {
           if (!getCommand().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasProcessorInfo()) {
+          if (!getProcessorInfo().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasClientInfo()) {
+          if (!getClientInfo().isInitialized()) {
             memoizedIsInitialized = 0;
             return false;
           }
@@ -2944,6 +3056,12 @@ public final class Websocket {
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           output.writeMessage(4, command_);
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          output.writeMessage(5, processorInfo_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          output.writeMessage(6, clientInfo_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -2969,6 +3087,14 @@ public final class Websocket {
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(4, command_);
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(5, processorInfo_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(6, clientInfo_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3086,6 +3212,8 @@ public final class Websocket {
           if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
             getParameterDataFieldBuilder();
             getCommandFieldBuilder();
+            getProcessorInfoFieldBuilder();
+            getClientInfoFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3110,6 +3238,18 @@ public final class Websocket {
             commandBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000008);
+          if (processorInfoBuilder_ == null) {
+            processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          } else {
+            processorInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000010);
+          if (clientInfoBuilder_ == null) {
+            clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
+          } else {
+            clientInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000020);
           return this;
         }
 
@@ -3162,6 +3302,22 @@ public final class Websocket {
           } else {
             result.command_ = commandBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000010;
+          }
+          if (processorInfoBuilder_ == null) {
+            result.processorInfo_ = processorInfo_;
+          } else {
+            result.processorInfo_ = processorInfoBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+            to_bitField0_ |= 0x00000020;
+          }
+          if (clientInfoBuilder_ == null) {
+            result.clientInfo_ = clientInfo_;
+          } else {
+            result.clientInfo_ = clientInfoBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -3190,6 +3346,12 @@ public final class Websocket {
           if (other.hasCommand()) {
             mergeCommand(other.getCommand());
           }
+          if (other.hasProcessorInfo()) {
+            mergeProcessorInfo(other.getProcessorInfo());
+          }
+          if (other.hasClientInfo()) {
+            mergeClientInfo(other.getClientInfo());
+          }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
         }
@@ -3203,6 +3365,18 @@ public final class Websocket {
           }
           if (hasCommand()) {
             if (!getCommand().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasProcessorInfo()) {
+            if (!getProcessorInfo().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasClientInfo()) {
+            if (!getClientInfo().isInitialized()) {
               
               return false;
             }
@@ -3530,6 +3704,240 @@ public final class Websocket {
             command_ = null;
           }
           return commandBuilder_;
+        }
+
+        // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
+        private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorInfoBuilder_;
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public boolean hasProcessorInfo() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessorInfo() {
+          if (processorInfoBuilder_ == null) {
+            return processorInfo_;
+          } else {
+            return processorInfoBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public Builder setProcessorInfo(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+          if (processorInfoBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            processorInfo_ = value;
+            onChanged();
+          } else {
+            processorInfoBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000010;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public Builder setProcessorInfo(
+            org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder builderForValue) {
+          if (processorInfoBuilder_ == null) {
+            processorInfo_ = builderForValue.build();
+            onChanged();
+          } else {
+            processorInfoBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000010;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public Builder mergeProcessorInfo(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+          if (processorInfoBuilder_ == null) {
+            if (((bitField0_ & 0x00000010) == 0x00000010) &&
+                processorInfo_ != org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance()) {
+              processorInfo_ =
+                org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(processorInfo_).mergeFrom(value).buildPartial();
+            } else {
+              processorInfo_ = value;
+            }
+            onChanged();
+          } else {
+            processorInfoBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000010;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public Builder clearProcessorInfo() {
+          if (processorInfoBuilder_ == null) {
+            processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+            onChanged();
+          } else {
+            processorInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000010);
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder getProcessorInfoBuilder() {
+          bitField0_ |= 0x00000010;
+          onChanged();
+          return getProcessorInfoFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorInfoOrBuilder() {
+          if (processorInfoBuilder_ != null) {
+            return processorInfoBuilder_.getMessageOrBuilder();
+          } else {
+            return processorInfo_;
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+            getProcessorInfoFieldBuilder() {
+          if (processorInfoBuilder_ == null) {
+            processorInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
+                    processorInfo_,
+                    getParentForChildren(),
+                    isClean());
+            processorInfo_ = null;
+          }
+          return processorInfoBuilder_;
+        }
+
+        // optional .yamcsManagement.ClientInfo clientInfo = 6;
+        private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> clientInfoBuilder_;
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public boolean hasClientInfo() {
+          return ((bitField0_ & 0x00000020) == 0x00000020);
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo() {
+          if (clientInfoBuilder_ == null) {
+            return clientInfo_;
+          } else {
+            return clientInfoBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public Builder setClientInfo(org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
+          if (clientInfoBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            clientInfo_ = value;
+            onChanged();
+          } else {
+            clientInfoBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000020;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public Builder setClientInfo(
+            org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
+          if (clientInfoBuilder_ == null) {
+            clientInfo_ = builderForValue.build();
+            onChanged();
+          } else {
+            clientInfoBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000020;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public Builder mergeClientInfo(org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
+          if (clientInfoBuilder_ == null) {
+            if (((bitField0_ & 0x00000020) == 0x00000020) &&
+                clientInfo_ != org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance()) {
+              clientInfo_ =
+                org.yamcs.protobuf.YamcsManagement.ClientInfo.newBuilder(clientInfo_).mergeFrom(value).buildPartial();
+            } else {
+              clientInfo_ = value;
+            }
+            onChanged();
+          } else {
+            clientInfoBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000020;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public Builder clearClientInfo() {
+          if (clientInfoBuilder_ == null) {
+            clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
+            onChanged();
+          } else {
+            clientInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000020);
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder getClientInfoBuilder() {
+          bitField0_ |= 0x00000020;
+          onChanged();
+          return getClientInfoFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder() {
+          if (clientInfoBuilder_ != null) {
+            return clientInfoBuilder_.getMessageOrBuilder();
+          } else {
+            return clientInfo_;
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
+            getClientInfoFieldBuilder() {
+          if (clientInfoBuilder_ == null) {
+            clientInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
+                    clientInfo_,
+                    getParentForChildren(),
+                    isClean());
+            clientInfo_ = null;
+          }
+          return clientInfoBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:websocket.WebSocketServerMessage.WebSocketSubscriptionData)
@@ -4376,32 +4784,35 @@ public final class Websocket {
   static {
     java.lang.String[] descriptorData = {
       "\n\017websocket.proto\022\twebsocket\032\013yamcs.prot" +
-      "o\032\020commanding.proto\032\014pvalue.proto\"|\n\026Web" +
-      "SocketClientMessage\022\027\n\017protocolVersion\030\001" +
-      " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource" +
-      "\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"" +
-      "\336\005\n\026WebSocketServerMessage\022;\n\004type\030\001 \001(\016" +
-      "2-.websocket.WebSocketServerMessage.Mess" +
-      "ageType\022C\n\005reply\030\002 \001(\01324.websocket.WebSo" +
-      "cketServerMessage.WebSocketReplyData\022K\n\t" +
-      "exception\030\003 \001(\01328.websocket.WebSocketSer",
-      "verMessage.WebSocketExceptionData\022I\n\004dat" +
-      "a\030\004 \001(\0132;.websocket.WebSocketServerMessa" +
-      "ge.WebSocketSubscriptionData\032E\n\022WebSocke" +
-      "tReplyData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016s" +
-      "equenceNumber\030\002 \001(\005\032v\n\026WebSocketExceptio" +
-      "nData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequen" +
-      "ceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001(\t\022\017\n\007message\030" +
-      "\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\267\001\n\031WebSocketSubscri" +
-      "ptionData\022\026\n\016sequenceNumber\030\001 \001(\r\022\"\n\004typ" +
-      "e\030\002 \001(\0162\024.yamcs.ProtoDataType\022,\n\rparamet",
-      "erData\030\003 \001(\0132\025.pvalue.ParameterData\0220\n\007c" +
-      "ommand\030\004 \001(\0132\037.commanding.CommandHistory" +
-      "Entry\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEP" +
-      "TION\020\003\022\010\n\004DATA\020\0042g\n\020WebSocketService\022S\n\013" +
-      "sendMessage\022!.websocket.WebSocketClientM" +
-      "essage\032!.websocket.WebSocketServerMessag" +
-      "eB\024\n\022org.yamcs.protobuf"
+      "o\032\020commanding.proto\032\014pvalue.proto\032\025yamcs" +
+      "Management.proto\"|\n\026WebSocketClientMessa" +
+      "ge\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequenceN" +
+      "umber\030\002 \001(\r\022\020\n\010resource\030\003 \001(\t\022\021\n\toperati" +
+      "on\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\306\006\n\026WebSocketServ" +
+      "erMessage\022;\n\004type\030\001 \001(\0162-.websocket.WebS" +
+      "ocketServerMessage.MessageType\022C\n\005reply\030" +
+      "\002 \001(\01324.websocket.WebSocketServerMessage" +
+      ".WebSocketReplyData\022K\n\texception\030\003 \001(\01328",
+      ".websocket.WebSocketServerMessage.WebSoc" +
+      "ketExceptionData\022I\n\004data\030\004 \001(\0132;.websock" +
+      "et.WebSocketServerMessage.WebSocketSubsc" +
+      "riptionData\032E\n\022WebSocketReplyData\022\027\n\017pro" +
+      "tocolVersion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001" +
+      "(\005\032v\n\026WebSocketExceptionData\022\027\n\017protocol" +
+      "Version\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n" +
+      "\004type\030\003 \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001" +
+      "(\014\032\237\002\n\031WebSocketSubscriptionData\022\026\n\016sequ" +
+      "enceNumber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.P",
+      "rotoDataType\022,\n\rparameterData\030\003 \001(\0132\025.pv" +
+      "alue.ParameterData\0220\n\007command\030\004 \001(\0132\037.co" +
+      "mmanding.CommandHistoryEntry\0225\n\rprocesso" +
+      "rInfo\030\005 \001(\0132\036.yamcsManagement.ProcessorI" +
+      "nfo\022/\n\nclientInfo\030\006 \001(\0132\033.yamcsManagemen" +
+      "t.ClientInfo\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r" +
+      "\n\tEXCEPTION\020\003\022\010\n\004DATA\020\0042g\n\020WebSocketServ" +
+      "ice\022S\n\013sendMessage\022!.websocket.WebSocket" +
+      "ClientMessage\032!.websocket.WebSocketServe" +
+      "rMessageB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4437,7 +4848,7 @@ public final class Websocket {
           internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", });
           return null;
         }
       };
@@ -4447,6 +4858,7 @@ public final class Websocket {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Commanding.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
+          org.yamcs.protobuf.YamcsManagement.getDescriptor(),
         }, assigner);
   }
 

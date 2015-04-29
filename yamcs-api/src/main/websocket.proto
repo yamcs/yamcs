@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "yamcsManagement.proto";
 
 // TODO we should probably include messages for all the sub-operations here.
 
@@ -39,10 +40,12 @@ message WebSocketServerMessage {
   // could in the future just make it bytes just like with the requests.
   // oh, and protobuf3 plans to support an Any-type.
   message WebSocketSubscriptionData {
-    optional uint32 sequenceNumber=1;
-    optional yamcs.ProtoDataType type=2;
-    optional pvalue.ParameterData parameterData=3;
-    optional commanding.CommandHistoryEntry command=4;
+    optional uint32 sequenceNumber = 1;
+    optional yamcs.ProtoDataType type = 2;
+    optional pvalue.ParameterData parameterData = 3;
+    optional commanding.CommandHistoryEntry command = 4;
+    optional yamcsManagement.ProcessorInfo processorInfo = 5;
+    optional yamcsManagement.ClientInfo clientInfo = 6;
   }
 
   optional MessageType type=1;

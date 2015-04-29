@@ -18,7 +18,7 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         this.client=client;
         clientInfo=ClientInfo.newBuilder().setInstance(instance)
             .setApplicationName(applicationName)
-            .setYProcessorName(yprocName).setUsername(username)
+            .setProcessorName(yprocName).setUsername(username)
             .setId(id).build();
     }
     
@@ -40,7 +40,7 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         client.switchYProcessor(chan);
         
         clientInfo=ClientInfo.newBuilder().mergeFrom(clientInfo)
-            .setInstance(chan.getInstance()).setYProcessorName(chan.getName())
+            .setInstance(chan.getInstance()).setProcessorName(chan.getName())
             .build();
     }
 }

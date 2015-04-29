@@ -47,10 +47,10 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterClient(YProcessor channel, WebSocketServerHandler wsHandler) {
-	super(channel, wsHandler);
-	log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + channel.getInstance() + "]");
-	pidrm = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
+    public ParameterClient(YProcessor yproc, WebSocketServerHandler wsHandler) {
+	super(yproc, wsHandler);
+	log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + yproc.getInstance() + "]");
+	pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
 	wsHandler.addResource("parameter", this);
 	wsHandler.addResource("request", this);
     }
@@ -163,7 +163,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	if(subscriptionId==-1) {
 	    throw new WebSocketException(requestId, "Not subscribed");
 	}
-	ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
 	boolean r=prm.unsubscribeAll(subscriptionId);
 	if(r) {
 	    subscriptionId=-1;
@@ -219,7 +219,7 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
      * unsubscribe all parameters
      */
     public void quit() {
-	ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
+	ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
 	if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
 	if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }

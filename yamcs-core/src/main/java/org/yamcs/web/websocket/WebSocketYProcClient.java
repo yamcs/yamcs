@@ -20,15 +20,17 @@ public class WebSocketYProcClient implements YProcessorClient {
 
     private final ParameterClient paraClient;
     private final CommandHistoryClient cmdhistClient;
-
+    private final ManagementClient mgmtClient;
+   
     public WebSocketYProcClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName) {
         this.applicationName = applicationName;
         log = LoggerFactory.getLogger(WebSocketYProcClient.class.getName() + "[" + yamcsInstance + "]");
-
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
+        
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
         paraClient = new ParameterClient(yproc, wsHandler);
         cmdhistClient = new CommandHistoryClient(yproc, wsHandler);
+        mgmtClient = new ManagementClient(yproc, wsHandler, clientId);
     }
 
     @Override
@@ -36,6 +38,7 @@ public class WebSocketYProcClient implements YProcessorClient {
         log.info("switching yprocessor to {}", c);
         paraClient.switchYProcessor(c);
         cmdhistClient.switchYProcessor(c);
+
     }
 
     @Override
@@ -60,5 +63,8 @@ public class WebSocketYProcClient implements YProcessorClient {
         ManagementService.getInstance().unregisterClient(clientId);
         paraClient.quit();
         cmdhistClient.quit();
+        mgmtClient.quit();
     }
+
+   
 }

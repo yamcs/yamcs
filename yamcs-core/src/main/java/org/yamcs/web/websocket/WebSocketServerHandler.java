@@ -38,16 +38,16 @@ public class WebSocketServerHandler {
 
     //these two are valid after the socket has been upgraded and they are practical final
     Channel channel;
-    WebSocketYProcClient channelClient;
+    WebSocketYProcClient yprocClient;
 
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
 
     public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws Exception {
 	if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
-	if(channelClient==null) {
+	if(yprocClient==null) {
 	    String applicationName = determineApplicationName(req);
-	    this.channelClient=new WebSocketYProcClient(yamcsInstance, this, applicationName);
+	    this.yprocClient=new WebSocketYProcClient(yamcsInstance, this, applicationName);
 	}
 
 	this.channel=ctx.channel();
@@ -83,7 +83,7 @@ public class WebSocketServerHandler {
 		log.debug("received websocket frame {}", frame);
 		// Check for closing frame
 		if (frame instanceof CloseWebSocketFrame) {
-		    channelClient.quit();
+		    yprocClient.quit();
 		    this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
 		    return;
 		} else if (frame instanceof PingWebSocketFrame) {
@@ -178,9 +178,9 @@ public class WebSocketServerHandler {
     }
 
     public void channelDisconnected(Channel c) {
-	if(channelClient!=null) {
+	if(yprocClient!=null) {
 	    log.info("Channel "+c.remoteAddress()+" disconnected");
-	    channelClient.quit();
+	    yprocClient.quit();
 	}
     }
 }

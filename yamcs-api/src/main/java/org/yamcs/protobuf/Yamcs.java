@@ -260,6 +260,14 @@ public final class Yamcs {
      * <code>CMD_HISTORY = 9;</code>
      */
     CMD_HISTORY(8, 9),
+    /**
+     * <code>PROCESSOR_INFO = 10;</code>
+     */
+    PROCESSOR_INFO(9, 10),
+    /**
+     * <code>CLIENT_INFO = 11;</code>
+     */
+    CLIENT_INFO(10, 11),
     ;
 
     /**
@@ -306,6 +314,14 @@ public final class Yamcs {
      * <code>CMD_HISTORY = 9;</code>
      */
     public static final int CMD_HISTORY_VALUE = 9;
+    /**
+     * <code>PROCESSOR_INFO = 10;</code>
+     */
+    public static final int PROCESSOR_INFO_VALUE = 10;
+    /**
+     * <code>CLIENT_INFO = 11;</code>
+     */
+    public static final int CLIENT_INFO_VALUE = 11;
 
 
     public final int getNumber() { return value; }
@@ -321,6 +337,8 @@ public final class Yamcs {
         case 7: return ARCHIVE_TAG;
         case 8: return PARAMETER;
         case 9: return CMD_HISTORY;
+        case 10: return PROCESSOR_INFO;
+        case 11: return CLIENT_INFO;
         default: return null;
       }
     }
@@ -26899,26 +26917,27 @@ public final class Yamcs {
       "verity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002" +
       "*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002" +
       "\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022" +
-      "\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\225\001\n\rProto" +
+      "\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\272\001\n\rProto" +
       "DataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002" +
       "\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rAR" +
       "CHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAME",
-      "TER\020\010\022\017\n\013CMD_HISTORY\020\t2\211\001\n\014YamcsControl\022" +
-      "7\n\021GetYamcsInstances\022\013.yamcs.Void\032\025.yamc" +
-      "s.YamcsInstances\022@\n\022GetMissionDatabase\022\035" +
-      ".yamcs.MissionDatabaseRequest\032\013.yamcs.Vo" +
-      "id2\337\001\n\030RealtimeParameterService\0220\n\tSubsc" +
-      "ribe\022\026.yamcs.NamedObjectList\032\013.yamcs.Voi" +
-      "d\0221\n\014SubscribeAll\022\024.yamcs.StringMessage\032" +
-      "\013.yamcs.Void\0222\n\013Unsubscribe\022\026.yamcs.Name" +
-      "dObjectList\032\013.yamcs.Void\022*\n\016UnsubscribeA" +
-      "ll\022\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014Archive",
-      "Index\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022" +
-      ".yamcs.IndexResult\022/\n\006GetTag\022\023.yamcs.Ind" +
-      "exRequest\032\020.yamcs.TagResult\0227\n\tUpsertTag" +
-      "\022\027.yamcs.UpsertTagRequest\032\021.yamcs.Archiv" +
-      "eTag\0221\n\tDeleteTag\022\027.yamcs.DeleteTagReque" +
-      "st\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "TER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO" +
+      "\020\n\022\017\n\013CLIENT_INFO\020\0132\211\001\n\014YamcsControl\0227\n\021" +
+      "GetYamcsInstances\022\013.yamcs.Void\032\025.yamcs.Y" +
+      "amcsInstances\022@\n\022GetMissionDatabase\022\035.ya" +
+      "mcs.MissionDatabaseRequest\032\013.yamcs.Void2" +
+      "\337\001\n\030RealtimeParameterService\0220\n\tSubscrib" +
+      "e\022\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221" +
+      "\n\014SubscribeAll\022\024.yamcs.StringMessage\032\013.y" +
+      "amcs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedOb" +
+      "jectList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022",
+      "\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveInd" +
+      "ex\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.ya" +
+      "mcs.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexR" +
+      "equest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027." +
+      "yamcs.UpsertTagRequest\032\021.yamcs.ArchiveTa" +
+      "g\0221\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032" +
+      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

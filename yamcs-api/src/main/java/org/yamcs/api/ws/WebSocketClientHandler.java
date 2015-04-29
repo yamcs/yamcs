@@ -134,6 +134,14 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 	case CMD_HISTORY:
 	    callback.onCommandHistoryData(data.getCommand());
 	    break;
+        case CLIENT_INFO:
+            callback.onClientInfoData(data.getClientInfo());
+            break;
+        case PROCESSOR_INFO:
+            callback.onProcessorInfoData(data.getProcessorInfo());
+            break;
+            
+
 	default:
 	    throw new IllegalStateException("Unsupported data type " + data.getType());
 	}

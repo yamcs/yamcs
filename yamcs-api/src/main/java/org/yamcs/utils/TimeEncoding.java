@@ -186,6 +186,11 @@ public class TimeEncoding {
     }
 
 
+    /**
+     * parses an ISO 8860 UTC date into an instant
+     * @param s
+     * @return
+     */
     public static long parse(String s) {
         TaiUtcConverter.DateTimeComponents dtc; 
         Matcher m = iso8860Pattern.matcher(s);

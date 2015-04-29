@@ -1,4 +1,4 @@
-package yamcsmanagement;
+package yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
 /* Yamcs Management structures and services */
@@ -38,7 +38,7 @@ message ClientInfo {
     required int32 id=2;
     optional string username=3;
     optional string applicationName=4;
-    optional string yProcessorName=5;
+    optional string processorName=5;
 }
 message TmStatistics {
     required string packetName=1;
