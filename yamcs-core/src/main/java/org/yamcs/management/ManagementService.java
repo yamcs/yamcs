@@ -249,7 +249,7 @@ public class ManagementService {
             } else {
                 spec = cr.getSpec();
             }
-            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), priv.getCurrentUser(), spec);
+            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), currentUser, spec);
             yproc.setPersistent(cr.getPersistent());
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));

@@ -95,11 +95,11 @@ public class HornetProcessorManagement implements YProcessorListener {
             String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
             log.debug("Received a new request: "+req);
             if(Constants.YPR_createProcessor.equalsIgnoreCase(req)) {
-                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorManagementRequest.newBuilder());
                 mservice.createProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_connectToProcessor.equalsIgnoreCase(req)) {
-                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorManagementRequest.newBuilder());
                 mservice.connectToProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_pauseReplay.equalsIgnoreCase(req)) {
