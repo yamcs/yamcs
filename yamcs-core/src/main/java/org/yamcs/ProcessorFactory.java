@@ -15,12 +15,12 @@ import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Used to create channels as defined in channel.yaml
+ * Used to create processors as defined in yprocessor.yaml
  * 
  * @author mache
  *
  */
-public class YProcFactory {
+public class ProcessorFactory {
     static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
 
     /**
@@ -40,7 +40,7 @@ public class YProcFactory {
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    static public YProcessor create(String yamcsInstance, String name, String type, String creator, String spec) throws YProcessorException,  ConfigurationException {
+    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws YProcessorException,  ConfigurationException {
 	boolean initialized = false;
 	TcTmService tctms=null;
 	Map<String,Object> channelConfig = null;
@@ -101,17 +101,17 @@ public class YProcFactory {
     /**
      * loads objects but passes only non null parameters
      */
-    static private <T> T loadObject(String className, String yamcsInstance, Object args, String spec) throws ConfigurationException, IOException {
-	List<Object> params = new ArrayList<Object>();
-	params.add(yamcsInstance);
+    static private <T> T loadObject(String className, String yamcsInstance, Object args, Object spec) throws ConfigurationException, IOException {
+	List<Object> newargs = new ArrayList<Object>();
+	newargs.add(yamcsInstance);
 
 	if(args!=null) {
-	    params.add(args);
+	    newargs.add(args);
 	}
 	if(spec!=null) {
-	    params.add(spec);
+	    newargs.add(spec);
 	}
-	return new YObjectLoader<T>().loadObject(className, params.toArray());
+	return new YObjectLoader<T>().loadObject(className, newargs.toArray());
     }
 
     static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws YProcessorException, ConfigurationException {

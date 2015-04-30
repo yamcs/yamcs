@@ -15,7 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
-import org.yamcs.YProcFactory;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -65,7 +65,7 @@ public class AlgorithmManagerPyTest {
         
         
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
-        c=YProcFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
+        c=ProcessorFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
     

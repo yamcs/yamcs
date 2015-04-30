@@ -2589,13 +2589,6 @@ public final class SchemaYamcs
                 if(message.hasSpeed())
                     output.writeObject(4, message.getSpeed(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.WRITE, false);
 
-                for(org.yamcs.protobuf.Yamcs.ProtoDataType type : message.getTypeList())
-                    output.writeEnum(5, type.getNumber(), true);
-                for(org.yamcs.protobuf.Yamcs.NamedObjectId tmPacketFilter : message.getTmPacketFilterList())
-                    output.writeObject(6, tmPacketFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
-
-                for(String ppGroupFilter : message.getPpGroupFilterList())
-                    output.writeString(7, ppGroupFilter, true);
                 if(message.hasParameterRequest())
                     output.writeObject(8, message.getParameterRequest(), org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.WRITE, false);
 
@@ -2611,6 +2604,10 @@ public final class SchemaYamcs
                 if(message.hasPpRequest())
                     output.writeObject(12, message.getPpRequest(), org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.WRITE, false);
 
+                if(message.hasUtcStart())
+                    output.writeString(13, message.getUtcStart(), false);
+                if(message.hasUtcStop())
+                    output.writeString(14, message.getUtcStop(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.ReplayRequest message)
             {
@@ -2663,16 +2660,6 @@ public final class SchemaYamcs
                             builder.setSpeed(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplaySpeed.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.MERGE));
 
                             break;
-                        case 5:
-                            builder.addType(org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(input.readEnum()));
-                            break;
-                        case 6:
-                            builder.addTmPacketFilter(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
-
-                            break;
-                        case 7:
-                            builder.addPpGroupFilter(input.readString());
-                            break;
                         case 8:
                             builder.setParameterRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.ParameterReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ParameterReplayRequest.MERGE));
 
@@ -2692,6 +2679,12 @@ public final class SchemaYamcs
                         case 12:
                             builder.setPpRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.PpReplayRequest.MERGE));
 
+                            break;
+                        case 13:
+                            builder.setUtcStart(input.readString());
+                            break;
+                        case 14:
+                            builder.setUtcStop(input.readString());
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -2737,14 +2730,13 @@ public final class SchemaYamcs
                 case 2: return "stop";
                 case 3: return "endAction";
                 case 4: return "speed";
-                case 5: return "type";
-                case 6: return "tmPacketFilter";
-                case 7: return "ppGroupFilter";
                 case 8: return "parameterRequest";
                 case 9: return "packetRequest";
                 case 10: return "eventRequest";
                 case 11: return "commandHistoryRequest";
                 case 12: return "ppRequest";
+                case 13: return "utcStart";
+                case 14: return "utcStop";
                 default: return null;
             }
         }
@@ -2760,14 +2752,13 @@ public final class SchemaYamcs
             fieldMap.put("stop", 2);
             fieldMap.put("endAction", 3);
             fieldMap.put("speed", 4);
-            fieldMap.put("type", 5);
-            fieldMap.put("tmPacketFilter", 6);
-            fieldMap.put("ppGroupFilter", 7);
             fieldMap.put("parameterRequest", 8);
             fieldMap.put("packetRequest", 9);
             fieldMap.put("eventRequest", 10);
             fieldMap.put("commandHistoryRequest", 11);
             fieldMap.put("ppRequest", 12);
+            fieldMap.put("utcStart", 13);
+            fieldMap.put("utcStop", 14);
         }
     }
 

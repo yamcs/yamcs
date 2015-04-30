@@ -588,6 +588,168 @@ public final class SchemaYamcsManagement
         }
     }
 
+    public static final class ProcessorManagementRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest message) throws java.io.IOException
+            {
+                if(message.hasOperation())
+                    output.writeEnum(1, message.getOperation().getNumber(), false);
+                if(message.hasInstance())
+                    output.writeString(2, message.getInstance(), false);
+                if(message.hasName())
+                    output.writeString(3, message.getName(), false);
+                if(message.hasType())
+                    output.writeString(4, message.getType(), false);
+                if(message.hasSpec())
+                    output.writeString(5, message.getSpec(), false);
+                for(int clientId : message.getClientIdList())
+                    output.writeInt32(6, clientId, true);
+                if(message.hasPersistent())
+                    output.writeBool(7, message.getPersistent(), false);
+                if(message.hasReplaySpec())
+                    output.writeObject(8, message.getReplaySpec(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.valueOf(input.readEnum()));
+                            break;
+                        case 2:
+                            builder.setInstance(input.readString());
+                            break;
+                        case 3:
+                            builder.setName(input.readString());
+                            break;
+                        case 4:
+                            builder.setType(input.readString());
+                            break;
+                        case 5:
+                            builder.setSpec(input.readString());
+                            break;
+                        case 6:
+                            builder.addClientId(input.readInt32());
+                            break;
+                        case 7:
+                            builder.setPersistent(input.readBool());
+                            break;
+                        case 8:
+                            builder.setReplaySpec(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ProcessorManagementRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "operation";
+                case 2: return "instance";
+                case 3: return "name";
+                case 4: return "type";
+                case 5: return "spec";
+                case 6: return "clientId";
+                case 7: return "persistent";
+                case 8: return "replaySpec";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("operation", 1);
+            fieldMap.put("instance", 2);
+            fieldMap.put("name", 3);
+            fieldMap.put("type", 4);
+            fieldMap.put("spec", 5);
+            fieldMap.put("clientId", 6);
+            fieldMap.put("persistent", 7);
+            fieldMap.put("replaySpec", 8);
+        }
+    }
+
     public static final class ProcessorRequest
     {
         public static final org.yamcs.protobuf.SchemaYamcsManagement.ProcessorRequest.MessageSchema WRITE =
@@ -599,22 +761,14 @@ public final class SchemaYamcsManagement
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ProcessorRequest message) throws java.io.IOException
             {
-                if(message.hasInstance())
-                    output.writeString(1, message.getInstance(), false);
-                if(message.hasName())
-                    output.writeString(2, message.getName(), false);
-                if(message.hasType())
-                    output.writeString(3, message.getType(), false);
-                if(message.hasSpec())
-                    output.writeString(4, message.getSpec(), false);
-                if(message.hasPersistent())
-                    output.writeBool(5, message.getPersistent(), false);
-                for(int clientId : message.getClientIdList())
-                    output.writeInt32(6, clientId, true);
-                if(message.hasSeekTime())
-                    output.writeInt64(7, message.getSeekTime(), false);
                 if(message.hasOperation())
-                    output.writeEnum(8, message.getOperation().getNumber(), false);
+                    output.writeEnum(1, message.getOperation().getNumber(), false);
+                if(message.hasInstance())
+                    output.writeString(2, message.getInstance(), false);
+                if(message.hasName())
+                    output.writeString(3, message.getName(), false);
+                if(message.hasSeekTime())
+                    output.writeInt64(4, message.getSeekTime(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorRequest message)
             {
@@ -655,28 +809,16 @@ public final class SchemaYamcsManagement
                         case 0:
                             return;
                         case 1:
-                            builder.setInstance(input.readString());
+                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(input.readEnum()));
                             break;
                         case 2:
-                            builder.setName(input.readString());
+                            builder.setInstance(input.readString());
                             break;
                         case 3:
-                            builder.setType(input.readString());
+                            builder.setName(input.readString());
                             break;
                         case 4:
-                            builder.setSpec(input.readString());
-                            break;
-                        case 5:
-                            builder.setPersistent(input.readBool());
-                            break;
-                        case 6:
-                            builder.addClientId(input.readInt32());
-                            break;
-                        case 7:
                             builder.setSeekTime(input.readInt64());
-                            break;
-                        case 8:
-                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(input.readEnum()));
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -718,14 +860,10 @@ public final class SchemaYamcsManagement
         {
             switch(number)
             {
-                case 1: return "instance";
-                case 2: return "name";
-                case 3: return "type";
-                case 4: return "spec";
-                case 5: return "persistent";
-                case 6: return "clientId";
-                case 7: return "seekTime";
-                case 8: return "operation";
+                case 1: return "operation";
+                case 2: return "instance";
+                case 3: return "name";
+                case 4: return "seekTime";
                 default: return null;
             }
         }
@@ -737,14 +875,10 @@ public final class SchemaYamcsManagement
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("instance", 1);
-            fieldMap.put("name", 2);
-            fieldMap.put("type", 3);
-            fieldMap.put("spec", 4);
-            fieldMap.put("persistent", 5);
-            fieldMap.put("clientId", 6);
-            fieldMap.put("seekTime", 7);
-            fieldMap.put("operation", 8);
+            fieldMap.put("operation", 1);
+            fieldMap.put("instance", 2);
+            fieldMap.put("name", 3);
+            fieldMap.put("seekTime", 4);
         }
     }
 

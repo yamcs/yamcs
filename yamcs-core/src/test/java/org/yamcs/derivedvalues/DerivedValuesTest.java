@@ -12,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
-import org.yamcs.YProcFactory;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
@@ -51,7 +51,7 @@ public class DerivedValuesTest {
 	DerivedValuesManager dvm = new DerivedValuesManager("dvtest");
 	List<ParameterProvider> provList = new ArrayList<ParameterProvider>();
 	provList.add(dvm);
-	YProcessor c=YProcFactory.create(instance, channelName, "dvtest", 
+	YProcessor c=ProcessorFactory.create(instance, channelName, "dvtest", 
 		new SimpleTcTmService(tmGenerator, provList, null), "dvtest");
 
 	return c;

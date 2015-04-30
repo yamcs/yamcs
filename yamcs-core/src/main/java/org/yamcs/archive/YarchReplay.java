@@ -25,8 +25,11 @@ import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Instant;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -53,7 +56,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
     ReplayServer replayServer;
     volatile String streamName;
     volatile boolean quitting=false;
-    private volatile ReplayState state=ReplayState.INITIALIZATION;
+    private volatile ReplayState state = ReplayState.INITIALIZATION;
     static Logger log=LoggerFactory.getLogger(YarchReplay.class.getName());
     private volatile String errorString="";
     int numPacketsSent;
@@ -77,8 +80,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
         this.xtceDb=xtceDb;
         this.instance=replayServer.instance;
 
-        if (rr.getTypeList().isEmpty() // TODO delete first clause once no longer deprecated
-                        && !rr.hasPacketRequest() && !rr.hasParameterRequest()
+        if (!rr.hasPacketRequest() && !rr.hasParameterRequest()
                         && !rr.hasEventRequest() && !rr.hasPpRequest()
                         && !rr.hasCommandHistoryRequest()) {
             throw new YamcsException("Empty replay request");
@@ -150,6 +152,17 @@ class YarchReplay implements StreamSubscriber, Runnable {
             throw new YamcsException("changing the request only supported in the INITIALIZATION and STOPPED states");
         }
         
+        //get the start/stop from utcStart/utcStop
+        ReplayRequest.Builder b = ReplayRequest.newBuilder(newRequest);
+        
+        if(!newRequest.hasStart() && newRequest.hasUtcStart()) {
+            b.setStart(TimeEncoding.parse(newRequest.getUtcStart()));
+        }
+        if(!newRequest.hasStop() && newRequest.hasUtcStop()) {
+            b.setStop(TimeEncoding.parse(newRequest.getUtcStop()));
+        }
+        newRequest  = b.build();
+        
         if (newRequest.getStart()>newRequest.getStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
             throw new YamcsException("stop has to be greater than start");
@@ -158,30 +171,6 @@ class YarchReplay implements StreamSubscriber, Runnable {
         currentRequest=newRequest;
         handlers=new HashMap<ProtoDataType,ReplayHandler>();
         
-        // TODO delete this entire For, once API in proto removed, instead of deprecated
-        for (ProtoDataType rdp : currentRequest.getTypeList()) {
-            switch (rdp) {
-            case EVENT:
-                handlers.put(rdp, new EventReplayHandler());
-                break;
-            case TM_PACKET:
-                handlers.put(rdp, new XtceTmReplayHandler(xtceDb));
-                break;
-            case PP:
-                handlers.put(rdp, new PpReplayHandler(xtceDb));
-                break;
-// Covered by new API
-//            case PARAMETER:
-//                handlers.put(rdp, new ParameterReplayHandler(instance, xtceDb, ppdb));
-//                break;
-            case CMD_HISTORY:
-                handlers.put(rdp, new CommandHistoryReplayHandler(instance));
-                break;
-            default:
-        	log.debug("Ignoring request for type "+rdp);
-                    
-            }
-        }
         
         if (currentRequest.hasEventRequest())
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
@@ -262,15 +251,21 @@ class YarchReplay implements StreamSubscriber, Runnable {
         if(handlers.size()>1){
             sb.append(" USING gentime");
         }
-        switch(currentRequest.getSpeed().getType()) {
+        ReplaySpeed rs;
+        if(currentRequest.hasSpeed()) {
+            rs = currentRequest.getSpeed();
+        } else {
+            rs = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
+        }
+        switch(rs.getType()) {
         case    AFAP:
             sb.append(" SPEED AFAP");
             break;
         case FIXED_DELAY:
-            sb.append(" SPEED FIXED_DELAY "+(long)currentRequest.getSpeed().getParam());
+            sb.append(" SPEED FIXED_DELAY "+(long)rs.getParam());
             break;
         case REALTIME:
-            sb.append(" SPEED ORIGINAL gentime,"+(long)currentRequest.getSpeed().getParam());
+            sb.append(" SPEED ORIGINAL gentime,"+(long)rs.getParam());
         }
 
         String query=sb.toString();

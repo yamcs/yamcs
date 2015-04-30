@@ -39,7 +39,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ParameterClient extends AbstractWebSocketResource implements ParameterWithIdConsumer {
     Logger log;
     int subscriptionId=-1;
-
+    public static final String WSR_subscribe = "subscribe";
+    public static final String WSR_unsubscribe = "unsubscribe";
+    public static final String WSR_subscribeAll = "subscribeAll";
+    public static final String WSR_unsubscribeAll = "unsubscribeAll";
+    
     //subscription id used for computations
     int compSubscriptionId=-1;
 
@@ -58,16 +62,16 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
 	switch (ctx.getOperation()) {
-	    case "subscribe":
+	    case WSR_subscribe:
 		NamedObjectList subscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
 		return subscribe(ctx.getRequestId(), subscribeList);
-	    case "subscribeAll":
+	    case WSR_subscribeAll:
 		StringMessage stringMessage = decoder.decodeMessageData(ctx, SchemaYamcs.StringMessage.MERGE).build();
 		return subscribeAll(ctx.getRequestId(), stringMessage.getMessage());
-	    case "unsubscribe":
+	    case WSR_unsubscribe:
 		NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
 		return unsubscribe(ctx.getRequestId(), unsubscribeList);
-	    case "unsubscribeAll":
+	    case WSR_unsubscribeAll:
 		return unsubscribeAll(ctx.getRequestId());
 	    case "subscribeComputations":
 		ComputationDefList cdefList = decoder.decodeMessageData(ctx, SchemaComp.ComputationDefList.MERGE).build();
@@ -88,9 +92,11 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 	    }
 	    WebSocketReplyData reply = toAckReply(requestId);
 	    wsHandler.sendReply(reply);
-	    List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idlist);
-	    if(!pvlist.isEmpty()) {
-	        update(subscriptionId, pvlist);
+	    if(pidrm.hasParameterCache()) {
+	        List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idlist);
+	        if(!pvlist.isEmpty()) {
+	            update(subscriptionId, pvlist);
+	        }
 	    }
 	    
 	    return null;

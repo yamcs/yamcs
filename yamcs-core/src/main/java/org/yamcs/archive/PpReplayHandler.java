@@ -29,7 +29,6 @@ public class PpReplayHandler implements ReplayHandler {
     public void setRequest(ReplayRequest newRequest) {
         this.request=newRequest;
         currentGroups.clear();
-        currentGroups.addAll(newRequest.getPpGroupFilterList()); // TODO delete once no longer deprecated
         currentGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
     }
 

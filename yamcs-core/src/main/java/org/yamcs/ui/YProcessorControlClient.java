@@ -12,6 +12,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
@@ -45,7 +46,7 @@ public class YProcessorControlClient implements ConnectionListener {
     }
 
     public void createProcessor(String instance, String name, String type, String spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
-        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
+        ProcessorManagementRequest.Builder crb = ProcessorManagementRequest.newBuilder()
         .setInstance(instance).setName(name)
         .setType(type).setSpec(spec).setPersistent(persistent);
         for(int i=0;i<clients.length;i++) {
@@ -55,7 +56,7 @@ public class YProcessorControlClient implements ConnectionListener {
     }
 
     public void connectToYProcessor(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
-        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
+        ProcessorManagementRequest.Builder crb = ProcessorManagementRequest.newBuilder()
         .setInstance(instance).setName(name);
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);

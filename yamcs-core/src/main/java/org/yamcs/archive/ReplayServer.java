@@ -122,16 +122,10 @@ public class ReplayServer extends AbstractExecutionThreadService {
 
             // Check privileges for requested packets
             // TODO delete right half of if-statement once no longer deprecated
-            if (replayRequest.hasPacketRequest() || replayRequest.getTmPacketFilterCount() > 0) {
+            if (replayRequest.hasPacketRequest()) {
                 Collection<String> allowedPackets = priv.getTmPacketNames(instance, MdbMappings.MDB_OPSNAME);
                 List<NamedObjectId> invalidPackets = new ArrayList<NamedObjectId>();
     
-                // TODO OLD API, delete this for once no longer deprecated
-                for( NamedObjectId noi : replayRequest.getTmPacketFilterList() ) {
-                    if( ! allowedPackets.contains( noi.getName() ) ) {
-                        invalidPackets.add( noi );
-                    }
-                }
                 for (NamedObjectId noi : replayRequest.getPacketRequest().getNameFilterList()) {
                     if (! allowedPackets.contains(noi.getName())) {
                         invalidPackets.add(noi);

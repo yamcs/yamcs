@@ -37,16 +37,12 @@ public class XtceTmReplayHandler implements ReplayHandler {
     @Override
     public void setRequest(ReplayRequest newRequest) throws YamcsException {
         this.request=newRequest;
-        // TODO delete second half of if-statement once deprecated API no longer in use
-        if (newRequest.getPacketRequest().getNameFilterList().isEmpty()
-                        && newRequest.getTmPacketFilterList().isEmpty()) {
+        if (newRequest.getPacketRequest().getNameFilterList().isEmpty()) {
             partitions=null; //retrieve all
             return;
         }
         partitions.clear();
         SequenceContainer rootSc=xtcedb.getRootSequenceContainer();
-        // TODO delete this next statement once deprecated API no longer in use
-        addPartitions(newRequest.getTmPacketFilterList(), rootSc);
         addPartitions(newRequest.getPacketRequest().getNameFilterList(), rootSc);
     }
     
@@ -74,10 +70,10 @@ public class XtceTmReplayHandler implements ReplayHandler {
     public String getSelectCmd() {
         StringBuilder sb=new StringBuilder();
         sb.append("SELECT ").append(ProtoDataType.TM_PACKET.getNumber()).
-        append(",* from tm where ");
-        if(partitions!=null) {
+        append(",* from tm ");
+        if(partitions!=null) {            
             if(partitions.isEmpty())return null;
-            sb.append("pname in (");
+            sb.append("WHERE pname IN (");
             boolean first=true;
             for(String pn:partitions) {
                 if(first) first=false;
@@ -87,7 +83,10 @@ public class XtceTmReplayHandler implements ReplayHandler {
             sb.append(")");
             appendTimeClause(sb, request, false);
         } else {
-            appendTimeClause(sb, request, true);
+            if(request.hasStart() || (request.hasStop())) {
+                sb.append("WHERE ");
+                appendTimeClause(sb, request, true);
+            }
         }
         return sb.toString();
     }

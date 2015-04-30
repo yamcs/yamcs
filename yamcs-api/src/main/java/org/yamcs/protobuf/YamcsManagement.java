@@ -4829,12 +4829,22 @@ public final class YamcsManagement {
     // @@protoc_insertion_point(class_scope:yamcsManagement.Statistics)
   }
 
-  public interface ProcessorRequestOrBuilder
+  public interface ProcessorManagementRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required string instance = 1;
+    // optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+     */
+    boolean hasOperation();
+    /**
+     * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation getOperation();
+
+    // optional string instance = 2;
+    /**
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
@@ -4842,7 +4852,7 @@ public final class YamcsManagement {
      */
     boolean hasInstance();
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
@@ -4850,7 +4860,7 @@ public final class YamcsManagement {
      */
     java.lang.String getInstance();
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
@@ -4859,9 +4869,9 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string name = 2;
+    // optional string name = 3;
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
@@ -4869,7 +4879,7 @@ public final class YamcsManagement {
      */
     boolean hasName();
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
@@ -4877,7 +4887,7 @@ public final class YamcsManagement {
      */
     java.lang.String getName();
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
@@ -4886,9 +4896,9 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string type = 3;
+    // optional string type = 4;
     /**
-     * <code>optional string type = 3;</code>
+     * <code>optional string type = 4;</code>
      *
      * <pre>
      *only for CREATE
@@ -4896,7 +4906,7 @@ public final class YamcsManagement {
      */
     boolean hasType();
     /**
-     * <code>optional string type = 3;</code>
+     * <code>optional string type = 4;</code>
      *
      * <pre>
      *only for CREATE
@@ -4904,7 +4914,7 @@ public final class YamcsManagement {
      */
     java.lang.String getType();
     /**
-     * <code>optional string type = 3;</code>
+     * <code>optional string type = 4;</code>
      *
      * <pre>
      *only for CREATE
@@ -4913,9 +4923,9 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getTypeBytes();
 
-    // optional string spec = 4;
+    // optional string spec = 5;
     /**
-     * <code>optional string spec = 4;</code>
+     * <code>optional string spec = 5;</code>
      *
      * <pre>
      *only for CREATE
@@ -4923,7 +4933,7 @@ public final class YamcsManagement {
      */
     boolean hasSpec();
     /**
-     * <code>optional string spec = 4;</code>
+     * <code>optional string spec = 5;</code>
      *
      * <pre>
      *only for CREATE
@@ -4931,7 +4941,7 @@ public final class YamcsManagement {
      */
     java.lang.String getSpec();
     /**
-     * <code>optional string spec = 4;</code>
+     * <code>optional string spec = 5;</code>
      *
      * <pre>
      *only for CREATE
@@ -4940,30 +4950,12 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getSpecBytes();
 
-    // optional bool persistent = 5 [default = false];
-    /**
-     * <code>optional bool persistent = 5 [default = false];</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    boolean hasPersistent();
-    /**
-     * <code>optional bool persistent = 5 [default = false];</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    boolean getPersistent();
-
     // repeated int32 clientId = 6;
     /**
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
+     *for CREATE and CONNECT
      * </pre>
      */
     java.util.List<java.lang.Integer> getClientIdList();
@@ -4971,7 +4963,7 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
+     *for CREATE and CONNECT
      * </pre>
      */
     int getClientIdCount();
@@ -4979,14 +4971,1823 @@ public final class YamcsManagement {
      * <code>repeated int32 clientId = 6;</code>
      *
      * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
+     *for CREATE and CONNECT
      * </pre>
      */
     int getClientId(int index);
 
-    // optional int64 seekTime = 7;
+    // optional bool persistent = 7 [default = false];
     /**
-     * <code>optional int64 seekTime = 7;</code>
+     * <code>optional bool persistent = 7 [default = false];</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    boolean hasPersistent();
+    /**
+     * <code>optional bool persistent = 7 [default = false];</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    boolean getPersistent();
+
+    // optional .yamcs.ReplayRequest replaySpec = 8;
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    boolean hasReplaySpec();
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec();
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder();
+  }
+  /**
+   * Protobuf type {@code yamcsManagement.ProcessorManagementRequest}
+   */
+  public static final class ProcessorManagementRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements ProcessorManagementRequestOrBuilder {
+    // Use ProcessorManagementRequest.newBuilder() to construct.
+    private ProcessorManagementRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ProcessorManagementRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ProcessorManagementRequest defaultInstance;
+    public static ProcessorManagementRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ProcessorManagementRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ProcessorManagementRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation value = org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                operation_ = value;
+              }
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              instance_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              name_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              type_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
+              spec_ = input.readBytes();
+              break;
+            }
+            case 48: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              clientId_.add(input.readInt32());
+              break;
+            }
+            case 50: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
+                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                clientId_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000020;
+              persistent_ = input.readBool();
+              break;
+            }
+            case 66: {
+              org.yamcs.protobuf.Yamcs.ReplayRequest.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+                subBuilder = replaySpec_.toBuilder();
+              }
+              replaySpec_ = input.readMessage(org.yamcs.protobuf.Yamcs.ReplayRequest.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(replaySpec_);
+                replaySpec_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000040;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ProcessorManagementRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ProcessorManagementRequest> PARSER =
+        new com.google.protobuf.AbstractParser<ProcessorManagementRequest>() {
+      public ProcessorManagementRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ProcessorManagementRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorManagementRequest> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code yamcsManagement.ProcessorManagementRequest.Operation}
+     */
+    public enum Operation
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>CREATE_PROCESSOR = 0;</code>
+       */
+      CREATE_PROCESSOR(0, 0),
+      /**
+       * <code>CONNECT_TO_PROCESSOR = 1;</code>
+       */
+      CONNECT_TO_PROCESSOR(1, 1),
+      ;
+
+      /**
+       * <code>CREATE_PROCESSOR = 0;</code>
+       */
+      public static final int CREATE_PROCESSOR_VALUE = 0;
+      /**
+       * <code>CONNECT_TO_PROCESSOR = 1;</code>
+       */
+      public static final int CONNECT_TO_PROCESSOR_VALUE = 1;
+
+
+      public final int getNumber() { return value; }
+
+      public static Operation valueOf(int value) {
+        switch (value) {
+          case 0: return CREATE_PROCESSOR;
+          case 1: return CONNECT_TO_PROCESSOR;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Operation>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Operation>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Operation>() {
+              public Operation findValueByNumber(int number) {
+                return Operation.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Operation[] VALUES = values();
+
+      public static Operation valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private Operation(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcsManagement.ProcessorManagementRequest.Operation)
+    }
+
+    private int bitField0_;
+    // optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;
+    public static final int OPERATION_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation operation_;
+    /**
+     * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+     */
+    public boolean hasOperation() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation getOperation() {
+      return operation_;
+    }
+
+    // optional string instance = 2;
+    public static final int INSTANCE_FIELD_NUMBER = 2;
+    private java.lang.Object instance_;
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    public boolean hasInstance() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    public java.lang.String getInstance() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          instance_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getInstanceBytes() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        instance_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string name = 3;
+    public static final int NAME_FIELD_NUMBER = 3;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string type = 4;
+    public static final int TYPE_FIELD_NUMBER = 4;
+    private java.lang.Object type_;
+    /**
+     * <code>optional string type = 4;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string type = 4;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public java.lang.String getType() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          type_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string type = 4;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getTypeBytes() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        type_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string spec = 5;
+    public static final int SPEC_FIELD_NUMBER = 5;
+    private java.lang.Object spec_;
+    /**
+     * <code>optional string spec = 5;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public boolean hasSpec() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string spec = 5;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public java.lang.String getSpec() {
+      java.lang.Object ref = spec_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          spec_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string spec = 5;</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getSpecBytes() {
+      java.lang.Object ref = spec_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        spec_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated int32 clientId = 6;
+    public static final int CLIENTID_FIELD_NUMBER = 6;
+    private java.util.List<java.lang.Integer> clientId_;
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     *
+     * <pre>
+     *for CREATE and CONNECT
+     * </pre>
+     */
+    public java.util.List<java.lang.Integer>
+        getClientIdList() {
+      return clientId_;
+    }
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     *
+     * <pre>
+     *for CREATE and CONNECT
+     * </pre>
+     */
+    public int getClientIdCount() {
+      return clientId_.size();
+    }
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     *
+     * <pre>
+     *for CREATE and CONNECT
+     * </pre>
+     */
+    public int getClientId(int index) {
+      return clientId_.get(index);
+    }
+
+    // optional bool persistent = 7 [default = false];
+    public static final int PERSISTENT_FIELD_NUMBER = 7;
+    private boolean persistent_;
+    /**
+     * <code>optional bool persistent = 7 [default = false];</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public boolean hasPersistent() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool persistent = 7 [default = false];</code>
+     *
+     * <pre>
+     *only for CREATE
+     * </pre>
+     */
+    public boolean getPersistent() {
+      return persistent_;
+    }
+
+    // optional .yamcs.ReplayRequest replaySpec = 8;
+    public static final int REPLAYSPEC_FIELD_NUMBER = 8;
+    private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_;
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    public boolean hasReplaySpec() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
+      return replaySpec_;
+    }
+    /**
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     *
+     * <pre>
+     *for CREATE as alternative to string spec
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
+      return replaySpec_;
+    }
+
+    private void initFields() {
+      operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.CREATE_PROCESSOR;
+      instance_ = "";
+      name_ = "";
+      type_ = "";
+      spec_ = "";
+      clientId_ = java.util.Collections.emptyList();
+      persistent_ = false;
+      replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (hasReplaySpec()) {
+        if (!getReplaySpec().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, operation_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getInstanceBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getSpecBytes());
+      }
+      for (int i = 0; i < clientId_.size(); i++) {
+        output.writeInt32(6, clientId_.get(i));
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(7, persistent_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(8, replaySpec_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, operation_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getInstanceBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getSpecBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < clientId_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(clientId_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getClientIdList().size();
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, persistent_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, replaySpec_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcsManagement.ProcessorManagementRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ProcessorManagementRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.class, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getReplaySpecFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.CREATE_PROCESSOR;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        instance_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        type_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        spec_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        clientId_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000020);
+        persistent_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        if (replaySpecBuilder_ == null) {
+          replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
+        } else {
+          replaySpecBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ProcessorManagementRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest build() {
+        org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest result = new org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.operation_ = operation_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.instance_ = instance_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.spec_ = spec_;
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.clientId_ = clientId_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.persistent_ = persistent_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (replaySpecBuilder_ == null) {
+          result.replaySpec_ = replaySpec_;
+        } else {
+          result.replaySpec_ = replaySpecBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.getDefaultInstance()) return this;
+        if (other.hasOperation()) {
+          setOperation(other.getOperation());
+        }
+        if (other.hasInstance()) {
+          bitField0_ |= 0x00000002;
+          instance_ = other.instance_;
+          onChanged();
+        }
+        if (other.hasName()) {
+          bitField0_ |= 0x00000004;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasType()) {
+          bitField0_ |= 0x00000008;
+          type_ = other.type_;
+          onChanged();
+        }
+        if (other.hasSpec()) {
+          bitField0_ |= 0x00000010;
+          spec_ = other.spec_;
+          onChanged();
+        }
+        if (!other.clientId_.isEmpty()) {
+          if (clientId_.isEmpty()) {
+            clientId_ = other.clientId_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureClientIdIsMutable();
+            clientId_.addAll(other.clientId_);
+          }
+          onChanged();
+        }
+        if (other.hasPersistent()) {
+          setPersistent(other.getPersistent());
+        }
+        if (other.hasReplaySpec()) {
+          mergeReplaySpec(other.getReplaySpec());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasReplaySpec()) {
+          if (!getReplaySpec().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;
+      private org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.CREATE_PROCESSOR;
+      /**
+       * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+       */
+      public boolean hasOperation() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation getOperation() {
+        return operation_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+       */
+      public Builder setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        operation_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorManagementRequest.Operation operation = 1;</code>
+       */
+      public Builder clearOperation() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.CREATE_PROCESSOR;
+        onChanged();
+        return this;
+      }
+
+      // optional string instance = 2;
+      private java.lang.Object instance_ = "";
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public boolean hasInstance() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public java.lang.String getInstance() {
+        java.lang.Object ref = instance_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          instance_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getInstanceBytes() {
+        java.lang.Object ref = instance_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          instance_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public Builder setInstance(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        instance_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public Builder clearInstance() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        instance_ = getDefaultInstance().getInstance();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 2;</code>
+       *
+       * <pre>
+       *yamcs instance
+       * </pre>
+       */
+      public Builder setInstanceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        instance_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string name = 3;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 3;</code>
+       *
+       * <pre>
+       *processor name
+       * </pre>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string type = 4;
+      private java.lang.Object type_ = "";
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public java.lang.String getType() {
+        java.lang.Object ref = type_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          type_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes() {
+        java.lang.Object ref = type_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          type_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder setType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        type_ = getDefaultInstance().getType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 4;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder setTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string spec = 5;
+      private java.lang.Object spec_ = "";
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public boolean hasSpec() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public java.lang.String getSpec() {
+        java.lang.Object ref = spec_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          spec_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getSpecBytes() {
+        java.lang.Object ref = spec_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          spec_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder setSpec(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        spec_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder clearSpec() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        spec_ = getDefaultInstance().getSpec();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string spec = 5;</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder setSpecBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        spec_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated int32 clientId = 6;
+      private java.util.List<java.lang.Integer> clientId_ = java.util.Collections.emptyList();
+      private void ensureClientIdIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = new java.util.ArrayList<java.lang.Integer>(clientId_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public java.util.List<java.lang.Integer>
+          getClientIdList() {
+        return java.util.Collections.unmodifiableList(clientId_);
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public int getClientIdCount() {
+        return clientId_.size();
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public int getClientId(int index) {
+        return clientId_.get(index);
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public Builder setClientId(
+          int index, int value) {
+        ensureClientIdIsMutable();
+        clientId_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public Builder addClientId(int value) {
+        ensureClientIdIsMutable();
+        clientId_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public Builder addAllClientId(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureClientIdIsMutable();
+        super.addAll(values, clientId_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       *
+       * <pre>
+       *for CREATE and CONNECT
+       * </pre>
+       */
+      public Builder clearClientId() {
+        clientId_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+        return this;
+      }
+
+      // optional bool persistent = 7 [default = false];
+      private boolean persistent_ ;
+      /**
+       * <code>optional bool persistent = 7 [default = false];</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public boolean hasPersistent() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool persistent = 7 [default = false];</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public boolean getPersistent() {
+        return persistent_;
+      }
+      /**
+       * <code>optional bool persistent = 7 [default = false];</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder setPersistent(boolean value) {
+        bitField0_ |= 0x00000040;
+        persistent_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool persistent = 7 [default = false];</code>
+       *
+       * <pre>
+       *only for CREATE
+       * </pre>
+       */
+      public Builder clearPersistent() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        persistent_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional .yamcs.ReplayRequest replaySpec = 8;
+      private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> replaySpecBuilder_;
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public boolean hasReplaySpec() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
+        if (replaySpecBuilder_ == null) {
+          return replaySpec_;
+        } else {
+          return replaySpecBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public Builder setReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
+        if (replaySpecBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          replaySpec_ = value;
+          onChanged();
+        } else {
+          replaySpecBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public Builder setReplaySpec(
+          org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builderForValue) {
+        if (replaySpecBuilder_ == null) {
+          replaySpec_ = builderForValue.build();
+          onChanged();
+        } else {
+          replaySpecBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public Builder mergeReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
+        if (replaySpecBuilder_ == null) {
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
+              replaySpec_ != org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance()) {
+            replaySpec_ =
+              org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(replaySpec_).mergeFrom(value).buildPartial();
+          } else {
+            replaySpec_ = value;
+          }
+          onChanged();
+        } else {
+          replaySpecBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public Builder clearReplaySpec() {
+        if (replaySpecBuilder_ == null) {
+          replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
+          onChanged();
+        } else {
+          replaySpecBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplaySpecBuilder() {
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return getReplaySpecFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
+        if (replaySpecBuilder_ != null) {
+          return replaySpecBuilder_.getMessageOrBuilder();
+        } else {
+          return replaySpec_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       *
+       * <pre>
+       *for CREATE as alternative to string spec
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> 
+          getReplaySpecFieldBuilder() {
+        if (replaySpecBuilder_ == null) {
+          replaySpecBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder>(
+                  replaySpec_,
+                  getParentForChildren(),
+                  isClean());
+          replaySpec_ = null;
+        }
+        return replaySpecBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:yamcsManagement.ProcessorManagementRequest)
+    }
+
+    static {
+      defaultInstance = new ProcessorManagementRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcsManagement.ProcessorManagementRequest)
+  }
+
+  public interface ProcessorRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .yamcsManagement.ProcessorRequest.Operation operation = 1;
+    /**
+     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+     */
+    boolean hasOperation();
+    /**
+     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation();
+
+    // optional string instance = 2;
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    boolean hasInstance();
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    java.lang.String getInstance();
+    /**
+     * <code>optional string instance = 2;</code>
+     *
+     * <pre>
+     *yamcs instance
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getInstanceBytes();
+
+    // optional string name = 3;
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 3;</code>
+     *
+     * <pre>
+     *processor name
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional int64 seekTime = 4;
+    /**
+     * <code>optional int64 seekTime = 4;</code>
      *
      * <pre>
      *for SEEK
@@ -4994,23 +6795,13 @@ public final class YamcsManagement {
      */
     boolean hasSeekTime();
     /**
-     * <code>optional int64 seekTime = 7;</code>
+     * <code>optional int64 seekTime = 4;</code>
      *
      * <pre>
      *for SEEK
      * </pre>
      */
     long getSeekTime();
-
-    // optional .yamcsManagement.ProcessorRequest.Operation operation = 8;
-    /**
-     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-     */
-    boolean hasOperation();
-    /**
-     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-     */
-    org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation();
   }
   /**
    * Protobuf type {@code yamcsManagement.ProcessorRequest}
@@ -5067,66 +6858,30 @@ public final class YamcsManagement {
               }
               break;
             }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              instance_ = input.readBytes();
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation value = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                operation_ = value;
+              }
               break;
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              name_ = input.readBytes();
+              instance_ = input.readBytes();
               break;
             }
             case 26: {
               bitField0_ |= 0x00000004;
-              type_ = input.readBytes();
+              name_ = input.readBytes();
               break;
             }
-            case 34: {
+            case 32: {
               bitField0_ |= 0x00000008;
-              spec_ = input.readBytes();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              persistent_ = input.readBool();
-              break;
-            }
-            case 48: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-                clientId_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              clientId_.add(input.readInt32());
-              break;
-            }
-            case 50: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
-                clientId_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                clientId_.add(input.readInt32());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 56: {
-              bitField0_ |= 0x00000020;
               seekTime_ = input.readInt64();
-              break;
-            }
-            case 64: {
-              int rawValue = input.readEnum();
-              org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation value = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(8, rawValue);
-              } else {
-                bitField0_ |= 0x00000040;
-                operation_ = value;
-              }
               break;
             }
           }
@@ -5137,9 +6892,6 @@ public final class YamcsManagement {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-          clientId_ = java.util.Collections.unmodifiableList(clientId_);
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -5177,35 +6929,19 @@ public final class YamcsManagement {
     public enum Operation
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
-       * <code>CREATE = 0;</code>
-       */
-      CREATE(0, 0),
-      /**
-       * <code>CONNECT_TO_PROCESSOR = 1;</code>
-       */
-      CONNECT_TO_PROCESSOR(1, 1),
-      /**
        * <code>PAUSE = 2;</code>
        */
-      PAUSE(2, 2),
+      PAUSE(0, 2),
       /**
        * <code>RESUME = 3;</code>
        */
-      RESUME(3, 3),
+      RESUME(1, 3),
       /**
        * <code>SEEK = 4;</code>
        */
-      SEEK(4, 4),
+      SEEK(2, 4),
       ;
 
-      /**
-       * <code>CREATE = 0;</code>
-       */
-      public static final int CREATE_VALUE = 0;
-      /**
-       * <code>CONNECT_TO_PROCESSOR = 1;</code>
-       */
-      public static final int CONNECT_TO_PROCESSOR_VALUE = 1;
       /**
        * <code>PAUSE = 2;</code>
        */
@@ -5224,8 +6960,6 @@ public final class YamcsManagement {
 
       public static Operation valueOf(int value) {
         switch (value) {
-          case 0: return CREATE;
-          case 1: return CONNECT_TO_PROCESSOR;
           case 2: return PAUSE;
           case 3: return RESUME;
           case 4: return SEEK;
@@ -5281,21 +7015,37 @@ public final class YamcsManagement {
     }
 
     private int bitField0_;
-    // required string instance = 1;
-    public static final int INSTANCE_FIELD_NUMBER = 1;
+    // optional .yamcsManagement.ProcessorRequest.Operation operation = 1;
+    public static final int OPERATION_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation operation_;
+    /**
+     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+     */
+    public boolean hasOperation() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation() {
+      return operation_;
+    }
+
+    // optional string instance = 2;
+    public static final int INSTANCE_FIELD_NUMBER = 2;
     private java.lang.Object instance_;
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
      * </pre>
      */
     public boolean hasInstance() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
@@ -5316,7 +7066,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>required string instance = 1;</code>
+     * <code>optional string instance = 2;</code>
      *
      * <pre>
      *yamcs instance
@@ -5336,21 +7086,21 @@ public final class YamcsManagement {
       }
     }
 
-    // required string name = 2;
-    public static final int NAME_FIELD_NUMBER = 2;
+    // optional string name = 3;
+    public static final int NAME_FIELD_NUMBER = 3;
     private java.lang.Object name_;
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
      * </pre>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
@@ -5371,7 +7121,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 3;</code>
      *
      * <pre>
      *processor name
@@ -5391,190 +7141,21 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string type = 3;
-    public static final int TYPE_FIELD_NUMBER = 3;
-    private java.lang.Object type_;
-    /**
-     * <code>optional string type = 3;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public boolean hasType() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional string type = 3;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public java.lang.String getType() {
-      java.lang.Object ref = type_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          type_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string type = 3;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getTypeBytes() {
-      java.lang.Object ref = type_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        type_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    // optional string spec = 4;
-    public static final int SPEC_FIELD_NUMBER = 4;
-    private java.lang.Object spec_;
-    /**
-     * <code>optional string spec = 4;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public boolean hasSpec() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional string spec = 4;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public java.lang.String getSpec() {
-      java.lang.Object ref = spec_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          spec_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string spec = 4;</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getSpecBytes() {
-      java.lang.Object ref = spec_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        spec_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    // optional bool persistent = 5 [default = false];
-    public static final int PERSISTENT_FIELD_NUMBER = 5;
-    private boolean persistent_;
-    /**
-     * <code>optional bool persistent = 5 [default = false];</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public boolean hasPersistent() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>optional bool persistent = 5 [default = false];</code>
-     *
-     * <pre>
-     *only for CREATE
-     * </pre>
-     */
-    public boolean getPersistent() {
-      return persistent_;
-    }
-
-    // repeated int32 clientId = 6;
-    public static final int CLIENTID_FIELD_NUMBER = 6;
-    private java.util.List<java.lang.Integer> clientId_;
-    /**
-     * <code>repeated int32 clientId = 6;</code>
-     *
-     * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
-     * </pre>
-     */
-    public java.util.List<java.lang.Integer>
-        getClientIdList() {
-      return clientId_;
-    }
-    /**
-     * <code>repeated int32 clientId = 6;</code>
-     *
-     * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
-     * </pre>
-     */
-    public int getClientIdCount() {
-      return clientId_.size();
-    }
-    /**
-     * <code>repeated int32 clientId = 6;</code>
-     *
-     * <pre>
-     *for CreateProcessor and CONNECT_TO_PROCESSOR
-     * </pre>
-     */
-    public int getClientId(int index) {
-      return clientId_.get(index);
-    }
-
-    // optional int64 seekTime = 7;
-    public static final int SEEKTIME_FIELD_NUMBER = 7;
+    // optional int64 seekTime = 4;
+    public static final int SEEKTIME_FIELD_NUMBER = 4;
     private long seekTime_;
     /**
-     * <code>optional int64 seekTime = 7;</code>
+     * <code>optional int64 seekTime = 4;</code>
      *
      * <pre>
      *for SEEK
      * </pre>
      */
     public boolean hasSeekTime() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional int64 seekTime = 7;</code>
+     * <code>optional int64 seekTime = 4;</code>
      *
      * <pre>
      *for SEEK
@@ -5584,45 +7165,17 @@ public final class YamcsManagement {
       return seekTime_;
     }
 
-    // optional .yamcsManagement.ProcessorRequest.Operation operation = 8;
-    public static final int OPERATION_FIELD_NUMBER = 8;
-    private org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation operation_;
-    /**
-     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-     */
-    public boolean hasOperation() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
-    }
-    /**
-     * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-     */
-    public org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation() {
-      return operation_;
-    }
-
     private void initFields() {
+      operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.PAUSE;
       instance_ = "";
       name_ = "";
-      type_ = "";
-      spec_ = "";
-      persistent_ = false;
-      clientId_ = java.util.Collections.emptyList();
       seekTime_ = 0L;
-      operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.CREATE;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasInstance()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -5631,28 +7184,16 @@ public final class YamcsManagement {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getInstanceBytes());
+        output.writeEnum(1, operation_.getNumber());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getNameBytes());
+        output.writeBytes(2, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getTypeBytes());
+        output.writeBytes(3, getNameBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getSpecBytes());
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBool(5, persistent_);
-      }
-      for (int i = 0; i < clientId_.size(); i++) {
-        output.writeInt32(6, clientId_.get(i));
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeInt64(7, seekTime_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeEnum(8, operation_.getNumber());
+        output.writeInt64(4, seekTime_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5665,40 +7206,19 @@ public final class YamcsManagement {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getInstanceBytes());
+          .computeEnumSize(1, operation_.getNumber());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getNameBytes());
+          .computeBytesSize(2, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getTypeBytes());
+          .computeBytesSize(3, getNameBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getSpecBytes());
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(5, persistent_);
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < clientId_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(clientId_.get(i));
-        }
-        size += dataSize;
-        size += 1 * getClientIdList().size();
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(7, seekTime_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(8, operation_.getNumber());
+          .computeInt64Size(4, seekTime_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5820,22 +7340,14 @@ public final class YamcsManagement {
 
       public Builder clear() {
         super.clear();
-        instance_ = "";
+        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.PAUSE;
         bitField0_ = (bitField0_ & ~0x00000001);
-        name_ = "";
+        instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        type_ = "";
+        name_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        spec_ = "";
-        bitField0_ = (bitField0_ & ~0x00000008);
-        persistent_ = false;
-        bitField0_ = (bitField0_ & ~0x00000010);
-        clientId_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
         seekTime_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.CREATE;
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -5867,36 +7379,19 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.instance_ = instance_;
+        result.operation_ = operation_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.name_ = name_;
+        result.instance_ = instance_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.type_ = type_;
+        result.name_ = name_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.spec_ = spec_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.persistent_ = persistent_;
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          clientId_ = java.util.Collections.unmodifiableList(clientId_);
-          bitField0_ = (bitField0_ & ~0x00000020);
-        }
-        result.clientId_ = clientId_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000020;
-        }
         result.seekTime_ = seekTime_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000040;
-        }
-        result.operation_ = operation_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5913,58 +7408,27 @@ public final class YamcsManagement {
 
       public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ProcessorRequest other) {
         if (other == org.yamcs.protobuf.YamcsManagement.ProcessorRequest.getDefaultInstance()) return this;
+        if (other.hasOperation()) {
+          setOperation(other.getOperation());
+        }
         if (other.hasInstance()) {
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
           instance_ = other.instance_;
           onChanged();
         }
         if (other.hasName()) {
-          bitField0_ |= 0x00000002;
-          name_ = other.name_;
-          onChanged();
-        }
-        if (other.hasType()) {
           bitField0_ |= 0x00000004;
-          type_ = other.type_;
-          onChanged();
-        }
-        if (other.hasSpec()) {
-          bitField0_ |= 0x00000008;
-          spec_ = other.spec_;
-          onChanged();
-        }
-        if (other.hasPersistent()) {
-          setPersistent(other.getPersistent());
-        }
-        if (!other.clientId_.isEmpty()) {
-          if (clientId_.isEmpty()) {
-            clientId_ = other.clientId_;
-            bitField0_ = (bitField0_ & ~0x00000020);
-          } else {
-            ensureClientIdIsMutable();
-            clientId_.addAll(other.clientId_);
-          }
+          name_ = other.name_;
           onChanged();
         }
         if (other.hasSeekTime()) {
           setSeekTime(other.getSeekTime());
-        }
-        if (other.hasOperation()) {
-          setOperation(other.getOperation());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasInstance()) {
-          
-          return false;
-        }
-        if (!hasName()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -5987,20 +7451,56 @@ public final class YamcsManagement {
       }
       private int bitField0_;
 
-      // required string instance = 1;
+      // optional .yamcsManagement.ProcessorRequest.Operation operation = 1;
+      private org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.PAUSE;
+      /**
+       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+       */
+      public boolean hasOperation() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation() {
+        return operation_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+       */
+      public Builder setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        operation_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 1;</code>
+       */
+      public Builder clearOperation() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.PAUSE;
+        onChanged();
+        return this;
+      }
+
+      // optional string instance = 2;
       private java.lang.Object instance_ = "";
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
        * </pre>
        */
       public boolean hasInstance() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
@@ -6018,7 +7518,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
@@ -6038,7 +7538,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
@@ -6049,26 +7549,26 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         instance_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
        * </pre>
        */
       public Builder clearInstance() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         instance_ = getDefaultInstance().getInstance();
         onChanged();
         return this;
       }
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional string instance = 2;</code>
        *
        * <pre>
        *yamcs instance
@@ -6079,26 +7579,26 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         instance_ = value;
         onChanged();
         return this;
       }
 
-      // required string name = 2;
+      // optional string name = 3;
       private java.lang.Object name_ = "";
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
        * </pre>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
@@ -6116,7 +7616,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
@@ -6136,7 +7636,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
@@ -6147,26 +7647,26 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         name_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
        * </pre>
        */
       public Builder clearName() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         name_ = getDefaultInstance().getName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 3;</code>
        *
        * <pre>
        *processor name
@@ -6177,365 +7677,26 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         name_ = value;
         onChanged();
         return this;
       }
 
-      // optional string type = 3;
-      private java.lang.Object type_ = "";
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public boolean hasType() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public java.lang.String getType() {
-        java.lang.Object ref = type_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          type_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public com.google.protobuf.ByteString
-          getTypeBytes() {
-        java.lang.Object ref = type_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          type_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder setType(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        type_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder clearType() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        type_ = getDefaultInstance().getType();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string type = 3;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder setTypeBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        type_ = value;
-        onChanged();
-        return this;
-      }
-
-      // optional string spec = 4;
-      private java.lang.Object spec_ = "";
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public boolean hasSpec() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public java.lang.String getSpec() {
-        java.lang.Object ref = spec_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          spec_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public com.google.protobuf.ByteString
-          getSpecBytes() {
-        java.lang.Object ref = spec_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          spec_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder setSpec(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
-        spec_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder clearSpec() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        spec_ = getDefaultInstance().getSpec();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string spec = 4;</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder setSpecBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
-        spec_ = value;
-        onChanged();
-        return this;
-      }
-
-      // optional bool persistent = 5 [default = false];
-      private boolean persistent_ ;
-      /**
-       * <code>optional bool persistent = 5 [default = false];</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public boolean hasPersistent() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional bool persistent = 5 [default = false];</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public boolean getPersistent() {
-        return persistent_;
-      }
-      /**
-       * <code>optional bool persistent = 5 [default = false];</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder setPersistent(boolean value) {
-        bitField0_ |= 0x00000010;
-        persistent_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool persistent = 5 [default = false];</code>
-       *
-       * <pre>
-       *only for CREATE
-       * </pre>
-       */
-      public Builder clearPersistent() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        persistent_ = false;
-        onChanged();
-        return this;
-      }
-
-      // repeated int32 clientId = 6;
-      private java.util.List<java.lang.Integer> clientId_ = java.util.Collections.emptyList();
-      private void ensureClientIdIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
-          clientId_ = new java.util.ArrayList<java.lang.Integer>(clientId_);
-          bitField0_ |= 0x00000020;
-         }
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public java.util.List<java.lang.Integer>
-          getClientIdList() {
-        return java.util.Collections.unmodifiableList(clientId_);
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public int getClientIdCount() {
-        return clientId_.size();
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public int getClientId(int index) {
-        return clientId_.get(index);
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public Builder setClientId(
-          int index, int value) {
-        ensureClientIdIsMutable();
-        clientId_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public Builder addClientId(int value) {
-        ensureClientIdIsMutable();
-        clientId_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public Builder addAllClientId(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
-        ensureClientIdIsMutable();
-        super.addAll(values, clientId_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated int32 clientId = 6;</code>
-       *
-       * <pre>
-       *for CreateProcessor and CONNECT_TO_PROCESSOR
-       * </pre>
-       */
-      public Builder clearClientId() {
-        clientId_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
-        onChanged();
-        return this;
-      }
-
-      // optional int64 seekTime = 7;
+      // optional int64 seekTime = 4;
       private long seekTime_ ;
       /**
-       * <code>optional int64 seekTime = 7;</code>
+       * <code>optional int64 seekTime = 4;</code>
        *
        * <pre>
        *for SEEK
        * </pre>
        */
       public boolean hasSeekTime() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional int64 seekTime = 7;</code>
+       * <code>optional int64 seekTime = 4;</code>
        *
        * <pre>
        *for SEEK
@@ -6545,64 +7706,28 @@ public final class YamcsManagement {
         return seekTime_;
       }
       /**
-       * <code>optional int64 seekTime = 7;</code>
+       * <code>optional int64 seekTime = 4;</code>
        *
        * <pre>
        *for SEEK
        * </pre>
        */
       public Builder setSeekTime(long value) {
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000008;
         seekTime_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 seekTime = 7;</code>
+       * <code>optional int64 seekTime = 4;</code>
        *
        * <pre>
        *for SEEK
        * </pre>
        */
       public Builder clearSeekTime() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000008);
         seekTime_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      // optional .yamcsManagement.ProcessorRequest.Operation operation = 8;
-      private org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.CREATE;
-      /**
-       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-       */
-      public boolean hasOperation() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
-      }
-      /**
-       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation getOperation() {
-        return operation_;
-      }
-      /**
-       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-       */
-      public Builder setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        bitField0_ |= 0x00000080;
-        operation_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional .yamcsManagement.ProcessorRequest.Operation operation = 8;</code>
-       */
-      public Builder clearOperation() {
-        bitField0_ = (bitField0_ & ~0x00000080);
-        operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.CREATE;
         onChanged();
         return this;
       }
@@ -8234,6 +9359,11 @@ public final class YamcsManagement {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yamcsManagement_Statistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcsManagement_ProcessorManagementRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcsManagement_ProcessorRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -8269,30 +9399,35 @@ public final class YamcsManagement {
       "nt\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instance\030\001 \002(\t" +
       "\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(" +
       "\0132\035.yamcsManagement.TmStatistics\022\023\n\013last" +
-      "Updated\030\004 \001(\003\"\241\002\n\020ProcessorRequest\022\020\n\010in" +
-      "stance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t" +
-      "\022\014\n\004spec\030\004 \001(\t\022\031\n\npersistent\030\005 \001(\010:\005fals",
-      "e\022\020\n\010clientId\030\006 \003(\005\022\020\n\010seekTime\030\007 \001(\003\022>\n" +
-      "\toperation\030\010 \001(\0162+.yamcsManagement.Proce" +
-      "ssorRequest.Operation\"R\n\tOperation\022\n\n\006CR" +
-      "EATE\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\022\t\n\005PAUS" +
-      "E\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010LinkInfo\022\020" +
-      "\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003" +
-      " \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010di" +
-      "sabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCoun" +
-      "t\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014Servi" +
-      "ceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNIN",
-      "G\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAI" +
-      "LED\020\0052\341\002\n\020ProcessorControl\022A\n\017CreateProc" +
-      "essor\022!.yamcsManagement.ProcessorRequest" +
-      "\032\013.yamcs.Void\022D\n\022ConnectToProcessor\022!.ya" +
+      "Updated\030\004 \001(\003\"\266\002\n\032ProcessorManagementReq" +
+      "uest\022H\n\toperation\030\001 \001(\01625.yamcsManagemen" +
+      "t.ProcessorManagementRequest.Operation\022\020",
+      "\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004" +
+      " \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\n" +
+      "persistent\030\007 \001(\010:\005false\022(\n\nreplaySpec\030\010 " +
+      "\001(\0132\024.yamcs.ReplayRequest\";\n\tOperation\022\024" +
+      "\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCE" +
+      "SSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\toperation" +
+      "\030\001 \001(\0162+.yamcsManagement.ProcessorReques" +
+      "t.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 " +
+      "\001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperation\022\t\n\005PA" +
+      "USE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010LinkInfo",
+      "\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type" +
+      "\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010" +
+      "disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCo" +
+      "unt\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014Ser" +
+      "viceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNN" +
+      "ING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006F" +
+      "AILED\020\0052\341\002\n\020ProcessorControl\022A\n\017CreatePr" +
+      "ocessor\022!.yamcsManagement.ProcessorReque" +
+      "st\032\013.yamcs.Void\022D\n\022ConnectToProcessor\022!." +
+      "yamcsManagement.ProcessorRequest\032\013.yamcs",
+      ".Void\022@\n\016PauseProcessor\022!.yamcsManagemen" +
+      "t.ProcessorRequest\032\013.yamcs.Void\022A\n\017Resum" +
+      "eProcessor\022!.yamcsManagement.ProcessorRe" +
+      "quest\032\013.yamcs.Void\022?\n\rSeekProcessor\022!.ya" +
       "mcsManagement.ProcessorRequest\032\013.yamcs.V" +
-      "oid\022@\n\016PauseProcessor\022!.yamcsManagement." +
-      "ProcessorRequest\032\013.yamcs.Void\022A\n\017ResumeP" +
-      "rocessor\022!.yamcsManagement.ProcessorRequ" +
-      "est\032\013.yamcs.Void\022?\n\rSeekProcessor\022!.yamc" +
-      "sManagement.ProcessorRequest\032\013.yamcs.Voi",
-      "dB\024\n\022org.yamcs.protobuf"
+      "oidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8323,14 +9458,20 @@ public final class YamcsManagement {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_Statistics_descriptor,
               new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", });
-          internal_static_yamcsManagement_ProcessorRequest_descriptor =
+          internal_static_yamcsManagement_ProcessorManagementRequest_descriptor =
             getDescriptor().getMessageTypes().get(4);
+          internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_yamcsManagement_ProcessorManagementRequest_descriptor,
+              new java.lang.String[] { "Operation", "Instance", "Name", "Type", "Spec", "ClientId", "Persistent", "ReplaySpec", });
+          internal_static_yamcsManagement_ProcessorRequest_descriptor =
+            getDescriptor().getMessageTypes().get(5);
           internal_static_yamcsManagement_ProcessorRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ProcessorRequest_descriptor,
-              new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Persistent", "ClientId", "SeekTime", "Operation", });
+              new java.lang.String[] { "Operation", "Instance", "Name", "SeekTime", });
           internal_static_yamcsManagement_LinkInfo_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_yamcsManagement_LinkInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_LinkInfo_descriptor,

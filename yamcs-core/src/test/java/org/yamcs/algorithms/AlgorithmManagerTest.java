@@ -19,7 +19,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
-import org.yamcs.YProcFactory;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -69,7 +69,7 @@ public class AlgorithmManagerTest {
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         
-        c=YProcFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
+        c=ProcessorFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
     

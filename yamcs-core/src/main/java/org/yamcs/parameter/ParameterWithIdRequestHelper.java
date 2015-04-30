@@ -201,5 +201,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	prm=newPrm;
     }
 
+    public boolean hasParameterCache() {
+        return prm.hasParameterCache();
+    }
+
 }
 

@@ -32,10 +32,7 @@ public class TmReplayHandler implements ReplayHandler {
     public void setRequest(ReplayRequest newRequest) throws YamcsException{
         this.request=newRequest;
         partitions.clear();
-        // TODO OLD API, delete this for once deprecated API no longer in use
-        for(NamedObjectId pnoi:newRequest.getTmPacketFilterList()) {
-            addPartition(pnoi);
-        }
+        
         for(NamedObjectId pnoi:newRequest.getPacketRequest().getNameFilterList()) {
             addPartition(pnoi);
         }
@@ -61,7 +58,7 @@ public class TmReplayHandler implements ReplayHandler {
         if(partitions.isEmpty())return null;
         StringBuilder sb=new StringBuilder();
         sb.append("SELECT ").append(ProtoDataType.TM_PACKET.getNumber()).
-           append(",* from  tm where part in (");
+           append(",* from  tm WHERE part in (");
         boolean first=true;
         for(String pn:partitions) {
             if(first) first=false;

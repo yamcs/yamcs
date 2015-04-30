@@ -49,7 +49,7 @@ public class AlarmTest {
         tmGenerator=new RefMdbPacketGenerator();
         SimpleTcTmService tctms = new SimpleTcTmService(tmGenerator, null, null);
         try {
-            c=YProcFactory.create(yamcsInstance, "AlarmTest", "refmdb", tctms, "test");
+            c=ProcessorFactory.create(yamcsInstance, "AlarmTest", "refmdb", tctms, "test");
         } catch (Exception e) {
             e.printStackTrace();
         }

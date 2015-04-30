@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
-import org.yamcs.YProcFactory;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Privilege;
 import org.yamcs.commanding.CommandQueue;
@@ -25,10 +26,10 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-
 import com.google.common.util.concurrent.Service;
+
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 
 public class ManagementService {
@@ -215,7 +216,7 @@ public class ManagementService {
 
     }
 
-    public void createProcessor(ProcessorRequest cr, Privilege priv) throws YamcsException{
+    public void createProcessor(ProcessorManagementRequest cr, Privilege priv) throws YamcsException{
         log.info("Creating a new yproc instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
         String currentUser=priv.getCurrentUser();
         if(currentUser==null) currentUser="unknown";
@@ -242,7 +243,13 @@ public class ManagementService {
         try {
             int n=0;
             YProcessor yproc;
-            yproc = YProcFactory.create(cr.getInstance(), cr.getName(), cr.getType(), cr.getSpec(),"unknown");
+            Object spec;
+            if(cr.hasReplaySpec()) {
+                spec = cr.getReplaySpec();
+            } else {
+                spec = cr.getSpec();
+            }
+            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), priv.getCurrentUser(), spec);
             yproc.setPersistent(cr.getPersistent());
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
@@ -269,7 +276,7 @@ public class ManagementService {
     }
 
 
-    public void connectToProcessor(ProcessorRequest cr, Privilege priv) throws YamcsException {
+    public void connectToProcessor(ProcessorManagementRequest cr, Privilege priv) throws YamcsException {
         YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
         if(chan==null) throw new YamcsException("Unexisting yproc ("+cr.getInstance()+", "+cr.getName()+") specified");
 

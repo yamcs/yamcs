@@ -41,22 +41,26 @@ import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementClient;
-import org.yamcs.yarch.YarchTestCase;
+import org.yamcs.web.websocket.ParameterClient;
 
 import com.google.protobuf.MessageLite;
 
-public class IntegrationTest extends YarchTestCase {
+public class IntegrationTest {
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
@@ -153,7 +157,6 @@ public class IntegrationTest extends YarchTestCase {
         wsr = new WebSocketRequest("parameter", "subscribe", subscrList);       
         wsClient.sendRequest(wsr);
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        System.out.println("pdata: "+pdata);
         checkPdata(pdata, packetProvider);
     }
 
@@ -355,12 +358,70 @@ public class IntegrationTest extends YarchTestCase {
     
     @Test
     public void testReplay() throws Exception {
-        generateData("2015-01-01T10:00:00", 1000);
+        generateData("2015-01-01T10:00:00", 3600);
         ClientInfo cinfo = getClientInfo();
         //create a parameter reply via REST
+        ReplayRequest rr = ReplayRequest.newBuilder().setUtcStart("2015-01-01T10:01:00").setUtcStop("2015-01-01T10:05:00")
+                .setPacketRequest(PacketReplayRequest.newBuilder().build()).build();
+        ProcessorManagementRequest prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
+                .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
+                .setReplaySpec(rr).build();
         
+        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/management/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE));
         
+        cinfo = getClientInfo();
+        assertEquals("testReplay", cinfo.getProcessorName());
+        
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6"); 
+        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterClient.WSR_subscribe, subscrList);
+        wsClient.sendRequest(wsr);
+        
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        
+        assertEquals(2, pdata.getParameterCount());
+        ParameterValue p11_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:00.000", p11_6.getGenerationTimeUTC()); 
+        
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        
+        assertEquals(2, pdata.getParameterCount());
+        p11_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:01.000", p11_6.getGenerationTimeUTC()); 
+        
+        //go back to realtime
+        prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
+                .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
+        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/management/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE));
+        
+        cinfo = getClientInfo();
+        assertEquals("realtime", cinfo.getProcessorName());
     }
+
+    @Test
+    public void testRetrieveDataFromArchive() throws Exception {
+    }
+
+    @Test
+    public void testRetrieveIndex() throws Exception {
+    }
+
+
+    private RestSendCommandRequest getCommand(String cmdName, int seq, String... args) {
+        NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
+
+        RestCommandType.Builder cmdb = RestCommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
+        for(int i =0 ;i<args.length; i+=2) {
+            cmdb.addArguments(RestArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+        }
+
+        return RestSendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
+
+    }
+
+
+    
 
     private ClientInfo getClientInfo() throws InterruptedException {
         WebSocketRequest wsr = new WebSocketRequest("management", ManagementClient.OP_getClientInfo);
@@ -388,28 +449,6 @@ public class IntegrationTest extends YarchTestCase {
         }
     }
     
-    @Test
-    public void testRetrieveDataFromArchive() throws Exception {
-    }
-
-    @Test
-    public void testRetrieveIndex() throws Exception {
-    }
-
-
-    private RestSendCommandRequest getCommand(String cmdName, int seq, String... args) {
-        NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
-
-        RestCommandType.Builder cmdb = RestCommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
-        for(int i =0 ;i<args.length; i+=2) {
-            cmdb.addArguments(RestArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
-        }
-
-        return RestSendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
-
-    }
-
-
 
     private void checkPdata(ParameterData pdata, RefMdbPacketGenerator packetProvider) {
         assertNotNull(pdata);

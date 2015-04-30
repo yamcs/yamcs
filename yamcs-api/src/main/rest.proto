@@ -60,6 +60,11 @@ message RestDumpRawMdbResponse {
 message RestSetParameterResponse {
 }
 
+message RestCreateProcessorResponse {
+}
+message RestConnectToProcessorResponse {
+}
+
 message RestGetParameterRequest {
     repeated yamcs.NamedObjectId list=1;
     optional bool fromCache=2;

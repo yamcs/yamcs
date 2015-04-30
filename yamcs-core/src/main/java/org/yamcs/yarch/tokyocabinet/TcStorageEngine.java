@@ -2,6 +2,7 @@ package org.yamcs.yarch.tokyocabinet;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,11 +24,11 @@ import org.yamcs.yarch.TableWriter.InsertMode;
  *
  */
 public class TcStorageEngine implements StorageEngine {
-    Map<TableDefinition, TcPartitionManager> partitionManagers = new HashMap<TableDefinition, TcPartitionManager>();
+    Map<TableDefinition, TcPartitionManager> partitionManagers = Collections.synchronizedMap(new HashMap<TableDefinition, TcPartitionManager>());
     final YarchDatabase ydb;
 
     public TcStorageEngine(YarchDatabase ydb) {
-	this.ydb = ydb;
+        this.ydb = ydb;
     }
 
     @Override
@@ -72,7 +73,11 @@ public class TcStorageEngine implements StorageEngine {
 
     @Override
     public AbstractStream newTableReaderStream(TableDefinition tbl) {
-	return new TcTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
+        TcPartitionManager pm = partitionManagers.get(tbl);
+        if(pm==null) {
+            throw new RuntimeException("Do not have a PartitionManager for table '"+tbl.getName()+"'");
+        }
+        return new TcTableReaderStream(ydb, tbl, pm);
     }
 
 

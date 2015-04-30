@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcFactory;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -82,7 +82,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         MyTcTmService tctms=new MyTcTmService();
 
         try {
-            yproc = YProcFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
+            yproc = ProcessorFactory.create(instance, "paramreplay"+counter.getAndIncrement(), "ParamReplay", tctms, "internal");
         } catch (Exception e) {
             throw new YamcsException("cannot create channel", e);
         }

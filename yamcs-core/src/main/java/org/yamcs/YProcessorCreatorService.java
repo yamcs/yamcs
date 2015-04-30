@@ -44,7 +44,7 @@ public class YProcessorCreatorService extends AbstractService {
     @Override
     protected void doStart() {
 	try {
-	    yproc =  YProcFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
+	    yproc =  ProcessorFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
 	    yproc.setPersistent(true);
 	    realtimeParameterService = new RealtimeParameterService(yproc);
 	    yproc.start();

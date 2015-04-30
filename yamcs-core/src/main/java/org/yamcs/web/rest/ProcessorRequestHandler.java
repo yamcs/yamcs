@@ -12,6 +12,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
@@ -24,15 +25,29 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         if (path.length == 0) {
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
             return;
-        } 
-        String yprocName = path[0];
-        YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
-        if(yproc==null) {
-            log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
+        }
+        if("processor".equals(path[0])) {
+            if (path.length == 1) {
+                handleProcessorManagementRequest(ctx, req, yamcsInstance);
+            } else {
+                String yprocName = path[1];
+                YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
+                if(yproc==null) {
+                    log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
+                    sendError(ctx, HttpResponseStatus.NOT_FOUND);
+                    return;
+                }
+                remainingUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+                handleProcessorRequest(ctx, req, yproc, remainingUri);
+            }
+        } else {
+            log.warn("Unknown request {} has been received");
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
             return;
         }
-        remainingUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+    }
+        
+    private void handleProcessorRequest(ChannelHandlerContext ctx, FullHttpRequest req, YProcessor yproc, String remainingUri) throws RestException {
         ProcessorRequest yprocReq = readMessage(req, SchemaYamcsManagement.ProcessorRequest.MERGE).build();
         if(req.getMethod()==HttpMethod.POST) {
             switch(yprocReq.getOperation()) {
@@ -57,6 +72,16 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
                 }
                 yproc.seek(yprocReq.getSeekTime());
                 break;
+            default:
+                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
+            }
+        }
+    }
+    
+    private void handleProcessorManagementRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance) throws RestException {
+        ProcessorManagementRequest yprocReq = readMessage(req, SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
+        if(req.getMethod()==HttpMethod.POST) {
+            switch(yprocReq.getOperation()) {
             case CONNECT_TO_PROCESSOR:
                 ManagementService mservice = ManagementService.getInstance();
                 try {
@@ -66,7 +91,7 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
                 }
                 break;
             
-            case CREATE:
+            case CREATE_PROCESSOR:
                 mservice = ManagementService.getInstance();
                 try {
                     mservice.createProcessor(yprocReq, Privilege.getInstance());
@@ -80,5 +105,4 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
             }
         }
     }
-
 }

@@ -28,6 +28,7 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -94,11 +95,11 @@ public class HornetProcessorManagement implements YProcessorListener {
             String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
             log.debug("Received a new request: "+req);
             if(Constants.YPR_createProcessor.equalsIgnoreCase(req)) {
-                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
                 mservice.createProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_connectToProcessor.equalsIgnoreCase(req)) {
-                ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
+                ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
                 mservice.connectToProcessor(cr, priv);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_pauseReplay.equalsIgnoreCase(req)) {

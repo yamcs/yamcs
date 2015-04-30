@@ -17650,6 +17650,48 @@ public final class Yamcs {
      */
     long getStop();
 
+    // optional string utcStart = 13;
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    boolean hasUtcStart();
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    java.lang.String getUtcStart();
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getUtcStartBytes();
+
+    // optional string utcStop = 14;
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    boolean hasUtcStop();
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    java.lang.String getUtcStop();
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    com.google.protobuf.ByteString
+        getUtcStopBytes();
+
     // optional .yamcs.EndAction endAction = 3 [default = QUIT];
     /**
      * <code>optional .yamcs.EndAction endAction = 3 [default = QUIT];</code>
@@ -17693,116 +17735,6 @@ public final class Yamcs {
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder getSpeedOrBuilder();
-
-    // repeated .yamcs.ProtoDataType type = 5 [deprecated = true];
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> getTypeList();
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated int getTypeCount();
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.ProtoDataType getType(int index);
-
-    // repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getTmPacketFilterList();
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectId getTmPacketFilter(int index);
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated int getTmPacketFilterCount();
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getTmPacketFilterOrBuilderList();
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getTmPacketFilterOrBuilder(
-        int index);
-
-    // repeated string ppGroupFilter = 7 [deprecated = true];
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated java.util.List<java.lang.String>
-    getPpGroupFilterList();
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated int getPpGroupFilterCount();
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated java.lang.String getPpGroupFilter(int index);
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getPpGroupFilterBytes(int index);
 
     // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
     /**
@@ -17957,14 +17889,14 @@ public final class Yamcs {
               if (value == null) {
                 unknownFields.mergeVarintField(3, rawValue);
               } else {
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000010;
                 endAction_ = value;
               }
               break;
             }
             case 34: {
               org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+              if (((bitField0_ & 0x00000020) == 0x00000020)) {
                 subBuilder = speed_.toBuilder();
               }
               speed_ = input.readMessage(org.yamcs.protobuf.Yamcs.ReplaySpeed.PARSER, extensionRegistry);
@@ -17972,61 +17904,12 @@ public final class Yamcs {
                 subBuilder.mergeFrom(speed_);
                 speed_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000008;
-              break;
-            }
-            case 40: {
-              int rawValue = input.readEnum();
-              org.yamcs.protobuf.Yamcs.ProtoDataType value = org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(5, rawValue);
-              } else {
-                if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                  type_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ProtoDataType>();
-                  mutable_bitField0_ |= 0x00000010;
-                }
-                type_.add(value);
-              }
-              break;
-            }
-            case 42: {
-              int length = input.readRawVarint32();
-              int oldLimit = input.pushLimit(length);
-              while(input.getBytesUntilLimit() > 0) {
-                int rawValue = input.readEnum();
-                org.yamcs.protobuf.Yamcs.ProtoDataType value = org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(rawValue);
-                if (value == null) {
-                  unknownFields.mergeVarintField(5, rawValue);
-                } else {
-                  if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                    type_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ProtoDataType>();
-                    mutable_bitField0_ |= 0x00000010;
-                  }
-                  type_.add(value);
-                }
-              }
-              input.popLimit(oldLimit);
-              break;
-            }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-                tmPacketFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              tmPacketFilter_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
-              break;
-            }
-            case 58: {
-              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-                ppGroupFilter_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000040;
-              }
-              ppGroupFilter_.add(input.readBytes());
+              bitField0_ |= 0x00000020;
               break;
             }
             case 66: {
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
                 subBuilder = parameterRequest_.toBuilder();
               }
               parameterRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.ParameterReplayRequest.PARSER, extensionRegistry);
@@ -18034,12 +17917,12 @@ public final class Yamcs {
                 subBuilder.mergeFrom(parameterRequest_);
                 parameterRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000040;
               break;
             }
             case 74: {
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000020) == 0x00000020)) {
+              if (((bitField0_ & 0x00000080) == 0x00000080)) {
                 subBuilder = packetRequest_.toBuilder();
               }
               packetRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.PacketReplayRequest.PARSER, extensionRegistry);
@@ -18047,12 +17930,12 @@ public final class Yamcs {
                 subBuilder.mergeFrom(packetRequest_);
                 packetRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000020;
+              bitField0_ |= 0x00000080;
               break;
             }
             case 82: {
               org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+              if (((bitField0_ & 0x00000100) == 0x00000100)) {
                 subBuilder = eventRequest_.toBuilder();
               }
               eventRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.EventReplayRequest.PARSER, extensionRegistry);
@@ -18060,12 +17943,12 @@ public final class Yamcs {
                 subBuilder.mergeFrom(eventRequest_);
                 eventRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000100;
               break;
             }
             case 90: {
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000080) == 0x00000080)) {
+              if (((bitField0_ & 0x00000200) == 0x00000200)) {
                 subBuilder = commandHistoryRequest_.toBuilder();
               }
               commandHistoryRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.PARSER, extensionRegistry);
@@ -18073,12 +17956,12 @@ public final class Yamcs {
                 subBuilder.mergeFrom(commandHistoryRequest_);
                 commandHistoryRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000200;
               break;
             }
             case 98: {
               org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000100) == 0x00000100)) {
+              if (((bitField0_ & 0x00000400) == 0x00000400)) {
                 subBuilder = ppRequest_.toBuilder();
               }
               ppRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.PpReplayRequest.PARSER, extensionRegistry);
@@ -18086,7 +17969,17 @@ public final class Yamcs {
                 subBuilder.mergeFrom(ppRequest_);
                 ppRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000400;
+              break;
+            }
+            case 106: {
+              bitField0_ |= 0x00000004;
+              utcStart_ = input.readBytes();
+              break;
+            }
+            case 114: {
+              bitField0_ |= 0x00000008;
+              utcStop_ = input.readBytes();
               break;
             }
           }
@@ -18097,15 +17990,6 @@ public final class Yamcs {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-          type_ = java.util.Collections.unmodifiableList(type_);
-        }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-          tmPacketFilter_ = java.util.Collections.unmodifiableList(tmPacketFilter_);
-        }
-        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-          ppGroupFilter_ = new com.google.protobuf.UnmodifiableLazyStringList(ppGroupFilter_);
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -18178,6 +18062,104 @@ public final class Yamcs {
       return stop_;
     }
 
+    // optional string utcStart = 13;
+    public static final int UTCSTART_FIELD_NUMBER = 13;
+    private java.lang.Object utcStart_;
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    public boolean hasUtcStart() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    public java.lang.String getUtcStart() {
+      java.lang.Object ref = utcStart_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          utcStart_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string utcStart = 13;</code>
+     *
+     * <pre>
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getUtcStartBytes() {
+      java.lang.Object ref = utcStart_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        utcStart_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string utcStop = 14;
+    public static final int UTCSTOP_FIELD_NUMBER = 14;
+    private java.lang.Object utcStop_;
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    public boolean hasUtcStop() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    public java.lang.String getUtcStop() {
+      java.lang.Object ref = utcStop_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          utcStop_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string utcStop = 14;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUtcStopBytes() {
+      java.lang.Object ref = utcStop_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        utcStop_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     // optional .yamcs.EndAction endAction = 3 [default = QUIT];
     public static final int ENDACTION_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.Yamcs.EndAction endAction_;
@@ -18189,7 +18171,7 @@ public final class Yamcs {
      * </pre>
      */
     public boolean hasEndAction() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional .yamcs.EndAction endAction = 3 [default = QUIT];</code>
@@ -18213,7 +18195,7 @@ public final class Yamcs {
      * </pre>
      */
     public boolean hasSpeed() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
      * <code>optional .yamcs.ReplaySpeed speed = 4;</code>
@@ -18236,145 +18218,6 @@ public final class Yamcs {
       return speed_;
     }
 
-    // repeated .yamcs.ProtoDataType type = 5 [deprecated = true];
-    public static final int TYPE_FIELD_NUMBER = 5;
-    private java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> type_;
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> getTypeList() {
-      return type_;
-    }
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated public int getTypeCount() {
-      return type_.size();
-    }
-    /**
-     * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-     *
-     * <pre>
-     *what data to be replayed
-     *if PP is requested, the ParameterData message will be used but the data type will be PP
-     * </pre>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ProtoDataType getType(int index) {
-      return type_.get(index);
-    }
-
-    // repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];
-    public static final int TMPACKETFILTER_FIELD_NUMBER = 6;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> tmPacketFilter_;
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getTmPacketFilterList() {
-      return tmPacketFilter_;
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getTmPacketFilterOrBuilderList() {
-      return tmPacketFilter_;
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated public int getTmPacketFilterCount() {
-      return tmPacketFilter_.size();
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getTmPacketFilter(int index) {
-      return tmPacketFilter_.get(index);
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-     * </pre>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getTmPacketFilterOrBuilder(
-        int index) {
-      return tmPacketFilter_.get(index);
-    }
-
-    // repeated string ppGroupFilter = 7 [deprecated = true];
-    public static final int PPGROUPFILTER_FIELD_NUMBER = 7;
-    private com.google.protobuf.LazyStringList ppGroupFilter_;
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated public java.util.List<java.lang.String>
-        getPpGroupFilterList() {
-      return ppGroupFilter_;
-    }
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated public int getPpGroupFilterCount() {
-      return ppGroupFilter_.size();
-    }
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated public java.lang.String getPpGroupFilter(int index) {
-      return ppGroupFilter_.get(index);
-    }
-    /**
-     * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-     *
-     * <pre>
-     *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-     * </pre>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getPpGroupFilterBytes(int index) {
-      return ppGroupFilter_.getByteString(index);
-    }
-
     // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
     public static final int PARAMETERREQUEST_FIELD_NUMBER = 8;
     private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_;
@@ -18386,7 +18229,7 @@ public final class Yamcs {
      * </pre>
      */
     public boolean hasParameterRequest() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
@@ -18416,7 +18259,7 @@ public final class Yamcs {
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
      */
     public boolean hasPacketRequest() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
@@ -18438,7 +18281,7 @@ public final class Yamcs {
      * <code>optional .yamcs.EventReplayRequest eventRequest = 10;</code>
      */
     public boolean hasEventRequest() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
      * <code>optional .yamcs.EventReplayRequest eventRequest = 10;</code>
@@ -18460,7 +18303,7 @@ public final class Yamcs {
      * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;</code>
      */
     public boolean hasCommandHistoryRequest() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
      * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;</code>
@@ -18482,7 +18325,7 @@ public final class Yamcs {
      * <code>optional .yamcs.PpReplayRequest ppRequest = 12;</code>
      */
     public boolean hasPpRequest() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
      * <code>optional .yamcs.PpReplayRequest ppRequest = 12;</code>
@@ -18500,11 +18343,10 @@ public final class Yamcs {
     private void initFields() {
       start_ = 0L;
       stop_ = 0L;
+      utcStart_ = "";
+      utcStop_ = "";
       endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
       speed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
-      type_ = java.util.Collections.emptyList();
-      tmPacketFilter_ = java.util.Collections.emptyList();
-      ppGroupFilter_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
       packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
       eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
@@ -18518,12 +18360,6 @@ public final class Yamcs {
 
       if (hasSpeed()) {
         if (!getSpeed().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      for (int i = 0; i < getTmPacketFilterCount(); i++) {
-        if (!getTmPacketFilter(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -18553,35 +18389,32 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeInt64(2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeEnum(3, endAction_.getNumber());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeMessage(4, speed_);
       }
-      for (int i = 0; i < type_.size(); i++) {
-        output.writeEnum(5, type_.get(i).getNumber());
-      }
-      for (int i = 0; i < tmPacketFilter_.size(); i++) {
-        output.writeMessage(6, tmPacketFilter_.get(i));
-      }
-      for (int i = 0; i < ppGroupFilter_.size(); i++) {
-        output.writeBytes(7, ppGroupFilter_.getByteString(i));
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeMessage(8, parameterRequest_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeMessage(9, packetRequest_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeMessage(10, eventRequest_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeMessage(11, commandHistoryRequest_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeMessage(12, ppRequest_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(13, getUtcStartBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(14, getUtcStopBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -18600,55 +18433,41 @@ public final class Yamcs {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, endAction_.getNumber());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, speed_);
       }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < type_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeEnumSizeNoTag(type_.get(i).getNumber());
-        }
-        size += dataSize;
-        size += 1 * type_.size();
-      }
-      for (int i = 0; i < tmPacketFilter_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, tmPacketFilter_.get(i));
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < ppGroupFilter_.size(); i++) {
-          dataSize += com.google.protobuf.CodedOutputStream
-            .computeBytesSizeNoTag(ppGroupFilter_.getByteString(i));
-        }
-        size += dataSize;
-        size += 1 * getPpGroupFilterList().size();
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, parameterRequest_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, packetRequest_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, eventRequest_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, commandHistoryRequest_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(12, ppRequest_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(13, getUtcStartBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(14, getUtcStopBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -18763,7 +18582,6 @@ public final class Yamcs {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getSpeedFieldBuilder();
-          getTmPacketFilterFieldBuilder();
           getParameterRequestFieldBuilder();
           getPacketRequestFieldBuilder();
           getEventRequestFieldBuilder();
@@ -18781,54 +18599,48 @@ public final class Yamcs {
         bitField0_ = (bitField0_ & ~0x00000001);
         stop_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
+        utcStart_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        utcStop_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
+        bitField0_ = (bitField0_ & ~0x00000010);
         if (speedBuilder_ == null) {
           speed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
         } else {
           speedBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
-        type_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
-        if (tmPacketFilterBuilder_ == null) {
-          tmPacketFilter_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-        } else {
-          tmPacketFilterBuilder_.clear();
-        }
-        ppGroupFilter_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000020);
         if (parameterRequestBuilder_ == null) {
           parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
         } else {
           parameterRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         if (packetRequestBuilder_ == null) {
           packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
         } else {
           packetRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         if (eventRequestBuilder_ == null) {
           eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
         } else {
           eventRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         if (commandHistoryRequestBuilder_ == null) {
           commandHistoryRequest_ = org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance();
         } else {
           commandHistoryRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000200);
         if (ppRequestBuilder_ == null) {
           ppRequest_ = org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance();
         } else {
           ppRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -18868,69 +18680,57 @@ public final class Yamcs {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.endAction_ = endAction_;
+        result.utcStart_ = utcStart_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
+        }
+        result.utcStop_ = utcStop_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.endAction_ = endAction_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
         }
         if (speedBuilder_ == null) {
           result.speed_ = speed_;
         } else {
           result.speed_ = speedBuilder_.build();
         }
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
-          type_ = java.util.Collections.unmodifiableList(type_);
-          bitField0_ = (bitField0_ & ~0x00000010);
-        }
-        result.type_ = type_;
-        if (tmPacketFilterBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020)) {
-            tmPacketFilter_ = java.util.Collections.unmodifiableList(tmPacketFilter_);
-            bitField0_ = (bitField0_ & ~0x00000020);
-          }
-          result.tmPacketFilter_ = tmPacketFilter_;
-        } else {
-          result.tmPacketFilter_ = tmPacketFilterBuilder_.build();
-        }
-        if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          ppGroupFilter_ = new com.google.protobuf.UnmodifiableLazyStringList(
-              ppGroupFilter_);
-          bitField0_ = (bitField0_ & ~0x00000040);
-        }
-        result.ppGroupFilter_ = ppGroupFilter_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000010;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
         }
         if (parameterRequestBuilder_ == null) {
           result.parameterRequest_ = parameterRequest_;
         } else {
           result.parameterRequest_ = parameterRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-          to_bitField0_ |= 0x00000020;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
         }
         if (packetRequestBuilder_ == null) {
           result.packetRequest_ = packetRequest_;
         } else {
           result.packetRequest_ = packetRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
-          to_bitField0_ |= 0x00000040;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
         }
         if (eventRequestBuilder_ == null) {
           result.eventRequest_ = eventRequest_;
         } else {
           result.eventRequest_ = eventRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
-          to_bitField0_ |= 0x00000080;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
         }
         if (commandHistoryRequestBuilder_ == null) {
           result.commandHistoryRequest_ = commandHistoryRequest_;
         } else {
           result.commandHistoryRequest_ = commandHistoryRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
-          to_bitField0_ |= 0x00000100;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
         }
         if (ppRequestBuilder_ == null) {
           result.ppRequest_ = ppRequest_;
@@ -18959,57 +18759,21 @@ public final class Yamcs {
         if (other.hasStop()) {
           setStop(other.getStop());
         }
+        if (other.hasUtcStart()) {
+          bitField0_ |= 0x00000004;
+          utcStart_ = other.utcStart_;
+          onChanged();
+        }
+        if (other.hasUtcStop()) {
+          bitField0_ |= 0x00000008;
+          utcStop_ = other.utcStop_;
+          onChanged();
+        }
         if (other.hasEndAction()) {
           setEndAction(other.getEndAction());
         }
         if (other.hasSpeed()) {
           mergeSpeed(other.getSpeed());
-        }
-        if (!other.type_.isEmpty()) {
-          if (type_.isEmpty()) {
-            type_ = other.type_;
-            bitField0_ = (bitField0_ & ~0x00000010);
-          } else {
-            ensureTypeIsMutable();
-            type_.addAll(other.type_);
-          }
-          onChanged();
-        }
-        if (tmPacketFilterBuilder_ == null) {
-          if (!other.tmPacketFilter_.isEmpty()) {
-            if (tmPacketFilter_.isEmpty()) {
-              tmPacketFilter_ = other.tmPacketFilter_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-            } else {
-              ensureTmPacketFilterIsMutable();
-              tmPacketFilter_.addAll(other.tmPacketFilter_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.tmPacketFilter_.isEmpty()) {
-            if (tmPacketFilterBuilder_.isEmpty()) {
-              tmPacketFilterBuilder_.dispose();
-              tmPacketFilterBuilder_ = null;
-              tmPacketFilter_ = other.tmPacketFilter_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-              tmPacketFilterBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getTmPacketFilterFieldBuilder() : null;
-            } else {
-              tmPacketFilterBuilder_.addAllMessages(other.tmPacketFilter_);
-            }
-          }
-        }
-        if (!other.ppGroupFilter_.isEmpty()) {
-          if (ppGroupFilter_.isEmpty()) {
-            ppGroupFilter_ = other.ppGroupFilter_;
-            bitField0_ = (bitField0_ & ~0x00000040);
-          } else {
-            ensurePpGroupFilterIsMutable();
-            ppGroupFilter_.addAll(other.ppGroupFilter_);
-          }
-          onChanged();
         }
         if (other.hasParameterRequest()) {
           mergeParameterRequest(other.getParameterRequest());
@@ -19033,12 +18797,6 @@ public final class Yamcs {
       public final boolean isInitialized() {
         if (hasSpeed()) {
           if (!getSpeed().isInitialized()) {
-            
-            return false;
-          }
-        }
-        for (int i = 0; i < getTmPacketFilterCount(); i++) {
-          if (!getTmPacketFilter(i).isInitialized()) {
             
             return false;
           }
@@ -19159,6 +18917,178 @@ public final class Yamcs {
         return this;
       }
 
+      // optional string utcStart = 13;
+      private java.lang.Object utcStart_ = "";
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public boolean hasUtcStart() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public java.lang.String getUtcStart() {
+        java.lang.Object ref = utcStart_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          utcStart_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getUtcStartBytes() {
+        java.lang.Object ref = utcStart_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          utcStart_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public Builder setUtcStart(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        utcStart_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public Builder clearUtcStart() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        utcStart_ = getDefaultInstance().getUtcStart();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStart = 13;</code>
+       *
+       * <pre>
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       * </pre>
+       */
+      public Builder setUtcStartBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        utcStart_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string utcStop = 14;
+      private java.lang.Object utcStop_ = "";
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public boolean hasUtcStop() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public java.lang.String getUtcStop() {
+        java.lang.Object ref = utcStop_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          utcStop_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUtcStopBytes() {
+        java.lang.Object ref = utcStop_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          utcStop_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public Builder setUtcStop(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        utcStop_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public Builder clearUtcStop() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        utcStop_ = getDefaultInstance().getUtcStop();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStop = 14;</code>
+       */
+      public Builder setUtcStopBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        utcStop_ = value;
+        onChanged();
+        return this;
+      }
+
       // optional .yamcs.EndAction endAction = 3 [default = QUIT];
       private org.yamcs.protobuf.Yamcs.EndAction endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
       /**
@@ -19169,7 +19099,7 @@ public final class Yamcs {
        * </pre>
        */
       public boolean hasEndAction() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional .yamcs.EndAction endAction = 3 [default = QUIT];</code>
@@ -19192,7 +19122,7 @@ public final class Yamcs {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         endAction_ = value;
         onChanged();
         return this;
@@ -19205,7 +19135,7 @@ public final class Yamcs {
        * </pre>
        */
       public Builder clearEndAction() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000010);
         endAction_ = org.yamcs.protobuf.Yamcs.EndAction.QUIT;
         onChanged();
         return this;
@@ -19223,7 +19153,7 @@ public final class Yamcs {
        * </pre>
        */
       public boolean hasSpeed() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional .yamcs.ReplaySpeed speed = 4;</code>
@@ -19256,7 +19186,7 @@ public final class Yamcs {
         } else {
           speedBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -19274,7 +19204,7 @@ public final class Yamcs {
         } else {
           speedBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -19286,7 +19216,7 @@ public final class Yamcs {
        */
       public Builder mergeSpeed(org.yamcs.protobuf.Yamcs.ReplaySpeed value) {
         if (speedBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
               speed_ != org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance()) {
             speed_ =
               org.yamcs.protobuf.Yamcs.ReplaySpeed.newBuilder(speed_).mergeFrom(value).buildPartial();
@@ -19297,7 +19227,7 @@ public final class Yamcs {
         } else {
           speedBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -19314,7 +19244,7 @@ public final class Yamcs {
         } else {
           speedBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
       /**
@@ -19325,7 +19255,7 @@ public final class Yamcs {
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder getSpeedBuilder() {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         onChanged();
         return getSpeedFieldBuilder().getBuilder();
       }
@@ -19364,554 +19294,6 @@ public final class Yamcs {
         return speedBuilder_;
       }
 
-      // repeated .yamcs.ProtoDataType type = 5 [deprecated = true];
-      private java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> type_ =
-        java.util.Collections.emptyList();
-      private void ensureTypeIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
-          type_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ProtoDataType>(type_);
-          bitField0_ |= 0x00000010;
-        }
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.ProtoDataType> getTypeList() {
-        return java.util.Collections.unmodifiableList(type_);
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public int getTypeCount() {
-        return type_.size();
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ProtoDataType getType(int index) {
-        return type_.get(index);
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder setType(
-          int index, org.yamcs.protobuf.Yamcs.ProtoDataType value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureTypeIsMutable();
-        type_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addType(org.yamcs.protobuf.Yamcs.ProtoDataType value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureTypeIsMutable();
-        type_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addAllType(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.ProtoDataType> values) {
-        ensureTypeIsMutable();
-        super.addAll(values, type_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.ProtoDataType type = 5 [deprecated = true];</code>
-       *
-       * <pre>
-       *what data to be replayed
-       *if PP is requested, the ParameterData message will be used but the data type will be PP
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder clearType() {
-        type_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
-        onChanged();
-        return this;
-      }
-
-      // repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> tmPacketFilter_ =
-        java.util.Collections.emptyList();
-      private void ensureTmPacketFilterIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
-          tmPacketFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(tmPacketFilter_);
-          bitField0_ |= 0x00000020;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> tmPacketFilterBuilder_;
-
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getTmPacketFilterList() {
-        if (tmPacketFilterBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(tmPacketFilter_);
-        } else {
-          return tmPacketFilterBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public int getTmPacketFilterCount() {
-        if (tmPacketFilterBuilder_ == null) {
-          return tmPacketFilter_.size();
-        } else {
-          return tmPacketFilterBuilder_.getCount();
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getTmPacketFilter(int index) {
-        if (tmPacketFilterBuilder_ == null) {
-          return tmPacketFilter_.get(index);
-        } else {
-          return tmPacketFilterBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder setTmPacketFilter(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (tmPacketFilterBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.set(index, value);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder setTmPacketFilter(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (tmPacketFilterBuilder_ == null) {
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addTmPacketFilter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (tmPacketFilterBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.add(value);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addTmPacketFilter(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (tmPacketFilterBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.add(index, value);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addTmPacketFilter(
-          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (tmPacketFilterBuilder_ == null) {
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.add(builderForValue.build());
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addTmPacketFilter(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (tmPacketFilterBuilder_ == null) {
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addAllTmPacketFilter(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (tmPacketFilterBuilder_ == null) {
-          ensureTmPacketFilterIsMutable();
-          super.addAll(values, tmPacketFilter_);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder clearTmPacketFilter() {
-        if (tmPacketFilterBuilder_ == null) {
-          tmPacketFilter_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder removeTmPacketFilter(int index) {
-        if (tmPacketFilterBuilder_ == null) {
-          ensureTmPacketFilterIsMutable();
-          tmPacketFilter_.remove(index);
-          onChanged();
-        } else {
-          tmPacketFilterBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getTmPacketFilterBuilder(
-          int index) {
-        return getTmPacketFilterFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getTmPacketFilterOrBuilder(
-          int index) {
-        if (tmPacketFilterBuilder_ == null) {
-          return tmPacketFilter_.get(index);  } else {
-          return tmPacketFilterBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getTmPacketFilterOrBuilderList() {
-        if (tmPacketFilterBuilder_ != null) {
-          return tmPacketFilterBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(tmPacketFilter_);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addTmPacketFilterBuilder() {
-        return getTmPacketFilterFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addTmPacketFilterBuilder(
-          int index) {
-        return getTmPacketFilterFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId tmPacketFilter = 6 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-       * </pre>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getTmPacketFilterBuilderList() {
-        return getTmPacketFilterFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getTmPacketFilterFieldBuilder() {
-        if (tmPacketFilterBuilder_ == null) {
-          tmPacketFilterBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  tmPacketFilter_,
-                  ((bitField0_ & 0x00000020) == 0x00000020),
-                  getParentForChildren(),
-                  isClean());
-          tmPacketFilter_ = null;
-        }
-        return tmPacketFilterBuilder_;
-      }
-
-      // repeated string ppGroupFilter = 7 [deprecated = true];
-      private com.google.protobuf.LazyStringList ppGroupFilter_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensurePpGroupFilterIsMutable() {
-        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
-          ppGroupFilter_ = new com.google.protobuf.LazyStringArrayList(ppGroupFilter_);
-          bitField0_ |= 0x00000040;
-         }
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public java.util.List<java.lang.String>
-          getPpGroupFilterList() {
-        return java.util.Collections.unmodifiableList(ppGroupFilter_);
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public int getPpGroupFilterCount() {
-        return ppGroupFilter_.size();
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public java.lang.String getPpGroupFilter(int index) {
-        return ppGroupFilter_.get(index);
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getPpGroupFilterBytes(int index) {
-        return ppGroupFilter_.getByteString(index);
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder setPpGroupFilter(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpGroupFilterIsMutable();
-        ppGroupFilter_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addPpGroupFilter(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpGroupFilterIsMutable();
-        ppGroupFilter_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addAllPpGroupFilter(
-          java.lang.Iterable<java.lang.String> values) {
-        ensurePpGroupFilterIsMutable();
-        super.addAll(values, ppGroupFilter_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder clearPpGroupFilter() {
-        ppGroupFilter_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppGroupFilter = 7 [deprecated = true];</code>
-       *
-       * <pre>
-       *if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-       * </pre>
-       */
-      @java.lang.Deprecated public Builder addPpGroupFilterBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpGroupFilterIsMutable();
-        ppGroupFilter_.add(value);
-        onChanged();
-        return this;
-      }
-
       // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
       private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
@@ -19924,7 +19306,7 @@ public final class Yamcs {
        * </pre>
        */
       public boolean hasParameterRequest() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
@@ -19957,7 +19339,7 @@ public final class Yamcs {
         } else {
           parameterRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -19975,7 +19357,7 @@ public final class Yamcs {
         } else {
           parameterRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -19987,7 +19369,7 @@ public final class Yamcs {
        */
       public Builder mergeParameterRequest(org.yamcs.protobuf.Yamcs.ParameterReplayRequest value) {
         if (parameterRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) == 0x00000080) &&
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
               parameterRequest_ != org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance()) {
             parameterRequest_ =
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.newBuilder(parameterRequest_).mergeFrom(value).buildPartial();
@@ -19998,7 +19380,7 @@ public final class Yamcs {
         } else {
           parameterRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -20015,7 +19397,7 @@ public final class Yamcs {
         } else {
           parameterRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       /**
@@ -20026,7 +19408,7 @@ public final class Yamcs {
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder getParameterRequestBuilder() {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         onChanged();
         return getParameterRequestFieldBuilder().getBuilder();
       }
@@ -20073,7 +19455,7 @@ public final class Yamcs {
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
        */
       public boolean hasPacketRequest() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
@@ -20098,7 +19480,7 @@ public final class Yamcs {
         } else {
           packetRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -20112,7 +19494,7 @@ public final class Yamcs {
         } else {
           packetRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -20120,7 +19502,7 @@ public final class Yamcs {
        */
       public Builder mergePacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
         if (packetRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
               packetRequest_ != org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance()) {
             packetRequest_ =
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder(packetRequest_).mergeFrom(value).buildPartial();
@@ -20131,7 +19513,7 @@ public final class Yamcs {
         } else {
           packetRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -20144,14 +19526,14 @@ public final class Yamcs {
         } else {
           packetRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
        */
       public org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder getPacketRequestBuilder() {
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000080;
         onChanged();
         return getPacketRequestFieldBuilder().getBuilder();
       }
@@ -20190,7 +19572,7 @@ public final class Yamcs {
        * <code>optional .yamcs.EventReplayRequest eventRequest = 10;</code>
        */
       public boolean hasEventRequest() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
        * <code>optional .yamcs.EventReplayRequest eventRequest = 10;</code>
@@ -20215,7 +19597,7 @@ public final class Yamcs {
         } else {
           eventRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -20229,7 +19611,7 @@ public final class Yamcs {
         } else {
           eventRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -20237,7 +19619,7 @@ public final class Yamcs {
        */
       public Builder mergeEventRequest(org.yamcs.protobuf.Yamcs.EventReplayRequest value) {
         if (eventRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
               eventRequest_ != org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance()) {
             eventRequest_ =
               org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder(eventRequest_).mergeFrom(value).buildPartial();
@@ -20248,7 +19630,7 @@ public final class Yamcs {
         } else {
           eventRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -20261,14 +19643,14 @@ public final class Yamcs {
         } else {
           eventRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       /**
        * <code>optional .yamcs.EventReplayRequest eventRequest = 10;</code>
        */
       public org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder getEventRequestBuilder() {
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         onChanged();
         return getEventRequestFieldBuilder().getBuilder();
       }
@@ -20307,7 +19689,7 @@ public final class Yamcs {
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;</code>
        */
       public boolean hasCommandHistoryRequest() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;</code>
@@ -20332,7 +19714,7 @@ public final class Yamcs {
         } else {
           commandHistoryRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         return this;
       }
       /**
@@ -20346,7 +19728,7 @@ public final class Yamcs {
         } else {
           commandHistoryRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         return this;
       }
       /**
@@ -20354,7 +19736,7 @@ public final class Yamcs {
        */
       public Builder mergeCommandHistoryRequest(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest value) {
         if (commandHistoryRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400) &&
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
               commandHistoryRequest_ != org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance()) {
             commandHistoryRequest_ =
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder(commandHistoryRequest_).mergeFrom(value).buildPartial();
@@ -20365,7 +19747,7 @@ public final class Yamcs {
         } else {
           commandHistoryRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         return this;
       }
       /**
@@ -20378,14 +19760,14 @@ public final class Yamcs {
         } else {
           commandHistoryRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
       /**
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 11;</code>
        */
       public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder getCommandHistoryRequestBuilder() {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000200;
         onChanged();
         return getCommandHistoryRequestFieldBuilder().getBuilder();
       }
@@ -20424,7 +19806,7 @@ public final class Yamcs {
        * <code>optional .yamcs.PpReplayRequest ppRequest = 12;</code>
        */
       public boolean hasPpRequest() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
        * <code>optional .yamcs.PpReplayRequest ppRequest = 12;</code>
@@ -20449,7 +19831,7 @@ public final class Yamcs {
         } else {
           ppRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000400;
         return this;
       }
       /**
@@ -20463,7 +19845,7 @@ public final class Yamcs {
         } else {
           ppRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000400;
         return this;
       }
       /**
@@ -20471,7 +19853,7 @@ public final class Yamcs {
        */
       public Builder mergePpRequest(org.yamcs.protobuf.Yamcs.PpReplayRequest value) {
         if (ppRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) == 0x00000800) &&
+          if (((bitField0_ & 0x00000400) == 0x00000400) &&
               ppRequest_ != org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance()) {
             ppRequest_ =
               org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder(ppRequest_).mergeFrom(value).buildPartial();
@@ -20482,7 +19864,7 @@ public final class Yamcs {
         } else {
           ppRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000400;
         return this;
       }
       /**
@@ -20495,14 +19877,14 @@ public final class Yamcs {
         } else {
           ppRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
       /**
        * <code>optional .yamcs.PpReplayRequest ppRequest = 12;</code>
        */
       public org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder getPpRequestBuilder() {
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00000400;
         onChanged();
         return getPpRequestFieldBuilder().getBuilder();
       }
@@ -26880,64 +26262,62 @@ public final class Yamcs {
       ".yamcs.ArchiveTag\"2\n\020DeleteTagRequest\022\036\n" +
       "\003tag\030\003 \002(\0132\021.yamcs.ArchiveTag\"B\n\013ReplayS" +
       "peed\022$\n\004type\030\001 \002(\0162\026.yamcs.ReplaySpeedTy" +
-      "pe\022\r\n\005param\030\002 \001(\002\"\372\003\n\rReplayRequest\022\r\n\005s",
-      "tart\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022)\n\tendAction\030\003 " +
-      "\001(\0162\020.yamcs.EndAction:\004QUIT\022!\n\005speed\030\004 \001" +
-      "(\0132\022.yamcs.ReplaySpeed\022&\n\004type\030\005 \003(\0162\024.y" +
-      "amcs.ProtoDataTypeB\002\030\001\0220\n\016tmPacketFilter" +
-      "\030\006 \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\022\031\n\rppGr" +
-      "oupFilter\030\007 \003(\tB\002\030\001\0227\n\020parameterRequest\030" +
-      "\010 \001(\0132\035.yamcs.ParameterReplayRequest\0221\n\r" +
-      "packetRequest\030\t \001(\0132\032.yamcs.PacketReplay" +
-      "Request\022/\n\014eventRequest\030\n \001(\0132\031.yamcs.Ev" +
-      "entReplayRequest\022A\n\025commandHistoryReques",
-      "t\030\013 \001(\0132\".yamcs.CommandHistoryReplayRequ" +
-      "est\022)\n\tppRequest\030\014 \001(\0132\026.yamcs.PpReplayR" +
-      "equest\"|\n\026ParameterReplayRequest\022(\n\nname" +
-      "Filter\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\007se" +
-      "ndRaw\030\002 \001(\010:\005false\022 \n\021performMonitoring\030" +
-      "\003 \001(\010:\005false\"?\n\023PacketReplayRequest\022(\n\nn" +
-      "ameFilter\030\001 \003(\0132\024.yamcs.NamedObjectId\"\024\n" +
-      "\022EventReplayRequest\"\035\n\033CommandHistoryRep" +
-      "layRequest\"*\n\017PpReplayRequest\022\027\n\017groupNa" +
-      "meFilter\030\001 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state",
-      "\030\001 \002(\0162\037.yamcs.ReplayStatus.ReplayState\022" +
-      "%\n\007request\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024" +
-      "\n\014errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016I" +
-      "NITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020" +
-      "\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n" +
-      "\014TmPacketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006" +
-      "packet\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016" +
-      "sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs" +
-      ".NamedObjectId\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t" +
-      "\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTim",
-      "e\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t" +
-      "\022\017\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.ya" +
-      "mcs.Event.EventSeverity:\004INFO\"1\n\rEventSe" +
-      "verity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002" +
-      "*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002" +
-      "\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022" +
-      "\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\272\001\n\rProto" +
-      "DataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002" +
-      "\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rAR" +
-      "CHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAME",
-      "TER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO" +
-      "\020\n\022\017\n\013CLIENT_INFO\020\0132\211\001\n\014YamcsControl\0227\n\021" +
-      "GetYamcsInstances\022\013.yamcs.Void\032\025.yamcs.Y" +
-      "amcsInstances\022@\n\022GetMissionDatabase\022\035.ya" +
-      "mcs.MissionDatabaseRequest\032\013.yamcs.Void2" +
-      "\337\001\n\030RealtimeParameterService\0220\n\tSubscrib" +
-      "e\022\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221" +
-      "\n\014SubscribeAll\022\024.yamcs.StringMessage\032\013.y" +
-      "amcs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedOb" +
-      "jectList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022",
-      "\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveInd" +
-      "ex\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.ya" +
-      "mcs.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexR" +
-      "equest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027." +
-      "yamcs.UpsertTagRequest\032\021.yamcs.ArchiveTa" +
-      "g\0221\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032" +
-      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "pe\022\r\n\005param\030\002 \001(\002\"\250\003\n\rReplayRequest\022\r\n\005s",
+      "tart\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart\030\r \001" +
+      "(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n\tendAction\030\003 \001(\0162\020" +
+      ".yamcs.EndAction:\004QUIT\022!\n\005speed\030\004 \001(\0132\022." +
+      "yamcs.ReplaySpeed\0227\n\020parameterRequest\030\010 " +
+      "\001(\0132\035.yamcs.ParameterReplayRequest\0221\n\rpa" +
+      "cketRequest\030\t \001(\0132\032.yamcs.PacketReplayRe" +
+      "quest\022/\n\014eventRequest\030\n \001(\0132\031.yamcs.Even" +
+      "tReplayRequest\022A\n\025commandHistoryRequest\030" +
+      "\013 \001(\0132\".yamcs.CommandHistoryReplayReques" +
+      "t\022)\n\tppRequest\030\014 \001(\0132\026.yamcs.PpReplayReq",
+      "uest\"|\n\026ParameterReplayRequest\022(\n\nnameFi" +
+      "lter\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\007send" +
+      "Raw\030\002 \001(\010:\005false\022 \n\021performMonitoring\030\003 " +
+      "\001(\010:\005false\"?\n\023PacketReplayRequest\022(\n\nnam" +
+      "eFilter\030\001 \003(\0132\024.yamcs.NamedObjectId\"\024\n\022E" +
+      "ventReplayRequest\"\035\n\033CommandHistoryRepla" +
+      "yRequest\"*\n\017PpReplayRequest\022\027\n\017groupName" +
+      "Filter\030\001 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state\030\001" +
+      " \002(\0162\037.yamcs.ReplayStatus.ReplayState\022%\n" +
+      "\007request\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024\n\014",
+      "errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016INI" +
+      "TIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020\002\022" +
+      "\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n\014T" +
+      "mPacketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006pa" +
+      "cket\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016se" +
+      "quenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs.N" +
+      "amedObjectId\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026" +
+      "\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTime\030" +
+      "\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017" +
+      "\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamc",
+      "s.Event.EventSeverity:\004INFO\"1\n\rEventSeve" +
+      "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005" +
+      "\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
+      "\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n" +
+      "\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\272\001\n\rProtoDa" +
+      "taType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r" +
+      "\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCH" +
+      "IVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETE" +
+      "R\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n" +
+      "\022\017\n\013CLIENT_INFO\020\0132\211\001\n\014YamcsControl\0227\n\021Ge",
+      "tYamcsInstances\022\013.yamcs.Void\032\025.yamcs.Yam" +
+      "csInstances\022@\n\022GetMissionDatabase\022\035.yamc" +
+      "s.MissionDatabaseRequest\032\013.yamcs.Void2\337\001" +
+      "\n\030RealtimeParameterService\0220\n\tSubscribe\022" +
+      "\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221\n\014" +
+      "SubscribeAll\022\024.yamcs.StringMessage\032\013.yam" +
+      "cs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedObje" +
+      "ctList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013." +
+      "yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveIndex" +
+      "\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.yamc",
+      "s.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexReq" +
+      "uest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027.ya" +
+      "mcs.UpsertTagRequest\032\021.yamcs.ArchiveTag\022" +
+      "1\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032\013." +
+      "yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -27069,7 +26449,7 @@ public final class Yamcs {
           internal_static_yamcs_ReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_ReplayRequest_descriptor,
-              new java.lang.String[] { "Start", "Stop", "EndAction", "Speed", "Type", "TmPacketFilter", "PpGroupFilter", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", });
+              new java.lang.String[] { "Start", "Stop", "UtcStart", "UtcStop", "EndAction", "Speed", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", });
           internal_static_yamcs_ParameterReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(21);
           internal_static_yamcs_ParameterReplayRequest_fieldAccessorTable = new

@@ -28,7 +28,7 @@ public class ContainerRequestManagerTest {
     @Test
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
-        YProcessor c = YProcFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
+        YProcessor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
         ContainerRequestManager rm = c.getContainerRequestManager();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();

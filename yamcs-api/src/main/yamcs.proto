@@ -139,47 +139,47 @@ message IndexRequest {
 
 //contains histogram data
 message ArchiveRecord {
-    required NamedObjectId id=1;
-    required int64 first=2;
-    required int64 last=3;
-    required int32 num=4;
-    optional string info=5;
+required NamedObjectId id=1;
+required int64 first=2;
+required int64 last=3;
+required int32 num=4;
+optional string info=5;
 }
 message IndexResult {
-    required string instance=1;
-    repeated ArchiveRecord records=2;
-    //type can be histogram or completenss
-    optional string type=3;
-    //if type=histogram, the tableName is the table for which the histogram is sent
-    optional string tableName=4;
+required string instance=1;
+repeated ArchiveRecord records=2;
+//type can be histogram or completenss
+optional string type=3;
+//if type=histogram, the tableName is the table for which the histogram is sent
+optional string tableName=4;
 }
 
 message TagRequest {
-    required string instance=1;
-    optional int64 start=2;
-    optional int64 stop=3;
+required string instance=1;
+optional int64 start=2;
+optional int64 stop=3;
 }
 message ArchiveTag {
-    optional int32 id=1;
-    required string name=2;
-    optional int64 start=3;
-    optional int64 stop=4;
-    optional string description=5;
-    optional string color=6;
+optional int32 id=1;
+required string name=2;
+optional int64 start=3;
+optional int64 stop=4;
+optional string description=5;
+optional string color=6;
 }
 
 message TagResult {
-    required string instance=1;
-    repeated ArchiveTag tag=2;
+required string instance=1;
+repeated ArchiveTag tag=2;
 }
 
 //insert (if no oldTag) or update tag
 message UpsertTagRequest {
-    optional ArchiveTag oldTag=1;
-    required ArchiveTag newTag=2;
+optional ArchiveTag oldTag=1;
+required ArchiveTag newTag=2;
 }
 message DeleteTagRequest {
-    required ArchiveTag tag=3;
+required ArchiveTag tag=3;
 }
 
 /************************ Replay Service ****************/
@@ -187,7 +187,7 @@ message DeleteTagRequest {
 // all the subsequent control messages are send to the returned address
 /* all the replay data is sent on the data address
 service YarchReplay {
-   rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
+rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
 }
 
 service Replay {
@@ -236,6 +236,10 @@ message ReplayRequest {
     //time specification
     optional int64 start=1;
     optional int64 stop=2;
+   
+    //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+    optional string utcStart = 13;
+    optional string utcStop = 14;
 
     //what should happen at the end of the replay
     optional EndAction endAction=3[default=QUIT];
@@ -243,16 +247,6 @@ message ReplayRequest {
     //how fast the replay should go
     optional ReplaySpeed speed=4;
     
-    //what data to be replayed
-    //if PP is requested, the ParameterData message will be used but the data type will be PP
-    repeated ProtoDataType type=5[deprecated=true];
-
-    //if type contains TM_PACKET, this can be used to restrict the packets replayed; if this is empty, all are sent)
-    repeated NamedObjectId tmPacketFilter=6[deprecated=true];
-
-    //if type contains PP, this can be used to restrict the pp groups replayed; if this is empty, all are sent
-    repeated string ppGroupFilter=7[deprecated=true];
-
     // At least one of the following request types should be added
     optional ParameterReplayRequest parameterRequest=8;
     optional PacketReplayRequest packetRequest=9;
