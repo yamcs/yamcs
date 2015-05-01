@@ -28,11 +28,10 @@ realtime:
 #           stream: "pp_realtime"
        # implements XTCE algorithms
        - class: org.yamcs.algorithms.AlgorithmManager
-       - class: org.yamcs.parameter.SoftwareParameterManager
        # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
        - class: org.yamcs.parameter.SystemParametersProvider
        # manages software parameters
-       - class: org.yamcs.parameter.SoftwareParametersProvider
+       - class: org.yamcs.parameter.SoftwareParameterManager
     config:
         #check alarms and also enable the alarm server (that keeps track of unacknoledged alarms)
         alarm:
