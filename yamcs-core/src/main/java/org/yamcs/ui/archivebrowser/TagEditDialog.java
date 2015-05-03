@@ -1,44 +1,17 @@
 package org.yamcs.ui.archivebrowser;
 
-import javax.swing.JPanel;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.BorderLayout;
-import java.awt.Graphics;
-
-import javax.swing.JDialog;
-import java.awt.GridBagLayout;
-import javax.swing.JButton;
-import java.awt.GridBagConstraints;
-import java.awt.FlowLayout;
-
-import javax.swing.Icon;
-import javax.swing.InputVerifier;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.JEditorPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
-
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-
-
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JComboBox;
+import javax.swing.*;
 import javax.swing.JFormattedTextField.AbstractFormatter;
+
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
 
 public class TagEditDialog extends JDialog implements ActionListener {
 
@@ -444,7 +417,7 @@ class ColorIcon implements Icon {
         g.drawRect(x, y, size - 1, size - 1);  
     }
     
-    static Map<String, ColorIcon> icons=new HashMap<String, ColorIcon>();
+    static Map<String, ColorIcon> icons=new HashMap<>();
     
     
     public static ColorIcon getIcon(String colorName) {
