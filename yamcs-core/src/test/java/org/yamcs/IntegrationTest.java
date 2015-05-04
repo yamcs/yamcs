@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -36,6 +37,8 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
+import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
+import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.SchemaPvalue;
@@ -46,6 +49,7 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -393,7 +397,7 @@ public class IntegrationTest {
         //go back to realtime
         prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
                 .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/management/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE));
+        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/management/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE));
         
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -401,6 +405,24 @@ public class IntegrationTest {
 
     @Test
     public void testRetrieveDataFromArchive() throws Exception {
+        generateData("2015-02-01T10:00:00", 3600);
+        NamedObjectId p11_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_6").build();
+        NamedObjectId p13_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara13_1").build();
+        
+        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p11_6id).addNameFilter(p13_1id).build();
+        RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
+                .setUtcStart("2015-02-01T10:10:00").setUtcStop("2015-02-01T10:10:02").build();
+        String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE));
+        RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
+        List<ParameterData> plist = rdar.getParameterDataList();
+        assertNotNull(plist);
+        assertEquals(4, plist.size());
+        ParameterValue pv0 = plist.get(0).getParameter(0);
+        assertEquals("2015-02-01T10:10:00.000", pv0.getGenerationTimeUTC());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", pv0.getId().getName());
+        ParameterValue pv3 = plist.get(3).getParameter(0);
+        assertEquals("2015-02-01T10:10:01.000", pv3.getGenerationTimeUTC());
+        assertEquals("/REFMDB/SUBSYS1/FixedStringPara13_1", pv3.getId().getName());
     }
 
     @Test

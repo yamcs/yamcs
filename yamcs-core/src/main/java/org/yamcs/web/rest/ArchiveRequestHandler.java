@@ -130,14 +130,29 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         // Currently, profiles apply only for Parameter requests
         Yamcs.NamedObjectList requestedProfile = getParametersProfile(qsDecoder, yamcsInstance);
 
+        
         String contentType = getTargetContentType(req);
 
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
+        
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         rrb.setEndAction(EndAction.QUIT);
+        
+        if(request.hasStart()) {
+            rrb.setStart(request.getStart());
+        } else if(request.hasUtcStart()) {
+            rrb.setUtcStart(request.getUtcStart());
+        }
+        
+        if(request.hasStop()) {
+            rrb.setStop(request.getStop());
+        } else if(request.hasUtcStop()) {
+            rrb.setUtcStop(request.getUtcStop());
+        }
+        
+        
         if (request.hasParameterRequest()) {
-            if(requestedProfile != null)
-            {
+            if(requestedProfile != null) {
                 Yamcs.ParameterReplayRequest prr = rrb.getParameterRequest().newBuilderForType().addAllNameFilter(requestedProfile.getListList()).build();
                 rrb.setParameterRequest(prr);
             } else {
@@ -163,7 +178,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         YamcsSession ys = null;
         YamcsClient msgClient = null;
         try {
-            ys = YamcsSession.newBuilder().setConnectionParams("yamcs://localhost:5445/"+yamcsInstance).build();
+            ys = YamcsSession.newBuilder().setConnectionParams("yamcs:///"+yamcsInstance).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             SimpleString replayServer = Protocol.getYarchReplayControlAddress(yamcsInstance);
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());

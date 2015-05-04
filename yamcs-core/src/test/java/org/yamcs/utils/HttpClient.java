@@ -92,7 +92,12 @@ public class HttpClient {
 	Future<String> f = doAsyncRequest(url, httpMethod, body);
 	return f.get(5, TimeUnit.SECONDS);
     }
-
+    public String doGetRequest(String url, String body) throws Exception {
+        return doRequest(url, HttpMethod.GET, body);
+    }
+    public String doPostRequest(String url, String body) throws Exception {
+        return doRequest(url, HttpMethod.POST, body);
+    }
 
     class MyChannelHandler extends SimpleChannelInboundHandler<HttpObject> { 
 	@Override

@@ -1627,6 +1627,10 @@ public final class SchemaRest
 
                 if(message.hasStream())
                     output.writeBool(8, message.getStream(), false);
+                if(message.hasUtcStart())
+                    output.writeString(9, message.getUtcStart(), false);
+                if(message.hasUtcStop())
+                    output.writeString(10, message.getUtcStop(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestDumpArchiveRequest message)
             {
@@ -1695,6 +1699,12 @@ public final class SchemaRest
                         case 8:
                             builder.setStream(input.readBool());
                             break;
+                        case 9:
+                            builder.setUtcStart(input.readString());
+                            break;
+                        case 10:
+                            builder.setUtcStop(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1743,6 +1753,8 @@ public final class SchemaRest
                 case 6: return "commandHistoryRequest";
                 case 7: return "ppRequest";
                 case 8: return "stream";
+                case 9: return "utcStart";
+                case 10: return "utcStop";
                 default: return null;
             }
         }
@@ -1762,6 +1774,8 @@ public final class SchemaRest
             fieldMap.put("commandHistoryRequest", 6);
             fieldMap.put("ppRequest", 7);
             fieldMap.put("stream", 8);
+            fieldMap.put("utcStart", 9);
+            fieldMap.put("utcStop", 10);
         }
     }
 

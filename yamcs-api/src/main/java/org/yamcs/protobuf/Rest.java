@@ -7892,6 +7892,48 @@ public final class Rest {
      */
     long getStop();
 
+    // optional string utcStart = 9;
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    boolean hasUtcStart();
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    java.lang.String getUtcStart();
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getUtcStartBytes();
+
+    // optional string utcStop = 10;
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    boolean hasUtcStop();
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    java.lang.String getUtcStop();
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    com.google.protobuf.ByteString
+        getUtcStopBytes();
+
     // optional .yamcs.ParameterReplayRequest parameterRequest = 3;
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 3;</code>
@@ -8061,7 +8103,7 @@ public final class Rest {
             }
             case 26: {
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
                 subBuilder = parameterRequest_.toBuilder();
               }
               parameterRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.ParameterReplayRequest.PARSER, extensionRegistry);
@@ -8069,12 +8111,12 @@ public final class Rest {
                 subBuilder.mergeFrom(parameterRequest_);
                 parameterRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000010;
               break;
             }
             case 34: {
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+              if (((bitField0_ & 0x00000020) == 0x00000020)) {
                 subBuilder = packetRequest_.toBuilder();
               }
               packetRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.PacketReplayRequest.PARSER, extensionRegistry);
@@ -8082,12 +8124,12 @@ public final class Rest {
                 subBuilder.mergeFrom(packetRequest_);
                 packetRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000020;
               break;
             }
             case 42: {
               org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
                 subBuilder = eventRequest_.toBuilder();
               }
               eventRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.EventReplayRequest.PARSER, extensionRegistry);
@@ -8095,12 +8137,12 @@ public final class Rest {
                 subBuilder.mergeFrom(eventRequest_);
                 eventRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000040;
               break;
             }
             case 50: {
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000020) == 0x00000020)) {
+              if (((bitField0_ & 0x00000080) == 0x00000080)) {
                 subBuilder = commandHistoryRequest_.toBuilder();
               }
               commandHistoryRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.PARSER, extensionRegistry);
@@ -8108,12 +8150,12 @@ public final class Rest {
                 subBuilder.mergeFrom(commandHistoryRequest_);
                 commandHistoryRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000020;
+              bitField0_ |= 0x00000080;
               break;
             }
             case 58: {
               org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+              if (((bitField0_ & 0x00000100) == 0x00000100)) {
                 subBuilder = ppRequest_.toBuilder();
               }
               ppRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.PpReplayRequest.PARSER, extensionRegistry);
@@ -8121,12 +8163,22 @@ public final class Rest {
                 subBuilder.mergeFrom(ppRequest_);
                 ppRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000100;
               break;
             }
             case 64: {
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000200;
               stream_ = input.readBool();
+              break;
+            }
+            case 74: {
+              bitField0_ |= 0x00000004;
+              utcStart_ = input.readBytes();
+              break;
+            }
+            case 82: {
+              bitField0_ |= 0x00000008;
+              utcStop_ = input.readBytes();
               break;
             }
           }
@@ -8209,6 +8261,104 @@ public final class Rest {
       return stop_;
     }
 
+    // optional string utcStart = 9;
+    public static final int UTCSTART_FIELD_NUMBER = 9;
+    private java.lang.Object utcStart_;
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    public boolean hasUtcStart() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    public java.lang.String getUtcStart() {
+      java.lang.Object ref = utcStart_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          utcStart_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string utcStart = 9;</code>
+     *
+     * <pre>
+     *Alternative time specification as UTC strings in ISO8601 format
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getUtcStartBytes() {
+      java.lang.Object ref = utcStart_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        utcStart_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string utcStop = 10;
+    public static final int UTCSTOP_FIELD_NUMBER = 10;
+    private java.lang.Object utcStop_;
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    public boolean hasUtcStop() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    public java.lang.String getUtcStop() {
+      java.lang.Object ref = utcStop_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          utcStop_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string utcStop = 10;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUtcStopBytes() {
+      java.lang.Object ref = utcStop_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        utcStop_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     // optional .yamcs.ParameterReplayRequest parameterRequest = 3;
     public static final int PARAMETERREQUEST_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_;
@@ -8220,7 +8370,7 @@ public final class Rest {
      * </pre>
      */
     public boolean hasParameterRequest() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 3;</code>
@@ -8250,7 +8400,7 @@ public final class Rest {
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 4;</code>
      */
     public boolean hasPacketRequest() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 4;</code>
@@ -8272,7 +8422,7 @@ public final class Rest {
      * <code>optional .yamcs.EventReplayRequest eventRequest = 5;</code>
      */
     public boolean hasEventRequest() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
      * <code>optional .yamcs.EventReplayRequest eventRequest = 5;</code>
@@ -8294,7 +8444,7 @@ public final class Rest {
      * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 6;</code>
      */
     public boolean hasCommandHistoryRequest() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
      * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 6;</code>
@@ -8316,7 +8466,7 @@ public final class Rest {
      * <code>optional .yamcs.PpReplayRequest ppRequest = 7;</code>
      */
     public boolean hasPpRequest() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
      * <code>optional .yamcs.PpReplayRequest ppRequest = 7;</code>
@@ -8345,7 +8495,7 @@ public final class Rest {
      * </pre>
      */
     public boolean hasStream() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
      * <code>optional bool stream = 8;</code>
@@ -8364,6 +8514,8 @@ public final class Rest {
     private void initFields() {
       start_ = 0L;
       stop_ = 0L;
+      utcStart_ = "";
+      utcStop_ = "";
       parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
       packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
       eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
@@ -8401,23 +8553,29 @@ public final class Rest {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeInt64(2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(3, parameterRequest_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeMessage(4, packetRequest_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeMessage(5, eventRequest_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeMessage(6, commandHistoryRequest_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeMessage(7, ppRequest_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeBool(8, stream_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(9, getUtcStartBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(10, getUtcStopBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -8436,29 +8594,37 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, parameterRequest_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, packetRequest_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, eventRequest_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, commandHistoryRequest_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(7, ppRequest_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(8, stream_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(9, getUtcStartBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(10, getUtcStopBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8585,38 +8751,42 @@ public final class Rest {
         bitField0_ = (bitField0_ & ~0x00000001);
         stop_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
+        utcStart_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        utcStop_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         if (parameterRequestBuilder_ == null) {
           parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
         } else {
           parameterRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000010);
         if (packetRequestBuilder_ == null) {
           packetRequest_ = org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance();
         } else {
           packetRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000020);
         if (eventRequestBuilder_ == null) {
           eventRequest_ = org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance();
         } else {
           eventRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000040);
         if (commandHistoryRequestBuilder_ == null) {
           commandHistoryRequest_ = org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance();
         } else {
           commandHistoryRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000080);
         if (ppRequestBuilder_ == null) {
           ppRequest_ = org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance();
         } else {
           ppRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000100);
         stream_ = false;
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -8656,45 +8826,53 @@ public final class Rest {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
+        result.utcStart_ = utcStart_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.utcStop_ = utcStop_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
         if (parameterRequestBuilder_ == null) {
           result.parameterRequest_ = parameterRequest_;
         } else {
           result.parameterRequest_ = parameterRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
         }
         if (packetRequestBuilder_ == null) {
           result.packetRequest_ = packetRequest_;
         } else {
           result.packetRequest_ = packetRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
         }
         if (eventRequestBuilder_ == null) {
           result.eventRequest_ = eventRequest_;
         } else {
           result.eventRequest_ = eventRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-          to_bitField0_ |= 0x00000020;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
         }
         if (commandHistoryRequestBuilder_ == null) {
           result.commandHistoryRequest_ = commandHistoryRequest_;
         } else {
           result.commandHistoryRequest_ = commandHistoryRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
-          to_bitField0_ |= 0x00000040;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
         }
         if (ppRequestBuilder_ == null) {
           result.ppRequest_ = ppRequest_;
         } else {
           result.ppRequest_ = ppRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000080;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
         }
         result.stream_ = stream_;
         result.bitField0_ = to_bitField0_;
@@ -8718,6 +8896,16 @@ public final class Rest {
         }
         if (other.hasStop()) {
           setStop(other.getStop());
+        }
+        if (other.hasUtcStart()) {
+          bitField0_ |= 0x00000004;
+          utcStart_ = other.utcStart_;
+          onChanged();
+        }
+        if (other.hasUtcStop()) {
+          bitField0_ |= 0x00000008;
+          utcStop_ = other.utcStop_;
+          onChanged();
         }
         if (other.hasParameterRequest()) {
           mergeParameterRequest(other.getParameterRequest());
@@ -8858,6 +9046,178 @@ public final class Rest {
         return this;
       }
 
+      // optional string utcStart = 9;
+      private java.lang.Object utcStart_ = "";
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public boolean hasUtcStart() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public java.lang.String getUtcStart() {
+        java.lang.Object ref = utcStart_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          utcStart_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getUtcStartBytes() {
+        java.lang.Object ref = utcStart_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          utcStart_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public Builder setUtcStart(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        utcStart_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public Builder clearUtcStart() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        utcStart_ = getDefaultInstance().getUtcStart();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStart = 9;</code>
+       *
+       * <pre>
+       *Alternative time specification as UTC strings in ISO8601 format
+       * </pre>
+       */
+      public Builder setUtcStartBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        utcStart_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string utcStop = 10;
+      private java.lang.Object utcStop_ = "";
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public boolean hasUtcStop() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public java.lang.String getUtcStop() {
+        java.lang.Object ref = utcStop_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          utcStop_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUtcStopBytes() {
+        java.lang.Object ref = utcStop_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          utcStop_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public Builder setUtcStop(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        utcStop_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public Builder clearUtcStop() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        utcStop_ = getDefaultInstance().getUtcStop();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string utcStop = 10;</code>
+       */
+      public Builder setUtcStopBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        utcStop_ = value;
+        onChanged();
+        return this;
+      }
+
       // optional .yamcs.ParameterReplayRequest parameterRequest = 3;
       private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_ = org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
@@ -8870,7 +9230,7 @@ public final class Rest {
        * </pre>
        */
       public boolean hasParameterRequest() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 3;</code>
@@ -8903,7 +9263,7 @@ public final class Rest {
         } else {
           parameterRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
@@ -8921,7 +9281,7 @@ public final class Rest {
         } else {
           parameterRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
@@ -8933,7 +9293,7 @@ public final class Rest {
        */
       public Builder mergeParameterRequest(org.yamcs.protobuf.Yamcs.ParameterReplayRequest value) {
         if (parameterRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
               parameterRequest_ != org.yamcs.protobuf.Yamcs.ParameterReplayRequest.getDefaultInstance()) {
             parameterRequest_ =
               org.yamcs.protobuf.Yamcs.ParameterReplayRequest.newBuilder(parameterRequest_).mergeFrom(value).buildPartial();
@@ -8944,7 +9304,7 @@ public final class Rest {
         } else {
           parameterRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
@@ -8961,7 +9321,7 @@ public final class Rest {
         } else {
           parameterRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       /**
@@ -8972,7 +9332,7 @@ public final class Rest {
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder getParameterRequestBuilder() {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000010;
         onChanged();
         return getParameterRequestFieldBuilder().getBuilder();
       }
@@ -9019,7 +9379,7 @@ public final class Rest {
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 4;</code>
        */
       public boolean hasPacketRequest() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 4;</code>
@@ -9044,7 +9404,7 @@ public final class Rest {
         } else {
           packetRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -9058,7 +9418,7 @@ public final class Rest {
         } else {
           packetRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -9066,7 +9426,7 @@ public final class Rest {
        */
       public Builder mergePacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
         if (packetRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
               packetRequest_ != org.yamcs.protobuf.Yamcs.PacketReplayRequest.getDefaultInstance()) {
             packetRequest_ =
               org.yamcs.protobuf.Yamcs.PacketReplayRequest.newBuilder(packetRequest_).mergeFrom(value).buildPartial();
@@ -9077,7 +9437,7 @@ public final class Rest {
         } else {
           packetRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -9090,14 +9450,14 @@ public final class Rest {
         } else {
           packetRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 4;</code>
        */
       public org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder getPacketRequestBuilder() {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000020;
         onChanged();
         return getPacketRequestFieldBuilder().getBuilder();
       }
@@ -9136,7 +9496,7 @@ public final class Rest {
        * <code>optional .yamcs.EventReplayRequest eventRequest = 5;</code>
        */
       public boolean hasEventRequest() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional .yamcs.EventReplayRequest eventRequest = 5;</code>
@@ -9161,7 +9521,7 @@ public final class Rest {
         } else {
           eventRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -9175,7 +9535,7 @@ public final class Rest {
         } else {
           eventRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -9183,7 +9543,7 @@ public final class Rest {
        */
       public Builder mergeEventRequest(org.yamcs.protobuf.Yamcs.EventReplayRequest value) {
         if (eventRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
               eventRequest_ != org.yamcs.protobuf.Yamcs.EventReplayRequest.getDefaultInstance()) {
             eventRequest_ =
               org.yamcs.protobuf.Yamcs.EventReplayRequest.newBuilder(eventRequest_).mergeFrom(value).buildPartial();
@@ -9194,7 +9554,7 @@ public final class Rest {
         } else {
           eventRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
@@ -9207,14 +9567,14 @@ public final class Rest {
         } else {
           eventRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
       /**
        * <code>optional .yamcs.EventReplayRequest eventRequest = 5;</code>
        */
       public org.yamcs.protobuf.Yamcs.EventReplayRequest.Builder getEventRequestBuilder() {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         onChanged();
         return getEventRequestFieldBuilder().getBuilder();
       }
@@ -9253,7 +9613,7 @@ public final class Rest {
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 6;</code>
        */
       public boolean hasCommandHistoryRequest() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 6;</code>
@@ -9278,7 +9638,7 @@ public final class Rest {
         } else {
           commandHistoryRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -9292,7 +9652,7 @@ public final class Rest {
         } else {
           commandHistoryRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -9300,7 +9660,7 @@ public final class Rest {
        */
       public Builder mergeCommandHistoryRequest(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest value) {
         if (commandHistoryRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
               commandHistoryRequest_ != org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance()) {
             commandHistoryRequest_ =
               org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.newBuilder(commandHistoryRequest_).mergeFrom(value).buildPartial();
@@ -9311,7 +9671,7 @@ public final class Rest {
         } else {
           commandHistoryRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -9324,14 +9684,14 @@ public final class Rest {
         } else {
           commandHistoryRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
       /**
        * <code>optional .yamcs.CommandHistoryReplayRequest commandHistoryRequest = 6;</code>
        */
       public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.Builder getCommandHistoryRequestBuilder() {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000080;
         onChanged();
         return getCommandHistoryRequestFieldBuilder().getBuilder();
       }
@@ -9370,7 +9730,7 @@ public final class Rest {
        * <code>optional .yamcs.PpReplayRequest ppRequest = 7;</code>
        */
       public boolean hasPpRequest() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
        * <code>optional .yamcs.PpReplayRequest ppRequest = 7;</code>
@@ -9395,7 +9755,7 @@ public final class Rest {
         } else {
           ppRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -9409,7 +9769,7 @@ public final class Rest {
         } else {
           ppRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -9417,7 +9777,7 @@ public final class Rest {
        */
       public Builder mergePpRequest(org.yamcs.protobuf.Yamcs.PpReplayRequest value) {
         if (ppRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
               ppRequest_ != org.yamcs.protobuf.Yamcs.PpReplayRequest.getDefaultInstance()) {
             ppRequest_ =
               org.yamcs.protobuf.Yamcs.PpReplayRequest.newBuilder(ppRequest_).mergeFrom(value).buildPartial();
@@ -9428,7 +9788,7 @@ public final class Rest {
         } else {
           ppRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
@@ -9441,14 +9801,14 @@ public final class Rest {
         } else {
           ppRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       /**
        * <code>optional .yamcs.PpReplayRequest ppRequest = 7;</code>
        */
       public org.yamcs.protobuf.Yamcs.PpReplayRequest.Builder getPpRequestBuilder() {
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000100;
         onChanged();
         return getPpRequestFieldBuilder().getBuilder();
       }
@@ -9492,7 +9852,7 @@ public final class Rest {
        * </pre>
        */
       public boolean hasStream() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
        * <code>optional bool stream = 8;</code>
@@ -9518,7 +9878,7 @@ public final class Rest {
        * </pre>
        */
       public Builder setStream(boolean value) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000200;
         stream_ = value;
         onChanged();
         return this;
@@ -9534,7 +9894,7 @@ public final class Rest {
        * </pre>
        */
       public Builder clearStream() {
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000200);
         stream_ = false;
         onChanged();
         return this;
@@ -12849,37 +13209,38 @@ public final class Rest {
       " \n\036RestConnectToProcessorResponse\"a\n\027Res",
       "tGetParameterRequest\022\"\n\004list\030\001 \003(\0132\024.yam" +
       "cs.NamedObjectId\022\021\n\tfromCache\030\002 \001(\010\022\017\n\007t" +
-      "imeout\030\003 \001(\004\"\320\002\n\026RestDumpArchiveRequest\022" +
-      "\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\0227\n\020paramete" +
-      "rRequest\030\003 \001(\0132\035.yamcs.ParameterReplayRe" +
-      "quest\0221\n\rpacketRequest\030\004 \001(\0132\032.yamcs.Pac" +
-      "ketReplayRequest\022/\n\014eventRequest\030\005 \001(\0132\031" +
-      ".yamcs.EventReplayRequest\022A\n\025commandHist" +
-      "oryRequest\030\006 \001(\0132\".yamcs.CommandHistoryR" +
-      "eplayRequest\022)\n\tppRequest\030\007 \001(\0132\026.yamcs.",
-      "PpReplayRequest\022\016\n\006stream\030\010 \001(\010\"\346\001\n\027Rest" +
-      "DumpArchiveResponse\022,\n\rparameterData\030\002 \003" +
-      "(\0132\025.pvalue.ParameterData\022\'\n\npacketData\030" +
-      "\003 \003(\0132\023.yamcs.TmPacketData\0220\n\007command\030\004 " +
-      "\003(\0132\037.commanding.CommandHistoryEntry\022\033\n\005" +
-      "event\030\005 \003(\0132\014.yamcs.Event\022%\n\006ppData\030\006 \003(" +
-      "\0132\025.pvalue.ParameterData\"A\n\026RestSendComm" +
-      "andRequest\022\'\n\010commands\030\001 \003(\0132\025.rest.Rest" +
-      "CommandType\"\031\n\027RestSendCommandResponse*G" +
-      "\n\016RestDataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007DER",
-      "IVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\0032\266\003\n\013REST" +
-      "Service\022n\n\027listAvailableParameters\022(.res" +
-      "t.RestListAvailableParametersRequest\032).r" +
-      "est.RestListAvailableParametersResponse\022" +
-      "V\n\017validateCommand\022 .rest.RestValidateCo" +
-      "mmandRequest\032!.rest.RestValidateCommandR" +
-      "esponse\022J\n\013sendCommand\022\034.rest.RestSendCo" +
-      "mmandRequest\032\035.rest.RestSendCommandRespo" +
-      "nse\022G\n\ndumpRawMdb\022\033.rest.RestDumpRawMdbR" +
-      "equest\032\034.rest.RestDumpRawMdbResponse\022J\n\013",
-      "dumpArchive\022\034.rest.RestDumpArchiveReques" +
-      "t\032\035.rest.RestDumpArchiveResponseB\024\n\022org." +
-      "yamcs.protobuf"
+      "imeout\030\003 \001(\004\"\363\002\n\026RestDumpArchiveRequest\022" +
+      "\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart" +
+      "\030\t \001(\t\022\017\n\007utcStop\030\n \001(\t\0227\n\020parameterRequ" +
+      "est\030\003 \001(\0132\035.yamcs.ParameterReplayRequest" +
+      "\0221\n\rpacketRequest\030\004 \001(\0132\032.yamcs.PacketRe" +
+      "playRequest\022/\n\014eventRequest\030\005 \001(\0132\031.yamc" +
+      "s.EventReplayRequest\022A\n\025commandHistoryRe" +
+      "quest\030\006 \001(\0132\".yamcs.CommandHistoryReplay",
+      "Request\022)\n\tppRequest\030\007 \001(\0132\026.yamcs.PpRep" +
+      "layRequest\022\016\n\006stream\030\010 \001(\010\"\346\001\n\027RestDumpA" +
+      "rchiveResponse\022,\n\rparameterData\030\002 \003(\0132\025." +
+      "pvalue.ParameterData\022\'\n\npacketData\030\003 \003(\013" +
+      "2\023.yamcs.TmPacketData\0220\n\007command\030\004 \003(\0132\037" +
+      ".commanding.CommandHistoryEntry\022\033\n\005event" +
+      "\030\005 \003(\0132\014.yamcs.Event\022%\n\006ppData\030\006 \003(\0132\025.p" +
+      "value.ParameterData\"A\n\026RestSendCommandRe" +
+      "quest\022\'\n\010commands\030\001 \003(\0132\025.rest.RestComma" +
+      "ndType\"\031\n\027RestSendCommandResponse*G\n\016Res",
+      "tDataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020" +
+      "\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\0032\266\003\n\013RESTServi" +
+      "ce\022n\n\027listAvailableParameters\022(.rest.Res" +
+      "tListAvailableParametersRequest\032).rest.R" +
+      "estListAvailableParametersResponse\022V\n\017va" +
+      "lidateCommand\022 .rest.RestValidateCommand" +
+      "Request\032!.rest.RestValidateCommandRespon" +
+      "se\022J\n\013sendCommand\022\034.rest.RestSendCommand" +
+      "Request\032\035.rest.RestSendCommandResponse\022G" +
+      "\n\ndumpRawMdb\022\033.rest.RestDumpRawMdbReques",
+      "t\032\034.rest.RestDumpRawMdbResponse\022J\n\013dumpA" +
+      "rchive\022\034.rest.RestDumpArchiveRequest\032\035.r" +
+      "est.RestDumpArchiveResponseB\024\n\022org.yamcs" +
+      ".protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -12975,7 +13336,7 @@ public final class Rest {
           internal_static_rest_RestDumpArchiveRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestDumpArchiveRequest_descriptor,
-              new java.lang.String[] { "Start", "Stop", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", "Stream", });
+              new java.lang.String[] { "Start", "Stop", "UtcStart", "UtcStop", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", "Stream", });
           internal_static_rest_RestDumpArchiveResponse_descriptor =
             getDescriptor().getMessageTypes().get(15);
           internal_static_rest_RestDumpArchiveResponse_fieldAccessorTable = new
