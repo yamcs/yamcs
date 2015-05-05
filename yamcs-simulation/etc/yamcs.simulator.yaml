@@ -18,7 +18,7 @@ services:
     - org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.FSEventDecoder
 #    - org.yamcs.archive.PpRecorder
-#    - org.yamcs.archive.EventRecorder
+    - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
