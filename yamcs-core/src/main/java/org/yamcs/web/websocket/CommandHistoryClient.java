@@ -62,8 +62,10 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
 
 	this.yproc = c;
 
-	chrm = yproc.getCommandHistoryManager();
-	chrm.addSubscription(filter, this);
+        if (yproc.hasCommanding()) {
+            chrm = yproc.getCommandHistoryManager();
+            chrm.addSubscription(filter, this);
+	}
     }
 
     @Override
