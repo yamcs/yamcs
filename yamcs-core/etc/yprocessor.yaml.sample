@@ -43,5 +43,10 @@ realtime:
 
 
 Archive:
-    tm: 
-       class: org.yamcs.tctm.ReplayService
+    telemetryProvider: 
+        class: org.yamcs.tctm.ReplayService
+    config:
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
