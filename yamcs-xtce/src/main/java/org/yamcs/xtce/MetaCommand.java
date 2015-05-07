@@ -66,12 +66,20 @@ public class MetaCommand extends NameDescription {
     //assignment for inheritance
     List<ArgumentAssignment> argumentAssignmentList;
 
+    
+    /**
+     * From XTCE:
+     * Some Command and Control Systems may require special user access or confirmations before transmitting commands with certain levels.  
+     * The level is inherited from the Base MetaCommand, or it overrides any in the parent-chain if given here, however it should not go down in consequenceLevel.
+     */
+    private Significance defaultSignificance = null;
+    
     /**
      * if command is abstract, it cannot be instantiated
      */
     boolean abstractCmd = false;
 
-    List<TransmissionConstraint> transmissionContstrianList = new ArrayList<TransmissionConstraint>();
+    List<TransmissionConstraint> transmissionContstraintList = new ArrayList<TransmissionConstraint>();
 
     public MetaCommand(String name) {
 	super(name);
@@ -146,11 +154,11 @@ public class MetaCommand extends NameDescription {
     }
 
     public void addTransmissionConstrain(TransmissionConstraint constraint) {
-	transmissionContstrianList.add(constraint);
+	transmissionContstraintList.add(constraint);
     }
     
     public List<TransmissionConstraint> getTransmissionConstraintList() {
-	return transmissionContstrianList;
+	return transmissionContstraintList;
     }
     
     
@@ -164,15 +172,23 @@ public class MetaCommand extends NameDescription {
     public void print(PrintStream out) {
 	out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
 	if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-	if(!transmissionContstrianList.isEmpty()) {
+	if(!transmissionContstraintList.isEmpty()) {
 	    out.print(", TransmissionConstraints: ");
-	    out.print(transmissionContstrianList.toString());
+	    out.print(transmissionContstraintList.toString());
 	}
 	out.println();
 	commandContainer.print(out);
     }
 
     public boolean hasTransmissionConstraints() {
-	return !transmissionContstrianList.isEmpty();
+	return !transmissionContstraintList.isEmpty();
+    }
+
+    public Significance getDefaultSignificance() {
+        return defaultSignificance;
+    }
+
+    public void setDefaultSignificance(Significance defaultSignificance) {
+        this.defaultSignificance = defaultSignificance;
     }
 }
