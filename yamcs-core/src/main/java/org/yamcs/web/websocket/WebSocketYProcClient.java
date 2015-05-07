@@ -40,6 +40,10 @@ public class WebSocketYProcClient implements YProcessorClient {
         cmdhistClient.switchYProcessor(c);
 
     }
+    
+    public int getClientId() {
+        return clientId;
+    }
 
     @Override
     public void yProcessorQuit() {
