@@ -231,19 +231,27 @@ public class Privilege {
 
 	private User getUser(final AuthenticationToken authenticationToken)  {
 		while (true) {
+			if(authenticationToken == null)
+				return null;
 			Future<User> f = cache.get(authenticationToken);
 			if (f == null) {
 				Callable<User> eval = new Callable<User>() {
 					@Override
 					public User call() {
-						// check the realm support the type of provided token
-						if(!realm.supports(authenticationToken))
-						{
-							log.error("Realm " + Privilege.realmName + " does not support authentication token of type"
-									+ authenticationToken.getClass());
-							return null;
+						try {
+							// check the realm support the type of provided token
+							if (!realm.supports(authenticationToken)) {
+								log.error("Realm " + Privilege.realmName + " does not support authentication token of type"
+										+ authenticationToken.getClass());
+								return null;
+							}
+							return realm.loadUser(authenticationToken);
 						}
-						return realm.loadUser(authenticationToken);
+						catch (Exception e)
+						{
+							log.error("Unable to load user from realm " + realmName, e);
+							return new User(authenticationToken);
+						}
 					}
 				};
 				FutureTask<User> ft = new FutureTask<User>(eval);

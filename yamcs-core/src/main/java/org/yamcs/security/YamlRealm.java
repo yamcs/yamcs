@@ -87,7 +87,7 @@ public class YamlRealm implements Realm {
         user.lastUpdated = System.currentTimeMillis();
 
         try {
-            YConfiguration conf = YConfiguration.getConfiguration(configFileName);
+            YConfiguration conf = YConfiguration.getConfiguration(configFileName, true);
             List<String> userDef = conf.getList("users", usernamePasswordToken.getUsername());
 
             // Load roles
@@ -111,7 +111,7 @@ public class YamlRealm implements Realm {
         }
         catch (Exception e)
         {
-            log.error("Unable to load user " + usernamePasswordToken + " from YamlRealm", e);
+            log.warn("Unable to load user " + usernamePasswordToken + " from YamlRealm", e);
         }
 
         user.setAuthenticated(authenticates(authenticationToken));
