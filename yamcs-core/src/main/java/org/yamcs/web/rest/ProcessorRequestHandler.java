@@ -16,7 +16,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
     
     
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
