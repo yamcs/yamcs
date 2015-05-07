@@ -18,7 +18,6 @@ import org.yamcs.GuardedBy;
 import org.yamcs.InvalidCommandId;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
-import org.yamcs.Privilege;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistory;
@@ -27,6 +26,8 @@ import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
@@ -44,7 +45,7 @@ import com.google.common.util.concurrent.AbstractService;
  *  - depending on the queue state the command can be immediately sent, stored in the queue or rejected
  *  - when the command is immediately sent or rejected, the command queue monitor is not notified
  *  - if the command has transmissionConstraints with timeout>0, the command can sit in the queue even if the queue is not blocked
- * 
+ *
  * Note: the update of the command monitors is done in the same thread. That means that if the connection to one 
  *  of the monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users
  *  most likely connected in the same LAN, I don't consider this to be an issue. 
@@ -58,16 +59,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     CommandingManager commandingManager;
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients=new ConcurrentLinkedQueue<CommandQueueListener>();
     private final Logger log;
-    
+
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<TransmissionConstraintChecker>();
-    
+
     private final String instance,yprocName;
 
-    ParameterValueList pvList = new ParameterValueList(); 
-    
+    ParameterValueList pvList = new ParameterValueList();
+
     YProcessor yproc;
     int paramSubscriptionRequestId = -1;
-    
+
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     /**
      * Constructs a Command Queue Manager having the given history manager and tc uplinker.
@@ -87,7 +88,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.instance = yproc.getInstance();
         this.yprocName = yproc.getName();
 
-        
+
         CommandQueue cq=new CommandQueue(yproc, "default");
         queues.put("default", cq);
 
@@ -168,13 +169,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * First the command is added to the command history
      * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history 
      *  added to the queue or directly sent using the uplinker
-     * 
+     *
      * @param pc
      */
-    public synchronized void addCommand(PreparedCommand pc) {
+    public synchronized void addCommand(AuthenticationToken authToken, PreparedCommand pc) {
         commandHistoryListener.addCommand(pc);
 
-        CommandQueue q=getQueue(pc);
+        CommandQueue q=getQueue(authToken);
         if(q.state==QueueState.DISABLED) {
             failedCommand(q, pc, "Commanding Queue disabled", false);
         } else if(q.state==QueueState.BLOCKED) {
@@ -186,7 +187,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             } else {
                 releaseCommand(q, pc, false, false);
             }
-        }	
+        }
     }
 
 
@@ -204,9 +205,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         CommandQueue q = tcChecker.queue;
         TCStatus status = tcChecker.aggregateStatus;
         log.info("transmission constraint finished for "+pc.getCmdName()+" status: "+status);
-        
+
         pendingTcCheckers.remove(tcChecker);
-        
+
 
         if(q.getState()==QueueState.BLOCKED) {
             log.debug("Command queue for command "+pc+" is blocked, leaving command in the queue");
@@ -223,9 +224,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if(status==TCStatus.OK) {
             addToCommandHistory(pc, CommandHistory.TransmissionContraints_KEY, "OK");
             releaseCommand(q, pc, true, false);
-        } else if(status == TCStatus.TIMED_OUT) { 
+        } else if(status == TCStatus.TIMED_OUT) {
             addToCommandHistory(pc, CommandHistory.TransmissionContraints_KEY, "NOK");
-            failedCommand(q, pc, "Transmission constraints check failed",true);    
+            failedCommand(q, pc, "Transmission constraints check failed",true);
         }
     }
 
@@ -293,14 +294,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * @param pc 
+     * @param pc
      * @return the queue where the command should be placed.
      */
-    private CommandQueue getQueue(PreparedCommand pc) {
+    private CommandQueue getQueue(AuthenticationToken authToken) {
         Privilege priv=Privilege.getInstance();
-        if(!priv.isEnabled()) return queues.get("default");
+        if(authToken == null || !priv.isEnabled()) return queues.get("default");
 
-        String[] roles=priv.getRoles();
+        String[] roles=priv.getRoles(authToken);
         if(roles==null) return queues.get("default");
         for(String role:roles) {
             for(CommandQueue cq:queues.values()) {
@@ -318,9 +319,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     /**
      * Called via CORBA to remove a command from the queue
-     * @param commandId 
-     * @throws CommandQueueException 
-     * @throws InsufficientPrivileges 
+     * @param commandId
+     * @throws CommandQueueException
+     * @throws InsufficientPrivileges
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
         log.info("called to remove command: "+commandId);
@@ -346,9 +347,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     /**
      * Called from external client to release a command from the queue
-     * @param commandId 
-     * @throws CommandQueueException 
-     * @throws InsufficientPrivileges 
+     * @param commandId
+     * @throws CommandQueueException
+     * @throws InsufficientPrivileges
      */
     public synchronized PreparedCommand sendCommand(CommandId commandId, boolean rebuild) {
         PreparedCommand command=null;
@@ -402,7 +403,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             for(PreparedCommand pc:queue.commands) {
                 failedCommand(queue, pc, "Commanding Queue disabled", true);
             }
-            queue.commands.clear(); 
+            queue.commands.clear();
         }
         //	Notify the monitoring clients
         for(CommandQueueListener m:monitoringClients) {
@@ -446,7 +447,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             scheduleImmediateCheck(tcc);
         }
     }
-    
+
     private void scheduleImmediateCheck(final TransmissionConstraintChecker tcc) {
         executor.execute(new Runnable() {
             @Override
@@ -455,7 +456,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         });
     }
-    
+
     private void scheduleCheck(final TransmissionConstraintChecker tcc, long millisec) {
         executor.schedule(new Runnable() {
             @Override
@@ -464,7 +465,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }, millisec, TimeUnit.MILLISECONDS);
     }
-    
+
     @Override
     public void updateItems(int subscriptionId, final List<ParameterValue> items) {
         executor.execute(new Runnable() {
@@ -482,7 +483,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         final PreparedCommand pc;
         final CommandQueue queue;
         TCStatus aggregateStatus=TCStatus.INIT;
-        
+
         public TransmissionConstraintChecker(CommandQueue queue, PreparedCommand pc) {
             this.pc = pc;
             this.queue = queue;
@@ -502,11 +503,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
                 aggregateStatus = TCStatus.PENDING;
             }
-            
+
             if(aggregateStatus!=TCStatus.PENDING) return;
             ArrayList<ParameterValue> plist2 = new ArrayList<ParameterValue>(pvList);
-            
-           
+
+
             ComparisonProcessor cproc = new ComparisonProcessor(pvList);
             aggregateStatus = TCStatus.OK;
             long scheduleNextCheck = Long.MAX_VALUE;
@@ -523,26 +524,26 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     } else {
                         MatchCriteria mc = tcs.constraint.getMatchCriteria();
                         try {
-                        if(!cproc.matches(mc)) {
-                            if(timeRemaining > 0) {
-                                aggregateStatus = TCStatus.PENDING;
-                                if(timeRemaining <scheduleNextCheck) {
-                                    scheduleNextCheck = timeRemaining;
+                            if(!cproc.matches(mc)) {
+                                if(timeRemaining > 0) {
+                                    aggregateStatus = TCStatus.PENDING;
+                                    if(timeRemaining <scheduleNextCheck) {
+                                        scheduleNextCheck = timeRemaining;
+                                    }
+                                } else {
+                                    aggregateStatus = TCStatus.TIMED_OUT;
+                                    break;
                                 }
-                            } else {
-                                aggregateStatus = TCStatus.TIMED_OUT;
-                                break;
                             }
-                        }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        }
-                    
+                    }
+
                 }
             }
             if(aggregateStatus == TCStatus.PENDING) {
-               scheduleCheck(this, scheduleNextCheck);
+                scheduleCheck(this, scheduleNextCheck);
             } else {
                 onTransmissionContraintCheckFinished(this);
             }

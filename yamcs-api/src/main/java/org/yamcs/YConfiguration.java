@@ -121,10 +121,20 @@ public class YConfiguration {
 	    } catch (IOException e){
 		throw new ConfigurationException("Cannot load configuration for subsystem "+subsystem+": "+e);
 	    }
-	    configurations.put(subsystem, c);
+		configurations.put(subsystem, c);
 	}
-	return c;
-    }
+		return c;
+	}
+
+	public synchronized static YConfiguration getConfiguration(String subsystem, boolean reload) throws ConfigurationException {
+		if(reload) {
+			YConfiguration c = configurations.get(subsystem);
+			if (c != null) {
+				configurations.remove(subsystem);
+			}
+		}
+		return getConfiguration(subsystem);
+	}
 
     private static InputStream getConfigurationStream(String name) throws ConfigurationException {
 	InputStream is;

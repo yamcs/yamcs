@@ -28,6 +28,7 @@ import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.RestExceptionMessage;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.AbstractRequestHandler;
 
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -57,7 +58,7 @@ public abstract class AbstractRestRequestHandler extends AbstractRequestHandler 
     private JsonFactory jsonFactory = new JsonFactory();
     protected CsvGenerator csvGenerator = null;
 
-    public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException;
+    public abstract void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException;
 
     /**
      * Accepted Content-Type headers (in priority order, defaults to first if unspecified).

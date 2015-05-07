@@ -16,6 +16,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.security.AuthenticationToken;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +44,7 @@ public class WebSocketServerHandler {
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
 
-    public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws Exception {
+    public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, AuthenticationToken authToken) throws Exception {
 	if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
 	if(yprocClient==null) {
 	    String applicationName = determineApplicationName(req);

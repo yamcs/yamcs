@@ -21,4 +21,4 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
 # run the program
-exec "$_RUNJAVA" -classpath "$CLASSPATH" org.yamcs.security.Privilege "$@"
+exec "$_RUNJAVA" -classpath "$CLASSPATH" org.yamcs.security.PasswordHash "$@"

@@ -11,8 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorListener;
-import org.yamcs.HornetQAuthPrivilege;
-import org.yamcs.Privilege;
+import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -46,11 +45,11 @@ public class HornetProcessorManagement implements YProcessorListener {
     static Logger log=LoggerFactory.getLogger(HornetProcessorManagement.class.getName());
     Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     ManagementService mservice;
-    
+
     static Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
-    
+
     static public final String YPR_createProcessor = "createProcessor";
-    
+
     public HornetProcessorManagement(ManagementService mservice, ScheduledThreadPoolExecutor timer) throws YamcsApiException, HornetQException {
         this.mservice=mservice;
         timer.scheduleAtFixedRate(new Runnable() {
@@ -58,14 +57,14 @@ public class HornetProcessorManagement implements YProcessorListener {
             public void run() {updateStatistics();}
         }, 1, 1, TimeUnit.SECONDS);
 
-        
+
         if(ysession!=null) return;
         ysession=YamcsSession.newBuilder().build();
-        
+
         //trick to make sure that the yprocessor info queue exists
         yclient=ysession.newClientBuilder().setDataConsumer(YPROCESSOR_INFO_ADDRESS, YPROCESSOR_INFO_ADDRESS).build();
         yclient.close();
-        
+
         yclient=ysession.newClientBuilder().setDataProducer(true).build();
         yprocControlServer=ysession.newClientBuilder().setRpcAddress(YPROCESSOR_CONTROL_ADDRESS).build();
         yprocControlServer.rpcConsumer.setMessageHandler(new MessageHandler() {
@@ -80,12 +79,12 @@ public class HornetProcessorManagement implements YProcessorListener {
             }
         });
     }
-    
-    
-    
+
+
+
     private void processControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
-        Privilege priv = HornetQAuthPrivilege.getInstance(msg);
-        
+        HqClientMessageToken usertoken= new HqClientMessageToken(msg, null);
+
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
         if(replyto==null) {
             log.warn("Did not receive a replyto header. Ignoring the request");
@@ -96,11 +95,11 @@ public class HornetProcessorManagement implements YProcessorListener {
             log.debug("Received a new request: "+req);
             if(Constants.YPR_createProcessor.equalsIgnoreCase(req)) {
                 ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorManagementRequest.newBuilder());
-                mservice.createProcessor(cr, priv);
+                mservice.createProcessor(cr, usertoken);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_connectToProcessor.equalsIgnoreCase(req)) {
                 ProcessorManagementRequest cr=(ProcessorManagementRequest)Protocol.decode(msg, ProcessorManagementRequest.newBuilder());
-                mservice.connectToProcessor(cr, priv);
+                mservice.connectToProcessor(cr, usertoken);
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_pauseReplay.equalsIgnoreCase(req)) {
                 ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
@@ -124,10 +123,10 @@ public class HornetProcessorManagement implements YProcessorListener {
         } catch (YamcsException e) {
             log.warn("Sending error reply "+ e);
             yprocControlServer.sendErrorReply(replyto, e.getMessage());
-        } 
+        }
     }
 
-   
+
     @Override
     public void processorAdded(YProcessor yproc) {
         try {
@@ -138,8 +137,8 @@ public class HornetProcessorManagement implements YProcessorListener {
             log.error("Exception when registering yproc: ", e);
         }
     }
-    
-    
+
+
     @Override
     public void yProcessorClosed(YProcessor yprocl) {
         ProcessorInfo ci=getProcessorInfo(yprocl);
@@ -173,8 +172,8 @@ public class HornetProcessorManagement implements YProcessorListener {
             log.error("Exception when sending yproc event: ", e);
         }
     }
-    
-    
+
+
     public void updateStatistics() {
         try {
             for(Entry<YProcessor,Statistics> entry:yprocs.entrySet()) {
@@ -188,14 +187,14 @@ public class HornetProcessorManagement implements YProcessorListener {
                 if(stats!=STATS_NULL) {
                     sendYProcStatistics(yproc, stats);
                 }
-                
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    
+
     private Statistics buildStats(YProcessor yproc) {
         ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
         Statistics.Builder statsb=Statistics.newBuilder();
@@ -205,17 +204,17 @@ public class HornetProcessorManagement implements YProcessorListener {
         if(tmstats==null) {
             return STATS_NULL;
         }
-        
+
         for(ProcessingStatistics.TmStats t:tmstats) {
             TmStatistics ts=TmStatistics.newBuilder()
-                .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
-                .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
-                .setSubscribedParameterCount(t.subscribedParameterCount).build();
+                    .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
+                    .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
+                    .setSubscribedParameterCount(t.subscribedParameterCount).build();
             statsb.addTmstats(ts);
         }
         return statsb.build();
     }
-    
+
     private void sendYProcStatistics(YProcessor yproc, Statistics stats) {
         try {
             ClientMessage msg=ysession.session.createMessage(false);
@@ -231,31 +230,31 @@ public class HornetProcessorManagement implements YProcessorListener {
 
     public static ProcessorInfo getProcessorInfo(YProcessor yproc) {
         ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
-        .setName(yproc.getName()).setType(yproc.getType())
-        .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
-        .setState(yproc.getState());
-        
+                .setName(yproc.getName()).setType(yproc.getType())
+                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
+                .setState(yproc.getState());
+
         if(yproc.isReplay()) {
             cib.setReplayRequest(yproc.getReplayRequest());
             cib.setReplayState(yproc.getReplayState());
         }
         return cib.build();
     }
-    
-    
+
+
     public void registerClient(ClientInfo ci) {
         sendClientEvent("clientUpdated", ci, false);
     }
 
-    
+
     public void unregisterClient(ClientInfo ci) {
         sendClientEvent("clientDisconnected", ci, true);
     }
-    
+
     public void clientInfoChanged(ClientInfo ci) {
         sendClientEvent("clientUpdated", ci, false);
     }
-    
+
     static int x=0;
     private void sendClientEvent(String eventName, ClientInfo ci, boolean expire){
         ClientMessage msg=ysession.session.createMessage(false);
@@ -270,18 +269,18 @@ public class HornetProcessorManagement implements YProcessorListener {
         try {
             yclient.dataProducer.send(YPROCESSOR_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
-           log.error("exception when sedning client event: ", e);
+            log.error("exception when sedning client event: ", e);
         }
     }
 
 
 
     public void close() {
-	try {
-	    ysession.close();
-	} catch (HornetQException e) {
-	    log.error("Failed to close the yamcs session", e);
-	}
+        try {
+            ysession.close();
+        } catch (HornetQException e) {
+            log.error("Failed to close the yamcs session", e);
+        }
     }
 
 }

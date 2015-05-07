@@ -62,7 +62,7 @@
 
     <remoting-interceptors>
     	<!-- Facilitates internal mapping of users with privileges by injecting username into messages; users will have no privilieges without this -->
-		<class-name>org.yamcs.HornetQAuthInterceptor</class-name>
+		<class-name>org.yamcs.security.HornetQAuthInterceptor</class-name>
     </remoting-interceptors>
 
     <!-- Match an address, determine what roles are required for which queue action -->

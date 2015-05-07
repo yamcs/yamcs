@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,6 @@ import java.util.Map;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HornetQAuthInterceptor implements Interceptor {
 	public static final String USERNAME_PROPERTY = "username";
-	static Logger log = LoggerFactory.getLogger("org.yamcs.HornetQAuthInterceptor");
+	static Logger log = LoggerFactory.getLogger("org.yamcs.security.HornetQAuthInterceptor");
 	private Map<Object, AuthInjectionAssociation> cache = Collections.synchronizedMap( new HashMap<Object, AuthInjectionAssociation>() );
 	
 	@Override

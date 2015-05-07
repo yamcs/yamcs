@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,10 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.YamcsSession;
 
 /**
- * Authenticates and authorises HornetQ sessions from LDAP.
+ * Authenticates and authorises HornetQ sessions from configured realm.
  * 
- * See {@link Privilege} for information on authorisation and caching, and
- * {@link HornetQAuthPrivilege} for information on authentication.
+ * See {@link Privilege} for information on authentication, authorisation and caching
  * 
  * A default user is used for anonymous (non-authenticated) connections.
  * Specify a default user (and associated roles) in hornetq-users.xml. If no
@@ -26,7 +25,7 @@ import org.yamcs.api.YamcsSession;
  *
  */
 public class HornetQAuthManager implements HornetQSecurityManager {
-	static Logger log = LoggerFactory.getLogger("org.yamcs.HornetQAuthManager");
+	static Logger log = LoggerFactory.getLogger("org.yamcs.security.HornetQAuthManager");
 	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<String, ArrayList<String>>();
 	/** If null (default), anonymous connections will be rejected. */
 	private String defaultUser = null;
@@ -65,9 +64,9 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 	public void start() throws Exception {
 		configuredUserCache.clear();
 		if( Privilege.usePrivileges ) {
-			log.info( "LDAP enabled, authenticating and authorising from LDAP." );
+			log.info( "Privileges enabled, authenticating and authorising from "+Privilege.realmName+"." );
 		} else {
-			log.warn( "LDAP disabled, all connections are allowed and have full permissions." );
+			log.warn( "Privileges disabled, all connections are allowed and have full permissions." );
 		}
 	}
 
@@ -132,16 +131,18 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 			// If no default user, anonymous connections are not allowed.
 			return ( defaultUser != null );
 		}
-		
-		if( ! HornetQAuthPrivilege.authenticated(username, password) ) {
+
+		if( ! Privilege.getInstance().authenticates(new UsernamePasswordToken(username, password))){
+
+		//if( ! HornetQAuthPrivilege.authenticated(username, password) ) {
 			return false;
 		}
-		log.info( "User '{}' authenticated with LDAP", username );
+		log.info( "User '{}' authenticated with " + Privilege.realmName, username );
 		return true;
 	}
 
 	/**
-	 * @param roles - Set of roles configured for the component being accessed.
+	 * @param configuredRoles - Set of roles configured for the component being accessed.
 	 * @param checkType - Permission being sought.
 	 */
 	@Override
@@ -156,7 +157,7 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 			if( defaultUser == null ) {
 				return false;
 			}
-			// Default user is only in config, not in LDAP, so check perms now
+			// Default user is only in config, not in realm, so check perms now
 			username = defaultUser;
 			for( Role configuredRole : configuredRoles ) {
 				if( configuredUserCache.get( defaultUser ).contains( configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
@@ -177,9 +178,10 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 			return false;
 		}
 		
-		Privilege p = HornetQAuthPrivilege.getInstance(username);
+		Privilege p = Privilege.getInstance();
+		UsernamePasswordToken userToken = new UsernamePasswordToken(username, password);
 		for( Role configuredRole : configuredRoles ) {
-			if( p.hasRole( configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
+			if( p.hasRole(userToken, configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
 				return true;
 			}
 		}

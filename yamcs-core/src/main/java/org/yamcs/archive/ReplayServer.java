@@ -15,8 +15,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.HornetQAuthPrivilege;
-import org.yamcs.Privilege;
+import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -94,7 +94,6 @@ public class ReplayServer extends AbstractExecutionThreadService {
 
     /**
      * create a new packet replay object
-     * @param archive instance
      */
     public void createReplay(ClientMessage msg, SimpleString replyto, SimpleString dataAddress) throws Exception {
         if(replayCount.get()>=MAX_REPLAYS) {
@@ -103,13 +102,14 @@ public class ReplayServer extends AbstractExecutionThreadService {
         ReplayRequest replayRequest=(ReplayRequest)decode(msg, ReplayRequest.newBuilder());
 
         if( Privilege.usePrivileges ) {
-            Privilege priv = HornetQAuthPrivilege.getInstance( msg );
+            Privilege priv = Privilege.getInstance();
+            HqClientMessageToken usertoken = new HqClientMessageToken(msg, null);
 
             // Check privileges for requested parameters
             if (replayRequest.hasParameterRequest()) {
                 List<NamedObjectId> invalidParameters = new ArrayList<NamedObjectId>();
                 for( NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList() ) {
-                    if( ! priv.hasPrivilege( Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
+                    if( ! priv.hasPrivilege(usertoken, Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
                         invalidParameters.add( noi );
                     }
                 }
@@ -123,7 +123,8 @@ public class ReplayServer extends AbstractExecutionThreadService {
             // Check privileges for requested packets
             // TODO delete right half of if-statement once no longer deprecated
             if (replayRequest.hasPacketRequest()) {
-                Collection<String> allowedPackets = priv.getTmPacketNames(instance, MdbMappings.MDB_OPSNAME);
+                Collection<String> allowedPackets = priv.getTmPacketNames(instance, usertoken, MdbMappings.MDB_OPSNAME);
+
                 List<NamedObjectId> invalidPackets = new ArrayList<NamedObjectId>();
     
                 for (NamedObjectId noi : replayRequest.getPacketRequest().getNameFilterList()) {

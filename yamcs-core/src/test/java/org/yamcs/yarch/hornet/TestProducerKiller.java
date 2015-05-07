@@ -11,7 +11,7 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.HornetQAuthManager;
+import org.yamcs.security.HornetQAuthManager;
 
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;

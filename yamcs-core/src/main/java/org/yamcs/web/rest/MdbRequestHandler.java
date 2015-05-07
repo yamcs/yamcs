@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
 import org.yamcs.protobuf.Rest.RestParameter;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -34,7 +35,7 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         if (req.getMethod() != HttpMethod.GET)
             throw new MethodNotAllowedException(req.getMethod());
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
