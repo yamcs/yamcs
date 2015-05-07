@@ -34,6 +34,9 @@ import org.yamcs.protobuf.Yamcs.MissionDatabase;
 import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
 import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.security.HornetQAuthManager;
+import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
@@ -185,28 +188,30 @@ public class YamcsServer {
 		    return;
 		}
 		try {
-		    String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
-		    staticlog.debug("received request "+req);
-		    if("getYamcsInstances".equalsIgnoreCase(req)) {
-			ctrlAddressClient.sendReply(replyto, "OK", getYamcsInstances());
-		    } else  if("getMissionDatabase".equalsIgnoreCase(req)) {
-			Privilege priv = HornetQAuthPrivilege.getInstance( msg );
-			if( ! priv.hasPrivilege( Privilege.Type.SYSTEM, "MayGetMissionDatabase" ) ) {
-			    staticlog.warn( "User '{}' does not have 'MayGetMissionDatabase' privilege." );
-			    ctrlAddressClient.sendErrorReply(replyto, "Privilege required but missing: MayGetMissionDatabase");
-			    return;
+			String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
+			staticlog.debug("received request "+req);
+			if("getYamcsInstances".equalsIgnoreCase(req)) {
+				ctrlAddressClient.sendReply(replyto, "OK", getYamcsInstances());
+			} else  if("getMissionDatabase".equalsIgnoreCase(req)) {
+
+				Privilege priv = Privilege.getInstance();
+				HqClientMessageToken authToken = new HqClientMessageToken(msg, null);
+				if( ! priv.hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayGetMissionDatabase" ) ) {
+					staticlog.warn( "User '{}' does not have 'MayGetMissionDatabase' privilege." );
+					ctrlAddressClient.sendErrorReply(replyto, "Privilege required but missing: MayGetMissionDatabase");
+					return;
+				}
+				SimpleString dataAddress=msg.getSimpleStringProperty(DATA_TO_HEADER_NAME);
+				if(dataAddress == null) {
+					staticlog.warn("Received a getMissionDatabase without a "+DATA_TO_HEADER_NAME +" header");
+					ctrlAddressClient.sendErrorReply(replyto, "no data address specified");
+					return;
+				}
+				MissionDatabaseRequest mdr = (MissionDatabaseRequest)Protocol.decode(msg, MissionDatabaseRequest.newBuilder());
+				sendMissionDatabase(mdr, replyto, dataAddress);
+			} else {
+				staticlog.warn("Received invalid request: "+req);
 			}
-			SimpleString dataAddress=msg.getSimpleStringProperty(DATA_TO_HEADER_NAME);
-			if(dataAddress == null) {
-			    staticlog.warn("Received a getMissionDatabase without a "+DATA_TO_HEADER_NAME +" header");
-			    ctrlAddressClient.sendErrorReply(replyto, "no data address specified");
-			    return;
-			}
-			MissionDatabaseRequest mdr = (MissionDatabaseRequest)Protocol.decode(msg, MissionDatabaseRequest.newBuilder());
-			sendMissionDatabase(mdr, replyto, dataAddress);
-		    } else {
-			staticlog.warn("Received invalid request: "+req);
-		    }
 		} catch (Exception e) {
 		    staticlog.warn("exception received when sending the reply: ", e);
 		}
@@ -272,22 +277,23 @@ public class YamcsServer {
 	//Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
     }
 
-    /**
-     * @param args
-     * @throws ConfigurationException 
-     * @throws IOException 
-     * @throws YProcessorException 
-     * @throws InvalidName 
-     * @throws AdapterInactive 
-     * @throws WrongPolicy 
-     * @throws ServantNotActive 
-     * @throws java.text.ParseException 
-     */
+	/**
+	 * @param args
+	 * @throws ConfigurationException
+	 * @throws IOException
+	 * @throws YProcessorException
+	 * @throws InvalidName
+	 * @throws AdapterInactive
+	 * @throws WrongPolicy
+	 * @throws ServantNotActive
+	 * @throws java.text.ParseException
+	 */
     public static void main(String[] args) {
 	if(args.length>0) printOptionsAndExit();
 
 	try {
 	    YConfiguration.setup();
+		setupSecurity();
 	    setupHornet();
 	    org.yamcs.yarch.management.ManagementService.setup(true);
 	    ManagementService.setup(true,true);
@@ -305,8 +311,12 @@ public class YamcsServer {
 
     }
 
+	private static void setupSecurity() {
+		org.yamcs.security.Privilege.getInstance();
+	}
 
-    private static void printOptionsAndExit() {
+
+	private static void printOptionsAndExit() {
 	System.err.println("Usage: yamcs-server.sh");
 	System.err.println("\t All options are taken from yamcs.yaml");
 	System.exit(-1);

@@ -50,6 +50,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
 
@@ -120,7 +121,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
      * is true).
      */
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         if (req.getMethod() != HttpMethod.GET)
             throw new MethodNotAllowedException(req.getMethod());
         RestDumpArchiveRequest request = readMessage(req, SchemaRest.RestDumpArchiveRequest.MERGE).build();

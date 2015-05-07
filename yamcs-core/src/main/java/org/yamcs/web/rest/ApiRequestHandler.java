@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.AuthenticationToken;
 
 /**
  * Handles everything under /api. In the future could also be used to handle multiple versions,
@@ -30,7 +31,7 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         String[] path = remainingUri.split("/", 2);
         if (path.length == 0) {
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
@@ -39,17 +40,17 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
                 // Chop off first path segment (incl. any '/') while keeping querystring in place
                 String choppedUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
                 if(path[0].startsWith(ARCHIVE_PATH)) {
-                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else if(path[0].startsWith(MDB_PATH)) {
-                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else if(path[0].startsWith(COMMANDING_PATH)) {
-                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else if(path[0].startsWith(PARAMETER_PATH)) {
-                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else if(path[0].startsWith(MANAGEMENT_PATH)) {
-                    managementRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    managementRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else if(path[0].startsWith(PROCESSOR_PATH)) {
-                    processorRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri);
+                    processorRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
                 } else {
                     log.warn("Unknown request received: '{}'", path[0]);
                     sendError(ctx, HttpResponseStatus.NOT_FOUND);

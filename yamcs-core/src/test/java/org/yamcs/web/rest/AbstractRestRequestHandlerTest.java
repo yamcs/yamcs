@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 
 import org.junit.Test;
+import org.yamcs.security.AuthenticationToken;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -85,7 +86,7 @@ public class AbstractRestRequestHandlerTest {
 
     private static final class MockRestRequestHandler extends AbstractRestRequestHandler {
         @Override
-        public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri) throws RestException {
+        public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
             // NOP
         }
     }

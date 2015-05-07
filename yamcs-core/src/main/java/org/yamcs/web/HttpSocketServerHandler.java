@@ -1,7 +1,9 @@
 package org.yamcs.web;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Hashtable;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -9,23 +11,24 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.web.rest.ApiRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
+import javax.xml.bind.DatatypeConverter;
+
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpHeaders.setHeader;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -56,6 +59,16 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
+
+        AuthenticationToken authToken = null;
+        if(Privilege.getInstance().isEnabled()) {
+            String authorizationHeader = req.headers().get("Authorization");
+            authToken = extractAuthenticationToken(authorizationHeader);
+            if (!authenticatesUser(authToken)) {
+                sendNegativeHttpResponse(ctx, req, UNAUTHORIZED);
+                return;
+            }
+        }
 
         if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
@@ -98,11 +111,11 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         String[] rpath = path[2].split("/",2);
         String handler=rpath[0];
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
-            webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance);
+            webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
         } else if(DISPLAYS_PATH.equals(handler)) {
-            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null);
+            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null, authToken);
         } else if(API_PATH.equals(handler)) {
-            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null);
+            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null, authToken);
         } else {
         	log.warn("Unknown handler {}", handler);
         	sendNegativeHttpResponse(ctx, req, NOT_FOUND);
@@ -117,9 +130,50 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             setContentLength(res, buf.readableBytes());
         }
 
+        if(status == UNAUTHORIZED)
+        {
+            setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"nmrs_m7VKmomQ2YM3\"");
+        }
+
         ChannelFuture f = ctx.writeAndFlush(res);
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    // This method checks the user information sent in the Authorization
+    // header against the database of users maintained in the users Hashtable.
+    Hashtable validUsers = new Hashtable();
+    protected UsernamePasswordToken extractAuthenticationToken(String auth) throws IOException {
+        if(auth == null)
+        {
+            return null;
+        }
+        if (!auth.toUpperCase().startsWith("BASIC ")) {
+            return null;  // we only do BASIC
+        }
+        // Get encoded user and password, comes after "BASIC "
+        String userpassEncoded = auth.substring(6);
+        // Decode it, using any base 64 decoder
+        String userpassDecoded  = new String(DatatypeConverter.parseBase64Binary(userpassEncoded));
+
+        String username = "";
+        String password = "";
+        try {
+            username = userpassDecoded.split(":")[0];
+            password = userpassDecoded.split(":")[1];
+        }
+        catch (Exception e){}
+        return new UsernamePasswordToken(username, password);
+    }
+
+    protected boolean authenticatesUser(AuthenticationToken authToken) throws IOException {      ;
+        if(Privilege.getInstance().authenticates(authToken))
+        {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 }

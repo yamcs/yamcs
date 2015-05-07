@@ -14,9 +14,10 @@ import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.Privilege;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -60,7 +61,7 @@ public class ManagementService {
 
         if(jmxEnabled)
             mbeanServer=ManagementFactory.getPlatformMBeanServer();
-        else 
+        else
             mbeanServer=null;
 
         if(hornetEnabled) {
@@ -216,24 +217,22 @@ public class ManagementService {
 
     }
 
-    public void createProcessor(ProcessorManagementRequest cr, Privilege priv) throws YamcsException{
+    public void createProcessor(ProcessorManagementRequest cr, AuthenticationToken authToken) throws YamcsException{
         log.info("Creating a new yproc instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
-        String currentUser=priv.getCurrentUser();
-        if(currentUser==null) currentUser="unknown";
-
-        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlYProcessor")) {
-            if(cr.getPersistent()) { 
-                log.warn("User "+currentUser+" is not allowed to create persistent yprocessors");
+        String userName = (authToken != null && authToken.getPrincipal() != null) ? authToken.getPrincipal().toString() : "unknownUser";
+        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
+            if(cr.getPersistent()) {
+                log.warn("User "+userName+" is not allowed to create persistent yprocessors");
                 throw new YamcsException("permission denied");
             }
             if(!"Archive".equals(cr.getType())) {
-                log.warn("User "+currentUser+" is not allowed to create yprocessors of type "+cr.getType());
+                log.warn("User "+userName+" is not allowed to create yprocessors of type "+cr.getType());
                 throw new YamcsException("permission denied");
             }
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!currentUser.equals(si.getUsername())) {
-                    log.warn("User "+currentUser+" is not allowed to connect "+si.getUsername()+" to a new yprocessor "+cr.getName() );
+                if(!userName.equals(si.getUsername())) {
+                    log.warn("User "+userName+" is not allowed to connect "+si.getUsername()+" to a new yprocessor "+cr.getName() );
                     throw new YamcsException("permission denied");
                 }
             }
@@ -249,7 +248,7 @@ public class ManagementService {
             } else {
                 spec = cr.getSpec();
             }
-            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), currentUser, spec);
+            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), userName, spec);
             yproc.setPersistent(cr.getPersistent());
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
@@ -276,27 +275,25 @@ public class ManagementService {
     }
 
 
-    public void connectToProcessor(ProcessorManagementRequest cr, Privilege priv) throws YamcsException {
+    public void connectToProcessor(ProcessorManagementRequest cr, AuthenticationToken usertoken) throws YamcsException {
         YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
         if(chan==null) throw new YamcsException("Unexisting yproc ("+cr.getInstance()+", "+cr.getName()+") specified");
 
 
-        String currentUser=priv.getCurrentUser();
-        if(currentUser==null) currentUser="unknown";
-
-        log.debug("User "+ currentUser+" wants to connect clients "+cr.getClientIdList()+" to yproc "+cr.getName());
+        String userName = (usertoken != null && usertoken.getPrincipal() != null) ? usertoken.getPrincipal().toString() : "unknown";
+        log.debug("User "+ userName+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
 
 
-        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlYProcessor") &&
-                !((chan.isPersistent() || chan.getCreator().equals(currentUser)))) {
-            log.warn("User "+currentUser+" is not allowed to connect users to yproc "+cr.getName() );
+        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor") &&
+                !((chan.isPersistent() || chan.getCreator().equals(userName)))) {
+            log.warn("User "+userName+" is not allowed to connect users to yproc "+cr.getName() );
             throw new YamcsException("permission denied");
         }
-        if(!priv.hasPrivilege(Privilege.Type.SYSTEM, "MayControlYProcessor")) {
+        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
             for(int i=0; i<cr.getClientIdCount(); i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!currentUser.equals(si.getUsername())) {
-                    log.warn("User "+currentUser+" is not allowed to connect "+si.getUsername()+" to yprocessor "+cr.getName());
+                if(!userName.equals(si.getUsername())) {
+                    log.warn("User "+userName+" is not allowed to connect "+si.getUsername()+" to yprocessor "+cr.getName());
                     throw new YamcsException("permission denied");
                 }
             }

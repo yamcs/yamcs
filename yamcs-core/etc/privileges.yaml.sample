@@ -4,6 +4,9 @@
 #
 enabled: false
 
+#one of: LdapRealm, YamlRealm
+realm: org.yamcs.security.YamlRealm
+
 #maximum number of CIS sessions clients are allowed
 maxNoSessions: 10
 
@@ -14,3 +17,6 @@ systemPath:      "ou=System, ou=yamcs, ou=Applications, ou=Operation, ou=Columbu
 tmParameterPath: "ou=TM_PARAMETER, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
 tmPacketPath:    "ou=TM_PACKET, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
 tcPath:          "ou=TC, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
+
+# yaml file, if using YamlRealm
+yamlRealmFilename:  credentials.yaml

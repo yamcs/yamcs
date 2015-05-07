@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -46,7 +47,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
         this.fileRequestHandler=fileRequestHandler;
     }
 
-    void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri) throws Exception {
+    void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "uss-app.html");
             return;

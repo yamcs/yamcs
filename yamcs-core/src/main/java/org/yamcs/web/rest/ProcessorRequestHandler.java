@@ -7,19 +7,19 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Privilege;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
+import org.yamcs.security.AuthenticationToken;
 
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
     
     
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         String[] path = remainingUri.split("/", 2);
         
         if (path.length == 0) {
@@ -28,7 +28,7 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         }
         if("processor".equals(path[0])) {
             if (path.length == 1) {
-                handleProcessorManagementRequest(ctx, req, yamcsInstance);
+                handleProcessorManagementRequest(ctx, req, yamcsInstance, authToken);
             } else {
                 String yprocName = path[1];
                 YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
@@ -78,14 +78,14 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         }
     }
     
-    private void handleProcessorManagementRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance) throws RestException {
+    private void handleProcessorManagementRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, AuthenticationToken authToken) throws RestException {
         ProcessorManagementRequest yprocReq = readMessage(req, SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
         if(req.getMethod()==HttpMethod.POST) {
             switch(yprocReq.getOperation()) {
             case CONNECT_TO_PROCESSOR:
                 ManagementService mservice = ManagementService.getInstance();
                 try {
-                    mservice.connectToProcessor(yprocReq, Privilege.getInstance());
+                    mservice.connectToProcessor(yprocReq, authToken);
                 } catch (YamcsException e) {
                     throw new BadRequestException(e.getMessage());
                 }
@@ -94,7 +94,7 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
             case CREATE_PROCESSOR:
                 mservice = ManagementService.getInstance();
                 try {
-                    mservice.createProcessor(yprocReq, Privilege.getInstance());
+                    mservice.createProcessor(yprocReq, authToken);
                 } catch (YamcsException e) {
                     throw new BadRequestException(e.getMessage());
                 }

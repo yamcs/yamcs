@@ -3,8 +3,9 @@ package org.yamcs.commanding;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+
 import org.yamcs.YProcessor;
-import org.yamcs.Privilege;
+import org.yamcs.security.Privilege;
 
 import org.yamcs.protobuf.Commanding.QueueState;
 

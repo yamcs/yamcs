@@ -27,6 +27,7 @@ import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpSocketServerHandler;
 import org.yamcs.xtce.Parameter;
 
@@ -39,7 +40,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 public class ParameterRequestHandler extends AbstractRestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         org.yamcs.YProcessor yproc = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
 
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
