@@ -90,19 +90,19 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 	    if("setQueueState".equalsIgnoreCase(req)) {
 		if(!cqr.hasQueueInfo()) throw new YamcsException("setQueueState requires a queueInfo");
 		CommandQueueInfo cqi=cqr.getQueueInfo();
-		CommandQueueManager cqm=getQueueManager(cqi.getInstance(), cqi.getYProcessorName());
+		CommandQueueManager cqm=getQueueManager(cqi.getInstance(), cqi.getProcessorName());
 		cqm.setQueueState(cqi.getName(), cqi.getState(), cqr.getRebuild());
 		queueControlServer.sendReply(replyto, "OK", null);
 	    } else if("sendCommand".equalsIgnoreCase(req)) {
 		if(!cqr.hasQueueEntry()) throw new YamcsException("sendCommand requires a queueEntry");
 		CommandQueueEntry cqe=cqr.getQueueEntry();
-		CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getYProcessorName());
+		CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getProcessorName());
 		cqm.sendCommand(cqe.getCmdId(), cqr.getRebuild());
 		queueControlServer.sendReply(replyto, "OK", null);
 	    } else if("rejectCommand".equalsIgnoreCase(req)) {
 		if(!cqr.hasQueueEntry()) throw new YamcsException("rejectCommand requires a queueEntry");
 		CommandQueueEntry cqe=cqr.getQueueEntry();
-		CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getYProcessorName());
+		CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getProcessorName());
 		cqm.rejectCommand(cqe.getCmdId(), "username");
 		queueControlServer.sendReply(replyto, "OK", null);
 	    } else  {
@@ -156,7 +156,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
     private void sendCommandEvent(String eventName, CommandQueue q, PreparedCommand pc, boolean expire) {
 	YProcessor c=q.getChannel();
 	CommandQueueEntry cqe=CommandQueueEntry.newBuilder()
-		.setInstance(c.getInstance()).setYProcessorName(c.getName()).setQueueName(q.getName())
+		.setInstance(c.getInstance()).setProcessorName(c.getName()).setQueueName(q.getName())
 		.setCmdId(pc.getCommandId()).setSource(pc.getSource()).setBinary(ByteString.copyFrom(pc.getBinary()))
 		.setGenerationTime(pc.getGenerationTime()).setUsername(pc.getUsername()).build();
 
@@ -182,7 +182,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
     public void updateQueue(CommandQueue queue) {
 	YProcessor c=queue.getChannel();
 	CommandQueueInfo cqi=CommandQueueInfo.newBuilder()
-		.setInstance(c.getInstance()).setYProcessorName(c.getName())
+		.setInstance(c.getInstance()).setProcessorName(c.getName())
 		.setName(queue.getName()).setState(queue.getState()).build();
 
 	String lvn=c.getInstance()+"."+c.getName()+"."+queue.getName();

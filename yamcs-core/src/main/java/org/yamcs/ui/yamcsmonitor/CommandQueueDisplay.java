@@ -283,7 +283,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             @Override
             public void run() {
                 System.out.println("processing updateQueue "+cqi);
-                QueuesTableModel model=queuesModels.get(cqi.getInstance()+"."+cqi.getYProcessorName());
+                QueuesTableModel model=queuesModels.get(cqi.getInstance()+"."+cqi.getProcessorName());
                 
                 model.updateQueue(cqi);
             }
@@ -296,7 +296,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 	    SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getYProcessorName());
+                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
                 model.commandAdded(cqe);
             }
         });
@@ -308,7 +308,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 	    SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getYProcessorName());
+                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
                 model.removeCommandFromQueue(cqe);
             }
         });
@@ -320,7 +320,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 	    SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getYProcessorName());
+                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
                 model.removeCommandFromQueue(cqe);
             }
         });
