@@ -13,7 +13,7 @@ import java.util.List;
  *
  */
 public class MetaCommand extends NameDescription {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     /**
      * From XTCE:
@@ -169,17 +169,6 @@ public class MetaCommand extends NameDescription {
 	}
     }
 
-    public void print(PrintStream out) {
-	out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
-	if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-	if(!transmissionContstraintList.isEmpty()) {
-	    out.print(", TransmissionConstraints: ");
-	    out.print(transmissionContstraintList.toString());
-	}
-	out.println();
-	commandContainer.print(out);
-    }
-
     public boolean hasTransmissionConstraints() {
 	return !transmissionContstraintList.isEmpty();
     }
@@ -190,5 +179,21 @@ public class MetaCommand extends NameDescription {
 
     public void setDefaultSignificance(Significance defaultSignificance) {
         this.defaultSignificance = defaultSignificance;
+    }
+    
+    
+    public void print(PrintStream out) {
+        out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
+        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+        if(!transmissionContstraintList.isEmpty()) {
+            out.print(", TransmissionConstraints: ");
+            out.print(transmissionContstraintList.toString());
+        }
+        if(defaultSignificance!=null) {
+            out.print(", defaultSignificance: ");
+            out.print(defaultSignificance.toString());
+        }
+        out.println();
+        commandContainer.print(out);
     }
 }

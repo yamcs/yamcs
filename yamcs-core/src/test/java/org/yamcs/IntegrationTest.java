@@ -33,6 +33,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandSignificance;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestArgumentType;
@@ -41,6 +42,8 @@ import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
 import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
+import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
+import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -111,9 +114,6 @@ public class IntegrationTest {
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
         httpClient = new HttpClient();
         packetProvider.setGenerationTime(TimeEncoding.INVALID_INSTANT);
-        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        System.out.println("got cinfo:"+cinfo);
-        assertNotNull(cinfo);
     }
 
     @After
@@ -280,6 +280,23 @@ public class IntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
 
+    
+    @Test
+    public void testValidateCommand() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
+        wsClient.sendRequest(wsr);
+
+        RestValidateCommandRequest cmdreq = getValidateCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 10, "p1", "2");
+        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/validator", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestValidateCommandRequest.WRITE));
+        RestValidateCommandResponse vcr = (fromJson(resp, SchemaRest.RestValidateCommandResponse.MERGE)).build();
+        assertEquals(1, vcr.getCommandsSignificanceCount());
+        CommandSignificance significance = vcr.getCommandsSignificance(0);
+        assertEquals(10, significance.getSequenceNumber());
+        assertEquals(CommandSignificance.Level.critical, significance.getConsequenceLevel());
+        assertEquals("this is a critical command, pay attention", significance.getReasonForWarning());
+       
+    }
+
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -431,6 +448,18 @@ public class IntegrationTest {
     public void testRetrieveIndex() throws Exception {
     }
 
+
+    private RestValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) {
+        NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
+
+        RestCommandType.Builder cmdb = RestCommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
+        for(int i =0 ;i<args.length; i+=2) {
+            cmdb.addArguments(RestArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+        }
+
+        return RestValidateCommandRequest.newBuilder().addCommands(cmdb.build()).build();
+
+    }
 
     private RestSendCommandRequest getCommand(String cmdName, int seq, String... args) {
         NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();

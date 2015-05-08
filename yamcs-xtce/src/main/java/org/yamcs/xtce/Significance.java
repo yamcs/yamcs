@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.io.Serializable;
+
 /**
  *  XTCE: 
  *   Significance provides some cautionary information about the potential consequence of each MetaCommand.
@@ -7,7 +9,8 @@ package org.yamcs.xtce;
  * @author nm
  *
  */
-public class Significance {
+public class Significance implements Serializable {
+    private static final long serialVersionUID = 1L;
     
     public enum Levels {
         none,
@@ -31,5 +34,9 @@ public class Significance {
 
     public Levels getConsequenceLevel() {
         return consequenceLevel;
-    }   
+    } 
+    
+    public String toString() {
+        return consequenceLevel+"("+reasonForWarning+")";
+    }
 }

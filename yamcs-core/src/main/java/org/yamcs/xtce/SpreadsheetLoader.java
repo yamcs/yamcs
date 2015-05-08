@@ -1246,7 +1246,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
 	    }
 	    
-	    i++;
+	    
 	    int cmdEnd = i + 1;
 	    while (cmdEnd < sheet.getRows()) {
 		cells = jumpToRow(sheet, cmdEnd);
@@ -1266,7 +1266,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
 		    cmd.addTransmissionConstrain(constraint);
 		}
-		
+		System.out.println("cmdName="+cmdName+": "+hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE));
 		if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
 		    if(cmd.getDefaultSignificance()!=null) {
 		        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
@@ -1284,7 +1284,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    }
 		    cmd.setDefaultSignificance(new Significance(slevel, reason));
 		}
-		
 		i++;
 	    }
 	}
