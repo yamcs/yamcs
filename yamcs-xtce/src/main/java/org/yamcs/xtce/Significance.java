@@ -9,8 +9,8 @@ package org.yamcs.xtce;
  */
 public class Significance {
     
-    enum Levels {
-        normal,
+    public enum Levels {
+        none,
         watch,
         warning,
         distress,
@@ -20,7 +20,7 @@ public class Significance {
     final private String reasonForWarning;
     final private Levels consequenceLevel;
     
-    public Significance(String reasonForWarning, Levels consequenceLevel) {
+    public Significance( Levels consequenceLevel, String reasonForWarning) {
         this.reasonForWarning = reasonForWarning;
         this.consequenceLevel = consequenceLevel;
     }
@@ -31,7 +31,5 @@ public class Significance {
 
     public Levels getConsequenceLevel() {
         return consequenceLevel;
-    }
-    
-
+    }   
 }
