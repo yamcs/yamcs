@@ -152,8 +152,8 @@ public final class SchemaCommanding
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
-                if(message.hasYProcessorName())
-                    output.writeString(2, message.getYProcessorName(), false);
+                if(message.hasProcessorName())
+                    output.writeString(2, message.getProcessorName(), false);
                 if(message.hasName())
                     output.writeString(3, message.getName(), false);
                 if(message.hasState())
@@ -201,7 +201,7 @@ public final class SchemaCommanding
                             builder.setInstance(input.readString());
                             break;
                         case 2:
-                            builder.setYProcessorName(input.readString());
+                            builder.setProcessorName(input.readString());
                             break;
                         case 3:
                             builder.setName(input.readString());
@@ -250,7 +250,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "instance";
-                case 2: return "yProcessorName";
+                case 2: return "processorName";
                 case 3: return "name";
                 case 4: return "state";
                 default: return null;
@@ -265,7 +265,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("instance", 1);
-            fieldMap.put("yProcessorName", 2);
+            fieldMap.put("processorName", 2);
             fieldMap.put("name", 3);
             fieldMap.put("state", 4);
         }
@@ -284,8 +284,8 @@ public final class SchemaCommanding
             {
                 if(message.hasInstance())
                     output.writeString(1, message.getInstance(), false);
-                if(message.hasYProcessorName())
-                    output.writeString(2, message.getYProcessorName(), false);
+                if(message.hasProcessorName())
+                    output.writeString(2, message.getProcessorName(), false);
                 if(message.hasQueueName())
                     output.writeString(3, message.getQueueName(), false);
                 if(message.hasCmdId())
@@ -343,7 +343,7 @@ public final class SchemaCommanding
                             builder.setInstance(input.readString());
                             break;
                         case 2:
-                            builder.setYProcessorName(input.readString());
+                            builder.setProcessorName(input.readString());
                             break;
                         case 3:
                             builder.setQueueName(input.readString());
@@ -405,7 +405,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "instance";
-                case 2: return "yProcessorName";
+                case 2: return "processorName";
                 case 3: return "queueName";
                 case 4: return "cmdId";
                 case 5: return "source";
@@ -424,7 +424,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("instance", 1);
-            fieldMap.put("yProcessorName", 2);
+            fieldMap.put("processorName", 2);
             fieldMap.put("queueName", 3);
             fieldMap.put("cmdId", 4);
             fieldMap.put("source", 5);
@@ -560,6 +560,131 @@ public final class SchemaCommanding
             fieldMap.put("queueInfo", 1);
             fieldMap.put("queueEntry", 2);
             fieldMap.put("rebuild", 3);
+        }
+    }
+
+    public static final class CommandSignificance
+    {
+        public static final org.yamcs.protobuf.SchemaCommanding.CommandSignificance.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaCommanding.CommandSignificance.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaCommanding.CommandSignificance.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaCommanding.CommandSignificance.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandSignificance>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandSignificance message) throws java.io.IOException
+            {
+                if(message.hasSequenceNumber())
+                    output.writeInt32(1, message.getSequenceNumber(), false);
+                if(message.hasConsequenceLevel())
+                    output.writeEnum(2, message.getConsequenceLevel().getNumber(), false);
+                if(message.hasReasonForWarning())
+                    output.writeString(3, message.getReasonForWarning(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandSignificance message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.CommandSignificance.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.CommandSignificance.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.CommandSignificance> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandSignificance message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Commanding.CommandSignificance newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.CommandSignificance.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.CommandSignificance.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setSequenceNumber(input.readInt32());
+                            break;
+                        case 2:
+                            builder.setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(input.readEnum()));
+                            break;
+                        case 3:
+                            builder.setReasonForWarning(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandSignificance.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Commanding.CommandSignificance.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.CommandSignificance.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.CommandSignificance.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.CommandSignificance.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.CommandSignificance.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.CommandSignificance.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "sequenceNumber";
+                case 2: return "consequenceLevel";
+                case 3: return "reasonForWarning";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("sequenceNumber", 1);
+            fieldMap.put("consequenceLevel", 2);
+            fieldMap.put("reasonForWarning", 3);
         }
     }
 

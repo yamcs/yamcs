@@ -111,6 +111,9 @@ public class IntegrationTest {
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
         httpClient = new HttpClient();
         packetProvider.setGenerationTime(TimeEncoding.INVALID_INSTANT);
+        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
+        System.out.println("got cinfo:"+cinfo);
+        assertNotNull(cinfo);
     }
 
     @After
@@ -131,7 +134,6 @@ public class IntegrationTest {
         for (int i=0;i <1000000; i++) packetProvider.generate_PKT11();
         System.out.println("total time: "+(System.currentTimeMillis()-t0));
    }
-
 
     @Test
     public void testWsParameter() throws Exception {	

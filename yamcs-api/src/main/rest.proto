@@ -48,6 +48,7 @@ message RestValidateCommandRequest {
 }
 
 message RestValidateCommandResponse {
+  repeated commanding.CommandSignificance commandsSignificance = 1;
 }
 
 message RestDumpRawMdbRequest {

@@ -15,6 +15,8 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandSignificance;
+import org.yamcs.protobuf.Commanding.CommandSignificance.Level;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
@@ -25,6 +27,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.XtceDb;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -96,6 +99,14 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
                 throw new BadRequestException(e);
             } catch (YamcsException e) { // could be anything, consider as internal server error
                 throw new InternalServerErrorException(e);
+            }
+            Significance s = mc.getDefaultSignificance();
+            if(s!=null) {
+                CommandSignificance.Builder csb = CommandSignificance.newBuilder()
+                        .setSequenceNumber(restCommand.getSequenceNumber())
+                        .setConsequenceLevel(Level.valueOf(s.getConsequenceLevel().toString()))
+                        .setReasonForWarning(s.getReasonForWarning());
+                responseb.addCommandsSignificance(csb.build());
             }
         }
 

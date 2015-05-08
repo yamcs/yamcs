@@ -847,6 +847,9 @@ public final class SchemaRest
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestValidateCommandResponse message) throws java.io.IOException
             {
+                for(org.yamcs.protobuf.Commanding.CommandSignificance commandsSignificance : message.getCommandsSignificanceList())
+                    output.writeObject(1, commandsSignificance, org.yamcs.protobuf.SchemaCommanding.CommandSignificance.WRITE, true);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.RestValidateCommandResponse message)
             {
@@ -886,6 +889,10 @@ public final class SchemaRest
                     {
                         case 0:
                             return;
+                        case 1:
+                            builder.addCommandsSignificance(input.mergeObject(org.yamcs.protobuf.Commanding.CommandSignificance.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandSignificance.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -926,6 +933,7 @@ public final class SchemaRest
         {
             switch(number)
             {
+                case 1: return "commandsSignificance";
                 default: return null;
             }
         }
@@ -937,6 +945,7 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
+            fieldMap.put("commandsSignificance", 1);
         }
     }
 

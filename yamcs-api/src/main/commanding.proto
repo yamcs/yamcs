@@ -13,28 +13,28 @@ message CommandId {
 
 /************* Command Queue Control ********************/
 enum QueueState {
-   BLOCKED=1;
-   DISABLED=2;
-   ENABLED=3;
+   BLOCKED = 1;
+   DISABLED = 2;
+   ENABLED = 3;
 }
 
 message CommandQueueInfo {
-    required string instance=1;
-    required string yProcessorName=2;
-    required string name=3;
-    optional QueueState state=4;
+    required string instance = 1;
+    required string processorName = 2;
+    required string name = 3;
+    optional QueueState state = 4;
 }
 
 /*One entry (command) in the command queue*/
 message CommandQueueEntry {
-   required string instance=1;
-   required string yProcessorName=2;
-   required string queueName=3;
-   required CommandId cmdId=4;
-   optional string source=5;
-   optional bytes binary=6;
-   optional string username=7;
-   optional int64 generationTime=8;
+   required string instance = 1;
+   required string processorName = 2;
+   required string queueName = 3;
+   required CommandId cmdId = 4;
+   optional string source = 5;
+   optional bytes binary = 6;
+   optional string username = 7;
+   optional int64 generationTime = 8;
 }
 
 
@@ -49,13 +49,28 @@ service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
   rpc RejectCommand(CommandQueueEntry) returns (yamcs.Void);
 }
 
+/* this message is sent as response to validate, in case the significance is defined for a commands*/
+message CommandSignificance {
+    enum Level {
+        none = 1;
+        watch = 2;
+        warning = 3;
+        distress = 4;
+        critical = 5;
+        severe = 6;
+    };
+   required int32 sequenceNumber = 1; //the sequence number of the command sent
+   required Level consequenceLevel = 2;
+   optional string reasonForWarning = 3;
+}
+
 
 /********************* Command History ***********************/
 
 message CommandHistoryAttribute {
     optional string name = 1;
     optional yamcs.Value value = 2;
-    optional int64 time =3;
+    optional int64 time = 3;
 }
 
 message CommandHistoryEntry {
@@ -63,3 +78,5 @@ message CommandHistoryEntry {
     //required string cmdName = 2; //removed because it's part of the CommandId
     repeated CommandHistoryAttribute attr = 3 ;
 }
+
+

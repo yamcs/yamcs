@@ -966,20 +966,20 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string yProcessorName = 2;
+    // required string processorName = 2;
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    boolean hasYProcessorName();
+    boolean hasProcessorName();
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    java.lang.String getYProcessorName();
+    java.lang.String getProcessorName();
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
     com.google.protobuf.ByteString
-        getYProcessorNameBytes();
+        getProcessorNameBytes();
 
     // required string name = 3;
     /**
@@ -1064,7 +1064,7 @@ public final class Commanding {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              yProcessorName_ = input.readBytes();
+              processorName_ = input.readBytes();
               break;
             }
             case 26: {
@@ -1166,20 +1166,20 @@ public final class Commanding {
       }
     }
 
-    // required string yProcessorName = 2;
-    public static final int YPROCESSORNAME_FIELD_NUMBER = 2;
-    private java.lang.Object yProcessorName_;
+    // required string processorName = 2;
+    public static final int PROCESSORNAME_FIELD_NUMBER = 2;
+    private java.lang.Object processorName_;
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    public boolean hasYProcessorName() {
+    public boolean hasProcessorName() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    public java.lang.String getYProcessorName() {
-      java.lang.Object ref = yProcessorName_;
+    public java.lang.String getProcessorName() {
+      java.lang.Object ref = processorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -1187,22 +1187,22 @@ public final class Commanding {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          yProcessorName_ = s;
+          processorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getYProcessorNameBytes() {
-      java.lang.Object ref = yProcessorName_;
+        getProcessorNameBytes() {
+      java.lang.Object ref = processorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        yProcessorName_ = b;
+        processorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -1270,7 +1270,7 @@ public final class Commanding {
 
     private void initFields() {
       instance_ = "";
-      yProcessorName_ = "";
+      processorName_ = "";
       name_ = "";
       state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
     }
@@ -1283,7 +1283,7 @@ public final class Commanding {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasYProcessorName()) {
+      if (!hasProcessorName()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1302,7 +1302,7 @@ public final class Commanding {
         output.writeBytes(1, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getYProcessorNameBytes());
+        output.writeBytes(2, getProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getNameBytes());
@@ -1325,7 +1325,7 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getYProcessorNameBytes());
+          .computeBytesSize(2, getProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1453,7 +1453,7 @@ public final class Commanding {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        yProcessorName_ = "";
+        processorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -1494,7 +1494,7 @@ public final class Commanding {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.yProcessorName_ = yProcessorName_;
+        result.processorName_ = processorName_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -1524,9 +1524,9 @@ public final class Commanding {
           instance_ = other.instance_;
           onChanged();
         }
-        if (other.hasYProcessorName()) {
+        if (other.hasProcessorName()) {
           bitField0_ |= 0x00000002;
-          yProcessorName_ = other.yProcessorName_;
+          processorName_ = other.processorName_;
           onChanged();
         }
         if (other.hasName()) {
@@ -1546,7 +1546,7 @@ public final class Commanding {
           
           return false;
         }
-        if (!hasYProcessorName()) {
+        if (!hasProcessorName()) {
           
           return false;
         }
@@ -1650,76 +1650,76 @@ public final class Commanding {
         return this;
       }
 
-      // required string yProcessorName = 2;
-      private java.lang.Object yProcessorName_ = "";
+      // required string processorName = 2;
+      private java.lang.Object processorName_ = "";
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public boolean hasYProcessorName() {
+      public boolean hasProcessorName() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public java.lang.String getYProcessorName() {
-        java.lang.Object ref = yProcessorName_;
+      public java.lang.String getProcessorName() {
+        java.lang.Object ref = processorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          yProcessorName_ = s;
+          processorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getYProcessorNameBytes() {
-        java.lang.Object ref = yProcessorName_;
+          getProcessorNameBytes() {
+        java.lang.Object ref = processorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          yProcessorName_ = b;
+          processorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder setYProcessorName(
+      public Builder setProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        yProcessorName_ = value;
+        processorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder clearYProcessorName() {
+      public Builder clearProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        yProcessorName_ = getDefaultInstance().getYProcessorName();
+        processorName_ = getDefaultInstance().getProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder setYProcessorNameBytes(
+      public Builder setProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        yProcessorName_ = value;
+        processorName_ = value;
         onChanged();
         return this;
       }
@@ -1863,20 +1863,20 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string yProcessorName = 2;
+    // required string processorName = 2;
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    boolean hasYProcessorName();
+    boolean hasProcessorName();
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    java.lang.String getYProcessorName();
+    java.lang.String getProcessorName();
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
     com.google.protobuf.ByteString
-        getYProcessorNameBytes();
+        getProcessorNameBytes();
 
     // required string queueName = 3;
     /**
@@ -2019,7 +2019,7 @@ public final class Commanding {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              yProcessorName_ = input.readBytes();
+              processorName_ = input.readBytes();
               break;
             }
             case 26: {
@@ -2143,20 +2143,20 @@ public final class Commanding {
       }
     }
 
-    // required string yProcessorName = 2;
-    public static final int YPROCESSORNAME_FIELD_NUMBER = 2;
-    private java.lang.Object yProcessorName_;
+    // required string processorName = 2;
+    public static final int PROCESSORNAME_FIELD_NUMBER = 2;
+    private java.lang.Object processorName_;
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    public boolean hasYProcessorName() {
+    public boolean hasProcessorName() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
-    public java.lang.String getYProcessorName() {
-      java.lang.Object ref = yProcessorName_;
+    public java.lang.String getProcessorName() {
+      java.lang.Object ref = processorName_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -2164,22 +2164,22 @@ public final class Commanding {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          yProcessorName_ = s;
+          processorName_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string yProcessorName = 2;</code>
+     * <code>required string processorName = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getYProcessorNameBytes() {
-      java.lang.Object ref = yProcessorName_;
+        getProcessorNameBytes() {
+      java.lang.Object ref = processorName_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        yProcessorName_ = b;
+        processorName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -2371,7 +2371,7 @@ public final class Commanding {
 
     private void initFields() {
       instance_ = "";
-      yProcessorName_ = "";
+      processorName_ = "";
       queueName_ = "";
       cmdId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
       source_ = "";
@@ -2388,7 +2388,7 @@ public final class Commanding {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasYProcessorName()) {
+      if (!hasProcessorName()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -2415,7 +2415,7 @@ public final class Commanding {
         output.writeBytes(1, getInstanceBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getYProcessorNameBytes());
+        output.writeBytes(2, getProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getQueueNameBytes());
@@ -2450,7 +2450,7 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getYProcessorNameBytes());
+          .computeBytesSize(2, getProcessorNameBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2599,7 +2599,7 @@ public final class Commanding {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        yProcessorName_ = "";
+        processorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         queueName_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -2652,7 +2652,7 @@ public final class Commanding {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.yProcessorName_ = yProcessorName_;
+        result.processorName_ = processorName_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -2702,9 +2702,9 @@ public final class Commanding {
           instance_ = other.instance_;
           onChanged();
         }
-        if (other.hasYProcessorName()) {
+        if (other.hasProcessorName()) {
           bitField0_ |= 0x00000002;
-          yProcessorName_ = other.yProcessorName_;
+          processorName_ = other.processorName_;
           onChanged();
         }
         if (other.hasQueueName()) {
@@ -2740,7 +2740,7 @@ public final class Commanding {
           
           return false;
         }
-        if (!hasYProcessorName()) {
+        if (!hasProcessorName()) {
           
           return false;
         }
@@ -2852,76 +2852,76 @@ public final class Commanding {
         return this;
       }
 
-      // required string yProcessorName = 2;
-      private java.lang.Object yProcessorName_ = "";
+      // required string processorName = 2;
+      private java.lang.Object processorName_ = "";
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public boolean hasYProcessorName() {
+      public boolean hasProcessorName() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public java.lang.String getYProcessorName() {
-        java.lang.Object ref = yProcessorName_;
+      public java.lang.String getProcessorName() {
+        java.lang.Object ref = processorName_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          yProcessorName_ = s;
+          processorName_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getYProcessorNameBytes() {
-        java.lang.Object ref = yProcessorName_;
+          getProcessorNameBytes() {
+        java.lang.Object ref = processorName_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          yProcessorName_ = b;
+          processorName_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder setYProcessorName(
+      public Builder setProcessorName(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        yProcessorName_ = value;
+        processorName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder clearYProcessorName() {
+      public Builder clearProcessorName() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        yProcessorName_ = getDefaultInstance().getYProcessorName();
+        processorName_ = getDefaultInstance().getProcessorName();
         onChanged();
         return this;
       }
       /**
-       * <code>required string yProcessorName = 2;</code>
+       * <code>required string processorName = 2;</code>
        */
-      public Builder setYProcessorNameBytes(
+      public Builder setProcessorNameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        yProcessorName_ = value;
+        processorName_ = value;
         onChanged();
         return this;
       }
@@ -4299,6 +4299,822 @@ public final class Commanding {
     }
 
     // @@protoc_insertion_point(class_scope:commanding.CommandQueueRequest)
+  }
+
+  public interface CommandSignificanceOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required int32 sequenceNumber = 1;
+    /**
+     * <code>required int32 sequenceNumber = 1;</code>
+     *
+     * <pre>
+     *the sequence number of the command sent
+     * </pre>
+     */
+    boolean hasSequenceNumber();
+    /**
+     * <code>required int32 sequenceNumber = 1;</code>
+     *
+     * <pre>
+     *the sequence number of the command sent
+     * </pre>
+     */
+    int getSequenceNumber();
+
+    // required .commanding.CommandSignificance.Level consequenceLevel = 2;
+    /**
+     * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+     */
+    boolean hasConsequenceLevel();
+    /**
+     * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+     */
+    org.yamcs.protobuf.Commanding.CommandSignificance.Level getConsequenceLevel();
+
+    // optional string reasonForWarning = 3;
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    boolean hasReasonForWarning();
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    java.lang.String getReasonForWarning();
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getReasonForWarningBytes();
+  }
+  /**
+   * Protobuf type {@code commanding.CommandSignificance}
+   *
+   * <pre>
+   * this message is sent as response to validate, in case the significance is defined for a commands
+   * </pre>
+   */
+  public static final class CommandSignificance extends
+      com.google.protobuf.GeneratedMessage
+      implements CommandSignificanceOrBuilder {
+    // Use CommandSignificance.newBuilder() to construct.
+    private CommandSignificance(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CommandSignificance(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CommandSignificance defaultInstance;
+    public static CommandSignificance getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CommandSignificance getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CommandSignificance(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              sequenceNumber_ = input.readInt32();
+              break;
+            }
+            case 16: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Commanding.CommandSignificance.Level value = org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(2, rawValue);
+              } else {
+                bitField0_ |= 0x00000002;
+                consequenceLevel_ = value;
+              }
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              reasonForWarning_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Commanding.CommandSignificance.class, org.yamcs.protobuf.Commanding.CommandSignificance.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CommandSignificance> PARSER =
+        new com.google.protobuf.AbstractParser<CommandSignificance>() {
+      public CommandSignificance parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CommandSignificance(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CommandSignificance> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code commanding.CommandSignificance.Level}
+     */
+    public enum Level
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>none = 1;</code>
+       */
+      none(0, 1),
+      /**
+       * <code>watch = 2;</code>
+       */
+      watch(1, 2),
+      /**
+       * <code>warning = 3;</code>
+       */
+      warning(2, 3),
+      /**
+       * <code>distress = 4;</code>
+       */
+      distress(3, 4),
+      /**
+       * <code>critical = 5;</code>
+       */
+      critical(4, 5),
+      /**
+       * <code>severe = 6;</code>
+       */
+      severe(5, 6),
+      ;
+
+      /**
+       * <code>none = 1;</code>
+       */
+      public static final int none_VALUE = 1;
+      /**
+       * <code>watch = 2;</code>
+       */
+      public static final int watch_VALUE = 2;
+      /**
+       * <code>warning = 3;</code>
+       */
+      public static final int warning_VALUE = 3;
+      /**
+       * <code>distress = 4;</code>
+       */
+      public static final int distress_VALUE = 4;
+      /**
+       * <code>critical = 5;</code>
+       */
+      public static final int critical_VALUE = 5;
+      /**
+       * <code>severe = 6;</code>
+       */
+      public static final int severe_VALUE = 6;
+
+
+      public final int getNumber() { return value; }
+
+      public static Level valueOf(int value) {
+        switch (value) {
+          case 1: return none;
+          case 2: return watch;
+          case 3: return warning;
+          case 4: return distress;
+          case 5: return critical;
+          case 6: return severe;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Level>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Level>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Level>() {
+              public Level findValueByNumber(int number) {
+                return Level.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Commanding.CommandSignificance.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Level[] VALUES = values();
+
+      public static Level valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private Level(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:commanding.CommandSignificance.Level)
+    }
+
+    private int bitField0_;
+    // required int32 sequenceNumber = 1;
+    public static final int SEQUENCENUMBER_FIELD_NUMBER = 1;
+    private int sequenceNumber_;
+    /**
+     * <code>required int32 sequenceNumber = 1;</code>
+     *
+     * <pre>
+     *the sequence number of the command sent
+     * </pre>
+     */
+    public boolean hasSequenceNumber() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int32 sequenceNumber = 1;</code>
+     *
+     * <pre>
+     *the sequence number of the command sent
+     * </pre>
+     */
+    public int getSequenceNumber() {
+      return sequenceNumber_;
+    }
+
+    // required .commanding.CommandSignificance.Level consequenceLevel = 2;
+    public static final int CONSEQUENCELEVEL_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Commanding.CommandSignificance.Level consequenceLevel_;
+    /**
+     * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+     */
+    public boolean hasConsequenceLevel() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+     */
+    public org.yamcs.protobuf.Commanding.CommandSignificance.Level getConsequenceLevel() {
+      return consequenceLevel_;
+    }
+
+    // optional string reasonForWarning = 3;
+    public static final int REASONFORWARNING_FIELD_NUMBER = 3;
+    private java.lang.Object reasonForWarning_;
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    public boolean hasReasonForWarning() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    public java.lang.String getReasonForWarning() {
+      java.lang.Object ref = reasonForWarning_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          reasonForWarning_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string reasonForWarning = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getReasonForWarningBytes() {
+      java.lang.Object ref = reasonForWarning_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        reasonForWarning_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      sequenceNumber_ = 0;
+      consequenceLevel_ = org.yamcs.protobuf.Commanding.CommandSignificance.Level.none;
+      reasonForWarning_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasSequenceNumber()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasConsequenceLevel()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, sequenceNumber_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeEnum(2, consequenceLevel_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getReasonForWarningBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, sequenceNumber_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(2, consequenceLevel_.getNumber());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getReasonForWarningBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Commanding.CommandSignificance parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Commanding.CommandSignificance prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code commanding.CommandSignificance}
+     *
+     * <pre>
+     * this message is sent as response to validate, in case the significance is defined for a commands
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Commanding.CommandSignificanceOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Commanding.CommandSignificance.class, org.yamcs.protobuf.Commanding.CommandSignificance.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Commanding.CommandSignificance.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        sequenceNumber_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        consequenceLevel_ = org.yamcs.protobuf.Commanding.CommandSignificance.Level.none;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        reasonForWarning_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_descriptor;
+      }
+
+      public org.yamcs.protobuf.Commanding.CommandSignificance getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Commanding.CommandSignificance.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Commanding.CommandSignificance build() {
+        org.yamcs.protobuf.Commanding.CommandSignificance result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Commanding.CommandSignificance buildPartial() {
+        org.yamcs.protobuf.Commanding.CommandSignificance result = new org.yamcs.protobuf.Commanding.CommandSignificance(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.sequenceNumber_ = sequenceNumber_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.consequenceLevel_ = consequenceLevel_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.reasonForWarning_ = reasonForWarning_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Commanding.CommandSignificance) {
+          return mergeFrom((org.yamcs.protobuf.Commanding.CommandSignificance)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Commanding.CommandSignificance other) {
+        if (other == org.yamcs.protobuf.Commanding.CommandSignificance.getDefaultInstance()) return this;
+        if (other.hasSequenceNumber()) {
+          setSequenceNumber(other.getSequenceNumber());
+        }
+        if (other.hasConsequenceLevel()) {
+          setConsequenceLevel(other.getConsequenceLevel());
+        }
+        if (other.hasReasonForWarning()) {
+          bitField0_ |= 0x00000004;
+          reasonForWarning_ = other.reasonForWarning_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasSequenceNumber()) {
+          
+          return false;
+        }
+        if (!hasConsequenceLevel()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Commanding.CommandSignificance parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Commanding.CommandSignificance) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required int32 sequenceNumber = 1;
+      private int sequenceNumber_ ;
+      /**
+       * <code>required int32 sequenceNumber = 1;</code>
+       *
+       * <pre>
+       *the sequence number of the command sent
+       * </pre>
+       */
+      public boolean hasSequenceNumber() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 sequenceNumber = 1;</code>
+       *
+       * <pre>
+       *the sequence number of the command sent
+       * </pre>
+       */
+      public int getSequenceNumber() {
+        return sequenceNumber_;
+      }
+      /**
+       * <code>required int32 sequenceNumber = 1;</code>
+       *
+       * <pre>
+       *the sequence number of the command sent
+       * </pre>
+       */
+      public Builder setSequenceNumber(int value) {
+        bitField0_ |= 0x00000001;
+        sequenceNumber_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 sequenceNumber = 1;</code>
+       *
+       * <pre>
+       *the sequence number of the command sent
+       * </pre>
+       */
+      public Builder clearSequenceNumber() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        sequenceNumber_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required .commanding.CommandSignificance.Level consequenceLevel = 2;
+      private org.yamcs.protobuf.Commanding.CommandSignificance.Level consequenceLevel_ = org.yamcs.protobuf.Commanding.CommandSignificance.Level.none;
+      /**
+       * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+       */
+      public boolean hasConsequenceLevel() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandSignificance.Level getConsequenceLevel() {
+        return consequenceLevel_;
+      }
+      /**
+       * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+       */
+      public Builder setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
+        consequenceLevel_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required .commanding.CommandSignificance.Level consequenceLevel = 2;</code>
+       */
+      public Builder clearConsequenceLevel() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        consequenceLevel_ = org.yamcs.protobuf.Commanding.CommandSignificance.Level.none;
+        onChanged();
+        return this;
+      }
+
+      // optional string reasonForWarning = 3;
+      private java.lang.Object reasonForWarning_ = "";
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public boolean hasReasonForWarning() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public java.lang.String getReasonForWarning() {
+        java.lang.Object ref = reasonForWarning_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          reasonForWarning_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getReasonForWarningBytes() {
+        java.lang.Object ref = reasonForWarning_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          reasonForWarning_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public Builder setReasonForWarning(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        reasonForWarning_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public Builder clearReasonForWarning() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        reasonForWarning_ = getDefaultInstance().getReasonForWarning();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string reasonForWarning = 3;</code>
+       */
+      public Builder setReasonForWarningBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        reasonForWarning_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:commanding.CommandSignificance)
+    }
+
+    static {
+      defaultInstance = new CommandSignificance(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:commanding.CommandSignificance)
   }
 
   public interface CommandHistoryAttributeOrBuilder
@@ -6087,6 +6903,11 @@ public final class Commanding {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandQueueRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_commanding_CommandSignificance_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_commanding_CommandSignificance_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandHistoryAttribute_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -6108,31 +6929,36 @@ public final class Commanding {
       "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
       "oto\"`\n\tCommandId\022\026\n\016generationTime\030\001 \002(\003" +
       "\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumber\030\003 \002(\005" +
-      "\022\023\n\013commandName\030\004 \001(\t\"q\n\020CommandQueueInf" +
-      "o\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 " +
-      "\002(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comma" +
-      "nding.QueueState\"\300\001\n\021CommandQueueEntry\022\020" +
-      "\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t" +
-      "\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.com" +
-      "manding.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006bin",
-      "ary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generatio" +
-      "nTime\030\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tq" +
-      "ueueInfo\030\001 \001(\0132\034.commanding.CommandQueue" +
-      "Info\0221\n\nqueueEntry\030\002 \001(\0132\035.commanding.Co" +
-      "mmandQueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"" +
-      "R\n\027CommandHistoryAttribute\022\014\n\004name\030\001 \001(\t" +
-      "\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 " +
-      "\001(\003\"r\n\023CommandHistoryEntry\022(\n\tcommandId\030" +
-      "\001 \002(\0132\025.commanding.CommandId\0221\n\004attr\030\003 \003" +
-      "(\0132#.commanding.CommandHistoryAttribute*",
-      "4\n\nQueueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002" +
-      "\022\013\n\007ENABLED\020\0032\313\001\n\023CommandQueueControl\022:\n" +
-      "\rSetQueueState\022\034.commanding.CommandQueue" +
-      "Info\032\013.yamcs.Void\022;\n\013SendCommand\022\037.comma" +
-      "nding.CommandQueueRequest\032\013.yamcs.Void\022;" +
-      "\n\rRejectCommand\022\035.commanding.CommandQueu" +
-      "eEntry\032\013.yamcs.VoidB\024\n\022org.yamcs.protobu" +
-      "f"
+      "\022\023\n\013commandName\030\004 \001(\t\"p\n\020CommandQueueInf" +
+      "o\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002" +
+      "(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comman" +
+      "ding.QueueState\"\277\001\n\021CommandQueueEntry\022\020\n" +
+      "\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002(\t\022\021" +
+      "\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.comma" +
+      "nding.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006binar",
+      "y\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generationT" +
+      "ime\030\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tque" +
+      "ueInfo\030\001 \001(\0132\034.commanding.CommandQueueIn" +
+      "fo\0221\n\nqueueEntry\030\002 \001(\0132\035.commanding.Comm" +
+      "andQueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"\333\001" +
+      "\n\023CommandSignificance\022\026\n\016sequenceNumber\030" +
+      "\001 \002(\005\022?\n\020consequenceLevel\030\002 \002(\0162%.comman" +
+      "ding.CommandSignificance.Level\022\030\n\020reason" +
+      "ForWarning\030\003 \001(\t\"Q\n\005Level\022\010\n\004none\020\001\022\t\n\005w" +
+      "atch\020\002\022\013\n\007warning\020\003\022\014\n\010distress\020\004\022\014\n\010cri",
+      "tical\020\005\022\n\n\006severe\020\006\"R\n\027CommandHistoryAtt" +
+      "ribute\022\014\n\004name\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.ya" +
+      "mcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023CommandHistor" +
+      "yEntry\022(\n\tcommandId\030\001 \002(\0132\025.commanding.C" +
+      "ommandId\0221\n\004attr\030\003 \003(\0132#.commanding.Comm" +
+      "andHistoryAttribute*4\n\nQueueState\022\013\n\007BLO" +
+      "CKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001\n\023Co" +
+      "mmandQueueControl\022:\n\rSetQueueState\022\034.com" +
+      "manding.CommandQueueInfo\032\013.yamcs.Void\022;\n" +
+      "\013SendCommand\022\037.commanding.CommandQueueRe",
+      "quest\032\013.yamcs.Void\022;\n\rRejectCommand\022\035.co" +
+      "mmanding.CommandQueueEntry\032\013.yamcs.VoidB" +
+      "\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6150,27 +6976,33 @@ public final class Commanding {
           internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "YProcessorName", "Name", "State", });
+              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", });
           internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueEntry_descriptor,
-              new java.lang.String[] { "Instance", "YProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", });
+              new java.lang.String[] { "Instance", "ProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", });
           internal_static_commanding_CommandQueueRequest_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_commanding_CommandQueueRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueRequest_descriptor,
               new java.lang.String[] { "QueueInfo", "QueueEntry", "Rebuild", });
-          internal_static_commanding_CommandHistoryAttribute_descriptor =
+          internal_static_commanding_CommandSignificance_descriptor =
             getDescriptor().getMessageTypes().get(4);
+          internal_static_commanding_CommandSignificance_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_commanding_CommandSignificance_descriptor,
+              new java.lang.String[] { "SequenceNumber", "ConsequenceLevel", "ReasonForWarning", });
+          internal_static_commanding_CommandHistoryAttribute_descriptor =
+            getDescriptor().getMessageTypes().get(5);
           internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandHistoryAttribute_descriptor,
               new java.lang.String[] { "Name", "Value", "Time", });
           internal_static_commanding_CommandHistoryEntry_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandHistoryEntry_descriptor,

@@ -135,6 +135,8 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMDOPT_NAME = 0;
     protected final static int IDX_CMDOPT_TXCONST = 1;
     protected final static int IDX_CMDOPT_TXCONST_TIMEOUT = 2;
+    protected final static int IDX_CMDOPT_SIGNIFICANCE = 3;
+    protected final static int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
     
     
     
@@ -1264,6 +1266,25 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
 		    cmd.addTransmissionConstrain(constraint);
 		}
+		
+		if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
+		    if(cmd.getDefaultSignificance()!=null) {
+		        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
+		    }
+		    String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
+		    Significance.Levels slevel;
+		    try {
+		        slevel = Significance.Levels.valueOf(significance); 
+		    } catch (IllegalArgumentException e) {
+		        throw new SpreadsheetLoadException(ctx, "Invalid significance '"+significance+"' specified. Available values are: "+Arrays.toString(Significance.Levels.values()));
+		    }
+		    String reason = null;
+		    if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE_REASON)) {
+		        reason = cells[IDX_CMDOPT_SIGNIFICANCE_REASON].getContents();
+		    }
+		    cmd.setDefaultSignificance(new Significance(slevel, reason));
+		}
+		
 		i++;
 	    }
 	}
