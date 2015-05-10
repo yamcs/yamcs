@@ -23,27 +23,17 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         String[] path = remainingUri.split("/", 2);
         
         if (path.length == 0) {
-            sendError(ctx, HttpResponseStatus.NOT_FOUND);
-            return;
-        }
-        if("processor".equals(path[0])) {
-            if (path.length == 1) {
-                handleProcessorManagementRequest(ctx, req, yamcsInstance, authToken);
-            } else {
-                String yprocName = path[1];
-                YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
-                if(yproc==null) {
-                    log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
-                    sendError(ctx, HttpResponseStatus.NOT_FOUND);
-                    return;
-                }
-                remainingUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
-                handleProcessorRequest(ctx, req, yproc, remainingUri);
-            }
+            handleProcessorManagementRequest(ctx, req, yamcsInstance, authToken);
         } else {
-            log.warn("Unknown request {} has been received");
-            sendError(ctx, HttpResponseStatus.NOT_FOUND);
-            return;
+            String yprocName = path[0];
+            YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
+            if(yproc==null) {
+                log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
+                sendError(ctx, HttpResponseStatus.NOT_FOUND);
+                return;
+            }
+            remainingUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+            handleProcessorRequest(ctx, req, yproc, remainingUri);
         }
     }
         
