@@ -38,7 +38,8 @@ public class YamlRealm implements Realm {
     @Override
     public boolean supports(AuthenticationToken authenticationToken) {
         // supports only username/password authentication
-        return authenticationToken.getClass() == UsernamePasswordToken.class;
+        return authenticationToken.getClass() == UsernamePasswordToken.class
+                || authenticationToken.getClass() == HqClientMessageToken.class;
     }
 
     @Override
@@ -103,10 +104,10 @@ public class YamlRealm implements Realm {
             user.tcPrivileges = new HashSet<>();
             user.systemPrivileges = new HashSet<>();
             for (String role : userRoles) {
-                user.tmParaPrivileges.addAll(conf.getList("roles", role, tm_parameter_privileges));
-                user.tmPacketPrivileges.addAll(conf.getList("roles", role, tm_packet_privileges));
-                user.tcPrivileges.addAll(conf.getList("roles", role, tc_privileges));
-                user.systemPrivileges.addAll(conf.getList("roles", role, system_privileges));
+                user.tmParaPrivileges.addAll(getPrivileges(conf, role, tm_parameter_privileges));
+                user.tmPacketPrivileges.addAll(getPrivileges(conf, role, tm_packet_privileges));
+                user.tcPrivileges.addAll(getPrivileges(conf, role, tc_privileges));
+                user.systemPrivileges.addAll(getPrivileges(conf, role, system_privileges));
             }
         }
         catch (Exception e)
@@ -116,5 +117,20 @@ public class YamlRealm implements Realm {
 
         user.setAuthenticated(authenticates(authenticationToken));
         return user;
+    }
+
+
+    private List getPrivileges(YConfiguration conf, String role, String privilegesType)
+    {
+        List result = null;
+        try {
+            result = conf.getList("roles", role, privilegesType);
+        }
+        catch (Exception e)
+        {
+            log.warn("No privileges of type " + privilegesType + " for role " + role);
+            result = new LinkedList<>();
+        }
+        return result;
     }
 }

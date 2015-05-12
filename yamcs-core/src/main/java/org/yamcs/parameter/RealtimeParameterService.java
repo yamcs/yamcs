@@ -15,12 +15,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 
-import org.yamcs.YProcessor;
-import org.yamcs.InvalidIdentification;
-import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.ParameterValue;
-import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
+import org.yamcs.*;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
@@ -30,6 +25,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.HqClientMessageToken;
 
 /**
  * Provides realtime parameter subscription via hornetq.  
@@ -100,7 +97,8 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     }
 
 
-    private void subscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
+    private void subscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
+			throws HornetQException {
 	List<NamedObjectId> paraList=null;
 	try {
 	    paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
@@ -108,14 +106,15 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	    log.warn("Could not decode the parameter list");
 	    return;
 	}
-	//TODO check permissions and subscription limits
+	HqClientMessageToken authToken = new HqClientMessageToken(msg, null);
+
 	try {
 	    if(subscriptions.containsValue(dataAddress)) {
 		int subscriptionId=subscriptions.inverse().get(dataAddress);
-		prh.addItemsToRequest(subscriptionId, paraList);
+		prh.addItemsToRequest(subscriptionId, paraList, authToken);
 	    } else {
 		YamcsServer.configureNonBlocking(dataAddress);
-		int subscriptionId=prh.addRequest(paraList);
+		int subscriptionId=prh.addRequest(paraList, authToken);
 		subscriptions.put(subscriptionId, dataAddress);
 	    }
 	    yclient.sendReply(replyto, "OK",null);
@@ -125,8 +124,11 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	} catch (InvalidRequestIdentification e) {
 	    log.error("got invalid subscription id", e);
 	    yclient.sendErrorReply(replyto, "internal error: "+e.toString());
+	} catch (NoPermissionException e) {
+		log.error("No permission.", e);
+		yclient.sendErrorReply(replyto, e);
 	}
-    }
+	}
 
 
     private void unsubscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
@@ -137,10 +139,16 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	    log.warn("Could not decode the parameter list");
 	    return;
 	}
+		AuthenticationToken authToken = new HqClientMessageToken(msg, null);
 	if(subscriptions.containsValue(dataAddress)) {
 	    int subscriptionId=subscriptions.inverse().get(dataAddress);
-	    prh.removeItemsFromRequest(subscriptionId, paraList);
-	    yclient.sendReply(replyto, "OK",null);
+		try {
+			prh.removeItemsFromRequest(subscriptionId, paraList, authToken);
+		    yclient.sendReply(replyto, "OK",null);
+		} catch (NoPermissionException e) {
+			log.error("No permission.", e);
+			yclient.sendErrorReply(replyto, e);
+		}
 	} else {
 	    yclient.sendErrorReply(replyto, "not subscribed to anything");
 	    return;
@@ -150,24 +158,30 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     }
 
 
-    private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
-	//TODO check permissions and subscription limits
+	private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
 
-	String namespace=null;
-	try {
-	    namespace=((StringMessage)Protocol.decode(msg, StringMessage.newBuilder())).getMessage();
-	} catch (YamcsApiException e) {
-	    log.warn("Could not decode the namespace");
-	    return;
+		String namespace=null;
+		try {
+			namespace=((StringMessage)Protocol.decode(msg, StringMessage.newBuilder())).getMessage();
+		} catch (YamcsApiException e) {
+			log.warn("Could not decode the namespace");
+			return;
+		}
+		if(subscriptions.containsValue(dataAddress)) {
+			yclient.sendErrorReply(replyto, "already subscribed for this address");
+			return;
+		}
+		AuthenticationToken authToken = new HqClientMessageToken(msg, null);
+		int subscriptionId= 0;
+		try {
+			subscriptionId = prh.subscribeAll(namespace, authToken);
+			subscriptions.put(subscriptionId, dataAddress);
+			yclient.sendReply(replyto, "OK", null);
+		} catch (NoPermissionException e) {
+			log.error("No permission.", e);
+			yclient.sendErrorReply(replyto, e);
+		}
 	}
-	if(subscriptions.containsValue(dataAddress)) {
-	    yclient.sendErrorReply(replyto, "already subscribed for this address");
-	    return;
-	}
-	int subscriptionId=prh.subscribeAll(namespace);
-	subscriptions.put(subscriptionId, dataAddress);
-	yclient.sendReply(replyto, "OK", null);
-    }
 
     private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
 	if(!subscriptions.containsValue(dataAddress)) {

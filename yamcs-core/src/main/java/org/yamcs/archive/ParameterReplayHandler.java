@@ -28,6 +28,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
@@ -56,6 +57,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
     YProcessor yproc;
     String instance;
     boolean hasTm, hasPp;
+    AuthenticationToken authToken;
 
     /**
      * Implements parameter replays. One of xtcedb or ppdb can be null meaning
@@ -65,9 +67,10 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
      * @param xtcedb
      * @param ppdb
      */
-    public ParameterReplayHandler(String instance, XtceDb xtcedb) {
+    public ParameterReplayHandler(String instance, XtceDb xtcedb, AuthenticationToken authToken) {
         this.instance=instance;
         this.xtcedb=xtcedb;
+        this.authToken = authToken;
     }
 
     @Override
@@ -92,7 +95,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         //add all parameters to the ParameterManager and later one query which tm packets or pp groups are subscribed
         // to use them when creating the replay streams.
         try {
-            pidrm.addRequest(plist);
+            pidrm.addRequest(plist, authToken);
         } catch (InvalidIdentification e) {
             NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);

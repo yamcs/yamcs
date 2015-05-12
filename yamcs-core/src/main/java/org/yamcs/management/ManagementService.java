@@ -198,9 +198,9 @@ public class ManagementService {
         }
     }
 
-    private void switchYProcessor(ClientControlImpl cci, YProcessor yproc) throws YProcessorException {
+    private void switchYProcessor(ClientControlImpl cci, YProcessor yproc, AuthenticationToken authToken) throws YProcessorException {
         ClientInfo oldci=cci.getClientInfo();
-        cci.switchYProcessor(yproc);
+        cci.switchYProcessor(yproc, authToken);
         ClientInfo ci=cci.getClientInfo();
 
         try {
@@ -253,7 +253,7 @@ public class ManagementService {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
                 if(cci!=null) {
-                    switchYProcessor(cci, yproc);
+                    switchYProcessor(cci, yproc, authToken);
                     n++;
                 } else {
                     log.warn("createYProcessor called with invalid client id:"+cr.getClientId(i)+"; ignored.");
@@ -303,7 +303,7 @@ public class ManagementService {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 int id=cr.getClientId(i);
                 ClientControlImpl cci=clients.get(id);
-                switchYProcessor(cci, chan);
+                switchYProcessor(cci, chan, usertoken);
             }
         } catch(YProcessorException e) {
             throw new YamcsException(e.toString());

@@ -3,6 +3,7 @@ package org.yamcs.web.websocket;
 import org.yamcs.YProcessor;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.security.AuthenticationToken;
 
 /**
  * A resource bundles a set of logically related operations.
@@ -29,7 +30,8 @@ public abstract class AbstractWebSocketResource {
      * @return
      * @throws WebSocketException
      */
-    public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException;
+    public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authToken)
+            throws WebSocketException;
 
     protected static WebSocketReplyData toAckReply(int requestId) {
         return WebSocketReplyData.newBuilder()

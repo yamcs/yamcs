@@ -15,6 +15,7 @@ public class BadRequestException extends RestException {
         super(t.getMessage(), t);
     }
 
+
     @Override
     public HttpResponseStatus getHttpResponseStatus() {
         return HttpResponseStatus.BAD_REQUEST;

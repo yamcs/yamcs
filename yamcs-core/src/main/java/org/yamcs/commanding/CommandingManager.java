@@ -12,6 +12,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -50,6 +51,11 @@ public class CommandingManager extends AbstractService {
 	public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin, int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
 		log.debug("building command {} with arguments", mc, argAssignmentList);
 
+        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TC, mc.getName()))
+        {
+            throw new NoPermissionException("User has no privilege on command " + mc.getName());
+        }
+
 		byte[] b = MetaCommandProcessor.buildCommand(mc,  argAssignmentList);
 
 		CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(TimeEncoding.currentInstant()).build();
@@ -58,7 +64,6 @@ public class CommandingManager extends AbstractService {
 		pc.setBinary(b);
 		String username = (authToken !=null && authToken.getPrincipal() != null)?authToken.getPrincipal().toString():"anonymous";
 		pc.setUsername(username);
-		// TODO: privileges for building this command
 		pc.setMetaCommand(mc);
 
 		return pc;

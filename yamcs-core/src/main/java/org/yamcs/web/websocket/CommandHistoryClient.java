@@ -15,6 +15,7 @@ import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.security.AuthenticationToken;
 
 /**
  * Provides realtime command history subscription via web.
@@ -30,7 +31,7 @@ public class CommandHistoryClient extends AbstractWebSocketResource implements C
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
 	switch (ctx.getOperation()) {
 	    case "subscribe":
 		return subscribe(ctx.getRequestId());

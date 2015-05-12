@@ -17,6 +17,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.YProcessorControlClient;
 import org.yamcs.ui.YProcessorListener;
 
@@ -214,7 +215,7 @@ public class YProcessorsTest {
         YProcessor yproc;
 
         @Override
-        public void switchYProcessor(YProcessor c) throws YProcessorException {
+        public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
             yproc.disconnect(this);
             c.connect(this);
             yproc=c;

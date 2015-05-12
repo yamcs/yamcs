@@ -88,7 +88,8 @@ public class LdapRealm implements Realm {
     public boolean supports(AuthenticationToken authenticationToken)
     {
         return authenticationToken.getClass() == UsernamePasswordToken.class
-                || authenticationToken.getClass() == CertificateToken.class;
+                || authenticationToken.getClass() == CertificateToken.class
+                || authenticationToken.getClass() == HqClientMessageToken.class;
     }
 
 
@@ -100,7 +101,8 @@ public class LdapRealm implements Realm {
                 || authenticationToken.getCredentials() == null) {
             return false;
         }
-        if(authenticationToken.getClass() == UsernamePasswordToken.class)
+        if(authenticationToken.getClass() == UsernamePasswordToken.class
+                || authenticationToken.getClass() == HqClientMessageToken.class)
             return authenticateUsernamePassword((UsernamePasswordToken)authenticationToken);
         else if(authenticationToken.getClass() == CertificateToken.class)
             return authenticateCertificate((CertificateToken) authenticationToken);
