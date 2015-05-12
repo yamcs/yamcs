@@ -66,6 +66,9 @@ message RestCreateProcessorResponse {
 message RestConnectToProcessorResponse {
 }
 
+message RestProcessorResponse {
+}
+
 message RestGetParameterRequest {
     repeated yamcs.NamedObjectId list=1;
     optional bool fromCache=2;
