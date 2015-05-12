@@ -93,7 +93,7 @@ fi
 - added eutef js file to Erasmus RPM
 * Fri Jul 8 2011 nm
 - add the yamcs-cdmcs subpackage
-* Wed Apr 28 2011 nm
+* Thu Apr 28 2011 nm
 - add the yamcs-dass subpackage
 * Wed Apr 20 2011 nm
 - add the yamcs-erasmus subpackage
