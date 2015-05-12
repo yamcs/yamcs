@@ -11,7 +11,7 @@ import org.yamcs.security.AuthenticationToken;
 
 /**
  * Handles everything under /api. In the future could also be used to handle multiple versions,
- * if every needed. (e.g. /api/v2).
+ * if ever needed. (e.g. /api/v2).
  */
 public class ApiRequestHandler extends AbstractRestRequestHandler {
 

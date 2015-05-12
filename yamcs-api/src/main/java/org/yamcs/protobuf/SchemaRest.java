@@ -1477,6 +1477,110 @@ public final class SchemaRest
         }
     }
 
+    public static final class RestProcessorResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestProcessorResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestProcessorResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestProcessorResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestProcessorResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestProcessorResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestProcessorResponse message) throws java.io.IOException
+            {
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestProcessorResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestProcessorResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestProcessorResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestProcessorResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestProcessorResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestProcessorResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestProcessorResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestProcessorResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestProcessorResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestProcessorResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestProcessorResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestProcessorResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestProcessorResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestProcessorResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestProcessorResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+        }
+    }
+
     public static final class RestGetParameterRequest
     {
         public static final org.yamcs.protobuf.SchemaRest.RestGetParameterRequest.MessageSchema WRITE =

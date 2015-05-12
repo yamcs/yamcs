@@ -19,7 +19,7 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 
 public class ManagementRequestHandler extends AbstractRestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ManagementRequestHandler.class.getName());
     
     
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
