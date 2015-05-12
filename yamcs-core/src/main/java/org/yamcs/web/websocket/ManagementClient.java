@@ -12,6 +12,7 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.security.AuthenticationToken;
 
 public class ManagementClient extends AbstractWebSocketResource {
     public static final String OP_getProcessorInfo = "getProcessorInfo";
@@ -28,7 +29,7 @@ public class ManagementClient extends AbstractWebSocketResource {
 
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_getProcessorInfo:
             return processGetProcessorInfoRequest(ctx, decoder);

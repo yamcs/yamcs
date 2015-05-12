@@ -1,5 +1,6 @@
 package org.yamcs.archive;
 
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.MessageLite;

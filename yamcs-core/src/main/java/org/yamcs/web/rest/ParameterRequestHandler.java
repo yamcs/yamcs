@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -28,6 +29,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.web.HttpSocketServerHandler;
 import org.yamcs.xtce.Parameter;
 
@@ -40,13 +42,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 public class ParameterRequestHandler extends AbstractRestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken)
+            throws RestException {
         org.yamcs.YProcessor yproc = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
 
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("_get".equals(qsDecoder.path())) {
             RestGetParameterRequest request = readMessage(req, SchemaRest.RestGetParameterRequest.MERGE).build();
-            ParameterData pdata = getParameters(request, yproc);
+            ParameterData pdata = getParameters(request, yproc, authToken);
             writeMessage(ctx, req, qsDecoder, pdata, SchemaPvalue.ParameterData.WRITE);
         } else if ("_set".equals(qsDecoder.path())) {
             ParameterData pdata = readMessage(req, SchemaPvalue.ParameterData.MERGE).build();
@@ -134,11 +137,11 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * Gets parameter values
      */
-    private ParameterData getParameters(RestGetParameterRequest request, org.yamcs.YProcessor yamcsChannel) throws RestException {
+    private ParameterData getParameters(RestGetParameterRequest request, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken)
+            throws RestException {
         if(request.getListCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }
-        //TODO permissions
         ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
@@ -150,14 +153,14 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
                     throw new BadRequestException("ParameterCache not activated for this channel");
                 }
                 List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(idList);
+                l = pwirh.getValuesFromCache(idList, authToken);
                 for(ParameterValueWithId pvwi: l) {
                     pdatab.addParameter(pvwi.toGbpParameterValue());
                 }
             } else {
 
                 long timeout = getTimeout(request);
-                int reqId = pwirh.addRequest(idList);
+                int reqId = pwirh.addRequest(idList, authToken);
                 long t0 = System.currentTimeMillis();
                 long t1;
                 while(true) {
@@ -179,7 +182,9 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
             //TODO - send the invalid parameters in a parsable form
             throw new BadRequestException("Invalid parameters: "+e.invalidParameters.toString());
         } catch (InterruptedException e) {
-            throw new InternalServerErrorException("Interrupted while waiting for prameters");
+            throw new InternalServerErrorException("Interrupted while waiting for parameters");
+        } catch (NoPermissionException e) {
+            throw new ForbiddenException(e.getMessage(), e);
         }
 
         return pdatab.build();

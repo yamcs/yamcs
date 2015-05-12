@@ -8,6 +8,7 @@ import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
 
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.security.AuthenticationToken;
 
 public class ClientControlImpl extends StandardMBean implements ClientControl {
     ClientInfo clientInfo;
@@ -36,8 +37,8 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         return client;
     }
 
-    public void switchYProcessor(YProcessor chan) throws YProcessorException {
-        client.switchYProcessor(chan);
+    public void switchYProcessor(YProcessor chan, AuthenticationToken authToken) throws YProcessorException {
+        client.switchYProcessor(chan, authToken);
         
         clientInfo=ClientInfo.newBuilder().mergeFrom(clientInfo)
             .setInstance(chan.getInstance()).setProcessorName(chan.getName())

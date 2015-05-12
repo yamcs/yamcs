@@ -48,7 +48,7 @@ public class WebSocketServerHandler {
 	if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
 	if(yprocClient==null) {
 	    String applicationName = determineApplicationName(req);
-	    this.yprocClient=new WebSocketYProcClient(yamcsInstance, this, applicationName);
+	    this.yprocClient=new WebSocketYProcClient(yamcsInstance, this, applicationName, authToken);
 	}
 
 	this.channel=ctx.channel();
@@ -111,7 +111,7 @@ public class WebSocketServerHandler {
 		    WebSocketDecodeContext msg = decoder.decodeMessage(in);
 		    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
 		    if (resource != null) {
-			WebSocketReplyData reply = resource.processRequest(msg, decoder);
+			WebSocketReplyData reply = resource.processRequest(msg, decoder, yprocClient.getAuthToken());
 			if(reply!=null) {
 			    sendReply(reply);
 			}

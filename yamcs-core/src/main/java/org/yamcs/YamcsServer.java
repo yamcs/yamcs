@@ -42,6 +42,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -49,11 +50,11 @@ import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 
 /**
- * 
+ *
  * Main yamcs server, starts a Yarch instance for each defined instance
  * Handles basic requests for retrieving the configured instances, database versions 
  * and retrieve databases in serialized form
- * 
+ *
  * @author nm
  *
  */
@@ -67,10 +68,10 @@ public class YamcsServer {
 
     Logger log;
     static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class.getName());
-    
+
     /**in the shutdown, allow servies this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
-    
+
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
@@ -123,31 +124,42 @@ public class YamcsServer {
     static YamcsClient ctrlAddressClient;
 
     public static EmbeddedHornetQ setupHornet() throws Exception {
-	//divert hornetq logging
-	System.setProperty("org.jboss.logging.provider", "slf4j");
-	
-	hornetServer = new EmbeddedHornetQ();
-	hornetServer.setSecurityManager( new HornetQAuthManager() );
-	hornetServer.start();
-	//create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
-	yamcsSession=YamcsSession.newBuilder().build();
-	ctrlAddressClient=yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
-	return hornetServer;
+        //divert hornetq logging
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+
+        // load optional configuration file name for hornetq,
+        // otherwise default will be hornetq-configuration.xml
+        String hornetqConfigFile = null;
+        try{
+            YConfiguration c=YConfiguration.getConfiguration("yamcs");
+            hornetqConfigFile = c.getString("hornetqConfigFile");
+        }
+        catch (Exception e){}
+
+        hornetServer = new EmbeddedHornetQ();
+        hornetServer.setSecurityManager( new HornetQAuthManager() );
+        if(hornetqConfigFile != null)
+            hornetServer.setConfigResourcePath(hornetqConfigFile);
+        hornetServer.start();
+        //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
+        yamcsSession=YamcsSession.newBuilder().build();
+        ctrlAddressClient=yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
+        return hornetServer;
     }
-    
+
     public static void stopHornet() throws Exception {
    	yamcsSession.close();
    	Protocol.closeKiller();
    	hornetServer.stop();
     }
-   
+
     public static void shutDown() throws Exception {
 	for(YamcsServer ys: instances.values()) {
 	    ys.stop();
 	}
     }
-    
-    
+
+
     public void stop() {
 	for(int i = serviceList.size()-1; i>=0; i--) {
 	    Service s = serviceList.get(i);
@@ -159,7 +171,7 @@ public class YamcsServer {
 	    }
 	}
     }
-    
+
     public static boolean hasInstance(String instance) {
 	return instances.containsKey(instance);
     }
@@ -178,7 +190,7 @@ public class YamcsServer {
 	    }
 	});
 
-	
+
 	ctrlAddressClient.rpcConsumer.setMessageHandler(new MessageHandler() {
 	    @Override
 	    public void onMessage(ClientMessage msg) {
@@ -226,7 +238,7 @@ public class YamcsServer {
 	    aib.setName(inst);
 	    YConfiguration c;
 	    try {
-		MissionDatabase.Builder mdb = MissionDatabase.newBuilder(); 
+		MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
 		c = YConfiguration.getConfiguration("yamcs."+inst);
 		String configName = c.getString("mdb");
 		XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(configName);

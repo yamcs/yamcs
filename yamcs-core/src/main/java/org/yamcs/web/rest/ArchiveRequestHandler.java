@@ -51,6 +51,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
 
@@ -179,7 +180,17 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         YamcsSession ys = null;
         YamcsClient msgClient = null;
         try {
-            ys = YamcsSession.newBuilder().setConnectionParams("yamcs:///"+yamcsInstance).build();
+            String yamcsConnectionData = "yamcs://";
+            if(authToken!=null && authToken.getClass() == UsernamePasswordToken.class)
+            {
+                yamcsConnectionData += ((UsernamePasswordToken)authToken).getUsername()
+                        + ":" + ((UsernamePasswordToken)authToken).getPasswordS() +"@" ;
+            }
+            yamcsConnectionData += "localhost/"+yamcsInstance;
+
+           // yamcsConnectionData = "yamcs:///" + yamcsInstance;
+
+            ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             SimpleString replayServer = Protocol.getYarchReplayControlAddress(yamcsInstance);
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());

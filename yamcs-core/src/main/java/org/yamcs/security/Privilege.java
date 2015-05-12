@@ -227,10 +227,14 @@ public class Privilege {
     }
 
 
+    public int getMaxNoSessions()
+    {
+        return maxNoSessions;
+    }
 
 
 
-    private User getUser(final AuthenticationToken authenticationToken)  {
+    public User getUser(final AuthenticationToken authenticationToken)  {
         while (true) {
             if(authenticationToken == null)
                 return null;
@@ -318,7 +322,7 @@ public class Privilege {
                         // checking only the certificate username, not against the certificate binary data
                     }
                 } else {
-                    authenticationToken = new UsernamePasswordToken(args[0], "k2");
+                    authenticationToken = new UsernamePasswordToken(args[0], "");
                 }
 
                 System.out.println(priv.getUser(authenticationToken));

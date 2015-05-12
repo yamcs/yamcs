@@ -29,6 +29,8 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
@@ -74,7 +76,9 @@ class YarchReplay implements StreamSubscriber, Runnable {
     boolean dropTuple=false; //set to true when jumping to a different time
     volatile boolean ignoreClose;
     
-    public YarchReplay(ReplayServer replayServer, ReplayRequest rr,  SimpleString dataAddress, XtceDb xtceDb) throws IOException, ConfigurationException, HornetQException, YamcsException, YamcsApiException {
+    public YarchReplay(ReplayServer replayServer, ReplayRequest rr,  SimpleString dataAddress,
+                       XtceDb xtceDb, AuthenticationToken authToken)
+            throws IOException, ConfigurationException, HornetQException, YamcsException, YamcsApiException {
         this.replayServer=replayServer;
         this.dataAddress=dataAddress;
         this.xtceDb=xtceDb;
@@ -86,7 +90,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
             throw new YamcsException("Empty replay request");
         }
 
-        setRequest(rr);
+        setRequest(rr, authToken);
         ysession = YamcsSession.newBuilder().build();
         yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
         Protocol.killProducerOnConsumerClosed(yclient.dataProducer, dataAddress);
@@ -109,6 +113,8 @@ class YarchReplay implements StreamSubscriber, Runnable {
                 }
                 try {
                     String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
+                    AuthenticationToken authToken = new HqClientMessageToken(msg, null);
+
                     log.debug("received a new request: "+req);
                     if("Start".equalsIgnoreCase(req)) {
                         start();
@@ -130,7 +136,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
                         seek(inst.getInstant());
                         yclient.sendReply(replyto, "OK", null);
                     } else if("ChangeReplayRequest".equalsIgnoreCase(req)){
-                        setRequest((ReplayRequest)decode(msg, ReplayRequest.newBuilder()));
+                        setRequest((ReplayRequest)decode(msg, ReplayRequest.newBuilder()), authToken);
                         yclient.sendReply(replyto, "OK", null);
                     } else  {
                         throw new YamcsException("Unknown request '"+req+"'");
@@ -147,7 +153,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
         }
     }
 
-    private void setRequest(ReplayRequest newRequest) throws YamcsException {
+    private void setRequest(ReplayRequest newRequest, AuthenticationToken authToken) throws YamcsException {
         if(state!=ReplayState.INITIALIZATION && state!=ReplayState.STOPPED) {
             throw new YamcsException("changing the request only supported in the INITIALIZATION and STOPPED states");
         }
@@ -179,7 +185,7 @@ class YarchReplay implements StreamSubscriber, Runnable {
         if (currentRequest.hasPpRequest())
             handlers.put(ProtoDataType.PP, new PpReplayHandler(xtceDb));
         if (currentRequest.hasParameterRequest())
-            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb));
+            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb, authToken));
         if (currentRequest.hasCommandHistoryRequest())
             handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
         

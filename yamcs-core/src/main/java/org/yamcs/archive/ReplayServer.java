@@ -100,16 +100,16 @@ public class ReplayServer extends AbstractExecutionThreadService {
             throw new YamcsException("maximum number of replays reached");
         }
         ReplayRequest replayRequest=(ReplayRequest)decode(msg, ReplayRequest.newBuilder());
-
+        HqClientMessageToken authToken = null;
         if( Privilege.usePrivileges ) {
             Privilege priv = Privilege.getInstance();
-            HqClientMessageToken usertoken = new HqClientMessageToken(msg, null);
+            authToken = new HqClientMessageToken(msg, null);
 
             // Check privileges for requested parameters
             if (replayRequest.hasParameterRequest()) {
                 List<NamedObjectId> invalidParameters = new ArrayList<NamedObjectId>();
                 for( NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList() ) {
-                    if( ! priv.hasPrivilege(usertoken, Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
+                    if( ! priv.hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, noi.getName() ) ) {
                         invalidParameters.add( noi );
                     }
                 }
@@ -123,7 +123,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
             // Check privileges for requested packets
             // TODO delete right half of if-statement once no longer deprecated
             if (replayRequest.hasPacketRequest()) {
-                Collection<String> allowedPackets = priv.getTmPacketNames(instance, usertoken, MdbMappings.MDB_OPSNAME);
+                Collection<String> allowedPackets = priv.getTmPacketNames(instance, authToken, MdbMappings.MDB_OPSNAME);
 
                 List<NamedObjectId> invalidPackets = new ArrayList<NamedObjectId>();
     
@@ -151,7 +151,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
         }
 
         try {
-            YarchReplay yr=new YarchReplay(this, replayRequest, dataAddress, XtceDbFactory.getInstance(instance));
+            YarchReplay yr=new YarchReplay(this, replayRequest, dataAddress, XtceDbFactory.getInstance(instance), authToken);
             replayCount.incrementAndGet();
             (new Thread(yr)).start();
             StringMessage addr=StringMessage.newBuilder().setMessage(yr.yclient.rpcAddress.toString()).build();
