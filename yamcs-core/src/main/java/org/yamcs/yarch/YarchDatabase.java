@@ -87,7 +87,7 @@ public class YarchDatabase {
 	if(config.containsKey("storageEngines")) {
 	    se = config.getList("storageEngines");
 	} else {
-	    se = Arrays.asList(TC_ENGINE_NAME);
+	    se = Arrays.asList(RDB_ENGINE_NAME, TC_ENGINE_NAME);
 	}
 	if(se!=null) {
 	    for(String s:se) {
