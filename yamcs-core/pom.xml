@@ -150,6 +150,9 @@
    		     <value>${project.build.directory}/test-classes/logging.properties</value>
    		   </property>
     </systemProperties>
+          <excludes>
+          <exclude>**/IntegrationTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
