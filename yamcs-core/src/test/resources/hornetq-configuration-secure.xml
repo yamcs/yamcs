@@ -7,10 +7,6 @@
     <security-invalidation-interval>60000</security-invalidation-interval>
     <journal-type>NIO</journal-type>
 
-    <bindings-directory>/storage/hornetq/bindings</bindings-directory>
-    <journal-directory>/storage/hornetq/journal</journal-directory>
-    <large-messages-directory>/storage/hornetq/large-messages</large-messages-directory>
-    <paging-directory>/storage/hornetq/paging</paging-directory>
 
 
     <management-notification-address>hornetq.notifications</management-notification-address>
