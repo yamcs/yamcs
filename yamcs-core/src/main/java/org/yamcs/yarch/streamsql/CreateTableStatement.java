@@ -14,36 +14,36 @@ import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 public class CreateTableStatement extends StreamSqlStatement {
-	
-	String tableName;
-	TupleDefinition tupleDefinition;
+
+    String tableName;
+    TupleDefinition tupleDefinition;
     ArrayList<String> primaryKey;
     ArrayList<String> histoColumns;
     PartitioningSpec partitioningSpec;;
     String dataDir;
     String engine;
-    
+
     private boolean compressed=false;
-    
-	public CreateTableStatement(String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
-		this.tableName=tableName;
-		this.tupleDefinition=tupleDefinition;
-		this.primaryKey=primaryKey;
-	}
 
-	
+    public CreateTableStatement(String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
+        this.tableName=tableName;
+        this.tupleDefinition=tupleDefinition;
+        this.primaryKey=primaryKey;
+    }
 
-	public void setDataDir(String dataDir) {
-		this.dataDir=dataDir;
-		
-	}
 
-	public void setPartitioning(PartitioningSpec pspec) {
-		this.partitioningSpec=pspec;
-	}
-	public void setCompressed(boolean c) {
-		this.compressed=c;
-	}
+
+    public void setDataDir(String dataDir) {
+        this.dataDir=dataDir;
+
+    }
+
+    public void setPartitioning(PartitioningSpec pspec) {
+        this.partitioningSpec=pspec;
+    }
+    public void setCompressed(boolean c) {
+        this.compressed=c;
+    }
 
     public void addHistogramColumn(String columnName) {
         if(histoColumns==null) {
@@ -51,14 +51,14 @@ public class CreateTableStatement extends StreamSqlStatement {
         }
         histoColumns.add(columnName);
     }
-    
+
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
         YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
         synchronized(ydb) {
             TableDefinition tableDefinition=new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();
-            
+
             if(dataDir!=null) {
                 tableDefinition.setDataDir(dataDir);
                 tableDefinition.setCustomDataDir(true);
@@ -67,21 +67,21 @@ public class CreateTableStatement extends StreamSqlStatement {
                 tableDefinition.setCustomDataDir(false);
             }
             if(engine!=null) {
-            	tableDefinition.setStorageEngineName(engine);
+                tableDefinition.setStorageEngineName(engine);
             } else {
-            	tableDefinition.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
+                tableDefinition.setStorageEngineName(YarchDatabase.DEFAULT_STORAGE_ENGINE);
             }
-            
+
             tableDefinition.setCompressed(compressed);
             if(partitioningSpec!=null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
             } else {
-            	tableDefinition.setPartitioningSpec(PartitioningSpec.noneSpec());
+                tableDefinition.setPartitioningSpec(PartitioningSpec.noneSpec());
             }
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
-            
+
             try {
                 ydb.createTable(tableDefinition);
                 return new StreamSqlResult();
@@ -91,7 +91,7 @@ public class CreateTableStatement extends StreamSqlStatement {
         }
     }
 
-	public void setEngine(String engine) {
-		this.engine=engine;		
-	}
+    public void setEngine(String engine) {
+        this.engine=engine;		
+    }
 }
