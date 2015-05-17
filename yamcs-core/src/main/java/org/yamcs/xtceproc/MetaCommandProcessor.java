@@ -89,7 +89,7 @@ public class MetaCommandProcessor {
 			List<ArgumentAssignment> aaList = mc.getArgumentAssignmentList();
 			if(aaList!=null) {
 				for(ArgumentAssignment aa:aaList) {
-					if(args.containsKey(aa.getArgumentName())) {
+					if(argAssignment.containsKey(aa.getArgumentName())) {
 						throw new ErrorInCommand("Cannot overwrite the argument "+aa.getArgumentName()+" which is defined in the inheritance assignment list");
 					}
 					argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());

@@ -168,4 +168,15 @@ public class CommandingManagerTest {
 		assertNotNull(e);
 		assertTrue(e.getMessage().contains("Cannot assign value to p4"));
 	}
+
+	@Test(expected = ErrorInCommand.class)
+	public void testExceptionOnReassigningInheritanceArgument() throws Exception {
+		MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
+		List<ArgumentAssignment> assignments = Arrays.asList(new ArgumentAssignment("uint8_arg", "2"),
+					new ArgumentAssignment("uint16_arg", "2"),
+					new ArgumentAssignment("int32_arg", "2"),
+					new ArgumentAssignment("uint64_arg", "2"),
+					new ArgumentAssignment("ccsds-apid", "123")); // Already assigned by parent
+		MetaCommandProcessor.buildCommand(mc, assignments);
+	}
 }
