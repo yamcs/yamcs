@@ -124,8 +124,8 @@
             <permission type="deleteDurableQueue" roles="Administrator"/>
             <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1,Role2"/>
             <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1,Role2"/>
-            <permission type="consume" roles="Operator,Administrator,SOLACES-UHB,Role1,Role2"/>
-            <permission type="send" roles="Operator,Administrator,SOLACES-UHB,Role1,Role2"/>
+            <permission type="consume" roles="Operator,Administrator,Role1,Role2"/>
+            <permission type="send" roles="Operator,Administrator,Role1,Role2"/>
         </security-setting>
         <!-- General yamcs addresses -->
         <security-setting match="yamcsControl">
