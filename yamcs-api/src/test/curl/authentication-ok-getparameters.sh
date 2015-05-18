@@ -1,0 +1,2 @@
+# Provide the username and password "operator:password". This part needs to be encoded in base64.
+curl -H "Authorization: Basic b3BlcmF0b3I6cGFzc3dvcmQ=" -XGET http://localhost:8090/simulator/api/mdb/parameters?pretty
