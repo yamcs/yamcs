@@ -28,6 +28,8 @@ import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -135,10 +137,11 @@ public class TestEventRecording extends YarchTestCase {
         replay.startAsync();
         msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
-        
         EventReplayRequest err=EventReplayRequest.newBuilder().build();
-        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).
-                    setEventRequest(err).build();
+        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
+                .setEventRequest(err)
+                .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
+                .build();
         SimpleString replayServer=Protocol.getYarchReplayControlAddress(context.getDbName());
         StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
         
@@ -156,7 +159,6 @@ public class TestEventRecording extends YarchTestCase {
         assertNotNull(msg);
         ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
         assertEquals(ProtoDataType.STATE_CHANGE, dt);
-        
         eventRecorder.stopAsync();
         streamAdapter.quit();
         ys.close();
