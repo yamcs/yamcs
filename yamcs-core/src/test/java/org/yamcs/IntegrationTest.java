@@ -81,7 +81,7 @@ public class IntegrationTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         setupYamcs();
-        boolean debug = true;
+        boolean debug = false;
         if(debug) {
             Logger.getLogger("org.yamcs").setLevel(Level.ALL);
         }
