@@ -3,6 +3,8 @@ Version 0.28.0 Released
 - improved the rest interface
 - modularized more the creation of streams and channels
 - added rocksdb storage engine
+- added command pretransmission checks
+- added containter based command verification
 
 
 Version 0.27.3 Released 31-Oct-2014
