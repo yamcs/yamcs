@@ -1270,7 +1270,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		cells = jumpToRow(sheet, i);
 		if(hasColumn(cells, IDX_CMDOPT_TXCONST)) {
 		    String condition = cells[IDX_CMDOPT_TXCONST].getContents();
-		    MatchCriteria criteria=toMatchCriteria(condition);
+		    MatchCriteria criteria;
+		    try {
+		        criteria=toMatchCriteria(condition);
+		    } catch (Exception e) {
+		        throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+condition+"': "+e);
+		    }
 		    long timeout = 0;
 		    if(hasColumn(cells, IDX_CMDOPT_TXCONST_TIMEOUT)) {
 			timeout = Long.parseLong(cells[IDX_CMDOPT_TXCONST_TIMEOUT].getContents());
