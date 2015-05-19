@@ -13,7 +13,7 @@ import java.util.List;
  *
  */
 public class MetaCommand extends NameDescription {
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
 
     /**
      * From XTCE:
@@ -80,7 +80,22 @@ public class MetaCommand extends NameDescription {
     boolean abstractCmd = false;
 
     List<TransmissionConstraint> transmissionContstraintList = new ArrayList<TransmissionConstraint>();
-
+    
+    /**
+     * From XTCE
+     * A Command Verifier is a conditional check on the telemetry from a SpaceSystem that that provides positive indication on the processing state of a command. 
+     * There are eight different verifiers each associated with difference states in command processing:
+     * TransferredToRange, TransferredFromRange, Received, Accepted, Queued, Execution, Complete, and Failed. 
+     *  There may be multiple ‘complete’ verifiers. ‘Complete’ verifiers are added to the Base MetaCommand ‘Complete’ verifier list. 
+     *  All others will override a verifier defined in a Base MetaCommand
+     *  
+     *  
+     *  In Yamcs the verifier type is specified in the stage field.
+    */
+    private List<CommandVerifier> verifierList = new ArrayList<CommandVerifier>();
+    
+    
+    
     public MetaCommand(String name) {
 	super(name);
     }
@@ -181,6 +196,18 @@ public class MetaCommand extends NameDescription {
         this.defaultSignificance = defaultSignificance;
     }
     
+    public void addVerifier(CommandVerifier cmdVerifier) {
+        verifierList.add(cmdVerifier);
+    }
+
+
+    public boolean hasCommandVerifiers() {
+        return !verifierList.isEmpty();
+    }
+    
+    public List<CommandVerifier> getCommandVerifiers() {
+        return Collections.unmodifiableList(verifierList);
+    }
     
     public void print(PrintStream out) {
         out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
@@ -193,7 +220,15 @@ public class MetaCommand extends NameDescription {
             out.print(", defaultSignificance: ");
             out.print(defaultSignificance.toString());
         }
+        
+        if(!verifierList.isEmpty()) {
+            out.print(", Verifiers: ");
+            out.print(verifierList.toString());
+        }
         out.println();
         commandContainer.print(out);
     }
+
+
+  
 }

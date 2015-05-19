@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ContainerProvider;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.container.ContainerProvider;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
@@ -217,5 +217,11 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     protected void doStop() {
 	notifyStopped();
+    }
+
+
+
+    public XtceDb getXtceDb() {
+        return xtcedb;
     }
 }

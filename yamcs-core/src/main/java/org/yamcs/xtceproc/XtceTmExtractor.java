@@ -3,12 +3,10 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ItemIdPacketConsumerStruct;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -113,14 +111,7 @@ public class XtceTmExtractor {
     public void stopProviding(SequenceContainer sequenceContainer) {
 	//TODO
     }
-
-    public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {
-	synchronized(subscription) {
-	    for(ItemIdPacketConsumerStruct i:iipcs) {
-		subscription.addSequenceContainer(i.def);
-	    }
-	}
-    }
+    
 
     public ParameterValueList getParameterResult() {
 	return paramResult;

@@ -1,6 +1,6 @@
 package org.yamcs.commanding;
 
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 
 import com.google.common.util.concurrent.Service;
 
@@ -26,5 +26,5 @@ public interface CommandReleaser extends Service {
      * the command releaser has to add the command to the history when it is released. 
      * @param commandHistory
      */
-    void setCommandHistory(CommandHistory commandHistory);
+    void setCommandHistory(CommandHistoryPublisher commandHistory);
 }

@@ -20,7 +20,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
@@ -55,7 +55,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues=new HashMap<String, CommandQueue>();
     CommandReleaser commandReleaser;
-    CommandHistory commandHistoryListener;
+    CommandHistoryPublisher commandHistoryListener;
     CommandingManager commandingManager;
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients=new ConcurrentLinkedQueue<CommandQueueListener>();
     private final Logger log;
@@ -69,7 +69,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     YProcessor yproc;
     int paramSubscriptionRequestId = -1;
 
-    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    private final ScheduledThreadPoolExecutor timer;
     /**
      * Constructs a Command Queue Manager having the given history manager and tc uplinker.
      *  The parameters have to be not null.
@@ -83,11 +83,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         yproc=commandingManager.getChannel();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
-        this.commandHistoryListener = yproc.getCommandHistoryListener();
+        this.commandHistoryListener = yproc.getCommandHistoryPublisher();
         this.commandReleaser = yproc.getCommandReleaser();
         this.instance = yproc.getInstance();
         this.yprocName = yproc.getName();
-
+        this.timer = yproc.getTimer();
 
         CommandQueue cq=new CommandQueue(yproc, "default");
         queues.put("default", cq);
@@ -222,10 +222,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             return; //command has been removed in the meanwhile
         }
         if(status==TCStatus.OK) {
-            addToCommandHistory(pc, CommandHistory.TransmissionContraints_KEY, "OK");
+            addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
             releaseCommand(q, pc, true, false);
         } else if(status == TCStatus.TIMED_OUT) {
-            addToCommandHistory(pc, CommandHistory.TransmissionContraints_KEY, "NOK");
+            addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
             failedCommand(q, pc, "Transmission constraints check failed",true);
         }
     }
@@ -256,7 +256,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param notify notify or not the monitoring clients.
      */
     private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
-        addToCommandHistory(pc, CommandHistory.CommandFailed_KEY, reason);
+        addToCommandHistory(pc, CommandHistoryPublisher.CommandFailed_KEY, reason);
         //Notify the monitoring clients
         if(notify) {
             for(CommandQueueListener m:monitoringClients) {
@@ -279,6 +279,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 				return;
 			}*/
         }
+        //start the verifiers
+        MetaCommand mc = pc.getMetaCommand();
+        if(mc.hasCommandVerifiers()) {
+            log.debug("Starting command verification for "+pc);
+            CommandVerificationHandler cvh = new CommandVerificationHandler(yproc, pc);
+            cvh.start();
+        }
+        
         commandReleaser.releaseCommand(pc);
         //Notify the monitoring clients
         if(notify) {
@@ -449,7 +457,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void scheduleImmediateCheck(final TransmissionConstraintChecker tcc) {
-        executor.execute(new Runnable() {
+        timer.execute(new Runnable() {
             @Override
             public void run() {
                 tcc.check();
@@ -458,7 +466,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void scheduleCheck(final TransmissionConstraintChecker tcc, long millisec) {
-        executor.schedule(new Runnable() {
+        timer.schedule(new Runnable() {
             @Override
             public void run() {
                 tcc.check();
@@ -468,7 +476,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     @Override
     public void updateItems(int subscriptionId, final List<ParameterValue> items) {
-        executor.execute(new Runnable() {
+        timer.execute(new Runnable() {
             @Override
             public void run() {
                 doUpdateItems(items);

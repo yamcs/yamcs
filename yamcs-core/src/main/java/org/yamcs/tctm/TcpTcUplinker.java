@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidCommandId;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -30,7 +30,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     protected SocketChannel socketChannel=null;
     protected String host="whirl";
     protected int port=10003;
-    protected CommandHistory commandHistoryListener;
+    protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector; 
     SelectionKey selectionKey;
     protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
@@ -208,7 +208,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     }
 
     @Override
-    public void setCommandHistoryListener(CommandHistory commandHistoryListener) {
+    public void setCommandHistoryListener(CommandHistoryPublisher commandHistoryListener) {
 	this.commandHistoryListener=commandHistoryListener;
     }
 

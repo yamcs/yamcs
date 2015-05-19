@@ -44,8 +44,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 	this.listener = listener;
     }
 
-    public int addRequest(List<NamedObjectId> idList, AuthenticationToken authToken)
-			throws InvalidIdentification, NoPermissionException {
+    public int addRequest(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
 	ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
 	List<Parameter> plist = checkNames(idList);
 	for(int i =0; i<idList.size() ; i++) {

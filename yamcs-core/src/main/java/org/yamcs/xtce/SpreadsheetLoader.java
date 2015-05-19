@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.utils.StringConvertors;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
+import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.Comparison.OperatorType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
@@ -53,6 +55,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static String SHEET_ALARMS="Alarms";
     protected final static String SHEET_COMMANDS="Commands";
     protected final static String SHEET_COMMANDOPTIONS="CommandOptions";
+    protected final static String SHEET_COMMANDVERIFICATION="CommandVerification";
 
     //columns in the parameters sheet (including local parameters)
     final static int IDX_PARAM_OPSNAME=0;
@@ -138,7 +141,16 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMDOPT_SIGNIFICANCE = 3;
     protected final static int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
     
-    
+    //columns in the command verification sheet    
+    protected final static int IDX_CMDVERIF_NAME = 0;
+    protected final static int IDX_CMDVERIF_STAGE = 1;
+    protected final static int IDX_CMDVERIF_TYPE = 2;
+    protected final static int IDX_CMDVERIF_TEXT = 3;
+    protected final static int IDX_CMDVERIF_CHECKWINDOW = 4;
+    protected final static int IDX_CMDVERIF_CHECKWINDOW_RELATIVETO = 5;
+    protected final static int IDX_CMDVERIF_ONSUCCESS = 6;
+    protected final static int IDX_CMDVERIF_ONFAIL = 7;
+    protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
     
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION="3.0";
@@ -211,6 +223,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	loadAlarmsSheet(false);
 	loadCommandSheet(false);
 	loadCommandOptionsSheet(false);
+	loadCommandVerificationSheet(false);
     }
 
     @Override
@@ -1266,7 +1279,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
 		    cmd.addTransmissionConstrain(constraint);
 		}
-		System.out.println("cmdName="+cmdName+": "+hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE));
 		if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
 		    if(cmd.getDefaultSignificance()!=null) {
 		        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
@@ -1287,6 +1299,109 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		i++;
 	    }
 	}
+    }
+    
+    
+    protected void loadCommandVerificationSheet(boolean required) {
+        Sheet sheet = switchToSheet(SHEET_COMMANDVERIFICATION, required);
+        if(sheet==null) return;
+        int i = 1;
+        while(i<sheet.getRows()) {
+            // search for a new command definition, starting from row i 
+            //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
+            Cell[] cells = jumpToRow(sheet, i);
+            if (cells == null || cells.length<1) {
+                log.debug("Ignoring line {} because it's empty", ctx.row);
+                i++;
+                continue;
+            }
+            if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                i++;
+                continue;
+            }
+            
+            String cmdName = cells[IDX_CMDVERIF_NAME].getContents();
+            MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
+            if(cmd == null) {
+                throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
+            }
+            
+            
+            int cmdEnd = i + 1;
+            while (cmdEnd < sheet.getRows()) {
+                cells = jumpToRow(sheet, cmdEnd);
+                if (hasColumn(cells, IDX_CMDVERIF_NAME))  break;
+                cmdEnd++;
+            }
+            while (i<cmdEnd) {
+                cells = jumpToRow(sheet, i);
+                if(hasColumn(cells, IDX_CMDVERIF_STAGE)) {
+                    String stage =  cells[IDX_CMDVERIF_STAGE].getContents();
+                    
+                    if(!hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW)) {
+                        throw new  SpreadsheetLoadException(ctx, "No checkwindow specified for the command verifier ");
+                    }
+                    String checkws = cells[IDX_CMDVERIF_CHECKWINDOW].getContents();
+                    Pattern p = Pattern.compile("(\\d+),(\\d+)");
+                    Matcher m = p.matcher(checkws);
+                    if(!m.matches()) {
+                        throw new  SpreadsheetLoadException(ctx, "Invalid checkwindow specified. Use 'start,stop' where start and stop are number of milliseconds. Both have to be positive.");
+                    }
+                    long start = Long.valueOf(m.group(1));
+                    long stop = Long.valueOf(m.group(2));
+                    if(stop<start) {
+                        throw new  SpreadsheetLoadException(ctx, "Invalid checkwindow specified. Stop cannot be smaller than start");
+                    }
+                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.timeLastVerifierPassed;
+                    
+                    if(hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
+                        String s = cells[IDX_CMDVERIF_CHECKWINDOW_RELATIVETO].getContents();
+                        try {
+                          cwr =   TimeWindowIsRelativeToType.valueOf(s);
+                        } catch (IllegalArgumentException  e) {
+                            throw new  SpreadsheetLoadException(ctx, "Invalid value '"+s+"' specified for CheckWindow relative to parameter. Use one of "+TimeWindowIsRelativeToType.values());
+                        }
+                    } 
+                    CheckWindow cw = new CheckWindow(start, stop, cwr);
+                    CommandVerifier cmdVerifier = new CommandVerifier(stage, cw);
+                    
+                    if(!hasColumn(cells, IDX_CMDVERIF_TYPE)) {
+                        throw new  SpreadsheetLoadException(ctx, "No type specified for the command verifier ");
+                    }
+                    String type  =  cells[IDX_CMDVERIF_TYPE].getContents();
+                    if("container".equalsIgnoreCase(type)) {
+                        String containerName =  cells[IDX_CMDVERIF_TEXT].getContents();
+                        SequenceContainer container = spaceSystem.getSequenceContainer(containerName);
+                        cmdVerifier.setContainerRef(container);
+                    } else {
+                        throw new  SpreadsheetLoadException(ctx, "Invalid type '"+type+"' specified for the command verifier. Supported types are: container ");
+                    }
+                    String tas = null;
+                    try {
+                        if(hasColumn(cells, IDX_CMDVERIF_ONSUCCESS)) {
+                            tas = cells[IDX_CMDVERIF_ONSUCCESS].getContents();
+                            CommandVerifier.TerminationAction ta = TerminationAction.valueOf(tas);
+                            cmdVerifier.setOnSuccess(ta);
+                        }
+                        if(hasColumn(cells, IDX_CMDVERIF_ONFAIL)) {
+                            tas = cells[IDX_CMDVERIF_ONFAIL].getContents();
+                            CommandVerifier.TerminationAction ta = TerminationAction.valueOf(tas);
+                            cmdVerifier.setOnFail(ta);
+                        }
+                        if(hasColumn(cells, IDX_CMDVERIF_ONTIMEOUT)) {
+                            tas = cells[IDX_CMDVERIF_ONTIMEOUT].getContents();
+                            CommandVerifier.TerminationAction ta = TerminationAction.valueOf(tas);
+                            cmdVerifier.setOnTimeout(ta);
+                        }
+                        cmd.addVerifier(cmdVerifier);
+                    } catch (IllegalArgumentException e) {
+                        throw new  SpreadsheetLoadException(ctx, "Invalid termination action '"+tas+"' specified for the command verifier. Supported actions are: "+TerminationAction.values());
+                    }
+                }                    
+                i++;
+            }
+        }
     }
 
     private List<ArgumentAssignment> toArgumentAssignmentList(String argAssignment) {

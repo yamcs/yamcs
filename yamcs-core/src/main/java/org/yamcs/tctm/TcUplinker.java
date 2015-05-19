@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 
 import com.google.common.util.concurrent.Service;
@@ -13,7 +13,7 @@ import com.google.common.util.concurrent.Service;
 public interface TcUplinker extends Link, Service {
 	void sendTc(PreparedCommand preparedCommand);
 
-	void setCommandHistoryListener(CommandHistory commandHistoryListener);
+	void setCommandHistoryListener(CommandHistoryPublisher commandHistoryListener);
 
 	/** 
 	 * Returns one of "OK" or "NOK"

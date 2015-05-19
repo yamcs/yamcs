@@ -3,7 +3,7 @@ package org.yamcs.tctm;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Stream;
@@ -50,7 +50,7 @@ public class YarchTcCommandReleaser extends AbstractService implements CommandRe
 
 
     @Override
-    public void setCommandHistory(CommandHistory commandHistoryListener) {
+    public void setCommandHistory(CommandHistoryPublisher commandHistoryListener) {
 
     }
 

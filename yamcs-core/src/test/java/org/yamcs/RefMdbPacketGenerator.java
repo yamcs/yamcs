@@ -39,6 +39,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
     public final int pkt2Length=8;
+    
+    
+    public final int cmdAck_Length=headerLength+7;
 
     //raw values of parameters 
     public volatile short pIntegerPara1_1=5;
@@ -185,6 +188,17 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 fill_PKT1_11(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
+     }
+     
+     public ByteBuffer generateCmdAck(short cmdId, byte stage, int result) {
+         ByteBuffer bb=ByteBuffer.allocate(cmdAck_Length);
+         fill_CcsdsHeader(bb, 101, 1000);
+         bb.position(headerLength);
+         bb.putShort(cmdId);
+         bb.put(stage);
+         bb.putInt(result);
+         sendToTmProcessor(bb);
+         return bb;
      }
      
      /**

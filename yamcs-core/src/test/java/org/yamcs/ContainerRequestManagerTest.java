@@ -3,16 +3,18 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.container.ContainerConsumer;
+import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ContainerRequestManagerTest {
@@ -30,6 +32,7 @@ public class ContainerRequestManagerTest {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
         YProcessor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
         ContainerRequestManager rm = c.getContainerRequestManager();
+        XtceDb xtceDb = c.getXtceDb();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();
         RecordingPacketConsumer consumer2 = new RecordingPacketConsumer();
@@ -41,23 +44,23 @@ public class ContainerRequestManagerTest {
         packetGenerator.generate_PKT13();
 
         assertEquals(6, consumer1.received.size());
-        Iterator<ItemIdPacketConsumerStruct> it = consumer1.received.keySet().iterator();
-        assertEquals("ccsds-default", it.next().def.getName());
-        assertEquals("PKT1", it.next().def.getName());
-        assertEquals("PKT11", it.next().def.getName());
-        assertEquals("ccsds-default", it.next().def.getName());
-        assertEquals("PKT1", it.next().def.getName());
-        assertEquals("PKT13", it.next().def.getName());
+        Iterator<SequenceContainer> it = consumer1.received.iterator();
+        assertEquals("ccsds-default", it.next().getName());
+        assertEquals("PKT1", it.next().getName());
+        assertEquals("PKT11", it.next().getName());
+        assertEquals("ccsds-default", it.next().getName());
+        assertEquals("PKT1", it.next().getName());
+        assertEquals("PKT13", it.next().getName());
 
         // Same for 2nd consumer
         assertEquals(6, consumer2.received.size());
-        it = consumer2.received.keySet().iterator();
-        assertEquals("ccsds-default", it.next().def.getName());
-        assertEquals("PKT1", it.next().def.getName());
-        assertEquals("PKT11", it.next().def.getName());
-        assertEquals("ccsds-default", it.next().def.getName());
-        assertEquals("PKT1", it.next().def.getName());
-        assertEquals("PKT13", it.next().def.getName());
+        it = consumer2.received.iterator();
+        assertEquals("ccsds-default", it.next().getName());
+        assertEquals("PKT1", it.next().getName());
+        assertEquals("PKT11", it.next().getName());
+        assertEquals("ccsds-default", it.next().getName());
+        assertEquals("PKT1", it.next().getName());
+        assertEquals("PKT13", it.next().getName());
 
         // Now try unsubscribing 2nd consumer
         consumer1.reset();
@@ -71,13 +74,14 @@ public class ContainerRequestManagerTest {
         assertEquals(0, consumer2.received.size());
 
         // Now subscribe 2nd consumer to PKT13 only
-        rm.subscribe(consumer2, NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/PKT13").build());
+        
+        rm.subscribe(consumer2, xtceDb.getSequenceContainer("/REFMDB/SUBSYS1/PKT13"));
 
         packetGenerator.generate_PKT11();
         packetGenerator.generate_PKT13();
 
         assertEquals(1, consumer2.received.size());
-        SequenceContainer cont = consumer2.received.keySet().iterator().next().def;
+        SequenceContainer cont = consumer2.received.iterator().next();
         assertEquals("PKT13", cont.getName());
 
         // Subscribe consumer2 to all again
@@ -92,12 +96,12 @@ public class ContainerRequestManagerTest {
     /**
      * PacketConsumer that stores whatever it consumes for later retrieval
      */
-    private static class RecordingPacketConsumer implements PacketConsumer {
-        Map<ItemIdPacketConsumerStruct, ByteBuffer> received = new LinkedHashMap<ItemIdPacketConsumerStruct, ByteBuffer>();
+    private static class RecordingPacketConsumer implements ContainerConsumer {
+        List<SequenceContainer> received = new ArrayList<SequenceContainer>();
 
         @Override
-        public void processPacket(ItemIdPacketConsumerStruct iipcs, ByteBuffer content) {
-            received.put(iipcs, content);
+        public void processContainer(SequenceContainer sc, ByteBuffer content) {
+            received.add(sc);
         }
 
         void reset() {

@@ -19,7 +19,7 @@ import org.yamcs.protobuf.Commanding.CommandId;
  * @author nm
  *
  */
-public class YarchCommandHistoryAdapter implements CommandHistory {
+public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     static public final String REALTIME_CMDHIST_STREAM_NAME="cmdhist_realtime";
     static public final String DUMP_CMDHIST_STREAM_NAME="cmdhist_dump";
     

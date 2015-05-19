@@ -28,7 +28,7 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallbackListener;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.YamcsConnectionProperties;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -59,7 +59,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.FileUtils;
@@ -82,7 +81,7 @@ public class IntegrationTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         setupYamcs();
-        boolean debug = false;
+        boolean debug = true;
         if(debug) {
             Logger.getLogger("org.yamcs").setLevel(Level.ALL);
         }
@@ -341,14 +340,14 @@ public class IntegrationTest {
         assertEquals(1, cmdhist.getAttrCount());
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistory.TransmissionContraints_KEY, cha.getName());
+        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NOK", cha.getValue().getStringValue());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistory.CommandFailed_KEY, cha.getName());
+        assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
         assertEquals("Transmission constraints check failed", cha.getValue().getStringValue());
     }
 
@@ -380,7 +379,7 @@ public class IntegrationTest {
         assertEquals(1, cmdhist.getAttrCount());
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistory.TransmissionContraints_KEY, cha.getName());
+        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
     }
 
@@ -551,7 +550,6 @@ public class IntegrationTest {
 
     @Test
     public void testPermissionGetParameter() throws Exception {
-
         UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
         currentUser = testuser;
 
@@ -569,7 +567,52 @@ public class IntegrationTest {
 
     }
 
+    
+    @Test
+    public void testCommandVerification() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
+        wsClient.sendRequest(wsr);
 
+        RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/VERIFICATION_TC", 7);
+        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
+        assertEquals("{}", resp);
+
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+
+        assertNotNull(cmdhist);
+        CommandId cmdid = cmdhist.getCommandId();
+        assertEquals("/REFMDB/SUBSYS1/VERIFICATION_TC", cmdid.getCommandName());
+        assertEquals(7, cmdid.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdid.getOrigin());
+        packetProvider.generateCmdAck((short)1001, (byte)0, 0);
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals("Verifier_Execution", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+        
+        packetProvider.generateCmdAck((short)1001, (byte)5, 0);
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals("Verifier_Complete", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+        
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+    }
+
+    
     private RestValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) {
         NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
 

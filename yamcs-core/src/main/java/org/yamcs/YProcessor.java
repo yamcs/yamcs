@@ -10,15 +10,17 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cmdhistory.CommandHistory;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
+import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -52,7 +54,7 @@ public class YProcessor {
     static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
     private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
-    private CommandHistory commandHistoryPublisher;
+    private CommandHistoryPublisher commandHistoryPublisher;
 
     private CommandHistoryRequestManager commandHistoryRequestManager;
 
@@ -89,6 +91,8 @@ public class YProcessor {
     //unless very good performance reasons, we should try to serialize all the processing in this thread
     final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     
+    final private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    
     @GuardedBy("this")
     HashSet<YProcessorClient> connectedClients= new HashSet<YProcessorClient>();
 
@@ -103,6 +107,7 @@ public class YProcessor {
 	this.type=type;
     }
 
+    
   
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
@@ -147,7 +152,7 @@ public class YProcessor {
 	    containerRequestManager=new ContainerRequestManager(this, tmProcessor);
 	    parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
 
-	    containerRequestManager.setPacketProvider(tmPacketProvider);
+	//    containerRequestManager.setPacketProvider(tmPacketProvider);
 
 	    for(ParameterProvider pprov: parameterProviders) {
 		pprov.init(this);
@@ -223,7 +228,7 @@ public class YProcessor {
 	return instance+"."+name;
     }
 
-    public CommandHistory getCommandHistoryListener() {
+    public CommandHistoryPublisher getCommandHistoryPublisher() {
 	return commandHistoryPublisher;
     }
 
@@ -494,5 +499,11 @@ public class YProcessor {
 
     public boolean cacheAllParameters() {
 	return parameterCacheAll;
+    }
+
+
+
+    public ScheduledThreadPoolExecutor getTimer() {
+        return timer;
     }
 }
