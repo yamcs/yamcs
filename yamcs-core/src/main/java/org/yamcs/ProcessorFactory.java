@@ -26,7 +26,7 @@ public class ProcessorFactory {
     /**
      * Create a channel with the give name, type, creator and spec
      * 
-     *  type is used to load the tm, parameter and command classes as defined in channel.yaml
+     *  type is used to load the tm, parameter and command classes as defined in yprocessor.yaml
      *  spec if not null is passed as an extra argument to those classes - it is used for example when creating replay channels to pass on the data that has to be replayed.
      *       should probably be changed from string to some sort of object.
      * 

@@ -7,10 +7,6 @@
     <security-invalidation-interval>60000</security-invalidation-interval>
     <journal-type>NIO</journal-type>
 
-    <bindings-directory>/storage/hornetq/bindings</bindings-directory>
-    <journal-directory>/storage/hornetq/journal</journal-directory>
-    <large-messages-directory>/storage/hornetq/large-messages</large-messages-directory>
-    <paging-directory>/storage/hornetq/paging</paging-directory>
 
 
     <management-notification-address>hornetq.notifications</management-notification-address>
@@ -77,29 +73,29 @@
         <!-- Per-instance addresses -->
         <!-- temp data queues -->
         <security-setting match="tempRpcAddress.#">
-            <permission type="createNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="deleteNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="consume" roles="Operator,Administrator"/>
-            <permission type="send" roles="Operator,Administrator"/>
+            <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="consume" roles="Operator,Administrator,Role1"/>
+            <permission type="send" roles="Operator,Administrator,Role1"/>
         </security-setting>
         <security-setting match="tempDataAddress.#">
-            <permission type="createNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="deleteNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="consume" roles="Operator,Administrator"/>
-            <permission type="send" roles="Operator,Administrator"/>
+            <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="consume" roles="Operator,Administrator,Role1"/>
+            <permission type="send" roles="Operator,Administrator,Role1"/>
         </security-setting>
         <!-- Privileged operators can use the realtime stream -->
         <security-setting match="*.tm_realtime">
-            <permission type="createNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="deleteNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="consume" roles="Operator,Administrator"/>
-            <permission type="send" roles="Operator,Administrator"/>
+            <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="consume" roles="Operator,Administrator,Role1"/>
+            <permission type="send" roles="Operator,Administrator,Role1"/>
         </security-setting>
         <security-setting match="*.parameters_realtime">
-            <permission type="createNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="deleteNonDurableQueue" roles="Operator,Administrator"/>
-            <permission type="consume" roles="Operator,Administrator"/>
-            <permission type="send" roles="Operator,Administrator"/>
+            <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1"/>
+            <permission type="consume" roles="Operator,Administrator,Role1"/>
+            <permission type="send" roles="Operator,Administrator,Role1"/>
         </security-setting>
         <security-setting match="*.tm_dump">
             <permission type="send" roles="yamcs-bridge" />
@@ -128,8 +124,8 @@
             <permission type="deleteDurableQueue" roles="Administrator"/>
             <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1,Role2"/>
             <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1,Role2"/>
-            <permission type="consume" roles="Operator,Administrator,SOLACES-UHB,Role1,Role2"/>
-            <permission type="send" roles="Operator,Administrator,SOLACES-UHB,Role1,Role2"/>
+            <permission type="consume" roles="Operator,Administrator,Role1,Role2"/>
+            <permission type="send" roles="Operator,Administrator,Role1,Role2"/>
         </security-setting>
         <!-- General yamcs addresses -->
         <security-setting match="yamcsControl">
