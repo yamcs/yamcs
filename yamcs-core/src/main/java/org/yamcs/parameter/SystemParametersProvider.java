@@ -123,16 +123,19 @@ public class SystemParametersProvider extends AbstractService implements StreamS
      */
     @Override
     public boolean canProvide(NamedObjectId paraId) {
+        boolean result;
         if(!paraId.hasNamespace()) {
-            return paraId.getName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
+            result = paraId.getName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
         } else {
-            return paraId.getNamespace().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
+            result = paraId.getNamespace().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
         }
+        return result;
+        
     }
 
     @Override
     public boolean canProvide(Parameter para) {        
-	return para.getName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
+	return para.getQualifiedName().startsWith(XtceDbFactory.YAMCS_SPACESYSTEM_NAME);
     }
 
     

@@ -25,7 +25,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;

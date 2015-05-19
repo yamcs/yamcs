@@ -74,6 +74,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 
     @Override
     public void run() {
+        setupSysVariables();
 	while(isRunning()) {
 	    PacketWithTime pwrt=getNextPacket();
 	    if(pwrt==null) break;
