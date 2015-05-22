@@ -19,6 +19,7 @@ class User {
 
 	Set<String> roles;
 	Set<String> tmParaPrivileges;
+    Set<String> tmParaSetPrivileges;
 	Set<String> tmPacketPrivileges;
 	Set<String> tcPrivileges;
 	Set<String> systemPrivileges;
@@ -64,9 +65,12 @@ class User {
 	public boolean hasPrivilege(Privilege.Type type, String privilege) {
 		Set<String> priv = null;
 		switch (type) {
-			case TM_PARAMETER:
-				priv = this.tmParaPrivileges;
-				break;
+            case TM_PARAMETER:
+                priv = this.tmParaPrivileges;
+                break;
+            case TM_PARAMETER_SET:
+                priv = this.tmParaSetPrivileges;
+                break;
 			case TC:
 				priv = this.tcPrivileges;
 				break;
@@ -94,7 +98,8 @@ class User {
 		return "User:" + authenticationToken.getPrincipal().toString()
 				+ "\n authenticated: " + authenticated
 				+ "\n roles: " + roles + "\n   tm parameter privileges:"
-				+ tmParaPrivileges + "\n   tm packet privileges:"
+                + tmParaPrivileges + "\n   tm parameter set privileges:"
+                + tmParaSetPrivileges + "\n   tm packet privileges:"
 				+ tmPacketPrivileges + "\n   tc privileges:" + tcPrivileges
 				+ "\n   system privileges:" + systemPrivileges
 				+ "\n   lastUpdated:" + new Date(lastUpdated);

@@ -567,6 +567,21 @@ public class IntegrationTest {
 
     }
 
+    @Test
+    public void testPermissionSetParameter() throws Exception {
+        UsernamePasswordToken testuser = new UsernamePasswordToken("operator", "password");
+        currentUser = testuser;
+
+        org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
+                .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
+                .setEngValue(ValueHelper.newValue(5)).build();
+        ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
+        HttpClient httpClient = new HttpClient();
+        String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
+        assertTrue("Permission should be denied", response.contains("ForbiddenException"));
+
+    }
+
     
     @Test
     public void testCommandVerification() throws Exception {

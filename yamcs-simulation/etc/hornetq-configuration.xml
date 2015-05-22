@@ -71,10 +71,10 @@
     <!-- Yamcs server internally has all roles. -->
     <security-settings>
         <security-setting match="#">
-            <permission type="createNonDurableQueue" roles="Operator,Administrator,Role1"/>
-            <permission type="deleteNonDurableQueue" roles="Operator,Administrator,Role1"/>
-            <permission type="consume" roles="Operator,Administrator,Role1"/>
-            <permission type="send" roles="Operator,Administrator,Role1"/>
+            <permission type="createNonDurableQueue" roles="Operator,Monitoring,Supervisor"/>
+            <permission type="deleteNonDurableQueue" roles="Operator,Monitoring,Supervisor"/>
+            <permission type="consume" roles="Operator,Monitoring,Supervisor"/>
+            <permission type="send" roles="Operator,Monitoring,Supervisor"/>
         </security-setting>
     </security-settings>
 

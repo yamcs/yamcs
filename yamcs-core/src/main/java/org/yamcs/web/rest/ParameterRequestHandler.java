@@ -19,6 +19,7 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
@@ -53,7 +54,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
             writeMessage(ctx, req, qsDecoder, pdata, SchemaPvalue.ParameterData.WRITE);
         } else if ("_set".equals(qsDecoder.path())) {
             ParameterData pdata = readMessage(req, SchemaPvalue.ParameterData.MERGE).build();
-            RestSetParameterResponse response = setParameters(pdata, yproc);
+            RestSetParameterResponse response = setParameters(pdata, yproc, authToken);
 
             writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSetParameterResponse.WRITE);
         } else {
@@ -118,12 +119,28 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets multiple parameters parameters
      */
-    private RestSetParameterResponse setParameters(ParameterData pdata, org.yamcs.YProcessor yamcsChannel) throws RestException {
-        //TODO permissions
+    private RestSetParameterResponse setParameters(ParameterData pdata, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken) throws RestException {
 
         SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this channel");
+        }
+        // check permission
+        {
+            ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
+            for(Pvalue.ParameterValue p : pdata.getParameterList())
+            {
+                try {
+                    String parameterName = prm.getParameter(p.getId()).getQualifiedName();
+                    if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER_SET, parameterName))
+                    {
+                        throw  new ForbiddenException("User " + authToken + " has no set permission for parameter "
+                                + parameterName);
+                    }
+                } catch (InvalidIdentification invalidIdentification) {
+                    throw new BadRequestException("InvalidIdentification: " + invalidIdentification.getMessage());
+                }
+            }
         }
         try {
             spm.updateParameters(pdata.getParameterList());
@@ -133,6 +150,8 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
         return RestSetParameterResponse.newBuilder().build();
     }
+
+
 
     /**
      * Gets parameter values

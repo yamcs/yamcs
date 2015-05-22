@@ -19,6 +19,7 @@ public class YamlRealm implements Realm {
 
     static String configFileName;
     static String tm_parameter_privileges = "tm_parameter_privileges";
+    static String tm_parameter_set_privileges = "tm_parameter_set_privileges";
     static String tm_packet_privileges = "tm_packet_privileges";
     static String tc_privileges = "tc_privileges";
     static String system_privileges = "system_privileges";
@@ -98,13 +99,15 @@ public class YamlRealm implements Realm {
             }
             user.roles = userRoles;
 
-            // Load Priviledges
+            // Load Privileges
             user.tmParaPrivileges = new HashSet<>();
+            user.tmParaSetPrivileges = new HashSet<>();
             user.tmPacketPrivileges = new HashSet<>();
             user.tcPrivileges = new HashSet<>();
             user.systemPrivileges = new HashSet<>();
             for (String role : userRoles) {
                 user.tmParaPrivileges.addAll(getPrivileges(conf, role, tm_parameter_privileges));
+                user.tmParaSetPrivileges.addAll(getPrivileges(conf, role, tm_parameter_set_privileges));
                 user.tmPacketPrivileges.addAll(getPrivileges(conf, role, tm_packet_privileges));
                 user.tcPrivileges.addAll(getPrivileges(conf, role, tc_privileges));
                 user.systemPrivileges.addAll(getPrivileges(conf, role, system_privileges));

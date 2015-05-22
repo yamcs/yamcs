@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
  */
 public class LdapRealm implements Realm {
     public static String tmParaPrivPath;
+    public static String tmParaSetPrivPath;
     public static String tmPacketPrivPath;
     public static String tcPrivPath;
     public static String systemPrivPath;
@@ -46,6 +47,7 @@ public class LdapRealm implements Realm {
             rolePath = conf.getString("rolePath");
             systemPrivPath = conf.getString("systemPath");
             tmParaPrivPath = conf.getString("tmParameterPath");
+            tmParaSetPrivPath = conf.getString("tmParameterSetPath");
             tmPacketPrivPath = conf.getString("tmPacketPath");
             tcPrivPath = conf.getString("tcPath");
             contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -218,6 +220,8 @@ public class LdapRealm implements Realm {
             u.tmPacketPrivileges = loadPrivileges(context, ldapRoles, tmPacketPrivPath, "groupOfNames", "cn");
             u.tcPrivileges = loadPrivileges(context, ldapRoles, tcPrivPath,	"groupOfNames", "cn");
             u.systemPrivileges = loadPrivileges(context, ldapRoles, systemPrivPath,	"groupOfNames", "cn");
+            // might fail on previous yamcs ldap since this is a new type of privileges:
+            u.tmParaSetPrivileges = loadPrivileges(context, ldapRoles, tmParaSetPrivPath,	"groupOfNames", "cn");
 
         } catch (NamingException e) {
             log.error("", e);

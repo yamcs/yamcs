@@ -52,7 +52,7 @@ public class Privilege {
     static Logger log = LoggerFactory.getLogger(Privilege.class);
 
     public enum Type {
-        SYSTEM, TC, TM_PACKET, TM_PARAMETER
+        SYSTEM, TC, TM_PACKET, TM_PARAMETER, TM_PARAMETER_SET
     };
 
     /**
