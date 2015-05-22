@@ -34,6 +34,8 @@ import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.TimeEncoding;
 
@@ -200,8 +202,9 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
                     build();
                
                 EventReplayRequest err=EventReplayRequest.newBuilder().build();
-                ReplayRequest crr=ReplayRequest.newBuilder().setStart(params.start).setStop(params.stop).
-                        setEndAction(EndAction.QUIT).setEventRequest(err).build();
+                ReplayRequest crr=ReplayRequest.newBuilder().setStart(params.start).setStop(params.stop)
+                        .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
+                        .setEndAction(EndAction.QUIT).setEventRequest(err).build();
                 
                 SimpleString replayServer=Protocol.getYarchReplayControlAddress(yconnector.getConnectionParams().getInstance());
                 StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", crr, StringMessage.newBuilder());
