@@ -61,6 +61,10 @@ public final class SchemaPvalue
                     output.writeDouble(21, message.getSevereLow(), false);
                 if(message.hasSevereHigh())
                     output.writeDouble(22, message.getSevereHigh(), false);
+                if(message.hasExpirationTime())
+                    output.writeInt64(23, message.getExpirationTime(), false);
+                if(message.hasExpirationTimeUTC())
+                    output.writeString(24, message.getExpirationTimeUTC(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
             {
@@ -163,6 +167,12 @@ public final class SchemaPvalue
                         case 22:
                             builder.setSevereHigh(input.readDouble());
                             break;
+                        case 23:
+                            builder.setExpirationTime(input.readInt64());
+                            break;
+                        case 24:
+                            builder.setExpirationTimeUTC(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -223,6 +233,8 @@ public final class SchemaPvalue
                 case 20: return "criticalHigh";
                 case 21: return "severeLow";
                 case 22: return "severeHigh";
+                case 23: return "expirationTime";
+                case 24: return "expirationTimeUTC";
                 default: return null;
             }
         }
@@ -254,6 +266,8 @@ public final class SchemaPvalue
             fieldMap.put("criticalHigh", 20);
             fieldMap.put("severeLow", 21);
             fieldMap.put("severeHigh", 22);
+            fieldMap.put("expirationTime", 23);
+            fieldMap.put("expirationTimeUTC", 24);
         }
     }
 

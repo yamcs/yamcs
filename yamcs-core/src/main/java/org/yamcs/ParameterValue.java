@@ -25,6 +25,8 @@ public class ParameterValue {
     private Value engValue;
     private long acquisitionTime;
     private long generationTime;
+    private long expirationTime = TimeEncoding.INVALID_INSTANT;
+    
     private AcquisitionStatus acquisitionStatus;
     private boolean processingStatus;
     public MonitoringResult monitoringResult;
@@ -310,7 +312,15 @@ public class ParameterValue {
 	this.engValue=ev;
     }
 
+    public void setExpirationTime(long et) {
+        this.expirationTime = et;
+    }
+    
+    public long getExpirationTime() {
+        return expirationTime;
+    }
 
+    
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
 	org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
 		.setAcquisitionStatus(getAcquisitionStatus())
@@ -323,7 +333,12 @@ public class ParameterValue {
 	// TODO make this optional
 	gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
 	gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
-
+	
+	if(expirationTime!=TimeEncoding.INVALID_INSTANT) {
+	    gpvb.setExpirationTime(expirationTime);
+	    gpvb.setExpirationTimeUTC(TimeEncoding.toString(expirationTime));
+	}
+	
 	// TODO make this optional
 	if (watchRange != null) {
 	    if (!Double.isInfinite(watchRange.getMinInclusive()))

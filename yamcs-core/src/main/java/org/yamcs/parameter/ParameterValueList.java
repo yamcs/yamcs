@@ -406,7 +406,23 @@ public class ParameterValueList implements Collection<ParameterValue> {
         throw new UnsupportedOperationException();
     }
 
-
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        boolean first = true;
+        for(ParameterValue pv:this) {
+            if(first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(pv.toString());
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    
+    
     static class Entry {
         final ParameterValue pv;
         Entry next, before, after;

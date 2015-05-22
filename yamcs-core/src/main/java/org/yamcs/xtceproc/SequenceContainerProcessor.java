@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 
@@ -22,7 +23,12 @@ public class SequenceContainerProcessor {
         //First add it to the result
         pcontext.containerResult.add(new ContainerExtractionResult(seq, pcontext.bb
                         .asReadOnlyBuffer(), pcontext.bitPosition, pcontext.acquisitionTime, pcontext.generationTime));
-
+        
+        RateInStream ris = seq.getRateInStream();
+        if(ris != null) {
+            pcontext.expirationTime = pcontext.acquisitionTime + ris.getMaxInterval();
+        }
+        
         int maxposition=pcontext.bitPosition;
         //then extract the entries
         TreeSet<SequenceEntry> entries=pcontext.subscription.getEntries(seq);

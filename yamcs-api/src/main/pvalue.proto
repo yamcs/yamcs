@@ -64,6 +64,8 @@ message ParameterValue {
     optional double criticalHigh = 20;
     optional double severeLow = 21;
     optional double severeHigh = 22;
+    optional int64 expirationTime = 23;
+    optional string expirationTimeUTC = 24;
 }
 
 message ParameterData {

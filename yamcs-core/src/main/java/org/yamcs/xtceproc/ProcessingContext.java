@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.utils.TimeEncoding;
 
 
 /**
@@ -12,8 +13,7 @@ import org.yamcs.parameter.ParameterValueList;
  * @author nm
  *
  */
-public class ProcessingContext {
-	
+public class ProcessingContext {	
 	ByteBuffer bb;
 	public int bitPosition;
 	
@@ -29,6 +29,8 @@ public class ProcessingContext {
 	
 	public long acquisitionTime;
 	public long generationTime;
+	public long expirationTime = TimeEncoding.INVALID_INSTANT;
+	
 	ProcessingStatistics stats;
 	
 	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);

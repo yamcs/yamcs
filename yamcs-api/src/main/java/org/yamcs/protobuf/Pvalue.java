@@ -621,6 +621,31 @@ public final class Pvalue {
      * <code>optional double severeHigh = 22;</code>
      */
     double getSevereHigh();
+
+    // optional int64 expirationTime = 23;
+    /**
+     * <code>optional int64 expirationTime = 23;</code>
+     */
+    boolean hasExpirationTime();
+    /**
+     * <code>optional int64 expirationTime = 23;</code>
+     */
+    long getExpirationTime();
+
+    // optional string expirationTimeUTC = 24;
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    boolean hasExpirationTimeUTC();
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    java.lang.String getExpirationTimeUTC();
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    com.google.protobuf.ByteString
+        getExpirationTimeUTCBytes();
   }
   /**
    * Protobuf type {@code pvalue.ParameterValue}
@@ -812,6 +837,16 @@ public final class Pvalue {
             case 177: {
               bitField0_ |= 0x00080000;
               severeHigh_ = input.readDouble();
+              break;
+            }
+            case 184: {
+              bitField0_ |= 0x00100000;
+              expirationTime_ = input.readInt64();
+              break;
+            }
+            case 194: {
+              bitField0_ |= 0x00200000;
+              expirationTimeUTC_ = input.readBytes();
               break;
             }
           }
@@ -1266,6 +1301,65 @@ public final class Pvalue {
       return severeHigh_;
     }
 
+    // optional int64 expirationTime = 23;
+    public static final int EXPIRATIONTIME_FIELD_NUMBER = 23;
+    private long expirationTime_;
+    /**
+     * <code>optional int64 expirationTime = 23;</code>
+     */
+    public boolean hasExpirationTime() {
+      return ((bitField0_ & 0x00100000) == 0x00100000);
+    }
+    /**
+     * <code>optional int64 expirationTime = 23;</code>
+     */
+    public long getExpirationTime() {
+      return expirationTime_;
+    }
+
+    // optional string expirationTimeUTC = 24;
+    public static final int EXPIRATIONTIMEUTC_FIELD_NUMBER = 24;
+    private java.lang.Object expirationTimeUTC_;
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    public boolean hasExpirationTimeUTC() {
+      return ((bitField0_ & 0x00200000) == 0x00200000);
+    }
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    public java.lang.String getExpirationTimeUTC() {
+      java.lang.Object ref = expirationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          expirationTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string expirationTimeUTC = 24;</code>
+     */
+    public com.google.protobuf.ByteString
+        getExpirationTimeUTCBytes() {
+      java.lang.Object ref = expirationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        expirationTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
       rawValue_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
@@ -1287,6 +1381,8 @@ public final class Pvalue {
       criticalHigh_ = 0D;
       severeLow_ = 0D;
       severeHigh_ = 0D;
+      expirationTime_ = 0L;
+      expirationTimeUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1378,6 +1474,12 @@ public final class Pvalue {
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
         output.writeDouble(22, severeHigh_);
       }
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
+        output.writeInt64(23, expirationTime_);
+      }
+      if (((bitField0_ & 0x00200000) == 0x00200000)) {
+        output.writeBytes(24, getExpirationTimeUTCBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1466,6 +1568,14 @@ public final class Pvalue {
       if (((bitField0_ & 0x00080000) == 0x00080000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(22, severeHigh_);
+      }
+      if (((bitField0_ & 0x00100000) == 0x00100000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(23, expirationTime_);
+      }
+      if (((bitField0_ & 0x00200000) == 0x00200000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(24, getExpirationTimeUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1643,6 +1753,10 @@ public final class Pvalue {
         bitField0_ = (bitField0_ & ~0x00040000);
         severeHigh_ = 0D;
         bitField0_ = (bitField0_ & ~0x00080000);
+        expirationTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00100000);
+        expirationTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00200000);
         return this;
       }
 
@@ -1763,6 +1877,14 @@ public final class Pvalue {
           to_bitField0_ |= 0x00080000;
         }
         result.severeHigh_ = severeHigh_;
+        if (((from_bitField0_ & 0x00100000) == 0x00100000)) {
+          to_bitField0_ |= 0x00100000;
+        }
+        result.expirationTime_ = expirationTime_;
+        if (((from_bitField0_ & 0x00200000) == 0x00200000)) {
+          to_bitField0_ |= 0x00200000;
+        }
+        result.expirationTimeUTC_ = expirationTimeUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1842,6 +1964,14 @@ public final class Pvalue {
         }
         if (other.hasSevereHigh()) {
           setSevereHigh(other.getSevereHigh());
+        }
+        if (other.hasExpirationTime()) {
+          setExpirationTime(other.getExpirationTime());
+        }
+        if (other.hasExpirationTimeUTC()) {
+          bitField0_ |= 0x00200000;
+          expirationTimeUTC_ = other.expirationTimeUTC_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2924,6 +3054,113 @@ public final class Pvalue {
       public Builder clearSevereHigh() {
         bitField0_ = (bitField0_ & ~0x00080000);
         severeHigh_ = 0D;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 expirationTime = 23;
+      private long expirationTime_ ;
+      /**
+       * <code>optional int64 expirationTime = 23;</code>
+       */
+      public boolean hasExpirationTime() {
+        return ((bitField0_ & 0x00100000) == 0x00100000);
+      }
+      /**
+       * <code>optional int64 expirationTime = 23;</code>
+       */
+      public long getExpirationTime() {
+        return expirationTime_;
+      }
+      /**
+       * <code>optional int64 expirationTime = 23;</code>
+       */
+      public Builder setExpirationTime(long value) {
+        bitField0_ |= 0x00100000;
+        expirationTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 expirationTime = 23;</code>
+       */
+      public Builder clearExpirationTime() {
+        bitField0_ = (bitField0_ & ~0x00100000);
+        expirationTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string expirationTimeUTC = 24;
+      private java.lang.Object expirationTimeUTC_ = "";
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public boolean hasExpirationTimeUTC() {
+        return ((bitField0_ & 0x00200000) == 0x00200000);
+      }
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public java.lang.String getExpirationTimeUTC() {
+        java.lang.Object ref = expirationTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          expirationTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public com.google.protobuf.ByteString
+          getExpirationTimeUTCBytes() {
+        java.lang.Object ref = expirationTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          expirationTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public Builder setExpirationTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00200000;
+        expirationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public Builder clearExpirationTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00200000);
+        expirationTimeUTC_ = getDefaultInstance().getExpirationTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string expirationTimeUTC = 24;</code>
+       */
+      public Builder setExpirationTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00200000;
+        expirationTimeUTC_ = value;
         onChanged();
         return this;
       }
@@ -4037,7 +4274,7 @@ public final class Pvalue {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\"\251\004\n\016" +
+      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\"\334\004\n\016" +
       "ParameterValue\022 \n\002id\030\001 \001(\0132\024.yamcs.Named" +
       "ObjectId\022\036\n\010rawValue\030\002 \001(\0132\014.yamcs.Value" +
       "\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Value\022\027\n\017acqu" +
@@ -4051,20 +4288,21 @@ public final class Pvalue {
       "\017 \001(\001\022\023\n\013warningHigh\030\020 \001(\001\022\023\n\013distressLo" +
       "w\030\021 \001(\001\022\024\n\014distressHigh\030\022 \001(\001\022\023\n\013critica" +
       "lLow\030\023 \001(\001\022\024\n\014criticalHigh\030\024 \001(\001\022\021\n\tseve" +
-      "reLow\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\"q\n\rParam" +
-      "eterData\022)\n\tparameter\030\001 \003(\0132\026.pvalue.Par" +
-      "ameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016generation" +
-      "Time\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n\021Acquisitio" +
-      "nStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022" +
-      "\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020Monitoring",
-      "Result\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005W" +
-      "ATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n" +
-      "\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_H" +
-      "IGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n" +
-      "\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITIC" +
-      "AL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022" +
-      "\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org." +
-      "yamcs.protobuf"
+      "reLow\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\022\026\n\016expir" +
+      "ationTime\030\027 \001(\003\022\031\n\021expirationTimeUTC\030\030 \001" +
+      "(\t\"q\n\rParameterData\022)\n\tparameter\030\001 \003(\0132\026" +
+      ".pvalue.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n" +
+      "\016generationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n" +
+      "\021AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_",
+      "RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n" +
+      "\020MonitoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LI" +
+      "MITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATC" +
+      "H_HIGH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020" +
+      "\n\014WARNING_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRE" +
+      "SS_LOW\020\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020" +
+      "\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n" +
+      "\n\006SEVERE\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIG" +
+      "H\020\025B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4076,7 +4314,7 @@ public final class Pvalue {
           internal_static_pvalue_ParameterValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pvalue_ParameterValue_descriptor,
-              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "WatchLow", "WatchHigh", "WarningLow", "WarningHigh", "DistressLow", "DistressHigh", "CriticalLow", "CriticalHigh", "SevereLow", "SevereHigh", });
+              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "WatchLow", "WatchHigh", "WarningLow", "WarningHigh", "DistressLow", "DistressHigh", "CriticalLow", "CriticalHigh", "SevereLow", "SevereHigh", "ExpirationTime", "ExpirationTimeUTC", });
           internal_static_pvalue_ParameterData_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_pvalue_ParameterData_fieldAccessorTable = new

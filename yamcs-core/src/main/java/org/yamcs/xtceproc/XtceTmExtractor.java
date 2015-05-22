@@ -10,6 +10,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
@@ -86,6 +87,8 @@ public class XtceTmExtractor {
 	    synchronized(subscription) {
 		long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
 		ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
+		
+		
 		pcontext.sequenceContainerProcessor.extract(startContainer);
 	    }
 	} catch (Exception e) {

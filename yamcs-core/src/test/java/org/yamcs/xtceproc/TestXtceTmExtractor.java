@@ -14,6 +14,7 @@ import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -31,7 +32,7 @@ public class TestXtceTmExtractor {
     }
 
     @Test
-    public void testPKT11() throws ConfigurationException {
+    public void testPKT1_1() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
         //xtcedb.print(System.out);
@@ -63,6 +64,47 @@ public class TestXtceTmExtractor {
         assertEquals(tmGenerator.pStringPara11_5, pv.getEngValue().getStringValue());
     }
 
+    
+    @Test
+    public void testPKT1_2() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        //xtcedb.print(System.out);
+
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        ByteBuffer bb=tmGenerator.generate_PKT1_2();
+        tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
+        
+        ParameterValueList received=tmExtractor.getParameterResult();
+        
+        ParameterValue pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/LEIntegerPara1_2_1"));
+        assertNotNull(pv);
+        assertEquals(tmGenerator.pLEIntegerPara1_2_1, pv.getEngValue().getUint32Value());
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/LEIntegerPara1_2_2"));
+        assertNotNull(pv);
+        assertEquals(tmGenerator.pLEIntegerPara1_2_2, pv.getEngValue().getUint32Value());
+        
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/LEIntegerPara1_2_3"));
+        assertNotNull(pv);
+        assertEquals(tmGenerator.pLEIntegerPara1_2_3, pv.getEngValue().getUint32Value());
+        
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/LEFloatPara1_2_1"));
+        assertNotNull(pv);
+        assertEquals(tmGenerator.pLEFloatPara1_2_1*0.0001672918, pv.getEngValue().getFloatValue(), 1e-8);
+        
+        pv=received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/LEFloatPara1_2_2"));
+        assertNotNull(pv);
+        assertEquals(tmGenerator.pLEFloatPara1_2_2, pv.getEngValue().getFloatValue(), 0);
+        
+        assertEquals(pv.getAcquisitionTime()+1500, pv.getExpirationTime());
+    }
+
+    
     @Test
     public void testPKT13StringStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();

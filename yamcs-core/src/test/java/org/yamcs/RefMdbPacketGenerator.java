@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -27,15 +28,15 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     TmProcessor tmProcessor;
     public final int headerLength=16;
     public final int pkt1Length=headerLength+3;
-    public final int pkt11Length=pkt1Length+56;
-    public final int pkt12Length=pkt1Length+7;
-    public final int pkt13Length=pkt1Length+100;
-    public final int pkt14Length=pkt1Length+100;
-    public final int pkt15Length=pkt1Length+50;
-    public final int pkt16Length=pkt1Length+4;
-    public final int pkt17Length=pkt1Length+6;
-    public final int pkt18Length=pkt1Length+6;
-    public final int pkt19Length=pkt1Length+1;
+    public final int pkt1_1Length=pkt1Length+56;
+    public final int pkt1_2Length=pkt1Length+16;
+    public final int pkt1_3Length=pkt1Length+100;
+    public final int pkt1_4Length=pkt1Length+100;
+    public final int pkt1_5Length=pkt1Length+50;
+    public final int pkt1_6Length=pkt1Length+4;
+    public final int pkt1_7Length=pkt1Length+6;
+    public final int pkt1_8Length=pkt1Length+6;
+    public final int pkt1_9Length=pkt1Length+1;
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
     public final int pkt2Length=8;
@@ -58,6 +59,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile int pIntegerPara1_11_1=0xAFFFFFFE; // a uint32 stored in signed java int
     public volatile long pIntegerPara1_11_1_unsigned_value=2952790014L; // the equivalent unsigned value
 
+    public volatile byte pLEIntegerPara1_2_1 = 13;
+    public volatile short pLEIntegerPara1_2_2 = 1300;
+    public volatile int pLEIntegerPara1_2_3 = 130000;
+    public volatile short pLEFloatPara1_2_1 = 300;
+    public volatile float pLEFloatPara1_2_2 = 2.7182f;
+
+    
+    
     static public final String pFixedStringPara13_1 = "Ab"; // 16 bits
     static public final String pFixedStringPara13_2 = "A"; // 8 bits
     static public final String pTerminatedStringPara13_3 = "Abcdef"; // Null terminated
@@ -104,28 +113,35 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
 
     public ByteBuffer generate_PKT11() {
-	ByteBuffer bb=ByteBuffer.allocate(pkt11Length);
+	ByteBuffer bb=ByteBuffer.allocate(pkt1_1Length);
 	fill_PKT11(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
 
+    public ByteBuffer generate_PKT1_2() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt1_2Length);
+        fill_PKT1_2(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
     public ByteBuffer generate_PKT13() {
-	ByteBuffer bb=ByteBuffer.allocate(pkt13Length);
+	ByteBuffer bb=ByteBuffer.allocate(pkt1_3Length);
 	fill_PKT13(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
 
     public ByteBuffer generate_PKT14() {
-	ByteBuffer bb=ByteBuffer.allocate(pkt14Length);
+	ByteBuffer bb=ByteBuffer.allocate(pkt1_4Length);
 	fill_PKT14(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
 
     public ByteBuffer generate_PKT15() {
-	ByteBuffer bb=ByteBuffer.allocate(pkt15Length);
+	ByteBuffer bb=ByteBuffer.allocate(pkt1_5Length);
 	fill_PKT15(bb);
 	sendToTmProcessor(bb);
 	return bb;
@@ -149,28 +165,28 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
       * Generate a packet with configurable content
       */
      public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
-	 ByteBuffer bb=ByteBuffer.allocate(pkt16Length);
+	 ByteBuffer bb=ByteBuffer.allocate(pkt1_6Length);
 	 fill_PKT16(bb, pIntegerPara16_1, pIntegerPara16_2);
 	 sendToTmProcessor(bb, rectime, gentime);
 	 return bb;
      }
 
      public ByteBuffer generate_PKT17() {
-	 ByteBuffer bb=ByteBuffer.allocate(pkt17Length);
+	 ByteBuffer bb=ByteBuffer.allocate(pkt1_7Length);
 	 fill_PKT17(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
      }
 
      public ByteBuffer generate_PKT18(int pIntegerPara18_1, int pIntegerPara18_2) {
-	 ByteBuffer bb=ByteBuffer.allocate(pkt18Length);
+	 ByteBuffer bb=ByteBuffer.allocate(pkt1_8Length);
 	 fill_PKT18(bb, pIntegerPara18_1, pIntegerPara18_2);
 	 sendToTmProcessor(bb);
 	 return bb;
      }
 
      public ByteBuffer generate_PKT19() {
-	 ByteBuffer bb=ByteBuffer.allocate(pkt19Length);
+	 ByteBuffer bb=ByteBuffer.allocate(pkt1_9Length);
 	 fill_PKT19(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
@@ -266,6 +282,18 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 byte[] b=new byte[10];
 	 System.arraycopy(pStringPara11_5.getBytes(), 0, b, 0, pStringPara11_5.getBytes().length);
 	 bb.put(b);
+     }
+     
+     private void fill_PKT1_2(ByteBuffer bb) {
+         fill_PKT1(bb, 2);
+         bb.position(pkt1Length);
+         
+         bb.order(ByteOrder.LITTLE_ENDIAN);
+         bb.put(pLEIntegerPara1_2_1);
+         bb.putShort(pLEIntegerPara1_2_2);
+         bb.putInt(pLEIntegerPara1_2_3);
+         bb.putShort(pLEFloatPara1_2_1);
+         bb.putFloat(pLEFloatPara1_2_2);
      }
 
      private void fill_PKT13(ByteBuffer bb) {
@@ -373,6 +401,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.putInt(pIntegerPara1_11_1);
      }
 
+
+   
+     
      private void putFixedStringParam( ByteBuffer bb, String value, int bits ) {
 	 int baSize = bits / 8;
 	 if( bits == -1 ) {
@@ -423,10 +454,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      }
 
 
-     private void fill_PKT12(ByteBuffer bb) {
-	 fill_PKT1(bb, 2);
-	 //TODO
-     }
 
      @Override
      public String getLinkStatus() {
