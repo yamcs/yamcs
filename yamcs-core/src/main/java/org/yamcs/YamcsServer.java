@@ -229,6 +229,7 @@ public class YamcsServer {
 		}
 	    }
 	});
+        System.out.println("yamcsstartup success");
     }
 
     private static YamcsInstances getYamcsInstances() {
