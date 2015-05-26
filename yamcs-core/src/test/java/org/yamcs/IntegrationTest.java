@@ -341,8 +341,18 @@ public class IntegrationTest {
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
+        assertEquals("PENDING", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NOK", cha.getValue().getStringValue());
 
+        
+        
         cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
@@ -368,6 +378,14 @@ public class IntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
+        assertEquals("PENDING", cha.getValue().getStringValue());
+        
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
         assertNull(cmdhist);
 
@@ -378,7 +396,7 @@ public class IntegrationTest {
 
         assertEquals(1, cmdhist.getAttrCount());
 
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
     }
@@ -601,11 +619,22 @@ public class IntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
         packetProvider.generateCmdAck((short)1001, (byte)0, 0);
         
+        
+
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
+        assertEquals("NA", cha.getValue().getStringValue());
+        
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+
+        cha = cmdhist.getAttr(0);
         assertEquals("Verifier_Execution", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
         

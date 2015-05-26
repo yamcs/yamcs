@@ -185,6 +185,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             if(pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
+                addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
                 releaseCommand(q, pc, false, false);
             }
         }
@@ -195,8 +196,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
         q.commands.add(pc);
         notifyAdded(q, pc);
+        
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
+        addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
+        
         scheduleImmediateCheck(constraintChecker);
     }
 
@@ -513,8 +517,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
 
             if(aggregateStatus!=TCStatus.PENDING) return;
-            ArrayList<ParameterValue> plist2 = new ArrayList<ParameterValue>(pvList);
-
 
             ComparisonProcessor cproc = new ComparisonProcessor(pvList);
             aggregateStatus = TCStatus.OK;
