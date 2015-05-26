@@ -199,11 +199,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
-        addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
         
         scheduleImmediateCheck(constraintChecker);
     }
 
+    private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
+        addToCommandHistory(tcChecker.pc, CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
+    }
+    
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
         PreparedCommand pc = tcChecker.pc;
         CommandQueue q = tcChecker.queue;
@@ -553,6 +556,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
             }
             if(aggregateStatus == TCStatus.PENDING) {
+                onTransmissionContraintCheckPending(this);
                 scheduleCheck(this, scheduleNextCheck);
             } else {
                 onTransmissionContraintCheckFinished(this);
