@@ -356,7 +356,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 		} catch (Exception e) {
 			log.error("Unable to load Simulation Data. Check the XML file is correct. Details:\n"
 					+ e.toString());
-			return null;
+			throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
 		}
 	}
 
