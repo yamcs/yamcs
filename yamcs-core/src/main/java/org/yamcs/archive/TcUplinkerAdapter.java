@@ -24,6 +24,7 @@ import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.AbstractService;
+
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 
@@ -75,6 +76,9 @@ public class TcUplinkerAdapter extends AbstractService {
 	    }
 	    final Stream stream;
 	    String name = "tc"+count;
+            if(m.containsKey("name")) {
+                name=m.get("name").toString();
+            }
 	    if(streamName!=null) {
 		if(streamName.equals(REALTIME_TC_STREAM_NAME)) {
 		    stream=realtimeStream;
