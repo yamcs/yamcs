@@ -341,14 +341,6 @@ public class IntegrationTest {
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("PENDING", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NOK", cha.getValue().getStringValue());
 
         
