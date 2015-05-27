@@ -7664,6 +7664,1001 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:rest.RestProcessorResponse)
   }
 
+  public interface RestListProcessorsRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * Protobuf type {@code rest.RestListProcessorsRequest}
+   */
+  public static final class RestListProcessorsRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements RestListProcessorsRequestOrBuilder {
+    // Use RestListProcessorsRequest.newBuilder() to construct.
+    private RestListProcessorsRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RestListProcessorsRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RestListProcessorsRequest defaultInstance;
+    public static RestListProcessorsRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RestListProcessorsRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RestListProcessorsRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.RestListProcessorsRequest.class, org.yamcs.protobuf.Rest.RestListProcessorsRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RestListProcessorsRequest> PARSER =
+        new com.google.protobuf.AbstractParser<RestListProcessorsRequest>() {
+      public RestListProcessorsRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RestListProcessorsRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestListProcessorsRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private void initFields() {
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.RestListProcessorsRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.RestListProcessorsRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.RestListProcessorsRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.RestListProcessorsRequest.class, org.yamcs.protobuf.Rest.RestListProcessorsRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.RestListProcessorsRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.RestListProcessorsRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsRequest build() {
+        org.yamcs.protobuf.Rest.RestListProcessorsRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsRequest buildPartial() {
+        org.yamcs.protobuf.Rest.RestListProcessorsRequest result = new org.yamcs.protobuf.Rest.RestListProcessorsRequest(this);
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.RestListProcessorsRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.RestListProcessorsRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.RestListProcessorsRequest other) {
+        if (other == org.yamcs.protobuf.Rest.RestListProcessorsRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.RestListProcessorsRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.RestListProcessorsRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.RestListProcessorsRequest)
+    }
+
+    static {
+      defaultInstance = new RestListProcessorsRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.RestListProcessorsRequest)
+  }
+
+  public interface RestListProcessorsResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .yamcsManagement.ProcessorInfo processor = 1;
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> 
+        getProcessorList();
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor(int index);
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    int getProcessorCount();
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+        getProcessorOrBuilderList();
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code rest.RestListProcessorsResponse}
+   */
+  public static final class RestListProcessorsResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements RestListProcessorsResponseOrBuilder {
+    // Use RestListProcessorsResponse.newBuilder() to construct.
+    private RestListProcessorsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RestListProcessorsResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RestListProcessorsResponse defaultInstance;
+    public static RestListProcessorsResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RestListProcessorsResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RestListProcessorsResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                processor_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ProcessorInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              processor_.add(input.readMessage(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          processor_ = java.util.Collections.unmodifiableList(processor_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.RestListProcessorsResponse.class, org.yamcs.protobuf.Rest.RestListProcessorsResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RestListProcessorsResponse> PARSER =
+        new com.google.protobuf.AbstractParser<RestListProcessorsResponse>() {
+      public RestListProcessorsResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RestListProcessorsResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestListProcessorsResponse> getParserForType() {
+      return PARSER;
+    }
+
+    // repeated .yamcsManagement.ProcessorInfo processor = 1;
+    public static final int PROCESSOR_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> processor_;
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> getProcessorList() {
+      return processor_;
+    }
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+        getProcessorOrBuilderList() {
+      return processor_;
+    }
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public int getProcessorCount() {
+      return processor_.size();
+    }
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor(int index) {
+      return processor_.get(index);
+    }
+    /**
+     * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder(
+        int index) {
+      return processor_.get(index);
+    }
+
+    private void initFields() {
+      processor_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getProcessorCount(); i++) {
+        if (!getProcessor(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < processor_.size(); i++) {
+        output.writeMessage(1, processor_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < processor_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, processor_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListProcessorsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.RestListProcessorsResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.RestListProcessorsResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.RestListProcessorsResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.RestListProcessorsResponse.class, org.yamcs.protobuf.Rest.RestListProcessorsResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.RestListProcessorsResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getProcessorFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (processorBuilder_ == null) {
+          processor_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          processorBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListProcessorsResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.RestListProcessorsResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsResponse build() {
+        org.yamcs.protobuf.Rest.RestListProcessorsResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListProcessorsResponse buildPartial() {
+        org.yamcs.protobuf.Rest.RestListProcessorsResponse result = new org.yamcs.protobuf.Rest.RestListProcessorsResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (processorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            processor_ = java.util.Collections.unmodifiableList(processor_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.processor_ = processor_;
+        } else {
+          result.processor_ = processorBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.RestListProcessorsResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.RestListProcessorsResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.RestListProcessorsResponse other) {
+        if (other == org.yamcs.protobuf.Rest.RestListProcessorsResponse.getDefaultInstance()) return this;
+        if (processorBuilder_ == null) {
+          if (!other.processor_.isEmpty()) {
+            if (processor_.isEmpty()) {
+              processor_ = other.processor_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureProcessorIsMutable();
+              processor_.addAll(other.processor_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.processor_.isEmpty()) {
+            if (processorBuilder_.isEmpty()) {
+              processorBuilder_.dispose();
+              processorBuilder_ = null;
+              processor_ = other.processor_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              processorBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getProcessorFieldBuilder() : null;
+            } else {
+              processorBuilder_.addAllMessages(other.processor_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getProcessorCount(); i++) {
+          if (!getProcessor(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.RestListProcessorsResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.RestListProcessorsResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .yamcsManagement.ProcessorInfo processor = 1;
+      private java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> processor_ =
+        java.util.Collections.emptyList();
+      private void ensureProcessorIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          processor_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ProcessorInfo>(processor_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorBuilder_;
+
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> getProcessorList() {
+        if (processorBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(processor_);
+        } else {
+          return processorBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public int getProcessorCount() {
+        if (processorBuilder_ == null) {
+          return processor_.size();
+        } else {
+          return processorBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor(int index) {
+        if (processorBuilder_ == null) {
+          return processor_.get(index);
+        } else {
+          return processorBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder setProcessor(
+          int index, org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+        if (processorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureProcessorIsMutable();
+          processor_.set(index, value);
+          onChanged();
+        } else {
+          processorBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder setProcessor(
+          int index, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder builderForValue) {
+        if (processorBuilder_ == null) {
+          ensureProcessorIsMutable();
+          processor_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          processorBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder addProcessor(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+        if (processorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureProcessorIsMutable();
+          processor_.add(value);
+          onChanged();
+        } else {
+          processorBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder addProcessor(
+          int index, org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+        if (processorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureProcessorIsMutable();
+          processor_.add(index, value);
+          onChanged();
+        } else {
+          processorBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder addProcessor(
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder builderForValue) {
+        if (processorBuilder_ == null) {
+          ensureProcessorIsMutable();
+          processor_.add(builderForValue.build());
+          onChanged();
+        } else {
+          processorBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder addProcessor(
+          int index, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder builderForValue) {
+        if (processorBuilder_ == null) {
+          ensureProcessorIsMutable();
+          processor_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          processorBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder addAllProcessor(
+          java.lang.Iterable<? extends org.yamcs.protobuf.YamcsManagement.ProcessorInfo> values) {
+        if (processorBuilder_ == null) {
+          ensureProcessorIsMutable();
+          super.addAll(values, processor_);
+          onChanged();
+        } else {
+          processorBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder clearProcessor() {
+        if (processorBuilder_ == null) {
+          processor_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          processorBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder removeProcessor(int index) {
+        if (processorBuilder_ == null) {
+          ensureProcessorIsMutable();
+          processor_.remove(index);
+          onChanged();
+        } else {
+          processorBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder getProcessorBuilder(
+          int index) {
+        return getProcessorFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder(
+          int index) {
+        if (processorBuilder_ == null) {
+          return processor_.get(index);  } else {
+          return processorBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+           getProcessorOrBuilderList() {
+        if (processorBuilder_ != null) {
+          return processorBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(processor_);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder addProcessorBuilder() {
+        return getProcessorFieldBuilder().addBuilder(
+            org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder addProcessorBuilder(
+          int index) {
+        return getProcessorFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder> 
+           getProcessorBuilderList() {
+        return getProcessorFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+          getProcessorFieldBuilder() {
+        if (processorBuilder_ == null) {
+          processorBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
+                  processor_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          processor_ = null;
+        }
+        return processorBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.RestListProcessorsResponse)
+    }
+
+    static {
+      defaultInstance = new RestListProcessorsResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.RestListProcessorsResponse)
+  }
+
   public interface RestGetParameterRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -13845,6 +14840,16 @@ public final class Rest {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_rest_RestProcessorResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_RestListProcessorsRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_RestListProcessorsRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_RestListProcessorsResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_RestListProcessorsResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_rest_RestGetParameterRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -13879,61 +14884,64 @@ public final class Rest {
   static {
     java.lang.String[] descriptorData = {
       "\n\nrest.proto\022\004rest\032\013yamcs.proto\032\020command" +
-      "ing.proto\032\014pvalue.proto\"1\n\024RestException" +
-      "Message\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t\"/\n\020Re" +
-      "stArgumentType\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 " +
-      "\001(\t\"\206\001\n\017RestCommandType\022\016\n\006origin\030\001 \001(\t\022" +
-      "\026\n\016sequenceNumber\030\002 \001(\005\022 \n\002id\030\003 \001(\0132\024.ya" +
-      "mcs.NamedObjectId\022)\n\targuments\030\004 \003(\0132\026.r" +
-      "est.RestArgumentType\"8\n\"RestListAvailabl" +
-      "eParametersRequest\022\022\n\nnamespaces\030\001 \003(\t\"[" +
-      "\n\rRestParameter\022 \n\002id\030\001 \001(\0132\024.yamcs.Name",
-      "dObjectId\022(\n\ndataSource\030\002 \001(\0162\024.rest.Res" +
-      "tDataSource\"N\n#RestListAvailableParamete" +
-      "rsResponse\022\'\n\nparameters\030\001 \003(\0132\023.rest.Re" +
-      "stParameter\"E\n\032RestValidateCommandReques" +
-      "t\022\'\n\010commands\030\001 \003(\0132\025.rest.RestCommandTy" +
-      "pe\"\\\n\033RestValidateCommandResponse\022=\n\024com" +
-      "mandsSignificance\030\001 \003(\0132\037.commanding.Com" +
-      "mandSignificance\"\027\n\025RestDumpRawMdbReques" +
-      "t\"(\n\026RestDumpRawMdbResponse\022\016\n\006rawMdb\030\002 " +
-      "\001(\014\"\032\n\030RestSetParameterResponse\"\035\n\033RestC",
-      "reateProcessorResponse\" \n\036RestConnectToP" +
-      "rocessorResponse\"\027\n\025RestProcessorRespons" +
-      "e\"a\n\027RestGetParameterRequest\022\"\n\004list\030\001 \003" +
-      "(\0132\024.yamcs.NamedObjectId\022\021\n\tfromCache\030\002 " +
-      "\001(\010\022\017\n\007timeout\030\003 \001(\004\"\363\002\n\026RestDumpArchive" +
-      "Request\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010" +
-      "utcStart\030\t \001(\t\022\017\n\007utcStop\030\n \001(\t\0227\n\020param" +
-      "eterRequest\030\003 \001(\0132\035.yamcs.ParameterRepla" +
-      "yRequest\0221\n\rpacketRequest\030\004 \001(\0132\032.yamcs." +
-      "PacketReplayRequest\022/\n\014eventRequest\030\005 \001(",
-      "\0132\031.yamcs.EventReplayRequest\022A\n\025commandH" +
-      "istoryRequest\030\006 \001(\0132\".yamcs.CommandHisto" +
-      "ryReplayRequest\022)\n\tppRequest\030\007 \001(\0132\026.yam" +
-      "cs.PpReplayRequest\022\016\n\006stream\030\010 \001(\010\"\346\001\n\027R" +
-      "estDumpArchiveResponse\022,\n\rparameterData\030" +
-      "\002 \003(\0132\025.pvalue.ParameterData\022\'\n\npacketDa" +
-      "ta\030\003 \003(\0132\023.yamcs.TmPacketData\0220\n\007command" +
-      "\030\004 \003(\0132\037.commanding.CommandHistoryEntry\022" +
-      "\033\n\005event\030\005 \003(\0132\014.yamcs.Event\022%\n\006ppData\030\006" +
-      " \003(\0132\025.pvalue.ParameterData\"A\n\026RestSendC",
-      "ommandRequest\022\'\n\010commands\030\001 \003(\0132\025.rest.R" +
-      "estCommandType\"\031\n\027RestSendCommandRespons" +
-      "e*G\n\016RestDataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007" +
-      "DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\0032\266\003\n\013R" +
-      "ESTService\022n\n\027listAvailableParameters\022(." +
-      "rest.RestListAvailableParametersRequest\032" +
-      ").rest.RestListAvailableParametersRespon" +
-      "se\022V\n\017validateCommand\022 .rest.RestValidat" +
-      "eCommandRequest\032!.rest.RestValidateComma" +
-      "ndResponse\022J\n\013sendCommand\022\034.rest.RestSen",
-      "dCommandRequest\032\035.rest.RestSendCommandRe" +
-      "sponse\022G\n\ndumpRawMdb\022\033.rest.RestDumpRawM" +
-      "dbRequest\032\034.rest.RestDumpRawMdbResponse\022" +
-      "J\n\013dumpArchive\022\034.rest.RestDumpArchiveReq" +
-      "uest\032\035.rest.RestDumpArchiveResponseB\024\n\022o" +
-      "rg.yamcs.protobuf"
+      "ing.proto\032\014pvalue.proto\032\025yamcsManagement" +
+      ".proto\"1\n\024RestExceptionMessage\022\014\n\004type\030\001" +
+      " \001(\t\022\013\n\003msg\030\002 \001(\t\"/\n\020RestArgumentType\022\014\n" +
+      "\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"\206\001\n\017RestComma" +
+      "ndType\022\016\n\006origin\030\001 \001(\t\022\026\n\016sequenceNumber" +
+      "\030\002 \001(\005\022 \n\002id\030\003 \001(\0132\024.yamcs.NamedObjectId" +
+      "\022)\n\targuments\030\004 \003(\0132\026.rest.RestArgumentT" +
+      "ype\"8\n\"RestListAvailableParametersReques" +
+      "t\022\022\n\nnamespaces\030\001 \003(\t\"[\n\rRestParameter\022 ",
+      "\n\002id\030\001 \001(\0132\024.yamcs.NamedObjectId\022(\n\ndata" +
+      "Source\030\002 \001(\0162\024.rest.RestDataSource\"N\n#Re" +
+      "stListAvailableParametersResponse\022\'\n\npar" +
+      "ameters\030\001 \003(\0132\023.rest.RestParameter\"E\n\032Re" +
+      "stValidateCommandRequest\022\'\n\010commands\030\001 \003" +
+      "(\0132\025.rest.RestCommandType\"\\\n\033RestValidat" +
+      "eCommandResponse\022=\n\024commandsSignificance" +
+      "\030\001 \003(\0132\037.commanding.CommandSignificance\"" +
+      "\027\n\025RestDumpRawMdbRequest\"(\n\026RestDumpRawM" +
+      "dbResponse\022\016\n\006rawMdb\030\002 \001(\014\"\032\n\030RestSetPar",
+      "ameterResponse\"\035\n\033RestCreateProcessorRes" +
+      "ponse\" \n\036RestConnectToProcessorResponse\"" +
+      "\027\n\025RestProcessorResponse\"\033\n\031RestListProc" +
+      "essorsRequest\"O\n\032RestListProcessorsRespo" +
+      "nse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsManagement" +
+      ".ProcessorInfo\"a\n\027RestGetParameterReques" +
+      "t\022\"\n\004list\030\001 \003(\0132\024.yamcs.NamedObjectId\022\021\n" +
+      "\tfromCache\030\002 \001(\010\022\017\n\007timeout\030\003 \001(\004\"\363\002\n\026Re" +
+      "stDumpArchiveRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004s" +
+      "top\030\002 \001(\003\022\020\n\010utcStart\030\t \001(\t\022\017\n\007utcStop\030\n",
+      " \001(\t\0227\n\020parameterRequest\030\003 \001(\0132\035.yamcs.P" +
+      "arameterReplayRequest\0221\n\rpacketRequest\030\004" +
+      " \001(\0132\032.yamcs.PacketReplayRequest\022/\n\014even" +
+      "tRequest\030\005 \001(\0132\031.yamcs.EventReplayReques" +
+      "t\022A\n\025commandHistoryRequest\030\006 \001(\0132\".yamcs" +
+      ".CommandHistoryReplayRequest\022)\n\tppReques" +
+      "t\030\007 \001(\0132\026.yamcs.PpReplayRequest\022\016\n\006strea" +
+      "m\030\010 \001(\010\"\346\001\n\027RestDumpArchiveResponse\022,\n\rp" +
+      "arameterData\030\002 \003(\0132\025.pvalue.ParameterDat" +
+      "a\022\'\n\npacketData\030\003 \003(\0132\023.yamcs.TmPacketDa",
+      "ta\0220\n\007command\030\004 \003(\0132\037.commanding.Command" +
+      "HistoryEntry\022\033\n\005event\030\005 \003(\0132\014.yamcs.Even" +
+      "t\022%\n\006ppData\030\006 \003(\0132\025.pvalue.ParameterData" +
+      "\"A\n\026RestSendCommandRequest\022\'\n\010commands\030\001" +
+      " \003(\0132\025.rest.RestCommandType\"\031\n\027RestSendC" +
+      "ommandResponse*G\n\016RestDataSource\022\017\n\013TELE" +
+      "METERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005" +
+      "LOCAL\020\0032\266\003\n\013RESTService\022n\n\027listAvailable" +
+      "Parameters\022(.rest.RestListAvailableParam" +
+      "etersRequest\032).rest.RestListAvailablePar",
+      "ametersResponse\022V\n\017validateCommand\022 .res" +
+      "t.RestValidateCommandRequest\032!.rest.Rest" +
+      "ValidateCommandResponse\022J\n\013sendCommand\022\034" +
+      ".rest.RestSendCommandRequest\032\035.rest.Rest" +
+      "SendCommandResponse\022G\n\ndumpRawMdb\022\033.rest" +
+      ".RestDumpRawMdbRequest\032\034.rest.RestDumpRa" +
+      "wMdbResponse\022J\n\013dumpArchive\022\034.rest.RestD" +
+      "umpArchiveRequest\032\035.rest.RestDumpArchive" +
+      "ResponseB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -14024,32 +15032,44 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestProcessorResponse_descriptor,
               new java.lang.String[] { });
-          internal_static_rest_RestGetParameterRequest_descriptor =
+          internal_static_rest_RestListProcessorsRequest_descriptor =
             getDescriptor().getMessageTypes().get(14);
+          internal_static_rest_RestListProcessorsRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_RestListProcessorsRequest_descriptor,
+              new java.lang.String[] { });
+          internal_static_rest_RestListProcessorsResponse_descriptor =
+            getDescriptor().getMessageTypes().get(15);
+          internal_static_rest_RestListProcessorsResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_RestListProcessorsResponse_descriptor,
+              new java.lang.String[] { "Processor", });
+          internal_static_rest_RestGetParameterRequest_descriptor =
+            getDescriptor().getMessageTypes().get(16);
           internal_static_rest_RestGetParameterRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterRequest_descriptor,
               new java.lang.String[] { "List", "FromCache", "Timeout", });
           internal_static_rest_RestDumpArchiveRequest_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_rest_RestDumpArchiveRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestDumpArchiveRequest_descriptor,
               new java.lang.String[] { "Start", "Stop", "UtcStart", "UtcStop", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", "Stream", });
           internal_static_rest_RestDumpArchiveResponse_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_rest_RestDumpArchiveResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestDumpArchiveResponse_descriptor,
               new java.lang.String[] { "ParameterData", "PacketData", "Command", "Event", "PpData", });
           internal_static_rest_RestSendCommandRequest_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_rest_RestSendCommandRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandRequest_descriptor,
               new java.lang.String[] { "Commands", });
           internal_static_rest_RestSendCommandResponse_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_rest_RestSendCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandResponse_descriptor,
@@ -14063,6 +15083,7 @@ public final class Rest {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Commanding.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
+          org.yamcs.protobuf.YamcsManagement.getDescriptor(),
         }, assigner);
   }
 
