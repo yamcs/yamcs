@@ -121,7 +121,6 @@ public class DataEncodingEncoder {
     		throw new IllegalStateException("String encoding requires data of type String not "+rawValue.getType());
     	}
     	String v = rawValue.getStringValue();
-    	
     	if(pcontext.bitPosition%8!=0) {
         	throw new IllegalStateException("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        	
         }
@@ -133,7 +132,8 @@ public class DataEncodingEncoder {
         	int byteOffset = pcontext.bitPosition/8;
             int sizeInBytes=sde.getSizeInBits()/8;
             if(sizeInBytes>b.length) sizeInBytes = b.length;
-            pcontext.bb.put(b, byteOffset, sizeInBytes);
+            pcontext.bb.position(byteOffset);
+            pcontext.bb.put(b, 0, sizeInBytes);
             pcontext.bitPosition+=8*sizeInBytes;
             break;
         case LeadingSize:
@@ -156,14 +156,16 @@ public class DataEncodingEncoder {
         			throw new IllegalArgumentException("SizeInBits of Size Tag of "+sde.getSizeInBitsOfSizeTag()+" not supported");        		
         	}
         	byteOffset = pcontext.bitPosition/8;
-        	pcontext.bb.put(b, byteOffset, b.length);            
+            pcontext.bb.position(byteOffset);
+        	pcontext.bb.put(b, 0, b.length);
+            pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
         case TerminationChar:
-            byteOffset=pcontext.bitPosition/8;            
-            pcontext.bb.put(b, byteOffset, b.length);
-            byteOffset+=b.length;
-            pcontext.bb.put(byteOffset, sde.getTerminationChar());
-            pcontext.bitPosition+=8*(b.length+1);
+            byteOffset=pcontext.bitPosition/8;
+            pcontext.bb.position(byteOffset);
+            pcontext.bb.put(b, 0, b.length);
+            pcontext.bb.put(sde.getTerminationChar());
+            pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
         }
     }
