@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "yamcsManagement.proto";
 
 // Generic holder for an exception
 message RestExceptionMessage {
@@ -67,6 +68,13 @@ message RestConnectToProcessorResponse {
 }
 
 message RestProcessorResponse {
+}
+
+message RestListProcessorsRequest {
+}
+
+message RestListProcessorsResponse {
+    repeated yamcsManagement.ProcessorInfo processor=1;
 }
 
 message RestGetParameterRequest {

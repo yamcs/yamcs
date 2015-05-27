@@ -10,16 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
+import org.yamcs.management.HornetProcessorManagement;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.RestConnectToProcessorResponse;
 import org.yamcs.protobuf.Rest.RestCreateProcessorResponse;
+import org.yamcs.protobuf.Rest.RestListProcessorsResponse;
 import org.yamcs.protobuf.Rest.RestProcessorResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
@@ -29,6 +30,8 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("".equals(qsDecoder.path())) {
             handleProcessorManagementRequest(ctx, req, yamcsInstance, qsDecoder, authToken);
+        } else if ("list".equals(qsDecoder.path())) {
+            handleProcessorListRequest(ctx, req, yamcsInstance, qsDecoder, authToken);
         } else {
             String yprocName = remainingUri.split("/")[0];
             YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
@@ -38,6 +41,19 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
                 return;
             }
             handleProcessorRequest(ctx, req, yproc, qsDecoder);
+        }
+    }
+
+    private void handleProcessorListRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance,
+            QueryStringDecoder qsDecoder, AuthenticationToken authToken) throws RestException {
+        if (req.getMethod() == HttpMethod.GET) {
+            RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
+            for (YProcessor processor : YProcessor.getChannels()) {
+                response.addProcessor(HornetProcessorManagement.getProcessorInfo(processor));
+            }
+            writeMessage(ctx, req, qsDecoder, response.build(), SchemaRest.RestListProcessorsResponse.WRITE);
+        } else {
+            throw new MethodNotAllowedException(req.getMethod());
         }
     }
         
