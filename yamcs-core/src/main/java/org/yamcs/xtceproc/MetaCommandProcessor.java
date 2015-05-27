@@ -39,6 +39,7 @@ public class MetaCommandProcessor {
 
 		
 		byte[] b = new byte[pcontext.size];
+        pcontext.bb.position(0);
 		pcontext.bb.get(b, 0, pcontext.size);
 		return b;
 	}
