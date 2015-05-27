@@ -321,9 +321,10 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 		Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
 		Long delayBeforeNextStep = nextStepDate - new Date().getTime();
 		try {
-			Thread.sleep(delayBeforeNextStep);
+            if(delayBeforeNextStep > 0)
+			    Thread.sleep(delayBeforeNextStep);
 		} catch (Exception e) {
-			log.error(e.toString());
+			log.error("", e);
 		}
 	}
 
