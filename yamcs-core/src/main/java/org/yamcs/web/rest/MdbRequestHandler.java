@@ -1,14 +1,7 @@
 package org.yamcs.web.rest;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +20,12 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 
 /**
  * Handles incoming requests related to the Mission Database (offset /mdb).
@@ -54,16 +53,14 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
     }
 
     /**
-     * Sends the XTCEDB for the requested yamcs instance.
+     * Sends the parameters for the requested yamcs instance. If no namespaces are specified, send qualified names.
      */
     private RestListAvailableParametersResponse listAvailableParameters(RestListAvailableParametersRequest request, String yamcsInstance) throws RestException {
         XtceDb mdb = loadMdb(yamcsInstance);
         RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
-        if (request.getNamespacesCount() == 0) { // Send all, if no namespace specified
+        if (request.getNamespacesCount() == 0) {
             for(Parameter p : mdb.getParameters()) {
-                for (Entry<String,String> entry : p.getAliasSet().getAliases().entrySet()) {
-                    responseb.addParameters(toRestParameter(entry.getKey(), entry.getValue(), p));
-                }
+                responseb.addParameters(toRestParameter(p.getQualifiedName(), p));
             }
         } else {
             for (Parameter p : mdb.getParameters()) {
@@ -78,10 +75,15 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         return responseb.build();
     }
 
-    private static RestParameter.Builder toRestParameter(String namespace, String value, Parameter parameter) {
+    private static RestParameter.Builder toRestParameter(String namespace, String name, Parameter parameter) {
+        RestParameter.Builder builder = toRestParameter(name, parameter);
+        builder.getIdBuilder().setNamespace(namespace);
+        return builder;
+    }
+
+    private static RestParameter.Builder toRestParameter(String name, Parameter parameter) {
         RestDataSource ds = RestDataSource.valueOf(parameter.getDataSource().name()); // I know, i know
-        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(value).build();
-        return RestParameter.newBuilder().setDataSource(ds).setId(id);
+        return RestParameter.newBuilder().setDataSource(ds).setId(NamedObjectId.newBuilder().setName(name));
     }
 
     private RestDumpRawMdbResponse dumpRawMdb(RestDumpRawMdbRequest request, String yamcsInstance) throws RestException {
