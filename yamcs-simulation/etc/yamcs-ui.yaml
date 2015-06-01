@@ -1,0 +1,8 @@
+#if set to true, the yamcs connect dialog will allow to specify the username/password to be used for connecting to yamcs
+authenticationEnabled: true
+
+#tools that show in the menu of the archive browser
+archiveBrowserTools:
+   - name: "CCSDS Gap Retrieval"
+     class: org.yamcs.ui.CcsdsCompletenessGui
+  

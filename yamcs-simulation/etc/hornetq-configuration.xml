@@ -73,8 +73,8 @@
         <security-setting match="#">
             <permission type="createNonDurableQueue" roles="Operator,Monitoring,Supervisor"/>
             <permission type="deleteNonDurableQueue" roles="Operator,Monitoring,Supervisor"/>
-            <permission type="consume" roles="Operator,Monitoring,Supervisor"/>
-            <permission type="send" roles="Operator,Monitoring,Supervisor"/>
+            <permission type="consume" roles="Operator,Monitoring,Supervisor,SPELL"/>
+            <permission type="send" roles="Operator,Monitoring,Supervisor,SPELL"/>
         </security-setting>
     </security-settings>
 

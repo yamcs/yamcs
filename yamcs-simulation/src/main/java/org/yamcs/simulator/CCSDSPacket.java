@@ -113,12 +113,23 @@ secondary header (10 bytes):
 		return buffer.slice();
 	}
 
-	protected void setUserDataBuffer(ByteBuffer buffer) {
+    public void appendUserDataBuffer(byte[] userData){
+        this.buffer = ByteBuffer.allocate(this.buffer.capacity() + userData.length).put(this.buffer.array()).put(userData);
+        updatePacketSize();
+    }
 
-		this.buffer = ByteBuffer.allocate(this.buffer.capacity())
-				.put(this.buffer).put(buffer);
+    public void setUserDataBuffer(ByteBuffer buffer) {
 
-	}
+        this.buffer = ByteBuffer.allocate(this.buffer.capacity())
+                .put(this.buffer).put(buffer);
+        updatePacketSize();
+    }
+
+    private void updatePacketSize() {
+        // update the packet size information in the secondary header
+        this.buffer.putShort(4, (short) (this.buffer.capacity() - 7));
+    }
+
 
 	public void send(OutputStream os) throws IOException
 	{

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ppSimulation stepLengthMs="1000">
+  <description>
+   Script for  Ground-station simulator GS which sees XBand lock for 5 minutes and no-lock for 15 minutes
+  </description>
+
+  <parameterSequence>
+    <parameter spaceSystem="/GS/" paraName="SBand_lock_status" valueType="def" value="0" generationStep="0" aquisitionStep="0" />
+  </parameterSequence>
+  <parameterSequence loop="true">
+      <parameter spaceSystem="/GS/" paraName="SBand_lock_status" valueType="def" value="1" generationStep="900" aquisitionStep="900" /><!-- 15 minutes later of no signal later-->
+      <parameter spaceSystem="/GS/" paraName="SBand_lock_status" valueType="def" value="0" generationStep="1200" aquisitionStep="1200"/><!-- another 5 minutes later , signal drops again-->
+  </parameterSequence> 
+</ppSimulation>

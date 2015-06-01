@@ -1,0 +1,29 @@
+# Definitions of command queues
+# Eeach queue has a name, a default state and a list of roles
+# There are three possibile states: 
+#   - enabled means the commands are sent immediately
+#   - blocked means the commands are accepted into the queue but need to be 
+#     manually sent 
+#   - disabled means the commands are rejected 
+# There is always a commandqueue called "default". It can be  redefined here
+# in order to have a different state
+# If a command comes from a user which is not defined by any other queue, 
+#   it is put into the default queue 
+
+queueNames: [Operator, Supervisor, SPELL]
+
+Operator:
+    state: enabled
+    roles: [Operator]
+
+uhb:
+    state: disabled
+    roles: [UHB-Operator]
+
+SPELL:
+    state: enabled
+    roles: [SPELL]
+
+Supervisor:
+    state: enabled
+    roles: [Supervisor]

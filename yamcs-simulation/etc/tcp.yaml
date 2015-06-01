@@ -1,0 +1,18 @@
+#configuration for the TcpTmProvider and TcpUplinker 
+# they look for properties like 
+#spec:
+#    tmHost: 
+#    tmPort:
+#    tcHost:
+#    tcPort:
+#    minimumTcPacketLength (by default 48)
+
+local:
+    tmHost: localhost
+    tmPort: 10015
+    tcHost: localhost
+    tcPort: 10025
+
+localDump:
+    tmHost: localhost
+    tmPort: 10115

@@ -6,3 +6,5 @@ simulator:
       subLoaders:
            - type: "sheet"
              spec: "mdb/simulator-tmtc.xls"
+    - type: "sheet"
+      spec: "mdb/GS-tmtc.xls"
