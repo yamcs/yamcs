@@ -24,14 +24,10 @@ public class ServerConnection {
 	private Socket tmSocket = null;
 	private Socket tcSocket = null;
 	private Socket losSocket = null;
-	
-	
-
 
 	private ServerSocket tmServerSocket = null;
 	private ServerSocket tcServerSocket = null;
 	private ServerSocket losServerSocket = null;
-
 
 	private int tmPort;
 	private int tcPort;
@@ -43,12 +39,10 @@ public class ServerConnection {
 	Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);
 
 	public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
-
         this.id = id;
 		this.tmPort = tmPort;
 		this.tcPort = tcPort;
 		this.losPort = losPort;
-
 	}
 	
 	public Socket getTcSocket() {
@@ -156,7 +150,6 @@ public class ServerConnection {
 		this.losServerSocket = losServerSocket;
 	}
 	
-
 	public Socket getLosSocket() {
 		return losSocket;
 	}

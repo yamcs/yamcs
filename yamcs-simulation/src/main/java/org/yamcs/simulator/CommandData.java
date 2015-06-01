@@ -43,5 +43,23 @@ public class CommandData {
 		buffer.put((byte) commandOf);
 	}
 
+    public static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName)
+    {
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 10);
+        packet.appendUserDataBuffer(transmittedRecordName.getBytes());
+        packet.appendUserDataBuffer(new byte[1]);
+
+        return packet;
+    }
+
+    public static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName)
+    {
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 11);
+        packet.appendUserDataBuffer(deletedRecordName.getBytes());
+        packet.appendUserDataBuffer(new byte[1]);
+
+        return packet;
+    }
+
 
 }

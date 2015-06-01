@@ -161,7 +161,7 @@ public class TelemetryLink {
             sI.setLosServerSocket(new ServerSocket(sI.getLosPort()));
             sI.setLosSocket(sI.getLosServerSocket().accept());
 
-            logMessage(sI.getId(), "Connected Dump TM: "
+            logMessage(sI.getId(), "Connected TM DUMP: "
                     + sI.getLosSocket().getInetAddress() + ":"
                     + sI.getLosSocket().getPort());
 

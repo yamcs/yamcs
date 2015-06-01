@@ -28,12 +28,8 @@ import java.util.LinkedList;
 public class SimWindow {
 
 	private JFrame frame;
-	private JButton btnConnectServers;
 	private Simulator simClient;
 
-	public Simulator getSimClient() {
-		return simClient;
-	}
 
 	public void setSimClient(Simulator simClient) {
 		this.simClient = simClient;
@@ -154,7 +150,7 @@ public class SimWindow {
             @Override
             public void mouseReleased(MouseEvent e) {
 
-                simClient.readLastLosFile();
+                simClient.dumpLosDataFile(null);
             }
         });
 		tLosButton.addActionListener(new ActionListener() {
@@ -172,9 +168,6 @@ public class SimWindow {
 
 	public void setFrame(JFrame frame) {
 		this.frame = frame;
-	}
-	public JButton getBtnConnectServers() {
-		return btnConnectServers;
 	}
 
 

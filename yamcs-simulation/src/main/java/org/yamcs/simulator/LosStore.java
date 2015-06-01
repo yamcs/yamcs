@@ -1,12 +1,10 @@
 package org.yamcs.simulator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -139,6 +137,39 @@ public class LosStore {
         return losNamePacket;
     }
 
+    public DataInputStream readLosFile(String fileName)
+    {
+        Path requestedFile = null;
+        DataInputStream datas = null;
+
+        if(fileName == null)
+        {
+            requestedFile = path;
+        }
+        else
+        {
+            requestedFile = Paths.get(System.getProperty("user.dir") + "/losData/" + fileName);
+        }
+        if(requestedFile == null)
+        {
+            System.out.println("No LOS data file to dump.");
+            return null;
+        }
+        System.out.println("readLosFile :" + requestedFile.toString());
+
+        try {
+
+            FileInputStream fStream = new FileInputStream(requestedFile.toFile());
+            datas = new DataInputStream(fStream);
+
+            // disable additional downloads of the current file
+            path = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return datas;
+    }
+
 
     public void tmPacketStore(CCSDSPacket packet) {
         try {
@@ -149,5 +180,22 @@ public class LosStore {
         losStored++;
         System.out.println("#" + losStored);
         System.out.println(packet.toString());
+    }
+
+    public void deleteFile(String filename) {
+        Path fileToDelete = Paths.get(System.getProperty("user.dir") + "/losData/" + filename);
+        System.out.println("losDeleteFile :" + fileToDelete.toString());
+        try{
+            fileToDelete.toFile().delete();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public String getCurrentFileName() {
+        if(path == null)
+             return null;
+        return  path.toFile().getName();
     }
 }

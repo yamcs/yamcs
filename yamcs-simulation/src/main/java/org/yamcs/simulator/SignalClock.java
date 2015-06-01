@@ -10,8 +10,8 @@ import java.util.concurrent.Semaphore;
  */
 
 public class SignalClock {
-	
-	String timeStamp = "";
+
+    String timeStamp = "";
     int losSeconds;
     int aosSeconds;
 
@@ -20,12 +20,12 @@ public class SignalClock {
     Semaphore  aosSignal;
 
     public Semaphore getLosSignal() {
-		return losSignal;
-	}
-    
-	public String getTimeStamp() {
-		return timeStamp;
-	}
+        return losSignal;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
 
     public SignalClock(int losSeconds, int aosSeconds) {
         this.losSeconds = losSeconds;
@@ -56,7 +56,6 @@ public class SignalClock {
                 // case starting los
                 aosSignal.acquire();
                 losSignal.release();
-                System.out.println("case starting los done");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -65,7 +64,6 @@ public class SignalClock {
 
     class AosTask extends TimerTask {
         public void run() {
-            timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
             try {
                 // case starting aos
                 aosSignal.release();
@@ -76,9 +74,9 @@ public class SignalClock {
         }
     }
 
-	public Semaphore getAosSignal() {
-		return aosSignal;
-	}
+    public Semaphore getAosSignal() {
+        return aosSignal;
+    }
 
-   
+
 }

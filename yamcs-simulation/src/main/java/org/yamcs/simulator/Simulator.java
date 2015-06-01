@@ -3,6 +3,7 @@ package org.yamcs.simulator;
 import org.yamcs.YConfiguration;
 import org.yamcs.simulator.ui.SimWindow;
 
+import java.io.FileInputStream;
 import java.net.*;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -17,12 +18,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class Simulator extends Thread {
 
 
-	CCSDSHandlerFlightData 	flightDataHandler;
-	CCSDSHandlerDHS 		dhsHandler;
-	CCSDSHandlerPower 		powerDataHandler;
-	CCSDSHandlerRCS 		rcsHandler;
-	CCSDSHandlerEPSLVPDU 	ESPLvpduHandler;
-	CCSDSHandlerAck         AckDataHandler;
+    CCSDSHandlerFlightData 	flightDataHandler;
+    CCSDSHandlerDHS 		dhsHandler;
+    CCSDSHandlerPower 		powerDataHandler;
+    CCSDSHandlerRCS 		rcsHandler;
+    CCSDSHandlerEPSLVPDU 	ESPLvpduHandler;
+    CCSDSHandlerAck         AckDataHandler;
 
 
     // configured via config file
@@ -36,21 +37,21 @@ public class Simulator extends Thread {
     private TelemetryLink tl;
     LosStore losStore = new LosStore(this);
 
-	private boolean engageHoldOneCycle = false;
-	private boolean unengageHoldOneCycle = false;
-	private int waitToEngage;
-	private int waitToUnengage;
-	private int DEFAULT_MAX_LENGTH=65542;
-	private int maxLength = DEFAULT_MAX_LENGTH;
-	private boolean engaged = false;
-	private boolean unengaged = true; 
-	private boolean ExeTransmitted = true;
-	private int battOneCommand;
-	private int battTwoCommand;
-	private int battThreeCommand;
+    private boolean engageHoldOneCycle = false;
+    private boolean unengageHoldOneCycle = false;
+    private int waitToEngage;
+    private int waitToUnengage;
+    private int DEFAULT_MAX_LENGTH=65542;
+    private int maxLength = DEFAULT_MAX_LENGTH;
+    private boolean engaged = false;
+    private boolean unengaged = true;
+    private boolean ExeTransmitted = true;
+    private int battOneCommand;
+    private int battTwoCommand;
+    private int battThreeCommand;
 
 
-	Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<CCSDSPacket>(100);//no more than 100 pending commands
+    Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<CCSDSPacket>(100);//no more than 100 pending commands
 
 
     public static SimWindow simWindow = null;
@@ -59,21 +60,21 @@ public class Simulator extends Thread {
         return serversConnections.size();
     }
 
-	public Simulator() throws IOException {
+    public Simulator() throws IOException {
         tl = new TelemetryLink(this, serversConnections);
 
-		flightDataHandler  = new CCSDSHandlerFlightData();
-		dhsHandler 		   = new CCSDSHandlerDHS();
-		powerDataHandler   = new CCSDSHandlerPower();
-		rcsHandler         = new CCSDSHandlerRCS();
-		ESPLvpduHandler    = new CCSDSHandlerEPSLVPDU();
-		AckDataHandler     = new CCSDSHandlerAck();
+        flightDataHandler  = new CCSDSHandlerFlightData();
+        dhsHandler 		   = new CCSDSHandlerDHS();
+        powerDataHandler   = new CCSDSHandlerPower();
+        rcsHandler         = new CCSDSHandlerRCS();
+        ESPLvpduHandler    = new CCSDSHandlerEPSLVPDU();
+        AckDataHandler     = new CCSDSHandlerAck();
 
-	}
+    }
 
 
 
-	public void run() {
+    public void run() {
 
         for(ServerConnection serverConnection : serversConnections ) {
 
@@ -83,7 +84,8 @@ public class Simulator extends Thread {
             new Thread(() -> {
                 while(true){
                     try {
-                        readCommands(new DataInputStream(serverConnection.getTcSocket().getInputStream()));
+                        // read commands
+                        pendingCommands.addAll(readPackets(new DataInputStream(serverConnection.getTcSocket().getInputStream())));
                         Thread.sleep(4000);
                     } catch (IOException e) {
                         serverConnection.setConnected(false);
@@ -104,233 +106,258 @@ public class Simulator extends Thread {
             })).start();
         }
 
-		CCSDSPacket packet = null;
+        CCSDSPacket packet = null;
 
-		try {
+        try {
 
-			for (int i = 0;;) {
-				CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-				CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
-				flightDataHandler.fillPacket(flightpacket);
+            for (int i = 0;;) {
+                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
+                CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
+                flightDataHandler.fillPacket(flightpacket);
                 tl.tmTransmit(flightpacket);
 
 
-				if (i < 30) ++i;
-				else {
-					if(waitToEngage == 2 || engaged  ){
-						engaged = true;
-						//unengaged = false;
-						CCSDSPacket powerpacket = new CCSDSPacket(16 , 1);
+                if (i < 30) ++i;
+                else {
+                    if(waitToEngage == 2 || engaged  ){
+                        engaged = true;
+                        //unengaged = false;
+                        CCSDSPacket powerpacket = new CCSDSPacket(16 , 1);
 
-						powerDataHandler.fillPacket(powerpacket);
+                        powerDataHandler.fillPacket(powerpacket);
 
-						switch(battOneCommand){
-						case 1: battOneCommand = 1;
-						powerDataHandler.setBattOneOff(powerpacket);
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 1, 0);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
+                        switch(battOneCommand){
+                            case 1: battOneCommand = 1;
+                                powerDataHandler.setBattOneOff(powerpacket);
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 1, 0);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
 
-						case 2: battOneCommand = 2;
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 1, 1);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
-						default :
-							break;
-						}		
-						switch(battTwoCommand){
+                            case 2: battOneCommand = 2;
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 1, 1);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
+                            default :
+                                break;
+                        }
+                        switch(battTwoCommand){
 
-						case 1:battTwoCommand = 1;
-						powerDataHandler.setBattTwoOff(powerpacket);
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 2, 0);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
+                            case 1:battTwoCommand = 1;
+                                powerDataHandler.setBattTwoOff(powerpacket);
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 2, 0);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
 
-						case 2:battTwoCommand = 2;
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 2, 1);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
-						}
-						switch(battThreeCommand){
-						case 1:battThreeCommand = 1;
-						powerDataHandler.setBattThreeOff(powerpacket);
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 3, 0);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
-						case 2:battThreeCommand = 2;
-						AckDataHandler.fillExeCompPacket(exeCompPacket, 3, 1);
-						if (!ExeTransmitted ){
-                            tl.tmTransmit(exeCompPacket);
-							ExeTransmitted = true;
-						}
-						break;
-						default:
-							break;
-						}
+                            case 2:battTwoCommand = 2;
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 2, 1);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
+                        }
+                        switch(battThreeCommand){
+                            case 1:battThreeCommand = 1;
+                                powerDataHandler.setBattThreeOff(powerpacket);
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 3, 0);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
+                            case 2:battThreeCommand = 2;
+                                AckDataHandler.fillExeCompPacket(exeCompPacket, 3, 1);
+                                if (!ExeTransmitted ){
+                                    tl.tmTransmit(exeCompPacket);
+                                    ExeTransmitted = true;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
 
                         tl.tmTransmit(powerpacket);
 
-						engageHoldOneCycle = false;
-						waitToEngage = 0;
+                        engageHoldOneCycle = false;
+                        waitToEngage = 0;
 
 
-					} else if (waitToUnengage == 2 || unengaged ){
-						CCSDSPacket	powerpacket = new CCSDSPacket(16 , 1);
-						powerDataHandler.fillPacket(powerpacket);
+                    } else if (waitToUnengage == 2 || unengaged ){
+                        CCSDSPacket	powerpacket = new CCSDSPacket(16 , 1);
+                        powerDataHandler.fillPacket(powerpacket);
                         tl.tmTransmit(powerpacket);
-						unengaged = true;
-						//engaged = false;
+                        unengaged = true;
+                        //engaged = false;
 
-						unengageHoldOneCycle = false;
-						waitToUnengage = 0;
-					}	
+                        unengageHoldOneCycle = false;
+                        waitToUnengage = 0;
+                    }
 
 
-					packet = new CCSDSPacket(9, 2);
-					dhsHandler.fillPacket(packet);
+                    packet = new CCSDSPacket(9, 2);
+                    dhsHandler.fillPacket(packet);
                     tl.tmTransmit(packet);
 
-					packet = new CCSDSPacket(36, 3);
-					rcsHandler.fillPacket(packet);
+                    packet = new CCSDSPacket(36, 3);
+                    rcsHandler.fillPacket(packet);
                     tl.tmTransmit(packet);
 
-					packet = new CCSDSPacket(6, 4);
-					ESPLvpduHandler.fillPacket(packet);
+                    packet = new CCSDSPacket(6, 4);
+                    ESPLvpduHandler.fillPacket(packet);
                     tl.tmTransmit(packet);
 
-					if (engageHoldOneCycle){ // hold the command for 1 cycle after the command Ack received
+                    if (engageHoldOneCycle){ // hold the command for 1 cycle after the command Ack received
 
-						waitToEngage = waitToEngage + 1;
-						System.out.println("Value : " + waitToEngage);
+                        waitToEngage = waitToEngage + 1;
+                        System.out.println("Value : " + waitToEngage);
 
-					}
+                    }
 
-					if (unengageHoldOneCycle){
-						waitToUnengage = waitToUnengage + 1;
-					}
+                    if (unengageHoldOneCycle){
+                        waitToUnengage = waitToUnengage + 1;
+                    }
 
-					i = 0;	
-				}
+                    i = 0;
+                }
 
-				executePendingCommands();
-				Thread.sleep(4000 / 20);
-			}
+                executePendingCommands();
+                Thread.sleep(4000 / 20);
+            }
 
-		} catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-		System.out.println("Simulator thread ended");
-	}
+        System.out.println("Simulator thread ended");
+    }
 
-	/**
-	 * runs in the main TM thread, executes commands from the queue (if any)
-	 * @throws IOException 
-	 */
-	private void executePendingCommands() throws IOException {
-		while(pendingCommands.size()>0) {
-			CCSDSPacket commandPacket = pendingCommands.poll();
+    /**
+     * runs in the main TM thread, executes commands from the queue (if any)
+     * @throws IOException
+     */
+    private void executePendingCommands() throws IOException {
+        while(pendingCommands.size()>0) {
+            CCSDSPacket commandPacket = pendingCommands.poll();
 
-			CCSDSPacket ackPacket;
-			if (commandPacket.packetType == 10) {
-				System.out.println("BATT COMMAND  : " + commandPacket.packetid+" batNum: "+commandPacket.getUserDataBuffer().get(0));
+            CCSDSPacket ackPacket;
+            if (commandPacket.packetType == 10) {
+                System.out.println("BATT COMMAND  : " + commandPacket.packetid+" batNum: "+commandPacket.getUserDataBuffer().get(0));
 
-				switch(commandPacket.packetid){
+                switch(commandPacket.packetid){
 
-				case 1 : commandPacket.packetid = 1 ; //switch on 
-					int batNum = commandPacket.getUserDataBuffer().get(0);
-					switch(batNum) {
-					case 1: batNum = 1; //switch bat1 on
-						unengageHoldOneCycle = true;
-						//engaged = false;
-						ExeTransmitted = false;
-						battOneCommand = 2;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                        tl.tmTransmit(ackPacket);
-					case 2: batNum = 2 ; //swtich bat2 on
-						unengageHoldOneCycle = true;
-						//engaged = false;
-						ExeTransmitted = false;
-						battTwoCommand = 2;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                        tl.tmTransmit(ackPacket);
-					case 3:
-                        batNum = 3;  //switch bat3 on
-						unengageHoldOneCycle = true;
-						//engaged = false;
-						battThreeCommand = 2;
-						ExeTransmitted = false;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                        tl.tmTransmit(ackPacket);
-					}
-                    break;
-				case 2: commandPacket.packetid = 2 ; //switch off
-					batNum = commandPacket.getUserDataBuffer().get(0);
-					switch(batNum) {
-				
-					case 1: batNum = 1; //switch bat1 off
-						engageHoldOneCycle = true;
-						ExeTransmitted = false;
-						battOneCommand = 1;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                        tl.tmTransmit(ackPacket);
-					break;
-                        case 2: batNum = 2; //switch bat2 off
-						engageHoldOneCycle = true;
-						ExeTransmitted = false;
-						battTwoCommand = 1;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                            tl.tmTransmit(ackPacket);
-					break;
-                        case 3: batNum = 3; //switch bat3 off
-						engageHoldOneCycle = true;
-						ExeTransmitted = false;
-						battThreeCommand = 1;
-						ackPacket = new CCSDSPacket(1, 2, 7);
-						AckDataHandler.fillAckPacket(ackPacket, 1);
-                            tl.tmTransmit(ackPacket);
-					}
+                    case 1 : commandPacket.packetid = 1 ; //switch on
+                        int batNum = commandPacket.getUserDataBuffer().get(0);
+                        switch(batNum) {
+                            case 1: batNum = 1; //switch bat1 on
+                                unengageHoldOneCycle = true;
+                                //engaged = false;
+                                ExeTransmitted = false;
+                                battOneCommand = 2;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+                            case 2: batNum = 2 ; //swtich bat2 on
+                                unengageHoldOneCycle = true;
+                                //engaged = false;
+                                ExeTransmitted = false;
+                                battTwoCommand = 2;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+                            case 3:
+                                batNum = 3;  //switch bat3 on
+                                unengageHoldOneCycle = true;
+                                //engaged = false;
+                                battThreeCommand = 2;
+                                ExeTransmitted = false;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+
+                        }
+                        break;
+                    case 2: commandPacket.packetid = 2 ; //switch off
+                        batNum = commandPacket.getUserDataBuffer().get(0);
+                        switch(batNum) {
+
+                            case 1: batNum = 1; //switch bat1 off
+                                engageHoldOneCycle = true;
+                                ExeTransmitted = false;
+                                battOneCommand = 1;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+                                break;
+                            case 2: batNum = 2; //switch bat2 off
+                                engageHoldOneCycle = true;
+                                ExeTransmitted = false;
+                                battTwoCommand = 1;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+                                break;
+                            case 3: batNum = 3; //switch bat3 off
+                                engageHoldOneCycle = true;
+                                ExeTransmitted = false;
+                                battThreeCommand = 1;
+                                ackPacket = new CCSDSPacket(1, 2, 7);
+                                AckDataHandler.fillAckPacket(ackPacket, 1);
+                                tl.tmTransmit(ackPacket);
+                        }
+                        break;
+                    case 5 : // LIST_RECORDING
+                        // send ack
+                        //ackPacket = new CCSDSPacket(1, 2, 7);
+                        //AckDataHandler.fillAckPacket(ackPacket, 1);
+                        //tl.tmTransmit(ackPacket);
+
+                        CCSDSPacket losNamePacket = losStore.getLosNames();
+                        tl.tmTransmit(losNamePacket);
+                        break;
+                    case 6: {// DUMP_RECORDINGS
+                        byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
+                        final String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
+                        System.out.println("Command DUMP_RECORDING for file " + fileName);
+                        dumpLosDataFile(fileName);
+                        break;
+                    }
+                    case 7 : { //DELETE_RECORDING
+                        byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
+                        final String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
+                        System.out.println("Command DELETE_RECORDING for file " + fileName);
+                        deleteLosDataFile(fileName);
+                        break;
+                    }
                 }
             }
         }
-	}
+    }
 
 
 
 
     /**
-	 * this runs in a separate thread but pushes commands to the main TM thread
-	 * @throws IOException 
-	 * 
-	 */
-	private void readCommands(DataInputStream dIn) {
+     * this runs in a separate thread but pushes commands to the main TM thread
+     * @throws IOException
+     *
+     */
+    private Queue<CCSDSPacket> readPackets(DataInputStream dIn) {
 
+        Queue<CCSDSPacket> packetQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);
         try {
             while(dIn.available() > 0) {
-                System.out.println("ok");
-                //READ IN COMMAND
+                //READ IN PACKET
                 byte hdr[] = new byte[6];
                 dIn.readFully(hdr);
                 int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
@@ -339,9 +366,7 @@ public class Simulator extends Thread {
                 System.arraycopy(hdr, 0, b, 0, 6);
                 dIn.readFully(b, 6, remaining);
                 CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
-                pendingCommands.add(packet);
-                //System.out.println("#" + losSent);
-                //System.out.println(packet.toString());
+                packetQueue.add(packet);
             }
             //System.out.println("Packets Stored & Sent = "+ losStored + " : "+  losSent);
         }catch(IOException e) {
@@ -350,11 +375,42 @@ public class Simulator extends Thread {
             System.err.println("Error reading command " + e);
             e.printStackTrace();
         }
-	}
+        return packetQueue;
+    }
 
-    public void readLastLosFile()
+
+    public void dumpLosDataFile(String filename)
     {
+        // read data from los storage
+        if(filename == null)
+        {
+            filename = losStore.getCurrentFileName();
+        }
+        DataInputStream dataStream = losStore.readLosFile(filename);
+        if(dataStream == null)
+            return;
 
+        // extract packets from the data stream and put them in queue for downlink
+        Queue<CCSDSPacket> qLosData = readPackets(dataStream);
+        for(CCSDSPacket ccsdsPacket : qLosData)
+        {
+            for (ServerConnection serverConnection : serversConnections)
+                            serverConnection.setTmDumpPacket(ccsdsPacket);
+
+        }
+
+        // add packet notifying that the file has been downloaded entirely
+        CCSDSPacket confirmationPacket = CommandData.buildLosTransmittedRecordingPacket(filename);
+        for(ServerConnection serverConnection : serversConnections)
+            serverConnection.setTmDumpPacket(confirmationPacket);
+    }
+
+    public void deleteLosDataFile(String filename) {
+        losStore.deleteFile(filename);
+        // add packet notifying that the file has been deleted
+        CCSDSPacket confirmationPacket = CommandData.buildLosDeletedRecordingPacket(filename);
+        for(ServerConnection serverConnection : serversConnections)
+            serverConnection.setTmDumpPacket(confirmationPacket);
 
     }
 
@@ -366,42 +422,6 @@ public class Simulator extends Thread {
         losStore.stopTriggeringLos();
     }
 
-
-	public static void main(String[] args) {
-
-
-
-        System.out.println("_______________________\n");
-        System.out.println(" ╦ ╦┌─┐┌─┐");
-        System.out.println(" ╚╦╝├─┤└─┐");
-        System.out.println("  ╩ ┴ ┴└─┘");
-        System.out.println(" Yet Another Simulator");
-        System.out.println("_______________________");
-
-        loadConfig();
-
-
-		try {
-			Simulator client = new Simulator();
-
-            // Start UI
-            if(ui)
-                simWindow = new SimWindow(client);
-
-            // Start simulator itself
-            client.start();
-
-            // start alternating los and aos
-            if(losAos && !ui)
-            {
-                client.startTriggeringLos();
-            }
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
 
     private static void loadConfig() {
         System.out.println("Current directory: " + System.getProperty("user.dir"));
@@ -429,5 +449,37 @@ public class Simulator extends Thread {
         };
 
     }
+
+
+    public static void main(String[] args) {
+        System.out.println("_______________________\n");
+        System.out.println(" ╦ ╦┌─┐┌─┐");
+        System.out.println(" ╚╦╝├─┤└─┐");
+        System.out.println("  ╩ ┴ ┴└─┘");
+        System.out.println(" Yet Another Simulator");
+        System.out.println("_______________________");
+
+        loadConfig();
+        try {
+            Simulator client = new Simulator();
+
+            // Start UI
+            if(ui)
+                simWindow = new SimWindow(client);
+
+            // Start simulator itself
+            client.start();
+
+            // start alternating los and aos
+            if(losAos && !ui)
+            {
+                client.startTriggeringLos();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

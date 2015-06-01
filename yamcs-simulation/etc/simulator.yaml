@@ -3,8 +3,8 @@ ui: true
 
 # Alternance of AOS and LOS periods
 losAos: true
-los_period_s: 2
-aos_period_s: 10
+los_period_s: 60
+aos_period_s: 120
 
 # Listening ports, several Yamcs server are supported, telemetry is sent to both of them
 servers:
