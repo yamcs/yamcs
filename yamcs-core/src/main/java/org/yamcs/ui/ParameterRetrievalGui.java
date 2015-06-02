@@ -62,6 +62,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.PetParameterFormatter;
@@ -530,7 +532,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             ParameterReplayRequest prr=ParameterReplayRequest.newBuilder().addAllNameFilter(paramList).build();
             ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                .setParameterRequest(prr).setStart(start).setStop(stop).build();
+                .setParameterRequest(prr).setStart(start).setStop(stop).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build()).build();
             
             StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.instance), "createReplay", rr, StringMessage.newBuilder());
             SimpleString replayAddress=new SimpleString(answer.getMessage());

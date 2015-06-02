@@ -47,6 +47,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
@@ -177,7 +179,8 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                 ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
                 yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
                 ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                                .setStart(startInstant).setStop(stopInstant);
+                                .setStart(startInstant).setStop(stopInstant).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
+                
                 PacketReplayRequest.Builder prr=PacketReplayRequest.newBuilder();
                 for(String pn:packetNames) {
                     prr.addNameFilter(NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(pn));
