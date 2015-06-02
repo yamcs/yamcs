@@ -7,12 +7,12 @@ import javax.swing.text.JTextComponent;
  * Component to be displayed when the matching yproc type is selected from
  * within the Yamcs Monitor
  */
-public abstract class YProcessorWidget {
+public abstract class ProcessorWidget {
     
     protected String processorType;
     protected JTextComponent nameComponent;
     
-    public YProcessorWidget(String channelType) {
+    public ProcessorWidget(String channelType) {
         this.processorType = channelType;
     }
 

@@ -481,7 +481,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         c.weightx = 0.0; c.gridwidth = 1; gridbag.setConstraints(label, c); 
         createPanel.add(label);
 
-        ArrayList<YProcessorWidget> widgets = new ArrayList<YProcessorWidget>();
+        ArrayList<ProcessorWidget> widgets = new ArrayList<ProcessorWidget>();
         try {
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
             if(yconf.containsKey("processorWidgets")) {
@@ -492,11 +492,11 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                     Map m = (Map) ywidget;
                     String processorType = YConfiguration.getString(m, "type");
                     String widgetClass = YConfiguration.getString(m, "class");
-                    YProcessorWidget widget = new YObjectLoader<YProcessorWidget>().loadObject(widgetClass, processorType);
+                    ProcessorWidget widget = new YObjectLoader<ProcessorWidget>().loadObject(widgetClass, processorType);
                     widgets.add(widget);
                 }
             } else {
-                widgets.add(new ArchiveYProcWidget("Archive"));
+                widgets.add(new ArchiveProcWidget("Archive"));
             }
         } catch(ConfigurationException e) {
             throw new RuntimeException(e);
@@ -522,7 +522,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH; gridbag.setConstraints(specPanel, c);
         createPanel.add(specPanel);
-        for (YProcessorWidget widget:widgets) {
+        for (ProcessorWidget widget:widgets) {
             widget.setSuggestedNameComponent(newYProcName);
             specPanel.add(widget.createConfigurationPanel(), widget.processorType);
         }
@@ -531,7 +531,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             @Override
             public void actionPerformed( ActionEvent ae ) {
                 specLayout.show(specPanel, processorChooser.getSelectedItem().toString());
-                YProcessorWidget widget = (YProcessorWidget)processorChooser.getSelectedItem();
+                ProcessorWidget widget = (ProcessorWidget)processorChooser.getSelectedItem();
                 widget.activate();
             }
         });
@@ -633,7 +633,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             return;
         }
         String name=newYProcName.getText();
-        YProcessorWidget type = (YProcessorWidget)processorChooser.getSelectedItem();
+        ProcessorWidget type = (ProcessorWidget)processorChooser.getSelectedItem();
         String spec = type.getSpec();
         if(hasAdminRights) {
             persistent=persistentCheckBox.isSelected();
@@ -759,8 +759,8 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
 
     //------------- end of interface ConnectionListener
 
-    public YProcessorWidget getActiveProcessorWidget() {
-        return (YProcessorWidget) processorChooser.getSelectedItem();
+    public ProcessorWidget getActiveProcessorWidget() {
+        return (ProcessorWidget) processorChooser.getSelectedItem();
     }
 
     private void connect(final YamcsConnectData ycd)	{

@@ -28,7 +28,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
 
-    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, YProcessorControlClient channelControl, boolean isAdmin) throws ConfigurationException, IOException {
+    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, YProcessorControlClient processorControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
 
@@ -89,20 +89,20 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         setDefaultCloseOperation(HIDE_ON_CLOSE);
 
         archivePanel.replayPanel.applySelectionButton.addActionListener(this);
-        archivePanel.replayPanel.setChannelControlClient(channelControl);
+        archivePanel.replayPanel.setProcessorControlClient(processorControl);
         archivePanel.replayPanel.clearReplayPanel();
         yconnector.addConnectionListener(this);
     }
 
     /*  void autofillPopup()
         {
-            if ( currentHrdpChannelInfo != null ) {
+            if ( currentHrdpProcessorInfo != null ) {
                 for (Enumeration<String> ep = payloads.keys(); ep.hasMoreElements(); ) {
                     final String key = ep.nextElement();
                     Vector<TMTypeSpec> tm = payloads.get(key);
                     for (Enumeration<TMTypeSpec> et = tm.elements(); et.hasMoreElements(); ) {
                         final TMTypeSpec pkt = et.nextElement();
-                        pkt.enabled = currentHrdpChannelInfo.containsPacket(pkt.opsname);
+                        pkt.enabled = currentHrdpProcesorInfo.containsPacket(pkt.opsname);
                         pkt.assocMenuItem.setVisible(!pkt.enabled);
                     }
                 }
@@ -120,17 +120,17 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
                 showError("Select the range you want to apply. Then try again");
             } else {
                 List<String> packets = archivePanel.getSelectedPackets("tm");
-                YProcessorWidget widget=YamcsMonitor.theApp.getActiveChannelWidget();
-                if(widget instanceof ArchiveYProcWidget) {
-                    ((ArchiveYProcWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
+                ProcessorWidget widget=YamcsMonitor.theApp.getActiveProcessorWidget();
+                if(widget instanceof ArchiveProcWidget) {
+                    ((ArchiveProcWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));
                     showInfo("A new HRDP selection was applied.\n" +
-                            "Look at the \"New Channel\" section in the Yamcs Monitor window to check.");
+                            "Look at the \"New Processor\" section in the Yamcs Monitor window to check.");
                 } else {
-                    showError("Cannot apply selection for the currently selected channel type");
+                    showError("Cannot apply selection for the currently selected processor type");
                 }
             }
 
-            //} else if (cmd.equals("populate-from-current-channel")) {
+            //} else if (cmd.equals("populate-from-current-processor")) {
 
             //autofillPopup();
         } else if (cmd.equalsIgnoreCase("close")) {

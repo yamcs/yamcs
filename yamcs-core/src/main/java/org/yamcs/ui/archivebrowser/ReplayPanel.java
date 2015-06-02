@@ -159,7 +159,7 @@ public class ReplayPanel extends JPanel {
         this.dataViewer=dataViewer;
     }
     
-    public void setChannelControlClient(YProcessorControlClient cc) {
+    public void setProcessorControlClient(YProcessorControlClient cc) {
         this.channelControl=cc;
     }
 
