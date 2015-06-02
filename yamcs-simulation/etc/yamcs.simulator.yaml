@@ -8,7 +8,7 @@ services:
            tm: ["tm_realtime", "tm_dump"]
            cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
            event: ["events_realtime", "events_dump"]
-           param: ["sys_param"]
+           param: ["sys_param", "pp_realtime"]
            alarm: ["alarms_realtime"]
 
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
