@@ -9,11 +9,11 @@ import javax.swing.text.JTextComponent;
  */
 public abstract class YProcessorWidget {
     
-    protected String channelType;
+    protected String processorType;
     protected JTextComponent nameComponent;
     
     public YProcessorWidget(String channelType) {
-        this.channelType = channelType;
+        this.processorType = channelType;
     }
 
     void setSuggestedNameComponent(JTextComponent nameComponent) {
@@ -41,6 +41,6 @@ public abstract class YProcessorWidget {
     
     @Override
     public String toString() {
-        return channelType;
+        return processorType;
     }
 }

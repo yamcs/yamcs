@@ -9,7 +9,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 class YProcTableModel extends AbstractTableModel {
     private ArrayList<ProcessorInfo> yprocs=new ArrayList<ProcessorInfo>();
 
-    public void removeYProc(String instance, String name) {
+    public void removeProcessor(String instance, String name) {
         for ( int i = 0; i < yprocs.size(); ++i ) {
             ProcessorInfo ci = yprocs.get(i);
             if(ci.getInstance().equals(instance) && ci.getName().equals(name)) {

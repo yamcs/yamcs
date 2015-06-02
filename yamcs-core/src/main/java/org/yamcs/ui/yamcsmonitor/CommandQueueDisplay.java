@@ -194,16 +194,16 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 		commandQueueControl.addCommandQueueListener(this);
 	}
 
-	public void addChannel(String instance, String channelName) {
+	public void addProcessor(String instance, String channelName) {
 	    QueuesTableModel model = new QueuesTableModel(instance, channelName);
 		queuesModels.put(instance+"."+channelName, model);
 	}
 
-	public void removeChannel(String instance, String channelName) {
+	public void removeProcessor(String instance, String channelName) {
 		queuesModels.remove(instance+"."+channelName);
 	}
 
-	public void setChannel(String instance, String channelName) {
+	public void setProcessor(String instance, String channelName) {
 	    System.out.println("setting channel : "+instance+" cn: "+channelName);
 		currentQueuesModel = channelName == null ? emptyQueuesModel : queuesModels.get(instance+"."+channelName);
 		if (currentQueuesModel == null) currentQueuesModel = emptyQueuesModel;

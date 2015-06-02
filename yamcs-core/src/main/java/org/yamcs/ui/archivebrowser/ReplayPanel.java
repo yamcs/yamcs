@@ -193,7 +193,7 @@ public class ReplayPanel extends JPanel {
      * called by the yamcs monitor when a channelinfo update is received from the server
      * @param ci
      */
-    public void updateChannelInfol(ProcessorInfo ci) {
+    public void updateProcessorInfol(ProcessorInfo ci) {
         if((currentYProcInfo==null)
                 || !ci.getInstance().equals(currentYProcInfo.getInstance()) 
                 || !ci.getName().equals(currentYProcInfo.getName())
