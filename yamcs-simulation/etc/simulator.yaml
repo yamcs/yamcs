@@ -1,5 +1,5 @@
 # Should the User Interface be used
-ui: true
+ui: false
 
 # Alternance of AOS and LOS periods
 losAos: true
