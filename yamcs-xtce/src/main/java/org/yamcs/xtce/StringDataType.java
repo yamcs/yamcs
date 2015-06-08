@@ -42,6 +42,9 @@ public class StringDataType extends BaseDataType {
 
     @Override
     public Object parseString(String stringValue) {
+        if(stringValue.startsWith("\"") && stringValue.endsWith("\"")) {
+            return stringValue.substring(1, stringValue.length()-1);
+        }
         return stringValue;
     }
 }
