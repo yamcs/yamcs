@@ -51,7 +51,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
     protected final static String SHEET_PROCESSED_PARAMETERS="ProcessedParameters";
     protected final static String SHEET_ALGORITHMS="Algorithms";
-    protected final static String SHEET_LIMITS="Limits"; // Deprecated. Use alarms
     protected final static String SHEET_ALARMS="Alarms";
     protected final static String SHEET_COMMANDS="Commands";
     protected final static String SHEET_COMMANDOPTIONS="CommandOptions";
@@ -64,10 +63,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     final static int IDX_PARAM_ENGTYPE=3;
     final static int IDX_PARAM_ENGUNIT=4;
     final static int IDX_PARAM_CALIBRATION=5;
-    final static int IDX_PARAM_LOWWARNILIMIT=6;
-    final static int IDX_PARAM_HIGHWARNILIMIT=7;
-    final static int IDX_PARAM_LOWCRITICALLIMIT=8;
-    final static int IDX_PARAM_HIGHCRITICALLIMIT=9;
+    final static int IDX_PARAM_DESCRIPTION=6;
 
 
     //columns in the containers sheet
@@ -153,7 +149,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
     
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="3.0";
+    final static String FORMAT_VERSION="4.0";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION };
 
@@ -212,7 +208,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected void loadSheets() throws SpreadsheetLoadException {
 	loadGeneralSheet(true);
 	loadCalibrationSheet(false);
-	loadLimitsSheet(false);
 	loadParametersSheet(true, SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
 	loadParametersSheet(false, SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
 	loadParametersSheet(false, SHEET_LOCAL_PARAMETERS, DataSource.LOCAL);
@@ -400,68 +395,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	}
     }
 
-    /**
-     * If there is a sheet with the Limits, load it now! 
-     */
-    private void loadLimitsSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_LIMITS, required);
-	if(sheet==null)return;
-
-	// start at 1 to not use the first line (= title line)
-	int start = 1;
-	while(true) {
-	    // we first search for a row containing (= starting) a new limit
-	    while (start < sheet.getRows()) {
-		Cell[] cells = jumpToRow(sheet, start);
-		if ((cells.length > 0) && (cells[0].getContents().length() > 0)) {
-		    break;
-		}
-		start++;
-	    }
-	    if (start >= sheet.getRows()) {
-		break;
-	    }
-	    Cell[] cells = jumpToRow(sheet, start);
-	    String name = cells[0].getContents();
-	    // now we search for the matching last row of the limit
-	    int end = start + 1;
-	    while (end < sheet.getRows()) {
-		cells = jumpToRow(sheet, end);
-		if (isRowEmpty(cells) || (cells[0].getContents().length() != 0)) {
-		    break;
-		}
-		end++;
-	    }
-
-	    for (int j = start; j < end; j++) {
-		cells = jumpToRow(sheet, j);
-		String condition=cells[1].getContents();
-		if(condition.length()==0) condition=null;
-		String mins=(cells.length>2)?cells[2].getContents():"";
-		String maxs=(cells.length>3)?cells[3].getContents():"";
-		double min=(mins.length()>0)?Double.parseDouble(mins): Double.NEGATIVE_INFINITY;
-		double max=(maxs.length()>0)?Double.parseDouble(maxs): Double.POSITIVE_INFINITY;					
-		FloatRange range=new FloatRange(min,max);
-		AlarmRanges ranges=new AlarmRanges();
-		ranges.warningRange=range;
-		ArrayList<LimitDef> al=limits.get(name);
-		if(al==null) {
-		    al=new ArrayList<LimitDef>();
-		    limits.put(name, al);
-		}
-		al.add(new LimitDef(condition,ranges));
-	    }
-	    ArrayList<LimitDef> al=limits.get(name);
-	    if((al==null)||(al.size()==0)) {
-		log.warn("Limit definition '"+name+"' on line "+start+" contains no range; Limit ignored");
-		limits.remove(name);
-	    } else if(!limits.containsKey(name) && al.size()>1) {
-		log.warn("Limit definition '"+name+"' on line "+start+" contains more than one range but has no condition; Limit ignored");
-	    }
-	    start = end;
-	}
-    }
-
+  
     private boolean isRowEmpty(Cell[] cells) {
 	for(int i=0;i<cells.length;i++) 
 	    if(cells[i].getContents().length()>0) return false;
@@ -546,7 +480,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    } else	if ("binary".equalsIgnoreCase(engtype)) {
 		ptype = new BinaryParameterType(name);
 	    } else {
-		throw new SpreadsheetLoadException(ctx, "Unknown parameter type " + engtype);
+	        if(engtype.isEmpty()) {
+	            throw new SpreadsheetLoadException(ctx, "No engineering type specified");
+	        } else {
+	            throw new SpreadsheetLoadException(ctx, "Unknown parameter type '" + engtype+"'");
+	        }
 	    }
 
 	    String units=null;
@@ -555,8 +493,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		UnitType unitType = new UnitType(units);
 		((BaseDataType) ptype).addUnit(unitType);
 	    }
-
-	    loadParameterLimits(ptype,cells);
 
 	    //calibrations
 	    DataEncoding encoding = null;
@@ -764,107 +700,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	}
     }
 
-    private void loadParameterLimits(ParameterType ptype, Cell[] cells) {
-	String warnMins=null;
-	if(hasColumn(cells, IDX_PARAM_LOWWARNILIMIT)) {
-	    warnMins=cells[IDX_PARAM_LOWWARNILIMIT].getContents();
-	    //System.out.println("limits.length="+limits.size()+"limits: "+limits.keySet() +"mins="+mins);
-	    if(limits.containsKey(warnMins)) { //limit is specified on the separate sheet
-		for(LimitDef ld:limits.get(warnMins)) {
-		    Pattern p=Pattern.compile("(\\w+)(==|!=|>|<|>=|<=)(\\w+)");
-		    if(ld.condition.length()>0) {
-			Matcher m=p.matcher(ld.condition);
-			if((!m.matches()) ||(m.groupCount()!=3)) {
-			    log.warn("Cannot parse alarm condition '"+ld.condition+"'");
-			    continue;
-			}
-			String pname=m.group(1);
-			String values=m.group(3);
-			String op=m.group(2);
-			Parameter para=parameters.get(pname);
-			if(para!=null) {
-
-			    ParameterInstanceRef paraRef=new ParameterInstanceRef(para);
-			    Comparison c;
-			    if(para.parameterType instanceof IntegerParameterType) {
-				try {
-				    long value=Long.parseLong(values);
-				    c=new Comparison(paraRef,value,Comparison.stringToOperator(op));
-				} catch (NumberFormatException e) {
-				    log.warn("Cannot parse alarm condition '"+ld.condition+"': "+e.getMessage());
-				    continue;
-				}
-			    } else if(para.parameterType instanceof EnumeratedParameterType) {
-				c=new Comparison(paraRef, values, Comparison.stringToOperator(op));
-			    } else {
-				log.warn("Conditions not supported for parameter of type "+para.parameterType);
-				continue;
-			    }
-			    NumericContextAlarm nca=new NumericContextAlarm();
-			    nca.setContextMatch(c);
-			    nca.setStaticAlarmRanges(ld.ranges);
-			    if(ptype instanceof IntegerParameterType){
-				((IntegerParameterType)ptype).addContextAlarm(nca);
-			    } else {
-				((FloatParameterType)ptype).addContextAlarm(nca);
-			    }
-			} else {  //TODO
-			    //	    ParameterInstanceRef paraRef=new ParameterInstanceRef(new NameReference(pname));
-			    //	    Comparison c=new Comparison(paraRef, Comparison.stringToOperator(op));
-
-			}
-		    } else {
-			setDefaultWarningAlarmRange(ptype, ld.ranges.warningRange);
-			setDefaultCriticalAlarmRange(ptype, ld.ranges.criticalRange);
-		    }
-		}
-	    }
-	}
-	String warnMaxs=null;
-	if(hasColumn(cells, IDX_PARAM_HIGHWARNILIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
-	    warnMaxs=cells[IDX_PARAM_HIGHWARNILIMIT].getContents();		        
-	}
-
-	String criticalMins=null;
-	if(hasColumn(cells, IDX_PARAM_LOWCRITICALLIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
-	    criticalMins=cells[IDX_PARAM_LOWCRITICALLIMIT].getContents();
-	}
-
-	String criticalMaxs=null;
-	if(hasColumn(cells, IDX_PARAM_HIGHCRITICALLIMIT) && ((ptype instanceof IntegerParameterType) || (ptype instanceof FloatParameterType))) {
-	    criticalMaxs=cells[IDX_PARAM_HIGHCRITICALLIMIT].getContents();
-	}
-
-	if(warnMins!=null || warnMaxs!=null) {
-	    double min=(warnMins!=null&&!limits.containsKey(warnMins))?Double.parseDouble(warnMins):Double.NEGATIVE_INFINITY;
-	    double max=(warnMaxs!=null)?Double.parseDouble(warnMaxs):Double.POSITIVE_INFINITY;
-	    setDefaultWarningAlarmRange(ptype,new FloatRange(min,max));
-	}
-
-	if(criticalMins!=null || criticalMaxs!=null) {
-	    double min=(criticalMins!=null)?Double.parseDouble(criticalMins):Double.NEGATIVE_INFINITY;
-	    double max=(criticalMaxs!=null)?Double.parseDouble(criticalMaxs):Double.POSITIVE_INFINITY;
-	    setDefaultCriticalAlarmRange(ptype, new FloatRange(min,max));
-	}
-    }
-
-    private void setDefaultCriticalAlarmRange(ParameterType ptype, FloatRange range) {
-	if(range==null)return;
-	if(ptype instanceof IntegerParameterType){
-	    ((IntegerParameterType)ptype).setDefaultCriticalAlarmRange(range);
-	} else {
-	    ((FloatParameterType)ptype).setDefaultCriticalAlarmRange(range);
-	}
-    }
-
-    private void setDefaultWarningAlarmRange(ParameterType ptype, FloatRange range) {
-	if(range==null)return;
-	if(ptype instanceof IntegerParameterType){
-	    ((IntegerParameterType)ptype).setDefaultWarningAlarmRange(range);
-	} else {
-	    ((FloatParameterType)ptype).setDefaultWarningAlarmRange(range);
-	}
-    }
+ 
 
     protected void loadContainersSheet(boolean required) {
 	Sheet sheet = switchToSheet(SHEET_CONTAINERS, required);
@@ -2204,7 +2040,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    return comp;
 	} else {
 	    final ParameterInstanceRef pref=new ParameterInstanceRef(false);
-	    final Comparison ucomp = new Comparison(pref, Integer.decode(value), opType);
+	    final Comparison ucomp = new Comparison(pref, value, opType);
 	    spaceSystem.addUnresolvedReference(new NameReference(pname, Type.PARAMETER, new ResolvedAction() {
 		@Override
 		public boolean resolved(NameDescription nd) {
