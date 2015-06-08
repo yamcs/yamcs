@@ -780,17 +780,17 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		// get the next row, containing a measurement/aggregate reference
 		cells = jumpToRow(sheet, i);
 		// determine whether we have not reached the end of the packet definition.
-		if ((cells == null) || (cells.length <= IDX_CONT_RELPOS) || cells[IDX_CONT_RELPOS].getContents().equals("")) {
+		if (!hasColumn(cells,  IDX_CONT_PARA_NAME)) {
 		    end = true; continue;
 		}
 
 		// extract a few variables, for further use
 		String flags = cells[IDX_CONT_FLAGS].getContents();
 		String paraname = cells[IDX_CONT_PARA_NAME].getContents();
-		if((cells.length<=IDX_CONT_RELPOS)||cells[IDX_CONT_RELPOS].getContents().equals("")) {
-		    throw new SpreadsheetLoadException(ctx, "relpos is not specified for "+paraname+" on line "+(i+1));
+		int relpos = 0;
+		if (hasColumn(cells,  IDX_CONT_RELPOS)) {
+		    relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
 		}
-		int relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
 
 		// we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
 		// We only do this if the absoluteOffset is not equal to -1, 
