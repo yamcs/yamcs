@@ -40,7 +40,7 @@ public class TestXtceTmExtractor {
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
-        ByteBuffer bb=tmGenerator.generate_PKT11();
+        ByteBuffer bb=tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
@@ -266,7 +266,7 @@ public class TestXtceTmExtractor {
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProviding(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
-        ByteBuffer bb = tmGenerator.generate_PKT11();
+        ByteBuffer bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         ArrayList<ContainerExtractionResult> received=tmExtractor.getContainerResult();

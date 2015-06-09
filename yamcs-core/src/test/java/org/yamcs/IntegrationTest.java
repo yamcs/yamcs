@@ -149,7 +149,7 @@ public class IntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
-        for (int i=0;i <1000000; i++) packetProvider.generate_PKT11();
+        for (int i=0;i <1000000; i++) packetProvider.generate_PKT1_1();
         System.out.println("total time: "+(System.currentTimeMillis()-t0));
     }
 
@@ -170,7 +170,7 @@ public class IntegrationTest {
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
-        for (int i=0;i <1000; i++) packetProvider.generate_PKT11();
+        for (int i=0;i <1000; i++) packetProvider.generate_PKT1_1();
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         checkPdata(pdata, packetProvider);
 
@@ -197,7 +197,7 @@ public class IntegrationTest {
         assertTrue(response.contains("Invalid parameters"));
         assertTrue(response.contains("/REFMDB/SUBSYS1/InvalidParaName"));
 
-        packetProvider.generate_PKT11();
+        packetProvider.generate_PKT1_1();
         Thread.sleep(1000);
         /////// gets parameters from cache via REST - second attempt with valid parameters
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_6", "/REFMDB/SUBSYS1/IntegerPara11_7");
@@ -225,7 +225,7 @@ public class IntegrationTest {
         responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         Thread.sleep(1000); //wait to make sure that the data has reached the server
 
-        packetProvider.generate_PKT11();
+        packetProvider.generate_PKT1_1();
 
         pdata = (fromJson(responseFuture.get(), SchemaPvalue.ParameterData.MERGE)).build();
 
@@ -697,7 +697,7 @@ public class IntegrationTest {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i=0;i <numPackets; i++) {
             packetProvider.setGenerationTime(t0+1000*i);
-            packetProvider.generate_PKT11();
+            packetProvider.generate_PKT1_1();
             packetProvider.generate_PKT13();
         }
     }

@@ -59,14 +59,14 @@ public class DerivedValuesTest {
     @Test
     public void testFloatAdd() throws Exception {
 
-	Parameter fp=xtceDb.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
+	Parameter fp=xtceDb.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
 	assertNotNull(fp);
 
 	YProcessor c=  createChannel("testFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add"));
-	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
+	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 	final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
 
 
@@ -82,7 +82,7 @@ public class DerivedValuesTest {
 	long t0 = System.currentTimeMillis();
 	int n = 10;
 	for(int i = 0 ; i<n; i++)  {
-	    tmGenerator.generate_PKT11();
+	    tmGenerator.generate_PKT1_1();
 	}
 	long t1 = System.currentTimeMillis();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
@@ -100,14 +100,14 @@ public class DerivedValuesTest {
     @Test
     public void testJavascriptFloatAdd() throws Exception {
 	XtceDb db=XtceDbFactory.getInstance(instance);
-	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
+	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
 	assertNotNull(fp);
 
 	YProcessor c=  createChannel("testJavascriptFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("/DV/test_float_add_js"));
-	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
+	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
 	final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
 
@@ -120,7 +120,7 @@ public class DerivedValuesTest {
 	});
 
 	c.start();
-	tmGenerator.generate_PKT11();
+	tmGenerator.generate_PKT1_1();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
 	assertEquals(2, params.size());
 	ParameterValue p=params.get(0);
@@ -138,14 +138,14 @@ public class DerivedValuesTest {
     //OpenJDK 7 is very fast.
     public void testJavascriptPerformanceFloatAdd() throws Exception {
 	XtceDb db=XtceDbFactory.getInstance(instance);
-	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2");
+	Parameter fp=db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2");
 	assertNotNull(fp);
 	YProcessor c=  createChannel("testJavascriptPerformanceFloatAdd");
 
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
 	paraList.add(prm.getParameter("test_float_ypr_js"));
-	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
+	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
 	final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
 
@@ -161,7 +161,7 @@ public class DerivedValuesTest {
 	long t0 = System.currentTimeMillis();
 	int n = 100000;
 	for(int i = 0 ; i<n; i++)  {
-	    tmGenerator.generate_PKT11();
+	    tmGenerator.generate_PKT1_1();
 	}
 	long t1 = System.currentTimeMillis();
 	//   s.tryAcquire(5, TimeUnit.SECONDS);
@@ -179,7 +179,7 @@ public class DerivedValuesTest {
 	Collection<DerivedValue> dvalues=new ArrayList<DerivedValue>(1);
 
 	public MyDerivedValuesProvider(XtceDb xtcedb) {
-	    FloatAddDv dv1=new FloatAddDv("test_float_add", new String[]{"/REFMDB/SUBSYS1/FloatPara11_2", "/REFMDB/SUBSYS1/FloatPara11_3"});
+	    FloatAddDv dv1=new FloatAddDv("test_float_add", new String[]{"/REFMDB/SUBSYS1/FloatPara1_1_2", "/REFMDB/SUBSYS1/FloatPara1_1_3"});
 	    dv1.def.setQualifiedName("/DV/test_float_add");
 	    dvalues.add(dv1);
 	}

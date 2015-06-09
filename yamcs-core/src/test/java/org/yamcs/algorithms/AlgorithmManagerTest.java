@@ -92,7 +92,7 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(2, params.size());
         for(ParameterValue pvwi:params) {
             if(pvwi.getParameter().equals(floatPara)) {
@@ -127,7 +127,7 @@ public class AlgorithmManagerTest {
         long t0 = System.currentTimeMillis();
         int n = 100000;
         for(int i = 0 ; i<n; i++)  {
-            tmGenerator.generate_PKT11();
+            tmGenerator.generate_PKT1_1();
         }
         long t1 = System.currentTimeMillis();
         assertEquals(2*n, params.size());
@@ -209,7 +209,7 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
     }
@@ -226,20 +226,20 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue(), 0.001);
         
         // Test unsubscribe
         params.clear();
         prm.removeItemsFromRequest(subscriptionId, p);
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertTrue(params.isEmpty());
         
         // Subscribe again
         params.clear();
         prm.addItemsToRequest(subscriptionId, p);
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue(), 0.001);
     }
@@ -258,12 +258,12 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getUint32Value());
         
         params.clear();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(2, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getUint32Value());
         assertEquals((20 + 20 + 20 + (20 / 3.0)) / 4.0, params.get(1).getEngValue().getFloatValue(), 0.001);
@@ -272,8 +272,8 @@ public class AlgorithmManagerTest {
         params.clear();
         prm.removeItemsFromRequest(subscriptionId, prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAverage"));
 
-        tmGenerator.generate_PKT11();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
+        tmGenerator.generate_PKT1_1();
         assertEquals(2, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getUint32Value());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(1).getEngValue().getUint32Value());
@@ -284,7 +284,7 @@ public class AlgorithmManagerTest {
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAverage"),
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatMultiplication")));
         prm.removeItemsFromRequest(subscriptionId, prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAverage"));
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         // We should still get AlgoFloatMultiplication
         assertEquals(2, params.size());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_1", params.get(0).getParameter().getQualifiedName());
@@ -359,7 +359,7 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(0.1672918, params.get(0).getEngValue().getFloatValue(), 1e-8);
         
@@ -413,7 +413,7 @@ public class AlgorithmManagerTest {
         assertEquals("/REFMDB/SUBSYS1/AlgoSelectiveOut", params.get(0).getParameter().getQualifiedName());
         assertEquals(pIntegerPara16_1, params.get(0).getEngValue().getFloatValue(), 1e-6);
         
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size()); // No change, not in OnParameterUpdate list
         
         pIntegerPara16_1 = 7;

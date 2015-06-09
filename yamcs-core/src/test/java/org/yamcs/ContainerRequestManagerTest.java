@@ -40,7 +40,7 @@ public class ContainerRequestManagerTest {
         rm.subscribeAll(consumer1);
         rm.subscribeAll(consumer2);
 
-        packetGenerator.generate_PKT11();
+        packetGenerator.generate_PKT1_1();
         packetGenerator.generate_PKT13();
 
         assertEquals(6, consumer1.received.size());
@@ -67,7 +67,7 @@ public class ContainerRequestManagerTest {
         consumer2.reset();
         rm.unsubscribeAll(consumer2);
 
-        packetGenerator.generate_PKT11();
+        packetGenerator.generate_PKT1_1();
         packetGenerator.generate_PKT13();
 
         assertEquals(6, consumer1.received.size());
@@ -77,7 +77,7 @@ public class ContainerRequestManagerTest {
         
         rm.subscribe(consumer2, xtceDb.getSequenceContainer("/REFMDB/SUBSYS1/PKT13"));
 
-        packetGenerator.generate_PKT11();
+        packetGenerator.generate_PKT1_1();
         packetGenerator.generate_PKT13();
 
         assertEquals(1, consumer2.received.size());
@@ -88,7 +88,7 @@ public class ContainerRequestManagerTest {
         consumer2.reset();
         rm.subscribeAll(consumer2);
 
-        packetGenerator.generate_PKT11();
+        packetGenerator.generate_PKT1_1();
         packetGenerator.generate_PKT13();
 
         assertEquals(6, consumer2.received.size());

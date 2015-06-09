@@ -87,7 +87,7 @@ public class AlgorithmManagerPyTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(2.1672918, params.get(0).getEngValue().getFloatValue(), 0.001);
     }
@@ -127,7 +127,7 @@ public class AlgorithmManagerPyTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT11();
+        tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
     }

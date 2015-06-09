@@ -47,7 +47,7 @@ public class YamcsServerTest {
         Object o=ois.readObject();
         assertTrue(o instanceof XtceDb);
         XtceDb xtcedb=(XtceDb) o;
-        assertNotNull(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT11"));
+        assertNotNull(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_1"));
         ois.close();
         
         yc.close();
