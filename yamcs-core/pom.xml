@@ -149,10 +149,11 @@
      		   <name>java.util.logging.config.file</name>
    		     <value>${project.build.directory}/test-classes/logging.properties</value>
    		   </property>
-    </systemProperties>
+            </systemProperties>
           <excludes>
-          <exclude>**/IntegrationTest.java</exclude>
-          </excludes>
+             <exclude>IntegrationTest.java</exclude>
+             <exclude>**/*$*</exclude> <!-- this excludes the inner classes which causes maven to get stuck somehow -->
+          </excludes> 
         </configuration>
       </plugin>
       <plugin>
