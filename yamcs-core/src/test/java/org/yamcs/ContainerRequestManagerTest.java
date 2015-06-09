@@ -47,20 +47,20 @@ public class ContainerRequestManagerTest {
         Iterator<SequenceContainer> it = consumer1.received.iterator();
         assertEquals("ccsds-default", it.next().getName());
         assertEquals("PKT1", it.next().getName());
-        assertEquals("PKT11", it.next().getName());
+        assertEquals("PKT1_1", it.next().getName());
         assertEquals("ccsds-default", it.next().getName());
         assertEquals("PKT1", it.next().getName());
-        assertEquals("PKT13", it.next().getName());
+        assertEquals("PKT1_3", it.next().getName());
 
         // Same for 2nd consumer
         assertEquals(6, consumer2.received.size());
         it = consumer2.received.iterator();
         assertEquals("ccsds-default", it.next().getName());
         assertEquals("PKT1", it.next().getName());
-        assertEquals("PKT11", it.next().getName());
+        assertEquals("PKT1_1", it.next().getName());
         assertEquals("ccsds-default", it.next().getName());
         assertEquals("PKT1", it.next().getName());
-        assertEquals("PKT13", it.next().getName());
+        assertEquals("PKT1_3", it.next().getName());
 
         // Now try unsubscribing 2nd consumer
         consumer1.reset();
