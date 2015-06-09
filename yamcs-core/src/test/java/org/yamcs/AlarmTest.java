@@ -44,7 +44,7 @@ public class AlarmTest {
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
         db=XtceDbFactory.getInstance(yamcsInstance);
-        assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
+        assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
         SimpleTcTmService tctms = new SimpleTcTmService(tmGenerator, null, null);

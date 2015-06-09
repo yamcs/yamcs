@@ -39,6 +39,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_9Length=pkt1Length+1;
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
+    public final int pkt1_12Length=pkt1Length+2;
     public final int pkt2Length=8;
     
     
@@ -48,14 +49,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile short pIntegerPara1_1=5;
 
 
-    public volatile byte pIntegerPara11_1=20;
-    public volatile short pFloatPara11_2=1000;
-    public volatile float pFloatPara11_3=2;
-    public volatile byte pEnumerationPara11_4=0;
-    public volatile String pStringPara11_5="cucu";
-    public volatile int pIntegerPara11_6=236;
-    public volatile byte pIntegerPara11_7=34;
-    public volatile long pIntegerPara11_8=5084265585L;
+    public volatile byte pIntegerPara1_1_1=20;
+    public volatile short pFloatPara1_1_2=1000;
+    public volatile float pFloatPara1_1_3=2;
+    public volatile byte pEnumerationPara1_1_4=0;
+    public volatile String pStringPara1_1_5="cucu";
+    public volatile int pIntegerPara1_1_6=236;
+    public volatile byte pIntegerPara1_1_7=34;
+    public volatile long pIntegerPara1_1_8=5084265585L;
     public volatile int pIntegerPara1_11_1=0xAFFFFFFE; // a uint32 stored in signed java int
     public volatile long pIntegerPara1_11_1_unsigned_value=2952790014L; // the equivalent unsigned value
 
@@ -67,28 +68,33 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     
     
-    static public final String pFixedStringPara13_1 = "Ab"; // 16 bits
-    static public final String pFixedStringPara13_2 = "A"; // 8 bits
-    static public final String pTerminatedStringPara13_3 = "Abcdef"; // Null terminated
-    static public final String pTerminatedStringPara13_4 = "Abcdef"; // Comma terminated
-    static public final String pPrependedSizeStringPara13_5 = "Abcdefghijklmnopqrstuvwxyz"; // First 16 bits (2 bytes) set size in bits of size tag
-    static public final String pPrependedSizeStringPara13_6 = "Abcdef"; // First 8 bits (1 byte) set size in bits of size tag
-    static public final String pFixedStringPara13_7="Abcdefghijklmnop"; // 128 bits
+    static public final String pFixedStringPara1_3_1 = "Ab"; // 16 bits
+    static public final String pFixedStringPara1_3_2 = "A"; // 8 bits
+    static public final String pTerminatedStringPara1_3_3 = "Abcdef"; // Null terminated
+    static public final String pTerminatedStringPara1_3_4 = "Abcdef"; // Comma terminated
+    static public final String pPrependedSizeStringPara1_3_5 = "Abcdefghijklmnopqrstuvwxyz"; // First 16 bits (2 bytes) set size in bits of size tag
+    static public final String pPrependedSizeStringPara1_3_6 = "Abcdef"; // First 8 bits (1 byte) set size in bits of size tag
+    static public final String pFixedStringPara1_3_7="Abcdefghijklmnop"; // 128 bits
 
     // Get floats from strings
-    static public final String pStringFloatFSPara14_1="1.34"; // Fixed size 32 bit
-    static public final String pStringFloatTSCPara14_2="0.0000001"; // Comma terminated, leading zeros and calibrated
-    static public final String pStringFloatTSSCPara14_3="0.12"; // Semi-colon terminated, leading zero
-    static public final String pStringFloatFSBPara14_4="1.34567890123456"; // 128 bit string
-    static public final String pStringFloatPSPara14_5="1.345678"; // Prepended size string, first 8 bits (1 byte) set size in bits of size tag
+    static public final String pStringFloatFSPara1_4_1="1.34"; // Fixed size 32 bit
+    static public final String pStringFloatTSCPara1_4_2="0.0000001"; // Comma terminated, leading zeros and calibrated
+    static public final String pStringFloatTSSCPara1_4_3="0.12"; // Semi-colon terminated, leading zero
+    static public final String pStringFloatFSBPara1_4_4="1.34567890123456"; // 128 bit string
+    static public final String pStringFloatPSPara1_4_5="1.345678"; // Prepended size string, first 8 bits (1 byte) set size in bits of size tag
 
     // Get integers from strings
-    static public final String pStringIntFixedPara15_1="120"; // Fixed size, 24 bits
-    static public final String pStringIntTermPara15_2="12"; // Comma terminated
-    static public final String pStringIntTermPara15_3="12045"; // Semi-colon terminated
-    static public final String pStringIntPrePara15_4="1204507"; // Prepended size (16 bits)
-    static public final String pStringIntStrPara15_5="123406789"; // string
+    static public final String pStringIntFixedPara1_5_1="120"; // Fixed size, 24 bits
+    static public final String pStringIntTermPara1_5_2="12"; // Comma terminated
+    static public final String pStringIntTermPara1_5_3="12045"; // Semi-colon terminated
+    static public final String pStringIntPrePara1_5_4="1204507"; // Prepended size (16 bits)
+    static public final String pStringIntStrPara1_5_5="123406789"; // string
 
+    //Get enumerations from strings
+    public final String pStringEnumPara1_12_1="1";
+
+    
+    
     static public final int pIntegerPara2_1 = 123;
     static public final int pIntegerPara2_2 = 25;
 
@@ -114,7 +120,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     public ByteBuffer generate_PKT11() {
 	ByteBuffer bb=ByteBuffer.allocate(pkt1_1Length);
-	fill_PKT11(bb);
+	fill_PKT1_1(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
@@ -128,21 +134,21 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     
     public ByteBuffer generate_PKT13() {
 	ByteBuffer bb=ByteBuffer.allocate(pkt1_3Length);
-	fill_PKT13(bb);
+	fill_PKT1_3(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
 
     public ByteBuffer generate_PKT14() {
 	ByteBuffer bb=ByteBuffer.allocate(pkt1_4Length);
-	fill_PKT14(bb);
+	fill_PKT1_4(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
 
-    public ByteBuffer generate_PKT15() {
+    public ByteBuffer generate_PKT1_5() {
 	ByteBuffer bb=ByteBuffer.allocate(pkt1_5Length);
-	fill_PKT15(bb);
+	fill_PKT1_5(bb);
 	sendToTmProcessor(bb);
 	return bb;
     }
@@ -157,37 +163,37 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     /**
      * Generate a packet with configurable content
      */
-     public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2) {
-	return generate_PKT16(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
+     public ByteBuffer generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2) {
+	return generate_PKT1_6(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
      }
 
      /**
       * Generate a packet with configurable content
       */
-     public ByteBuffer generate_PKT16(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
+     public ByteBuffer generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
 	 ByteBuffer bb=ByteBuffer.allocate(pkt1_6Length);
-	 fill_PKT16(bb, pIntegerPara16_1, pIntegerPara16_2);
+	 fill_PKT1_6(bb, pIntegerPara16_1, pIntegerPara16_2);
 	 sendToTmProcessor(bb, rectime, gentime);
 	 return bb;
      }
 
-     public ByteBuffer generate_PKT17() {
+     public ByteBuffer generate_PKT1_7() {
 	 ByteBuffer bb=ByteBuffer.allocate(pkt1_7Length);
-	 fill_PKT17(bb);
+	 fill_PKT1_7(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
      }
 
-     public ByteBuffer generate_PKT18(int pIntegerPara18_1, int pIntegerPara18_2) {
+     public ByteBuffer generate_PKT1_8(int pIntegerPara18_1, int pIntegerPara18_2) {
 	 ByteBuffer bb=ByteBuffer.allocate(pkt1_8Length);
-	 fill_PKT18(bb, pIntegerPara18_1, pIntegerPara18_2);
+	 fill_PKT1_8(bb, pIntegerPara18_1, pIntegerPara18_2);
 	 sendToTmProcessor(bb);
 	 return bb;
      }
 
-     public ByteBuffer generate_PKT19() {
+     public ByteBuffer generate_PKT1_9() {
 	 ByteBuffer bb=ByteBuffer.allocate(pkt1_9Length);
-	 fill_PKT19(bb);
+	 fill_PKT1_9(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
      }
@@ -204,6 +210,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 fill_PKT1_11(bb);
 	 sendToTmProcessor(bb);
 	 return bb;
+     }
+     
+     
+     public ByteBuffer generate_PKT1_12() {
+         ByteBuffer bb=ByteBuffer.allocate(pkt1_12Length);
+         fill_PKT1_12(bb);
+         sendToTmProcessor(bb);
+         return bb;
      }
      
      public ByteBuffer generateCmdAck(short cmdId, byte stage, int result) {
@@ -263,24 +277,24 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.put(headerLength, (byte)((pIntegerPara1_1<<4)+packetType));
      }
 
-     private void fill_PKT11(ByteBuffer bb) {
+     private void fill_PKT1_1(ByteBuffer bb) {
 	 fill_PKT1(bb, 1);
 	 int offset=pkt1Length;
 	 bb.position(offset);
-	 bb.put(pIntegerPara11_1);
-	 bb.putShort(pFloatPara11_2);
-	 bb.putFloat(pFloatPara11_3);
-	 bb.put(pEnumerationPara11_4);
+	 bb.put(pIntegerPara1_1_1);
+	 bb.putShort(pFloatPara1_1_2);
+	 bb.putFloat(pFloatPara1_1_3);
+	 bb.put(pEnumerationPara1_1_4);
 
-	 bb.put((byte)(pIntegerPara11_6>>16));
-	 bb.putShort((short)(pIntegerPara11_6&0xFFFF));
-	 bb.put(pIntegerPara11_7);
+	 bb.put((byte)(pIntegerPara1_1_6>>16));
+	 bb.putShort((short)(pIntegerPara1_1_6&0xFFFF));
+	 bb.put(pIntegerPara1_1_7);
 
-	 bb.putShort((short)(pIntegerPara11_8>>32));
-	 bb.putInt((int)pIntegerPara11_8&0xFFFFFFFF);
+	 bb.putShort((short)(pIntegerPara1_1_8>>32));
+	 bb.putInt((int)pIntegerPara1_1_8&0xFFFFFFFF);
 
 	 byte[] b=new byte[10];
-	 System.arraycopy(pStringPara11_5.getBytes(), 0, b, 0, pStringPara11_5.getBytes().length);
+	 System.arraycopy(pStringPara1_1_5.getBytes(), 0, b, 0, pStringPara1_1_5.getBytes().length);
 	 bb.put(b);
      }
      
@@ -296,49 +310,49 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
          bb.putFloat(pLEFloatPara1_2_2);
      }
 
-     private void fill_PKT13(ByteBuffer bb) {
+     private void fill_PKT1_3(ByteBuffer bb) {
 	 fill_PKT1(bb, 3);
 	 int offset=pkt1Length;
 	 bb.position(offset);
 
-	 putFixedStringParam(bb, pFixedStringPara13_1, 16);
-	 putFixedStringParam(bb, pFixedStringPara13_2, 8);
+	 putFixedStringParam(bb, pFixedStringPara1_3_1, 16);
+	 putFixedStringParam(bb, pFixedStringPara1_3_2, 8);
 
-	 putTerminatedStringParam(bb, pTerminatedStringPara13_3, (byte)0);
-	 putTerminatedStringParam(bb, pTerminatedStringPara13_4, (byte)',');
+	 putTerminatedStringParam(bb, pTerminatedStringPara1_3_3, (byte)0);
+	 putTerminatedStringParam(bb, pTerminatedStringPara1_3_4, (byte)',');
 
-	 putPrependedSizeStringParam(bb, pPrependedSizeStringPara13_5, 16);
-	 putPrependedSizeStringParam(bb, pPrependedSizeStringPara13_6, 8);
+	 putPrependedSizeStringParam(bb, pPrependedSizeStringPara1_3_5, 16);
+	 putPrependedSizeStringParam(bb, pPrependedSizeStringPara1_3_6, 8);
 
-	 putFixedStringParam(bb, pFixedStringPara13_7, 128);
+	 putFixedStringParam(bb, pFixedStringPara1_3_7, 128);
      }
 
-     private void fill_PKT14(ByteBuffer bb) {
+     private void fill_PKT1_4(ByteBuffer bb) {
 	 fill_PKT1(bb, 4);
 	 int offset=pkt1Length;
 	 bb.position(offset);
 
 	 // Floats in strings
-	 putFixedStringParam(bb, pStringFloatFSPara14_1, 32);
-	 putTerminatedStringParam(bb, pStringFloatTSCPara14_2, (byte)',');
-	 putTerminatedStringParam(bb, pStringFloatTSSCPara14_3, (byte)';');
-	 putTerminatedStringParam(bb, pStringFloatTSSCPara14_3, (byte)';');
-	 putPrependedSizeStringParam(bb, pStringFloatPSPara14_5, 8);
-	 putFixedStringParam(bb, pStringFloatFSBPara14_4, 128);
+	 putFixedStringParam(bb, pStringFloatFSPara1_4_1, 32);
+	 putTerminatedStringParam(bb, pStringFloatTSCPara1_4_2, (byte)',');
+	 putTerminatedStringParam(bb, pStringFloatTSSCPara1_4_3, (byte)';');
+	 putTerminatedStringParam(bb, pStringFloatTSSCPara1_4_3, (byte)';');
+	 putPrependedSizeStringParam(bb, pStringFloatPSPara1_4_5, 8);
+	 putFixedStringParam(bb, pStringFloatFSBPara1_4_4, 128);
      }
 
-     private void fill_PKT15(ByteBuffer bb) {
+     private void fill_PKT1_5(ByteBuffer bb) {
 	 fill_PKT1(bb, 5);
 	 int offset=pkt1Length;
 	 bb.position(offset);
 
 	 // Integers in strings
-	 putFixedStringParam(bb, pStringIntFixedPara15_1, 24);
-	 putTerminatedStringParam(bb, pStringIntTermPara15_2, (byte)',');
-	 putTerminatedStringParam(bb, pStringIntTermPara15_3, (byte)';');
-	 putPrependedSizeStringParam(bb, pStringIntPrePara15_4, 16);
+	 putFixedStringParam(bb, pStringIntFixedPara1_5_1, 24);
+	 putTerminatedStringParam(bb, pStringIntTermPara1_5_2, (byte)',');
+	 putTerminatedStringParam(bb, pStringIntTermPara1_5_3, (byte)';');
+	 putPrependedSizeStringParam(bb, pStringIntPrePara1_5_4, 16);
 	 // Straight string is null terminated
-	 putTerminatedStringParam(bb, pStringIntStrPara15_5, (byte)0);
+	 putTerminatedStringParam(bb, pStringIntStrPara1_5_5, (byte)0);
      }
 
      private void fill_PKT2(ByteBuffer bb) {
@@ -347,7 +361,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.putShort((short)(pIntegerPara2_2&0xFFFF));
      }
 
-     private void fill_PKT16(ByteBuffer bb, int pIntegerPara16_1, int pIntegerPara16_2) {
+     private void fill_PKT1_6(ByteBuffer bb, int pIntegerPara16_1, int pIntegerPara16_2) {
 	 fill_PKT1(bb, 6);
 	 int offset=pkt1Length;
 	 bb.position(offset);
@@ -355,7 +369,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.putShort((short)(pIntegerPara16_2&0xFFFF));
      }
 
-     private void fill_PKT17(ByteBuffer bb) {
+     private void fill_PKT1_7(ByteBuffer bb) {
 	 fill_PKT1(bb, 7);
 	 int offset=pkt1Length;
 	 bb.position(offset);
@@ -368,7 +382,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.put(StringConvertors.hexStringToArray("187A"));
      }
 
-     private void fill_PKT18(ByteBuffer bb, int pIntegerPara18_1, int pIntegerPara18_2) {
+     private void fill_PKT1_8(ByteBuffer bb, int pIntegerPara18_1, int pIntegerPara18_2) {
 	 fill_PKT1(bb, 8);
 	 int offset=pkt1Length;
 	 bb.position(offset);
@@ -377,7 +391,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.putInt(pIntegerPara18_2);
      }
 
-     private void fill_PKT19(ByteBuffer bb) {
+     private void fill_PKT1_9(ByteBuffer bb) {
 	 fill_PKT1(bb, 9);
 	 int offset=pkt1Length;
 	 bb.position(offset);
@@ -401,6 +415,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 	 bb.putInt(pIntegerPara1_11_1);
      }
 
+
+     private void fill_PKT1_12(ByteBuffer bb) {
+         fill_PKT1(bb, 12);
+         int offset=pkt1Length;
+         bb.position(offset);
+
+         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte)';');
+     }
 
    
      

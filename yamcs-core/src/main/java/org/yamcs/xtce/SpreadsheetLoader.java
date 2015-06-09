@@ -2023,7 +2023,11 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	
 	String op=m.group(2);
 	String value=m.group(3).trim();
-
+	if((value.startsWith("\"")||value.startsWith("”")) &&
+	    (value.endsWith("\"")||value.endsWith("”")))  {
+	        value = value.substring(1, value.length()-1);
+	    }
+	
 	if ("=".equals(op)) {
 	    op="==";
 	}

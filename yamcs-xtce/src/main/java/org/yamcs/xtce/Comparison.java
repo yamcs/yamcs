@@ -144,7 +144,7 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public String toString() {
-        return "Comparison: paraName="+ instanceRef.getParameter().getName() + 
+        return "Comparison: paraName("+ instanceRef.getParameter().getName()+")" + 
                 operatorToString(comparisonOperator) + stringValue;
     }
 }

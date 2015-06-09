@@ -53,7 +53,7 @@ public class AlgorithmManagerPyTest {
         EventProducerFactory.setMockup(true);
         
         db=XtceDbFactory.getInstance(instance);
-        assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara11_2"));
+        assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
         List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
@@ -108,7 +108,7 @@ public class AlgorithmManagerPyTest {
         });
 
         c.start();
-        tmGenerator.generate_PKT18(2,-2);
+        tmGenerator.generate_PKT1_8(2,-2);
         assertEquals(4, params.size());
         assertEquals(2, params.get(0).getEngValue().getSint32Value());
         assertEquals(-2, params.get(1).getEngValue().getSint32Value());
@@ -129,6 +129,6 @@ public class AlgorithmManagerPyTest {
         c.start();
         tmGenerator.generate_PKT11();
         assertEquals(1, params.size());
-        assertEquals(tmGenerator.pIntegerPara11_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
+        assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
     }
 }

@@ -88,6 +88,8 @@ public class ParameterTypeProcessor {
             pval.setStringValue(ept.calibrate(rawValue.getSint32Value()));
         } else if (rawValue.getType() == Type.SINT64) {
             pval.setStringValue(ept.calibrate(rawValue.getSint64Value()));
+        } else if (rawValue.getType() == Type.STRING) {
+            pval.setStringValue(ept.calibrate(Long.parseLong(rawValue.getStringValue())));
         } else {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be calibrated as an enumeration");
         }

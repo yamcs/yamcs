@@ -220,8 +220,8 @@ public class IntegrationTest {
         assertEquals( 2000, t1-t0, 200);
         assertEquals(0, pdata.getParameterCount());
         //////// gets parameters from via REST - waiting for update - now with some parameters updated
-        packetProvider.pIntegerPara11_6 = 10;
-        packetProvider.pIntegerPara11_7 = 5;
+        packetProvider.pIntegerPara1_1_6 = 10;
+        packetProvider.pIntegerPara1_1_7 = 5;
         responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         Thread.sleep(1000); //wait to make sure that the data has reached the server
 
@@ -716,20 +716,20 @@ public class IntegrationTest {
         Value p1raw = p1.getRawValue();
         assertNotNull(p1raw);
         assertEquals(Type.UINT32 , p1raw.getType());
-        assertEquals(packetProvider.pIntegerPara11_6 , p1raw.getUint32Value());
+        assertEquals(packetProvider.pIntegerPara1_1_6 , p1raw.getUint32Value());
 
         Value p1eng = p1.getEngValue();
         assertEquals(Type.UINT32 , p1eng.getType());
-        assertEquals(packetProvider.pIntegerPara11_6 , p1eng.getUint32Value());
+        assertEquals(packetProvider.pIntegerPara1_1_6 , p1eng.getUint32Value());
 
         Value p2raw = p2.getRawValue();
         assertNotNull(p2raw);
         assertEquals(Type.UINT32 , p2raw.getType());
-        assertEquals(packetProvider.pIntegerPara11_7 , p2raw.getUint32Value());
+        assertEquals(packetProvider.pIntegerPara1_1_7 , p2raw.getUint32Value());
 
         Value p2eng = p2.getEngValue();
         assertEquals(Type.UINT32 , p2eng.getType());
-        assertEquals(packetProvider.pIntegerPara11_7 , p2eng.getUint32Value());
+        assertEquals(packetProvider.pIntegerPara1_1_7 , p2eng.getUint32Value());
     }
 
 
