@@ -115,7 +115,7 @@ public class TestXtceTmExtractor {
         
         tmExtractor.startProvidingAll();
         
-        ByteBuffer bb=tmGenerator.generate_PKT13();
+        ByteBuffer bb=tmGenerator.generate_PKT1_3();
         tmExtractor.processPacket(bb, TimeEncoding.currentInstant());
         
         //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));

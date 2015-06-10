@@ -132,7 +132,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb;
     }
     
-    public ByteBuffer generate_PKT13() {
+    public ByteBuffer generate_PKT1_3() {
 	ByteBuffer bb=ByteBuffer.allocate(pkt1_3Length);
 	fill_PKT1_3(bb);
 	sendToTmProcessor(bb);

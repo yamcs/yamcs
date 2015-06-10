@@ -145,7 +145,7 @@ public class IntegrationTest {
     public void testWsParameterSubscriPerformance() throws Exception {
         //subscribe to parameters
         long t0 = System.currentTimeMillis();
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6");
+        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
@@ -157,7 +157,7 @@ public class IntegrationTest {
     @Test
     public void testWsParameter() throws Exception {
         //subscribe to parameters
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName");
+        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
 
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
@@ -174,7 +174,7 @@ public class IntegrationTest {
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         checkPdata(pdata, packetProvider);
 
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6");
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
         wsClient.sendRequest(wsr);
 
@@ -190,7 +190,7 @@ public class IntegrationTest {
     @Test
     public void testRestParameterGet() throws Exception {
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6","/REFMDB/SUBSYS1/InvalidParaName");
+        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
         RestGetParameterRequest req = RestGetParameterRequest.newBuilder().setFromCache(true).addAllList(invalidSubscrList.getListList()).build();
 
         String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
@@ -200,7 +200,7 @@ public class IntegrationTest {
         packetProvider.generate_PKT1_1();
         Thread.sleep(1000);
         /////// gets parameters from cache via REST - second attempt with valid parameters
-        NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_6", "/REFMDB/SUBSYS1/IntegerPara11_7");
+        NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         req = RestGetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
 
         response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
@@ -235,7 +235,7 @@ public class IntegrationTest {
     @Test
     public void testRestParameterSetInvalidParam() throws Exception {
         org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
-                .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_6"))
+                .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
                 .setEngValue(ValueHelper.newValue(3.14)).build();
         ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
@@ -425,7 +425,7 @@ public class IntegrationTest {
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
 
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_7", "/REFMDB/SUBSYS1/IntegerPara11_6");
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterClient.WSR_subscribe, subscrList);
         wsClient.sendRequest(wsr);
 
@@ -433,15 +433,15 @@ public class IntegrationTest {
         assertNotNull(pdata);
 
         assertEquals(2, pdata.getParameterCount());
-        ParameterValue p11_6 = pdata.getParameter(0);
-        assertEquals("2015-01-01T10:01:00.000", p11_6.getGenerationTimeUTC());
+        ParameterValue p1_1_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
 
         assertEquals(2, pdata.getParameterCount());
-        p11_6 = pdata.getParameter(0);
-        assertEquals("2015-01-01T10:01:01.000", p11_6.getGenerationTimeUTC());
+        p1_1_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
         prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
@@ -455,10 +455,10 @@ public class IntegrationTest {
     @Test
     public void testRetrieveDataFromArchive() throws Exception {
         generateData("2015-02-03T10:00:00", 3600);
-        NamedObjectId p11_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_6").build();
-        NamedObjectId p13_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara13_1").build();
+        NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
+        NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
 
-        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p11_6id).addNameFilter(p13_1id).build();
+        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
         RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2015-02-03T10:10:00").setUtcStop("2015-02-03T10:10:02").build();
         String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
@@ -468,10 +468,10 @@ public class IntegrationTest {
         assertEquals(4, plist.size());
         ParameterValue pv0 = plist.get(0).getParameter(0);
         assertEquals("2015-02-03T10:10:00.000", pv0.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", pv0.getId().getName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
         ParameterValue pv3 = plist.get(3).getParameter(0);
         assertEquals("2015-02-03T10:10:01.000", pv3.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara13_1", pv3.getId().getName());
+        assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
     }
 
     @Test
@@ -503,8 +503,8 @@ public class IntegrationTest {
 
         // Check that integer parameter replay is ok
         generateData("2015-02-02T10:00:00", 3600);
-        NamedObjectId p11_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara11_6").build();
-        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p11_6id).build();
+        NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
+        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).build();
         RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2015-02-02T10:10:00").setUtcStop("2015-02-02T10:10:02").build();
         String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
@@ -514,14 +514,14 @@ public class IntegrationTest {
         assertEquals(2, plist.size());
         ParameterValue pv0 = plist.get(0).getParameter(0);
         assertEquals("2015-02-02T10:10:00.000", pv0.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", pv0.getId().getName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
 
         // Check that string parameter replay is denied
         boolean gotException = false;
         try {
             generateData("2015-02-02T10:00:00", 3600);
-            NamedObjectId p13_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara13_1").build();
-            prr = ParameterReplayRequest.newBuilder().addNameFilter(p13_1id).build();
+            NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
+            prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_3_1id).build();
             dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
                     .setUtcStart("2015-02-02T10:10:00").setUtcStop("2015-02-02T10:10:02").build();
             response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
@@ -564,13 +564,13 @@ public class IntegrationTest {
         currentUser = testuser;
 
         // Allowed to subscribe to Integer parameter from cache
-        NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara11_6", "/REFMDB/SUBSYS1/IntegerPara11_7");
+        NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         RestGetParameterRequest req = RestGetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
         String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         assertTrue("{}", !response.contains("ForbiddenException"));
 
         // Denied to subscribe to Float parameter from cache
-        validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara11_3", "/REFMDB/SUBSYS1/FloatPara11_2");
+        validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
         req = RestGetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
         response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
@@ -698,7 +698,7 @@ public class IntegrationTest {
         for (int i=0;i <numPackets; i++) {
             packetProvider.setGenerationTime(t0+1000*i);
             packetProvider.generate_PKT1_1();
-            packetProvider.generate_PKT13();
+            packetProvider.generate_PKT1_3();
         }
     }
 
@@ -710,8 +710,8 @@ public class IntegrationTest {
         org.yamcs.protobuf.Pvalue.ParameterValue p1 = pdata.getParameter(0);
         org.yamcs.protobuf.Pvalue.ParameterValue p2 = pdata.getParameter(1);
 
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_6", p1.getId().getName());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara11_7", p2.getId().getName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1.getId().getName());
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", p2.getId().getName());
 
         Value p1raw = p1.getRawValue();
         assertNotNull(p1raw);
