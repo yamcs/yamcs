@@ -75,14 +75,14 @@ public class ContainerRequestManagerTest {
 
         // Now subscribe 2nd consumer to PKT13 only
         
-        rm.subscribe(consumer2, xtceDb.getSequenceContainer("/REFMDB/SUBSYS1/PKT13"));
+        rm.subscribe(consumer2, xtceDb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_3"));
 
         packetGenerator.generate_PKT1_1();
         packetGenerator.generate_PKT1_3();
 
         assertEquals(1, consumer2.received.size());
         SequenceContainer cont = consumer2.received.iterator().next();
-        assertEquals("PKT13", cont.getName());
+        assertEquals("PKT1_3", cont.getName());
 
         // Subscribe consumer2 to all again
         consumer2.reset();
