@@ -158,7 +158,6 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
      *            file to extract content type
      */
     private static void setContentTypeHeader(HttpResponse response, File file) {
-        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
         response.headers().set(Names.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
     
