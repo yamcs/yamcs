@@ -1,7 +1,7 @@
 package org.yamcs.xtce;
 
 /**
- * Interface to be implemented by all the parameter types
+ * Interface to be implemented by all the argument types
  * @author nm
  *
  */
