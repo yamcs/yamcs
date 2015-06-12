@@ -73,7 +73,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
         setContentTypeHeader(response, JSON_MIME_TYPE);
         setContentLength(response, cb.readableBytes());
         
-        ChannelFuture writeFuture=ctx.write(response);
+        ChannelFuture writeFuture=ctx.writeAndFlush(response);
 
         // Decide whether to close the connection or not.
         if (!isKeepAlive(req)) {
