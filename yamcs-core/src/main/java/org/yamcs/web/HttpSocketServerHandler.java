@@ -113,9 +113,9 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
             webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
         } else if(DISPLAYS_PATH.equals(handler)) {
-            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null, authToken);
+            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else if(API_PATH.equals(handler)) {
-            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, path.length>1? rpath[1] : null, authToken);
+            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else {
         	log.warn("Unknown handler {}", handler);
         	sendNegativeHttpResponse(ctx, req, NOT_FOUND);
