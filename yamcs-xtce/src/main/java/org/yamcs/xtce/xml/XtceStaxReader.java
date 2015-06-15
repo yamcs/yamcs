@@ -165,7 +165,6 @@ public class XtceStaxReader {
      */
     private XMLEvent             xmlEvent                       = null;
 
-
     /**
      * this is the guy we are building 
      */
@@ -327,7 +326,7 @@ public class XtceStaxReader {
         if (nameSpace == null) {
             throw new XMLStreamException("Namespace attribute is missing");
         }
-
+        nameSpace = nameSpace.intern();
         String alias = readAttribute("alias", xmlEvent.asStartElement());
         if (alias == null) {
             throw new XMLStreamException("Alias attribute is missing");
