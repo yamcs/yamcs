@@ -31,7 +31,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_1Length=pkt1Length+56;
     public final int pkt1_2Length=pkt1Length+16;
     public final int pkt1_3Length=pkt1Length+100;
-    public final int pkt1_4Length=pkt1Length+100;
+    public final int pkt1_4Length=pkt1Length+300;
     public final int pkt1_5Length=pkt1Length+50;
     public final int pkt1_6Length=pkt1Length+4;
     public final int pkt1_7Length=pkt1Length+6;
@@ -39,7 +39,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_9Length=pkt1Length+1;
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
-    public final int pkt1_12Length=pkt1Length+2;
     public final int pkt2Length=8;
     
     
@@ -77,21 +76,21 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     static public final String pFixedStringPara1_3_7="Abcdefghijklmnop"; // 128 bits
 
     // Get floats from strings
-    static public final String pStringFloatFSPara1_4_1="1.34"; // Fixed size 32 bit
-    static public final String pStringFloatTSCPara1_4_2="0.0000001"; // Comma terminated, leading zeros and calibrated
+    public  String pStringFloatFSPara1_4_1="1.34"; // Fixed size 32 bit
+    public  String pStringFloatTSCPara1_4_2="0.0000001"; // Comma terminated, leading zeros and calibrated
     static public final String pStringFloatTSSCPara1_4_3="0.12"; // Semi-colon terminated, leading zero
     static public final String pStringFloatFSBPara1_4_4="1.34567890123456"; // 128 bit string
     static public final String pStringFloatPSPara1_4_5="1.345678"; // Prepended size string, first 8 bits (1 byte) set size in bits of size tag
 
     // Get integers from strings
     static public final String pStringIntFixedPara1_5_1="120"; // Fixed size, 24 bits
-    static public final String pStringIntTermPara1_5_2="12"; // Comma terminated
+    public String pStringIntTermPara1_5_2="12"; // Comma terminated
     static public final String pStringIntTermPara1_5_3="12045"; // Semi-colon terminated
     static public final String pStringIntPrePara1_5_4="1204507"; // Prepended size (16 bits)
     static public final String pStringIntStrPara1_5_5="123406789"; // string
 
     //Get enumerations from strings
-    public final String pStringEnumPara1_12_1="1";
+    public String pStringEnumPara1_12_1="1";
 
     
     
@@ -214,7 +213,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      
      
      public ByteBuffer generate_PKT1_12() {
-         ByteBuffer bb=ByteBuffer.allocate(pkt1_12Length);
+         ByteBuffer bb=ByteBuffer.allocate(pkt1Length + pStringEnumPara1_12_1.length()+1);
          fill_PKT1_12(bb);
          sendToTmProcessor(bb);
          return bb;

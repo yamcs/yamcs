@@ -2,7 +2,10 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BaseDataType;
@@ -24,7 +27,8 @@ import com.google.common.collect.Multimap;
 
 public class ParameterTypeProcessor {
     ProcessingContext pcontext;
-
+    static Logger log=LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
+    
     ParameterTypeProcessor(ProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
@@ -89,7 +93,13 @@ public class ParameterTypeProcessor {
         } else if (rawValue.getType() == Type.SINT64) {
             pval.setStringValue(ept.calibrate(rawValue.getSint64Value()));
         } else if (rawValue.getType() == Type.STRING) {
-            pval.setStringValue(ept.calibrate(Long.parseLong(rawValue.getStringValue())));
+            try {
+                long l = Long.parseLong(rawValue.getStringValue());
+                pval.setStringValue(ept.calibrate(l));
+            } catch (NumberFormatException e) {
+                log.warn("{}: failed to parse string '{}' to long", ept.getName(), rawValue.getStringValue());
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            }
         } else {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be calibrated as an enumeration");
         }
@@ -142,7 +152,13 @@ public class ParameterTypeProcessor {
         } else if (rawValue.getType() == Type.SINT64) {
             doIntegerCalibration(ipt, pval, rawValue.getSint64Value());
         } else if (rawValue.getType() == Type.STRING) {
-            doIntegerCalibration(ipt, pval, Long.valueOf(rawValue.getStringValue()));
+            try {
+                long l = Long.parseLong(rawValue.getStringValue());
+                doIntegerCalibration(ipt, pval, l);
+            } catch (NumberFormatException e) {
+                log.warn("{}: failed to parse string '{}' to long", ipt.getQualifiedName(), rawValue.getStringValue());
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            }
         } else {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to integer");
         }
@@ -188,7 +204,13 @@ public class ParameterTypeProcessor {
         } else if(rawValue.getType() == Type.DOUBLE) {
             doFloatCalibration(fpt, pval, rawValue.getDoubleValue());
         } else if(rawValue.getType() == Type.STRING) {
-            doFloatCalibration(fpt, pval, Double.valueOf(rawValue.getStringValue()));
+            try {
+                Double d = Double.parseDouble(rawValue.getStringValue());
+                doFloatCalibration(fpt, pval, d);
+            } catch (NumberFormatException e) {
+                log.warn("{}: failed to parse string '{}' to double", fpt.getName(), rawValue.getStringValue());
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            }
         } else if(rawValue.getType() == Type.UINT32) {
             doFloatCalibration(fpt, pval, rawValue.getUint32Value());
         } else if(rawValue.getType() == Type.UINT64) {
