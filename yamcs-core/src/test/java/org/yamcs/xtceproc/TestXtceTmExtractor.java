@@ -15,7 +15,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;

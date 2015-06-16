@@ -94,7 +94,7 @@ public class ParameterTypeProcessor {
             pval.setStringValue(ept.calibrate(rawValue.getSint64Value()));
         } else if (rawValue.getType() == Type.STRING) {
             try {
-                long l = Long.parseLong(rawValue.getStringValue());
+                long l = Long.decode(rawValue.getStringValue());
                 pval.setStringValue(ept.calibrate(l));
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to long", ept.getName(), rawValue.getStringValue());
@@ -153,10 +153,10 @@ public class ParameterTypeProcessor {
             doIntegerCalibration(ipt, pval, rawValue.getSint64Value());
         } else if (rawValue.getType() == Type.STRING) {
             try {
-                long l = Long.parseLong(rawValue.getStringValue());
+                long l = Long.decode(rawValue.getStringValue());
                 doIntegerCalibration(ipt, pval, l);
             } catch (NumberFormatException e) {
-                log.warn("{}: failed to parse string '{}' to long", ipt.getQualifiedName(), rawValue.getStringValue());
+                log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             }
         } else {
