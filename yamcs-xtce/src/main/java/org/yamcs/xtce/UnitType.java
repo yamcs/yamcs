@@ -11,7 +11,7 @@ public class UnitType implements Serializable {
     String description;
     double power = 1;
     String factor = "1";
-    String unit;
+    private String unit;
 
     public UnitType(String unit) {
         this.unit = unit;
@@ -40,6 +40,11 @@ public class UnitType implements Serializable {
     public void setFactor(String factor) {
         this.factor = factor;
     }
+    
+    public String getUnit() {
+        return unit;
+    }
+
     
     @Override
     public String toString() {

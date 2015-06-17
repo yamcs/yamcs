@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,4 +40,10 @@ public interface ParameterType {
      * @return
      */
     Object parseStringForRawValue(String stringValue);
+    
+    /**
+     * 
+     * @return the list of units
+     */
+    public List<UnitType> getUnitSet();
 }
