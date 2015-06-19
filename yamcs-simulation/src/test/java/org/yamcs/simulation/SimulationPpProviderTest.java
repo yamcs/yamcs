@@ -126,7 +126,7 @@ public class SimulationPpProviderTest {
 				- ppListener.receivedValue.get(1).getGenerationTime() == 42);
 
 		// check monitoring result
-		assertTrue(ppListener.receivedValue.get(20).monitoringResult == MonitoringResult.WARNING_HIGH);
+		assertEquals(MonitoringResult.WARNING_HIGH, ppListener.receivedValue.get(20).getMonitoringResult());
 	}
 
 	@Test

@@ -29,7 +29,7 @@ public class ParameterValue {
     
     private AcquisitionStatus acquisitionStatus;
     private boolean processingStatus;
-    public MonitoringResult monitoringResult;
+    private MonitoringResult monitoringResult;
     public MonitoringResult deltaMonitoringResult;
 
 

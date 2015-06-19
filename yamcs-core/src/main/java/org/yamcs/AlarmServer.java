@@ -127,7 +127,7 @@ public class AlarmServer extends AbstractService {
 	    if(activeAlarm.violations == minViolations) {
 		listener.notifyTriggered(activeAlarm);
 	    } else {
-		if(moreSevere(pv.monitoringResult, activeAlarm.mostSevereValue.monitoringResult)){
+		if(moreSevere(pv.getMonitoringResult(), activeAlarm.mostSevereValue.getMonitoringResult())){
 		    activeAlarm.mostSevereValue = pv;
 		    listener.notifySeverityIncrease(activeAlarm);
 		} else {

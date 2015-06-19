@@ -24,7 +24,7 @@ public class AlarmServerTest {
     
     ParameterValue getParameterValue(Parameter p, MonitoringResult mr) {
 	ParameterValue pv = new ParameterValue(p);
-	pv.monitoringResult = mr;
+	pv.setMonitoringResult(mr);
 	
 	return pv;
     }
