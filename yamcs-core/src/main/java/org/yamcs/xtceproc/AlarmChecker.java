@@ -73,35 +73,28 @@ public class AlarmChecker {
 	}
     }
 
+    /**
+     * Update the list of parameters used for alarm checking
+     * @param pvals
+     */
     public void updateParameters(Collection<ParameterValue> pvals) {
 	synchronized(lastValues) {
 	    for(ParameterValue pv: pvals) {
 		lastValues.removeFirst(pv.def);
 		lastValues.add(pv);
 	    }
-	    ComparisonProcessor comparisonProcessor=new ComparisonProcessor(lastValues);
-	    for(ParameterValue pval:pvals) {
-		if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
-		    performAlarmChecking(pval, comparisonProcessor);
-		} else {
-		    pval.setMonitoringResult(MonitoringResult.IN_LIMITS);
-		}
-	    }
-	}	    
+	}
     }
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
-     * information. Any pvals that are required for performing comparison
-     * matches are taken from the same set of pvals.
+     * information.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
 	ComparisonProcessor comparisonProcessor=new ComparisonProcessor(lastValues);
 	for(ParameterValue pval:pvals) {
 	    if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
 		performAlarmChecking(pval, comparisonProcessor);
-	    } else {
-		pval.setMonitoringResult(MonitoringResult.IN_LIMITS);
-	    }
+	    } //else do not set the MonitoringResult
 	}
     }
 

@@ -49,7 +49,6 @@ public class ParameterValue {
 
 	setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
 	setProcessingStatus(true);
-	monitoringResult=MonitoringResult.DISABLED;
     }
 
     /**
@@ -325,10 +324,17 @@ public class ParameterValue {
 	org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
 		.setAcquisitionStatus(getAcquisitionStatus())
 		.setAcquisitionTime(getAcquisitionTime())
-		.setEngValue(getEngValue())
-		.setGenerationTime(getGenerationTime())
-		.setMonitoringResult(getMonitoringResult())
+		.setGenerationTime(getGenerationTime())		
 		.setProcessingStatus(getProcessingStatus());
+	
+	if(engValue!=null) {
+	    gpvb.setEngValue(engValue);
+	}
+	if(monitoringResult!=null) {
+	    gpvb.setMonitoringResult(monitoringResult);
+	}
+	
+	
 
 	// TODO make this optional
 	gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
