@@ -28,6 +28,7 @@ var YamcsWebSocket = function(instance) {
 
     conn.onmessage = function(msg) {
         var json = JSON.parse(msg.data)
+	
         switch(json[1]) {
         case MESSAGE_TYPE_REPLY:
             dispatchReply(json[2], json[3]); 
@@ -84,8 +85,11 @@ var YamcsWebSocket = function(instance) {
     };
 
     var dispatchData = function(dataType, message) {
+        
         var chain = dataCallbacks[dataType];
+
         if(chain == undefined) return; // no callbacks for this event
+     
         for(var i = 0; i < chain.length; i++){
             chain[i]( message )
         }
@@ -205,7 +209,7 @@ var YamcsWebSocket = function(instance) {
         doSubscribeComputations(parameters,true)
     }
 
-    this.bindDataHandler('ParameterData', function(pdata){
+    this.bindDataHandler('PARAMETER', function(pdata){
         var params=pdata.parameter;
         for(var i=0; i<params.length; i++) {
             var p=params[i];
