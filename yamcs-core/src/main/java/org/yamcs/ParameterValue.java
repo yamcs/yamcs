@@ -17,6 +17,10 @@ import com.google.protobuf.ByteString;
  *
  */
 public class ParameterValue {
+    public MonitoringResult getDeltaMonitoringResult() {
+        return deltaMonitoringResult;
+    }
+
     public Parameter def;
     ParameterEntry entry;
     int absoluteBitOffset, bitSize;
@@ -30,7 +34,7 @@ public class ParameterValue {
     private AcquisitionStatus acquisitionStatus;
     private boolean processingStatus;
     private MonitoringResult monitoringResult;
-    public MonitoringResult deltaMonitoringResult;
+    private MonitoringResult deltaMonitoringResult;
 
 
     public FloatRange watchRange=null;
