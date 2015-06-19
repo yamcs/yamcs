@@ -182,7 +182,12 @@ $.extend(USS.Field.prototype, {
     decimals: 0,
     parseAndDraw: function(svg, parent, e) {
         //make a group to put the text and the bounding box together
+        var settings = {
+            transform: "translate("+this.x+","+this.y+")",
+	   // onclick: "alert ('clicked')"	    
+	}
         parent = svg.group(parent, this.id+'-group', {transform: "translate("+this.x+","+this.y+")"});
+
         var $e = $(e);
         var unit=$e.children('Unit').text();
         var decimals=$e.children('Decimals').text();
@@ -218,8 +223,10 @@ $.extend(USS.Field.prototype, {
         if(!this.overrideDqi) {
              settings.class='DEAD-background';
         }
+        
         svg.rect(parent, 0, 0, this.width, this.height, settings);
-        USS.writeText(svg, parent, {id: this.id, x: 0, y: 0, width: this.width, height: this.height}, $e.children('TextStyle'), "x");
+        USS.writeText(svg, parent, {id: this.id, x: 0, y: 0, width: this.width, height: this.height}, $e.children('TextStyle'), " ");
+	
     },
     updateValue: function(para) {
         var v = USS.getParameterValue(para, this.usingRaw);
@@ -251,7 +258,7 @@ $.extend(USS.Field.prototype, {
         svg.configure(fbg, {fill: newcolor});
     },
     //the values are CSS clases defined in uss.dqi.css
-    alldqi: ['DEAD', 'DISABLED', 'IN_LIMITS', 'NOMINAL_LIMIT_VIOLATION', 'DANGER_LIMIT_VIOLATION', 'STATIC'],
+    alldqi: ['DEAD', 'DISABLED', 'IN_LIMITS', 'NOMINAL_LIMIT_VIOLATION', 'DANGER_LIMIT_VIOLATION', 'STATIC', "UNDEFINED"],
     //implements based on the mcs_dqistyle.xml
     getDqi: function (para) {
         switch(para.acquisitionStatus) {
@@ -264,6 +271,7 @@ $.extend(USS.Field.prototype, {
                     case 4: return 'NOMINAL_LIMIT_VIOLATION';
                     case 5: return 'DANGER_LIMIT_VIOLATION';
                     case 6: return 'DANGER_LIMIT_VIOLATION';
+		    case undefined: return 'UNDEFINED';
                 }
                 break;
             case 1: return "DEAD"; //NOT_RECEIVED

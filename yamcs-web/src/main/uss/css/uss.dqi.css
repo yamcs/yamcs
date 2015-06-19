@@ -12,6 +12,14 @@
 	fill: black; 
 }
 
+.UNDEFINED-foreground {
+	fill: white; 
+}
+.UNDEFINED-background {
+	fill: black; 
+}
+
+
 .IN_LIMITS-foreground {
 	fill: black;
 }
