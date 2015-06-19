@@ -88,7 +88,7 @@ public class WebSocketServerHandler {
 		    this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
 		    return;
 		} else if (frame instanceof PingWebSocketFrame) {
-		    ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
+		    ctx.channel().writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
 		    return;
 		} else if (frame instanceof TextWebSocketFrame) {
 		    // We could do something more clever here, but only need to support json and gpb for now
@@ -153,13 +153,12 @@ public class WebSocketServerHandler {
         }
         
 	WebSocketFrame frame = encoder.encodeReply(reply);
-	channel.write(frame);
+	channel.writeAndFlush(frame);
     }
 
     private void sendException(WebSocketException e) throws IOException {
 	WebSocketFrame frame = encoder.encodeException(e);
-	channel.write(frame);
-	channel.flush();
+	channel.writeAndFlush(frame);
     }
 
     /**
@@ -174,8 +173,7 @@ public class WebSocketServerHandler {
 	    return;
 	}
 	WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);
-	channel.write(frame);
-	channel.flush();
+	channel.writeAndFlush(frame);
     }
 
     public void channelDisconnected(Channel c) {

@@ -196,7 +196,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         setDateHeader(response);
 
         // Close the connection as soon as the error message is sent.
-        ctx.channel().write(response).addListener(ChannelFutureListener.CLOSE);
+        ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     
         
