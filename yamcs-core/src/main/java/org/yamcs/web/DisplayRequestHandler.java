@@ -49,7 +49,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 
     void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "uss-app.html");
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "display-app.html");
             return;
         } else if (remainingUri.contains("/")){
             sendError(ctx, BAD_REQUEST);

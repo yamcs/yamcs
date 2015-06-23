@@ -440,6 +440,10 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    if(hasColumn(cells, IDX_PARAM_CALIBRATION)) {
 		calib = cells[IDX_PARAM_CALIBRATION].getContents();
 	    }
+	    if(hasColumn(cells, IDX_PARAM_DESCRIPTION)) {
+	        String shortDescription = cells[IDX_PARAM_DESCRIPTION].getContents();
+	        param.setShortDescription(shortDescription);
+	    }
 	    if("n".equals(calib) || "".equals(calib))calib=null;
 	    if("y".equalsIgnoreCase(calib)) calib=name;
 

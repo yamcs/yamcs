@@ -65,7 +65,7 @@ public class XtceAliasSet implements Serializable {
     public int size() {
         return aliases.size();
     }
-    
+
     @Override
     public String toString() {
         return aliases.toString();

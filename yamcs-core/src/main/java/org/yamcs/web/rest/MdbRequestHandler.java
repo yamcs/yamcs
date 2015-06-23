@@ -2,6 +2,7 @@ package org.yamcs.web.rest;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,13 +10,23 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.protobuf.Rest.RestDataSource;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbRequest;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
+import org.yamcs.protobuf.Rest.RestGetParameterInfoRequest;
+import org.yamcs.protobuf.Rest.RestGetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.RestListAvailableParametersRequest;
 import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
+import org.yamcs.protobuf.Rest.RestNameDescription;
 import org.yamcs.protobuf.Rest.RestParameter;
+import org.yamcs.protobuf.Rest.RestParameterInfo;
+import org.yamcs.protobuf.Rest.RestParameterType;
+import org.yamcs.protobuf.Rest.RestUnitType;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -46,6 +57,10 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             RestDumpRawMdbRequest request = readMessage(req, SchemaRest.RestDumpRawMdbRequest.MERGE).build();
             RestDumpRawMdbResponse responseMsg = dumpRawMdb(request, yamcsInstance);
             writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
+        } else if ("parameterInfo".equals(qsDecoder.path())) {
+            RestGetParameterInfoRequest request = readMessage(req, SchemaRest.RestGetParameterInfoRequest.MERGE).build();
+            RestGetParameterInfoResponse responseMsg = getParameterInfo(request, yamcsInstance, authToken);
+            writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestGetParameterInfoResponse.WRITE);
         } else {
             log.debug("No match for '" + qsDecoder.path() + "'");
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
@@ -92,15 +107,72 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         // TODO TEMP would prefer if we don't send java-serialized data.
         // TODO this limits our abilities to send, say, json
         // TODO and makes clients too dependent
-        XtceDb mdb = loadMdb(yamcsInstance);
+        XtceDb xtceDb = loadMdb(yamcsInstance);
         ByteString.Output bout = ByteString.newOutput();
         try (ObjectOutputStream oos = new ObjectOutputStream(bout)) {
-            oos.writeObject(mdb);
+            oos.writeObject(xtceDb);
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not serialize MDB", e);
         }
         responseb.setRawMdb(bout.toByteString());
         return responseb.build();
+    }
+
+    private RestGetParameterInfoResponse getParameterInfo(RestGetParameterInfoRequest request, String yamcsInstance, AuthenticationToken authToken) throws RestException {
+        XtceDb xtceDb = loadMdb(yamcsInstance);
+        
+        RestGetParameterInfoResponse.Builder responseb = RestGetParameterInfoResponse.newBuilder();
+        for(NamedObjectId id:request.getListList() ){
+            Parameter p = xtceDb.getParameter(id);
+            if(p==null) {
+                throw new BadRequestException("Invalid parameter name specified "+id);
+            }
+             if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+                log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
+                continue;
+            }
+            responseb.addPinfo(getParameterInfo(id, p));
+        }
+        return responseb.build();
+    }
+    
+    
+    private RestParameterInfo getParameterInfo(NamedObjectId id, Parameter p) {
+        RestParameterInfo.Builder rpib = RestParameterInfo.newBuilder();
+        rpib.setId(id);
+        rpib.setDataSource(p.getDataSource().name());
+        rpib.setDescription(getNameDescription(p));
+        rpib.setType(getParameterType(p.getParameterType()));
+        
+        return rpib.build();
+    }
+
+    private RestParameterType getParameterType(ParameterType parameterType) {
+        RestParameterType.Builder rptb = RestParameterType.newBuilder();
+        rptb.setDataEncoding(parameterType.getEncoding().toString());
+        rptb.setEngType(parameterType.getTypeAsString());
+        for(UnitType ut: parameterType.getUnitSet()) {
+            rptb.addUnitSet(getUnitType(ut));
+        }
+        return rptb.build();
+    }
+
+    private RestUnitType getUnitType(UnitType ut) {
+        return RestUnitType.newBuilder().setUnit(ut.getUnit()).build();
+    }
+
+    private RestNameDescription getNameDescription(NameDescription nd) {
+        RestNameDescription.Builder rnb =  RestNameDescription.newBuilder();
+        rnb.setQualifiedName(nd.getQualifiedName());
+        String s = nd.getShortDescription();
+        if(s!=null) rnb.setShortDescription(s);
+        s = nd.getLongDescription();
+        if(s!=null)rnb.setLongDescription(s);
+        Map<String, String> aliases = nd.getAliasSet().getAliases();
+        for(Map.Entry<String, String> me:aliases.entrySet()) {
+            rnb.addAliases(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()).build());
+        }
+        return rnb.build();
     }
 
     private XtceDb loadMdb(String yamcsInstance) throws RestException {

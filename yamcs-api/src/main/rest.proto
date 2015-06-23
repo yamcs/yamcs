@@ -35,6 +35,7 @@ message RestListAvailableParametersRequest {
   repeated string namespaces=1; // if not available, all the namespaces
 }
 
+
 message RestParameter {
   optional yamcs.NamedObjectId id=1;
   optional RestDataSource dataSource=2;
@@ -72,6 +73,7 @@ message RestProcessorResponse {
 
 message RestListProcessorsRequest {
 }
+
 
 message RestListProcessorsResponse {
     repeated yamcsManagement.ProcessorInfo processor=1;
@@ -119,6 +121,60 @@ message RestSendCommandRequest {
 }
 
 message RestSendCommandResponse {
+}
+
+message RestUnitType {
+   optional string unit = 1;
+}
+
+enum RestAlarmLevel {
+   normal = 0;
+   watch = 1;
+   warning =  2;
+   distress = 3;
+   critical = 4;
+   severe = 5;
+}
+message RestAlarmRange {
+   optional RestAlarmLevel level = 1; 
+   optional double minInclusive = 2;
+   optional double maxInclusive = 3; 
+
+   //TODO show here also the integer value of the enumeration
+   optional string enumerationValue = 4;
+}
+message RestAlarmInfo {
+    optional int32 minViolations = 1;
+    repeated RestAlarmRange staticAlarmRanges = 2;
+}
+
+message RestParameterType {
+    optional string engType = 1;
+    optional string dataEncoding =2; //TODO
+    repeated RestUnitType unitSet = 3; 
+    optional RestAlarmInfo defaultAlarm = 4;
+}
+
+message RestNameDescription {
+    optional string qualifiedName = 1;
+    optional string shortDescription = 2;
+    optional string longDescription = 3;
+    repeated yamcs.NamedObjectId aliases = 4;
+}
+
+message RestParameterInfo {
+    optional yamcs.NamedObjectId id = 1;
+    optional RestNameDescription description = 2;
+    optional RestParameterType type = 3;
+    optional string dataSource = 4;
+}
+
+message RestGetParameterInfoRequest {
+    repeated yamcs.NamedObjectId list = 1;
+}
+
+message RestGetParameterInfoResponse {
+    repeated RestParameterInfo pinfo = 1;
 }
 
 service RESTService {

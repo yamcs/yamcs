@@ -46,4 +46,10 @@ public interface ParameterType {
      * @return the list of units
      */
     public List<UnitType> getUnitSet();
+    
+    /**
+     * 
+     * @return the data encoding for the parameter
+     */
+    public DataEncoding getEncoding();
 }
