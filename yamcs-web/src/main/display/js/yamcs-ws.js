@@ -114,13 +114,13 @@ var YamcsWebSocket = function(instance) {
        }
     }
 
-    var doSubscribeParameters = function(parameters, addToList) {
+    var doSubscribeParameters = function(parameters, namespace, addToList) {
         var paraList=[];
         for(var paraname in parameters) {
             var p=parameters[paraname];
             if (p.type=='ExternalDataSource') {
                 if(addToList) addSubscribedParameter(paraname, p);
-                paraList.push({name: paraname, namespace: 'MDB:OPS Name'});
+                paraList.push({name: p.name, namespace: p.namespace});
             }
         }
         if(paraList.length==0) return;
@@ -133,12 +133,12 @@ var YamcsWebSocket = function(instance) {
                     console.log('The following parameters are invalid: ', invalidParams);
                     for(var i=0; i<invalidParams.length; i++) {
                         var name=invalidParams[i].name;
-                        var db=parameters[name];
+                        var db=parameters[name];			
                         delete parameters[name];
                         invalidDataBindings[name]=db;
                     }
                     console.log('retrying without them');
-                    doSubscribeParameters(parameters, false, false);
+                    doSubscribeParameters(parameters, false);
             } else {
                 console.log('got exception from subscription: ',exceptionType, exceptionMsg);
             }

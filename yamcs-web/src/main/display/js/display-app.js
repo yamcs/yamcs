@@ -1,17 +1,23 @@
 var yamcsInstance=location.pathname.match(/\/([^\/]*)\//)[1];
 var loadedDisplays = {};
-var lastSelectedDisplay = null;
+var openWindows = {};
+var lastSelectedWindow = null;
 
 var yamcsWebSocket
 
 $(document).ready(function(){
     configureMenu();
+    configureContextMenu();
     loadDisplayList();
     $.window.prepare({
         animationSpeed: 200,  // set animation speed
         minWinLong: 180,       // set minimized window long dimension width in pixel
         scrollable: false
      });
+
+
+     
+    
     yamcsWebSocket = new YamcsWebSocket(yamcsInstance);
 });
 
@@ -26,6 +32,28 @@ function configureMenu() {
      });
 
 }
+
+function configureContextMenu() {
+     $.contextMenu({
+        selector: '[class~=context-menu-field]', 
+        trigger: 'right',
+        callback: function(key, options) {
+            console.log('clicked', key, options);
+	    parameter = USS.getParameterFromWidget(options.$trigger[0].ussWidget);
+	    if( key== 'info') {
+	        showParameterInfo(parameter)	      
+	    } else {
+	        alert(key+" not implemented");	      
+	    }
+        },
+        items: {
+            "info": {name: "Info", icon: "info"},
+            "plot": {name: "Plot", icon: "plot"},            
+        }
+    });
+}
+
+
 function loadDisplayList() {
     function addDisplay(sb, path, d) {
          if(d instanceof Array) {
@@ -69,16 +97,11 @@ function updateMenu() {
     });
 }
 
-function showDisplay(filename) {
-    
-    var wnd=loadedDisplays[filename];
-    if(wnd) {
-        wnd.select();
-    } else {
-        //var filename="ACES_FS_Overview.uss";
-        wnd = $("#yamcs-body").window({
-            title: filename,
-            content: '<div id="'+filename+'"></div>',
+function showWindow(name, onShowFunction) {
+  var divid = 'wnd-'+name;
+  wnd = $("#yamcs-body").window({
+            title: name,
+            content: '<div id="'+divid+'"></div>',
             //width: 300, height: 300,
             x:110, y:30,
             showFooter: false,
@@ -89,48 +112,72 @@ function showDisplay(filename) {
             scrollable: false,
             onShow: function(wnd) {
                  document.body.style.cursor='wait';
-                 var div=document.getElementById(filename);
-                 USS.loadDisplay(div, filename, yamcsWebSocket, function(displ) {
-                     console.log("resizing to ", displ.width, displ.height);
-                     wnd.resize(displ.width, displ.height+25); //the 24 comes from  css .window_header_normal height+2*padding: 20*2*2
-                     var dname=filename.substring(0, filename.length-4);
+                 var div=document.getElementById(divid);       
+		 onShowFunction(div, name, yamcsWebSocket, function(width, height) {
+                     console.log("resizing to ", width, height);
+                     wnd.resize(width, height+25); //the 24 comes from  css .window_header_normal height+2*padding: 20*2*2
                      //var s="<tr class='yamcs-task'><td><img src='symlib/images/U23_led_grey.svg' height='12' width='12' ></td><td id='task-"+filename+"' class='yamcs-task'>"+dname+"</td></tr>";
-                     var s="<span class='yamcs-task' id='task-"+filename+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+dname+"</span>";
-        
+                     var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+name+"</span>";        
                      $("#yamcs-task-list").append(s);
-                     var e = document.getElementById("task-"+filename);
-                     var $e = $(e);
+                     var e = document.getElementById("task-"+name);
+                     var $e = $(e);s
                      $e.bind( "mouseenter.button", function() {
                          $e.addClass( "ui-state-hover" );
                      }).bind( "mouseleave.button", function() {
                          $e.removeClass( "ui-state-hover" );
                      }).bind( "click.button", function( event ) {
-                         bringDisplayToFront(filename);
+                         bringWindowToFront(name);
                      });
                      document.body.style.cursor='default';
-                 });
+                 });		 		
             }, 
             onClose: function(wnd) {
-                for(var f in loadedDisplays) {
-                    if(loadedDisplays[f] === wnd) {
-                        closeDisplay(f);
+                for(var f in openWindows) {
+                    if(openWindows[f] === wnd) {
+                        closeWindow(f);
                     }
                 }
             }
         });
-        loadedDisplays[filename] = wnd;
+    openWindows[name] = wnd;
+}
+
+function showDisplay(filename) {    
+    var wnd = openWindows[filename];
+    if(wnd) {
+        wnd.select();
+    } else {
+      var dname=filename.substring(0, filename.length-4);
+      showWindow(filename, function(div, filename, yamcsWebSocket, onLoadContent) {
+	USS.loadDisplay(div, filename, yamcsWebSocket, function(displ) {
+	  onLoadContent(displ.width, displ.height);
+	});
+      });
     }
 }
 
-function closeDisplay(filename) {
-    delete loadedDisplays[filename];
-    var e = document.getElementById("task-"+filename);
+
+
+function closeWindow(name) {
+    delete openWindows[name];
+    var e = document.getElementById("task-"+name);
     $(e).remove();
 }
 
-function bringDisplayToFront(filename) {
-    console.log(" bringing "+filename+" in front");
-    if(lastSelectedDisplay) lastSelectedDisplay.unselect();
-    lastSelectedDisplay=loadedDisplays[filename];
-    lastSelectedDisplay.select();
+
+function bringWindowToFront(name) {
+    console.log(" bringing "+name+" in front");
+    if(lastSelectedWindow) lastSelectedWindow.unselect();
+    lastSelectedWindow = openWindows[name];
+    lastSelectedWindow.select();
+}
+
+
+
+function showParameterInfo(parameter) {
+  var name = 'pinfo-'+parameter.name;
+  showWindow(name, function(div, name, yamcsWebSocket, onDone) {
+      console.log("loading parameter info for ", parameter);
+      onDone(100,100);
+  });
 }

@@ -2,7 +2,14 @@
 
 var USS = {
    computationCount:0,
-   widgetCount: 0
+   widgetCount: 0,
+   
+   opsNamespace: 'MDB:OPS Name',
+   //dynamic properties
+   dp_VALUE: 'VALUE',
+   dp_X: 'X',
+   dp_Y: 'Y',
+   dp_FILL_COLOR: 'FILL_COLOR'
 }; //USS namespace
 
 
@@ -34,20 +41,20 @@ USS.loadDisplay = function(div, filename, yamcsWebSocket, doneFunction) {
 USS.updateWidget = function(db, para) {
     var widget=db.widget;
     switch (db.dynamicProperty) {
-        case 'VALUE':
+        case USS.dp_VALUE:
             if(widget.updateValue === undefined) {
                 //console.log('no updateValue for ', widget);
                 return;
             }
             widget.updateValue(para, db.usingRaw);
             break;
-        case 'X':
+        case USS.dp_X:
             widget.updatePosition(para, 'x', db.usingRaw);
             break;
-        case 'Y':
+        case USS.dp_Y:
             widget.updatePosition(para, 'y', db.usingRaw);
             break;
-        case 'FILL_COLOR':
+        case USS.dp_FILL_COLOR:
             widget.updateFillColor(para, db.usingRaw);
             break;
         default:
@@ -69,7 +76,8 @@ USS.parseDataBinding = function(e) {
             db[n]=$('string:nth-child(2)', val).text();
         });
         if(db.Opsname!==undefined) {
-            db.ParameterName=db.Opsname
+            db.parameterName=db.Opsname
+            db.parameterNamespace = USS.opsNamespace;
          } else {
             console.log("External Data source without Opsname", ds);
          }
@@ -80,7 +88,7 @@ USS.parseDataBinding = function(e) {
        var c=new Object();
        c.expression=$(ds).children('Expression').text();
        c.args=[]
-       c.ParameterName=pname;
+       c.parameterName=pname;
 
        $('Arguments ExternalDataSource', e).each(function(idx, val) {
             var arg=new Object();
@@ -97,7 +105,7 @@ USS.parseDataBinding = function(e) {
         });
        db.expression=c.expression;
        db.args=c.args;
-       db.ParameterName=pname;
+       db.parameterName=pname;
     }
     return db;
 }
@@ -279,4 +287,15 @@ USS.openDisplay = function(displayBaseName) {
     } else {
         alert("This button only works when the display is running inside the full USS app");
     }
+}
+
+
+//get the parameter id for the parameter shown in the widget for plotting or info
+USS.getParameterFromWidget = function(widget) {
+   for(i in widget.dataBindings) {
+       p = widget.dataBindings[i];
+       if(p.dynamicProperty==USS.dp_VALUE) {
+	    return {name: p.parameterName, namespace: p.parameterNamespace}
+       }
+   }
 }

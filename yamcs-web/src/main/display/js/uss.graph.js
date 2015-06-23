@@ -30,7 +30,7 @@ $.extend(USS.LineGraph.prototype, {
        settings.yAxis=this.parseRangeAxis($e.children('DefaultRangeAxis'));
        settings.series= [{
                 id: 'series-1',
-                name: this.dataBindings[0].ParameterName,
+                name: this.dataBindings[0].parameterName,
                 data: []
               } ];
       this.chart = new Highcharts.Chart(settings);

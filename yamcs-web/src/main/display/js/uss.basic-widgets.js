@@ -65,7 +65,7 @@ USS.Display.prototype = {
     },
 
     drawWidget: function(svg, parent, e) {
-        //console.log('in drawElement, wt:',e.widgetType);
+        //console.log('in drawWidget, wt:',e.widgetType);
         var opts=this.parseStandardOptions(e);
         var widgetType=e.widgetType;
          
@@ -85,24 +85,26 @@ USS.Display.prototype = {
 
             w.parseAndDraw(svg, parent, e);
             var len=opts.dataBindings.length;
+
             if(len>0) { 
                 this.widgets[w.id]=w; //we only remember those widgets that have dynamic properties
                 for(var i=0; i<len; i++) {
                     var db = opts.dataBindings[i];
-                    var para = this.parameters[db.ParameterName];
+                    var para = this.parameters[db.parameterName];
                     if (para === undefined) {
-                        para = {name: db.ParameterName, type: db.type, bindings:[]};
+                        para = {name: db.parameterName, namespace:db.parameterNamespace, type: db.type, bindings:[]};
                         if(para.type == 'Computation') {
                            para.expression = db.expression;
                            para.args=db.args;
                         }
-                        this.parameters[db.ParameterName] = para;
+                        this.parameters[db.parameterName] = para;
                     }
                     var binding={};
                     binding.dynamicProperty=db.dynamicProperty;
                     if(db.usingRaw !== undefined) {
                         binding.usingRaw=db.usingRaw;
                     }
+                   
                     binding.widget = w;
                     para.bindings.push(binding);
                 }
@@ -184,9 +186,10 @@ $.extend(USS.Field.prototype, {
         //make a group to put the text and the bounding box together
         var settings = {
             transform: "translate("+this.x+","+this.y+")",
-	   // onclick: "alert ('clicked')"	    
+	    class: "context-menu-field"   
 	}
-        parent = svg.group(parent, this.id+'-group', {transform: "translate("+this.x+","+this.y+")"});
+        parent = svg.group(parent, this.id+'-group', settings);
+	parent.ussWidget = this;
 
         var $e = $(e);
         var unit=$e.children('Unit').text();
@@ -278,7 +281,7 @@ $.extend(USS.Field.prototype, {
             case 2: return "DEAD"; //INVALID
             case 3: return "EXPIRED";
         }
-    }
+    }    
 });
 
 /************* Polyline *****************/
