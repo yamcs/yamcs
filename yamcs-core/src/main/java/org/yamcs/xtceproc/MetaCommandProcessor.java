@@ -34,7 +34,7 @@ public class MetaCommandProcessor {
 		
 		TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0);
 		pcontext.argValues = args;
-		pcontext.mccProcessor.encode(def);		
+		pcontext.mccProcessor.encode(mc);
 
 
 		
@@ -62,26 +62,34 @@ public class MetaCommandProcessor {
 		if(argList!=null) {
 			//check for each argument that we either have an assignment or a value 
 			for(Argument a: argList) {
-				if(args.containsKey(a)) continue;
-				String stringValue;
-
-				if(!argAssignment.containsKey(a.getName())) {
-					if(a.getInitialValue()==null) {
-						throw new ErrorInCommand("No value provided for argument "+a.getName()+" (and the argument has no default value either)");
-					} else {
-						stringValue = a.getInitialValue();
-					}
-				} else {
-					stringValue = argAssignment.remove(a.getName());
-				}
-				ArgumentType type = a.getArgumentType();
-				try {
-					Value v = ArgumentTypeProcessor.parseAndCheckRange(type, stringValue);				
-					args.put(a,  v);
-				} catch (Exception e) {
-					throw new ErrorInCommand("Cannot assign value to "+a.getName()+": "+e.getMessage());
-				}				
-			}
+                if(args.containsKey(a)) continue;
+                String stringValue = null;
+                String argInitialValue = null;
+                Value argTypeInitialValue = null;
+                if(!argAssignment.containsKey(a.getName())) {
+                    argInitialValue = a.getInitialValue();
+                    argTypeInitialValue = ArgumentTypeProcessor.getInitialValue(a.getArgumentType());
+                    if(argInitialValue == null && argTypeInitialValue == null) {
+                        throw new ErrorInCommand("No value provided for argument "+a.getName()+" (and the argument has no default value either)");
+                    }
+                } else {
+                    stringValue = argAssignment.remove(a.getName());
+                }
+                ArgumentType type = a.getArgumentType();
+                try {
+                    Value v;
+                    // default value argInitialValue overwrites argTypeInitialValue
+                    if(stringValue == null)
+                        stringValue = argInitialValue;
+                    if(stringValue !=null)
+                        v = ArgumentTypeProcessor.parseAndCheckRange(type, stringValue);
+                    else
+                        v= argTypeInitialValue;
+                    args.put(a,  v);
+                } catch (Exception e) {
+                    throw new ErrorInCommand("Cannot assign value to "+a.getName()+": "+e.getMessage());
+                }
+            }
 		}
 		
 		//now, go to the parent

@@ -14,6 +14,7 @@ public abstract class BaseDataType extends NameDescription {
     }
 
     public DataEncoding getEncoding() {
+
 	return encoding;
     }
 

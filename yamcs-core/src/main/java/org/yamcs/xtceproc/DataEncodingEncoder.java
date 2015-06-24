@@ -235,9 +235,9 @@ public class DataEncodingEncoder {
         } else {
         	throw new IllegalArgumentException("Cannot encode as binary data values of type "+rawValue.getType());
         }
-        int sizeInBytes = bde.getSizeInBits();
+        int sizeInBytes = bde.getSizeInBits()/8;
         if(sizeInBytes>v.length) sizeInBytes = v.length;
-        pcontext.bb.put(v, pcontext.bitPosition/8, sizeInBytes);
+        pcontext.bb.put(v, 0, sizeInBytes);
         pcontext.bitPosition+=bde.getSizeInBits();
     }
     

@@ -153,6 +153,32 @@ public class ArgumentTypeProcessor {
     	return raw;
     }
 
+    public static Value getInitialValue(ArgumentType type)
+    {
+        if (type instanceof IntegerArgumentType) {
+            if(((IntegerArgumentType) type).getInitialValue() == null)
+                return null;
+            return ValueHelper.newValue(((IntegerArgumentType) type).getInitialValue());
+        } else if (type instanceof FloatArgumentType) {
+            return ValueHelper.newValue(((FloatArgumentType) type).getInitialValue());
+        } else if (type instanceof StringArgumentType) {
+            if(((StringArgumentType) type).getInitialValue() == null)
+                return null;
+            return ValueHelper.newValue(((StringArgumentType) type).getInitialValue());
+        } else if (type instanceof BinaryArgumentType) {
+
+            if(((BinaryArgumentType) type).getInitialValue() == null)
+                return null;
+            return ValueHelper.newValue(((BinaryArgumentType) type).getInitialValue());
+        } else if (type instanceof EnumeratedArgumentType) {
+
+            if(((EnumeratedArgumentType) type).getInitialValue() == null)
+                return null;
+            return ValueHelper.newValue(((EnumeratedArgumentType) type).getInitialValue());
+        }
+        return null;
+    }
+
 	public static Value parseAndCheckRange(ArgumentType type, String argumentValue) throws ErrorInCommand {
 		Value v;
 		if(type instanceof IntegerArgumentType) {

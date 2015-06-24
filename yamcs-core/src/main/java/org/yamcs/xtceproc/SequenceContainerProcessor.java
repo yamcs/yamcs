@@ -35,6 +35,12 @@ public class SequenceContainerProcessor {
         if(entries!=null) {
             for (SequenceEntry se:entries) {
                 try {
+                    if(pcontext.bitPosition >= pcontext.bb.capacity()*8)
+                    {
+                        // Packet does not contain more parameters
+                        log.info("Packet does not contain more parameter");
+                        break;
+                    }
                     switch(se.getReferenceLocation()) {
                     case previousEntry:
                         pcontext.bitPosition+=se.getLocationInContainerInBits();
