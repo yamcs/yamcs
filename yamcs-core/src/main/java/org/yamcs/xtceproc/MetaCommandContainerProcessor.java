@@ -34,7 +34,7 @@ public class MetaCommandContainerProcessor {
             int previousPosition  = pcontext.bitPosition;
             switch(se.getReferenceLocation()) {
                 case previousEntry:
-                    pcontext.bitPosition += se.getLocationInContainerInBits()-1;
+                    pcontext.bitPosition += se.getLocationInContainerInBits();
                     break;
                 case containerStart:
                     pcontext.bitPosition = se.getLocationInContainerInBits();
