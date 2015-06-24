@@ -30,21 +30,23 @@ public class MetaCommandContainerProcessor {
         }
 
         for(SequenceEntry se: container.getEntryList()) {
+            int size=0;
             int previousPosition  = pcontext.bitPosition;
             switch(se.getReferenceLocation()) {
                 case previousEntry:
-                    pcontext.bitPosition+=se.getLocationInContainerInBits()-1;
+                    pcontext.bitPosition += se.getLocationInContainerInBits()-1;
                     break;
                 case containerStart:
-                    pcontext.bitPosition=se.getLocationInContainerInBits() + fixedPositionOffset;
+                    pcontext.bitPosition = se.getLocationInContainerInBits();
             }
             if(se instanceof ArgumentEntry) {
                 fillInArgumentEntry((ArgumentEntry) se, pcontext);
+                size = (pcontext.bitPosition+7)/8;
             } else if (se instanceof FixedValueEntry) {
                 fillInFixedValueEntry((FixedValueEntry) se, pcontext);
+                size = (pcontext.bitPosition+7)/8;
                 pcontext.bitPosition = previousPosition;
             }
-			int size = (pcontext.bitPosition+7)/8;
 			if(size>pcontext.size) {
 				pcontext.size = size;
 			}
