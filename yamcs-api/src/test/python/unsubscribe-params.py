@@ -56,3 +56,4 @@ while i < 3:
         break
     print "Bad, Received '%s'" % result
 
+ws.close();
