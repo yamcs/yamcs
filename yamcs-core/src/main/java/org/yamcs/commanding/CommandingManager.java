@@ -55,6 +55,8 @@ public class CommandingManager extends AbstractService {
         {
             throw new NoPermissionException("User has no privilege on command " + mc.getName());
         }
+        if(origin == null)
+            origin = "anonymous";
 
         byte[] b = MetaCommandProcessor.buildCommand(mc,  argAssignmentList);
 

@@ -24,6 +24,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.UnitType;
@@ -97,6 +98,11 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
     }
 
     private static RestParameter.Builder toRestParameter(String name, Parameter parameter) {
+        if(parameter.getDataSource() == null)
+        {
+            log.warn("Datasource for parameter " + name + " is null, setting TELEMETERED by default");
+            parameter.setDataSource(DataSource.TELEMETERED);
+        }
         RestDataSource ds = RestDataSource.valueOf(parameter.getDataSource().name()); // I know, i know
         return RestParameter.newBuilder().setDataSource(ds).setId(NamedObjectId.newBuilder().setName(name));
     }

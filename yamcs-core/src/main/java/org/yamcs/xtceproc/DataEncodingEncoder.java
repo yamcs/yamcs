@@ -134,7 +134,9 @@ public class DataEncodingEncoder {
             if(sizeInBytes>b.length) sizeInBytes = b.length;
             pcontext.bb.position(byteOffset);
             pcontext.bb.put(b, 0, sizeInBytes);
-            pcontext.bitPosition+=8*sizeInBytes;
+            byte[] blank =new byte[sde.getSizeInBits() - sizeInBytes];
+            pcontext.bb.put(blank);
+            pcontext.bitPosition+=sde.getSizeInBits();
             break;
         case LeadingSize:
         	pcontext.bb.order(ByteOrder.BIG_ENDIAN); //TBD
@@ -235,9 +237,9 @@ public class DataEncodingEncoder {
         } else {
         	throw new IllegalArgumentException("Cannot encode as binary data values of type "+rawValue.getType());
         }
-        int sizeInBytes = bde.getSizeInBits();
+        int sizeInBytes = bde.getSizeInBits()/8;
         if(sizeInBytes>v.length) sizeInBytes = v.length;
-        pcontext.bb.put(v, pcontext.bitPosition/8, sizeInBytes);
+        pcontext.bb.put(v, 0, sizeInBytes);
         pcontext.bitPosition+=bde.getSizeInBits();
     }
     

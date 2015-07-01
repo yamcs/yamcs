@@ -26,6 +26,10 @@ public class EnumeratedDataType extends BaseDataType {
         this.initialValue = initialValue;
     }
 
+    public String getInitialValue() {
+        return initialValue;
+    }
+
     public ValueEnumeration enumValue(Long key) {
         if ( enumeration.containsKey(key) ) {
             return enumeration.get(key);

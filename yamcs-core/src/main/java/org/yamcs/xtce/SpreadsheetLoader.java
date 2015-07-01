@@ -603,7 +603,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		    });
 		}
 		encoding=new FloatDataEncoding(name, bitlength);
-		if(calib!=null) {
+		if((!"enumerated".equalsIgnoreCase(engtype)) && calib!=null) {
 		    Calibrator c = calibrators.get(calib);
 		    if (c == null) {
 			throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
@@ -1520,7 +1520,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
 	    }
 	    encoding=new FloatDataEncoding(name, sizeInBits);
-	    if(calib!=null) {
+	    if((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
 		Calibrator c = calibrators.get(calib);
 		if (c == null) {
 		    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");

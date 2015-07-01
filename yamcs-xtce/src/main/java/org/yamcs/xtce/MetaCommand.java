@@ -180,8 +180,8 @@ public class MetaCommand extends NameDescription {
     public void addArgumentAssignment(ArgumentAssignment aa) {
 	if(argumentAssignmentList==null) {
 	    argumentAssignmentList = new ArrayList<ArgumentAssignment>();
-	    argumentAssignmentList.add(aa);
 	}
+        argumentAssignmentList.add(aa);
     }
 
     public boolean hasTransmissionConstraints() {

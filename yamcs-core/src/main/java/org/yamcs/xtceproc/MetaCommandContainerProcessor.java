@@ -3,14 +3,9 @@ package org.yamcs.xtceproc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ErrorInCommand;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.ArgumentEntry;
-import org.yamcs.xtce.ArgumentType;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.FixedValueEntry;
-import org.yamcs.xtce.MetaCommandContainer;
-import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.*;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 
 public class MetaCommandContainerProcessor {
@@ -20,26 +15,38 @@ public class MetaCommandContainerProcessor {
 		this.pcontext=pcontext;
 	}
 
-	public void encode(MetaCommandContainer container) {
-		MetaCommandContainer parent = container.getBaseContainer();
+	public void encode(MetaCommand metaCommand) throws ErrorInCommand {
+		MetaCommand parent = metaCommand.getBaseMetaCommand();
+        int fixedPositionOffset = 0;
 		if(parent !=null ) {
 			encode(parent);
+            fixedPositionOffset = pcontext.bitPosition;
 		}
 
-		for(SequenceEntry se: container.getEntryList()) {
-			switch(se.getReferenceLocation()) {
-			case previousEntry:
-				pcontext.bitPosition+=se.getLocationInContainerInBits();
-				break;
-			case containerStart:
-				pcontext.bitPosition=se.getLocationInContainerInBits();
-			}
-			if(se instanceof ArgumentEntry) {
-				fillInArgumentEntry((ArgumentEntry) se, pcontext);
-			} else if (se instanceof FixedValueEntry) {
-				fillInFixedValueEntry((FixedValueEntry) se, pcontext);
-			}
-			int size = (pcontext.bitPosition+7)/8;
+        MetaCommandContainer container = metaCommand.getCommandContainer();
+        if(container == null)
+        {
+            throw new ErrorInCommand("MetaCommand has no container: " + metaCommand);
+        }
+
+        for(SequenceEntry se: container.getEntryList()) {
+            int size=0;
+            int previousPosition  = pcontext.bitPosition;
+            switch(se.getReferenceLocation()) {
+                case previousEntry:
+                    pcontext.bitPosition += se.getLocationInContainerInBits();
+                    break;
+                case containerStart:
+                    pcontext.bitPosition = se.getLocationInContainerInBits();
+            }
+            if(se instanceof ArgumentEntry) {
+                fillInArgumentEntry((ArgumentEntry) se, pcontext);
+                size = (pcontext.bitPosition+7)/8;
+            } else if (se instanceof FixedValueEntry) {
+                fillInFixedValueEntry((FixedValueEntry) se, pcontext);
+                size = (pcontext.bitPosition+7)/8;
+                pcontext.bitPosition = previousPosition;
+            }
 			if(size>pcontext.size) {
 				pcontext.size = size;
 			}
@@ -52,20 +59,12 @@ public class MetaCommandContainerProcessor {
 		if(argValue==null) {
 			throw new IllegalStateException("No value for argument "+arg);
 		}
-		ReferenceLocationType rlt = argEntry.getReferenceLocation();
-		switch(rlt) {
-		case containerStart: 
-			pcontext.bitPosition = argEntry.getLocationInContainerInBits();
-			break;
-		case previousEntry:
-			pcontext.bitPosition += argEntry.getLocationInContainerInBits();
-			break;
-		}
 
 		ArgumentType atype = arg.getArgumentType();
 		Value rawValue = ArgumentTypeProcessor.decalibrate(atype, argValue);
-		pcontext.deEncoder.encodeRaw(((BaseDataType)atype).getEncoding(), rawValue);		
-	}
+		pcontext.deEncoder.encodeRaw(((BaseDataType) atype).getEncoding(), rawValue);
+
+    }
 
 	private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {
 		int sizeInBits = fve.getSizeInBits();
