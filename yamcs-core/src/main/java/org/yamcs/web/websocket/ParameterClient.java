@@ -195,6 +195,10 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
     @Override
     public void update(int subscrId, List<ParameterValueWithId> paramList) {
 	if(wsHandler==null) return;
+        if(paramList == null || paramList.size() == 0)
+        {
+            return;
+        }
 
 	if(subscrId==compSubscriptionId) {
 	    updateComputations(paramList);
