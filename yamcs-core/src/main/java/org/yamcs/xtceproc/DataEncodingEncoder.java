@@ -134,7 +134,9 @@ public class DataEncodingEncoder {
             if(sizeInBytes>b.length) sizeInBytes = b.length;
             pcontext.bb.position(byteOffset);
             pcontext.bb.put(b, 0, sizeInBytes);
-            pcontext.bitPosition+=8*sizeInBytes;
+            byte[] blank =new byte[sde.getSizeInBits() - sizeInBytes];
+            pcontext.bb.put(blank);
+            pcontext.bitPosition+=sde.getSizeInBits();
             break;
         case LeadingSize:
         	pcontext.bb.order(ByteOrder.BIG_ENDIAN); //TBD

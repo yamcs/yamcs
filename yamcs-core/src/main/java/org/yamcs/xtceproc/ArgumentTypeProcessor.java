@@ -67,7 +67,11 @@ public class ArgumentTypeProcessor {
         DataEncoding de=ipt.getEncoding();
         if(de instanceof IntegerDataEncoding) {
             calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        } else {
+        }
+        else if(de instanceof FloatDataEncoding) {
+            return doFloatDecalibration(ipt.getEncoding(), ipt.getSizeInBits(), v);
+        }
+        else {
             throw new IllegalStateException("Unsupported integer encoding of type: "+de);
         }
         
@@ -93,27 +97,26 @@ public class ArgumentTypeProcessor {
 	
 	private static Value decalibrateFloat(FloatArgumentType fat, Value v) {
         if(v.getType() == Type.FLOAT) {
-            return doFloatDecalibration(fat, v.getFloatValue());
+            return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getFloatValue());
         } else if(v.getType() == Type.DOUBLE) {
-        	return doFloatDecalibration(fat, v.getDoubleValue());
+        	return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getDoubleValue());
         } else if(v.getType() == Type.STRING) {
-        	return doFloatDecalibration(fat, Double.valueOf(v.getStringValue()));
+        	return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), Double.valueOf(v.getStringValue()));
         } else if(v.getType() == Type.UINT32) {
-        	return doFloatDecalibration(fat, v.getUint32Value());
+        	return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getUint32Value());
         } else if(v.getType() == Type.UINT64) {
-        	return doFloatDecalibration(fat, v.getUint64Value());
+        	return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getUint64Value());
         } else if(v.getType() == Type.SINT32) {
-        	return doFloatDecalibration(fat, v.getSint32Value());
+        	return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getSint32Value());
         } else if(v.getType() == Type.SINT64) {
-        	return  doFloatDecalibration(fat, v.getSint64Value());
+        	return  doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getSint64Value());
         } else {
             throw new IllegalArgumentException("Unsupported value type '"+v.getType()+"' cannot be converted to float");
         }
     }
     
-    private static Value doFloatDecalibration(FloatArgumentType fat, double doubleValue) {
+    private static Value doFloatDecalibration(DataEncoding de, int sizeInBits, double doubleValue) {
         Calibrator calibrator=null;
-        DataEncoding de=fat.getEncoding();
         if(de instanceof FloatDataEncoding) {
             calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
         } else if(de instanceof IntegerDataEncoding) {
@@ -124,7 +127,7 @@ public class ArgumentTypeProcessor {
         
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
         Value raw;
-        if(fat.getSizeInBits() == 32) {
+        if(sizeInBits == 32) {
             raw = Value.newBuilder().setType(Value.Type.FLOAT).setFloatValue((float)doubleCalValue).build();
         } else {
         	raw = Value.newBuilder().setType(Value.Type.DOUBLE).setDoubleValue(doubleCalValue).build();

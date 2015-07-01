@@ -92,6 +92,8 @@ public class ParameterTypeProcessor {
             pval.setStringValue(ept.calibrate(rawValue.getSint32Value()));
         } else if (rawValue.getType() == Type.SINT64) {
             pval.setStringValue(ept.calibrate(rawValue.getSint64Value()));
+        }  else if (rawValue.getType() == Type.FLOAT) { // added for obcp simulator
+            pval.setStringValue(ept.calibrate((long)rawValue.getFloatValue()));
         } else if (rawValue.getType() == Type.STRING) {
             try {
                 long l = Long.decode(rawValue.getStringValue());
@@ -151,6 +153,8 @@ public class ParameterTypeProcessor {
             doIntegerCalibration(ipt, pval, rawValue.getSint32Value());
         } else if (rawValue.getType() == Type.SINT64) {
             doIntegerCalibration(ipt, pval, rawValue.getSint64Value());
+        } else if (rawValue.getType() == Type.FLOAT) {
+            doIntegerCalibration(ipt, pval, (long)rawValue.getFloatValue());
         } else if (rawValue.getType() == Type.STRING) {
             try {
                 long l = Long.decode(rawValue.getStringValue());
@@ -169,7 +173,12 @@ public class ParameterTypeProcessor {
         DataEncoding de=ipt.getEncoding();
         if(de instanceof IntegerDataEncoding) {
             calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        } else {
+        }
+        else if(de instanceof  FloatDataEncoding)
+        {
+            calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
+        }
+        else {
             throw new IllegalStateException("Unsupported float encoding of type: "+de);
         }
         
