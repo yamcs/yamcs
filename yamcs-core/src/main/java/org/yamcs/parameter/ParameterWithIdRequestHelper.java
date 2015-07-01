@@ -123,7 +123,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 Entry<Parameter, NamedObjectId> e = it.next();
                 checkParameterPrivilege(authToken, e.getKey().getQualifiedName());
                 if(parameterIds.contains(e.getValue())) {
-                    it.remove();
+                    paramsToRemove.add(e.getKey());
                 }
             }
         }
@@ -154,7 +154,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         synchronized(subscription) {
             for(ParameterValue pv: items) {
                 List<NamedObjectId> idList = subscription.get(pv.getParameter());
-                if(idList==null) {
+                if(idList==null || idList.size() == 0) {
                     log.warn("Received values for a parameter not subscribed: "+pv.getParameter());
                     continue;
                 }

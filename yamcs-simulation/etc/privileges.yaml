@@ -4,7 +4,7 @@
 #
 # if privileges.enables is set to true, you need to enable security of hornetQ and ensure
 # the hornetQ roles are assigned to user in the chosen realm.
-enabled: true
+enabled: false
 
 #one of: LdapRealm, YamlRealm
 realm: org.yamcs.security.YamlRealm
