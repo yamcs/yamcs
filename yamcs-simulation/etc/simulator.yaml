@@ -2,7 +2,7 @@
 ui: false
 
 # Alternance of AOS and LOS periods
-losAos: true
+losAos: false 
 los_period_s: 60
 aos_period_s: 120
 
