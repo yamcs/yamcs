@@ -41,7 +41,7 @@ cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 #cp -a yamcs-web/target/yamcs-web*.jar %{buildroot}/%{prefix}/lib/
 #cp -a yamcs-web/target/dependency/*.jar %{buildroot}/%{prefix}/lib/
-cp -a yamcs-web/src/main/uss*  %{buildroot}/%{prefix}/web/
+cp -a yamcs-web/src/main/display*  %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
