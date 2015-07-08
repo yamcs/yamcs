@@ -57,7 +57,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static String SHEET_COMMANDVERIFICATION="CommandVerification";
 
     //columns in the parameters sheet (including local parameters)
-    final static int IDX_PARAM_OPSNAME=0;
+    final static int IDX_PARAM_NAME=0;
     final static int IDX_PARAM_BITLENGTH=1;
     final static int IDX_PARAM_RAWTYPE=2;
     final static int IDX_PARAM_ENGTYPE=3;
@@ -411,11 +411,12 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 	    if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
 		continue;
 	    }
-	    String name = cells[IDX_PARAM_OPSNAME].getContents();
+	    String name = cells[IDX_PARAM_NAME].getContents();
 	    if (name.length() == 0) {
 		continue;
 	    }
 
+	    validateNameType(name);
 	    final Parameter param = new Parameter(name);
 	    parameters.put(param.getName(), param);
 
@@ -2172,5 +2173,15 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 		throw exc;
 	    }
 	}
+    }
+    
+    static Pattern allowedInNameType = Pattern.compile("[\\d\\w_-]+");
+    boolean draconicXtceNameRestrictions = true; //TODO - should be configurable
+    private void validateNameType(String name) {
+        if(!draconicXtceNameRestrictions) return;
+        
+        if(!allowedInNameType.matcher(name).matches()) {
+            throw new SpreadsheetLoadException(ctx, "Invalid name '"+name+"'; should only contain letters, digits, _, and -");
+        }
     }
 }
