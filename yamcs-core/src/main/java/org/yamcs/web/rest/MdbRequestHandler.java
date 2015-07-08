@@ -35,7 +35,6 @@ import com.google.protobuf.ByteString;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
@@ -47,8 +46,10 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
 
     @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
-        if (req.getMethod() != HttpMethod.GET)
-            throw new MethodNotAllowedException(req.getMethod());
+        
+        //because it is difficult to send GET requests with body from some clients (including jquery), we allow POST requests here.
+        //       if (req.getMethod() != HttpMethod.GET)
+        //            throw new MethodNotAllowedException(req.getMethod());
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("parameters".equals(qsDecoder.path())) {
             RestListAvailableParametersRequest request = readMessage(req, SchemaRest.RestListAvailableParametersRequest.MERGE).build();
@@ -59,9 +60,31 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             RestDumpRawMdbResponse responseMsg = dumpRawMdb(request, yamcsInstance);
             writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
         } else if ("parameterInfo".equals(qsDecoder.path())) {
-            RestGetParameterInfoRequest request = readMessage(req, SchemaRest.RestGetParameterInfoRequest.MERGE).build();
-            RestGetParameterInfoResponse responseMsg = getParameterInfo(request, yamcsInstance, authToken);
-            writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestGetParameterInfoResponse.WRITE);
+            if (qsDecoder.parameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
+                String name = qsDecoder.parameters().get("name").get(0);
+                NamedObjectId.Builder noib = NamedObjectId.newBuilder();
+                noib.setName(name);
+                if (qsDecoder.parameters().containsKey("namespace")) {
+                    noib.setNamespace(qsDecoder.parameters().get("namespace").get(0));
+                }
+                NamedObjectId id = noib.build();
+                XtceDb xtceDb = loadMdb(yamcsInstance);
+                Parameter p = xtceDb.getParameter(id);
+                if(p==null) {
+                    throw new BadRequestException("Invalid parameter name specified "+id);
+                }
+                 if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+                     log.warn("Parameter Info not authorized for token {}, throwing BadRequestException", authToken);
+                     throw new BadRequestException("Invalid parameter name specified "+id);
+                }
+                RestParameterInfo pinfo = getParameterInfo(id, p);
+                writeMessage(ctx, req, qsDecoder, pinfo, SchemaRest.RestParameterInfo.WRITE);
+            } else { //possible multiple parameter requested, we return  RestGetParameterInfoResponse
+                RestGetParameterInfoRequest request = readMessage(req, SchemaRest.RestGetParameterInfoRequest.MERGE).build();
+                RestGetParameterInfoResponse responseMsg = getParameterInfo(request, yamcsInstance, authToken);
+                writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestGetParameterInfoResponse.WRITE);
+            }
+            
         } else {
             log.debug("No match for '" + qsDecoder.path() + "'");
             sendError(ctx, HttpResponseStatus.NOT_FOUND);
@@ -124,6 +147,8 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         return responseb.build();
     }
 
+    
+    
     private RestGetParameterInfoResponse getParameterInfo(RestGetParameterInfoRequest request, String yamcsInstance, AuthenticationToken authToken) throws RestException {
         XtceDb xtceDb = loadMdb(yamcsInstance);
         

@@ -54,12 +54,16 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         } else if (msg instanceof WebSocketFrame) {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
+        } else {
+            log.info("sending bad request error for message {}",msg);
+            sendError(ctx, BAD_REQUEST);
+            return;
         }
     }
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
-
+        
         AuthenticationToken authToken = null;
         if(Privilege.getInstance().isEnabled()) {
             String authorizationHeader = req.headers().get("Authorization");
@@ -69,7 +73,6 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
                 return;
             }
         }
-
         if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
@@ -107,7 +110,6 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
             return;
         }
-        
         String[] rpath = path[2].split("/",2);
         String handler=rpath[0];
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
@@ -130,8 +132,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             setContentLength(res, buf.readableBytes());
         }
 
-        if(status == UNAUTHORIZED)
-        {
+        if(status == UNAUTHORIZED) {
             setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"nmrs_m7VKmomQ2YM3\"");
         }
 
@@ -139,6 +140,15 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         if (!isKeepAlive(req) || res.getStatus().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
+    }
+    
+    private static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+        FullHttpResponse response = new DefaultFullHttpResponse(
+                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + status + "\r\n", CharsetUtil.UTF_8));
+        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
+
+        // Close the connection as soon as the error message is sent.
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     // This method checks the user information sent in the Authorization

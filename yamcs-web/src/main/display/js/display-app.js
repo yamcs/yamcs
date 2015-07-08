@@ -97,26 +97,30 @@ function updateMenu() {
     });
 }
 
-function showWindow(name, onShowFunction) {
+function showWindow(name, onShowFunction, resizable, scrollable) {
+
+  if (typeof(resizable)==='undefined') resizable = false;
+   if (typeof(scrollable)==='undefined') scrollable = false;
+  
   var divid = 'wnd-'+name;
   wnd = $("#yamcs-body").window({
             title: name,
-            content: '<div id="'+divid+'"></div>',
-            //width: 300, height: 300,
+            content: '<div id="'+divid+'"></div>',           
             x:110, y:30,
             showFooter: false,
-            resizable: false,
+            resizable: resizable,
             minimizable: false,
             maximizable: false,
-            checkBoundary: true,
-            scrollable: false,
+            checkBoundary: false,
+            scrollable: scrollable,
+	    maxWidth: -1,
+	    maxHeight: -1,
             onShow: function(wnd) {
                  document.body.style.cursor='wait';
                  var div=document.getElementById(divid);       
 		 onShowFunction(div, name, yamcsWebSocket, function(width, height) {
                      console.log("resizing to ", width, height);
                      wnd.resize(width, height+25); //the 24 comes from  css .window_header_normal height+2*padding: 20*2*2
-                     //var s="<tr class='yamcs-task'><td><img src='symlib/images/U23_led_grey.svg' height='12' width='12' ></td><td id='task-"+filename+"' class='yamcs-task'>"+dname+"</td></tr>";
                      var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+name+"</span>";        
                      $("#yamcs-task-list").append(s);
                      var e = document.getElementById("task-"+name);
@@ -176,8 +180,18 @@ function bringWindowToFront(name) {
 
 function showParameterInfo(parameter) {
   var name = 'pinfo-'+parameter.name;
-  showWindow(name, function(div, name, yamcsWebSocket, onDone) {
-      console.log("loading parameter info for ", parameter);
-      onDone(100,100);
-  });
+  showWindow(name, function(div, name, yamcsWebSocket, onLoadContent) {
+      console.log("getting parameter info for ", parameter);      
+      $.ajax({
+	    url: "/"+yamcsInstance+"/api/mdb/parameterInfo",
+            data: parameter,
+      }).done(function(pinfo) {		 
+	  $(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
+          onLoadContent(800,500);
+      }).fail( function(xhr, textStatus, errorThrown) {
+	var r = JSON.parse(xhr.responseText);
+	$(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
+          onLoadContent(800,500);
+      })
+  }, true, true);
 }
