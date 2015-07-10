@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.*;
-import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 
 public class MetaCommandContainerProcessor {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
@@ -17,10 +16,8 @@ public class MetaCommandContainerProcessor {
 
     public void encode(MetaCommand metaCommand) throws ErrorInCommand {
         MetaCommand parent = metaCommand.getBaseMetaCommand();
-        int fixedPositionOffset = 0;
         if(parent !=null ) {
             encode(parent);
-            fixedPositionOffset = pcontext.bitPosition;
         }
 
         MetaCommandContainer container = metaCommand.getCommandContainer();
