@@ -17,6 +17,12 @@ public abstract class DataEncoding extends NameDescription implements Serializab
         this.sizeInBits = sizeInBits;
     }
     
+    DataEncoding(String name, int sizeInBits, ByteOrder byteOrder) {
+        this(name, sizeInBits);
+        this.byteOrder = byteOrder;
+    }
+    
+    
     public int getSizeInBits() {
         return sizeInBits;
     }
@@ -27,6 +33,9 @@ public abstract class DataEncoding extends NameDescription implements Serializab
 
     public ByteOrder getByteOrder() {
         return byteOrder;
+    }
+    public void setByteOrder(ByteOrder order) {
+        this.byteOrder = order;        
     }
 
     //these two methods are used for serialisation because ByteOrder is not serializable

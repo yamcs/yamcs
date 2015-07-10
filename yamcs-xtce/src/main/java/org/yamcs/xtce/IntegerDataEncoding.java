@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.nio.ByteOrder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,10 +18,13 @@ public class IntegerDataEncoding extends DataEncoding {
      * @param name
      * @param sizeInBits
      */
-    public IntegerDataEncoding(String name,int sizeInBits) {
-        super(name, sizeInBits);
+    public IntegerDataEncoding(String name,int sizeInBits, ByteOrder byteOrder) {
+        super(name, sizeInBits, byteOrder);
     }
 
+    public IntegerDataEncoding(String name,int sizeInBits) {
+        super(name, sizeInBits, ByteOrder.BIG_ENDIAN);
+    }
     /**
      * Integer data encoded as a string.
      * @param name
@@ -71,4 +76,6 @@ public class IntegerDataEncoding extends DataEncoding {
             return (int)Long.parseLong(stringValue);
         }
     }
+
+   
 }

@@ -7,19 +7,19 @@ package org.yamcs.xtce;
  *
  */
 public class FloatArgumentType extends FloatDataType implements ArgumentType {
-	private static final long serialVersionUID=1L;
-	
-	public FloatArgumentType(String name){
-		super(name);
-	}
-    
-	
+    private static final long serialVersionUID=1L;
+
+    public FloatArgumentType(String name){
+        super(name);
+    }
+
+
     public String getTypeAsString() {
         return "float";
     }
 
     @Override
     public String toString() {
-    	  return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
+        return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
     }
 }

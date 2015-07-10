@@ -3,7 +3,7 @@ package org.yamcs.xtce;
 public class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 200706051146L;
     int sizeInBits=32;
-    boolean signed=true;
+    protected boolean signed=true;
 
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. 

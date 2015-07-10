@@ -5,7 +5,6 @@ import jxl.read.biff.BiffException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
@@ -17,7 +16,6 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 
 import java.io.*;
 import java.nio.ByteOrder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -31,7 +29,7 @@ import java.util.regex.Pattern;
  * @author nm, ddw
  *
  */
-public class SpreadsheetLoader implements SpaceSystemLoader {
+public class SpreadsheetLoader extends AbstractFileLoader {
     protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
     protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
     protected HashMap<String,EnumerationDefinition> enumerations = new HashMap<String, EnumerationDefinition>();
@@ -129,14 +127,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMD_RANGEHIGH = 13;
     protected final static int IDX_CMD_DESCRIPTION = 14;
 
-    
+
     //columns in the command options sheet
     protected final static int IDX_CMDOPT_NAME = 0;
     protected final static int IDX_CMDOPT_TXCONST = 1;
     protected final static int IDX_CMDOPT_TXCONST_TIMEOUT = 2;
     protected final static int IDX_CMDOPT_SIGNIFICANCE = 3;
     protected final static int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
-    
+
     //columns in the command verification sheet    
     protected final static int IDX_CMDVERIF_NAME = 0;
     protected final static int IDX_CMDVERIF_STAGE = 1;
@@ -147,7 +145,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected final static int IDX_CMDVERIF_ONSUCCESS = 6;
     protected final static int IDX_CMDVERIF_ONFAIL = 7;
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
-    
+
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION="4.0";
     // Explicitly support these versions (i.e. load without warning)
@@ -157,7 +155,6 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     protected Workbook workbook;
     protected String opsnamePrefix;
     protected SpaceSystem spaceSystem;
-    String path;
     static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
 
 
@@ -165,524 +162,497 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
      * configSection is the name under which this config appears in the database
      */
     public SpreadsheetLoader(String filename) {
-	ctx.file=new File(filename).getName();
-	path = filename;
+        super(filename);
+        ctx.file=new File(filename).getName();
     }
 
     @Override
     public String getConfigName(){
-	return ctx.file;
+        return ctx.file;
     }
 
     @Override
     public SpaceSystem load() {
-	log.info("Loading spreadsheet " + path);
+        log.info("Loading spreadsheet " + path);
 
-	try {
-	    // Given path may be relative, so use absolute path to report issues
-	    File ssFile = new File( path );
-	    if( !ssFile.exists() ) throw new FileNotFoundException( ssFile.getAbsolutePath() );
-	    workbook = Workbook.getWorkbook( ssFile );
-	} catch (BiffException e) {
-	    throw new SpreadsheetLoadException(ctx, e);
-	} catch (IOException e) {
-	    throw new SpreadsheetLoadException(ctx, e);
-	}
+        try {
+            // Given path may be relative, so use absolute path to report issues
+            File ssFile = new File( path );
+            if( !ssFile.exists() ) throw new FileNotFoundException( ssFile.getAbsolutePath() );
+            workbook = Workbook.getWorkbook( ssFile );
+        } catch (BiffException e) {
+            throw new SpreadsheetLoadException(ctx, e);
+        } catch (IOException e) {
+            throw new SpreadsheetLoadException(ctx, e);
+        }
 
-	try {
-	    loadSheets();
-	} catch(SpreadsheetLoadException e) {
-	    throw e;
-	} catch (Exception e) {
-	    throw new SpreadsheetLoadException(ctx, e);
-	}
+        try {
+            loadSheets();
+        } catch(SpreadsheetLoadException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SpreadsheetLoadException(ctx, e);
+        }
 
-	// Check errors after all sheets have been read
-	for(PotentialExtractionError e : potentialErrors) {
-	    e.recheck();
-	}
+        // Check errors after all sheets have been read
+        for(PotentialExtractionError e : potentialErrors) {
+            e.recheck();
+        }
 
-	return spaceSystem;
+        return spaceSystem;
     }
 
     protected void loadSheets() throws SpreadsheetLoadException {
-	loadGeneralSheet(true);
-	loadCalibrationSheet(false);
-	loadParametersSheet(true, SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
-	loadParametersSheet(false, SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
-	loadParametersSheet(false, SHEET_LOCAL_PARAMETERS, DataSource.LOCAL);
-	loadContainersSheet(true);
-	loadProcessedParametersSheet(false);
-	loadNonStandardSheets(); // Extension point
-	loadAlgorithmsSheet(false);
-	loadAlarmsSheet(false);
-	loadCommandSheet(false);
-	loadCommandOptionsSheet(false);
-	loadCommandVerificationSheet(false);
-    }
-
-    @Override
-    public boolean needsUpdate(RandomAccessFile consistencyDateFile) throws IOException, ConfigurationException {
-	String line;
-	while((line=consistencyDateFile.readLine())!=null) {
-	    if(line.startsWith(ctx.file)) {
-		File f=new File(path);
-		if(!f.exists()) throw new ConfigurationException("The file "+f.getAbsolutePath()+" doesn't exist");
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss");
-		try {
-		    Date serializedDate=sdf.parse(line.substring(ctx.file.length()+1));
-		    if(serializedDate.getTime()>=f.lastModified()) {
-			log.info("Serialized excel database "+ctx.file+" is up to date.");
-			return false;
-		    } else {
-			log.info("Serialized excel database "+ctx.file+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
-			return true;
-		    }
-		} catch (ParseException e) {
-		    log.warn("can not parse the date from "+line+": ", e);
-		    return true;
-		}
-	    }
-	}
-	log.info("Could not find a line starting with 'MDB' in the consistency date file");
-	return true;
+        loadGeneralSheet(true);
+        loadCalibrationSheet(false);
+        loadParametersSheet(true, SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
+        loadParametersSheet(false, SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
+        loadParametersSheet(false, SHEET_LOCAL_PARAMETERS, DataSource.LOCAL);
+        loadContainersSheet(true);
+        loadProcessedParametersSheet(false);
+        loadNonStandardSheets(); // Extension point
+        loadAlgorithmsSheet(false);
+        loadAlarmsSheet(false);
+        loadCommandSheet(false);
+        loadCommandOptionsSheet(false);
+        loadCommandVerificationSheet(false);
     }
 
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-	File f=new File(path);
-	consistencyDateFile.write(ctx.file+" "+(new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified())+"\n");
+        File f=new File(path);
+        consistencyDateFile.write(ctx.file+" "+(new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified())+"\n");
     }
 
 
     protected void loadGeneralSheet(boolean required) {
-	Sheet sheet=switchToSheet(SHEET_GENERAL, required);
-	if(sheet==null)return;
-	Cell[] cells=jumpToRow(sheet, 1);
+        Sheet sheet=switchToSheet(SHEET_GENERAL, required);
+        if(sheet==null)return;
+        Cell[] cells=jumpToRow(sheet, 1);
 
-	// Version check
-	String version=cells[0].getContents();
-	// Specific versions supported
-	boolean supported = false;
-	for( String supportedVersion:FORMAT_VERSIONS_SUPPORTED ) {
-	    if( version.equals( supportedVersion ) ) {
-		supported = true;
-	    }
-	}
-	// If not explicitly supported, check major version number...
-	if( !supported ) {
-	    String sheetCompatVersion = version.substring( 0, version.indexOf('.') );
-	    String loaderCompatVersion = FORMAT_VERSION.substring( 0, FORMAT_VERSION.indexOf('.'));
-	    supported = loaderCompatVersion.equals( sheetCompatVersion );
-	    // If major version number matches, but minor number differs
-	    if( supported && !FORMAT_VERSION.equals( version ) ) {
-		log.info( String.format( "Some spreadsheet features for '%s' may not be supported by this loader: Spreadsheet version (%s) differs from loader supported version (%s)", ctx.file, version, FORMAT_VERSION ) );
-	    }
-	}
-	if( !supported ) {
-	    throw new SpreadsheetLoadException(ctx, String.format( "Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION ) );
-	}
+        // Version check
+        String version=cells[0].getContents();
+        // Specific versions supported
+        boolean supported = false;
+        for( String supportedVersion:FORMAT_VERSIONS_SUPPORTED ) {
+            if( version.equals( supportedVersion ) ) {
+                supported = true;
+            }
+        }
+        // If not explicitly supported, check major version number...
+        if( !supported ) {
+            String sheetCompatVersion = version.substring( 0, version.indexOf('.') );
+            String loaderCompatVersion = FORMAT_VERSION.substring( 0, FORMAT_VERSION.indexOf('.'));
+            supported = loaderCompatVersion.equals( sheetCompatVersion );
+            // If major version number matches, but minor number differs
+            if( supported && !FORMAT_VERSION.equals( version ) ) {
+                log.info( String.format( "Some spreadsheet features for '%s' may not be supported by this loader: Spreadsheet version (%s) differs from loader supported version (%s)", ctx.file, version, FORMAT_VERSION ) );
+            }
+        }
+        if( !supported ) {
+            throw new SpreadsheetLoadException(ctx, String.format( "Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION ) );
+        }
 
-	String name=requireString(cells, 1);
-	spaceSystem=new SpaceSystem(name);
+        String name=requireString(cells, 1);
+        spaceSystem=new SpaceSystem(name);
 
-	// Add a header
-	Header header = new Header();
-	spaceSystem.setHeader( header );
-	if( cells.length >= 3 ) {
-	    header.setVersion( cells[2].getContents() );
-	}
-	try {
-	    File wbf = new File( path );
-	    Date d = new Date( wbf.lastModified() );
-	    String date = (new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format( d );
-	    header.setDate( date );
-	} catch ( Exception e ) {
-	    // Ignore
-	}
+        // Add a header
+        Header header = new Header();
+        spaceSystem.setHeader( header );
+        if( cells.length >= 3 ) {
+            header.setVersion( cells[2].getContents() );
+        }
+        try {
+            File wbf = new File( path );
+            Date d = new Date( wbf.lastModified() );
+            String date = (new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format( d );
+            header.setDate( date );
+        } catch ( Exception e ) {
+            // Ignore
+        }
 
-	// Opsname prefix is optional
-	if( cells.length >= 4 ) {
-	    opsnamePrefix=cells[3].getContents();
-	} else {
-	    opsnamePrefix="";
-	    log.info( "No opsnamePrefix specified for {}", ctx.file );
-	}
+        // Opsname prefix is optional
+        if( cells.length >= 4 ) {
+            opsnamePrefix=cells[3].getContents();
+        } else {
+            opsnamePrefix="";
+            log.info( "No opsnamePrefix specified for {}", ctx.file );
+        }
     }
 
     protected void loadCalibrationSheet(boolean required) {
-	//read the calibrations
-	Sheet sheet=switchToSheet(SHEET_CALIBRATION, required);
-	if(sheet==null) return;
+        //read the calibrations
+        Sheet sheet=switchToSheet(SHEET_CALIBRATION, required);
+        if(sheet==null) return;
 
-	double[] pol_coef = null;
-	// SplinePoint = pointpair
-	ArrayList<SplinePoint>spline = null;
-	EnumerationDefinition enumeration = null;
-	// start at 1 to not use the first line (= title line)
-	int start = 1;
-	while(true) {
-	    // we first search for a row containing (= starting) a new calibration
-	    while (start < sheet.getRows()) {
-		Cell[] cells = jumpToRow(sheet, start);
-		if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
-		    break;
-		}
-		start++;
-	    }
-	    if (start >= sheet.getRows()) {
-		break;
-	    }
-	    Cell[] cells = jumpToRow(sheet, start);
-	    String name = cells[IDX_CALIB_NAME].getContents();
-	    String type = cells[IDX_CALIB_TYPE].getContents();
+        double[] pol_coef = null;
+        // SplinePoint = pointpair
+        ArrayList<SplinePoint>spline = null;
+        EnumerationDefinition enumeration = null;
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new calibration
+            while (start < sheet.getRows()) {
+                Cell[] cells = jumpToRow(sheet, start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= sheet.getRows()) {
+                break;
+            }
+            Cell[] cells = jumpToRow(sheet, start);
+            String name = cells[IDX_CALIB_NAME].getContents();
+            String type = cells[IDX_CALIB_TYPE].getContents();
 
-	    // now we search for the matching last row of that calibration
-	    int end = start + 1;
-	    while (end < sheet.getRows()) {
-		cells = jumpToRow(sheet, end);
-		if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
-		    break;
-		}
-		end++;
-	    }
-	    if ("pointpair".equalsIgnoreCase(type)) {
-		type = "spline";
-	    }
-	    if ("enumeration".equalsIgnoreCase(type)) {
-		enumeration = new EnumerationDefinition();
-	    } else if ("polynomial".equalsIgnoreCase(type)) {
-		pol_coef = new double[end - start];
-	    } else if ("spline".equalsIgnoreCase(type)) {
-		spline = new ArrayList<SplinePoint>();
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: enumeration, polynomial and spline(alias pointpair)");
-	    }
+            // now we search for the matching last row of that calibration
+            int end = start + 1;
+            while (end < sheet.getRows()) {
+                cells = jumpToRow(sheet, end);
+                if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
+                    break;
+                }
+                end++;
+            }
+            if ("pointpair".equalsIgnoreCase(type)) {
+                type = "spline";
+            }
+            if ("enumeration".equalsIgnoreCase(type)) {
+                enumeration = new EnumerationDefinition();
+            } else if ("polynomial".equalsIgnoreCase(type)) {
+                pol_coef = new double[end - start];
+            } else if ("spline".equalsIgnoreCase(type)) {
+                spline = new ArrayList<SplinePoint>();
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: enumeration, polynomial and spline(alias pointpair)");
+            }
 
-	    for (int j = start; j < end; j++) {
-		cells = jumpToRow(sheet, j);
-		if ("enumeration".equalsIgnoreCase(type)) {
-		    try {
-			long raw=Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
-			enumeration.valueMap.put(raw, cells[IDX_CALIB_CALIB2].getContents());
-		    } catch(NumberFormatException e) {
-			throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"+cells[IDX_CALIB_CALIB1].getContents()+"'");
-		    }
-		} else if ("polynomial".equalsIgnoreCase(type)) {
-		    pol_coef[j - start] = getNumber(cells[IDX_CALIB_CALIB1]);
-		} else if ("spline".equalsIgnoreCase(type)) {
-		    spline.add(new SplinePoint(getNumber(cells[IDX_CALIB_CALIB1]), getNumber(cells[IDX_CALIB_CALIB2])));
-		}
-	    }
-	    if ("enumeration".equalsIgnoreCase(type)) {
-		enumerations.put(name, enumeration);
-	    } else if ("polynomial".equalsIgnoreCase(type)) {
-		calibrators.put(name, new PolynomialCalibrator(pol_coef));
-	    } else if ("spline".equalsIgnoreCase(type)) {
-		calibrators.put(name, new SplineCalibrator(spline));
-	    }
-	    start = end;
-	}
-	//System.out.println("enumerations: " + enumerations + "\n");
-	//System.out.println("calibrators: " + calibrators + "\n"); 
+            for (int j = start; j < end; j++) {
+                cells = jumpToRow(sheet, j);
+                if ("enumeration".equalsIgnoreCase(type)) {
+                    try {
+                        long raw=Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
+                        enumeration.valueMap.put(raw, cells[IDX_CALIB_CALIB2].getContents());
+                    } catch(NumberFormatException e) {
+                        throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"+cells[IDX_CALIB_CALIB1].getContents()+"'");
+                    }
+                } else if ("polynomial".equalsIgnoreCase(type)) {
+                    pol_coef[j - start] = getNumber(cells[IDX_CALIB_CALIB1]);
+                } else if ("spline".equalsIgnoreCase(type)) {
+                    spline.add(new SplinePoint(getNumber(cells[IDX_CALIB_CALIB1]), getNumber(cells[IDX_CALIB_CALIB2])));
+                }
+            }
+            if ("enumeration".equalsIgnoreCase(type)) {
+                enumerations.put(name, enumeration);
+            } else if ("polynomial".equalsIgnoreCase(type)) {
+                calibrators.put(name, new PolynomialCalibrator(pol_coef));
+            } else if ("spline".equalsIgnoreCase(type)) {
+                calibrators.put(name, new SplineCalibrator(spline));
+            }
+            start = end;
+        }
+        //System.out.println("enumerations: " + enumerations + "\n");
+        //System.out.println("calibrators: " + calibrators + "\n"); 
     }
 
     private double getNumber(Cell cell) {
-	if((cell.getType()==CellType.NUMBER) || (cell.getType()==CellType.NUMBER_FORMULA)) {
-	    return ((NumberCell) cell).getValue();
-	} else {
-	    return Double.parseDouble(cell.getContents());
-	}
+        if((cell.getType()==CellType.NUMBER) || (cell.getType()==CellType.NUMBER_FORMULA)) {
+            return ((NumberCell) cell).getValue();
+        } else {
+            return Double.parseDouble(cell.getContents());
+        }
     }
 
-  
+
     private boolean isRowEmpty(Cell[] cells) {
-	for(int i=0;i<cells.length;i++) 
-	    if(cells[i].getContents().length()>0) return false;
-	return true;
+        for(int i=0;i<cells.length;i++) 
+            if(cells[i].getContents().length()>0) return false;
+        return true;
     }
 
     protected void loadParametersSheet(boolean required, String sheetName, DataSource dataSource) {
-	Sheet sheet = switchToSheet(sheetName, required);
-	if(sheet==null)return;
-	Cell[] firstRow = jumpToRow(sheet, 0);
-	for (int i = 1; i < sheet.getRows(); i++) {
-	    Cell[] cells = jumpToRow(sheet, i);
-	    if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
-		continue;
-	    }
-	    String name = cells[IDX_PARAM_NAME].getContents();
-	    if (name.length() == 0) {
-		continue;
-	    }
+        Sheet sheet = switchToSheet(sheetName, required);
+        if(sheet==null)return;
+        Cell[] firstRow = jumpToRow(sheet, 0);
+        for (int i = 1; i < sheet.getRows(); i++) {
+            Cell[] cells = jumpToRow(sheet, i);
+            if ((cells == null) || (cells.length < 3) || cells[0].getContents().startsWith("#")) {
+                continue;
+            }
+            String name = cells[IDX_PARAM_NAME].getContents();
+            if (name.length() == 0) {
+                continue;
+            }
 
-	    validateNameType(name);
-	    final Parameter param = new Parameter(name);
-	    parameters.put(param.getName(), param);
+            validateNameType(name);
+            final Parameter param = new Parameter(name);
+            parameters.put(param.getName(), param);
 
-	    XtceAliasSet xas=new XtceAliasSet();
-	    xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
-	    param.setAliasSet(xas);
-	    addAdditionalAliases(firstRow, cells, xas);
-	    spaceSystem.addParameter(param);
+            XtceAliasSet xas=new XtceAliasSet();
+            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
+            param.setAliasSet(xas);
+            addAdditionalAliases(firstRow, cells, xas);
+            spaceSystem.addParameter(param);
 
-	    //String path = cells[IDX_MEAS_PATH].getContents();
-	    String rawtype = cells[IDX_PARAM_RAWTYPE].getContents();
-	    if("DerivedValue".equalsIgnoreCase(rawtype)) continue;
-	    int bitlength=-1;
-	    try {
-		String bitls=cells[IDX_PARAM_BITLENGTH].getContents();
-		if(!bitls.isEmpty()) bitlength = Integer.decode(bitls);
-	    } catch(NumberFormatException e) {
-		throw new SpreadsheetLoadException(ctx, "Can't get bitlength out of '"+cells[IDX_PARAM_BITLENGTH].getContents()+"'");
-	    }
-	    String engtype = cells[IDX_PARAM_ENGTYPE].getContents();
-	    String calib=null;
-	    if(hasColumn(cells, IDX_PARAM_CALIBRATION)) {
-		calib = cells[IDX_PARAM_CALIBRATION].getContents();
-	    }
-	    if(hasColumn(cells, IDX_PARAM_DESCRIPTION)) {
-	        String shortDescription = cells[IDX_PARAM_DESCRIPTION].getContents();
-	        param.setShortDescription(shortDescription);
-	    }
-	    if("n".equals(calib) || "".equals(calib))calib=null;
-	    if("y".equalsIgnoreCase(calib)) calib=name;
+            //String path = cells[IDX_MEAS_PATH].getContents();
+            String rawtype = cells[IDX_PARAM_RAWTYPE].getContents();
+            if("DerivedValue".equalsIgnoreCase(rawtype)) continue;
+            int bitlength=-1;
+            try {
+                String bitls=cells[IDX_PARAM_BITLENGTH].getContents();
+                if(!bitls.isEmpty()) bitlength = Integer.decode(bitls);
+            } catch(NumberFormatException e) {
+                throw new SpreadsheetLoadException(ctx, "Can't get bitlength out of '"+cells[IDX_PARAM_BITLENGTH].getContents()+"'");
+            }
+            String engtype = cells[IDX_PARAM_ENGTYPE].getContents();
+            String calib=null;
+            if(hasColumn(cells, IDX_PARAM_CALIBRATION)) {
+                calib = cells[IDX_PARAM_CALIBRATION].getContents();
+            }
+            if(hasColumn(cells, IDX_PARAM_DESCRIPTION)) {
+                String shortDescription = cells[IDX_PARAM_DESCRIPTION].getContents();
+                param.setShortDescription(shortDescription);
+            }
+            if("n".equals(calib) || "".equals(calib))calib=null;
+            if("y".equalsIgnoreCase(calib)) calib=name;
 
-	    ParameterType ptype=null;
-	    if ("uint".equalsIgnoreCase(engtype)) {
-		ptype = new IntegerParameterType(name);
-		((IntegerParameterType)ptype).signed = false;
-	    } else if ("uint64".equalsIgnoreCase(engtype)) {
-		ptype = new IntegerParameterType(name);
-		((IntegerParameterType)ptype).signed = false;
-		((IntegerParameterType)ptype).setSizeInBits(64);
-	    } else if ("int".equalsIgnoreCase(engtype)) {
-		ptype = new IntegerParameterType(name);
-	    } else if("int64".equalsIgnoreCase(engtype)) {
-		ptype = new IntegerParameterType(name);
-		((IntegerParameterType)ptype).setSizeInBits(64);
-	    } else if ("float".equalsIgnoreCase(engtype)) {
-		ptype = new FloatParameterType(name);
-	    } else if ("double".equalsIgnoreCase(engtype)) {
-		ptype = new FloatParameterType(name);
-		((FloatParameterType)ptype).setSizeInBits(64);
-	    } else if ("enumerated".equalsIgnoreCase(engtype)) {
-		if(calib==null) {
-		    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
-		}
-		EnumerationDefinition enumeration = enumerations.get(calib);
-		if (enumeration == null) {
-		    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
-		}
-		ptype = new EnumeratedParameterType(calib);
-		for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
-		    ((EnumeratedParameterType) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
-		}
-	    } else if ("string".equalsIgnoreCase(engtype)) {
-		ptype = new StringParameterType(name);
-	    } else if ("boolean".equalsIgnoreCase(engtype)) {
-		ptype = new BooleanParameterType(name);
-	    } else	if ("binary".equalsIgnoreCase(engtype)) {
-		ptype = new BinaryParameterType(name);
-	    } else {
-	        if(engtype.isEmpty()) {
-	            throw new SpreadsheetLoadException(ctx, "No engineering type specified");
-	        } else {
-	            throw new SpreadsheetLoadException(ctx, "Unknown parameter type '" + engtype+"'");
-	        }
-	    }
+            ParameterType ptype=null;
+            if ("uint".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+                ((IntegerParameterType)ptype).signed = false;
+            } else if ("uint64".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+                ((IntegerParameterType)ptype).signed = false;
+                ((IntegerParameterType)ptype).setSizeInBits(64);
+            } else if ("int".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+            } else if("int64".equalsIgnoreCase(engtype)) {
+                ptype = new IntegerParameterType(name);
+                ((IntegerParameterType)ptype).setSizeInBits(64);
+            } else if ("float".equalsIgnoreCase(engtype)) {
+                ptype = new FloatParameterType(name);
+            } else if ("double".equalsIgnoreCase(engtype)) {
+                ptype = new FloatParameterType(name);
+                ((FloatParameterType)ptype).setSizeInBits(64);
+            } else if ("enumerated".equalsIgnoreCase(engtype)) {
+                if(calib==null) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " has to have an enumeration");
+                }
+                EnumerationDefinition enumeration = enumerations.get(calib);
+                if (enumeration == null) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
+                }
+                ptype = new EnumeratedParameterType(calib);
+                for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
+                    ((EnumeratedParameterType) ptype).addEnumerationValue(entry.getKey(), entry.getValue());
+                }
+            } else if ("string".equalsIgnoreCase(engtype)) {
+                ptype = new StringParameterType(name);
+            } else if ("boolean".equalsIgnoreCase(engtype)) {
+                ptype = new BooleanParameterType(name);
+            } else	if ("binary".equalsIgnoreCase(engtype)) {
+                ptype = new BinaryParameterType(name);
+            } else {
+                if(engtype.isEmpty()) {
+                    throw new SpreadsheetLoadException(ctx, "No engineering type specified");
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "Unknown parameter type '" + engtype+"'");
+                }
+            }
 
-	    String units=null;
-	    if(cells.length>IDX_PARAM_ENGUNIT) units = cells[IDX_PARAM_ENGUNIT].getContents();
-	    if(!"".equals(units) && units != null && ptype instanceof BaseDataType) {
-		UnitType unitType = new UnitType(units);
-		((BaseDataType) ptype).addUnit(unitType);
-	    }
+            String units=null;
+            if(cells.length>IDX_PARAM_ENGUNIT) units = cells[IDX_PARAM_ENGUNIT].getContents();
+            if(!"".equals(units) && units != null && ptype instanceof BaseDataType) {
+                UnitType unitType = new UnitType(units);
+                ((BaseDataType) ptype).addUnit(unitType);
+            }
 
-	    //calibrations
-	    DataEncoding encoding = null;
-	    if (("uint".equalsIgnoreCase(rawtype)) || rawtype.toLowerCase().startsWith("int")) {
-		if(bitlength==-1) {
-		    potentialErrors.add(new PotentialExtractionError(ctx, "Bit length is mandatory for integer parameters") {
-			@Override
-			public boolean errorPersists() {
-			    return !outputParameters.contains(param);
-			}
-		    });
-		}
-		encoding = new IntegerDataEncoding(name, bitlength);
-		if (rawtype.toLowerCase().startsWith("int")) {
-		    if ("int".equals(rawtype)) {
-			((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
-		    } else {
-			int startBracket = rawtype.indexOf('(');
-			if (startBracket != -1) {
-			    int endBracket = rawtype.indexOf(')', startBracket);
-			    if (endBracket != -1) {
-				String intRepresentation = rawtype.substring(startBracket+1, endBracket).trim().toLowerCase();
-				if ("2c".equals(intRepresentation)) {
-				    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
-				} else if ("si".equals(intRepresentation)) {
-				    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
-				} else {
-				    throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
-				}
-			    }
-			}
-		    }
-		}
-		if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
-		    Calibrator c = calibrators.get(calib);
-		    if (c == null) {
-			throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
-		    }
-		    ((IntegerDataEncoding)encoding).defaultCalibrator = c;
-		}
-	    } else if ("bytestream".equalsIgnoreCase(rawtype)) {
-		if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
-		encoding=new BinaryDataEncoding(name, bitlength);
-	    } else if ("boolean".equalsIgnoreCase(rawtype)) {
-		if(bitlength!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
-		encoding=new BooleanDataEncoding(name);
-	    } else if ("string".equalsIgnoreCase(rawtype)) {
-		// Version <= 1.6 String type
-		// STRING
-		if(bitlength==-1) {
-		    // Assume null-terminated if no length specified
-		    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
-		} else {
-		    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
-		    encoding.setSizeInBits(bitlength);
-		}
-	    } else if ( "fixedstring".equalsIgnoreCase( rawtype ) ) {
-		// v1.7 String type
-		// FIXEDSTRING
-		if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
-		encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
-		encoding.setSizeInBits(bitlength);
-	    } else if ( rawtype.toLowerCase().startsWith( "terminatedstring" ) ) {
-		// v1.7 String type
-		// TERMINATEDSTRING
-		encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
-		// Use specified byte if found, otherwise accept class default.
-		int startBracket = rawtype.indexOf( '(' );
-		if( startBracket != -1 ) {
-		    int endBracket = rawtype.indexOf( ')', startBracket );
-		    if( endBracket != -1 ) {
-			try {
-			    byte terminationChar = Byte.parseByte( rawtype.substring( rawtype.indexOf('x', startBracket)+1, endBracket ).trim(), 16 );
-			    ((StringDataEncoding)encoding).setTerminationChar(terminationChar);
-			} catch (NumberFormatException e) {
-			    throw new SpreadsheetLoadException(ctx, "Could not parse specified base 16 terminator from "+rawtype);
-			}
-		    }
-		}
-	    } else if ( rawtype.toLowerCase().startsWith( "prependedsizestring" ) ) {
-		// v1.7 String type
-		// PREPENDEDSIZESTRING
-		encoding=new StringDataEncoding( name, StringDataEncoding.SizeType.LeadingSize );
-		// Use specified size if found, otherwise accept class default.
-		int startBracket = rawtype.indexOf( '(' );
-		if( startBracket != -1 ) {
-		    int endBracket = rawtype.indexOf( ')', startBracket );
-		    if( endBracket != -1 ) {
-			try {
-			    int sizeInBitsOfSizeTag = Integer.parseInt( rawtype.substring(startBracket+1, endBracket).trim() );
-			    ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag( sizeInBitsOfSizeTag );
-			} catch (NumberFormatException e) {
-			    throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawtype);
-			}
-		    }
-		}
-	    } else if ("float".equalsIgnoreCase(rawtype)) {
-		if(bitlength==-1) {
-		    potentialErrors.add(new PotentialExtractionError(ctx, "Bit length is mandatory for float parameters") {
-			@Override
-			public boolean errorPersists() {
-			    return !outputParameters.contains(param);
-			}
-		    });
-		}
-		encoding=new FloatDataEncoding(name, bitlength);
-		if((!"enumerated".equalsIgnoreCase(engtype)) && calib!=null) {
-		    Calibrator c = calibrators.get(calib);
-		    if (c == null) {
-			throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
-		    } else {
-			((FloatDataEncoding)encoding).defaultCalibrator = c;
-		    }
-		}
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawtype);
-	    }
+            //calibrations
+            DataEncoding encoding = null;
+            if (("uint".equalsIgnoreCase(rawtype)) || rawtype.toLowerCase().startsWith("int")) {
+                if(bitlength==-1) {
+                    potentialErrors.add(new PotentialExtractionError(ctx, "Bit length is mandatory for integer parameters") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+                    });
+                }
+                encoding = new IntegerDataEncoding(name, bitlength);
+                if (rawtype.toLowerCase().startsWith("int")) {
+                    if ("int".equals(rawtype)) {
+                        ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                    } else {
+                        int startBracket = rawtype.indexOf('(');
+                        if (startBracket != -1) {
+                            int endBracket = rawtype.indexOf(')', startBracket);
+                            if (endBracket != -1) {
+                                String intRepresentation = rawtype.substring(startBracket+1, endBracket).trim().toLowerCase();
+                                if ("2c".equals(intRepresentation)) {
+                                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                                } else if ("si".equals(intRepresentation)) {
+                                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
+                                } else {
+                                    throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
+                                }
+                            }
+                        }
+                    }
+                }
+                if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
+                    Calibrator c = calibrators.get(calib);
+                    if (c == null) {
+                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
+                    }
+                    ((IntegerDataEncoding)encoding).defaultCalibrator = c;
+                }
+            } else if ("bytestream".equalsIgnoreCase(rawtype)) {
+                if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
+                encoding=new BinaryDataEncoding(name, bitlength);
+            } else if ("boolean".equalsIgnoreCase(rawtype)) {
+                if(bitlength!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+                encoding=new BooleanDataEncoding(name);
+            } else if ("string".equalsIgnoreCase(rawtype)) {
+                // Version <= 1.6 String type
+                // STRING
+                if(bitlength==-1) {
+                    // Assume null-terminated if no length specified
+                    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
+                } else {
+                    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
+                    encoding.setSizeInBits(bitlength);
+                }
+            } else if ( "fixedstring".equalsIgnoreCase( rawtype ) ) {
+                // v1.7 String type
+                // FIXEDSTRING
+                if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
+                encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
+                encoding.setSizeInBits(bitlength);
+            } else if ( rawtype.toLowerCase().startsWith( "terminatedstring" ) ) {
+                // v1.7 String type
+                // TERMINATEDSTRING
+                encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
+                // Use specified byte if found, otherwise accept class default.
+                int startBracket = rawtype.indexOf( '(' );
+                if( startBracket != -1 ) {
+                    int endBracket = rawtype.indexOf( ')', startBracket );
+                    if( endBracket != -1 ) {
+                        try {
+                            byte terminationChar = Byte.parseByte( rawtype.substring( rawtype.indexOf('x', startBracket)+1, endBracket ).trim(), 16 );
+                            ((StringDataEncoding)encoding).setTerminationChar(terminationChar);
+                        } catch (NumberFormatException e) {
+                            throw new SpreadsheetLoadException(ctx, "Could not parse specified base 16 terminator from "+rawtype);
+                        }
+                    }
+                }
+            } else if ( rawtype.toLowerCase().startsWith( "prependedsizestring" ) ) {
+                // v1.7 String type
+                // PREPENDEDSIZESTRING
+                encoding=new StringDataEncoding( name, StringDataEncoding.SizeType.LeadingSize );
+                // Use specified size if found, otherwise accept class default.
+                int startBracket = rawtype.indexOf( '(' );
+                if( startBracket != -1 ) {
+                    int endBracket = rawtype.indexOf( ')', startBracket );
+                    if( endBracket != -1 ) {
+                        try {
+                            int sizeInBitsOfSizeTag = Integer.parseInt( rawtype.substring(startBracket+1, endBracket).trim() );
+                            ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag( sizeInBitsOfSizeTag );
+                        } catch (NumberFormatException e) {
+                            throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawtype);
+                        }
+                    }
+                }
+            } else if ("float".equalsIgnoreCase(rawtype)) {
+                if(bitlength==-1) {
+                    potentialErrors.add(new PotentialExtractionError(ctx, "Bit length is mandatory for float parameters") {
+                        @Override
+                        public boolean errorPersists() {
+                            return !outputParameters.contains(param);
+                        }
+                    });
+                }
+                encoding=new FloatDataEncoding(name, bitlength);
+                if((!"enumerated".equalsIgnoreCase(engtype)) && calib!=null) {
+                    Calibrator c = calibrators.get(calib);
+                    if (c == null) {
+                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
+                    } else {
+                        ((FloatDataEncoding)encoding).defaultCalibrator = c;
+                    }
+                }
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawtype);
+            }
 
-	    if (ptype instanceof IntegerParameterType) {
-		// Integers can be encoded as strings
-		if( encoding instanceof StringDataEncoding ) {
-		    // Create a new int encoding which uses the configured string encoding
-		    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-		    if( calib != null ) {
-			Calibrator c = calibrators.get(calib);
-			if( c == null ) {
-			    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist");
-			}
-			intStringEncoding.defaultCalibrator = c;
-		    }
-		    ((IntegerParameterType)ptype).encoding = intStringEncoding;
-		} else {
-		    ((IntegerParameterType)ptype).encoding = encoding;
-		}
-	    } else if (ptype instanceof BinaryParameterType) {
-		((BinaryParameterType)ptype).encoding = encoding;
-	    } else if (ptype instanceof FloatParameterType) {
-		// Floats can be encoded as strings
-		if ( encoding instanceof StringDataEncoding ) {
-		    // Create a new float encoding which uses the configured string encoding
-		    FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding) );
-		    if(calib!=null) {
-			Calibrator c = calibrators.get(calib);
-			if( c == null ) {
-			    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist.");
-			} else {
-			    floatStringEncoding.defaultCalibrator = c;
-			}
-		    }
-		    ((FloatParameterType)ptype).encoding = floatStringEncoding;
-		} else {
-		    ((FloatParameterType)ptype).encoding = encoding;
-		}
-	    } else if (ptype instanceof EnumeratedParameterType) {
-		if(((EnumeratedParameterType) ptype).getEncoding() != null) {
-		    // Some other param has already led to setting the encoding of this shared ptype.
-		    // Do some basic consistency checks
-		    if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
-			throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
-		    }
-		}
+            if (ptype instanceof IntegerParameterType) {
+                // Integers can be encoded as strings
+                if( encoding instanceof StringDataEncoding ) {
+                    // Create a new int encoding which uses the configured string encoding
+                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                    if( calib != null ) {
+                        Calibrator c = calibrators.get(calib);
+                        if( c == null ) {
+                            throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist");
+                        }
+                        intStringEncoding.defaultCalibrator = c;
+                    }
+                    ((IntegerParameterType)ptype).encoding = intStringEncoding;
+                } else {
+                    ((IntegerParameterType)ptype).encoding = encoding;
+                }
+            } else if (ptype instanceof BinaryParameterType) {
+                ((BinaryParameterType)ptype).encoding = encoding;
+            } else if (ptype instanceof FloatParameterType) {
+                // Floats can be encoded as strings
+                if ( encoding instanceof StringDataEncoding ) {
+                    // Create a new float encoding which uses the configured string encoding
+                    FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding) );
+                    if(calib!=null) {
+                        Calibrator c = calibrators.get(calib);
+                        if( c == null ) {
+                            throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist.");
+                        } else {
+                            floatStringEncoding.defaultCalibrator = c;
+                        }
+                    }
+                    ((FloatParameterType)ptype).encoding = floatStringEncoding;
+                } else {
+                    ((FloatParameterType)ptype).encoding = encoding;
+                }
+            } else if (ptype instanceof EnumeratedParameterType) {
+                if(((EnumeratedParameterType) ptype).getEncoding() != null) {
+                    // Some other param has already led to setting the encoding of this shared ptype.
+                    // Do some basic consistency checks
+                    if(((EnumeratedParameterType) ptype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                        throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
+                    }
+                }
 
-		// Enumerations encoded as string integers
-		if( encoding instanceof StringDataEncoding ) {
-		    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-		    // Don't set calibrator, already done when making ptype
-		    ((EnumeratedParameterType) ptype).encoding = intStringEncoding;
-		} else {
-		    ((EnumeratedParameterType) ptype).encoding = encoding;
-		}
-	    } else if (ptype instanceof StringParameterType) {
-		((StringParameterType)ptype).encoding = encoding;
-	    } else if (ptype instanceof BooleanParameterType) {
-		((BooleanParameterType)ptype).encoding = encoding;
-	    }
+                // Enumerations encoded as string integers
+                if( encoding instanceof StringDataEncoding ) {
+                    IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                    // Don't set calibrator, already done when making ptype
+                    ((EnumeratedParameterType) ptype).encoding = intStringEncoding;
+                } else {
+                    ((EnumeratedParameterType) ptype).encoding = encoding;
+                }
+            } else if (ptype instanceof StringParameterType) {
+                ((StringParameterType)ptype).encoding = encoding;
+            } else if (ptype instanceof BooleanParameterType) {
+                ((BooleanParameterType)ptype).encoding = encoding;
+            }
 
-	    param.setParameterType(ptype);
-	    param.setDataSource(dataSource);
-	}
+            param.setParameterType(ptype);
+            param.setDataSource(dataSource);
+        }
 
-	/*		System.out.println("got parameters:");
+        /*		System.out.println("got parameters:");
 		for (Parameter p: parameters.values()) {
 			System.out.println(p);
 		}
-	 */	}
+         */	}
 
     /**
      * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
@@ -692,462 +662,462 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
      * @param xas
      */
     private void addAdditionalAliases(Cell[] firstRow, Cell[] cells, XtceAliasSet xas) {
-	int n = Math.min(firstRow.length, cells.length);
+        int n = Math.min(firstRow.length, cells.length);
 
-	for(int i=0; i<n; i++) {
-	    if((firstRow[i]!=null) && firstRow[i].getContents().startsWith("namespace:")
-		    && (cells[i]!=null) && (!cells[i].getContents().isEmpty())) {
-		String s = firstRow[i].getContents();
-		String namespace = s.substring(10, s.length());
-		String alias = cells[i].getContents();
-		xas.addAlias(namespace, alias);
-	    }
-	}
+        for(int i=0; i<n; i++) {
+            if((firstRow[i]!=null) && firstRow[i].getContents().startsWith("namespace:")
+                    && (cells[i]!=null) && (!cells[i].getContents().isEmpty())) {
+                String s = firstRow[i].getContents();
+                String namespace = s.substring(10, s.length());
+                String alias = cells[i].getContents();
+                xas.addAlias(namespace, alias);
+            }
+        }
     }
 
- 
+
 
     protected void loadContainersSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_CONTAINERS, required);
-	if(sheet==null)return;
+        Sheet sheet = switchToSheet(SHEET_CONTAINERS, required);
+        if(sheet==null)return;
 
-	HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
+        HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
 
-	for (int i = 1; i < sheet.getRows(); i++) {
-	    // search for a new packet definition, starting from row i 
-	    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
-	    Cell[] cells = jumpToRow(sheet, i);
-	    if (cells == null || cells.length<1) {
-		log.debug("Ignoring line {} because it's empty",ctx.row);
-		continue;
-	    }
-	    if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
-		continue;
-	    }
-	    // at this point, cells contains the data (name, path, ...) of either
-	    //		a) a sub-container (inherits from another packet)
-	    //		b) an aggregate container (which will be used as if it were a measurement, by other (sub)containers)
-	    String name = cells[IDX_CONT_NAME].getContents();
-	    String parent=null;
-	    String condition=null;
-	    if(cells.length>IDX_CONT_PARENT) {
-		parent=cells[IDX_CONT_PARENT].getContents();
-		if(cells.length<=IDX_CONT_CONDITION) {
-		    throw new SpreadsheetLoadException(ctx, "Parent specified but without inheritance condition on container");
-		}
-		condition = cells[IDX_CONT_CONDITION].getContents();
-		//if( "".equals( condition ) ) {
-		//	error( String.format( "Container %s (from spreadsheet '%s' line %d) has a parent container specified but no inheritance condition", name, configName, i));
-		//}
-	    }
+        for (int i = 1; i < sheet.getRows(); i++) {
+            // search for a new packet definition, starting from row i 
+            //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
+            Cell[] cells = jumpToRow(sheet, i);
+            if (cells == null || cells.length<1) {
+                log.debug("Ignoring line {} because it's empty",ctx.row);
+                continue;
+            }
+            if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                continue;
+            }
+            // at this point, cells contains the data (name, path, ...) of either
+            //		a) a sub-container (inherits from another packet)
+            //		b) an aggregate container (which will be used as if it were a measurement, by other (sub)containers)
+            String name = cells[IDX_CONT_NAME].getContents();
+            String parent=null;
+            String condition=null;
+            if(cells.length>IDX_CONT_PARENT) {
+                parent=cells[IDX_CONT_PARENT].getContents();
+                if(cells.length<=IDX_CONT_CONDITION) {
+                    throw new SpreadsheetLoadException(ctx, "Parent specified but without inheritance condition on container");
+                }
+                condition = cells[IDX_CONT_CONDITION].getContents();
+                //if( "".equals( condition ) ) {
+                //	error( String.format( "Container %s (from spreadsheet '%s' line %d) has a parent container specified but no inheritance condition", name, configName, i));
+                //}
+            }
 
-	    if("".equals(parent)) parent=null;
+            if("".equals(parent)) parent=null;
 
-	    // absoluteoffset is the absolute offset of the first parameter of the container
-	    int absoluteoffset=-1;
-	    if(parent==null) {
-		absoluteoffset=0;
-	    } else {
-		int x=parent.indexOf(":");
-		if(x!=-1) {
-		    absoluteoffset=Integer.decode(parent.substring(x+1));
-		    parent=parent.substring(0, x);
-		}
-	    }
+            // absoluteoffset is the absolute offset of the first parameter of the container
+            int absoluteoffset=-1;
+            if(parent==null) {
+                absoluteoffset=0;
+            } else {
+                int x=parent.indexOf(":");
+                if(x!=-1) {
+                    absoluteoffset=Integer.decode(parent.substring(x+1));
+                    parent=parent.substring(0, x);
+                }
+            }
 
-	    int containerSizeInBits=-1;
-	    if(hasColumn(cells, IDX_CONT_SIZEINBITS)) {
-		containerSizeInBits=Integer.decode(cells[IDX_CONT_SIZEINBITS].getContents());
-	    }
+            int containerSizeInBits=-1;
+            if(hasColumn(cells, IDX_CONT_SIZEINBITS)) {
+                containerSizeInBits=Integer.decode(cells[IDX_CONT_SIZEINBITS].getContents());
+            }
 
-	    RateInStream rate=null;
-	    if(hasColumn(cells, IDX_CONT_EXPECTED_INTERVAL)) {
-		int expint=Integer.decode(cells[IDX_CONT_EXPECTED_INTERVAL].getContents());
-		rate=new RateInStream(expint);
-	    }
+            RateInStream rate=null;
+            if(hasColumn(cells, IDX_CONT_EXPECTED_INTERVAL)) {
+                int expint=Integer.decode(cells[IDX_CONT_EXPECTED_INTERVAL].getContents());
+                rate=new RateInStream(expint);
+            }
 
-	    // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
-	    SequenceContainer container = new SequenceContainer(name);
-	    container.sizeInBits=containerSizeInBits;
-	    containers.put(name, container);
-	    container.setRateInStream(rate);
+            // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
+            SequenceContainer container = new SequenceContainer(name);
+            container.sizeInBits=containerSizeInBits;
+            containers.put(name, container);
+            container.setRateInStream(rate);
 
-	    //System.out.println("for "+name+" got absoluteOffset="+)
-	    // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
-	    int start = i++;
+            //System.out.println("for "+name+" got absoluteOffset="+)
+            // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
+            int start = i++;
 
-	    // now, we start processing the parameters (or references to aggregate containers)
-	    boolean end = false;
-	    int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
-	    while (!end && (i < sheet.getRows())) {
+            // now, we start processing the parameters (or references to aggregate containers)
+            boolean end = false;
+            int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
+            while (!end && (i < sheet.getRows())) {
 
-		// get the next row, containing a measurement/aggregate reference
-		cells = jumpToRow(sheet, i);
-		// determine whether we have not reached the end of the packet definition.
-		if (!hasColumn(cells,  IDX_CONT_PARA_NAME)) {
-		    end = true; continue;
-		}
+                // get the next row, containing a measurement/aggregate reference
+                cells = jumpToRow(sheet, i);
+                // determine whether we have not reached the end of the packet definition.
+                if (!hasColumn(cells,  IDX_CONT_PARA_NAME)) {
+                    end = true; continue;
+                }
 
-		// extract a few variables, for further use
-		String flags = cells[IDX_CONT_FLAGS].getContents();
-		String paraname = cells[IDX_CONT_PARA_NAME].getContents();
-		int relpos = 0;
-		if (hasColumn(cells,  IDX_CONT_RELPOS)) {
-		    relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
-		}
+                // extract a few variables, for further use
+                String flags = cells[IDX_CONT_FLAGS].getContents();
+                String paraname = cells[IDX_CONT_PARA_NAME].getContents();
+                int relpos = 0;
+                if (hasColumn(cells,  IDX_CONT_RELPOS)) {
+                    relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
+                }
 
-		// we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
-		// We only do this if the absoluteOffset is not equal to -1, 
-		//  because that would mean that we cannot and should not use absolute positions anymore
-		if (absoluteoffset != -1) {
-		    absoluteoffset += relpos;
-		}
-		// the repeat string will contain the number of times a measurement (or aggregate container) should be repeated. It is a String because at this point it can be either a number or a reference to another measurement
-		String repeat = "";
-		// we check whether the measurement (or aggregate container) has a '*' inside it, meaning that it is a repeat measurement/aggregate
-		Matcher m = Pattern.compile("(.*)[*](.*)").matcher(paraname);
-		if (m.matches()) {
-		    repeat = m.group(1);
-		    paraname = m.group(2);
-		}
+                // we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
+                // We only do this if the absoluteOffset is not equal to -1, 
+                //  because that would mean that we cannot and should not use absolute positions anymore
+                if (absoluteoffset != -1) {
+                    absoluteoffset += relpos;
+                }
+                // the repeat string will contain the number of times a measurement (or aggregate container) should be repeated. It is a String because at this point it can be either a number or a reference to another measurement
+                String repeat = "";
+                // we check whether the measurement (or aggregate container) has a '*' inside it, meaning that it is a repeat measurement/aggregate
+                Matcher m = Pattern.compile("(.*)[*](.*)").matcher(paraname);
+                if (m.matches()) {
+                    repeat = m.group(1);
+                    paraname = m.group(2);
+                }
 
-		// check whether this measurement/aggregate actually has an entry in the parameters table
-		// first we check if it is a measurement by trying to retrieve it from the parameters map. If this succeeds we add it as a new parameterentry,
-		// otherwise, we search for it in the containersmap, as it is probably an aggregate. If it is not, we encountered an error
-		// note that one of the next 2 lines will return null, but this does not pose a problem, it makes programming easier along the way
-		Parameter param = parameters.get(paraname);
-		SequenceContainer sc = containers.get(paraname);
-		// if the sequenceentry is repeated a fixed number of times, this number is recorded in the 'repeated' variable and used to calculate the next absoluteoffset (done below) 
-		int repeated = -1; 
-		if (param != null) {
-		    SequenceEntry se;
-		    if(flags.contains("L")) {
-			if(param.parameterType instanceof IntegerParameterType) {
-			    ((IntegerParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-			} else if(param.parameterType instanceof FloatParameterType) {
-			    ((FloatParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-			} else if(param.parameterType instanceof EnumeratedParameterType) {
-			    ((EnumeratedParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-			} else {
-			    throw new SpreadsheetLoadException(ctx, "Little endian not supported for parameter "+param);
-			}
-		    }
+                // check whether this measurement/aggregate actually has an entry in the parameters table
+                // first we check if it is a measurement by trying to retrieve it from the parameters map. If this succeeds we add it as a new parameterentry,
+                // otherwise, we search for it in the containersmap, as it is probably an aggregate. If it is not, we encountered an error
+                // note that one of the next 2 lines will return null, but this does not pose a problem, it makes programming easier along the way
+                Parameter param = parameters.get(paraname);
+                SequenceContainer sc = containers.get(paraname);
+                // if the sequenceentry is repeated a fixed number of times, this number is recorded in the 'repeated' variable and used to calculate the next absoluteoffset (done below) 
+                int repeated = -1; 
+                if (param != null) {
+                    SequenceEntry se;
+                    if(flags.contains("L")) {
+                        if(param.parameterType instanceof IntegerParameterType) {
+                            ((IntegerParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
+                        } else if(param.parameterType instanceof FloatParameterType) {
+                            ((FloatParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
+                        } else if(param.parameterType instanceof EnumeratedParameterType) {
+                            ((EnumeratedParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
+                        } else {
+                            throw new SpreadsheetLoadException(ctx, "Little endian not supported for parameter "+param);
+                        }
+                    }
 
-		    // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
-		    if (absoluteoffset == -1) {
-			se = new ParameterEntry(counter, container, relpos, ReferenceLocationType.previousEntry, param);
-		    } else {
-			se = new ParameterEntry(counter, container, absoluteoffset, ReferenceLocationType.containerStart, param);
-		    }
-		    // also check if the parameter should be added multiple times, and if so, do so
-		    repeated = addRepeat(se, repeat);
-		    container.entryList.add(se);
-		} else {
-		    if (sc != null) {
-			// ok, we found it as an aggregate, so we add it to the entryList of container, as a new ContainerEntry
-			// if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
-			SequenceEntry se;
-			if (absoluteoffset == -1) {
-			    se = new ContainerEntry(counter, container, relpos, ReferenceLocationType.previousEntry, sc);
-			} else {
-			    se = new ContainerEntry(counter, container, absoluteoffset, ReferenceLocationType.containerStart, sc);
-			}
-			// also check if the parameter should be added multiple times, and if so, do so
-			repeated = addRepeat(se, repeat);
-			container.entryList.add(se);
-		    } else {
-			throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname + "' was not found in the parameters or containers map");
-		    }
-		}
-		// after adding this measurement, we need to update the absoluteoffset for the next one. For this, we add the size of the current SequenceEntry to the absoluteoffset
-		int size=getSize(param,sc);
-		if ((repeated != -1) && (size != -1) && (absoluteoffset != -1)) {
-		    absoluteoffset += repeated * size;
-		} else {
-		    // from this moment on, absoluteoffset is set to -1, meaning that all subsequent SequenceEntries must be relative
-		    absoluteoffset = -1;
-		}
+                    // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
+                    if (absoluteoffset == -1) {
+                        se = new ParameterEntry(counter, container, relpos, ReferenceLocationType.previousEntry, param);
+                    } else {
+                        se = new ParameterEntry(counter, container, absoluteoffset, ReferenceLocationType.containerStart, param);
+                    }
+                    // also check if the parameter should be added multiple times, and if so, do so
+                    repeated = addRepeat(se, repeat);
+                    container.entryList.add(se);
+                } else {
+                    if (sc != null) {
+                        // ok, we found it as an aggregate, so we add it to the entryList of container, as a new ContainerEntry
+                        // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
+                        SequenceEntry se;
+                        if (absoluteoffset == -1) {
+                            se = new ContainerEntry(counter, container, relpos, ReferenceLocationType.previousEntry, sc);
+                        } else {
+                            se = new ContainerEntry(counter, container, absoluteoffset, ReferenceLocationType.containerStart, sc);
+                        }
+                        // also check if the parameter should be added multiple times, and if so, do so
+                        repeated = addRepeat(se, repeat);
+                        container.entryList.add(se);
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname + "' was not found in the parameters or containers map");
+                    }
+                }
+                // after adding this measurement, we need to update the absoluteoffset for the next one. For this, we add the size of the current SequenceEntry to the absoluteoffset
+                int size=getSize(param,sc);
+                if ((repeated != -1) && (size != -1) && (absoluteoffset != -1)) {
+                    absoluteoffset += repeated * size;
+                } else {
+                    // from this moment on, absoluteoffset is set to -1, meaning that all subsequent SequenceEntries must be relative
+                    absoluteoffset = -1;
+                }
 
-		// increment the counters;
-		i++; counter++;
-	    }
+                // increment the counters;
+                i++; counter++;
+            }
 
-	    // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
-	    if(parent!=null) {
-		// the condition is parsed and used to create the container.restrictionCriteria
-		//1) get the parent, from the same sheet
-		SequenceContainer sc = containers.get(parent);
-		//the parent is not in the same sheet, try to get from the Xtcedb
-		if(sc==null) {
-		    sc = spaceSystem.getSequenceContainer(parent);
-		}
-		if (sc != null) {
-		    container.setBaseContainer(sc);
-		} else {
-		    final SequenceContainer c=container;
-		    NameReference nr=new NameReference(parent, Type.SEQUENCE_CONTAINTER,
-			    new ResolvedAction() { 
-			@Override
-			public boolean resolved(NameDescription nd) {
-			    c.setBaseContainer((SequenceContainer) nd);
-			    return true;
-			}
-		    });
-		    spaceSystem.addUnresolvedReference(nr);
-		}
+            // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
+            if(parent!=null) {
+                // the condition is parsed and used to create the container.restrictionCriteria
+                //1) get the parent, from the same sheet
+                SequenceContainer sc = containers.get(parent);
+                //the parent is not in the same sheet, try to get from the Xtcedb
+                if(sc==null) {
+                    sc = spaceSystem.getSequenceContainer(parent);
+                }
+                if (sc != null) {
+                    container.setBaseContainer(sc);
+                } else {
+                    final SequenceContainer c=container;
+                    NameReference nr=new NameReference(parent, Type.SEQUENCE_CONTAINTER,
+                            new ResolvedAction() { 
+                        @Override
+                        public boolean resolved(NameDescription nd) {
+                            c.setBaseContainer((SequenceContainer) nd);
+                            return true;
+                        }
+                    });
+                    spaceSystem.addUnresolvedReference(nr);
+                }
 
-		// 2) extract the condition and create the restrictioncriteria
-		if(!"".equals(condition)) {
-		    container.restrictionCriteria=toMatchCriteria(condition);
-		}
-	    } else {
-		if(spaceSystem.getRootSequenceContainer()==null) {
-		    spaceSystem.setRootSequenceContainer(container);
-		}
-	    }
-	    XtceAliasSet xas=new XtceAliasSet();
-	    xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
-	    container.setAliasSet(xas);
+                // 2) extract the condition and create the restrictioncriteria
+                if(!"".equals(condition)) {
+                    container.restrictionCriteria=toMatchCriteria(condition);
+                }
+            } else {
+                if(spaceSystem.getRootSequenceContainer()==null) {
+                    spaceSystem.setRootSequenceContainer(container);
+                }
+            }
+            XtceAliasSet xas=new XtceAliasSet();
+            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
+            container.setAliasSet(xas);
 
-	    spaceSystem.addSequenceContainer(container);
-	}
+            spaceSystem.addSequenceContainer(container);
+        }
     }
 
 
     protected void loadCommandSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_COMMANDS, required);
-	if(sheet==null) return;
+        Sheet sheet = switchToSheet(SHEET_COMMANDS, required);
+        if(sheet==null) return;
 
-	HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
+        HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
-	for (int i = 1; i < sheet.getRows(); i++) {
-	    // search for a new command definition, starting from row i 
-	    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
-	    Cell[] cells = jumpToRow(sheet, i);
-	    if (cells == null || cells.length<1) {
-		log.debug("Ignoring line {} because it's empty", ctx.row);
-		continue;
-	    }
-	    if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
-		continue;
-	    }
-	  
-	    String name = cells[IDX_CMD_NAME].getContents();
-	    String parent=null;
-	    String argAssignment=null;
-	    if(cells.length>IDX_CMD_PARENT) {
-		parent=cells[IDX_CMD_PARENT].getContents();
-		if(hasColumn(cells, IDX_CMD_ARG_ASSIGNMENT)) {
-		    argAssignment = cells[IDX_CMD_ARG_ASSIGNMENT].getContents();
-		}
-	    }
+        for (int i = 1; i < sheet.getRows(); i++) {
+            // search for a new command definition, starting from row i 
+            //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
+            Cell[] cells = jumpToRow(sheet, i);
+            if (cells == null || cells.length<1) {
+                log.debug("Ignoring line {} because it's empty", ctx.row);
+                continue;
+            }
+            if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                continue;
+            }
 
-	    if("".equals(parent)) parent=null;
+            String name = cells[IDX_CMD_NAME].getContents();
+            String parent=null;
+            String argAssignment=null;
+            if(cells.length>IDX_CMD_PARENT) {
+                parent=cells[IDX_CMD_PARENT].getContents();
+                if(hasColumn(cells, IDX_CMD_ARG_ASSIGNMENT)) {
+                    argAssignment = cells[IDX_CMD_ARG_ASSIGNMENT].getContents();
+                }
+            }
 
-	    // absoluteOffset is the absolute offset of the first argument or FixedValue in the container
-	    int absoluteOffset=-1;
-	    if(parent==null) {
-		absoluteOffset=0;
-	    } else {
-		int x=parent.indexOf(":");
-		if(x!=-1) {
-		    absoluteOffset=Integer.decode(parent.substring(x+1));
-		    parent=parent.substring(0, x);
-		}
-	    }
-	    // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, 
-	    //and register that new SequenceContainer in the containers hashmap
-	    MetaCommandContainer container = new MetaCommandContainer(name);
-	    MetaCommand cmd = new MetaCommand(name);
-	    cmd.setMetaCommandContainer(container);
-	    commands.put(name, cmd);
-	    cmd.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
+            if("".equals(parent)) parent=null;
 
-	    if(hasColumn(cells, IDX_CMD_FLAGS)) {			
-		String flags = cells[IDX_CMD_FLAGS].getContents();
-		if(flags.contains("A")){
-		    cmd.setAbstract(true);
-		}
-	    }
+            // absoluteOffset is the absolute offset of the first argument or FixedValue in the container
+            int absoluteOffset=-1;
+            if(parent==null) {
+                absoluteOffset=0;
+            } else {
+                int x=parent.indexOf(":");
+                if(x!=-1) {
+                    absoluteOffset=Integer.decode(parent.substring(x+1));
+                    parent=parent.substring(0, x);
+                }
+            }
+            // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, 
+            //and register that new SequenceContainer in the containers hashmap
+            MetaCommandContainer container = new MetaCommandContainer(name);
+            MetaCommand cmd = new MetaCommand(name);
+            cmd.setMetaCommandContainer(container);
+            commands.put(name, cmd);
+            cmd.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
 
-	    // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
-	    int start = i++;
+            if(hasColumn(cells, IDX_CMD_FLAGS)) {			
+                String flags = cells[IDX_CMD_FLAGS].getContents();
+                if(flags.contains("A")){
+                    cmd.setAbstract(true);
+                }
+            }
 
-	    // now, we start processing the arguments
-	    boolean end = false;
-	    int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
-	    while (!end && (i < sheet.getRows())) {
+            // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
+            int start = i++;
 
-		// get the next row, containing a measurement/aggregate reference
-		cells = jumpToRow(sheet, i);
-		// determine whether we have not reached the end of the command definition.
-		if (!hasColumn(cells, IDX_CONT_RELPOS)) {
-		    end = true; continue;
-		}
+            // now, we start processing the arguments
+            boolean end = false;
+            int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
+            while (!end && (i < sheet.getRows())) {
 
-
-		String argname = cells[IDX_CMD_ARGNAME].getContents();
-		if(!hasColumn(cells, IDX_CMD_RELPOS)) {
-		    throw new SpreadsheetLoadException(ctx, "relpos is not specified for "+argname+" on line "+(i+1));
-		}
-		int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
-
-		if(!hasColumn(cells, IDX_CMD_ENGTYPE)) {
-		    throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
-		}
-		String engType = cells[IDX_CMD_ENGTYPE].getContents();
-		// we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
-		// We only do this if the absoluteOffset is not equal to -1, because that would mean that we cannot and should not use absolute positions anymore
-		if (absoluteOffset != -1) {
-		    absoluteOffset += relpos;
-		}
+                // get the next row, containing a measurement/aggregate reference
+                cells = jumpToRow(sheet, i);
+                // determine whether we have not reached the end of the command definition.
+                if (!hasColumn(cells, IDX_CONT_RELPOS)) {
+                    end = true; continue;
+                }
 
 
-		if(engType.equalsIgnoreCase("FixedValue")) {
-		    if(!hasColumn(cells, IDX_CMD_DEFVALUE)) {
-			throw new SpreadsheetLoadException(ctx, "default value is not specified for "+argname+" which is a FixedValue on line "+(i+1));
-		    }					
-		    String hexValue = cells[IDX_CMD_DEFVALUE].getContents();
-		    byte[] binaryValue = StringConvertors.hexStringToArray(hexValue);
+                String argname = cells[IDX_CMD_ARGNAME].getContents();
+                if(!hasColumn(cells, IDX_CMD_RELPOS)) {
+                    throw new SpreadsheetLoadException(ctx, "relpos is not specified for "+argname+" on line "+(i+1));
+                }
+                int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
 
-		    if(!hasColumn(cells, IDX_CMD_SIZEINBITS)) {
-			throw new SpreadsheetLoadException(ctx, "sizeInBits is not specified for "+argname+" which is a FixedValue on line "+(i+1));
-		    }
-		    int sizeInBits = Integer.parseInt(cells[IDX_CMD_SIZEINBITS].getContents());
-		    FixedValueEntry fve;
-		    if (absoluteOffset == -1) {
-			fve = new FixedValueEntry(counter, container, relpos, ReferenceLocationType.previousEntry, argname, binaryValue, sizeInBits);
-		    } else {
-			fve = new FixedValueEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
-		    }
-		    absoluteOffset += sizeInBits;
-		    container.entryList.add(fve);
-		} else {
-		    absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
-		}
+                if(!hasColumn(cells, IDX_CMD_ENGTYPE)) {
+                    throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
+                }
+                String engType = cells[IDX_CMD_ENGTYPE].getContents();
+                // we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
+                // We only do this if the absoluteOffset is not equal to -1, because that would mean that we cannot and should not use absolute positions anymore
+                if (absoluteOffset != -1) {
+                    absoluteOffset += relpos;
+                }
 
-		// increment the counters;
-		i++; counter++;
-	    }
 
-	    // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
-	    if(parent!=null) {
-		// the condition is parsed and used to create the container.restrictionCriteria
-		//1) get the parent, from the same sheet
-		MetaCommand parentCmd = commands.get(parent);
+                if(engType.equalsIgnoreCase("FixedValue")) {
+                    if(!hasColumn(cells, IDX_CMD_DEFVALUE)) {
+                        throw new SpreadsheetLoadException(ctx, "default value is not specified for "+argname+" which is a FixedValue on line "+(i+1));
+                    }					
+                    String hexValue = cells[IDX_CMD_DEFVALUE].getContents();
+                    byte[] binaryValue = StringConvertors.hexStringToArray(hexValue);
 
-		//the parent is not in the same sheet, try to get from the Xtcedb
-		if(parentCmd==null) {
-		    parentCmd = spaceSystem.getMetaCommand(parent);
-		}
-		if (parentCmd != null) {
-		    cmd.setBaseMetaCommand(parentCmd);
-		    container.setBaseContainer(parentCmd.getCommandContainer());
-		} else {
-		    final MetaCommand mc = cmd;
-		    final MetaCommandContainer mcc = container;
-		    NameReference nr=new NameReference(parent, Type.META_COMMAND,	new ResolvedAction() { 
-			@Override
-			public boolean resolved(NameDescription nd) {
-			    mc.setBaseMetaCommand((MetaCommand) nd);
-			    mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
-			    return true;
-			}
-		    });
-		    spaceSystem.addUnresolvedReference(nr);
-		}
+                    if(!hasColumn(cells, IDX_CMD_SIZEINBITS)) {
+                        throw new SpreadsheetLoadException(ctx, "sizeInBits is not specified for "+argname+" which is a FixedValue on line "+(i+1));
+                    }
+                    int sizeInBits = Integer.parseInt(cells[IDX_CMD_SIZEINBITS].getContents());
+                    FixedValueEntry fve;
+                    if (absoluteOffset == -1) {
+                        fve = new FixedValueEntry(counter, container, relpos, ReferenceLocationType.previousEntry, argname, binaryValue, sizeInBits);
+                    } else {
+                        fve = new FixedValueEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
+                    }
+                    absoluteOffset += sizeInBits;
+                    container.entryList.add(fve);
+                } else {
+                    absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
+                }
 
-		// 2) extract the condition and create the restrictioncriteria
-		if(argAssignment!=null) {
-		    cmd.argumentAssignmentList=toArgumentAssignmentList(argAssignment);
-		}
-	    } 
+                // increment the counters;
+                i++; counter++;
+            }
 
-	    XtceAliasSet xas=new XtceAliasSet();
-	    xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
-	    container.setAliasSet(xas);
+            // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
+            if(parent!=null) {
+                // the condition is parsed and used to create the container.restrictionCriteria
+                //1) get the parent, from the same sheet
+                MetaCommand parentCmd = commands.get(parent);
 
-	    spaceSystem.addMetaCommand(cmd);
-	}
+                //the parent is not in the same sheet, try to get from the Xtcedb
+                if(parentCmd==null) {
+                    parentCmd = spaceSystem.getMetaCommand(parent);
+                }
+                if (parentCmd != null) {
+                    cmd.setBaseMetaCommand(parentCmd);
+                    container.setBaseContainer(parentCmd.getCommandContainer());
+                } else {
+                    final MetaCommand mc = cmd;
+                    final MetaCommandContainer mcc = container;
+                    NameReference nr=new NameReference(parent, Type.META_COMMAND,	new ResolvedAction() { 
+                        @Override
+                        public boolean resolved(NameDescription nd) {
+                            mc.setBaseMetaCommand((MetaCommand) nd);
+                            mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
+                            return true;
+                        }
+                    });
+                    spaceSystem.addUnresolvedReference(nr);
+                }
+
+                // 2) extract the condition and create the restrictioncriteria
+                if(argAssignment!=null) {
+                    cmd.argumentAssignmentList=toArgumentAssignmentList(argAssignment);
+                }
+            } 
+
+            XtceAliasSet xas=new XtceAliasSet();
+            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
+            container.setAliasSet(xas);
+
+            spaceSystem.addMetaCommand(cmd);
+        }
     }
 
-    
+
 
     protected void loadCommandOptionsSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_COMMANDOPTIONS, required);
-	if(sheet==null) return;
-	int i = 1;
-	while(i<sheet.getRows()) {
-	    // search for a new command definition, starting from row i 
-	    //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
-	    Cell[] cells = jumpToRow(sheet, i);
-	    if (cells == null || cells.length<1) {
-		log.debug("Ignoring line {} because it's empty", ctx.row);
-		i++;
-		continue;
-	    }
-	    if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-		log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
-		i++;
-		continue;
-	    }
-	    
-	    String cmdName = cells[IDX_CMDOPT_NAME].getContents();
-	    MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
-	    if(cmd == null) {
-		throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
-	    }
-	    
-	    
-	    int cmdEnd = i + 1;
-	    while (cmdEnd < sheet.getRows()) {
-		cells = jumpToRow(sheet, cmdEnd);
-		if (hasColumn(cells, IDX_CMDOPT_NAME))  break;
-		cmdEnd++;
-	    }
-	    while (i<cmdEnd) {
-		cells = jumpToRow(sheet, i);
-		if(hasColumn(cells, IDX_CMDOPT_TXCONST)) {
-		    String condition = cells[IDX_CMDOPT_TXCONST].getContents();
-		    MatchCriteria criteria;
-		    try {
-		        criteria=toMatchCriteria(condition);
-		    } catch (Exception e) {
-		        throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+condition+"': "+e);
-		    }
-		    long timeout = 0;
-		    if(hasColumn(cells, IDX_CMDOPT_TXCONST_TIMEOUT)) {
-			timeout = Long.parseLong(cells[IDX_CMDOPT_TXCONST_TIMEOUT].getContents());
-		    }
+        Sheet sheet = switchToSheet(SHEET_COMMANDOPTIONS, required);
+        if(sheet==null) return;
+        int i = 1;
+        while(i<sheet.getRows()) {
+            // search for a new command definition, starting from row i 
+            //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
+            Cell[] cells = jumpToRow(sheet, i);
+            if (cells == null || cells.length<1) {
+                log.debug("Ignoring line {} because it's empty", ctx.row);
+                i++;
+                continue;
+            }
+            if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                i++;
+                continue;
+            }
 
-		    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
-		    cmd.addTransmissionConstrain(constraint);
-		}
-		if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
-		    if(cmd.getDefaultSignificance()!=null) {
-		        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
-		    }
-		    String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
-		    Significance.Levels slevel;
-		    try {
-		        slevel = Significance.Levels.valueOf(significance); 
-		    } catch (IllegalArgumentException e) {
-		        throw new SpreadsheetLoadException(ctx, "Invalid significance '"+significance+"' specified. Available values are: "+Arrays.toString(Significance.Levels.values()));
-		    }
-		    String reason = null;
-		    if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE_REASON)) {
-		        reason = cells[IDX_CMDOPT_SIGNIFICANCE_REASON].getContents();
-		    }
-		    cmd.setDefaultSignificance(new Significance(slevel, reason));
-		}
-		i++;
-	    }
-	}
+            String cmdName = cells[IDX_CMDOPT_NAME].getContents();
+            MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
+            if(cmd == null) {
+                throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
+            }
+
+
+            int cmdEnd = i + 1;
+            while (cmdEnd < sheet.getRows()) {
+                cells = jumpToRow(sheet, cmdEnd);
+                if (hasColumn(cells, IDX_CMDOPT_NAME))  break;
+                cmdEnd++;
+            }
+            while (i<cmdEnd) {
+                cells = jumpToRow(sheet, i);
+                if(hasColumn(cells, IDX_CMDOPT_TXCONST)) {
+                    String condition = cells[IDX_CMDOPT_TXCONST].getContents();
+                    MatchCriteria criteria;
+                    try {
+                        criteria=toMatchCriteria(condition);
+                    } catch (Exception e) {
+                        throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+condition+"': "+e);
+                    }
+                    long timeout = 0;
+                    if(hasColumn(cells, IDX_CMDOPT_TXCONST_TIMEOUT)) {
+                        timeout = Long.parseLong(cells[IDX_CMDOPT_TXCONST_TIMEOUT].getContents());
+                    }
+
+                    TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
+                    cmd.addTransmissionConstrain(constraint);
+                }
+                if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
+                    if(cmd.getDefaultSignificance()!=null) {
+                        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
+                    }
+                    String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
+                    Significance.Levels slevel;
+                    try {
+                        slevel = Significance.Levels.valueOf(significance); 
+                    } catch (IllegalArgumentException e) {
+                        throw new SpreadsheetLoadException(ctx, "Invalid significance '"+significance+"' specified. Available values are: "+Arrays.toString(Significance.Levels.values()));
+                    }
+                    String reason = null;
+                    if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE_REASON)) {
+                        reason = cells[IDX_CMDOPT_SIGNIFICANCE_REASON].getContents();
+                    }
+                    cmd.setDefaultSignificance(new Significance(slevel, reason));
+                }
+                i++;
+            }
+        }
     }
-    
-    
+
+
     protected void loadCommandVerificationSheet(boolean required) {
         Sheet sheet = switchToSheet(SHEET_COMMANDVERIFICATION, required);
         if(sheet==null) return;
@@ -1166,14 +1136,14 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 i++;
                 continue;
             }
-            
+
             String cmdName = cells[IDX_CMDVERIF_NAME].getContents();
             MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
             if(cmd == null) {
                 throw new SpreadsheetLoadException(ctx, "Could not find a command named "+cmdName);
             }
-            
-            
+
+
             int cmdEnd = i + 1;
             while (cmdEnd < sheet.getRows()) {
                 cells = jumpToRow(sheet, cmdEnd);
@@ -1184,7 +1154,7 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                 cells = jumpToRow(sheet, i);
                 if(hasColumn(cells, IDX_CMDVERIF_STAGE)) {
                     String stage =  cells[IDX_CMDVERIF_STAGE].getContents();
-                    
+
                     if(!hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW)) {
                         throw new  SpreadsheetLoadException(ctx, "No checkwindow specified for the command verifier ");
                     }
@@ -1200,18 +1170,18 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
                         throw new  SpreadsheetLoadException(ctx, "Invalid checkwindow specified. Stop cannot be smaller than start");
                     }
                     CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.timeLastVerifierPassed;
-                    
+
                     if(hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
                         String s = cells[IDX_CMDVERIF_CHECKWINDOW_RELATIVETO].getContents();
                         try {
-                          cwr =   TimeWindowIsRelativeToType.valueOf(s);
+                            cwr =   TimeWindowIsRelativeToType.valueOf(s);
                         } catch (IllegalArgumentException  e) {
                             throw new  SpreadsheetLoadException(ctx, "Invalid value '"+s+"' specified for CheckWindow relative to parameter. Use one of "+TimeWindowIsRelativeToType.values());
                         }
                     } 
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
                     CommandVerifier cmdVerifier = new CommandVerifier(stage, cw);
-                    
+
                     if(!hasColumn(cells, IDX_CMDVERIF_TYPE)) {
                         throw new  SpreadsheetLoadException(ctx, "No type specified for the command verifier ");
                     }
@@ -1251,347 +1221,346 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
     }
 
     private List<ArgumentAssignment> toArgumentAssignmentList(String argAssignment) {
-	List<ArgumentAssignment> aal = new ArrayList<ArgumentAssignment>();
-	String splitted[] = argAssignment.split(";");
-	for (String part: splitted) {
-	    aal.add(toArgumentAssignment(part));
-	}
-	return aal;
+        List<ArgumentAssignment> aal = new ArrayList<ArgumentAssignment>();
+        String splitted[] = argAssignment.split(";");
+        for (String part: splitted) {
+            aal.add(toArgumentAssignment(part));
+        }
+        return aal;
     }
 
 
     private ArgumentAssignment toArgumentAssignment(String argAssignment) {
-	Matcher m = Pattern.compile("(.*?)(=)(.*)").matcher(argAssignment);
-	if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '"+argAssignment+"'");
-	String aname=m.group(1).trim();
-	String value=m.group(3).trim();
-	return new ArgumentAssignment(aname, value);
+        Matcher m = Pattern.compile("(.*?)(=)(.*)").matcher(argAssignment);
+        if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '"+argAssignment+"'");
+        String aname=m.group(1).trim();
+        String value=m.group(3).trim();
+        return new ArgumentAssignment(aname, value);
     }
 
     private int loadArgument(Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int absoluteOffset, int counter) {
-	String engType = cells[IDX_CMD_ENGTYPE].getContents();
-	String name = cells[IDX_CMD_ARGNAME].getContents();
-	int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
-	String calib = null;
-	if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
-	    calib = cells[IDX_CMD_CALIBRATION].getContents();
-	}
-	String flags = null;
-	if(hasColumn(cells, IDX_CMD_FLAGS)) {			
-	    flags = cells[IDX_CMD_FLAGS].getContents();
-	}
-	int sizeInBits = -1;
-	if(hasColumn(cells, IDX_CMD_SIZEINBITS)) {
-	    sizeInBits = Integer.parseInt(cells[IDX_CMD_SIZEINBITS].getContents());
-	}
+        String engType = cells[IDX_CMD_ENGTYPE].getContents();
+        String name = cells[IDX_CMD_ARGNAME].getContents();
+        int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
+        String calib = null;
+        if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
+            calib = cells[IDX_CMD_CALIBRATION].getContents();
+        }
+        String flags = null;
+        if(hasColumn(cells, IDX_CMD_FLAGS)) {			
+            flags = cells[IDX_CMD_FLAGS].getContents();
+        }
+        int sizeInBits = -1;
+        if(hasColumn(cells, IDX_CMD_SIZEINBITS)) {
+            sizeInBits = Integer.parseInt(cells[IDX_CMD_SIZEINBITS].getContents());
+        }
 
-	String rawType = engType;
-	if(hasColumn(cells, IDX_CMD_RAWTYPE)) {
-	    rawType = cells[IDX_CMD_RAWTYPE].getContents();
-	}
+        String rawType = engType;
+        if(hasColumn(cells, IDX_CMD_RAWTYPE)) {
+            rawType = cells[IDX_CMD_RAWTYPE].getContents();
+        }
 
-	if("n".equals(calib) || "".equals(calib))calib=null;
-	if("y".equalsIgnoreCase(calib)) calib=name;
-
-
-	ArgumentType atype=null;
-	if ("uint".equalsIgnoreCase(engType)) {
-	    atype = new IntegerArgumentType(name);
-	    ((IntegerArgumentType)atype).signed = false;
-	} else if ("uint64".equalsIgnoreCase(engType)) {
-	    atype = new IntegerArgumentType(name);
-	    ((IntegerArgumentType)atype).signed = false;
-	    ((IntegerArgumentType)atype).setSizeInBits(64);
-	} else if ("int".equalsIgnoreCase(engType)) {
-	    atype = new IntegerArgumentType(name);
-	} else if("int64".equalsIgnoreCase(engType)) {
-	    atype = new IntegerArgumentType(name);
-	    ((IntegerArgumentType)atype).setSizeInBits(64);
-	} else if ("float".equalsIgnoreCase(engType)) {
-	    atype = new FloatArgumentType(name);
-	} else if ("double".equalsIgnoreCase(engType)) {
-	    atype = new FloatArgumentType(name);
-	    ((FloatArgumentType)atype).setSizeInBits(64);
-	} else if ("enumerated".equalsIgnoreCase(engType)) {
-	    if(calib==null) {
-		throw new SpreadsheetLoadException(ctx, "Argument " + name + " has to have an enumeration");
-	    }
-	    EnumerationDefinition enumeration = enumerations.get(calib);
-	    if (enumeration == null) {
-		throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
-	    }
-	    atype = new EnumeratedArgumentType(calib);
-	    for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
-		((EnumeratedArgumentType) atype).addEnumerationValue(entry.getKey(), entry.getValue());
-	    }
-	} else if ("string".equalsIgnoreCase(engType)) {
-	    atype = new StringArgumentType(name);
-	} else	if ("binary".equalsIgnoreCase(engType)) {
-	    atype = new BinaryArgumentType(name);
-	} else {
-	    throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
-	}
-	if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
-	Argument arg = new Argument(name);	
-	cmd.addArgument(arg);
-
-	if((flags!=null) && flags.contains("L")) {
-	    if(atype instanceof IntegerArgumentType) {
-		((IntegerArgumentType)atype).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-	    } else if(atype instanceof FloatArgumentType) {
-		((FloatArgumentType)atype).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-	    } else if(atype instanceof EnumeratedArgumentType) {
-		((EnumeratedArgumentType)atype).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Little endian not supported for argument "+name+" of type "+atype);
-	    }
-	}
-
-	if(hasColumn(cells, IDX_CMD_DEFVALUE)) {
-	    String v = cells[IDX_CMD_DEFVALUE].getContents();
-	    if(atype instanceof IntegerArgumentType) {
-		try {
-		    Long.decode(v);
-		} catch(Exception e) {
-		    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
-		}
-		arg.setInitialValue(v);
-	    } else if (atype instanceof FloatArgumentType) {
-		try {
-		    Double.parseDouble(v);
-		} catch(Exception e) {
-		    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
-		}
-		arg.setInitialValue(v);
-
-	    } else {
-		arg.setInitialValue(v);
-	    }
-	}
-	if(hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
-	    if(atype instanceof IntegerArgumentType) {
-		long minInclusive = Long.MIN_VALUE;
-		long maxInclusive = Long.MAX_VALUE;
-		if(hasColumn(cells, IDX_CMD_RANGELOW)) {
-		    minInclusive = Long.parseLong(cells[IDX_CMD_RANGELOW].getContents());
-		}
-		if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
-		    maxInclusive = Long.parseLong(cells[IDX_CMD_RANGEHIGH].getContents());
-		}
-		IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-		((IntegerArgumentType)atype).setValidRange(range);
-	    } else if(atype instanceof FloatArgumentType) {
-		double minInclusive = Double.NEGATIVE_INFINITY;
-		double maxInclusive = Double.POSITIVE_INFINITY;
-		if(hasColumn(cells, IDX_CMD_RANGELOW)) {
-		    minInclusive = Double.parseDouble(cells[IDX_CMD_RANGELOW].getContents());
-		}
-		if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
-		    maxInclusive = Double.parseDouble(cells[IDX_CMD_RANGEHIGH].getContents());
-		}
-		FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
-		((FloatArgumentType)atype).setValidRange(range);
-	    }
-	}
+        if("n".equals(calib) || "".equals(calib))calib=null;
+        if("y".equalsIgnoreCase(calib)) calib=name;
 
 
-	ArgumentEntry ae;
-	// if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
-	if (absoluteOffset == -1) {
-	    ae = new ArgumentEntry(counter, container, relpos, ReferenceLocationType.previousEntry, arg);
-	} else {
-	    ae = new ArgumentEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, arg);
-	}
+        ArgumentType atype=null;
+        if ("uint".equalsIgnoreCase(engType)) {
+            atype = new IntegerArgumentType(name);
+            ((IntegerArgumentType)atype).signed = false;
+        } else if ("uint64".equalsIgnoreCase(engType)) {
+            atype = new IntegerArgumentType(name);
+            ((IntegerArgumentType)atype).signed = false;
+            ((IntegerArgumentType)atype).setSizeInBits(64);
+        } else if ("int".equalsIgnoreCase(engType)) {
+            atype = new IntegerArgumentType(name);
+        } else if("int64".equalsIgnoreCase(engType)) {
+            atype = new IntegerArgumentType(name);
+            ((IntegerArgumentType)atype).setSizeInBits(64);
+        } else if ("float".equalsIgnoreCase(engType)) {
+            atype = new FloatArgumentType(name);
+        } else if ("double".equalsIgnoreCase(engType)) {
+            atype = new FloatArgumentType(name);
+            ((FloatArgumentType)atype).setSizeInBits(64);
+        } else if ("enumerated".equalsIgnoreCase(engType)) {
+            if(calib==null) {
+                throw new SpreadsheetLoadException(ctx, "Argument " + name + " has to have an enumeration");
+            }
+            EnumerationDefinition enumeration = enumerations.get(calib);
+            if (enumeration == null) {
+                throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
+            }
+            atype = new EnumeratedArgumentType(calib);
+            for (Entry<Long,String> entry:enumeration.valueMap.entrySet()) {
+                ((EnumeratedArgumentType) atype).addEnumerationValue(entry.getKey(), entry.getValue());
+            }
+        } else if ("string".equalsIgnoreCase(engType)) {
+            atype = new StringArgumentType(name);
+        } else	if ("binary".equalsIgnoreCase(engType)) {
+            atype = new BinaryArgumentType(name);
+        }  else if ("boolean".equalsIgnoreCase(engType)) {
+            atype = new BooleanArgumentType(name);
+        }else {
+            throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
+        }
+        if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
+        Argument arg = new Argument(name);	
+        cmd.addArgument(arg);
 
-	container.entryList.add(ae);
+
+        if(hasColumn(cells, IDX_CMD_DEFVALUE)) {
+            String v = cells[IDX_CMD_DEFVALUE].getContents();
+            if(atype instanceof IntegerArgumentType) {
+                try {
+                    Long.decode(v);
+                } catch(Exception e) {
+                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
+                }
+                arg.setInitialValue(v);
+            } else if (atype instanceof FloatArgumentType) {
+                try {
+                    Double.parseDouble(v);
+                } catch(Exception e) {
+                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '"+v+"'");
+                }
+                arg.setInitialValue(v);
+
+            } else {
+                arg.setInitialValue(v);
+            }
+        }
+        if(hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+            if(atype instanceof IntegerArgumentType) {
+                long minInclusive = Long.MIN_VALUE;
+                long maxInclusive = Long.MAX_VALUE;
+                if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+                    minInclusive = Long.parseLong(cells[IDX_CMD_RANGELOW].getContents());
+                }
+                if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+                    maxInclusive = Long.parseLong(cells[IDX_CMD_RANGEHIGH].getContents());
+                }
+                IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
+                ((IntegerArgumentType)atype).setValidRange(range);
+            } else if(atype instanceof FloatArgumentType) {
+                double minInclusive = Double.NEGATIVE_INFINITY;
+                double maxInclusive = Double.POSITIVE_INFINITY;
+                if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+                    minInclusive = Double.parseDouble(cells[IDX_CMD_RANGELOW].getContents());
+                }
+                if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+                    maxInclusive = Double.parseDouble(cells[IDX_CMD_RANGEHIGH].getContents());
+                }
+                FloatValidRange range = new FloatValidRange(minInclusive, maxInclusive);
+                ((FloatArgumentType)atype).setValidRange(range);
+            }
+        }
 
 
-	// after adding this argument, we need to update the absoluteOffset for the next one. 
-	// For this, we add the size of the current ArgumentEntry to the absoluteOffset
+        ArgumentEntry ae;
+        // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
+        if (absoluteOffset == -1) {
+            ae = new ArgumentEntry(counter, container, relpos, ReferenceLocationType.previousEntry, arg);
+        } else {
+            ae = new ArgumentEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, arg);
+        }
 
-	if ((sizeInBits != -1) && (absoluteOffset != -1)) {
-	    absoluteOffset += sizeInBits;
-	} else {
-	    // from this moment on, absoluteOffset is set to -1, meaning that all subsequent SequenceEntries must be relative
-	    absoluteOffset = -1;
-	}
-	String units=null;
-	if(hasColumn(cells, IDX_PARAM_ENGUNIT)) {
-	    units = cells[IDX_PARAM_ENGUNIT].getContents();
-	    if(!"".equals(units) && units != null && atype instanceof BaseDataType) {
-		UnitType unitType = new UnitType(units);
-		((BaseDataType) atype).addUnit(unitType);
-	    }
-	}
+        container.entryList.add(ae);
+        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+        if((flags!=null) && flags.contains("L")) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        }
 
-	//loadParameterLimits(ptype,cells);
+        // after adding this argument, we need to update the absoluteOffset for the next one. 
+        // For this, we add the size of the current ArgumentEntry to the absoluteOffset
 
-	//calibrations
-	DataEncoding encoding = null;
-	if (("uint".equalsIgnoreCase(rawType)) || rawType.toLowerCase().startsWith("int")) {
-	    if(sizeInBits==-1) {
-		throw new SpreadsheetLoadException(ctx, "Size in bits length is mandatory for integer arguments");
-	    }
-	    encoding = new IntegerDataEncoding(name, sizeInBits);
-	    if (rawType.toLowerCase().startsWith("int")) {
-		if ("int".equals(rawType)) {
-		    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
-		} else {
-		    int startBracket = rawType.indexOf('(');
-		    if (startBracket != -1) {
-			int endBracket = rawType.indexOf(')', startBracket);
-			if (endBracket != -1) {
-			    String intRepresentation = rawType.substring(startBracket+1, endBracket).trim().toLowerCase();
-			    if ("2c".equals(intRepresentation)) {
-				((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
-			    } else if ("si".equals(intRepresentation)) {
-				((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
-			    } else {
-				throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
-			    }
-			}
-		    }
-		}
-	    }
-	    if ((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
-		Calibrator c = calibrators.get(calib);
-		if (c == null) {
-		    throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
-		}
-		((IntegerDataEncoding)encoding).defaultCalibrator = c;
-	    }
-	} else if ("bytestream".equalsIgnoreCase(rawType)) {
-	    if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
-	    encoding=new BinaryDataEncoding(name, sizeInBits);
-	} else if ("boolean".equalsIgnoreCase(rawType)) {
-	    if(sizeInBits!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
-	    encoding=new BooleanDataEncoding(name);
-	} else if ("string".equalsIgnoreCase(rawType)) {
-	    // Version <= 1.6 String type
-	    // STRING
-	    if(sizeInBits==-1) {
-		// Assume null-terminated if no length specified
-		encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
-	    } else {
-		encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
-		encoding.setSizeInBits(sizeInBits);
-	    }
-	} else if ( "fixedstring".equalsIgnoreCase( rawType ) ) {
-	    // v1.7 String type
-	    // FIXEDSTRING
-	    if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
-	    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
-	    encoding.setSizeInBits(sizeInBits);
-	} else if ( rawType.toLowerCase().startsWith( "terminatedstring" ) ) {
-	    // v1.7 String type
-	    // TERMINATEDSTRING
-	    encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
-	    // Use specified byte if found, otherwise accept class default.
-	    int startBracket = rawType.indexOf( '(' );
-	    if( startBracket != -1 ) {
-		int endBracket = rawType.indexOf( ')', startBracket );
-		if( endBracket != -1 ) {
-		    try {
-			byte terminationChar = Byte.parseByte(rawType.substring( rawType.indexOf('x', startBracket)+1, endBracket ).trim(), 16 );
-			((StringDataEncoding)encoding).setTerminationChar(terminationChar);
-		    } catch (NumberFormatException e) {
-			throw new SpreadsheetLoadException(ctx, "Could not parse specified base 16 terminator from "+rawType);
-		    }
-		}
-	    }
-	} else if ( rawType.toLowerCase().startsWith( "prependedsizestring" ) ) {
-	    // v1.7 String type
-	    // PREPENDEDSIZESTRING
-	    encoding=new StringDataEncoding( name, StringDataEncoding.SizeType.LeadingSize );
-	    // Use specified size if found, otherwise accept class default.
-	    int startBracket = rawType.indexOf( '(' );
-	    if( startBracket != -1 ) {
-		int endBracket = rawType.indexOf( ')', startBracket );
-		if( endBracket != -1 ) {
-		    try {
-			int sizeInBitsOfSizeTag = Integer.parseInt( rawType.substring(startBracket+1, endBracket).trim() );
-			((StringDataEncoding)encoding).setSizeInBitsOfSizeTag( sizeInBitsOfSizeTag );
-		    } catch (NumberFormatException e) {
-			throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawType);
-		    }
-		}
-	    }
-	} else if ("float".equalsIgnoreCase(rawType) || "double".equalsIgnoreCase(rawType)) {
-	    if(sizeInBits==-1) {
-		throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
-	    }
-	    encoding=new FloatDataEncoding(name, sizeInBits);
-	    if((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
-		Calibrator c = calibrators.get(calib);
-		if (c == null) {
-		    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
-		} else {
-		    ((FloatDataEncoding)encoding).defaultCalibrator = c;
-		}
-	    }
-	} else {
-	    throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawType);
-	}
+        if ((sizeInBits != -1) && (absoluteOffset != -1)) {
+            absoluteOffset += sizeInBits;
+        } else {
+            // from this moment on, absoluteOffset is set to -1, meaning that all subsequent SequenceEntries must be relative
+            absoluteOffset = -1;
+        }
+        String units=null;
+        if(hasColumn(cells, IDX_PARAM_ENGUNIT)) {
+            units = cells[IDX_PARAM_ENGUNIT].getContents();
+            if(!"".equals(units) && units != null && atype instanceof BaseDataType) {
+                UnitType unitType = new UnitType(units);
+                ((BaseDataType) atype).addUnit(unitType);
+            }
+        }
 
-	if (atype instanceof IntegerArgumentType) {
-	    // Integers can be encoded as strings
-	    if( encoding instanceof StringDataEncoding ) {
-		// Create a new int encoding which uses the configured string encoding
-		IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-		if( calib != null ) {
-		    Calibrator c = calibrators.get(calib);
-		    if( c == null ) {
-			throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist");
-		    }
-		    intStringEncoding.defaultCalibrator = c;
-		}
-		((IntegerArgumentType)atype).encoding = intStringEncoding;
-	    } else {
-		((IntegerArgumentType)atype).encoding = encoding;
-	    }
-	} else if (atype instanceof BinaryArgumentType) {
-	    ((BinaryArgumentType)atype).encoding = encoding;
-	} else if (atype instanceof FloatArgumentType) {
-	    // Floats can be encoded as strings
-	    if ( encoding instanceof StringDataEncoding ) {
-		// Create a new float encoding which uses the configured string encoding
-		FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding) );
-		if(calib!=null) {
-		    Calibrator c = calibrators.get(calib);
-		    if( c == null ) {
-			throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist.");
-		    } else {
-			floatStringEncoding.defaultCalibrator = c;
-		    }
-		}
-		((FloatArgumentType)atype).encoding = floatStringEncoding;
-	    } else {
-		((FloatArgumentType)atype).encoding = encoding;
-	    }
-	} else if (atype instanceof EnumeratedArgumentType) {
-	    if(((EnumeratedArgumentType) atype).getEncoding() != null) {
-		// Some other param has already led to setting the encoding of this shared ptype.
-		// Do some basic consistency checks
-		if(((EnumeratedArgumentType) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
-		    throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
-		}
-	    }
+        //loadParameterLimits(ptype,cells);
 
-	    // Enumerations encoded as string integers
-	    if( encoding instanceof StringDataEncoding ) {
-		IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
-		// Don't set calibrator, already done when making ptype
-		((EnumeratedArgumentType) atype).encoding = intStringEncoding;
-	    } else {
-		((EnumeratedArgumentType) atype).encoding = encoding;
-	    }
-	} else if (atype instanceof StringArgumentType) {
-	    ((StringArgumentType)atype).encoding = encoding;
-	} 
+        //calibrations
+        DataEncoding encoding = null;
+        if (("uint".equalsIgnoreCase(rawType)) || rawType.toLowerCase().startsWith("int")) {
+            if(sizeInBits==-1) {
+                throw new SpreadsheetLoadException(ctx, "Size in bits length is mandatory for integer arguments");
+            }
+            encoding = new IntegerDataEncoding(name, sizeInBits, byteOrder);
+            if (rawType.toLowerCase().startsWith("int")) {
+                if ("int".equals(rawType)) {
+                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                } else {
+                    int startBracket = rawType.indexOf('(');
+                    if (startBracket != -1) {
+                        int endBracket = rawType.indexOf(')', startBracket);
+                        if (endBracket != -1) {
+                            String intRepresentation = rawType.substring(startBracket+1, endBracket).trim().toLowerCase();
+                            if ("2c".equals(intRepresentation)) {
+                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                            } else if ("si".equals(intRepresentation)) {
+                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
+                            } else {
+                                throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
+                            }
+                        }
+                    }
+                }
+            }
+            if ((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
+                Calibrator c = calibrators.get(calib);
+                if (c == null) {
+                    throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
+                }
+                ((IntegerDataEncoding)encoding).defaultCalibrator = c;
+            }
+        } else if ("bytestream".equalsIgnoreCase(rawType)) {
+            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
+            encoding=new BinaryDataEncoding(name, sizeInBits);
+        } else if ("boolean".equalsIgnoreCase(rawType)) {
+            if(sizeInBits!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+            encoding=new BooleanDataEncoding(name);
+        } else if ("string".equalsIgnoreCase(rawType)) {
+            // Version <= 1.6 String type
+            // STRING
+            if(sizeInBits==-1) {
+                // Assume null-terminated if no length specified
+                encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
+            } else {
+                encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
+                encoding.setSizeInBits(sizeInBits);
+            }
+        } else if ( "fixedstring".equalsIgnoreCase( rawType ) ) {
+            // v1.7 String type
+            // FIXEDSTRING
+            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
+            encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
+            encoding.setSizeInBits(sizeInBits);
+        } else if ( rawType.toLowerCase().startsWith( "terminatedstring" ) ) {
+            // v1.7 String type
+            // TERMINATEDSTRING
+            encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
+            // Use specified byte if found, otherwise accept class default.
+            int startBracket = rawType.indexOf( '(' );
+            if( startBracket != -1 ) {
+                int endBracket = rawType.indexOf( ')', startBracket );
+                if( endBracket != -1 ) {
+                    try {
+                        byte terminationChar = Byte.parseByte(rawType.substring( rawType.indexOf('x', startBracket)+1, endBracket ).trim(), 16 );
+                        ((StringDataEncoding)encoding).setTerminationChar(terminationChar);
+                    } catch (NumberFormatException e) {
+                        throw new SpreadsheetLoadException(ctx, "Could not parse specified base 16 terminator from "+rawType);
+                    }
+                }
+            }
+        } else if ( rawType.toLowerCase().startsWith( "prependedsizestring" ) ) {
+            // v1.7 String type
+            // PREPENDEDSIZESTRING
+            encoding=new StringDataEncoding( name, StringDataEncoding.SizeType.LeadingSize );
+            // Use specified size if found, otherwise accept class default.
+            int startBracket = rawType.indexOf( '(' );
+            if( startBracket != -1 ) {
+                int endBracket = rawType.indexOf( ')', startBracket );
+                if( endBracket != -1 ) {
+                    try {
+                        int sizeInBitsOfSizeTag = Integer.parseInt( rawType.substring(startBracket+1, endBracket).trim() );
+                        ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag( sizeInBitsOfSizeTag );
+                    } catch (NumberFormatException e) {
+                        throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawType);
+                    }
+                }
+            }
+        } else if ("float".equalsIgnoreCase(rawType) || "double".equalsIgnoreCase(rawType)) {
+            if(sizeInBits==-1) {
+                throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
+            }
+            encoding=new FloatDataEncoding(name, sizeInBits, byteOrder);
+            if((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
+                Calibrator c = calibrators.get(calib);
+                if (c == null) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
+                } else {
+                    ((FloatDataEncoding)encoding).defaultCalibrator = c;
+                }
+            }
+        } else {
+            throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawType);
+        }
 
-	arg.setArgumentType(atype);
+        if (atype instanceof IntegerArgumentType) {
+            // Integers can be encoded as strings
+            if( encoding instanceof StringDataEncoding ) {
+                // Create a new int encoding which uses the configured string encoding
+                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                if( calib != null ) {
+                    Calibrator c = calibrators.get(calib);
+                    if( c == null ) {
+                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist");
+                    }
+                    intStringEncoding.defaultCalibrator = c;
+                }
+                ((IntegerArgumentType)atype).setEncoding(intStringEncoding);
+            } else {
+                ((IntegerArgumentType)atype).setEncoding(encoding);
+            }
+        } else if (atype instanceof BinaryArgumentType) {
+            ((BinaryArgumentType)atype).encoding = encoding;
+        } else if (atype instanceof FloatArgumentType) {
+            // Floats can be encoded as strings
+            if ( encoding instanceof StringDataEncoding ) {
+                // Create a new float encoding which uses the configured string encoding
+                FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding));
+                if(calib!=null) {
+                    Calibrator c = calibrators.get(calib);
+                    if( c == null ) {
+                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib + "' but the calibrator does not exist.");
+                    } else {
+                        floatStringEncoding.defaultCalibrator = c;
+                    }
+                }
+                floatStringEncoding.setByteOrder(byteOrder);
+                ((FloatArgumentType)atype).setEncoding(floatStringEncoding);
+            } else {
+                ((FloatArgumentType)atype).setEncoding(encoding);
+            }
+        } else if (atype instanceof EnumeratedArgumentType) {
+            if(((EnumeratedArgumentType) atype).getEncoding() != null) {
+                // Some other param has already led to setting the encoding of this shared ptype.
+                // Do some basic consistency checks
+                if(((EnumeratedArgumentType) atype).getEncoding().getSizeInBits() != encoding.getSizeInBits()) {
+                    throw new SpreadsheetLoadException(ctx, "Multiple parameters are sharing calibrator '"+calib+"' with different bit sizes.");
+                }
+            }
 
-	return absoluteOffset;
+            // Enumerations encoded as string integers
+            if( encoding instanceof StringDataEncoding ) {
+                IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
+                // Don't set calibrator, already done when making ptype
+                ((EnumeratedArgumentType) atype).setEncoding(intStringEncoding);
+                intStringEncoding.setByteOrder(byteOrder);
+            } else {
+                ((EnumeratedArgumentType) atype).setEncoding(encoding);
+            }
+        } else if (atype instanceof StringArgumentType) {
+            ((StringArgumentType)atype).setEncoding(encoding);
+        } else if (atype instanceof BooleanArgumentType) {
+            ((BooleanArgumentType)atype).setEncoding(encoding);
+        } else {        
+            throw new RuntimeException("Don't know what to do with "+atype);
+        }
+        arg.setArgumentType(atype);
+
+        return absoluteOffset;
     }
 
 
@@ -1600,57 +1569,57 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
 
 
     protected void loadProcessedParametersSheet(boolean required) {
-	loadProcessedParametersSheet(required, IDX_PP_ALIAS);
+        loadProcessedParametersSheet(required, IDX_PP_ALIAS);
     }
 
     protected void loadProcessedParametersSheet(boolean required, int firstAliasColumnIndex) {
-	Sheet sheet = switchToSheet(SHEET_PROCESSED_PARAMETERS, required);
-	if(sheet==null)return;
+        Sheet sheet = switchToSheet(SHEET_PROCESSED_PARAMETERS, required);
+        if(sheet==null)return;
 
-	// Each row must specify a umi and an alias, with a group being optional
-	// The same umi may have many aliases, but a single alias value must
-	// be unique
+        // Each row must specify a umi and an alias, with a group being optional
+        // The same umi may have many aliases, but a single alias value must
+        // be unique
 
-	// Alias keys are the extra column names
-	Cell [] header_cells = jumpToRow(sheet, 0);
-	if( header_cells.length <= firstAliasColumnIndex ) {
-	    throw new SpreadsheetLoadException(ctx, "No aliases defined in ProcessedParameters sheet: Must have at least three columns including umi and group columns.");
-	}
+        // Alias keys are the extra column names
+        Cell [] header_cells = jumpToRow(sheet, 0);
+        if( header_cells.length <= firstAliasColumnIndex ) {
+            throw new SpreadsheetLoadException(ctx, "No aliases defined in ProcessedParameters sheet: Must have at least three columns including umi and group columns.");
+        }
 
-	log.info( "Spreadsheet has {} PP definition rows to be parsed", sheet.getRows() );
+        log.info( "Spreadsheet has {} PP definition rows to be parsed", sheet.getRows() );
 
-	for (int i = 1; i < sheet.getRows(); i++) {
-	    Cell[] cells = jumpToRow(sheet, i);
-	    if ((cells == null) || (cells.length < firstAliasColumnIndex) || cells[0].getContents().startsWith("#")) {
-		log.debug( "Ignoring line {} because it is empty, starts with #, or has < 3 cells populated", i );
-		continue;
-	    }
-	    String umi = cells[IDX_PP_UMI].getContents();
-	    if (umi.length() == 0) {
-		log.debug( "Ignoring line {} because the UMI column is empty", i );
-		continue;
-	    }
-	    String group = cells[IDX_PP_GROUP].getContents();
+        for (int i = 1; i < sheet.getRows(); i++) {
+            Cell[] cells = jumpToRow(sheet, i);
+            if ((cells == null) || (cells.length < firstAliasColumnIndex) || cells[0].getContents().startsWith("#")) {
+                log.debug( "Ignoring line {} because it is empty, starts with #, or has < 3 cells populated", i );
+                continue;
+            }
+            String umi = cells[IDX_PP_UMI].getContents();
+            if (umi.length() == 0) {
+                log.debug( "Ignoring line {} because the UMI column is empty", i );
+                continue;
+            }
+            String group = cells[IDX_PP_GROUP].getContents();
 
-	    XtceAliasSet xtceAlias = new XtceAliasSet();
-	    for( int alias_index = firstAliasColumnIndex; alias_index < cells.length; alias_index++ ) {
-		String alias = cells[ alias_index ].getContents();
-		if( ! "".equals( alias ) ) {
-		    if( alias_index > header_cells.length ) {
-			throw new SpreadsheetLoadException(ctx, "Alias entry on line "+i+" does not have namespace specified in first row of column.");
-		    }
-		    log.debug( "Got alias '{}' with value '{}'", header_cells[ alias_index ].getContents(), alias );
-		    xtceAlias.addAlias( header_cells[ alias_index ].getContents(), alias );
-		}
-	    }
+            XtceAliasSet xtceAlias = new XtceAliasSet();
+            for( int alias_index = firstAliasColumnIndex; alias_index < cells.length; alias_index++ ) {
+                String alias = cells[ alias_index ].getContents();
+                if( ! "".equals( alias ) ) {
+                    if( alias_index > header_cells.length ) {
+                        throw new SpreadsheetLoadException(ctx, "Alias entry on line "+i+" does not have namespace specified in first row of column.");
+                    }
+                    log.debug( "Got alias '{}' with value '{}'", header_cells[ alias_index ].getContents(), alias );
+                    xtceAlias.addAlias( header_cells[ alias_index ].getContents(), alias );
+                }
+            }
 
-	    Parameter ppDef=new Parameter(umi);
-	    ppDef.setRecordingGroup(group);
-	    ppDef.setAliasSet( xtceAlias );
+            Parameter ppDef=new Parameter(umi);
+            ppDef.setRecordingGroup(group);
+            ppDef.setAliasSet( xtceAlias );
 
-	    log.debug( "Adding PP definition '{}'", ppDef.getName() );
-	    spaceSystem.addParameter( ppDef );
-	}
+            log.debug( "Adding PP definition '{}'", ppDef.getName() );
+            spaceSystem.addParameter( ppDef );
+        }
     }
 
     /**
@@ -1659,492 +1628,492 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
      * loading the Algorithms.
      */
     protected void loadNonStandardSheets() {
-	// By default do nothing
+        // By default do nothing
     }
 
     protected void loadAlgorithmsSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_ALGORITHMS, required);
-	if (sheet == null) return;
+        Sheet sheet = switchToSheet(SHEET_ALGORITHMS, required);
+        if (sheet == null) return;
 
-	// start at 1 to not use the first line (= title line)
-	int start = 1;
-	while(true) {
-	    // we first search for a row containing (= starting) a new algorithm
-	    while (start < sheet.getRows()) {
-		Cell[] cells = jumpToRow(sheet, start);
-		if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
-		    break;
-		}
-		start++;
-	    }
-	    if (start >= sheet.getRows()) {
-		break;
-	    }
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new algorithm
+            while (start < sheet.getRows()) {
+                Cell[] cells = jumpToRow(sheet, start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= sheet.getRows()) {
+                break;
+            }
 
-	    Cell[] cells = jumpToRow(sheet, start);
-	    String name = cells[IDX_ALGO_NAME].getContents();
-	    String algorithmText = cells[IDX_ALGO_TEXT].getContents();
+            Cell[] cells = jumpToRow(sheet, start);
+            String name = cells[IDX_ALGO_NAME].getContents();
+            String algorithmText = cells[IDX_ALGO_TEXT].getContents();
 
-	    // now we search for the matching last row of that algorithm
-	    int end = start + 1;
-	    while (end < sheet.getRows()) {
-		cells = jumpToRow(sheet, end);
-		if (!hasColumn(cells, IDX_ALGO_PARA_REF)) {
-		    break;
-		}
-		end++;
-	    }
+            // now we search for the matching last row of that algorithm
+            int end = start + 1;
+            while (end < sheet.getRows()) {
+                cells = jumpToRow(sheet, end);
+                if (!hasColumn(cells, IDX_ALGO_PARA_REF)) {
+                    break;
+                }
+                end++;
+            }
 
-	    Algorithm algorithm = new Algorithm(name);
-	    algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
-	    algorithm.setLanguage("JavaScript");
-	    // Replace smart-quotes “ and ” with regular quotes "
-	    algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
+            Algorithm algorithm = new Algorithm(name);
+            algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
+            algorithm.setLanguage("JavaScript");
+            // Replace smart-quotes “ and ” with regular quotes "
+            algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
 
-	    // In/out params
-	    String paraInout=null;
-	    Set<String> inputParameterRefs=new HashSet<String>();
-	    for (int j = start+1; j < end; j++) {
-		cells = jumpToRow(sheet, j);
-		String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
-		if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
-		    paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
-		}
-		if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
-		if ("in".equalsIgnoreCase(paraInout)) {
-		    inputParameterRefs.add(paraRef);
-		    Parameter param = spaceSystem.getParameter(paraRef);
-		    final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
-		    if(param==null) {
-			NameReference nr=new NameReference(paraRef, Type.PARAMETER, new ResolvedAction() {
-			    @Override
-			    public boolean resolved(NameDescription nd) {
-				parameterInstance.setParameter((Parameter) nd); 
-				return true;
-			    }
-			});
-			spaceSystem.addUnresolvedReference(nr);
-		    } else {
-			parameterInstance.setParameter(param);
-		    }
+            // In/out params
+            String paraInout=null;
+            Set<String> inputParameterRefs=new HashSet<String>();
+            for (int j = start+1; j < end; j++) {
+                cells = jumpToRow(sheet, j);
+                String paraRef = cells[IDX_ALGO_PARA_REF].getContents();
+                if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
+                    paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
+                }
+                if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
+                if ("in".equalsIgnoreCase(paraInout)) {
+                    inputParameterRefs.add(paraRef);
+                    Parameter param = spaceSystem.getParameter(paraRef);
+                    final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
+                    if(param==null) {
+                        NameReference nr=new NameReference(paraRef, Type.PARAMETER, new ResolvedAction() {
+                            @Override
+                            public boolean resolved(NameDescription nd) {
+                                parameterInstance.setParameter((Parameter) nd); 
+                                return true;
+                            }
+                        });
+                        spaceSystem.addUnresolvedReference(nr);
+                    } else {
+                        parameterInstance.setParameter(param);
+                    }
 
 
-		    if (cells.length > IDX_ALGO_PARA_INSTANCE) {
-			if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
-			    int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
-			    if (instance > 0) {
-				throw new SpreadsheetLoadException(ctx, "Instance '"+instance+"' not supported. Can only go back in time. Use values <= 0.");
-			    }
-			    parameterInstance.setInstance(instance);
-			}
-		    }
+                    if (cells.length > IDX_ALGO_PARA_INSTANCE) {
+                        if (!"".equals(cells[IDX_ALGO_PARA_INSTANCE].getContents())) {
+                            int instance = Integer.valueOf(cells[IDX_ALGO_PARA_INSTANCE].getContents());
+                            if (instance > 0) {
+                                throw new SpreadsheetLoadException(ctx, "Instance '"+instance+"' not supported. Can only go back in time. Use values <= 0.");
+                            }
+                            parameterInstance.setInstance(instance);
+                        }
+                    }
 
-		    InputParameter inputParameter = new InputParameter(parameterInstance);
-		    if (cells.length > IDX_ALGO_PARA_NAME) {
-			if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
-			    inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
-			}
-		    }
-		    algorithm.addInput(inputParameter);
-		} else if ("out".equalsIgnoreCase(paraInout)) {
-		    Parameter param = spaceSystem.getParameter(paraRef);
-		    if (param == null) {
-			throw new SpreadsheetLoadException(ctx, "The measurement '" + paraRef + "' was not found on the parameters sheet");
-		    }
-		    outputParameters.add(param);
-		    OutputParameter outputParameter = new OutputParameter(param);
-		    if (cells.length > IDX_ALGO_PARA_NAME) {
-			outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
-		    }
-		    algorithm.addOutput(outputParameter);
-		} else {
-		    throw new SpreadsheetLoadException(ctx, "In/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
-		}
-	    }
+                    InputParameter inputParameter = new InputParameter(parameterInstance);
+                    if (cells.length > IDX_ALGO_PARA_NAME) {
+                        if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
+                            inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
+                        }
+                    }
+                    algorithm.addInput(inputParameter);
+                } else if ("out".equalsIgnoreCase(paraInout)) {
+                    Parameter param = spaceSystem.getParameter(paraRef);
+                    if (param == null) {
+                        throw new SpreadsheetLoadException(ctx, "The measurement '" + paraRef + "' was not found on the parameters sheet");
+                    }
+                    outputParameters.add(param);
+                    OutputParameter outputParameter = new OutputParameter(param);
+                    if (cells.length > IDX_ALGO_PARA_NAME) {
+                        outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
+                    }
+                    algorithm.addOutput(outputParameter);
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "In/out '"+paraInout+"' not supported. Must be one of 'in' or 'out'");
+                }
+            }
 
-	    // Add trigger conditions
-	    final TriggerSetType triggerSet = new TriggerSetType();
-	    Pattern PARAMETER_PATTERN=Pattern.compile("OnParameterUpdate\\((.*)\\)");
-	    Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
-	    cells = jumpToRow(sheet, start); // Jump back to algorithm row (for getting error msgs right)
-	    String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
-	    if(triggerText.startsWith("OnParameterUpdate")) {
-		    Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
-		    if(matcher.matches()) {
-			for(String s:matcher.group(1).split(",")) {
-			    Parameter para = spaceSystem.getParameter(s.trim());
-			    if(para!=null) {
-				OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
-				triggerSet.addOnParameterUpdateTrigger(trigger);
-			    } else {
-				NameReference nr=new NameReference(s.trim(), Type.PARAMETER,
-					new ResolvedAction() {
-				    @Override
-				    public boolean resolved(NameDescription nd) {
-					OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
-					triggerSet.addOnParameterUpdateTrigger(trigger);
-					return true;
-				    }
-				});
-				spaceSystem.addUnresolvedReference(nr);
-			    }
-			}
-		    } else {
-			throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnParameterUpdate trigger");
-		    }
-	    } else if(triggerText.startsWith("OnPeriodicRate")) {
-		    Matcher matcher = FIRERATE_PATTERN.matcher(triggerText);
-		    if(matcher.matches()) {
-			long fireRateMs = Long.parseLong(matcher.group(1), 10);
-			OnPeriodicRateTrigger trigger=new OnPeriodicRateTrigger(fireRateMs);
-			triggerSet.addOnPeriodicRateTrigger(trigger);
-		    } else {
-			throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
-		    }
-		
-	    } else if (triggerText.startsWith("OnInputParameterUpdate")) {
-		// default to all in parameters
-		for(String paraRef:inputParameterRefs) {
-		    Parameter para=spaceSystem.getParameter(paraRef);
-		    if(para!=null) {
-			triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
-		    } else {
-			NameReference nr=new NameReference(paraRef, Type.PARAMETER,
-				new ResolvedAction() {
-			    @Override
-			    public boolean resolved(NameDescription nd) {
-				OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
-				triggerSet.addOnParameterUpdateTrigger(trigger);
-				return true;
-			    }
-			});
-			spaceSystem.addUnresolvedReference(nr);
-		    }
-		}
-	    } else if(triggerText.isEmpty() || triggerText.startsWith("none")) {
-	        //do nothing, we run with an empty trigger set
+            // Add trigger conditions
+            final TriggerSetType triggerSet = new TriggerSetType();
+            Pattern PARAMETER_PATTERN=Pattern.compile("OnParameterUpdate\\((.*)\\)");
+            Pattern FIRERATE_PATTERN=Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
+            cells = jumpToRow(sheet, start); // Jump back to algorithm row (for getting error msgs right)
+            String triggerText = hasColumn(cells, IDX_ALGO_TRIGGER) ? cells[IDX_ALGO_TRIGGER].getContents() : "";
+            if(triggerText.startsWith("OnParameterUpdate")) {
+                Matcher matcher = PARAMETER_PATTERN.matcher(triggerText);
+                if(matcher.matches()) {
+                    for(String s:matcher.group(1).split(",")) {
+                        Parameter para = spaceSystem.getParameter(s.trim());
+                        if(para!=null) {
+                            OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger(para);
+                            triggerSet.addOnParameterUpdateTrigger(trigger);
+                        } else {
+                            NameReference nr=new NameReference(s.trim(), Type.PARAMETER,
+                                    new ResolvedAction() {
+                                @Override
+                                public boolean resolved(NameDescription nd) {
+                                    OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                    triggerSet.addOnParameterUpdateTrigger(trigger);
+                                    return true;
+                                }
+                            });
+                            spaceSystem.addUnresolvedReference(nr);
+                        }
+                    }
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnParameterUpdate trigger");
+                }
+            } else if(triggerText.startsWith("OnPeriodicRate")) {
+                Matcher matcher = FIRERATE_PATTERN.matcher(triggerText);
+                if(matcher.matches()) {
+                    long fireRateMs = Long.parseLong(matcher.group(1), 10);
+                    OnPeriodicRateTrigger trigger=new OnPeriodicRateTrigger(fireRateMs);
+                    triggerSet.addOnPeriodicRateTrigger(trigger);
+                } else {
+                    throw new SpreadsheetLoadException(ctx, "Wrongly formatted OnPeriodicRate trigger");
+                }
+
+            } else if (triggerText.startsWith("OnInputParameterUpdate")) {
+                // default to all in parameters
+                for(String paraRef:inputParameterRefs) {
+                    Parameter para=spaceSystem.getParameter(paraRef);
+                    if(para!=null) {
+                        triggerSet.addOnParameterUpdateTrigger(new OnParameterUpdateTrigger(para));
+                    } else {
+                        NameReference nr=new NameReference(paraRef, Type.PARAMETER,
+                                new ResolvedAction() {
+                            @Override
+                            public boolean resolved(NameDescription nd) {
+                                OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger((Parameter) nd);
+                                triggerSet.addOnParameterUpdateTrigger(trigger);
+                                return true;
+                            }
+                        });
+                        spaceSystem.addUnresolvedReference(nr);
+                    }
+                }
+            } else if(triggerText.isEmpty() || triggerText.startsWith("none")) {
+                //do nothing, we run with an empty trigger set
             } else {        
                 throw new SpreadsheetLoadException(ctx, "Trigger '"+triggerText+"' not supported.");
             }
-	    algorithm.setTriggerSet(triggerSet);
+            algorithm.setTriggerSet(triggerSet);
 
-	    spaceSystem.addAlgorithm(algorithm);
-	    start = end;
-	}
+            spaceSystem.addAlgorithm(algorithm);
+            start = end;
+        }
     }
 
     protected void loadAlarmsSheet(boolean required) {
-	Sheet sheet = switchToSheet(SHEET_ALARMS, required);
-	if (sheet == null) return;
+        Sheet sheet = switchToSheet(SHEET_ALARMS, required);
+        if (sheet == null) return;
 
-	// start at 1 to not use the first line (= title line)
-	int start = 1;
-	while(true) {
-	    // we first search for a row containing (= starting) a new alarm
-	    while (start < sheet.getRows()) {
-		Cell[] cells = jumpToRow(sheet, start);
-		if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
-		    break;
-		}
-		start++;
-	    }
-	    if (start >= sheet.getRows()) {
-		break;
-	    }
+        // start at 1 to not use the first line (= title line)
+        int start = 1;
+        while(true) {
+            // we first search for a row containing (= starting) a new alarm
+            while (start < sheet.getRows()) {
+                Cell[] cells = jumpToRow(sheet, start);
+                if ((cells.length > 0) && (cells[0].getContents().length() > 0) && !cells[0].getContents().startsWith("#")) {
+                    break;
+                }
+                start++;
+            }
+            if (start >= sheet.getRows()) {
+                break;
+            }
 
-	    Cell[] cells = jumpToRow(sheet, start);
-	    if(!hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
-		throw new SpreadsheetLoadException(ctx, "Alarms must be attached to a parameter name");
-	    }
-	    String paramName = cells[IDX_ALARM_PARAM_NAME].getContents();
-	    Parameter para = spaceSystem.getParameter(paramName);
-	    if(para == null) {
-		throw new SpreadsheetLoadException(ctx, "Could not find a parameter named "+paramName);
-	    }
+            Cell[] cells = jumpToRow(sheet, start);
+            if(!hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
+                throw new SpreadsheetLoadException(ctx, "Alarms must be attached to a parameter name");
+            }
+            String paramName = cells[IDX_ALARM_PARAM_NAME].getContents();
+            Parameter para = spaceSystem.getParameter(paramName);
+            if(para == null) {
+                throw new SpreadsheetLoadException(ctx, "Could not find a parameter named "+paramName);
+            }
 
-	    // now we search for the matching last row of the alarms for this parameter
-	    int paramEnd = start + 1;
-	    while (paramEnd < sheet.getRows()) {
-		cells = jumpToRow(sheet, paramEnd);
-		if (hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
-		    break;
-		}
-		paramEnd++;
-	    }
+            // now we search for the matching last row of the alarms for this parameter
+            int paramEnd = start + 1;
+            while (paramEnd < sheet.getRows()) {
+                cells = jumpToRow(sheet, paramEnd);
+                if (hasColumn(cells, IDX_ALARM_PARAM_NAME)) {
+                    break;
+                }
+                paramEnd++;
+            }
 
-	    // Iterate over all rows for this parameter
-	    MatchCriteria previousContext=null;
-	    int minViolations=-1;
-	    AlarmReportType reportType=AlarmReportType.ON_SEVERITY_CHANGE;
-	    for (int j = start; j < paramEnd; j++) {
-		cells = jumpToRow(sheet, j);
-		MatchCriteria context=previousContext;
-		if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
-		    String contextString = cells[IDX_ALARM_CONTEXT].getContents();
-		    context=toMatchCriteria(contextString);
-		    minViolations = -1;
-		}
+            // Iterate over all rows for this parameter
+            MatchCriteria previousContext=null;
+            int minViolations=-1;
+            AlarmReportType reportType=AlarmReportType.ON_SEVERITY_CHANGE;
+            for (int j = start; j < paramEnd; j++) {
+                cells = jumpToRow(sheet, j);
+                MatchCriteria context=previousContext;
+                if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
+                    String contextString = cells[IDX_ALARM_CONTEXT].getContents();
+                    context=toMatchCriteria(contextString);
+                    minViolations = -1;
+                }
 
-		if(hasColumn(cells, IDX_ALARM_MIN_VIOLATIONS)) {
-		    minViolations=Integer.parseInt(cells[IDX_ALARM_MIN_VIOLATIONS].getContents());
-		}
-
-
-		if(hasColumn(cells, IDX_ALARM_REPORT)) {
-		    if("OnSeverityChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
-			reportType=AlarmReportType.ON_SEVERITY_CHANGE;
-		    } else if("OnValueChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
-			reportType=AlarmReportType.ON_VALUE_CHANGE;
-		    } else {
-			throw new SpreadsheetLoadException(ctx, "Unrecognized report type '"+cells[IDX_ALARM_REPORT].getContents()+"'");
-		    }
-		}
-
-		if(hasColumn(cells, IDX_ALARM_WATCH_TRIGGER) && hasColumn(cells, IDX_ALARM_WATCH_VALUE)) {
-		    String trigger=cells[IDX_ALARM_WATCH_TRIGGER].getContents();
-		    String triggerValue=cells[IDX_ALARM_WATCH_VALUE].getContents();
-		    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.watch);
-		}
-		if(hasColumn(cells, IDX_ALARM_WARNING_TRIGGER) && hasColumn(cells, IDX_ALARM_WARNING_VALUE)) {
-		    String trigger=cells[IDX_ALARM_WARNING_TRIGGER].getContents();
-		    String triggerValue=cells[IDX_ALARM_WARNING_VALUE].getContents();
-		    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.warning);
-		}
-		if(hasColumn(cells, IDX_ALARM_DISTRESS_TRIGGER) && hasColumn(cells, IDX_ALARM_DISTRESS_VALUE)) {
-		    String trigger=cells[IDX_ALARM_DISTRESS_TRIGGER].getContents();
-		    String triggerValue=cells[IDX_ALARM_DISTRESS_VALUE].getContents();
-		    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.distress);
-		}
-		if(hasColumn(cells, IDX_ALARM_CRITICAL_TRIGGER) && hasColumn(cells, IDX_ALARM_CRITICAL_VALUE)) {
-		    String trigger=cells[IDX_ALARM_CRITICAL_TRIGGER].getContents();
-		    String triggerValue=cells[IDX_ALARM_CRITICAL_VALUE].getContents();
-		    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.critical);
-		}
-		if(hasColumn(cells, IDX_ALARM_SEVERE_TRIGGER) && hasColumn(cells, IDX_ALARM_SEVERE_VALUE)) {
-		    String trigger=cells[IDX_ALARM_SEVERE_TRIGGER].getContents();
-		    String triggerValue=cells[IDX_ALARM_SEVERE_VALUE].getContents();
-		    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.severe);
-		}
-
-		// Set minviolations and alarmreporttype
-		AlarmType alarm=null;
-		if(para.getParameterType() instanceof IntegerParameterType) {
-		    IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
-		    alarm=(context==null)?ipt.getDefaultAlarm():ipt.getNumericContextAlarm(context);
-		    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
-			ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
-		    }
-		} else if(para.getParameterType() instanceof FloatParameterType) {
-		    FloatParameterType fpt=(FloatParameterType)para.getParameterType();
-		    alarm=(context==null)?fpt.getDefaultAlarm():fpt.getNumericContextAlarm(context);
-		    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
-			fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
-		    }
-		} else if(para.getParameterType() instanceof EnumeratedParameterType) {
-		    EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
-		    alarm=(context==null)?ept.getDefaultAlarm():ept.getContextAlarm(context);
-		    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
-			ept.createOrGetAlarm(context).setAlarmReportType(reportType);
-		    }
-		}
+                if(hasColumn(cells, IDX_ALARM_MIN_VIOLATIONS)) {
+                    minViolations=Integer.parseInt(cells[IDX_ALARM_MIN_VIOLATIONS].getContents());
+                }
 
 
-		if(alarm!=null) { // It's possible that this gets called multiple times per alarm, but doesn't matter
-		    alarm.setMinViolations((minViolations==-1) ? 1 : minViolations);
-		    alarm.setAlarmReportType(reportType);
-		}
+                if(hasColumn(cells, IDX_ALARM_REPORT)) {
+                    if("OnSeverityChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
+                        reportType=AlarmReportType.ON_SEVERITY_CHANGE;
+                    } else if("OnValueChange".equalsIgnoreCase(cells[IDX_ALARM_REPORT].getContents())) {
+                        reportType=AlarmReportType.ON_VALUE_CHANGE;
+                    } else {
+                        throw new SpreadsheetLoadException(ctx, "Unrecognized report type '"+cells[IDX_ALARM_REPORT].getContents()+"'");
+                    }
+                }
 
-		previousContext=context;
-	    }
+                if(hasColumn(cells, IDX_ALARM_WATCH_TRIGGER) && hasColumn(cells, IDX_ALARM_WATCH_VALUE)) {
+                    String trigger=cells[IDX_ALARM_WATCH_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_WATCH_VALUE].getContents();
+                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.watch);
+                }
+                if(hasColumn(cells, IDX_ALARM_WARNING_TRIGGER) && hasColumn(cells, IDX_ALARM_WARNING_VALUE)) {
+                    String trigger=cells[IDX_ALARM_WARNING_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_WARNING_VALUE].getContents();
+                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.warning);
+                }
+                if(hasColumn(cells, IDX_ALARM_DISTRESS_TRIGGER) && hasColumn(cells, IDX_ALARM_DISTRESS_VALUE)) {
+                    String trigger=cells[IDX_ALARM_DISTRESS_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_DISTRESS_VALUE].getContents();
+                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.distress);
+                }
+                if(hasColumn(cells, IDX_ALARM_CRITICAL_TRIGGER) && hasColumn(cells, IDX_ALARM_CRITICAL_VALUE)) {
+                    String trigger=cells[IDX_ALARM_CRITICAL_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_CRITICAL_VALUE].getContents();
+                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.critical);
+                }
+                if(hasColumn(cells, IDX_ALARM_SEVERE_TRIGGER) && hasColumn(cells, IDX_ALARM_SEVERE_VALUE)) {
+                    String trigger=cells[IDX_ALARM_SEVERE_TRIGGER].getContents();
+                    String triggerValue=cells[IDX_ALARM_SEVERE_VALUE].getContents();
+                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.severe);
+                }
 
-	    start = paramEnd;
-	}
+                // Set minviolations and alarmreporttype
+                AlarmType alarm=null;
+                if(para.getParameterType() instanceof IntegerParameterType) {
+                    IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+                    alarm=(context==null)?ipt.getDefaultAlarm():ipt.getNumericContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
+                    }
+                } else if(para.getParameterType() instanceof FloatParameterType) {
+                    FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+                    alarm=(context==null)?fpt.getDefaultAlarm():fpt.getNumericContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
+                    }
+                } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+                    EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+                    alarm=(context==null)?ept.getDefaultAlarm():ept.getContextAlarm(context);
+                    if(reportType != AlarmType.DEFAULT_REPORT_TYPE) {
+                        ept.createOrGetAlarm(context).setAlarmReportType(reportType);
+                    }
+                }
+
+
+                if(alarm!=null) { // It's possible that this gets called multiple times per alarm, but doesn't matter
+                    alarm.setMinViolations((minViolations==-1) ? 1 : minViolations);
+                    alarm.setAlarmReportType(reportType);
+                }
+
+                previousContext=context;
+            }
+
+            start = paramEnd;
+        }
     }
 
 
     private void addAlarmRagne(Parameter para, MatchCriteria context, String trigger, String triggerValue, AlarmLevels level) {
-	if(para.getParameterType() instanceof IntegerParameterType) {
-	    IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
-	    if("low".equals(trigger)) {
-		ipt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
-	    } else if("high".equals(trigger)) {
-		ipt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
-	    }
-	} else if(para.getParameterType() instanceof FloatParameterType) {
-	    FloatParameterType fpt=(FloatParameterType)para.getParameterType();
-	    if("low".equals(trigger)) {
-		fpt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
-	    } else if("high".equals(trigger)) {
-		fpt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
-	    }
-	} else if(para.getParameterType() instanceof EnumeratedParameterType) {
-	    EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
-	    if("state".equals(trigger)) {
-		ValueEnumeration enumValue=ept.enumValue(triggerValue);
-		if(enumValue==null) {
-		    throw new SpreadsheetLoadException(ctx, "Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
-		} else {
-		    ept.addAlarm(context, enumValue, level);
-		}
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
-	    }
-	}
+        if(para.getParameterType() instanceof IntegerParameterType) {
+            IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
+            if("low".equals(trigger)) {
+                ipt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
+            } else if("high".equals(trigger)) {
+                ipt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+            }
+        } else if(para.getParameterType() instanceof FloatParameterType) {
+            FloatParameterType fpt=(FloatParameterType)para.getParameterType();
+            if("low".equals(trigger)) {
+                fpt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
+            } else if("high".equals(trigger)) {
+                fpt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+            }
+        } else if(para.getParameterType() instanceof EnumeratedParameterType) {
+            EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
+            if("state".equals(trigger)) {
+                ValueEnumeration enumValue=ept.enumValue(triggerValue);
+                if(enumValue==null) {
+                    throw new SpreadsheetLoadException(ctx, "Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                } else {
+                    ept.addAlarm(context, enumValue, level);
+                }
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+            }
+        }
     }
 
 
     private MatchCriteria toMatchCriteria(String criteriaString) {
-	if(criteriaString.contains(";")) {
-	    ComparisonList cl = new ComparisonList();
-	    String splitted[] = criteriaString.split(";");
-	    for (String part: splitted) {
-		cl.comparisons.add(toComparison(part));
-	    }
-	    return cl;
-	} else {
-	    return toComparison(criteriaString);
-	}
+        if(criteriaString.contains(";")) {
+            ComparisonList cl = new ComparisonList();
+            String splitted[] = criteriaString.split(";");
+            for (String part: splitted) {
+                cl.comparisons.add(toComparison(part));
+            }
+            return cl;
+        } else {
+            return toComparison(criteriaString);
+        }
     }
 
     private Comparison toComparison(String comparisonString) {
-	Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
-	if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
-	String pname=m.group(1).trim();
-	boolean useCalibrated=true;
-	int idx = pname.indexOf('.');
-	if(idx!=-1) {
-	    String t = pname.substring(idx+1);
-	    if("raw".equals(t)) {
-	        pname = pname.substring(0, idx);
-	        useCalibrated = false;
-	    } else {
-	        throw new SpreadsheetLoadException(ctx, "Cannot parse parameter for comparison '"+pname+"'. Use parameterName or parameterName.raw");
-	    }
-	}
-	
-	String op=m.group(2);
-	String value=m.group(3).trim();
-	if((value.startsWith("\"")||value.startsWith("”")) &&
-	    (value.endsWith("\"")||value.endsWith("”")))  {
-	        value = value.substring(1, value.length()-1);
-	    }
-	
-	if ("=".equals(op)) {
-	    op="==";
-	}
-	OperatorType opType=Comparison.stringToOperator(op);
-	if(opType==null) {
-	    throw new SpreadsheetLoadException(ctx, "Unknown operator '"+op+"'");
-	}
+        Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
+        if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
+        String pname=m.group(1).trim();
+        boolean useCalibrated=true;
+        int idx = pname.indexOf('.');
+        if(idx!=-1) {
+            String t = pname.substring(idx+1);
+            if("raw".equals(t)) {
+                pname = pname.substring(0, idx);
+                useCalibrated = false;
+            } else {
+                throw new SpreadsheetLoadException(ctx, "Cannot parse parameter for comparison '"+pname+"'. Use parameterName or parameterName.raw");
+            }
+        }
 
-	Parameter compareParam = spaceSystem.getParameter(pname);
-	if (compareParam != null) {
-	    ParameterInstanceRef pref=new ParameterInstanceRef(compareParam, useCalibrated);
-	    Comparison comp = new Comparison(pref, value, opType);
-	    comp.resolveValueType();
-	    return comp;
-	} else {
-	    final ParameterInstanceRef pref=new ParameterInstanceRef(false);
-	    final Comparison ucomp = new Comparison(pref, value, opType);
-	    spaceSystem.addUnresolvedReference(new NameReference(pname, Type.PARAMETER, new ResolvedAction() {
-		@Override
-		public boolean resolved(NameDescription nd) {
-		    pref.setParameter((Parameter) nd);
-		    ucomp.resolveValueType();
-		    return true;
-		}
-	    }));
-	    return ucomp;
-	}
+        String op=m.group(2);
+        String value=m.group(3).trim();
+        if((value.startsWith("\"")||value.startsWith("”")) &&
+                (value.endsWith("\"")||value.endsWith("”")))  {
+            value = value.substring(1, value.length()-1);
+        }
+
+        if ("=".equals(op)) {
+            op="==";
+        }
+        OperatorType opType=Comparison.stringToOperator(op);
+        if(opType==null) {
+            throw new SpreadsheetLoadException(ctx, "Unknown operator '"+op+"'");
+        }
+
+        Parameter compareParam = spaceSystem.getParameter(pname);
+        if (compareParam != null) {
+            ParameterInstanceRef pref=new ParameterInstanceRef(compareParam, useCalibrated);
+            Comparison comp = new Comparison(pref, value, opType);
+            comp.resolveValueType();
+            return comp;
+        } else {
+            final ParameterInstanceRef pref=new ParameterInstanceRef(false);
+            final Comparison ucomp = new Comparison(pref, value, opType);
+            spaceSystem.addUnresolvedReference(new NameReference(pname, Type.PARAMETER, new ResolvedAction() {
+                @Override
+                public boolean resolved(NameDescription nd) {
+                    pref.setParameter((Parameter) nd);
+                    ucomp.resolveValueType();
+                    return true;
+                }
+            }));
+            return ucomp;
+        }
     }
 
     protected boolean hasColumn(Cell[] cells, int idx) {
-	return (cells!=null) && (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
+        return (cells!=null) && (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
     }
 
     private int getSize(Parameter param, SequenceContainer sc) {
-	// either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
-	if (param != null) {
-	    DataEncoding de = ((BaseDataType)param.getParameterType()).getEncoding();
-	    if(de==null) throw new SpreadsheetLoadException(ctx, "Cannot determine the data encoding for "+param.getName());
-	    if (de instanceof FloatDataEncoding) {
-		return de.sizeInBits;
-	    } else if (de instanceof IntegerDataEncoding) {
-		return de.sizeInBits;
-	    } else	if (de instanceof BinaryDataEncoding) {
-		return de.sizeInBits;
-	    } else	if (de instanceof StringDataEncoding) {
-		return -1;
-	    } else if (de instanceof BooleanDataEncoding) {
-		return de.sizeInBits;
-	    } else {
-		throw new SpreadsheetLoadException(ctx, "No known size for data encoding : " + de);
-	    }
-	} else {
-	    return sc.sizeInBits;
-	}
+        // either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
+        if (param != null) {
+            DataEncoding de = ((BaseDataType)param.getParameterType()).getEncoding();
+            if(de==null) throw new SpreadsheetLoadException(ctx, "Cannot determine the data encoding for "+param.getName());
+            if (de instanceof FloatDataEncoding) {
+                return de.sizeInBits;
+            } else if (de instanceof IntegerDataEncoding) {
+                return de.sizeInBits;
+            } else	if (de instanceof BinaryDataEncoding) {
+                return de.sizeInBits;
+            } else	if (de instanceof StringDataEncoding) {
+                return -1;
+            } else if (de instanceof BooleanDataEncoding) {
+                return de.sizeInBits;
+            } else {
+                throw new SpreadsheetLoadException(ctx, "No known size for data encoding : " + de);
+            }
+        } else {
+            return sc.sizeInBits;
+        }
     }
 
     /** If repeat != "", decodes it to either an integer or a parameter and adds it to the SequenceEntry
      * If repeat is an integer, this integer is returned 
      */
     private int addRepeat(SequenceEntry se, String repeat) {
-	if (!repeat.equals("")) {
-	    se.repeatEntry = new Repeat();
-	    try {
-		int rep = Integer.decode(repeat);
-		se.repeatEntry.count = new FixedIntegerValue();
-		((FixedIntegerValue)se.repeatEntry.count).value = rep;
-		return rep;
-	    } catch (NumberFormatException e) {
-		se.repeatEntry.count = new DynamicIntegerValue();
-		Parameter repeatparam=parameters.get(repeat);
-		if(repeatparam==null) {
-		    throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat "+repeat);
-		}
-		((DynamicIntegerValue)se.repeatEntry.count).parameter = repeatparam;	
-		return -1;
-	    }
-	} else {
-	    return 1;
-	}
+        if (!repeat.equals("")) {
+            se.repeatEntry = new Repeat();
+            try {
+                int rep = Integer.decode(repeat);
+                se.repeatEntry.count = new FixedIntegerValue();
+                ((FixedIntegerValue)se.repeatEntry.count).value = rep;
+                return rep;
+            } catch (NumberFormatException e) {
+                se.repeatEntry.count = new DynamicIntegerValue();
+                Parameter repeatparam=parameters.get(repeat);
+                if(repeatparam==null) {
+                    throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat "+repeat);
+                }
+                ((DynamicIntegerValue)se.repeatEntry.count).parameter = repeatparam;	
+                return -1;
+            }
+        } else {
+            return 1;
+        }
     }
 
     protected Sheet switchToSheet(String sheetName, boolean required) {
-	Sheet sheet = workbook.getSheet(sheetName);
-	ctx.sheet=sheetName;
-	ctx.row=0;
-	if (required && sheet==null) {
-	    throw new SpreadsheetLoadException(ctx, "Required sheet '"+sheetName+"' was found missing");
-	}
-	return sheet;
+        Sheet sheet = workbook.getSheet(sheetName);
+        ctx.sheet=sheetName;
+        ctx.row=0;
+        if (required && sheet==null) {
+            throw new SpreadsheetLoadException(ctx, "Required sheet '"+sheetName+"' was found missing");
+        }
+        return sheet;
     }
 
     protected Cell[] jumpToRow(Sheet sheet, int row) {
-	ctx.row=row+1;
-	return sheet.getRow(row);
+        ctx.row=row+1;
+        return sheet.getRow(row);
     }
 
     protected String requireString(Cell[] cells, int column) {
-	String contents = cells[column].getContents();
-	if("".equals(contents)) {
-	    char col=(char) ('A'+(char)column);
-	    throw new SpreadsheetLoadException(ctx, "Cell at "+col+ctx.row+" is required");
-	}
-	return contents;
+        String contents = cells[column].getContents();
+        if("".equals(contents)) {
+            char col=(char) ('A'+(char)column);
+            throw new SpreadsheetLoadException(ctx, "Cell at "+col+ctx.row+" is required");
+        }
+        return contents;
     }
 
     private static class LimitDef {
-	public LimitDef(String condition, AlarmRanges ranges) {
-	    this.condition=condition;
-	    this.ranges=ranges;
-	}
-	String condition;
-	AlarmRanges ranges;
+        public LimitDef(String condition, AlarmRanges ranges) {
+            this.condition=condition;
+            this.ranges=ranges;
+        }
+        String condition;
+        AlarmRanges ranges;
     }
 
     /**
@@ -2154,32 +2123,32 @@ public class SpreadsheetLoader implements SpaceSystemLoader {
      * definitions)
      */
     protected static class EnumerationDefinition {
-	public LinkedHashMap<Long,String> valueMap=new LinkedHashMap<Long,String>();
+        public LinkedHashMap<Long,String> valueMap=new LinkedHashMap<Long,String>();
     }
 
     /**
      * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read. 
      */
     private abstract class PotentialExtractionError {
-	private SpreadsheetLoadException exc;
-	PotentialExtractionError(SpreadsheetLoadContext ctx, String error) {
-	    exc=new SpreadsheetLoadException(ctx, error);
-	}
+        private SpreadsheetLoadException exc;
+        PotentialExtractionError(SpreadsheetLoadContext ctx, String error) {
+            exc=new SpreadsheetLoadException(ctx, error);
+        }
 
-	abstract boolean errorPersists();
+        abstract boolean errorPersists();
 
-	public void recheck() {
-	    if(errorPersists()) {
-		throw exc;
-	    }
-	}
+        public void recheck() {
+            if(errorPersists()) {
+                throw exc;
+            }
+        }
     }
-    
+
     static Pattern allowedInNameType = Pattern.compile("[\\d\\w_-]+");
     boolean draconicXtceNameRestrictions = true; //TODO - should be configurable
     private void validateNameType(String name) {
         if(!draconicXtceNameRestrictions) return;
-        
+
         if(!allowedInNameType.matcher(name).matches()) {
             throw new SpreadsheetLoadException(ctx, "Invalid name '"+name+"'; should only contain letters, digits, _, and -");
         }

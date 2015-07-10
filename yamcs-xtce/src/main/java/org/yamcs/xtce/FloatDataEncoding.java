@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.nio.ByteOrder;
+
 
 public class FloatDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 200805131551L;
@@ -16,10 +18,13 @@ public class FloatDataEncoding extends DataEncoding {
      * @param sizeInBits
      */
     public FloatDataEncoding(String name, int sizeInBits) {
-        super(name, sizeInBits);
-        encoding = Encoding.IEEE754_1985;
+        this(name, sizeInBits, ByteOrder.BIG_ENDIAN);       
     }
 
+    public FloatDataEncoding(String name, int sizeInBits, ByteOrder byteOrder) {
+        super(name, sizeInBits, byteOrder);
+        encoding = Encoding.IEEE754_1985;
+    }
     /**
      * Float data encoded as a string. 
      * @param name
