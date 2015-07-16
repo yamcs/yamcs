@@ -4,7 +4,7 @@ instances:
    - testinst
 
 #where to find the web directory with ccs, js etc
-# for the moment the displays are also loaded from here but in the future we should have the possibility to specify per instance
+# the displays are also loaded from <webRoot>/displays/<instance> directory
 webRoot: /opt/yamcs/web
 # port used by the webserver
 webPort: 8090

@@ -54,19 +54,19 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
         } else if (remainingUri.contains("/")){
             sendError(ctx, BAD_REQUEST);
         } else if("listDisplays".equals(remainingUri)) {
-            handleListDisplays(ctx, req);
+            handleListDisplays(ctx, req, yamcsInstance);
         } else {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "single-display.html");
         }
     }
 
-    private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
+    private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws IOException {
 	ByteBuf cb=Unpooled.buffer(1024);
 	ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
         JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8);
         json.writeStartArray();
-        writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root+"/displays"));
+        writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root+"/displays/"+yamcsInstance));
         json.close();
         
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, cb);
