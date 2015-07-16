@@ -61,7 +61,7 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
         } else if ("parameterInfo".equals(qsDecoder.path())) {
             if (qsDecoder.parameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
-                String name = qsDecoder.parameters().get("name").get(0);
+                String name = qsDecoder.parameters().get("name").get(0);                
                 NamedObjectId.Builder noib = NamedObjectId.newBuilder();
                 noib.setName(name);
                 if (qsDecoder.parameters().containsKey("namespace")) {
@@ -71,10 +71,11 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
                 XtceDb xtceDb = loadMdb(yamcsInstance);
                 Parameter p = xtceDb.getParameter(id);
                 if(p==null) {
+                    log.warn("Invalid parameter name specified: {}", id);
                     throw new BadRequestException("Invalid parameter name specified "+id);
                 }
                  if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-                     log.warn("Parameter Info not authorized for token {}, throwing BadRequestException", authToken);
+                     log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, authToken);
                      throw new BadRequestException("Invalid parameter name specified "+id);
                 }
                 RestParameterInfo pinfo = getParameterInfo(id, p);
