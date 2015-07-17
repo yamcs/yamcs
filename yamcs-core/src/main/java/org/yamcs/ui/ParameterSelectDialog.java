@@ -184,7 +184,7 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 		    // Ignore
 		}
 		try {
-		    yamcsClient.yamcsSession.close();
+		    yamcsClient.getYamcsSession().close();
 		} catch (HornetQException e) {
 		    // Ignore
 		}

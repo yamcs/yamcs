@@ -170,7 +170,13 @@ public class YamcsSession {
 	    return result;
 	}
     }
-
+    
+    @Override
+    protected void finalize() {
+        if(sessionFactory!=null) sessionFactory.close();
+        if(locator!=null) locator.close();
+    }
+    
     public static void main(String[] argv) throws Exception {
 	@SuppressWarnings("unused")
 	YamcsSession ysession=YamcsSession.newBuilder().setConnectionParams("aces-test",5445).build();

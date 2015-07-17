@@ -65,7 +65,7 @@ public class YamcsClient {
     public long rpcTimeout=10000;
     long dataTimeout=10000;
     
-    public YamcsSession yamcsSession;
+    private YamcsSession yamcsSession;
     
     
     YamcsClient(YamcsSession yamcsSession) {
@@ -219,6 +219,15 @@ public class YamcsClient {
     }
     
     
+    public YamcsSession getYamcsSession() {
+        return yamcsSession;
+    }
+
+    public void setYamcsSession(YamcsSession yamcsSession) {
+        this.yamcsSession = yamcsSession;
+    }
+
+
     public static class ClientBuilder {
         boolean invm=true;
 
