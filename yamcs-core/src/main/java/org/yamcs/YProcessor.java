@@ -418,7 +418,7 @@ public class YProcessor {
     public static void addProcessorListener(YProcessorListener channelListener) {
         listeners.add(channelListener);
     }
-    public static void removeYProcListner(YProcessorListener channelListener) {
+    public static void removeYProcListener(YProcessorListener channelListener) {
         listeners.remove(channelListener);
     }
 

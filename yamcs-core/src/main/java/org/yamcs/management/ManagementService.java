@@ -3,22 +3,11 @@ package org.yamcs.management;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
-import org.yamcs.YProcessorClient;
-import org.yamcs.YProcessorException;
-import org.yamcs.ProcessorFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.commanding.CommandQueue;
-import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.tctm.Link;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -27,11 +16,23 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import com.google.common.util.concurrent.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.YProcessor;
+import org.yamcs.YProcessorClient;
+import org.yamcs.YProcessorException;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
+import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.tctm.Link;
+
+import com.google.common.util.concurrent.Service;
 
 public class ManagementService {
     final MBeanServer mbeanServer;
@@ -46,6 +47,8 @@ public class ManagementService {
 
     Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
+    
+    Set<ManagementListener> managementListeners = Collections.synchronizedSet(new HashSet<>());
 
     static public void setup(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         managementService=new ManagementService(hornetEnabled, jmxEnabled);
@@ -70,7 +73,7 @@ public class ManagementService {
                 hornetMgr=new HornetManagement(this, timer);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
                 hornetProcessorMgr=new HornetProcessorManagement(this, timer);
-                YProcessor.addProcessorListener(hornetProcessorMgr);
+                addManagementListener(hornetProcessorMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
                 hornetEnabled=false;
@@ -81,7 +84,10 @@ public class ManagementService {
 
     public void shutdown() {
         if(hornetEnabled) {
-            YProcessor.removeYProcListner(hornetProcessorMgr);
+            synchronized(managementListeners) {
+                managementListeners.forEach(l -> YProcessor.removeYProcListener(l));
+                managementListeners.clear();
+            }
             hornetMgr.stop();
             hornetCmdQueueMgr.stop();
             hornetProcessorMgr.close();
@@ -171,8 +177,9 @@ public class ManagementService {
             if(jmxEnabled) {
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+instance+":type=clients,processor="+yprocName+",id="+id));
             }
-            if(hornetEnabled) {
-                hornetProcessorMgr.registerClient(cci.getClientInfo());
+
+            synchronized(managementListeners) {
+                managementListeners.forEach(l -> l.registerClient(cci.getClientInfo()));
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
@@ -182,7 +189,7 @@ public class ManagementService {
 
 
 
-    public void unregisterClient(int id ) {
+    public void unregisterClient(int id) {
         ClientControlImpl cci=clients.remove(id);
         if(cci==null) return;
         ClientInfo ci=cci.getClientInfo();
@@ -190,8 +197,8 @@ public class ManagementService {
             if(jmxEnabled) {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+id));
             }
-            if(hornetEnabled) {
-                hornetProcessorMgr.unregisterClient(ci);
+            synchronized(managementListeners) {
+                managementListeners.forEach(l -> l.unregisterClient(ci));
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
@@ -208,8 +215,8 @@ public class ManagementService {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,processor="+oldci.getProcessorName()+",id="+ci.getId()));
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+ci.getId()));
             }
-            if(hornetEnabled) {
-                hornetProcessorMgr.clientInfoChanged(ci);
+            synchronized(managementListeners) {
+                managementListeners.forEach(l -> l.clientInfoChanged(ci));
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yprocessor", e);
@@ -324,6 +331,19 @@ public class ManagementService {
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
         }
+    }
+    
+    /**
+     * Adds a listener that needs to be notified when any processor, or any client is updated.
+     */
+    public boolean addManagementListener(ManagementListener l) {
+        YProcessor.addProcessorListener(l);
+        return managementListeners.add(l);
+    }
+    
+    public boolean removeManagementListener(ManagementListener l) {
+        YProcessor.removeYProcListener(l);
+        return managementListeners.remove(l);
     }
 
     public ClientInfo getClientInfo(int clientId) {

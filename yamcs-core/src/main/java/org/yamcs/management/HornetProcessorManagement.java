@@ -1,5 +1,12 @@
 package org.yamcs.management;
 
+import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
+import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
+import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
+import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -7,39 +14,35 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
-import org.yamcs.YProcessorListener;
-import org.yamcs.security.HqClientMessageToken;
-import org.yamcs.xtceproc.ProcessingStatistics;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-
-import static org.yamcs.api.Protocol.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.xtceproc.ProcessingStatistics;
 
 /**
  * provides yprocessor management services via hornetq
  * @author nm
  *
  */
-public class HornetProcessorManagement implements YProcessorListener {
+public class HornetProcessorManagement implements ManagementListener {
     YamcsSession ysession;
     YamcsClient yclient, yprocControlServer, linkControlServer;
     static Logger log=LoggerFactory.getLogger(HornetProcessorManagement.class.getName());
@@ -242,15 +245,18 @@ public class HornetProcessorManagement implements YProcessorListener {
     }
 
 
+    @Override
     public void registerClient(ClientInfo ci) {
         sendClientEvent("clientUpdated", ci, false);
     }
 
 
+    @Override
     public void unregisterClient(ClientInfo ci) {
         sendClientEvent("clientDisconnected", ci, true);
     }
 
+    @Override
     public void clientInfoChanged(ClientInfo ci) {
         sendClientEvent("clientUpdated", ci, false);
     }
