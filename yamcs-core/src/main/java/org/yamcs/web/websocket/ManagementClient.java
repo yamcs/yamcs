@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,12 +76,34 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     }
     
     /**
-     * Registers for updates on any processor or client
+     * Registers for updates on any processor or client. Sends the current set
+     * of processor, and clients (in that order) to the requester.
+     * <p>
+     * Calling this multiple times, will cause the current set of data to be
+     * sent again. Further updates will still arrive one-time only.
      */
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+        try {
+            wsHandler.sendReply(toAckReply(ctx.getRequestId()));
+            
+            // Send current set of processors
+            for (YProcessor processor : YProcessor.getChannels()) {
+                ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(processor);
+                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+            }
+            
+            // Send current set of clients
+            Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+            for (ClientInfo client : clients) {
+                ClientInfo cinfo = ClientInfo.newBuilder(client).setState(ClientState.CONNECTED).build();
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
+            }
+        } catch (IOException e) {
+            log.error("Exception when sending data", e);
+            return null;
+        }
         ManagementService.getInstance().addManagementListener(this);
-        // TODO send initial updates
-        return toAckReply(ctx.getRequestId());
+        return null;
     }
 
     @Override

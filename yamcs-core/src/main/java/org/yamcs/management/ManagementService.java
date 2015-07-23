@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -334,7 +335,9 @@ public class ManagementService {
     }
     
     /**
-     * Adds a listener that needs to be notified when any processor, or any client is updated.
+     * Adds a listener that is to be notified when any processor, or any client
+     * is updated. Calling this multiple times has no extra effects. Either you
+     * listen, or you don't.
      */
     public boolean addManagementListener(ManagementListener l) {
         YProcessor.addProcessorListener(l);
@@ -348,5 +351,13 @@ public class ManagementService {
 
     public ClientInfo getClientInfo(int clientId) {
         return clients.get(clientId).getClientInfo();
+    }
+    
+    public Set<ClientInfo> getAllClientInfo() {
+        synchronized(clients) {
+            return clients.values().stream()
+                    .map(v -> v.getClientInfo())
+                    .collect(Collectors.toSet());
+        }
     }
 }

@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -80,7 +81,7 @@ public class YProcessor {
     private boolean parameterCacheAll = false;
 
     static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
-    static List<YProcessorListener> listeners=new CopyOnWriteArrayList<YProcessorListener>(); //send notifications for added and removed processors to this
+    static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
 
     private boolean quitting;
     //a synchronous channel waits for all the clients to deliver tm packets and parameters
@@ -175,9 +176,7 @@ public class YProcessor {
 
 
             instances.put(key(yamcsInstance,name),this);
-            for(int i=0; i<listeners.size(); i++) {
-                listeners.get(i).processorAdded(this);
-            }
+            listeners.forEach(l -> l.processorAdded(this));
             ManagementService.getInstance().registerYProcessor(this);
         }
     }
@@ -289,9 +288,7 @@ public class YProcessor {
     }
 
     private void propagateChannelStateChange() {
-        for(int i=0; i<listeners.size(); i++) {
-            listeners.get(i).processorStateChanged(this);
-        }
+        listeners.forEach(l -> l.processorStateChanged(this));
     }
     public void seek(long instant) {
         getTmProcessor().resetStatistics();
@@ -403,9 +400,7 @@ public class YProcessor {
         //if(commandHistoryListener!=null) commandHistoryListener.channelStopped();
         if(commandReleaser!=null) commandReleaser.stopAsync();
         log.info("Channel "+name+" is out of business");
-        for(int i=0; i<listeners.size(); i++) {
-            listeners.get(i).yProcessorClosed(this);
-        }
+        listeners.forEach(l -> l.yProcessorClosed(this));
         ManagementService.getInstance().unregisterYProcessor(this);
         synchronized(this) {
             for(YProcessorClient s:connectedClients) {
