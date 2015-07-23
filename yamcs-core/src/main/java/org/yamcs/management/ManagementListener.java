@@ -1,16 +1,30 @@
 package org.yamcs.management;
 
-import org.yamcs.YProcessorListener;
+import org.yamcs.YProcessor;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 /**
- * Used by ManagementService to distribute updates wrt processor & clients
+ * Used by ManagementService to distribute various types of management-related updates
  */
-public interface ManagementListener extends YProcessorListener {
+public interface ManagementListener {
+    
+    void processorAdded(ProcessorInfo processorInfo);
 
-    public void registerClient(ClientInfo ci);
+    void processorClosed(ProcessorInfo processorInfo);
 
-    public void unregisterClient(ClientInfo ci);
+    void processorStateChanged(ProcessorInfo processorInfo);
 
-    public void clientInfoChanged(ClientInfo ci);
+    void clientRegistered(ClientInfo clientInfo);
+
+    void clientUnregistered(ClientInfo clientInfo);
+
+    void clientInfoChanged(ClientInfo clientInfo);
+    
+    /**
+     * Called by the {@link ManagementService} when the statistics for the given processor were updated.
+     * This usually happens at about 1Hz.
+     */
+    void statisticsUpdated(YProcessor processor, Statistics stats);
 }

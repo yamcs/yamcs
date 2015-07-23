@@ -6,7 +6,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.management.HornetProcessorManagement;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
@@ -15,6 +14,7 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.AuthenticationToken;
 
 /**
@@ -50,7 +50,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     
     private WebSocketReplyData processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
-        ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(yproc);
+        ProcessorInfo pinfo = ManagementService.getProcessorInfo(yproc);
         try {
             wsHandler.sendReply(toAckReply(requestId));
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
@@ -88,7 +88,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
             
             // Send current set of processors
             for (YProcessor processor : YProcessor.getChannels()) {
-                ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(processor);
+                ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
                 wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
             }
             
@@ -112,37 +112,34 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     }
 
     @Override
-    public void processorAdded(YProcessor processor) {
-        ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(yproc);
+    public void processorAdded(ProcessorInfo processorInfo) {
         try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
         }
     }
     
     @Override
-    public void processorStateChanged(YProcessor processor) {
-        ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(yproc);
+    public void processorStateChanged(ProcessorInfo processorInfo) {
         try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
         }
     }
 
     @Override
-    public void yProcessorClosed(YProcessor processor) {
-        ProcessorInfo pinfo = HornetProcessorManagement.getProcessorInfo(yproc);
+    public void processorClosed(ProcessorInfo processorInfo) {
         try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
         }
     }
 
     @Override
-    public void registerClient(ClientInfo ci) {
+    public void clientRegistered(ClientInfo ci) {
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
@@ -162,12 +159,21 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     }
 
     @Override
-    public void unregisterClient(ClientInfo ci) {
+    public void clientUnregistered(ClientInfo ci) {
         if (ci.getId() == clientId) return;
         
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
+        } catch (IOException e) {
+            log.error("Exception when sending data", e);
+        }
+    }
+    
+    @Override
+    public void statisticsUpdated(YProcessor processor, Statistics stats) {
+        try {
+            wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats, SchemaYamcsManagement.Statistics.WRITE);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
         }

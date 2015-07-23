@@ -1,16 +1,9 @@
 package org.yamcs.web.rest;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
-import org.yamcs.management.HornetProcessorManagement;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.RestConnectToProcessorResponse;
 import org.yamcs.protobuf.Rest.RestCreateProcessorResponse;
@@ -22,10 +15,17 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.security.AuthenticationToken;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
     
     
+    @Override
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
         if ("".equals(qsDecoder.path())) {
@@ -49,7 +49,7 @@ public class ProcessorRequestHandler extends AbstractRestRequestHandler {
         if (req.getMethod() == HttpMethod.GET) {
             RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
             for (YProcessor processor : YProcessor.getChannels()) {
-                response.addProcessor(HornetProcessorManagement.getProcessorInfo(processor));
+                response.addProcessor(ManagementService.getProcessorInfo(processor));
             }
             writeMessage(ctx, req, qsDecoder, response.build(), SchemaRest.RestListProcessorsResponse.WRITE);
         } else {

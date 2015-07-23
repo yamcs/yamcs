@@ -7,13 +7,6 @@ import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
 import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
 import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -33,9 +26,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.security.HqClientMessageToken;
-import org.yamcs.xtceproc.ProcessingStatistics;
 
 /**
  * provides yprocessor management services via hornetq
@@ -46,20 +37,12 @@ public class HornetProcessorManagement implements ManagementListener {
     YamcsSession ysession;
     YamcsClient yclient, yprocControlServer, linkControlServer;
     static Logger log=LoggerFactory.getLogger(HornetProcessorManagement.class.getName());
-    Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     ManagementService mservice;
-
-    static Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
     static public final String YPR_createProcessor = "createProcessor";
 
-    public HornetProcessorManagement(ManagementService mservice, ScheduledThreadPoolExecutor timer) throws YamcsApiException, HornetQException {
+    public HornetProcessorManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
         this.mservice=mservice;
-        timer.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {updateStatistics();}
-        }, 1, 1, TimeUnit.SECONDS);
-
 
         if(ysession!=null) return;
         ysession=YamcsSession.newBuilder().build();
@@ -131,34 +114,27 @@ public class HornetProcessorManagement implements ManagementListener {
 
 
     @Override
-    public void processorAdded(YProcessor yproc) {
+    public void processorAdded(ProcessorInfo processorInfo) {
         try {
-            ProcessorInfo ci=getProcessorInfo(yproc);
-            sendEvent("yprocUpdated", ci, false);
-            yprocs.put(yproc, STATS_NULL);
+            sendEvent("yprocUpdated", processorInfo, false);
         } catch (Exception e) {
             log.error("Exception when registering yproc: ", e);
         }
     }
 
-
     @Override
-    public void yProcessorClosed(YProcessor yprocl) {
-        ProcessorInfo ci=getProcessorInfo(yprocl);
-        sendEvent("yprocClosed", ci, true);
-        yprocs.remove(yprocl);
+    public void processorClosed(ProcessorInfo processorInfo) {
+        sendEvent("yprocClosed", processorInfo, true);
     }
 
     @Override
-    public void processorStateChanged(YProcessor yproc) {
+    public void processorStateChanged(ProcessorInfo processorInfo) {
         try {
-            ProcessorInfo ci=getProcessorInfo(yproc);
-            sendEvent("yprocUpdated", ci, false);
+            sendEvent("yprocUpdated", processorInfo, false);
         } catch (Exception e) {
             log.error("Exception when sending yprocUpdated event: ", e);
         }
     }
-
 
     private void sendEvent(String eventName, ProcessorInfo ci, boolean expire) {
         ClientMessage msg=ysession.session.createMessage(false);
@@ -176,49 +152,8 @@ public class HornetProcessorManagement implements ManagementListener {
         }
     }
 
-
-    public void updateStatistics() {
-        try {
-            for(Entry<YProcessor,Statistics> entry:yprocs.entrySet()) {
-                YProcessor yproc=entry.getKey();
-                Statistics stats=entry.getValue();
-                ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
-                if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
-                    stats=buildStats(yproc);
-                    yprocs.put(yproc, stats);
-                }
-                if(stats!=STATS_NULL) {
-                    sendYProcStatistics(yproc, stats);
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private Statistics buildStats(YProcessor yproc) {
-        ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
-        Statistics.Builder statsb=Statistics.newBuilder();
-        statsb.setLastUpdated(ps.getLastUpdated());
-        statsb.setInstance(yproc.getInstance()).setYProcessorName(yproc.getName());
-        Collection<ProcessingStatistics.TmStats> tmstats=ps.stats.values();
-        if(tmstats==null) {
-            return STATS_NULL;
-        }
-
-        for(ProcessingStatistics.TmStats t:tmstats) {
-            TmStatistics ts=TmStatistics.newBuilder()
-                    .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
-                    .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
-                    .setSubscribedParameterCount(t.subscribedParameterCount).build();
-            statsb.addTmstats(ts);
-        }
-        return statsb.build();
-    }
-
-    private void sendYProcStatistics(YProcessor yproc, Statistics stats) {
+    @Override
+    public void statisticsUpdated(YProcessor yproc, Statistics stats) {
         try {
             ClientMessage msg=ysession.session.createMessage(false);
             String lvn=yproc.getInstance()+"."+yproc.getName();
@@ -231,28 +166,13 @@ public class HornetProcessorManagement implements ManagementListener {
         }
     }
 
-    public static ProcessorInfo getProcessorInfo(YProcessor yproc) {
-        ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
-                .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
-                .setState(yproc.getState());
-
-        if(yproc.isReplay()) {
-            cib.setReplayRequest(yproc.getReplayRequest());
-            cib.setReplayState(yproc.getReplayState());
-        }
-        return cib.build();
-    }
-
-
     @Override
-    public void registerClient(ClientInfo ci) {
+    public void clientRegistered(ClientInfo ci) {
         sendClientEvent("clientUpdated", ci, false);
     }
 
-
     @Override
-    public void unregisterClient(ClientInfo ci) {
+    public void clientUnregistered(ClientInfo ci) {
         sendClientEvent("clientDisconnected", ci, true);
     }
 
@@ -279,8 +199,6 @@ public class HornetProcessorManagement implements ManagementListener {
         }
     }
 
-
-
     public void close() {
         try {
             ysession.close();
@@ -288,5 +206,4 @@ public class HornetProcessorManagement implements ManagementListener {
             log.error("Failed to close the yamcs session", e);
         }
     }
-
 }

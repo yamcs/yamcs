@@ -229,6 +229,7 @@ enum ProtoDataType {
        CMD_HISTORY = 9;
        PROCESSOR_INFO = 10;
        CLIENT_INFO = 11;
+       PROCESSING_STATISTICS = 12;
 };
 
 //used to replay (concurrently) TM packets, parameters and events
