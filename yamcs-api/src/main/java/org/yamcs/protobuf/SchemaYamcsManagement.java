@@ -197,6 +197,8 @@ public final class SchemaYamcsManagement
                     output.writeString(4, message.getApplicationName(), false);
                 if(message.hasProcessorName())
                     output.writeString(5, message.getProcessorName(), false);
+                if(message.hasState())
+                    output.writeEnum(6, message.getState().getNumber(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ClientInfo message)
             {
@@ -251,6 +253,9 @@ public final class SchemaYamcsManagement
                         case 5:
                             builder.setProcessorName(input.readString());
                             break;
+                        case 6:
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.valueOf(input.readEnum()));
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -296,6 +301,7 @@ public final class SchemaYamcsManagement
                 case 3: return "username";
                 case 4: return "applicationName";
                 case 5: return "processorName";
+                case 6: return "state";
                 default: return null;
             }
         }
@@ -312,6 +318,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("username", 3);
             fieldMap.put("applicationName", 4);
             fieldMap.put("processorName", 5);
+            fieldMap.put("state", 6);
         }
     }
 

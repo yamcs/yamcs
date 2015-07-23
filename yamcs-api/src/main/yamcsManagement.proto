@@ -34,12 +34,18 @@ message ProcessorInfo {
 }
 
 message ClientInfo {
+    enum ClientState {
+        CONNECTED = 0;
+        DISCONNECTED = 1;
+    }
     required string instance=1;
     required int32 id=2;
     optional string username=3;
     optional string applicationName=4;
     optional string processorName=5;
+    optional ClientState state=6;
 }
+
 message TmStatistics {
     required string packetName=1;
     optional int64 receivedPackets=2;

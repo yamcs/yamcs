@@ -83,6 +83,4 @@ public class WebSocketYProcClient implements YProcessorClient {
         cmdhistClient.quit();
         mgmtClient.quit();
     }
-
-   
 }

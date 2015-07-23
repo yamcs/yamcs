@@ -1,8 +1,20 @@
 package org.yamcs.web.websocket;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.*;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.InvalidRequestIdentification;
+import org.yamcs.NoPermissionException;
+import org.yamcs.ParameterValue;
+import org.yamcs.YProcessor;
+import org.yamcs.YProcessorException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -21,13 +33,6 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.Computation;
 import org.yamcs.web.ComputationFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Provides realtime parameter subscription via web.  
@@ -179,17 +184,17 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
     }
 
     private WebSocketReplyData unsubscribeAll(int requestId) throws WebSocketException {
-	if(subscriptionId==-1) {
-	    throw new WebSocketException(requestId, "Not subscribed");
-	}
-	ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
-	boolean r=prm.unsubscribeAll(subscriptionId);
-	if(r) {
-	    subscriptionId=-1;
-	    return toAckReply(requestId);
-	} else {
-	    throw new WebSocketException(requestId, "There is no subscribeAll subscription for this client");
-	}
+        if(subscriptionId==-1) {
+            throw new WebSocketException(requestId, "Not subscribed");
+        }
+        ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
+        boolean r=prm.unsubscribeAll(subscriptionId);
+        if(r) {
+            subscriptionId=-1;
+            return toAckReply(requestId);
+        } else {
+            throw new WebSocketException(requestId, "There is no subscribeAll subscription for this client");
+        }
     }
 
     @Override
@@ -241,10 +246,11 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
      * called when the socket is closed.
      * unsubscribe all parameters
      */
+    @Override
     public void quit() {
-	ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
-	if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
-	if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
+        ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
+        if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
+        if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
 
     public void switchYProcessor(YProcessor c, AuthenticationToken authToken)

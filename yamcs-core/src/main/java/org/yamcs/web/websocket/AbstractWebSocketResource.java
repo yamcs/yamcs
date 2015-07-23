@@ -32,6 +32,11 @@ public abstract class AbstractWebSocketResource {
      */
     public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authToken)
             throws WebSocketException;
+    
+    /**
+     * Called when the web socket is closed
+     */
+    public abstract void quit();
 
     protected static WebSocketReplyData toAckReply(int requestId) {
         return WebSocketReplyData.newBuilder()
