@@ -44,6 +44,7 @@ message ClientInfo {
     optional string applicationName=4;
     optional string processorName=5;
     optional ClientState state=6;
+    optional bool currentClient=7; //Only used for clients that register themselves (websocket)
 }
 
 message TmStatistics {

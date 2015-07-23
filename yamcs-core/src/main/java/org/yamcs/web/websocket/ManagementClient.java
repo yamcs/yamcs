@@ -65,6 +65,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     private WebSocketReplyData processGetClientInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
         ClientInfo cinfo = ManagementService.getInstance().getClientInfo(clientId);
+        cinfo = ClientInfo.newBuilder(cinfo).setState(ClientState.CONNECTED).setCurrentClient(true).build();
         try {
             wsHandler.sendReply(toAckReply(requestId));
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
@@ -95,7 +96,8 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
             // Send current set of clients
             Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
             for (ClientInfo client : clients) {
-                ClientInfo cinfo = ClientInfo.newBuilder(client).setState(ClientState.CONNECTED).build();
+                ClientInfo cinfo = ClientInfo.newBuilder(client)
+                        .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();
                 wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
             }
         } catch (IOException e) {
@@ -140,7 +142,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
 
     @Override
     public void clientRegistered(ClientInfo ci) {
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).build();
+        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).setCurrentClient(ci.getId() == clientId).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
         } catch (IOException e) {
@@ -150,7 +152,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     
     @Override
     public void clientInfoChanged(ClientInfo ci) {
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).build();
+        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).setCurrentClient(ci.getId() == clientId).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
         } catch (IOException e) {
@@ -162,7 +164,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     public void clientUnregistered(ClientInfo ci) {
         if (ci.getId() == clientId) return;
         
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).build();
+        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
         } catch (IOException e) {
