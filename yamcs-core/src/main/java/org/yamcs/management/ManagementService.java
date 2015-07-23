@@ -3,9 +3,9 @@ package org.yamcs.management;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -49,7 +49,7 @@ public class ManagementService {
     Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
     
-    Set<ManagementListener> managementListeners = Collections.synchronizedSet(new HashSet<>());
+    CopyOnWriteArraySet<ManagementListener> managementInfoListeners = new CopyOnWriteArraySet<>();
 
     static public void setup(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         managementService=new ManagementService(hornetEnabled, jmxEnabled);
@@ -85,10 +85,8 @@ public class ManagementService {
 
     public void shutdown() {
         if(hornetEnabled) {
-            synchronized(managementListeners) {
-                managementListeners.forEach(l -> YProcessor.removeYProcListener(l));
-                managementListeners.clear();
-            }
+            managementInfoListeners.forEach(l -> YProcessor.removeYProcListener(l));
+            managementInfoListeners.clear();
             hornetMgr.stop();
             hornetCmdQueueMgr.stop();
             hornetProcessorMgr.close();
@@ -178,10 +176,7 @@ public class ManagementService {
             if(jmxEnabled) {
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+instance+":type=clients,processor="+yprocName+",id="+id));
             }
-
-            synchronized(managementListeners) {
-                managementListeners.forEach(l -> l.registerClient(cci.getClientInfo()));
-            }
+            managementInfoListeners.forEach(l -> l.registerClient(cci.getClientInfo()));
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
         }
@@ -198,9 +193,7 @@ public class ManagementService {
             if(jmxEnabled) {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+id));
             }
-            synchronized(managementListeners) {
-                managementListeners.forEach(l -> l.unregisterClient(ci));
-            }
+            managementInfoListeners.forEach(l -> l.unregisterClient(ci));
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
         }
@@ -216,9 +209,7 @@ public class ManagementService {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,processor="+oldci.getProcessorName()+",id="+ci.getId()));
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+ci.getId()));
             }
-            synchronized(managementListeners) {
-                managementListeners.forEach(l -> l.clientInfoChanged(ci));
-            }
+            managementInfoListeners.forEach(l -> l.clientInfoChanged(ci));
         } catch (Exception e) {
             log.warn("Got exception when registering a yprocessor", e);
         }
@@ -341,12 +332,12 @@ public class ManagementService {
      */
     public boolean addManagementListener(ManagementListener l) {
         YProcessor.addProcessorListener(l);
-        return managementListeners.add(l);
+        return managementInfoListeners.add(l);
     }
     
     public boolean removeManagementListener(ManagementListener l) {
         YProcessor.removeYProcListener(l);
-        return managementListeners.remove(l);
+        return managementInfoListeners.remove(l);
     }
 
     public ClientInfo getClientInfo(int clientId) {
