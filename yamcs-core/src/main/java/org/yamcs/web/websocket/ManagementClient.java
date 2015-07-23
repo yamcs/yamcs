@@ -29,7 +29,7 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
     public ManagementClient(YProcessor yproc, WebSocketServerHandler wsHandler, int clientId) {
         super(yproc, wsHandler);
         wsHandler.addResource("management", this);
-        log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + yproc.getInstance() + "]");
+        log = LoggerFactory.getLogger(ManagementClient.class.getName() + "[" + yproc.getInstance() + "]");
         this.clientId = clientId;
     }
 
@@ -140,6 +140,8 @@ public class ManagementClient extends AbstractWebSocketResource implements Manag
 
     @Override
     public void unregisterClient(ClientInfo ci) {
+        if (ci.getId() == clientId) return;
+        
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
