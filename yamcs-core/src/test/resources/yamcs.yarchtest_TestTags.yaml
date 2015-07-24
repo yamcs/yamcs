@@ -10,16 +10,8 @@ services:
     - org.yamcs.YarchChannel
 
 
-# config the tm providers started by the TmProviderAdapter
-tmProviders:
-    - class: org.yamcs.tctm.FilePollingTmProvider
-      spec: /storage/yamcs-incoming/byops/tm
-      stream: tm_dump
-
-# config the pp providers started by the PpProviderAdapter
-ppProviders:
-    - class: org.yamcs.tctm.FilePollingPpProvider
-      spec: /storage/yamcs-incoming/byops/pp
-      stream: pp_dump
 
 mdb: refmdb
+
+streamConfig:
+   tm: ["tm_realtime"]

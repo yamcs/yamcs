@@ -124,7 +124,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     /**
-     * Start processing telemetry packets
+     * Process telemetry packets
      *
      */
     @Override
@@ -150,6 +150,31 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	} catch (Exception e) {
 	    log.error("got exception in tmprocessor ", e);
 	}
+    }
+    
+    @Override
+    public void processPacket(PacketWithTime pwrt, SequenceContainer sc){
+        try {
+            ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
+            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), sc);
+
+            ParameterValueList paramResult=tmExtractor.getParameterResult();
+            ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
+            
+            if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
+                //careful out of the synchronized block in order to avoid dead locks 
+                //  with the parameterRequestManager trying to add/remove parameters 
+                //  while we are sending updates
+                parameterRequestManager.update(paramResult);
+            }
+
+            if((containerRequestManager!=null) && (containerResult.size()>0)) {
+                containerRequestManager.update(containerResult);
+            }
+
+        } catch (Exception e) {
+            log.error("got exception in tmprocessor ", e);
+        }
     }
 
     @Override

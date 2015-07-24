@@ -230,42 +230,6 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
             tmProcessor.finished();
         }
     }
-    /*
-    private void processPps (List<PpData> list) {
-        ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
-
-        for(PpData ppd:list) {
-            ByteBuffer pp=ppd.getPp().asReadOnlyByteBuffer();
-            long umi=PpUtils.getUmi(pp);
-            ProcessedParameterDefinition ppDef=umi2PpMap.get(umi);
-            if(ppDef!=null) {
-                if (!subscribedParameters.contains(ppDef)) continue;
-                ParameterValue pv=PpUtils.getParameterValueFromProcessedDataBuffer(ppDef,pp);
-                if(pv!=null) params.add(pv);
-            }
-        }
-        log.trace("pps subscribed {}", params);
-        if(params.size()>0) {
-            try {
-                parameterRequestManager.update(params);
-            } catch (Exception e) {
-                log.error("Exception caught when propagatig the processed parameters: "+e);
-            }
-        }
-    }
-     */
-    @Override
-    public String getLinkStatus() {
-        if(isRunning()) {
-            return "OK";
-        } else {
-            return "UNAVAIL";
-        }
-    }
-
-    public String getStatusInfo() {
-        return getLinkStatus();
-    }
 
 
     @Override
@@ -323,23 +287,6 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
         }
     }
 
-    @Override
-    public void disable() {
-    }
-
-    @Override
-    public void enable() {
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return false;
-    }
-
-    @Override
-    public String getDetailedStatus() {
-        return "Getting data from "+packetReplayAddress;
-    }
 
     @Override
     public void setParameterListener(ParameterRequestManager parameterRequestManager) {
@@ -407,10 +354,5 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
             log.warn("Got Exception when starting the packet replay: ", e);
             return ReplayState.ERROR;
         }
-    }
-
-    @Override
-    public long getDataCount() {
-        return dataCount;
     }
 }

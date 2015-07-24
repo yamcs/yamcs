@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs;
 
 import org.yamcs.TmProcessor;
 
@@ -6,12 +6,12 @@ import com.google.common.util.concurrent.Service;
 
 
 /**
- * 
  * @author nm
- * Interface for packets providers
+ *
+ * Provides TM packets to a Yamcs Processor.
  * 
  */
-public interface TmPacketProvider extends Link, Service {
+public interface TmPacketProvider extends Service {
 	/**
 	 * sets the tm processor that should get all the tm packets
 	 */

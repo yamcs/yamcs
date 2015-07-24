@@ -2,7 +2,7 @@ package org.yamcs.cmdhistory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.archive.TcUplinkerAdapter;
+import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableWriter;

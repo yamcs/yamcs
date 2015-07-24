@@ -11,7 +11,6 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.utils.YObjectLoader;
 
 /**

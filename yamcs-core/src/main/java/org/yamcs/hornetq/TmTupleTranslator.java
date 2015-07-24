@@ -5,10 +5,11 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 import com.google.protobuf.ByteString;
+
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.archive.TmProviderAdapter;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.tctm.TmProviderAdapter;
 
 /**
  * Translates between tuples as defined in {@link TmProviderAdapter} and HornetQ messages containing TmPacketData

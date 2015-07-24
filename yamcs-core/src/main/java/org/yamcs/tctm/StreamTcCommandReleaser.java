@@ -11,18 +11,18 @@ import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
 /**
- * Sends commands to yarch streams
+ * Sends commands to yamcs streams
  * @author nm
  *
  */
-public class YarchTcCommandReleaser extends AbstractService implements CommandReleaser {
+public class StreamTcCommandReleaser extends AbstractService implements CommandReleaser {
     Stream stream;
     String streamName;
     String yamcsInstance; 
 
     volatile long sentTcCount;
 
-    public YarchTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
+    public StreamTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
 	this.yamcsInstance = yamcsInstance;
 	if(!config.containsKey("stream")) {
 	    throw new ConfigurationException("Please specify the stream in the config (args)");

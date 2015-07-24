@@ -3,6 +3,7 @@ package org.yamcs.archive;
 import static org.junit.Assert.*;
 import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
 import static org.yamcs.api.Protocol.decode;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -17,6 +18,7 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;

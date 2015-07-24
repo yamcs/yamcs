@@ -30,7 +30,8 @@ import com.google.common.util.concurrent.AbstractService;
 public class AbstractHornetQTranslatorService extends AbstractService {
     final private TupleTranslator translator;
     YamcsSession yamcsSession;
-    final private YamcsClient msgClient;
+
+
     List<Stream> streams = new ArrayList<Stream>();
     Map<Stream, StreamSubscriber> streamSubscribers = new HashMap<Stream, StreamSubscriber>();
 
@@ -38,6 +39,18 @@ public class AbstractHornetQTranslatorService extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     String instance;
 
+    private final ThreadLocal<YamcsClient> yamcsClient =
+            new ThreadLocal<YamcsClient>() {
+        @Override protected YamcsClient initialValue() {
+            try {
+                YamcsSession yamcsSession = YamcsSession.newBuilder().build();
+                YamcsClient yClient=yamcsSession.newClientBuilder().setDataProducer(true).build();
+                return yClient;
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot create a hornetq client", e);
+            }
+        }
+    };
 
     public AbstractHornetQTranslatorService(String instance, List<String> streamNames, TupleTranslator translator) throws ConfigurationException {
         this.instance = instance;
@@ -51,8 +64,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
         this.translator = translator;
 
         try {
-            yamcsSession=YamcsSession.newBuilder().build();
-            msgClient=yamcsSession.newClientBuilder().setDataProducer(true).build();
+
         } catch (Exception e) {
             throw new ConfigurationException("Cannot create hornetq client", e);
         }
@@ -69,13 +81,16 @@ public class AbstractHornetQTranslatorService extends AbstractService {
     protected void doStart() {
         for(Stream s:streams) {
             final SimpleString hornetAddress = new SimpleString(instance+"."+s.getName());
+            log.debug("Starting providing tuples from stream {} as messages on {} HornetQ address", s.getName(), hornetAddress.toString());
             StreamSubscriber ss = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     try {
-                        ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
+                        
+                        ClientMessage msg=translator.buildMessage(yamcsClient.get().getYamcsSession().createMessage(false), tuple);
+                        System.out.println("for tuple: "+tuple+" got msg: "+msg);
                         msg.putIntProperty(StreamAdapter.UNIQUEID_HDR_NAME, StreamAdapter.UNIQUEID);
-                        msgClient.dataProducer.send(hornetAddress, msg);
+                        yamcsClient.get().dataProducer.send(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
                         log.warn(e.getMessage());
                     } catch (HornetQException e) {
@@ -97,14 +112,10 @@ public class AbstractHornetQTranslatorService extends AbstractService {
 
     @Override
     protected void doStop() {
-        try {
-            msgClient.close();
-            for(Stream s:streams) {
-                s.removeSubscriber(streamSubscribers.get(s));
-            }
-        } catch (HornetQException e) {
-            log.warn("Got exception when quiting:", e);
+        for(Stream s:streams) {
+            s.removeSubscriber(streamSubscribers.get(s));
         }
-
     }
 }
+
+

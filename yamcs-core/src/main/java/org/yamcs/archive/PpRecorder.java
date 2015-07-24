@@ -3,13 +3,13 @@ package org.yamcs.archive;
 import java.io.IOException;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
-
 import com.google.common.util.concurrent.AbstractService;
 
-import static org.yamcs.archive.PpProviderAdapter.PP_TUPLE_DEFINITION;
+import static org.yamcs.tctm.PpProviderAdapter.PP_TUPLE_DEFINITION;
 
 
 /**

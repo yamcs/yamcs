@@ -27,13 +27,13 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class YarchPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
+public class StreamPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
     PpListener ppListener;
     ParameterRequestManager paraListener;
     final XtceDb xtceDb;
     
-    public YarchPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
+    public StreamPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
         
         if(!config.containsKey("stream")) {

@@ -14,7 +14,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.SystemParametersCollector;
@@ -27,7 +26,7 @@ import org.yamcs.utils.TimeEncoding;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 
-public class TcpTmProvider extends AbstractExecutionThreadService implements TmPacketProvider,  SystemParametersProducer {
+public class TcpTmProvider extends AbstractExecutionThreadService implements TmPacketSource,  SystemParametersProducer {
     protected volatile long packetcount = 0;
     protected Socket tmSocket;
     protected String host="localhost";
@@ -35,7 +34,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     protected volatile boolean disabled=false;
 
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private TmProcessor tmProcessor;
+    private TmSink tmSink;
 
 
     private SystemParametersCollector sysParamCollector;
@@ -68,8 +67,8 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     }
 
     @Override
-    public void setTmProcessor(TmProcessor tmProcessor) {
-	this.tmProcessor=tmProcessor;
+    public void setTmSink(TmSink tmSink) {
+	this.tmSink=tmSink;
     }
 
     @Override
@@ -78,9 +77,8 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 	while(isRunning()) {
 	    PacketWithTime pwrt=getNextPacket();
 	    if(pwrt==null) break;
-	    tmProcessor.processPacket(pwrt);
+	    tmSink.processPacket(pwrt);
 	}
-	tmProcessor.finished();
     }
 
     public PacketWithTime getNextPacket() {

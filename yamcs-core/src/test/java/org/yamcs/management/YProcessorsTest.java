@@ -11,6 +11,8 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.TmPacketProvider;
+import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
@@ -20,7 +22,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.YProcessorControlClient;
 import org.yamcs.ui.YProcessorListener;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
@@ -28,6 +29,8 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
+
+import com.google.common.util.concurrent.AbstractService;
 
 import static org.junit.Assert.*;
 
@@ -237,4 +240,34 @@ public class YProcessorsTest {
             return "random-app-name";
         }
     }
+    
+    public static class DummyTmProvider extends AbstractService implements TmPacketProvider {
+        private TmProcessor tmProcessor;
+
+
+        public DummyTmProvider(String instance, String spec) {
+        }
+
+        @Override
+        public boolean isArchiveReplay() {
+            return false;
+        }
+
+        @Override
+        public void doStop() {
+            tmProcessor.finished();
+            notifyStopped();
+        }
+
+        @Override
+        protected void doStart() {
+            notifyStarted();
+        }
+
+        @Override
+        public void setTmProcessor(TmProcessor tmProcessor) {
+            this.tmProcessor = tmProcessor;
+        }
+    }
+    
 }

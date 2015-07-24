@@ -14,8 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.IndexServer;
-import org.yamcs.archive.TmProviderAdapter;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -26,6 +24,7 @@ import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
 import org.yamcs.protobuf.Yamcs.TagRequest;
 import org.yamcs.protobuf.Yamcs.TagResult;
 import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
+import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.yarch.YarchTestCase;
 
 public class TestTags extends YarchTestCase {

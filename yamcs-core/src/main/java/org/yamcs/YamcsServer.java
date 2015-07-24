@@ -42,7 +42,6 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -81,6 +80,8 @@ public class YamcsServer {
 
 	YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
 	ManagementService managementService=ManagementService.getInstance();
+	StreamInitializer.createStreams(instance);
+	
 	List<Object> services=conf.getList("services");
 	for(Object servobj:services) {
 	    String servclass;

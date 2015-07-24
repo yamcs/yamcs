@@ -29,7 +29,6 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;

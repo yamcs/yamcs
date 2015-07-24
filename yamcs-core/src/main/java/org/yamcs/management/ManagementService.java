@@ -36,7 +36,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 public class ManagementService {
     final MBeanServer mbeanServer;
     HornetManagement hornetMgr;
-    HornetProcessorManagement hornetYProcMgr;
+    HornetProcessorManagement hornetProcessorMgr;
     HornetCommandQueueManagement hornetCmdQueueMgr;
 
     final boolean jmxEnabled, hornetEnabled;
@@ -69,8 +69,8 @@ public class ManagementService {
                 ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
                 hornetMgr=new HornetManagement(this, timer);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
-                hornetYProcMgr=new HornetProcessorManagement(this, timer);
-                YProcessor.addYProcListener(hornetYProcMgr);
+                hornetProcessorMgr=new HornetProcessorManagement(this, timer);
+                YProcessor.addYProcListener(hornetProcessorMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
                 hornetEnabled=false;
@@ -81,10 +81,10 @@ public class ManagementService {
 
     public void shutdown() {
         if(hornetEnabled) {
-            YProcessor.removeYProcListner(hornetYProcMgr);
+            YProcessor.removeYProcListner(hornetProcessorMgr);
             hornetMgr.stop();
             hornetCmdQueueMgr.stop();
-            hornetYProcMgr.close();
+            hornetProcessorMgr.close();
         }
     }
 
@@ -144,7 +144,7 @@ public class ManagementService {
         try {
             YProcessorControlImpl cci = new YProcessorControlImpl(yproc);
             if(jmxEnabled) {
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=yprocs,name="+yproc.getName()));
+                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yprocessor", e);
@@ -154,7 +154,7 @@ public class ManagementService {
     public void unregisterYProcessor(YProcessor yproc) {
         if(jmxEnabled) {
             try {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=yprocs,name="+yproc.getName()));
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
             } catch (Exception e) {
                 log.warn("Got exception when unregistering a yprocessor", e);
             }
@@ -169,10 +169,10 @@ public class ManagementService {
             ClientControlImpl cci = new ClientControlImpl(instance, id, client.getUsername(), client.getApplicationName(), yprocName, client);
             clients.put(cci.getClientInfo().getId(), cci);
             if(jmxEnabled) {
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+instance+":type=clients,yproc="+yprocName+",id="+id));
+                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+instance+":type=clients,processor="+yprocName+",id="+id));
             }
             if(hornetEnabled) {
-                hornetYProcMgr.registerClient(cci.getClientInfo());
+                hornetProcessorMgr.registerClient(cci.getClientInfo());
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
@@ -191,7 +191,7 @@ public class ManagementService {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+id));
             }
             if(hornetEnabled) {
-                hornetYProcMgr.unregisterClient(ci);
+                hornetProcessorMgr.unregisterClient(ci);
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yproc", e);
@@ -209,7 +209,7 @@ public class ManagementService {
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+ci.getId()));
             }
             if(hornetEnabled) {
-                hornetYProcMgr.clientInfoChanged(ci);
+                hornetProcessorMgr.clientInfoChanged(ci);
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a yprocessor", e);

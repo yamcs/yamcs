@@ -1,7 +1,7 @@
 package org.yamcs.cmdhistory;
 
 import org.yamcs.InvalidCommandId;
-import org.yamcs.archive.TcUplinkerAdapter;
+import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -10,7 +10,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-
 import org.yamcs.protobuf.Commanding.CommandId;
 
 /**

@@ -3,7 +3,7 @@ package org.yamcs.commanding;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.archive.TcUplinkerAdapter;
+import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.yarch.ColumnDefinition;

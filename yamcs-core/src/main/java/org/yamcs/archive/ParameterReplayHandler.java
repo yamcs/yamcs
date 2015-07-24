@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TmPacketProvider;
 import org.yamcs.YProcessor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
@@ -30,7 +31,6 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.tctm.TcTmService;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -236,12 +236,10 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
 
     class MyTcTmService extends AbstractService implements TcTmService {
-        MyTmPacketProvider tm;
         MyPpProvider pp;
         
         
         public MyTcTmService() {
-            if(xtcedb!=null) tm=new MyTmPacketProvider();
             if(xtcedb!=null) pp=new MyPpProvider();
         }
 
@@ -258,7 +256,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
         @Override
         public TmPacketProvider getTmPacketProvider() {
-            return tm;
+            return null;
         }
 
         @Override
@@ -291,31 +289,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         }
 
         @Override
-        public String getLinkStatus() {
-            return null;
-        }
-
-        @Override
         public boolean isArchiveReplay() {
-            return false;
-        }
-
-        @Override
-        public String getDetailedStatus() {
-            return null;
-        }
-
-
-        @Override
-        public void disable() {
-        }
-
-        @Override
-        public void enable() {
-        }
-
-        @Override
-        public boolean isDisabled() {
             return false;
         }
 
@@ -327,11 +301,6 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         @Override
         public void doStop() {
             notifyStopped();
-        }
-
-        @Override
-        public long getDataCount() {
-            return 0;
         }
     }
     
@@ -392,7 +361,5 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         protected void doStop() {
             notifyStopped();
         }
-
-		
     }
 }

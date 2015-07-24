@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -170,6 +171,9 @@ public class YamcsSession {
 	    return result;
 	}
     }
+    public ClientMessage createMessage(boolean durable) {
+        return session.createMessage(durable);
+    }
     
     @Override
     protected void finalize() {
@@ -181,4 +185,6 @@ public class YamcsSession {
 	@SuppressWarnings("unused")
 	YamcsSession ysession=YamcsSession.newBuilder().setConnectionParams("aces-test",5445).build();
     }
+    
+    
 }

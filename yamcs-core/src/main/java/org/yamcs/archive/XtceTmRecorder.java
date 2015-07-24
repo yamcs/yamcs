@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.hornetq.api.core.HornetQException;
@@ -11,7 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -25,7 +31,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Records XTCE TM sequence containers.
@@ -36,170 +42,254 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  * @author nm
  *
  */
-public class XtceTmRecorder extends AbstractExecutionThreadService implements Runnable, StreamSubscriber {
+public class XtceTmRecorder extends AbstractService {
     private long totalNumPackets;
     protected Logger log;
-    LinkedBlockingQueue<Tuple> tmQueue=new LinkedBlockingQueue<Tuple>(100000);
-    
+
+
     boolean giveWarningIfMultipleMatches=true; //print a warning if a packet is saved multiple times
-    
-    String archiveInstance;
-    final Stream realtimeStream, dumpStream;
+
+    String yamcsInstance;
     final Tuple END_MARK=new Tuple(TmProviderAdapter.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
-    protected Stream stream;
     XtceTmExtractor tmExtractor;
     static public final String REALTIME_TM_STREAM_NAME="tm_realtime";
     static public final String DUMP_TM_STREAM_NAME="tm_dump";
     static public final String TABLE_NAME="tm";
     static public final String PNAME_COLUMN="pname";
+    final XtceDb xtceDb;
     
+    private final List<StreamRecorder> recorders = new ArrayList<StreamRecorder>();
+
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION=new TupleDefinition();
     static {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.GENTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.SEQNUM_COLUMN, DataType.INT);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.RECTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.PACKET_COLUMN, DataType.BINARY);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //packet name 
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
-    
-    
-    public XtceTmRecorder(String archiveInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
-        this.archiveInstance=archiveInstance;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+archiveInstance+"]");
-        
-        YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+
+
+    /**
+     * old constructor for compatibility with older configuration files
+     * @param yamcsInstance
+     * @throws IOException
+     * @throws ConfigurationException
+     * @throws StreamSqlException
+     * @throws ParseException
+     * @throws HornetQException
+     * @throws YamcsApiException
+     */
+    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+        this(yamcsInstance, null);
+    }
+
+    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+        this.yamcsInstance = yamcsInstance;
+        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
+
+        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+
+
         if(ydb.getTable(TABLE_NAME)==null) {
             String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime, pname) table_format=compressed";
             ydb.execute(query);
         }
         ydb.execute("create stream tm_is"+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
         ydb.execute("insert into "+TABLE_NAME+" select * from tm_is");
+        xtceDb=XtceDbFactory.getInstance(yamcsInstance);
+        tmExtractor=new XtceTmExtractor(xtceDb);
+
         
         
-        Stream s=ydb.getStream(REALTIME_TM_STREAM_NAME);
-        if(s==null) {
-           throw new ConfigurationException("Cannot find stream '"+REALTIME_TM_STREAM_NAME+"'");
-        }
-        realtimeStream=s;
-        
-        s=ydb.getStream(DUMP_TM_STREAM_NAME);
-        if(s==null) {
-            throw new ConfigurationException("Cannot find stream '"+DUMP_TM_STREAM_NAME+"'");
-        }
-        dumpStream=s;
-        
-        
-        stream=ydb.getStream("tm_is");
-        XtceDb xtcedb=XtceDbFactory.getInstance(archiveInstance);
-        tmExtractor=new XtceTmExtractor(xtcedb);
-        SequenceContainer rootsc=xtcedb.getRootSequenceContainer();
-        if(rootsc==null) throw new ConfigurationException("XtceDb does not have a root container");
-        if( xtcedb.getInheritingContainers(rootsc) == null ) {
-        	log.info( "Root container has no inheriting containers, so providing TM from root container: "+rootsc.getName() );
-        	tmExtractor.startProviding( rootsc );
+        StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
+        if(config==null) {
+            List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
+            for(StreamConfigEntry sce: sceList){
+                createRecorder(sce);
+            }
         } else {
-        	for(SequenceContainer sc:xtcedb.getInheritingContainers(rootsc)) {
-            	tmExtractor.startProviding(sc);
+            @SuppressWarnings("unchecked")
+            List<String> streamNames = YConfiguration.getList(config, "streams");
+            for(String sn: streamNames) {
+                StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
+                if(sce==null) {
+                    throw new ConfigurationException("No stream config found for '"+sn+"'");
+                }
+                createRecorder(sce);
             }
-        }
-    }
-    
-    @Override
-    protected void startUp() {
-        Thread.currentThread().setName(this.getClass().getSimpleName()+"["+archiveInstance+"]");
-        realtimeStream.addSubscriber(this);
-        dumpStream.addSubscriber(this);
-    }
-    
-    @Override
-    public void onTuple(Stream istream, Tuple t) {
-        try {
-            if(istream==realtimeStream) {
-                tmQueue.put(t);
-            } else {
-                //realtime data has priority, if the queue is almost full, delay processing the dump stream
-                while(tmQueue.remainingCapacity()<100) Thread.sleep(100);
-                tmQueue.put(t);
-            }
-        } catch (InterruptedException e) {
-            log.warn("Got interrupted exception while putting data in the queue: ", e);
         }
     }
 
-    @Override
-    public void streamClosed(Stream istream) {
-        //shouldn't happen
-        log.error("stream "+istream+" closed");
+    private void createRecorder(StreamConfigEntry streamConf) {
+       
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        SequenceContainer rootsc=streamConf.getRootContainer() ;
+        if(rootsc==null) {
+            rootsc=xtceDb.getRootSequenceContainer();
+        }
+        if(rootsc==null) {
+            throw new ConfigurationException("XtceDb does not have a root sequence container and no container was specified for decoding packets from "+streamConf.getName()+" stream");
+        }
+
+        if(xtceDb.getInheritingContainers(rootsc) == null ) {
+            log.info( "Root container has no inheriting containers, so providing TM from root container: "+rootsc.getName() );
+            tmExtractor.startProviding(rootsc);
+        } else {
+            for(SequenceContainer sc:xtceDb.getInheritingContainers(rootsc)) {
+                tmExtractor.startProviding(sc);
+            }
+        }
+        Stream inputStream=ydb.getStream(streamConf.getName());
+
+        if(inputStream==null) {
+            throw new ConfigurationException("Cannot find stream '"+streamConf.getName()+"'");
+        }
+        Stream tm_is = ydb.getStream("tm_is");
+        StreamRecorder recorder = new StreamRecorder(inputStream, tm_is, rootsc, streamConf.isAsync());
+        recorders.add(recorder);
     }
 
     @Override
-    protected void triggerShutdown() {
-	quit();
-    }
-    
-    
-    @Override
-    public void run() {
-        try {
-            Tuple t;
-            while(true) {
-                t=tmQueue.take();
-                if(t==END_MARK) break;
-                saveTuple(t);
+    protected void doStart() {
+        for(StreamRecorder sr: recorders) {
+            sr.inputStream.addSubscriber(sr);
+            if(sr.async) {
+                new Thread(sr).start();
             }
-        } catch (InterruptedException e) {
-            log.warn("Got InteruptedException when waiting for the next tuple ", e);
-            Thread.currentThread().interrupt();
         }
+        notifyStarted();
     }
-    
+
+
+
+    @Override
+    protected void doStop() {
+        for(StreamRecorder sr: recorders) {
+            sr.quit();
+        }
+        notifyStopped();
+    }
+
+
+
+
     public long getNumProcessedPackets() {
-	return totalNumPackets;
+        return totalNumPackets;
     }
-    
-    /**receives a TM tuple. The definition is in  * TmProviderAdapter
+
+
+    /**
+     * Records telemetry from one stream. The decoding starts with the specified sequence container 
      * 
-     * it finds the XTCE names and puts them inside the recording
-     * @param t
+     * If async is set to true, the tuples are put in a queue and processed from a different thread.
+     * @author nm
+     *
      */
-    protected void saveTuple(Tuple t) {
-        long gentime=(Long)t.getColumn(0);
-        byte[] packet=(byte[])t.getColumn(3);
-        totalNumPackets++;
-        
-        ByteBuffer bb=ByteBuffer.wrap(packet);
-        tmExtractor.processPacket(bb, gentime);
+    class StreamRecorder implements StreamSubscriber, Runnable {
+        SequenceContainer sc;
+        boolean async;
+        Stream inputStream;
+        Stream outputStream;
 
-        //the result contains a list with all the matching containers, the first one is the root container
-        //we should normally have just two elements in the list
-        List<ContainerExtractionResult> result=tmExtractor.getContainerResult();
+        LinkedBlockingQueue<Tuple> tmQueue;
 
-        
-        try {
-            int k=0;
-            if(result.size()>1) k++;
-            
-            if((giveWarningIfMultipleMatches) && result.size()>2) {
-                log.warn("Packet matches multiple sequence containers {}", result.toString());
+        StreamRecorder(Stream inputStream, Stream outputStream, SequenceContainer sc, boolean async) {
+            this.outputStream = outputStream;
+            this.inputStream = inputStream;
+            this.sc = sc;
+            this.async = async;
+            if(async) {
+                tmQueue = new LinkedBlockingQueue<Tuple>(100000);
             }
-            List<Object> c=t.getColumns();
-            List<Object> columns=new ArrayList<Object>(c.size()+1);
-            columns.addAll(c);
-            
-            columns.add(c.size(), result.get(k).getContainer().getQualifiedName());
-            Tuple tp=new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
-            stream.emitTuple(tp);
-        } catch (Exception e) {
-            log.error("got exception when saving packet ", e);
         }
-    }
 
-    public void quit() {
-        try {
-            tmQueue.put(END_MARK);
-        } catch (InterruptedException e) {
-            log.warn("got interrupted while putting the empty buffer in the queue");
-            Thread.currentThread().interrupt();
+        /**
+         * Only called if running in async mode, otherwise tuples are saved directly
+         */
+        @Override
+        public void run() {
+            Thread.currentThread().setName(this.getClass().getSimpleName()+"["+yamcsInstance+"]");
+            try {
+                Tuple t;
+                while(true) {
+                    t=tmQueue.take();
+                    if(t==END_MARK) break;
+                    saveTuple(t);
+                }
+            } catch (InterruptedException e) {
+                log.warn("Got InteruptedException when waiting for the next tuple ", e);
+                Thread.currentThread().interrupt();
+            }
         }
+
+
+        @Override
+        public void onTuple(Stream istream, Tuple t) {
+            try {
+                if(async) {
+                    tmQueue.put(t);
+                } else {
+                    saveTuple(t);
+                }
+            } catch (InterruptedException e) {
+                log.warn("Got interrupted exception while putting data in the queue: ", e);
+            }
+        }
+
+        @Override
+        public void streamClosed(Stream istream) {
+            //shouldn't happen
+            log.error("stream "+istream+" closed");
+        }
+
+        public void quit() {
+            if(!async) return;
+
+            try {
+                tmQueue.put(END_MARK);
+            } catch (InterruptedException e) {
+                log.warn("got interrupted while putting the empty buffer in the queue");
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        /**saves a TM tuple. The definition is in  * TmProviderAdapter
+         * 
+         * it finds the XTCE names and puts them inside the recording
+         * @param t
+         */
+        protected void saveTuple(Tuple t) {
+            long gentime=(Long)t.getColumn(0);
+            byte[] packet=(byte[])t.getColumn(3);
+            totalNumPackets++;
+
+            ByteBuffer bb=ByteBuffer.wrap(packet);
+            tmExtractor.processPacket(bb, gentime, sc);
+
+            //the result contains a list with all the matching containers, the first one is the root container
+            //we should normally have just two elements in the list
+            List<ContainerExtractionResult> result=tmExtractor.getContainerResult();
+
+
+            try {
+                int k=0;
+                if(result.size()>1) k++;
+
+                if((giveWarningIfMultipleMatches) && result.size()>2) {
+                    log.warn("Packet matches multiple sequence containers {}", result.toString());
+                }
+                List<Object> c=t.getColumns();
+                List<Object> columns=new ArrayList<Object>(c.size()+1);
+                columns.addAll(c);
+
+                columns.add(c.size(), result.get(k).getContainer().getQualifiedName());
+                Tuple tp=new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
+                outputStream.emitTuple(tp);
+            } catch (Exception e) {
+                log.error("got exception when saving packet ", e);
+            }
+        }
+
     }
 }

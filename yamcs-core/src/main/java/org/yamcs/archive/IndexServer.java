@@ -2,29 +2,33 @@ package org.yamcs.archive;
 
 import static org.yamcs.api.Protocol.*;
 
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.StreamConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
-
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+
 import org.yamcs.YamcsException;
+import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
@@ -40,7 +44,7 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
 
     TmIndex tmIndexer;
 
-    final String instance;
+    final String yamcsInstance;
 
     final YamcsClient msgClient;
     YamcsSession ys;
@@ -53,37 +57,55 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
      * Maps instance names to archive directories
      */
     final HashSet<String> instances=new HashSet<String>();
-
     public IndexServer(String instance) throws HornetQException, IOException, ConfigurationException, YamcsApiException {
+        this(instance, null);
+    }
+    
+    public IndexServer(String yamcsInstance, Map<String, Object> config) throws HornetQException, IOException, ConfigurationException, YamcsApiException {
 	boolean readonly=false;
-	this.instance=instance;
-	YConfiguration c=YConfiguration.getConfiguration("yamcs."+instance);
+	this.yamcsInstance=yamcsInstance;
+	YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
 
 	if(c.containsKey("tmIndexer")) {
 	    String icn=c.getString("tmIndexer");
-	    tmIndexer=loadIndexerFromClass(icn, instance, readonly);
+	    tmIndexer=loadIndexerFromClass(icn, yamcsInstance, readonly);
 	} else {
-	    tmIndexer=new CccsdsTmIndex(instance, readonly);
+	    tmIndexer=new CccsdsTmIndex(yamcsInstance, readonly);
 	}
-	YarchDatabase dict=YarchDatabase.getInstance(instance);
+	YarchDatabase dict=YarchDatabase.getInstance(yamcsInstance);
 
 	if(!readonly) {
-	    Stream realtimeTmStream=dict.getStream(XtceTmRecorder.REALTIME_TM_STREAM_NAME);
-	    if(realtimeTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.REALTIME_TM_STREAM_NAME);
-	    realtimeTmStream.addSubscriber(tmIndexer);
-	    Stream dumpTmStream=dict.getStream(XtceTmRecorder.DUMP_TM_STREAM_NAME);
-	    if(dumpTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.DUMP_TM_STREAM_NAME);
-	    dumpTmStream.addSubscriber(tmIndexer);
+	    StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
+	        if(config==null) {
+	            List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
+	            for(StreamConfigEntry sce: sceList){
+	                subscribe(sce);
+	            }
+	        } else {
+	            List<String> streamNames = YConfiguration.getList(config, "streams");
+	            for(String sn: streamNames) {
+	                StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
+	                if(sce==null) {
+	                    throw new ConfigurationException("No stream config found for '"+sn+"'");
+	                }
+	                subscribe(sce);
+	            }
+	        }
 	}
 
-
-	tagDb=new TagDb(instance,readonly);
+	tagDb=new TagDb(yamcsInstance, readonly);
 	ys=YamcsSession.newBuilder().build();
-	msgClient=ys.newClientBuilder().setRpcAddress(Protocol.getYarchIndexControlAddress(instance)).
+	msgClient=ys.newClientBuilder().setRpcAddress(Protocol.getYarchIndexControlAddress(yamcsInstance)).
 		setDataProducer(true).build();
 	executor.allowCoreThreadTimeOut(true);
     }
 
+    private void subscribe(StreamConfigEntry sce) {
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        Stream realtimeTmStream=ydb.getStream(XtceTmRecorder.REALTIME_TM_STREAM_NAME);
+        if(realtimeTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.REALTIME_TM_STREAM_NAME);
+        realtimeTmStream.addSubscriber(tmIndexer);
+    }
     private static TmIndex loadIndexerFromClass(String icn, String instance, boolean readonly) throws ConfigurationException, IOException {
 	try {
 	    Class<TmIndex> ic=(Class<TmIndex>)Class.forName(icn);
@@ -106,7 +128,7 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
 
     @Override
     protected void startUp() {
-	Thread.currentThread().setName(this.getClass().getSimpleName()+"["+instance+"]");
+	Thread.currentThread().setName(this.getClass().getSimpleName()+"["+yamcsInstance+"]");
     }
 
     @Override

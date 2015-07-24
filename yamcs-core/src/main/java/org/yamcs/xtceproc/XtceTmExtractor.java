@@ -10,7 +10,6 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 

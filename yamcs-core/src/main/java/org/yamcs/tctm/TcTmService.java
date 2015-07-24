@@ -2,6 +2,7 @@ package org.yamcs.tctm;
 
 import java.util.List;
 
+import org.yamcs.TmPacketProvider;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;
 

@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.archive.PpProviderAdapter;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -36,7 +36,15 @@ public class AlarmServer extends AbstractService {
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
     private AlarmListener listener;
     private String streamName;
-
+    
+    static public final TupleDefinition ALARM_TUPLE_DEFINITION=new TupleDefinition();
+    //user time, parameter name sequence number and event 
+    static {
+        ALARM_TUPLE_DEFINITION.addColumn("triggerTime", DataType.TIMESTAMP);
+        ALARM_TUPLE_DEFINITION.addColumn("parameter", DataType.STRING);
+        ALARM_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
+        ALARM_TUPLE_DEFINITION.addColumn("event", DataType.STRING);
+    }
     
     /**
      * alarm server without a listener (used for unit tests )
@@ -237,7 +245,7 @@ public class AlarmServer extends AbstractService {
 	}
 	@Override
 	public void notifyTriggered(ActiveAlarm activeAlarm) {
-	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    TupleDefinition tdef = ALARM_TUPLE_DEFINITION.copy();
 	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
 	    
 	    tdef.addColumn("triggerPV", PpProviderAdapter.PP_DATA_TYPE);
@@ -249,7 +257,7 @@ public class AlarmServer extends AbstractService {
 	
 	@Override
 	public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    TupleDefinition tdef = ALARM_TUPLE_DEFINITION.copy();
 	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
 	    
 	    tdef.addColumn("severityIncreasedPV", PpProviderAdapter.PP_DATA_TYPE);
@@ -262,7 +270,7 @@ public class AlarmServer extends AbstractService {
 
 	@Override
 	public void notifyUpdate(ActiveAlarm activeAlarm) {	  
-	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    TupleDefinition tdef = ALARM_TUPLE_DEFINITION.copy();
 	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
 	    
 	    tdef.addColumn("updatedPV", PpProviderAdapter.PP_DATA_TYPE);
@@ -274,7 +282,7 @@ public class AlarmServer extends AbstractService {
 
 	@Override
 	public void notifyCleared(ActiveAlarm activeAlarm) {
-	    TupleDefinition tdef = StreamInitService.ALARM_TUPLE_DEFINITION.copy();
+	    TupleDefinition tdef = ALARM_TUPLE_DEFINITION.copy();
 	    ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
 	    
 	    tdef.addColumn("clearedPV", PpProviderAdapter.PP_DATA_TYPE);

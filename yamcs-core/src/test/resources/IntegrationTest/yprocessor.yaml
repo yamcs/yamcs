@@ -15,11 +15,11 @@ types: [realtime, Archive]
 
 realtime:
     telemetryProvider: 
-       class: org.yamcs.tctm.YarchTmPacketProvider
+       class: org.yamcs.StreamTmPacketProvider
        args: 
            stream: "tm_realtime"
     commandReleaser:
-       class: org.yamcs.tctm.YarchTcCommandReleaser
+       class: org.yamcs.StreamTcCommandReleaser
        args:
            stream: "tc_realtime"
     parameterProviders:

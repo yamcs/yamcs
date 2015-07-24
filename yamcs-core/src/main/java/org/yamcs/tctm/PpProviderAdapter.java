@@ -1,4 +1,4 @@
-package org.yamcs.archive;
+package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,9 +28,8 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * PpRecorder
  * 
- * Injects processed parameters from PpProviders into yarch.
+ * Injects processed parameters from PpProviders into yamcs streams.
  *
  * To the base definition there is one column for each parameter name with the type PROTOBUF({@link org.yamcs.protobuf.pvalue.ParameterValue}
 

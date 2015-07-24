@@ -1,4 +1,4 @@
-package org.yamcs.archive;
+package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,10 +9,8 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQException;
 import org.yamcs.ConfigurationException;
-import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
-import org.yamcs.tctm.TmPacketProvider;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -22,17 +20,19 @@ import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.AbstractService;
+
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
+import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Loads multiple TmPacketProviders and inject all the packets into one of the REALTIME_TM_STREAM_NAME or DUMP_TM_STREAM_NAME streams
+ * Loads multiple TmPacketProviders and inject all the packets into a defined stream
  * @author nm
  *
  */
 public class TmProviderAdapter extends AbstractService {
-    private Collection<TmPacketProvider> tmproviders=new ArrayList<TmPacketProvider>();
+    private Collection<TmPacketSource> tmproviders=new ArrayList<TmPacketSource>();
     final String archiveInstance;
     final static public String GENTIME_COLUMN="gentime";
     final static public String SEQNUM_COLUMN="seqNum";
@@ -81,9 +81,9 @@ public class TmProviderAdapter extends AbstractService {
 		throw new ConfigurationException("Cannot find stream '"+streamName+"'");
 	    }
 	    final Stream stream=s;
-	    YObjectLoader<TmPacketProvider> objloader=new YObjectLoader<TmPacketProvider>();
+	    YObjectLoader<TmPacketSource> objloader=new YObjectLoader<TmPacketSource>();
 
-	    TmPacketProvider prov= null;
+	    TmPacketSource prov= null;
 	    if(args!=null) {
 		prov = objloader.loadObject(className, archiveInstance, name, args);
 	    } else {
@@ -92,7 +92,7 @@ public class TmProviderAdapter extends AbstractService {
 
 	    if(!enabledAtStartup) prov.disable();
 
-	    prov.setTmProcessor(new TmProcessor() {
+	    prov.setTmSink(new TmSink() {
 		@Override
 		public void processPacket(PacketWithTime pwrt) {
 		    long time= pwrt.getGenerationTime();
@@ -100,10 +100,6 @@ public class TmProviderAdapter extends AbstractService {
 		    int apidSeqCount = ByteBuffer.wrap(pkt).getInt(0);
 		    Tuple t=new Tuple(TM_TUPLE_DEFINITION, new Object[] {time, apidSeqCount, pwrt.rectime, pkt });
 		    stream.emitTuple(t);
-		}
-
-		@Override
-		public void finished() {
 		}
 	    });
 
@@ -116,7 +112,7 @@ public class TmProviderAdapter extends AbstractService {
     
     @Override
     protected void doStart() {
-	for(TmPacketProvider prov:tmproviders) {
+	for(TmPacketSource prov:tmproviders) {
 	    prov.startAsync();
 	}
 	notifyStarted();
@@ -124,7 +120,7 @@ public class TmProviderAdapter extends AbstractService {
 
     @Override
     protected void doStop() {
-	for(TmPacketProvider prov:tmproviders) {
+	for(TmPacketSource prov:tmproviders) {
 	    prov.stopAsync();
 	}
 	notifyStopped();

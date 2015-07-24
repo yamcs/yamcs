@@ -11,23 +11,23 @@ public class ValueUtility {
     public static Value getUint32Value(int x) {
         return Value.newBuilder().setType(Value.Type.UINT32).setUint32Value(x).build(); 
     }
-    
+
     public static Value getSint32Value(int x) {
         return Value.newBuilder().setType(Value.Type.SINT32).setUint32Value(x).build(); 
     }
-    
+
     public static Value getStringValue(String x) {
         return Value.newBuilder().setType(Value.Type.STRING).setStringValue(x).build(); 
     }
-    
+
     public static Value getBinaryValue(byte[] x) {
         return Value.newBuilder().setType(Value.Type.BINARY).setBinaryValue(ByteString.copyFrom(x)).build(); 
     }
-    
+
     public static Value getTimestampValue(long x) {
         return Value.newBuilder().setType(Value.Type.TIMESTAMP).setTimestampValue(x).build(); 
     }
-    
+
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
         switch (cd.getType().val) { //TODO all types
         case INT:
@@ -39,13 +39,13 @@ public class ValueUtility {
         case BINARY:
             return getBinaryValue((byte[])v);
         case BOOLEAN:
-        	return ValueHelper.newValue((Boolean)v);
+            return ValueHelper.newValue((Boolean)v);
         }
         throw new RuntimeException("cannot convert type to value "+cd.getType());
     }
 
-    
-	public static Object getYarchValue(Value v) {
+
+    public static Object getYarchValue(Value v) {
         switch(v.getType()) {
         case BINARY:
             return v.getBinaryValue().toByteArray();
@@ -61,6 +61,12 @@ public class ValueUtility {
             return v.getStringValue();
         case TIMESTAMP:
             return v.getTimestampValue();
+        case BOOLEAN:
+            return v.getBooleanValue();
+        case SINT64:
+            return v.getSint64Value();
+        case UINT64:
+            return v.getSint64Value();
         }
         throw new RuntimeException("cannot values of type "+v.getType());
     }

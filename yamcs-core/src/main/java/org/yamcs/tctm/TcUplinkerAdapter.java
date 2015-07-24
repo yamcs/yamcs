@@ -1,4 +1,4 @@
-package org.yamcs.archive;
+package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,8 +54,6 @@ public class TcUplinkerAdapter extends AbstractService {
     public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
 	this.yamcsInstance=yamcsInstance;
 	YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
-	ydb.execute("create stream "+REALTIME_TC_STREAM_NAME+TC_TUPLE_DEFINITION.getStringDefinition());
-
 	realtimeStream=ydb.getStream(TcUplinkerAdapter.REALTIME_TC_STREAM_NAME);
 
 	//new StreamAdapter(realtimeStream, new SimpleString(archiveInstance+".tc.realtime"), new TmTupleTranslator());

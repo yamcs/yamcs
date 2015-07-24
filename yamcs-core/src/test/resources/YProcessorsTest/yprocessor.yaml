@@ -3,9 +3,10 @@ types: [dummy, Archive]
 
 dummy:
     telemetryProvider: 
-        class: org.yamcs.tctm.DummyTmProvider
+        class: org.yamcs.management.YProcessorsTest$DummyTmProvider
 
 
 Archive:
-    tm: org.yamcs.tctm.ReplayService
+    telemetryProvider:
+        class: org.yamcs.tctm.ReplayService
 

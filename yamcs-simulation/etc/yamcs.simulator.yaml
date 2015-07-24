@@ -1,21 +1,14 @@
 ############################################ testinst configuration  ############################################################################
 services:
-    #creates a number of streams required by the other services
-    #the streams are of predefined type "tm", "tc", "cmdHist" or "event"
-    # in addition - stream sql files can also be loaded by adding sqlFile: key
-    - class: org.yamcs.StreamInitService
-      args:
-           tm: ["tm_realtime", "tm_dump"]
-           cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
-           event: ["events_realtime", "events_dump"]
-           param: ["sys_param", "pp_realtime"]
-           alarm: ["alarms_realtime"]
-
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
     - org.yamcs.archive.TmProviderAdapter
     - org.yamcs.archive.PpProviderAdapter
     - org.yamcs.archive.TcUplinkerAdapter
-    - org.yamcs.archive.XtceTmRecorder
+    - class: org.yamcs.archive.XtceTmRecorder
+      args:
+         streams:
+           - name: tm_realtime
+           - name: tm_dump
     - org.yamcs.archive.FSEventDecoder
 #    - org.yamcs.archive.PpRecorder
     - org.yamcs.archive.EventRecorder
@@ -68,4 +61,15 @@ tcUplinkers:
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
 mdb: simulator
 
+
+#Configuration for streams created at server startu
+streamConfig:
+  tm: 
+    - name: "tm_realtime"
+    - name: "tm_dump"
+  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param"]
+  alarm: ["alarms_realtime"]
+  tc: ["tc_realtime"]
 
