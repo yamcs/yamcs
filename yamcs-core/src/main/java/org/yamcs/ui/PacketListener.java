@@ -1,10 +1,10 @@
 package org.yamcs.ui;
 
-import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
 
 public interface PacketListener {
 	public boolean isCanceled();
 	public void exception(final Exception e);
-	public void packetReceived(CcsdsPacket c);
+	public void packetReceived(TmPacketData c);
 	public void replayFinished();
 }
