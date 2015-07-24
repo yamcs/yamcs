@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,15 +36,26 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
+import org.yamcs.ContainerExtractionResult;
+import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.ui.PacketListener;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtceproc.XtceTmExtractor;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 public class PacketsTable extends JTable implements ListSelectionListener, PacketListener {
 
     private static final long serialVersionUID = 1L;
-    private static final String[] COLUMNS = {"#", "Generation Time", "APID", "Opsname", "Size"};
+    private static final String[] FIXED_COLUMNS = {"#", "Generation Time", "Packet Name"};
     private static final String MARK_PACKET = "Mark Packet";
     private static final String UNMARK_PACKET = "Unmark Packet";
     private static final Color LIGHT_GRAY = new Color(216, 216, 216);
@@ -55,6 +67,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     public static final String FORWARD_ACTION_KEY = "forward";
     public static final String UP_ACTION_KEY = "up";
     public static final String DOWN_ACTION_KEY = "down";
+    
+    
+    public static final String PREF_COLNAMES = "columns";
 
     private PacketViewer packetViewer;
     private JPopupMenu popup; 
@@ -68,18 +83,34 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     private List<Integer> history = new ArrayList<Integer>();
     private int historyPosition = -1;
 
+    //used for extracting parameters shown on the left overview table
+    XtceTmExtractor tmExtractor;
+
+    List<String> columnParaNames;
+    List<Parameter> shownColumnParameters;
+
+
     public PacketsTable(PacketViewer packetViewer) {
         super();
         this.packetViewer = packetViewer;
+        readColumnsFromPreference();
 
-        DefaultTableModel packetsModel = new DefaultTableModel(COLUMNS, 0) {
+        DefaultTableModel packetsModel = new DefaultTableModel(FIXED_COLUMNS, 0) {
             private static final long serialVersionUID = 1L;
 
             @Override
             public Class<?> getColumnClass(int columnIndex) { 
-                if (columnIndex == 0 || columnIndex == 2 || columnIndex == 4)
+                if (columnIndex == 0)
                     return Number.class;
-                return super.getColumnClass(columnIndex);
+                return String.class; //TODO
+            }
+            @Override
+            public String getColumnName(int column) {
+                if(column<FIXED_COLUMNS.length) {
+                    return FIXED_COLUMNS[column];
+                } else {
+                    return shownColumnParameters.get(column-FIXED_COLUMNS.length).getName();
+                }
             }
         };
         setModel(packetsModel);
@@ -88,9 +119,6 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         setFillsViewportHeight(true);
         getColumnModel().getColumn(0).setPreferredWidth(50);
         getColumnModel().getColumn(1).setPreferredWidth(160);
-        getColumnModel().getColumn(2).setPreferredWidth(50);
-        getColumnModel().getColumn(3).setPreferredWidth(160);
-        getColumnModel().getColumn(4).setPreferredWidth(50);
 
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -107,9 +135,16 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 return o1.intValue() < o2.intValue() ? -1 : (o1.intValue() > o2.intValue() ? 1 : 0);
             }
         };
+        
+        Comparator<ListPacket> packetComparator = new Comparator<ListPacket>() {
+            @Override
+            public int compare(ListPacket o1, ListPacket o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        };
+        
         packetsSorter.setComparator(0, numberComparator);
-        packetsSorter.setComparator(2, numberComparator);
-        packetsSorter.setComparator(4, numberComparator);
+        packetsSorter.setComparator(2, packetComparator);
         setRowSorter(packetsSorter);
 
         // Swing highlights the selected cell with an annoying blue border.
@@ -266,7 +301,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     private void createActions() {
         // Ctrl on win/linux, Command on mac
         int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-        
+
         //
         // GO TO PACKET
         Action goToPacketAction = new AbstractAction("Go to Packet...") {
@@ -390,7 +425,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             if (rowIndex != -1) {
                 rowIndex = convertRowIndexToModel(rowIndex);
 
-                packetViewer.setSelectedPacket((ListPacket)getModel().getValueAt(rowIndex, 3));
+                packetViewer.setSelectedPacket((ListPacket)getModel().getValueAt(rowIndex, 2));
                 int packetNumber = (Integer) getModel().getValueAt(rowIndex, 0);
                 if (history.isEmpty() || history.get(historyPosition) != packetNumber) {
                     historyPosition++;
@@ -468,51 +503,144 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     }
 
     @Override
-    public void packetReceived(CcsdsPacket c) {
-        int len = c.getCccsdsPacketLength()+7;
-        ByteBuffer bb = c.getByteBuffer();
-        byte[] buf;
-        if(bb.isDirect()) {
-            buf=bb.array();
+    public void packetReceived(TmPacketData data) {
+        byte[] buf = data.getPacket().toByteArray();        
+        int len = buf.length;
+        final ListPacket packet = new ListPacket(buf, len);
+        tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime());
+        ParameterValueList pvlist = tmExtractor.getParameterResult();
+        packet.setColumnParameters(pvlist);
+
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        String name;
+        if(containers.isEmpty()) {
+            name = "unknown";
         } else {
-            buf = new byte[bb.capacity()];
-            bb.get(buf);
+            name = containers.get(containers.size()-1).getContainer().getName();
         }
-        
-        final ListPacket ccsds = new ListPacket(buf, len);
-        String opsname = packetViewer.xtceutil.getPacketNameByApidPacketid(ccsds.getAPID(), ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-        if(opsname == null) opsname = packetViewer.xtceutil.getPacketNameByPacketId(ccsds.getPacketID(), MdbMappings.MDB_OPSNAME);
-        if(opsname == null) opsname = String.format("Packet ID %d", ccsds.getPacketID());
-        ccsds.setOpsname(opsname);
+
+        packet.setName(name);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 DefaultTableModel packetsModel = (DefaultTableModel) getModel();
-                addRow(new Object[] {
-                        TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-                        ccsds.getAPID(), ccsds, ccsds.getLength()
-                });
+                List<Object> row = new ArrayList<Object>();
+                row.add( TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
+                row.add(packet);
+                for(Parameter p:shownColumnParameters) {
+                    ParameterValue pv = packet.getParameterColumn(p);
+                    if(pv!=null) {
+                        row.add(getValue(pv));
+                    } else {
+                        row.add(null);
+                    }
+                }
+                addRow(row.toArray());
                 while (packetsModel.getRowCount() > maxLines) {
                     removeRow(0);
                 }
 
                 if (packetViewer.miAutoScroll.isSelected()) {
-                    int row = convertRowIndexToModel(packetsModel.getRowCount() - 1);
-                    Rectangle rect = getCellRect(row, 0, true);
+                    int rowNum = convertRowIndexToModel(packetsModel.getRowCount() - 1);
+                    Rectangle rect = getCellRect(rowNum, 0, true);
                     scrollRectToVisible(rect);
                 }
                 if (packetViewer.miAutoSelect.isSelected()) {
-                    int row = convertRowIndexToModel(packetsModel.getRowCount() - 1);
-                    getSelectionModel().setSelectionInterval(row, row);
+                    int rowNum = convertRowIndexToModel(packetsModel.getRowCount() - 1);
+                    getSelectionModel().setSelectionInterval(rowNum, rowNum);
                 }
             }
         });
     }
 
+   private Object getValue(ParameterValue pv) {
+        Value v = pv.getEngValue();
+        
+        if(v==null) {
+            return getValue(pv.getRawValue());
+        } else {
+            return getValue(v);
+        }
+    }
+    
+    private Object getValue(Value v) {
+        return ValueUtility.getYarchValue(v);
+    }
+    
+    //reads from the preferences the columns (parameters) that have to be shown in the left table
+    private void readColumnsFromPreference() {
+        columnParaNames = new ArrayList<String>();
+        String  jsons = packetViewer.uiPrefs.get(PREF_COLNAMES, null);
+        if(jsons==null) {
+            log("No columns definition found in ui preferences");
+            return;
+        }
+        JsonFactory jsonFactory = new JsonFactory();
+        try {
+            JsonParser jsp = jsonFactory.createParser(jsons);
+            if (jsp.nextToken() != JsonToken.START_ARRAY) {
+                log("columns definition found in preferences found but not an array");
+                return;
+            }
+            while(jsp.nextToken()==JsonToken.VALUE_STRING) {
+                columnParaNames.add(jsp.getValueAsString());
+            }            
+        } catch (Exception e) {
+            log("Failed to read parameter columns from preferences");
+            e.printStackTrace();
+        }            
+    }
+
+    private void saveColumnsToPreference() {
+        JsonFactory jsonFactory = new JsonFactory();
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            JsonGenerator jsg = jsonFactory.createGenerator(baos);
+            jsg.writeStartArray();
+            for(String s: columnParaNames) {
+                jsg.writeString(s);
+            }
+            jsg.writeEndArray();
+            jsg.close();
+            packetViewer.uiPrefs.put(PREF_COLNAMES, baos.toString());
+        } catch (Exception e) {
+            log("Failed to read parameter columns from preferences");
+            e.printStackTrace();
+        }            
+    }
+    
+
+    /**
+     * adds columns corresponding to existing parameters in XtceDB
+     * also creates the tmExtractor and subscribes to those parameters
+     * 
+     * */
+    void setupParameterColumns() {
+        tmExtractor=new XtceTmExtractor(packetViewer.xtcedb);
+        shownColumnParameters = new ArrayList<>();
+        for(String pn: columnParaNames) {
+            Parameter p = packetViewer.xtcedb.getParameter(pn);
+            if(p==null) {
+                log("Cannot find a parameter with name "+pn+" in XtceDB, ignoring");
+            } else {
+                shownColumnParameters.add(p);
+                ((DefaultTableModel) getModel()).addColumn(p.getName());
+                tmExtractor.startProviding(p);
+            }
+        }
+    }
+
+    void addParameterColumn(Parameter p) {
+        columnParaNames.add(p.getQualifiedName());
+        saveColumnsToPreference();
+        shownColumnParameters.add(p);
+        ((DefaultTableModel) getModel()).addColumn(p.getName());
+        tmExtractor.startProviding(p);
+    }
+
     @Override
     public void exception(final Exception e) {
         packetViewer.log(e.toString());
-        System.out.println(e);
     }
 
     @Override
@@ -553,5 +681,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 }
             }
         }
+    }
+
+    public void log(final String s) {
+        packetViewer.log(s);
     }
 }

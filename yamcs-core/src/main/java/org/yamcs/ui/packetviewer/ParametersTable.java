@@ -7,17 +7,23 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -29,14 +35,16 @@ import javax.swing.table.TableCellRenderer;
 
 import org.yamcs.ui.packetviewer.PacketViewer.Range;
 import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ValueEnumeration;
 
 public class ParametersTable extends JTable implements ListSelectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Color GRAYISH_COLOR = new Color(235, 235, 235);
-
-    private static final String[] COLUMNS = { "Opsname", "Eng Value",
+    private static final String ADD_PARAMETER_TO_LEFT = "Add Parameter to the left table";
+    
+    private static final String[] COLUMNS = { "Name", "Eng Value",
         "Raw Value", "Nominal Low", "Nominal High", "Danger Low",
         "Danger High", "Bit Offset", "Bit Size", "Calibration" };
 
@@ -45,6 +53,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
     private PacketViewer packetViewer;
     private String lastSearchTerm;
 
+    private RightClickMenu rightClickMenu = new RightClickMenu();
     public ParametersTable(PacketViewer packetViewer) {
         super(new DefaultTableModel(COLUMNS, 0));
         this.packetViewer = packetViewer;
@@ -53,7 +62,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         getSelectionModel().addListSelectionListener(this);
         setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-        LinkListener linkListener = new LinkListener();
+        MouseListener linkListener = new MouseListener();
         addMouseListener(linkListener);
         addMouseMotionListener(linkListener);
 
@@ -80,11 +89,11 @@ public class ParametersTable extends JTable implements ListSelectionListener {
                 if (value instanceof EnumeratedParameterType) {
                     String name = ((EnumeratedParameterType) value).getName();
                     String link = String.format("<html><a href=\"#\">%s</a></html>", name);
-                    c = super.getTableCellRendererComponent(table, link,
-                            isSelected, false /* disable focus ! */, row, column);
+                    c = super.getTableCellRendererComponent(table, link, isSelected, false /* disable focus ! */, row, column);
+                } else if(value instanceof Parameter){
+                    c = super.getTableCellRendererComponent(table, ((Parameter)value).getName(),  isSelected, false /* disable focus ! */, row, column);
                 } else {
-                    c = super.getTableCellRendererComponent(table, value,
-                            isSelected, false /* disable focus ! */, row, column);
+                    c = super.getTableCellRendererComponent(table, value,  isSelected, false /* disable focus ! */, row, column);
                 }
 
                 // Highlight search results
@@ -247,11 +256,18 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         lastSearchTerm = null;
     }
 
-    private class LinkListener extends MouseAdapter {
+    private class MouseListener extends MouseAdapter {
+        
+        @Override
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+        
         @Override
         public void mouseClicked(MouseEvent e) {
             int column = convertColumnIndexToModel(columnAtPoint(e.getPoint()));
             int row = rowAtPoint(e.getPoint());
+            maybeShowPopup(e);
             if (column == 9 && row != -1) {
                 Object val = getModel().getValueAt(row, column);
                 if (val instanceof EnumeratedParameterType) {
@@ -307,7 +323,12 @@ public class ParametersTable extends JTable implements ListSelectionListener {
                     JOptionPane.showMessageDialog(getJFrameContainer(ParametersTable.this), msgPanelScroll, title, JOptionPane.INFORMATION_MESSAGE);
                 }
             }
-        }        
+        }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
         @Override
         public void mouseMoved(MouseEvent e) {
             int column = convertColumnIndexToModel(columnAtPoint(e.getPoint()));
@@ -329,8 +350,16 @@ public class ParametersTable extends JTable implements ListSelectionListener {
             else
                 return getJFrameContainer((JComponent) parent);
         }
-    }
 
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                int row = rowAtPoint(e.getPoint());
+                rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
+                rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+
+    }
     static class SearchStats {
         /**
          * row index of selected match (as visible to user)
@@ -341,5 +370,20 @@ public class ParametersTable extends JTable implements ListSelectionListener {
          * total matching search results
          */
         int totalMatching;
+    }
+
+
+    private class RightClickMenu extends JPopupMenu {
+        Parameter selectedParameter;
+        public RightClickMenu() {
+                
+            Action a = new AbstractAction(ADD_PARAMETER_TO_LEFT) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    packetViewer.addParameterToTheLeftTable(selectedParameter);
+                }
+            };
+           add(a);
+        }
     }
 }

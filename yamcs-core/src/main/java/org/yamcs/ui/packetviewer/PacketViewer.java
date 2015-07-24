@@ -101,6 +101,7 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -143,15 +144,19 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     ConnectionParameters connectionParams;
     XtceUtil xtceutil;
+    //used for decoding full packets
     XtceTmProcessor tmProcessor;
+    
+    
     boolean authenticationEnabled = false;
     String streamName;
+   
     
     public PacketViewer() throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
-
+        
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
@@ -418,8 +423,12 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                logText.append(s + "\n");
-                logScrollpane.getVerticalScrollBar().setValue(logScrollpane.getVerticalScrollBar().getMaximum());
+                if(logText!=null) {
+                    logText.append(s + "\n");
+                    logScrollpane.getVerticalScrollBar().setValue(logScrollpane.getVerticalScrollBar().getMaximum());
+                } else {
+                    System.err.println(s);
+                }
             }
         });
     }
@@ -516,12 +525,15 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         xtceutil=XtceUtil.getInstance(xtcedb);
 
         tmProcessor=new XtceTmProcessor(xtcedb);
+        
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         log(String.format("Loaded definition of %d sequence container%s and %d parameter%s"
                 , xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s":"")
                 , xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s":"")));
+        
+        packetsTable.setupParameterColumns();
         return true;
     }
 
@@ -533,7 +545,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
             ClientMessage msg=yc.dataConsumer.receive(5000);
-            
+
             ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
@@ -550,8 +562,10 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
-
+        packetsTable.setupParameterColumns();
+        
         log("Loaded "+xtcedb.getSequenceContainers().size()+" sequence containers and "+xtcedb.getParameterNames().size()+" parameters");
+
         return true;
     }
 
@@ -567,7 +581,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 try {
                     FileInputStream reader = new FileInputStream(lastFile);
                     byte[] fourb = new byte[4];
-                    ListPacket ccsds;
+                    ListPacket packet;
                     ByteBuffer buf;
                     int res;
                     int len, offset = 0;
@@ -611,17 +625,8 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
             len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;           
-            int apid=CcsdsPacket.getAPID(buf);
-            int packetid = CcsdsPacket.getPacketID(buf);
-            ccsds = new ListPacket(buf.array(), len, offset);
-            
-            
-            String opsname = xtceutil.getPacketNameByApidPacketid(apid, packetid, MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = xtceutil.getPacketNameByPacketId(packetid, MdbMappings.MDB_OPSNAME);
-            if(opsname == null) opsname = String.format("Packet ID %d", packetid);
-            ccsds.setOpsname(opsname);
+            packet = new ListPacket(buf.array(), len, offset);
 
-            
             r = reader.skip(len - 16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
             offset += len;
@@ -629,7 +634,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
                 offset+=1;
             }
-            publish(ccsds);
+            publish(packet);
 
             packetCount++;
             if (packetCount == maxLines) break;
@@ -649,10 +654,10 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
             @Override
             protected void process(final List<ListPacket> chunks) {
-                for (ListPacket ccsds:chunks) {
-                    packetsTable.addRow(new Object[] {
-                            TimeEncoding.toCombinedFormat(ccsds.getInstant()),
-                            ccsds.getAPID(), ccsds, ccsds.getLength()      });
+                for (ListPacket packet:chunks) {
+                   /* packetsTable.addRow(new Object[] {
+                            TimeEncoding.toCombinedFormat(packet.getInstant()),
+                            packet.getAPID(), packet, packet.getLength()      });*/
                 }
             }
 
@@ -806,7 +811,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
                     // add new row for parameter table
 
-                    vec[0] = name;
+                    vec[0] = value.getParameter();
                     vec[1] = StringConvertors.toString(value.getEngValue(), false);
                     vec[2] = StringConvertors.toString(value.getRawValue(), false);
 
@@ -860,7 +865,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getInstant(), b));
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getGenerationTime(), b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -912,7 +917,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                         if(!loadRemoteXtcedb(mdbConfig)) return;
                     }
                 }
-                
+
             }
             SimpleString dataAddress;
             if(streamName==null || streamName.isEmpty()) {
@@ -923,16 +928,16 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             log("subscribing to "+dataAddress);
             yclient=yconnector.getSession().newClientBuilder().setRpc(false).
                     setDataConsumer(dataAddress, null).build();
-            
-            
-            
+
+
+
             yclient.dataConsumer.setMessageHandler(new MessageHandler() {
                 @Override
                 public void onMessage(ClientMessage msg) {
                     TmPacketData data;
                     try {
                         data = (TmPacketData)decode(msg, TmPacketData.newBuilder());
-                        packetsTable.packetReceived(new CcsdsPacket(data.getPacket().asReadOnlyByteBuffer()));
+                        packetsTable.packetReceived(data);
                     } catch (YamcsApiException e) {
                         log(e.toString());
                         e.printStackTrace();
@@ -1039,7 +1044,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         System.err.println(message);
         printUsageAndExit(false);
     }
-    
+
     private void setStreamName(String streamName) {
         this.streamName = streamName;        
     }
@@ -1119,5 +1124,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         }
     }
 
-  
+    public void addParameterToTheLeftTable(Parameter selectedParameter) {
+        packetsTable.addParameterColumn(selectedParameter);
+    }
 }

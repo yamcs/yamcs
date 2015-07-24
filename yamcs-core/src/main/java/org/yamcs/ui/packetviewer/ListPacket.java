@@ -7,7 +7,10 @@ import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
+import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.xtce.Parameter;
 
 /**
  * A packet appearing in the packet viewer list. Can be only partially loaded (i.e. the header only).
@@ -15,12 +18,15 @@ import org.yamcs.utils.CcsdsPacket;
 public class ListPacket {
     private static final String HEX_CHARS = "0123456789abcdef"; 
 
-    private String opsname;
+    private String name;
     private long fileOffset;
     byte[] buf;
     int length;
     boolean incomplete=false;
-    
+    long generationTime;
+ 
+    //these are the parameters that are shown in the left bar (in fact all parameters extracted by the extractor,so could be more than what is shown)
+    private ParameterValueList columnParameters;
     
     ListPacket(byte[] b, int length) {
         buf = b.clone();
@@ -33,13 +39,13 @@ public class ListPacket {
         this.incomplete = true;
     }
     
-    public void setOpsname(String opsname)  {
-        this.opsname = opsname;
+    public void setName(String opsname)  {
+        this.name = opsname;
     }
 
     @Override
     public String toString() {
-        return opsname;
+        return name;
     }
 
     void load(File srcFile) throws IOException {
@@ -94,27 +100,31 @@ public class ListPacket {
                 hexDoc.insertString(hexDoc.getLength(), hexBuf.toString(), hexDoc.getStyle("fixed"));
             }
         } catch (BadLocationException x) {
-            System.err.println("cannot format hexdump of "+opsname+": "+x.getMessage());
+            System.err.println("cannot format hexdump of "+name+": "+x.getMessage());
         }
     }
 
-    public long getInstant() {
+    public long getGenerationTime() {
         return CcsdsPacket.getInstant(buf);
     }
-
-    public int getAPID() {      
-        return CcsdsPacket.getAPID(buf);
-    }
-
+    
     public int getLength() {        
         return length;
     }
 
-    public int getPacketID() {
-        return CcsdsPacket.getPacketID(buf);
-    }
-
     public byte[] getBuffer() {
         return buf;
+    }
+
+    public void setColumnParameters(ParameterValueList pvlist) {
+        this.columnParameters = pvlist;        
+    }
+
+    public ParameterValue getParameterColumn(Parameter p) {
+        return columnParameters.getLast(p);
+    }
+
+    public String getName() {
+        return name;
     }
 }
