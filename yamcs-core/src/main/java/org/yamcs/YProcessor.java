@@ -408,7 +408,7 @@ public class YProcessor {
     }
 
 
-    public static void addYProcListener(YProcessorListener channelListener) {
+    public static void addProcessorListener(YProcessorListener channelListener) {
         listeners.add(channelListener);
     }
     public static void removeYProcListner(YProcessorListener channelListener) {

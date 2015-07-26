@@ -70,7 +70,7 @@ public class ManagementService {
                 hornetMgr=new HornetManagement(this, timer);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
                 hornetProcessorMgr=new HornetProcessorManagement(this, timer);
-                YProcessor.addYProcListener(hornetProcessorMgr);
+                YProcessor.addProcessorListener(hornetProcessorMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
                 hornetEnabled=false;
@@ -188,7 +188,7 @@ public class ManagementService {
         ClientInfo ci=cci.getClientInfo();
         try {
             if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+id));
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+id));
             }
             if(hornetEnabled) {
                 hornetProcessorMgr.unregisterClient(ci);
@@ -205,8 +205,8 @@ public class ManagementService {
 
         try {
             if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,yproc="+oldci.getProcessorName()+",id="+ci.getId()));
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,yproc="+ci.getProcessorName()+",id="+ci.getId()));
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,processor="+oldci.getProcessorName()+",id="+ci.getId()));
+                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+ci.getId()));
             }
             if(hornetEnabled) {
                 hornetProcessorMgr.clientInfoChanged(ci);
@@ -315,7 +315,7 @@ public class ManagementService {
             for(CommandQueue cq:cqm.getQueues()) {
                 if(jmxEnabled) {
                     CommandQueueControlImpl cqci = new CommandQueueControlImpl(instance, yprocName, cqm, cq);
-                    mbeanServer.registerMBean(cqci, ObjectName.getInstance(tld+"."+instance+":type=commandQueues,yproc="+yprocName+",name="+cq.getName()));
+                    mbeanServer.registerMBean(cqci, ObjectName.getInstance(tld+"."+instance+":type=commandQueues,processor="+yprocName+",name="+cq.getName()));
                 }
             }
             if(hornetEnabled) {
