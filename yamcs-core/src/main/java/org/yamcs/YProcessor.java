@@ -144,10 +144,12 @@ public class YProcessor {
 
             synchronous = tctms.isSynchronous();
 
-
+            
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this);
-            tmPacketProvider.setTmProcessor(tmProcessor);
+            if(tmPacketProvider!=null) {
+            	tmPacketProvider.setTmProcessor(tmProcessor);
+            }
             containerRequestManager=new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
 
@@ -249,7 +251,10 @@ public class YProcessor {
      *
      */
     public void start() {
-        tmPacketProvider.startAsync();
+    	if(tmPacketProvider!=null) {
+    		tmPacketProvider.startAsync();
+    	}
+    	
         if(commandReleaser!=null) {
             commandReleaser.startAsync();
             commandReleaser.awaitRunning();
@@ -265,8 +270,10 @@ public class YProcessor {
         }
 
         parameterRequestManager.start();
-
-        tmPacketProvider.awaitRunning();
+        
+        if(tmPacketProvider!=null) {
+        	tmPacketProvider.awaitRunning();
+        }
 
         propagateChannelStateChange();
     }

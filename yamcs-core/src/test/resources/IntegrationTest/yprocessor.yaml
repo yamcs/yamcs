@@ -17,7 +17,7 @@ realtime:
     telemetryProvider: 
        class: org.yamcs.StreamTmPacketProvider
        args: 
-           stream: "tm_realtime"
+           streams: ["tm_realtime"]
     commandReleaser:
        class: org.yamcs.StreamTcCommandReleaser
        args:

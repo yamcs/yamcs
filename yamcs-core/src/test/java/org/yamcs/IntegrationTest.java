@@ -10,10 +10,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +30,7 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallbackListener;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.YamcsConnectionProperties;
+import org.yamcs.archive.PacketWithTime;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -61,12 +64,17 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.tctm.TmPacketSource;
+import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementClient;
 import org.yamcs.web.websocket.ParameterClient;
+import org.yamcs.xtce.SequenceContainer;
 
+import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.Service;
 import com.google.protobuf.MessageLite;
 
 public class IntegrationTest {
@@ -77,7 +85,8 @@ public class IntegrationTest {
     HttpClient httpClient;
     UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");;
     UsernamePasswordToken currentUser = null;
-
+    RefMdbPacketGenerator packetGenerator;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         setupYamcs();
@@ -127,7 +136,8 @@ public class IntegrationTest {
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
         httpClient = new HttpClient();
-        packetProvider.setGenerationTime(TimeEncoding.INVALID_INSTANT);
+        packetGenerator = packetProvider.mdbPacketGenerator;
+        packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
 //        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
 //        System.out.println("got cinfo:"+cinfo);
@@ -149,7 +159,7 @@ public class IntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
-        for (int i=0;i <1000000; i++) packetProvider.generate_PKT1_1();
+        for (int i=0;i <1000000; i++) packetGenerator.generate_PKT1_1();
         System.out.println("total time: "+(System.currentTimeMillis()-t0));
     }
 
@@ -170,9 +180,9 @@ public class IntegrationTest {
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
-        for (int i=0;i <1000; i++) packetProvider.generate_PKT1_1();
+        for (int i=0;i <1000; i++) packetGenerator.generate_PKT1_1();
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
-        checkPdata(pdata, packetProvider);
+        checkPdata(pdata, packetGenerator);
 
         NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
@@ -182,7 +192,7 @@ public class IntegrationTest {
         wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
         wsClient.sendRequest(wsr);
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        checkPdata(pdata, packetProvider);
+        checkPdata(pdata, packetGenerator);
     }
 
 
@@ -197,7 +207,7 @@ public class IntegrationTest {
         assertTrue(response.contains("Invalid parameters"));
         assertTrue(response.contains("/REFMDB/SUBSYS1/InvalidParaName"));
 
-        packetProvider.generate_PKT1_1();
+        packetGenerator.generate_PKT1_1();
         Thread.sleep(1000);
         /////// gets parameters from cache via REST - second attempt with valid parameters
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
@@ -205,7 +215,7 @@ public class IntegrationTest {
 
         response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
-        checkPdata(pdata, packetProvider);
+        checkPdata(pdata, packetGenerator);
 
         /////// gets parameters from via REST - waiting for update - first test the timeout in case no update is coming
         long t0 = System.currentTimeMillis();
@@ -220,16 +230,16 @@ public class IntegrationTest {
         assertEquals( 2000, t1-t0, 200);
         assertEquals(0, pdata.getParameterCount());
         //////// gets parameters from via REST - waiting for update - now with some parameters updated
-        packetProvider.pIntegerPara1_1_6 = 10;
-        packetProvider.pIntegerPara1_1_7 = 5;
+        packetGenerator.pIntegerPara1_1_6 = 10;
+        packetGenerator.pIntegerPara1_1_7 = 5;
         responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
         Thread.sleep(1000); //wait to make sure that the data has reached the server
 
-        packetProvider.generate_PKT1_1();
+        packetGenerator.generate_PKT1_1();
 
         pdata = (fromJson(responseFuture.get(), SchemaPvalue.ParameterData.MERGE)).build();
 
-        checkPdata(pdata, packetProvider);
+        checkPdata(pdata, packetGenerator);
     }
 
     @Test
@@ -609,7 +619,7 @@ public class IntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/VERIFICATION_TC", cmdid.getCommandName());
         assertEquals(7, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
-        packetProvider.generateCmdAck((short)1001, (byte)0, 0);
+        packetGenerator.generateCmdAck((short)1001, (byte)0, 0);
         
         
 
@@ -630,7 +640,7 @@ public class IntegrationTest {
         assertEquals("Verifier_Execution", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
         
-        packetProvider.generateCmdAck((short)1001, (byte)5, 0);
+        packetGenerator.generateCmdAck((short)1001, (byte)5, 0);
         
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -696,9 +706,9 @@ public class IntegrationTest {
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i=0;i <numPackets; i++) {
-            packetProvider.setGenerationTime(t0+1000*i);
-            packetProvider.generate_PKT1_1();
-            packetProvider.generate_PKT1_3();
+        	packetGenerator.setGenerationTime(t0+1000*i);
+            packetGenerator.generate_PKT1_1();
+            packetGenerator.generate_PKT1_3();
         }
     }
 
@@ -811,10 +821,68 @@ public class IntegrationTest {
     }
 
 
-    public static class PacketProvider extends RefMdbPacketGenerator {
+    public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
         static volatile PacketProvider instance;
+        RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
+        TmSink tmSink;
+        
         public PacketProvider(String yinstance, String name, String spec) {
             instance = this;
         }
+		@Override
+		public String getLinkStatus() {
+			return "OK";
+		}
+		@Override
+		public String getDetailedStatus() {
+			return "OK";
+		}
+		@Override
+		public void enable() {
+			
+		}
+		@Override
+		public void disable() {
+			
+		}
+		@Override
+		public boolean isDisabled() {
+			return false;
+		}
+		@Override
+		public long getDataCount() {
+			return 0;
+		}
+	
+		@Override
+		public void setTmSink(TmSink tmSink) {
+			this.tmSink = tmSink;			
+		}
+		
+		@Override
+		public boolean isArchiveReplay() {
+			return false;
+		}
+		@Override
+		protected void doStart() {
+			mdbPacketGenerator.setTmProcessor(this);
+			notifyStarted();
+		}
+		@Override
+		protected void doStop() {
+			notifyStopped();
+		}
+		@Override
+		public void processPacket(PacketWithTime pwrt) {
+			tmSink.processPacket(pwrt);
+		}
+		@Override
+		public void processPacket(PacketWithTime pwrt, SequenceContainer rootContainer) {
+			tmSink.processPacket(pwrt);
+		}
+		@Override
+		public void finished() {
+			
+		}
     }
 }

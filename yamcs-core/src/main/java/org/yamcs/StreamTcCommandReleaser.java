@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs;
 
 import java.util.Map;
 
