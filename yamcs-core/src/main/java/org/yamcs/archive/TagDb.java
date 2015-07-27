@@ -1,42 +1,35 @@
 package org.yamcs.archive;
 
-import static org.yamcs.api.Protocol.decode;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsException;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
+import org.yamcs.protobuf.Yamcs.TagRequest;
+import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.tokyocabinet.YBDB;
 import org.yamcs.yarch.tokyocabinet.YBDBCUR;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-
-
-import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.TagRequest;
-import org.yamcs.protobuf.Yamcs.TagResult;
-import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
-
 public class TagDb {
 
-    static Logger log=LoggerFactory.getLogger(ReplayServer.class.getName());
+    static Logger log=LoggerFactory.getLogger(ReplayServer.class);
+    static Map<String, TagDb> dbsByInstance = new HashMap<String, TagDb>();
+    
     private YBDB db;
     final static int __key_size=12;
     final String instance;
     AtomicInteger idgenerator=new AtomicInteger(0);
     final byte[] firstkey=new byte[12];
     
-    public TagDb(String instance, boolean readonly) throws IOException, ConfigurationException {
+    private TagDb(String instance, boolean readonly) throws IOException, ConfigurationException {
         this.instance=instance;
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         
@@ -51,6 +44,14 @@ public class TagDb {
             ByteBuffer bb=ByteBuffer.wrap(db.get(firstkey));
             idgenerator.set(bb.getInt());
         }
+    }
+    
+    public static synchronized TagDb getInstance(String yamcsInstance, boolean readonly) throws ConfigurationException, IOException {
+        if (!dbsByInstance.containsKey(yamcsInstance)) {
+            TagDb tagDb = new TagDb(yamcsInstance, readonly);
+            dbsByInstance.put(yamcsInstance, tagDb);
+        }
+        return dbsByInstance.get(yamcsInstance);
     }
 
     private void writeHeader() throws IOException {
@@ -68,14 +69,17 @@ public class TagDb {
         return bbk.array();
     }
 
-    public void getTag(YamcsClient msgClient, ClientMessage msg, SimpleString dataAddress) throws IOException, YamcsApiException, HornetQException {
-        TagRequest req=(TagRequest)decode(msg, TagRequest.newBuilder());
-        log.debug("processing request: "+req);
+    /**
+     * Synchonously gets tags, passing every separate one to the provided
+     * {@link TagReceiver}.
+     */
+    public void getTags(TagRequest req, TagReceiver callback) throws IOException {
+        log.debug("processing request: {}", req);
         YBDBCUR cursor=db.openCursor();
         boolean hasNext;
         cursor.jump(firstkey);
         hasNext=cursor.next();
-        TagResult.Builder trb=TagResult.newBuilder().setInstance(instance);
+        
         
         //first we read all the records without start, then we jump to reqStart-maxDistance
         while(hasNext) {
@@ -85,50 +89,40 @@ public class TagDb {
                 hasNext=cursor.next();
                 continue;
             }
-            trb.addTag(tag);
-            if(trb.getTagCount()>500) {
-                msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
-                trb=TagResult.newBuilder().setInstance(instance);
-            }
+            callback.onTag(tag);
             hasNext=cursor.next();
         }
-        if(trb.getTagCount()>0)
-            msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
-        msgClient.sendDataEnd(dataAddress);
+        callback.finished();
     }
 
-    public void upsertTag(YamcsClient msgClient, ClientMessage msg, SimpleString replyto) throws IOException,YamcsApiException, YamcsException, HornetQException {
-       UpsertTagRequest utr=(UpsertTagRequest)decode(msg, UpsertTagRequest.newBuilder());
-       ArchiveTag oldTag=utr.getOldTag();
-       ArchiveTag newTag=utr.getNewTag();
+    public ArchiveTag upsertTag(UpsertTagRequest request) throws IOException, YamcsException {
+        ArchiveTag oldTag=request.getOldTag();
+        ArchiveTag newTag=request.getNewTag();
        
-       if(utr.hasOldTag()) { //update
-           if(!oldTag.hasId() || oldTag.getId()<1) throw new YamcsException("Invalid or unexisting id");
-           db.out(key(oldTag));
-           newTag=ArchiveTag.newBuilder(newTag).setId(oldTag.getId()).build();
-       } else {
-           newTag=ArchiveTag.newBuilder(newTag).setId(getNewId()).build();
-       }
-       db.put(key(newTag), newTag.toByteArray());
-       msgClient.sendReply(replyto, "OK",  newTag);
+        if(request.hasOldTag()) { //update
+            if(!oldTag.hasId() || oldTag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+            db.out(key(oldTag));
+            newTag=ArchiveTag.newBuilder(newTag).setId(oldTag.getId()).build();
+        } else {
+            newTag=ArchiveTag.newBuilder(newTag).setId(getNewId()).build();
+        }
+        db.put(key(newTag), newTag.toByteArray());
+        return newTag;
     }
 
-    public void deleteTag(YamcsClient msgClient, ClientMessage msg, SimpleString replyto) throws IOException, YamcsApiException, YamcsException, HornetQException {
-       DeleteTagRequest dtr=(DeleteTagRequest)decode(msg, DeleteTagRequest.newBuilder());
-       ArchiveTag tag=dtr.getTag();
-       if(!tag.hasId() || tag.getId()<1) throw new YamcsException("Invalid or unexisting id");
-       byte[] k=key(tag);
-       byte[]v=db.get(k);
-       if(v==null) throw new YamcsException("No tag with the given time,id");
-       db.out(k);
-       ArchiveTag dtag=ArchiveTag.parseFrom(v);
-       msgClient.sendReply(replyto, "OK",  dtag);
-       
+    public ArchiveTag deleteTag(DeleteTagRequest request) throws IOException, YamcsException {
+        ArchiveTag tag=request.getTag();
+        if(!tag.hasId() || tag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+        byte[] k=key(tag);
+        byte[]v=db.get(k);
+        if(v==null) throw new YamcsException("No tag with the given time,id");
+        db.out(k);
+        return ArchiveTag.parseFrom(v);
     }
+    
     private int getNewId() throws IOException {
         int id=idgenerator.incrementAndGet();
         writeHeader();
         return id;
     }
-
 }
