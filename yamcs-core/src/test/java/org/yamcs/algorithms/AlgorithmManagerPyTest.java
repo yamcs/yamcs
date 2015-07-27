@@ -61,6 +61,8 @@ public class AlgorithmManagerPyTest {
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
+        jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
+        
         config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager(instance, config);
         paramProviderList.add(am);

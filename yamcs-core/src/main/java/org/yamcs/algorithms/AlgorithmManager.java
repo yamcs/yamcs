@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,7 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
@@ -133,8 +135,15 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
                 }
 
-                // Put engine bindings in shared global scope
+                // Put engine bindings in shared global scope - we want the variables in the libraries to be global
                 Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+                Set<String> existingBindings = new HashSet<String>(scriptEngineManager.getBindings().keySet());
+                
+                existingBindings.retainAll(commonBindings.keySet());
+                if(!existingBindings.isEmpty()) {
+                    throw new ConfigurationException("Overlapping definitions found while loading libraries for language "+language+": "+ existingBindings);
+                }
+                commonBindings.putAll(scriptEngineManager.getBindings());
                 scriptEngineManager.setBindings(commonBindings);
             }
         }

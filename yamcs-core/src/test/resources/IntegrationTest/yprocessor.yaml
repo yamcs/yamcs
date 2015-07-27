@@ -31,7 +31,9 @@ realtime:
          args:            
             libraries:
               JavaScript:
-                - mdb/algolib.js      
+                - mdb/algolib.js
+              python:
+                - mdb/algolib.py
        - class: org.yamcs.parameter.SystemParametersProvider
        - class: org.yamcs.parameter.SoftwareParameterManager
     config:

@@ -1,8 +1,8 @@
 from __future__ import division
 
-def multiplyByThree(number):
+def multiplyByThreePy(number):
     return number*3
 
-def divideByThree(number):
+def divideByThreePy(number):
     return number/3
 

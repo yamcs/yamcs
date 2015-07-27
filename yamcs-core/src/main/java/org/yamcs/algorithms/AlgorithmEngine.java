@@ -276,7 +276,7 @@ public class AlgorithmEngine {
 
     @Override
     public String toString() {
-	return def.getName();
+	return "def.getName() " +scriptEngine;
     }
 
     private static ValueBinding toValueBinding(ParameterValue pval) {

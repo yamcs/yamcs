@@ -67,6 +67,7 @@ public class AlgorithmManagerTest {
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
+        jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
