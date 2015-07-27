@@ -1,14 +1,10 @@
 ############################################ testinst configuration  ############################################################################
 services:
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
-    - org.yamcs.archive.TmProviderAdapter
-    - org.yamcs.archive.PpProviderAdapter
-    - org.yamcs.archive.TcUplinkerAdapter
+    - org.yamcs.tctm.TmProviderAdapter
+    - org.yamcs.tctm.PpProviderAdapter
+    - org.yamcs.tctm.TcUplinkerAdapter
     - class: org.yamcs.archive.XtceTmRecorder
-      args:
-         streams:
-           - name: tm_realtime
-           - name: tm_dump
     - org.yamcs.archive.FSEventDecoder
 #    - org.yamcs.archive.PpRecorder
     - org.yamcs.archive.EventRecorder
