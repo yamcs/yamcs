@@ -20,17 +20,17 @@ import org.yamcs.security.AuthenticationToken;
 /**
  * Provides access to any Processor/Client info over web socket
  */
-public class ManagementClient extends AbstractWebSocketResource implements ManagementListener {
+public class ManagementResource extends AbstractWebSocketResource implements ManagementListener {
     public static final String OP_getProcessorInfo = "getProcessorInfo";
     public static final String OP_getClientInfo = "getClientInfo";
     public static final String OP_subscribe = "subscribe";
     private Logger log;
     private int clientId;
     
-    public ManagementClient(YProcessor yproc, WebSocketServerHandler wsHandler, int clientId) {
+    public ManagementResource(YProcessor yproc, WebSocketServerHandler wsHandler, int clientId) {
         super(yproc, wsHandler);
         wsHandler.addResource("management", this);
-        log = LoggerFactory.getLogger(ManagementClient.class.getName() + "[" + yproc.getInstance() + "]");
+        log = LoggerFactory.getLogger(ManagementResource.class.getName() + "[" + yproc.getInstance() + "]");
         this.clientId = clientId;
     }
 

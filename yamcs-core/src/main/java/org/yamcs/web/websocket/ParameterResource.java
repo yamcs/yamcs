@@ -42,7 +42,7 @@ import org.yamcs.web.ComputationFactory;
  * @author nm
  *
  */
-public class ParameterClient extends AbstractWebSocketResource implements ParameterWithIdConsumer {
+public class ParameterResource extends AbstractWebSocketResource implements ParameterWithIdConsumer {
     Logger log;
     int subscriptionId=-1;
     public static final String WSR_subscribe = "subscribe";
@@ -57,9 +57,9 @@ public class ParameterClient extends AbstractWebSocketResource implements Parame
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterClient(YProcessor yproc, WebSocketServerHandler wsHandler) {
+    public ParameterResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
         super(yproc, wsHandler);
-        log = LoggerFactory.getLogger(ParameterClient.class.getName() + "[" + yproc.getInstance() + "]");
+        log = LoggerFactory.getLogger(ParameterResource.class.getName() + "[" + yproc.getInstance() + "]");
         pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
         wsHandler.addResource("parameter", this);
         wsHandler.addResource("request", this);

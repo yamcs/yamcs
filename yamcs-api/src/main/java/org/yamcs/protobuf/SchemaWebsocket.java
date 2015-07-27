@@ -435,6 +435,9 @@ public final class SchemaWebsocket
                     if(message.hasClientInfo())
                         output.writeObject(6, message.getClientInfo(), org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.WRITE, false);
 
+                    if(message.hasStatistics())
+                        output.writeObject(7, message.getStatistics(), org.yamcs.protobuf.SchemaYamcsManagement.Statistics.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -496,6 +499,10 @@ public final class SchemaWebsocket
                                 builder.setClientInfo(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ClientInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.MERGE));
 
                                 break;
+                            case 7:
+                                builder.setStatistics(input.mergeObject(org.yamcs.protobuf.YamcsManagement.Statistics.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.Statistics.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -542,6 +549,7 @@ public final class SchemaWebsocket
                     case 4: return "command";
                     case 5: return "processorInfo";
                     case 6: return "clientInfo";
+                    case 7: return "statistics";
                     default: return null;
                 }
             }
@@ -559,6 +567,7 @@ public final class SchemaWebsocket
                 fieldMap.put("command", 4);
                 fieldMap.put("processorInfo", 5);
                 fieldMap.put("clientInfo", 6);
+                fieldMap.put("statistics", 7);
             }
         }
 
