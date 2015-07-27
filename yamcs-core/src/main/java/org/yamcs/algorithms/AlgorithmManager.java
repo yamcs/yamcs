@@ -64,12 +64,10 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
     private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
-    private static final String DEFAULT_LANGUAGE="JavaScript"; // included by default in JDK
     static final String KEY_ALGO_NAME="algoName";
 
     XtceDb xtcedb;
     ScriptEngineManager scriptEngineManager;
-    String scriptLanguage;
     String yamcsInstance;
 
     //the id used for subscribing to the parameterManager
@@ -99,47 +97,47 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
 
-        scriptLanguage=DEFAULT_LANGUAGE;
-        List<String> libraries=new ArrayList<String>();
+        Map<String,List<String>> libraries= null;
         if(config!=null) {
-            if(config.containsKey("scriptLanguage")) {
-                scriptLanguage=(String)config.get("scriptLanguage");
-            }
             if(config.containsKey("libraries")) {
-                libraries=(List<String>)config.get("libraries");
+                libraries=(Map<String,List<String>>)config.get("libraries");
             }
         }
 
         scriptEngineManager = new ScriptEngineManager();
-        if(!libraries.isEmpty()) {      
-            // Disposable ScriptEngine, just to eval libraries and put them in global scope
-            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(scriptLanguage);
-            if(scriptEngine==null) {
-                throw new ConfigurationException("Cannot get a script engine for language "+scriptLanguage);
-            }
-            try {
-                for(String lib:libraries) {
-                    log.debug("Loading library "+lib);
-                    File f=new File(lib);
-                    if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
-
-                    scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
-                    if (f.isFile()) {
-                        scriptEngine.eval(new FileReader(f));
-                    } else {
-                        throw new ConfigurationException("Specified library is not a file: "+f);
-                    }
+        if(libraries!=null) {
+            for(Map.Entry<String, List<String>> me: libraries.entrySet()) {
+                String language = me.getKey();
+                List<String> libraryNames = me.getValue();
+                // Disposable ScriptEngine, just to eval libraries and put them in global scope
+                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(language);
+                if(scriptEngine==null) {
+                    throw new ConfigurationException("Cannot get a script engine for language "+language);
                 }
-            } catch(IOException e) { // Force exit. User should fix this before continuing
-                throw new ConfigurationException("Cannot read from library file", e);
-            } catch(ScriptException e) { // Force exit. User should fix this before continuing
-                throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
-            }
+                try {
+                    for(String lib:libraryNames) {
+                        log.debug("Loading library "+lib);
+                        File f=new File(lib);
+                        if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
 
-            // Put engine bindings in shared global scope
-            Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-            scriptEngineManager.setBindings(commonBindings);
-        }        
+                        scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
+                        if (f.isFile()) {
+                            scriptEngine.eval(new FileReader(f));
+                        } else {
+                            throw new ConfigurationException("Specified library is not a file: "+f);
+                        }
+                    }
+                } catch(IOException e) { // Force exit. User should fix this before continuing
+                    throw new ConfigurationException("Cannot read from library file", e);
+                } catch(ScriptException e) { // Force exit. User should fix this before continuing
+                    throw new ConfigurationException("Script error found in library file: "+e.getMessage(), e);
+                }
+
+                // Put engine bindings in shared global scope
+                Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+                scriptEngineManager.setBindings(commonBindings);
+            }
+        }
     }
 
     @Override
@@ -214,7 +212,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
 
-        ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(scriptLanguage);
+        ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(algorithm.getLanguage());
+        if(scriptEngine==null) throw new RuntimeException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
+        
         scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
 
         AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);

@@ -64,8 +64,10 @@ public class AlgorithmManagerTest {
         tmGenerator=new RefMdbPacketGenerator();
         tmGenerator=new RefMdbPacketGenerator();
         List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
+        Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
-        config.put("libraries", Arrays.asList("mdb/algolib.js"));
+        jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
+        config.put("libraries", jslib);
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         

@@ -82,12 +82,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     //columns in the algorithms sheet
     final static int IDX_ALGO_NAME=0;
-    final static int IDX_ALGO_TEXT=1;
-    final static int IDX_ALGO_TRIGGER=2;
-    final static int IDX_ALGO_PARA_INOUT=3;
-    final static int IDX_ALGO_PARA_REF=4;
-    final static int IDX_ALGO_PARA_INSTANCE=5;
-    final static int IDX_ALGO_PARA_NAME=6;
+    final static int IDX_ALGO_LANGUGAGE=1;
+    final static int IDX_ALGO_TEXT=2;
+    final static int IDX_ALGO_TRIGGER=3;
+    final static int IDX_ALGO_PARA_INOUT=4;
+    final static int IDX_ALGO_PARA_REF=5;
+    final static int IDX_ALGO_PARA_INSTANCE=6;
+    final static int IDX_ALGO_PARA_NAME=7;
 
     //columns in the alarms sheet
     final static int IDX_ALARM_PARAM_NAME=0;
@@ -147,9 +148,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="4.0";
+    final static String FORMAT_VERSION="5.0";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION };
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION};
 
 
     protected Workbook workbook;
@@ -1652,6 +1653,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             Cell[] cells = jumpToRow(sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
+            String algorithmLanguage = cells[IDX_ALGO_LANGUGAGE].getContents();
+            if(!"JavaScript".equals(algorithmLanguage) && !"python".equals(algorithmLanguage)) {
+                throw new SpreadsheetLoadException(ctx, "Invalid algorithm language '"+algorithmLanguage+"' specified. Supported are 'JavaScript' and 'python' (case sensitive)");
+            }
+            
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
 
             // now we search for the matching last row of that algorithm
@@ -1666,7 +1672,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             Algorithm algorithm = new Algorithm(name);
             algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
-            algorithm.setLanguage("JavaScript");
+            algorithm.setLanguage(algorithmLanguage);
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
 

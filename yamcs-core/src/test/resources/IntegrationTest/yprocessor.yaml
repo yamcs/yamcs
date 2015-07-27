@@ -28,9 +28,10 @@ realtime:
 #           stream: "pp_realtime"
        # implements XTCE algorithms
        - class: org.yamcs.algorithms.AlgorithmManager
-         args:
+         args:            
             libraries:
-              - mdb/algolib.js      
+              JavaScript:
+                - mdb/algolib.js      
        - class: org.yamcs.parameter.SystemParametersProvider
        - class: org.yamcs.parameter.SoftwareParameterManager
     config:

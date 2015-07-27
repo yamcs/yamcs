@@ -57,9 +57,11 @@ public class AlgorithmManagerPyTest {
 
         tmGenerator=new RefMdbPacketGenerator();
         List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
+        
+        Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
-        config.put("libraries", Arrays.asList("mdb/algolib.py"));
-        config.put("scriptLanguage", "python");
+        jslib.put("python", Arrays.asList("mdb/algolib.py"));
+        config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager(instance, config);
         paramProviderList.add(am);
         
@@ -78,7 +80,7 @@ public class AlgorithmManagerPyTest {
     @Test
     public void testFloats() throws InvalidIdentification {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
-        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAddition");
+        Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionPy");
         prm.addRequest(p, new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, List<ParameterValue> items) {
@@ -119,7 +121,7 @@ public class AlgorithmManagerPyTest {
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
-        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivision"), new ParameterConsumer() {
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivisionPy"), new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, List<ParameterValue> items) {
                 params.addAll(items);
