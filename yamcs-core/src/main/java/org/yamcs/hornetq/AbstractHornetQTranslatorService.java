@@ -88,7 +88,6 @@ public class AbstractHornetQTranslatorService extends AbstractService {
                     try {
                         
                         ClientMessage msg=translator.buildMessage(yamcsClient.get().getYamcsSession().createMessage(false), tuple);
-                        System.out.println("for tuple: "+tuple+" got msg: "+msg);
                         msg.putIntProperty(StreamAdapter.UNIQUEID_HDR_NAME, StreamAdapter.UNIQUEID);
                         yamcsClient.get().dataProducer.send(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
