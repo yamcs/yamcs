@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
 import org.yamcs.protobuf.Yamcs.TagRequest;
-import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.tokyocabinet.YBDB;
 import org.yamcs.yarch.tokyocabinet.YBDBCUR;
@@ -68,6 +66,13 @@ public class TagDb {
         bbk.putInt(tag.getId());
         return bbk.array();
     }
+    
+    private byte[] key(long start, int id) {
+        ByteBuffer bbk=ByteBuffer.allocate(__key_size);
+        bbk.putLong(start);
+        bbk.putInt(id);
+        return bbk.array();
+    }
 
     /**
      * Synchonously gets tags, passing every separate one to the provided
@@ -94,26 +99,35 @@ public class TagDb {
         }
         callback.finished();
     }
-
-    public ArchiveTag upsertTag(UpsertTagRequest request) throws IOException, YamcsException {
-        ArchiveTag oldTag=request.getOldTag();
-        ArchiveTag newTag=request.getNewTag();
-       
-        if(request.hasOldTag()) { //update
-            if(!oldTag.hasId() || oldTag.getId()<1) throw new YamcsException("Invalid or unexisting id");
-            db.out(key(oldTag));
-            newTag=ArchiveTag.newBuilder(newTag).setId(oldTag.getId()).build();
-        } else {
-            newTag=ArchiveTag.newBuilder(newTag).setId(getNewId()).build();
-        }
+    
+    /**
+     * Inserts a new Tag. No id should be specified. If it is, it will
+     * silently be overwritten, and the new tag will be returned.
+     */
+    public ArchiveTag insertTag(ArchiveTag tag) throws IOException {
+        ArchiveTag newTag=ArchiveTag.newBuilder(tag).setId(getNewId()).build();
+        db.put(key(newTag), newTag.toByteArray());
+        return newTag;
+    }
+    
+    /**
+     * Updates an existing tag. The tag is fetched by the specified id
+     * throws YamcsException if the tag could not be found.
+     * <p>
+     * Note that both tagId and oldTagStart need to be specified so that
+     * a direct lookup in the internal data structure can be made. 
+     */
+    public ArchiveTag updateTag(long tagTime, int tagId, ArchiveTag tag) throws YamcsException, IOException {
+        if(tagId<1) throw new YamcsException("Invalid or unexisting id");
+        db.out(key(tagTime, tagId));
+        ArchiveTag newTag=ArchiveTag.newBuilder(tag).setId(tagId).build();
         db.put(key(newTag), newTag.toByteArray());
         return newTag;
     }
 
-    public ArchiveTag deleteTag(DeleteTagRequest request) throws IOException, YamcsException {
-        ArchiveTag tag=request.getTag();
-        if(!tag.hasId() || tag.getId()<1) throw new YamcsException("Invalid or unexisting id");
-        byte[] k=key(tag);
+    public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException {
+        if(tagId<1) throw new YamcsException("Invalid or unexisting id");
+        byte[] k=key(tagTime, tagId);
         byte[]v=db.get(k);
         if(v==null) throw new YamcsException("No tag with the given time,id");
         db.out(k);

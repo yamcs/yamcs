@@ -208,11 +208,23 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
                         });
                     } else if("upsertTag".equalsIgnoreCase(request)){
                         UpsertTagRequest utr=(UpsertTagRequest)decode(msg, UpsertTagRequest.newBuilder());
-                        ArchiveTag newTag = tagDb.upsertTag(utr);
+                        ArchiveTag oldTag=utr.getOldTag();
+                        ArchiveTag newTag=utr.getNewTag();
+                        
+                        if(utr.hasOldTag()) { //update
+                            if(!oldTag.hasId() || oldTag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+                            long tagTime = (oldTag.hasStart() ? oldTag.getStart() : 0); 
+                            newTag=tagDb.updateTag(tagTime, oldTag.getId(), newTag);
+                        } else {
+                            newTag=tagDb.insertTag(newTag);
+                        }
                         msgClient.sendReply(replyto, "OK", newTag);
                     } else if("deleteTag".equalsIgnoreCase(request)){
                         DeleteTagRequest dtr=(DeleteTagRequest)decode(msg, DeleteTagRequest.newBuilder());
-                        ArchiveTag dtag = tagDb.deleteTag(dtr);
+                        ArchiveTag tag=dtr.getTag();
+                        if(!tag.hasId() || tag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+                        long tagTime = (tag.hasStart() ? tag.getStart() : 0);
+                        ArchiveTag dtag = tagDb.deleteTag(tagTime, tag.getId());
                         msgClient.sendReply(replyto, "OK", dtag);
                     } else {
                         throw new YamcsException("Unknown request '"+request+"'");
