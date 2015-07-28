@@ -24,6 +24,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -179,7 +180,10 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
                             continue;
                         }
                         TagRequest req=(TagRequest)decode(msg, TagRequest.newBuilder());
-                        tagDb.getTags(req, new TagReceiver() {
+                        TimeInterval intv = new TimeInterval();
+                        if (req.hasStart()) intv.setStart(req.getStart());
+                        if (req.hasStop()) intv.setStop(req.getStop());
+                        tagDb.getTags(intv, new TagReceiver() {
                             private TagResult.Builder trb=TagResult.newBuilder().setInstance(yamcsInstance);
                             
                             @Override

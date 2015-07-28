@@ -99,6 +99,13 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         String[] path = req.remainingUri.split("/", 2);
         if (path.length == 0) {
             return handleDumpRequest(req); // GET /api/archive
+        } else {
+            QueryStringDecoder qsDecoder = new QueryStringDecoder(req.remainingUri);
+            if("tags".equals(qsDecoder.path())) {
+                return handleTagsRequest(req);
+            } else {
+                throw new NotFoundException(req);
+            }
         }
     }
 
@@ -365,6 +372,59 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 break;
             default:
                 log.warn("Unexpected data type " + dataType);
+        }
+    }
+    
+    /**
+     * GET /api/(instance)/archive/tags
+     * POST /api/(instance)/archive/tags
+     * PUT /api/(instance)/archive/tags/(old_start)/(id)
+     * DELETE /api/(instance)/archive/tags/(old_start)/(id)
+     */
+    private RestResponse handleTagsRequest(RestRequest req) throws RestException {
+        if ("tags".equals(req.qsDecoder.path())) {
+            if (req.isGET()) {
+                return getTags(req);
+            } else if (req.isPOST()) {
+                // TODO
+                return null;
+            } else {
+                throw new MethodNotAllowedException(req);
+            }
+        } else {
+            // TODO PUT & DELETE
+            return null;
+        }
+    }
+    
+    /**
+     * Lists all tags (optionally filtered by request-body)
+     * <p>
+     * GET /api/(instance)/archive/tags
+     */
+    private RestResponse getTags(RestRequest req) throws RestException {
+        TagDb tagDb = getTagDb(req.yamcsInstance);
+        GetTagsResponse.Builder responseb = GetTagsResponse.newBuilder();
+        try {
+            tagDb.getTags(new TimeInterval(), new TagReceiver() {
+                @Override
+                public void onTag(ArchiveTag tag) {
+                   responseb.addTags(tag);
+                }
+
+                @Override public void finished() {}
+            });
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not load tags", e);
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.GetTagsResponse.WRITE);
+    }
+    
+    private static TagDb getTagDb(String yamcsInstance) throws RestException {
+        try {
+            return TagDb.getInstance(yamcsInstance, false);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not load tag-db", e);
         }
     }
 

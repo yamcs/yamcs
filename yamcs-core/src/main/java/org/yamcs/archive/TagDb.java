@@ -8,10 +8,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
+import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.TagRequest;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.tokyocabinet.YBDB;
 import org.yamcs.yarch.tokyocabinet.YBDBCUR;
@@ -27,7 +26,7 @@ public class TagDb {
     AtomicInteger idgenerator=new AtomicInteger(0);
     final byte[] firstkey=new byte[12];
     
-    private TagDb(String instance, boolean readonly) throws IOException, ConfigurationException {
+    private TagDb(String instance, boolean readonly) throws IOException {
         this.instance=instance;
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         
@@ -44,7 +43,7 @@ public class TagDb {
         }
     }
     
-    public static synchronized TagDb getInstance(String yamcsInstance, boolean readonly) throws ConfigurationException, IOException {
+    public static synchronized TagDb getInstance(String yamcsInstance, boolean readonly) throws IOException {
         if (!dbsByInstance.containsKey(yamcsInstance)) {
             TagDb tagDb = new TagDb(yamcsInstance, readonly);
             dbsByInstance.put(yamcsInstance, tagDb);
@@ -78,19 +77,18 @@ public class TagDb {
      * Synchonously gets tags, passing every separate one to the provided
      * {@link TagReceiver}.
      */
-    public void getTags(TagRequest req, TagReceiver callback) throws IOException {
-        log.debug("processing request: {}", req);
+    public void getTags(TimeInterval intv, TagReceiver callback) throws IOException {
+        log.debug("processing request: {}", intv);
         YBDBCUR cursor=db.openCursor();
         boolean hasNext;
         cursor.jump(firstkey);
         hasNext=cursor.next();
         
-        
         //first we read all the records without start, then we jump to reqStart-maxDistance
         while(hasNext) {
             ArchiveTag tag=ArchiveTag.parseFrom(cursor.val());
-            if(req.hasStop() && tag.hasStart() && req.getStop()<tag.getStart()) break;
-            if(req.hasStart() && tag.hasStop() && tag.getStop()<req.getStart()) {
+            if(intv.hasStop() && tag.hasStart() && intv.getStop()<tag.getStart()) break;
+            if(intv.hasStart() && tag.hasStop() && intv.getStop()<intv.getStart()) {
                 hasNext=cursor.next();
                 continue;
             }
