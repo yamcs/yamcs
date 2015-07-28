@@ -41,7 +41,6 @@ public class MetaCommandContainerProcessor {
             } else if (se instanceof FixedValueEntry) {
                 fillInFixedValueEntry((FixedValueEntry) se, pcontext);
                 size = (pcontext.bitPosition+7)/8;
-                pcontext.bitPosition = previousPosition;
             }
             if(size>pcontext.size) {
                 pcontext.size = size;
