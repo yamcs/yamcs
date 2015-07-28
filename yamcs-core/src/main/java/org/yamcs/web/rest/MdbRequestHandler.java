@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.protobuf.Rest.RestDataSource;
-import org.yamcs.protobuf.Rest.RestDumpRawMdbRequest;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
 import org.yamcs.protobuf.Rest.RestGetParameterInfoRequest;
 import org.yamcs.protobuf.Rest.RestGetParameterInfoResponse;
@@ -21,10 +20,9 @@ import org.yamcs.protobuf.Rest.RestParameterType;
 import org.yamcs.protobuf.Rest.RestUnitType;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.UnitType;
@@ -33,11 +31,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 /**
  * Handles incoming requests related to the Mission Database (offset /mdb).
  */
@@ -45,58 +38,50 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
+    public RestResponse handleRequest(RestRequest req) throws RestException {
         
         //because it is difficult to send GET requests with body from some clients (including jquery), we allow POST requests here.
-        //       if (req.getMethod() != HttpMethod.GET)
-        //            throw new MethodNotAllowedException(req.getMethod());
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-        if ("parameters".equals(qsDecoder.path())) {
-            RestListAvailableParametersRequest request = readMessage(req, SchemaRest.RestListAvailableParametersRequest.MERGE).build();
-            RestListAvailableParametersResponse responseMsg = listAvailableParameters(request, yamcsInstance);
-            writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestListAvailableParametersResponse.WRITE);
-        } else if ("dump".equals(qsDecoder.path())) {
-            RestDumpRawMdbRequest request = readMessage(req, SchemaRest.RestDumpRawMdbRequest.MERGE).build();
-            RestDumpRawMdbResponse responseMsg = dumpRawMdb(request, yamcsInstance);
-            writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestDumpRawMdbResponse.WRITE);
-        } else if ("parameterInfo".equals(qsDecoder.path())) {
-            if (qsDecoder.parameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
-                String name = qsDecoder.parameters().get("name").get(0);                
+        //       req.assertGET();
+        if ("parameters".equals(req.qsDecoder.path())) {
+            return listAvailableParameters(req);
+        } else if ("dump".equals(req.qsDecoder.path())) {
+            return dumpRawMdb(req);
+        } else if ("parameterInfo".equals(req.qsDecoder.path())) {
+            if (req.qsDecoder.parameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
+                String name = req.qsDecoder.parameters().get("name").get(0);                
                 NamedObjectId.Builder noib = NamedObjectId.newBuilder();
                 noib.setName(name);
-                if (qsDecoder.parameters().containsKey("namespace")) {
-                    noib.setNamespace(qsDecoder.parameters().get("namespace").get(0));
+                if (req.qsDecoder.parameters().containsKey("namespace")) {
+                    noib.setNamespace(req.qsDecoder.parameters().get("namespace").get(0));
                 }
                 NamedObjectId id = noib.build();
-                XtceDb xtceDb = loadMdb(yamcsInstance);
+                XtceDb xtceDb = loadMdb(req.yamcsInstance);
                 Parameter p = xtceDb.getParameter(id);
                 if(p==null) {
                     log.warn("Invalid parameter name specified: {}", id);
                     throw new BadRequestException("Invalid parameter name specified "+id);
                 }
-                 if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-                     log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, authToken);
-                     throw new BadRequestException("Invalid parameter name specified "+id);
+                if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+                    log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
+                    throw new BadRequestException("Invalid parameter name specified "+id);
                 }
                 RestParameterInfo pinfo = getParameterInfo(id, p);
-                writeMessage(ctx, req, qsDecoder, pinfo, SchemaRest.RestParameterInfo.WRITE);
+                return new RestResponse(req, pinfo, SchemaRest.RestParameterInfo.WRITE);
             } else { //possible multiple parameter requested, we return  RestGetParameterInfoResponse
-                RestGetParameterInfoRequest request = readMessage(req, SchemaRest.RestGetParameterInfoRequest.MERGE).build();
-                RestGetParameterInfoResponse responseMsg = getParameterInfo(request, yamcsInstance, authToken);
-                writeMessage(ctx, req, qsDecoder, responseMsg, SchemaRest.RestGetParameterInfoResponse.WRITE);
+                return getParameterInfo(req);
             }
             
         } else {
-            log.debug("No match for '" + qsDecoder.path() + "'");
-            sendError(ctx, HttpResponseStatus.NOT_FOUND);
+            throw new NotFoundException(req);
         }
     }
 
     /**
      * Sends the parameters for the requested yamcs instance. If no namespaces are specified, send qualified names.
      */
-    private RestListAvailableParametersResponse listAvailableParameters(RestListAvailableParametersRequest request, String yamcsInstance) throws RestException {
-        XtceDb mdb = loadMdb(yamcsInstance);
+    private RestResponse listAvailableParameters(RestRequest req) throws RestException {
+        RestListAvailableParametersRequest request = req.readMessage(SchemaRest.RestListAvailableParametersRequest.MERGE).build();
+        XtceDb mdb = loadMdb(req.yamcsInstance);
         RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
         if (request.getNamespacesCount() == 0) {
             for(Parameter p : mdb.getParameters()) {
@@ -112,7 +97,8 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
                 }
             }
         }
-        return responseb.build();
+        
+        return new RestResponse(req, responseb.build(), SchemaRest.RestListAvailableParametersResponse.WRITE);
     }
 
     private static RestParameter.Builder toRestParameter(String namespace, String name, Parameter parameter) {
@@ -131,13 +117,13 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
         return RestParameter.newBuilder().setDataSource(ds).setId(NamedObjectId.newBuilder().setName(name));
     }
 
-    private RestDumpRawMdbResponse dumpRawMdb(RestDumpRawMdbRequest request, String yamcsInstance) throws RestException {
+    private RestResponse dumpRawMdb(RestRequest req) throws RestException {
         RestDumpRawMdbResponse.Builder responseb = RestDumpRawMdbResponse.newBuilder();
 
         // TODO TEMP would prefer if we don't send java-serialized data.
         // TODO this limits our abilities to send, say, json
         // TODO and makes clients too dependent
-        XtceDb xtceDb = loadMdb(yamcsInstance);
+        XtceDb xtceDb = loadMdb(req.yamcsInstance);
         ByteString.Output bout = ByteString.newOutput();
         try (ObjectOutputStream oos = new ObjectOutputStream(bout)) {
             oos.writeObject(xtceDb);
@@ -145,27 +131,29 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
             throw new InternalServerErrorException("Could not serialize MDB", e);
         }
         responseb.setRawMdb(bout.toByteString());
-        return responseb.build();
+        return new RestResponse(req, responseb.build(), SchemaRest.RestDumpRawMdbResponse.WRITE);
     }
 
     
     
-    private RestGetParameterInfoResponse getParameterInfo(RestGetParameterInfoRequest request, String yamcsInstance, AuthenticationToken authToken) throws RestException {
-        XtceDb xtceDb = loadMdb(yamcsInstance);
+    private RestResponse getParameterInfo(RestRequest req) throws RestException {
+        XtceDb xtceDb = loadMdb(req.yamcsInstance);
         
+        RestGetParameterInfoRequest request = req.readMessage(SchemaRest.RestGetParameterInfoRequest.MERGE).build();
         RestGetParameterInfoResponse.Builder responseb = RestGetParameterInfoResponse.newBuilder();
         for(NamedObjectId id:request.getListList() ){
             Parameter p = xtceDb.getParameter(id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-             if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+             if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }
             responseb.addPinfo(getParameterInfo(id, p));
         }
-        return responseb.build();
+        
+        return new RestResponse(req, responseb.build(), SchemaRest.RestGetParameterInfoResponse.WRITE);
     }
     
     

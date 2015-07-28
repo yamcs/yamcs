@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * whether something is a bad request, or any other subclass.
  */
 public abstract class RestException extends Exception {
+    private static final long serialVersionUID = 1L;
 
     public RestException(Throwable t) {
         super(t);

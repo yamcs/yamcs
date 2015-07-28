@@ -13,112 +13,95 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
-import org.yamcs.security.AuthenticationToken;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class ProcessorRequestHandler extends AbstractRestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
     
-    
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-        if ("".equals(qsDecoder.path())) {
-            handleProcessorManagementRequest(ctx, req, yamcsInstance, qsDecoder, authToken);
-        } else if ("list".equals(qsDecoder.path())) {
-            handleProcessorListRequest(ctx, req, yamcsInstance, qsDecoder, authToken);
+    public RestResponse handleRequest(RestRequest req) throws RestException {
+        String path = req.getRemainingUri();
+        if ("".equals(path)) {
+            return handleProcessorManagementRequest(req);
+        } else if ("list".equals(path)) {
+            return handleProcessorListRequest(req);
         } else {
-            String yprocName = remainingUri.split("/")[0];
-            YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
-            if(yproc==null) {
+            String yprocName = path.split("/")[0];
+            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, yprocName);
+            if(processor==null) {
                 log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
-                sendError(ctx, HttpResponseStatus.NOT_FOUND);
-                return;
+                throw new NotFoundException(req);
             }
-            handleProcessorRequest(ctx, req, yproc, qsDecoder);
+            return handleProcessorRequest(req, processor);
         }
     }
 
-    private void handleProcessorListRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance,
-            QueryStringDecoder qsDecoder, AuthenticationToken authToken) throws RestException {
-        if (req.getMethod() == HttpMethod.GET) {
-            RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
-            for (YProcessor processor : YProcessor.getChannels()) {
-                response.addProcessor(ManagementService.getProcessorInfo(processor));
-            }
-            writeMessage(ctx, req, qsDecoder, response.build(), SchemaRest.RestListProcessorsResponse.WRITE);
-        } else {
-            throw new MethodNotAllowedException(req.getMethod());
+    private RestResponse handleProcessorListRequest(RestRequest req) throws RestException {
+        req.assertGET();
+        RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
+        for (YProcessor processor : YProcessor.getChannels()) {
+            response.addProcessor(ManagementService.getProcessorInfo(processor));
         }
+        return new RestResponse(req, response.build(), SchemaRest.RestListProcessorsResponse.WRITE);
     }
         
-    private void handleProcessorRequest(ChannelHandlerContext ctx, FullHttpRequest req, YProcessor yproc, QueryStringDecoder qsDecoder) throws RestException {
-        ProcessorRequest yprocReq = readMessage(req, SchemaYamcsManagement.ProcessorRequest.MERGE).build();
-        if(req.getMethod()==HttpMethod.POST) {
-            switch(yprocReq.getOperation()) {
-            case RESUME:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot resume a non replay processor ");
-                } 
-                yproc.resume();
-                break;
-            case PAUSE:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot pause a non replay processor ");
-                }
-                yproc.pause();
-                break;
-            case SEEK:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot seek a non replay processor ");
-                }
-                if(!yprocReq.hasSeekTime()) {
-                    throw new BadRequestException("No seek time specified");                
-                }
-                yproc.seek(yprocReq.getSeekTime());
-                break;
-            default:
-                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
+    private RestResponse handleProcessorRequest(RestRequest req, YProcessor yproc) throws RestException {
+        req.assertPOST();
+        ProcessorRequest yprocReq = req.readMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
+        switch(yprocReq.getOperation()) {
+        case RESUME:
+            if(!yproc.isReplay()) {
+                throw new BadRequestException("Cannot resume a non replay processor ");
+            } 
+            yproc.resume();
+            break;
+        case PAUSE:
+            if(!yproc.isReplay()) {
+                throw new BadRequestException("Cannot pause a non replay processor ");
             }
-            RestProcessorResponse response = RestProcessorResponse.newBuilder().build();
-            writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestProcessorResponse.WRITE);
+            yproc.pause();
+            break;
+        case SEEK:
+            if(!yproc.isReplay()) {
+                throw new BadRequestException("Cannot seek a non replay processor ");
+            }
+            if(!yprocReq.hasSeekTime()) {
+                throw new BadRequestException("No seek time specified");                
+            }
+            yproc.seek(yprocReq.getSeekTime());
+            break;
+        default:
+            throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
+        RestProcessorResponse response = RestProcessorResponse.newBuilder().build();
+        return new RestResponse(req, response, SchemaRest.RestProcessorResponse.WRITE);
     }
     
-    private void handleProcessorManagementRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, QueryStringDecoder qsDecoder, AuthenticationToken authToken) throws RestException {
-        ProcessorManagementRequest yprocReq = readMessage(req, SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
-        if(req.getMethod()==HttpMethod.POST) {
-            switch(yprocReq.getOperation()) {
-            case CONNECT_TO_PROCESSOR:
-                ManagementService mservice = ManagementService.getInstance();
-                try {
-                    mservice.connectToProcessor(yprocReq, authToken);
-                    RestConnectToProcessorResponse response = RestConnectToProcessorResponse.newBuilder().build();
-                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestConnectToProcessorResponse.WRITE);
-                } catch (YamcsException e) {
-                    throw new BadRequestException(e.getMessage());
-                }
-                break;
-            
-            case CREATE_PROCESSOR:
-                mservice = ManagementService.getInstance();
-                try {
-                    mservice.createProcessor(yprocReq, authToken);
-                    RestCreateProcessorResponse response = RestCreateProcessorResponse.newBuilder().build();
-                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestCreateProcessorResponse.WRITE);
-                } catch (YamcsException e) {
-                    throw new BadRequestException(e.getMessage());
-                }
-                break;
-            
-            default:
-                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
+    private RestResponse handleProcessorManagementRequest(RestRequest req) throws RestException {
+        req.assertPOST();
+        ProcessorManagementRequest yprocReq = req.readMessage(SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
+        switch(yprocReq.getOperation()) {
+        case CONNECT_TO_PROCESSOR:
+            ManagementService mservice = ManagementService.getInstance();
+            try {
+                mservice.connectToProcessor(yprocReq, req.authToken);
+                RestConnectToProcessorResponse response = RestConnectToProcessorResponse.newBuilder().build();
+                return new RestResponse(req, response, SchemaRest.RestConnectToProcessorResponse.WRITE);
+            } catch (YamcsException e) {
+                throw new BadRequestException(e.getMessage());
             }
+        
+        case CREATE_PROCESSOR:
+            mservice = ManagementService.getInstance();
+            try {
+                mservice.createProcessor(yprocReq, req.authToken);
+                RestCreateProcessorResponse response = RestCreateProcessorResponse.newBuilder().build();
+                return new RestResponse(req, response, SchemaRest.RestCreateProcessorResponse.WRITE);
+            } catch (YamcsException e) {
+                throw new BadRequestException(e.getMessage());
+            }
+        
+        default:
+            throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
     }
 }

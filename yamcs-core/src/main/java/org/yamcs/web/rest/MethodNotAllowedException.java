@@ -1,6 +1,5 @@
 package org.yamcs.web.rest;
 
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -8,9 +7,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * specific path
  */
 public class MethodNotAllowedException extends RestException {
+    private static final long serialVersionUID = 1L;
 
-    public MethodNotAllowedException(HttpMethod method) {
-        super("Unsupported http method '" + method + "' for this path");
+    public MethodNotAllowedException(RestRequest req) {
+        super(String.format("Unsupported http method '%s' for path '%s'",
+                req.getHttpRequest().getMethod(),
+                req.getHttpRequest().getUri()));
     }
 
     @Override

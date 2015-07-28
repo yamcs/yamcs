@@ -1,22 +1,7 @@
 package org.yamcs.web.rest;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpHeaders.Values;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -31,17 +16,26 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.*;
+import org.yamcs.archive.TagDb;
+import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.GetTagsResponse;
 import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
 import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
+import org.yamcs.protobuf.SchemaCommanding;
+import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -50,17 +44,29 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.YarchDatabase;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
-import org.yamcs.yarch.YarchDatabase;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpHeaders.Values;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 /** 
  * Serves archived data through a web api. The Archived data is fetched from the
@@ -87,10 +93,13 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             }
         }
     };
-
+    
     @Override
-    public String[] getSupportedOutboundMediaTypes() {
-        return new String[] { JSON_MIME_TYPE, BINARY_MIME_TYPE, CSV_MIME_TYPE };
+    public RestResponse handleRequest(RestRequest req) throws RestException {
+        String[] path = req.remainingUri.split("/", 2);
+        if (path.length == 0) {
+            return handleDumpRequest(req); // GET /api/archive
+        }
     }
 
     // Check if a profile has been specified in the request
@@ -114,26 +123,28 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         return requestedProfile;
     }
 
-
     /**
      * Sends a replay request to the ReplayServer, and from that returns either a normal
      * HttpResponse (when the 'stream'-option is false), or a Chunked-Encoding HttpResponse followed
      * by multiple HttpChunks where messages are delimited by their byte size (when the 'stream'-option
      * is true).
      */
-    @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
-        if (req.getMethod() != HttpMethod.GET)
-            throw new MethodNotAllowedException(req.getMethod());
-        RestDumpArchiveRequest request = readMessage(req, SchemaRest.RestDumpArchiveRequest.MERGE).build();
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
+    private RestResponse handleDumpRequest(RestRequest req) throws RestException {
+        req.assertGET();
+        RestDumpArchiveRequest request = req.readMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
 
         // Check if a profile has been specified in the request
         // Currently, profiles apply only for Parameter requests
-        Yamcs.NamedObjectList requestedProfile = getParametersProfile(qsDecoder, yamcsInstance);
-
+        Yamcs.NamedObjectList requestedProfile = getParametersProfile(req.qsDecoder, req.yamcsInstance);
         
-        String contentType = getTargetContentType(req);
+        // This method also supports CSV as a response
+        String targetContentType;
+        if (req.getHttpRequest().headers().contains(Names.ACCEPT)
+                && req.getHttpRequest().headers().get(Names.ACCEPT).equals(CSV_MIME_TYPE)) {
+            targetContentType = CSV_MIME_TYPE;
+        } else {
+            targetContentType = req.deriveTargetContentType();
+        }
 
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         
@@ -171,7 +182,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             rrb.setPpRequest(request.getPpRequest());
         ReplayRequest replayRequest = rrb.build();
 
-        if(CSV_MIME_TYPE.equals(contentType))
+        if(CSV_MIME_TYPE.equals(targetContentType))
         {
             initCsvGenerator(replayRequest);
         }
@@ -181,18 +192,16 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         YamcsClient msgClient = null;
         try {
             String yamcsConnectionData = "yamcs://";
-            if(authToken!=null && authToken.getClass() == UsernamePasswordToken.class)
+            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class)
             {
-                yamcsConnectionData += ((UsernamePasswordToken)authToken).getUsername()
-                        + ":" + ((UsernamePasswordToken)authToken).getPasswordS() +"@" ;
+                yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
+                        + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
             }
-            yamcsConnectionData += "localhost/"+yamcsInstance;
-
-           // yamcsConnectionData = "yamcs:///" + yamcsInstance;
+            yamcsConnectionData += "localhost/"+req.yamcsInstance;
 
             ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(yamcsInstance);
+            SimpleString replayServer = Protocol.getYarchReplayControlAddress(req.yamcsInstance);
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
 
             // Server is good to go, start the replay
@@ -201,13 +210,15 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
             if (request.hasStream() && request.getStream()) {
                 try {
-                    streamResponse(msgClient, ctx, req, qsDecoder, contentType);
+                    streamResponse(msgClient, req, targetContentType);
+                    return null; // !
                 } catch (Exception e) {
                     // Not throwing RestException up, since we are likely a few chunks in already.
                     log.error("Skipping chunk", e);
+                    return null; // !
                 }
             } else {
-                writeAggregatedResponse(msgClient, ctx, req, qsDecoder, contentType);
+                return writeAggregatedResponse(msgClient, req, targetContentType);
             }
         } catch (YamcsException | URISyntaxException | YamcsApiException | HornetQException e) {
             throw new InternalServerErrorException(e);
@@ -221,13 +232,15 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
         }
     }
 
-    private void streamResponse(YamcsClient msgClient, ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String contentType)
+    private void streamResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
     throws HornetQException, YamcsApiException, IOException {
 
         // Return base HTTP response, indicating that we'll used chunked encoding
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
-        response.headers().set(Names.CONTENT_TYPE, contentType);
+        response.headers().set(Names.CONTENT_TYPE, targetContentType);
+        
+        ChannelHandlerContext ctx = req.getChannelHandlerContext();
 
         ChannelFuture writeFuture=ctx.write(response);
         writeFuture.addListener(CLOSE_ON_FAILURE);
@@ -257,14 +270,14 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
             ByteBuf buf = ctx.alloc().buffer();
             ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
 
-            if (BINARY_MIME_TYPE.equals(contentType)) {
+            if (BINARY_MIME_TYPE.equals(targetContentType)) {
                 builder.build().writeDelimitedTo(channelOut);
-            } else if (CSV_MIME_TYPE.equals(contentType)) {
+            } else if (CSV_MIME_TYPE.equals(targetContentType)) {
                 if(csvGenerator != null) {
                     csvGenerator.insertRows(builder.build(), channelOut);
                 }
             } else {
-                JsonGenerator generator = createJsonGenerator(channelOut, qsDecoder);
+                JsonGenerator generator = createJsonGenerator(channelOut, req.qsDecoder);
                 JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                 generator.close();
             }
@@ -283,25 +296,24 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     }
 
     /**
-     * Current implementation seems sub-optimal, because every message is encoded twice.
-     * Once for getting a decent byte size estimate, and a second time for writing the aggregate result.
-     * However, since we hard-limit to about 1MB and since we expect most clients that fetch from the
-     * archive to stream the response instead, I don't consider this a problem at this stage.
-     * This method is mostly here for small interactive requests through tools like curl.
+     * Current implementation seems sub-optimal, because every message is
+     * encoded twice. Once for getting a decent byte size estimate, and a second
+     * time for writing the aggregate result. However, since we hard-limit to
+     * about 1MB and since we expect most clients that fetch from the archive to
+     * stream the response instead, I don't consider this a problem at this
+     * stage. This method is mostly here for small interactive requests through
+     * tools like curl.
      */
-    private void writeAggregatedResponse(YamcsClient msgClient, ChannelHandlerContext ctx, FullHttpRequest req, QueryStringDecoder qsDecoder, String contentType)
+    private RestResponse writeAggregatedResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
     throws RestException, HornetQException, YamcsApiException {
         int sizeEstimate = 0;
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-        response.headers().set(Names.CONTENT_TYPE, contentType);
         RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
         while(true) {
             ClientMessage msg = msgClient.dataConsumer.receive();
 
             if (Protocol.endOfStream(msg)) {
                 log.trace("All done. Send to client");
-                writeMessage(ctx, req, qsDecoder, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
-                break;
+                return new RestResponse(req, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
             }
 
             ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
@@ -312,11 +324,11 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
             MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
             try {
-                if (BINARY_MIME_TYPE.equals(contentType)) {
+                if (BINARY_MIME_TYPE.equals(targetContentType)) {
                     sizeEstimate += restMessage.message.getSerializedSize();
                 } else {
                     ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
-                    JsonGenerator generator = createJsonGenerator(tempOut, qsDecoder);
+                    JsonGenerator generator = createJsonGenerator(tempOut, req.qsDecoder);
                     JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                     generator.close();
                     sizeEstimate += tempOut.toByteArray().length;

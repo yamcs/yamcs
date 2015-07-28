@@ -1,13 +1,9 @@
 package org.yamcs.web.rest;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.AuthenticationToken;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Handles everything under /api. In the future could also be used to handle multiple versions,
@@ -31,40 +27,42 @@ public class ApiRequestHandler extends AbstractRestRequestHandler {
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
-        String[] path = remainingUri.split("/", 2);
+    public RestResponse handleRequest(RestRequest ctx) {
+        String[] path = ctx.remainingUri.split("/", 2);
         if (path.length == 0) {
-            sendError(ctx, HttpResponseStatus.NOT_FOUND);
+            sendError(ctx.getChannelHandlerContext(), HttpResponseStatus.NOT_FOUND);
         } else {
             try {
                 // Chop off first path segment (incl. any '/') while keeping querystring in place
-                String choppedUri = remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+                String choppedUri = ctx.remainingUri.substring(path.length > 1 ? path[0].length() + 1 : path[0].length());
+                ctx.remainingUri = choppedUri;
                 if(path[0].startsWith(ARCHIVE_PATH)) {
-                    archiveRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(archiveRequestHandler.handleRequest(ctx));
                 } else if(path[0].startsWith(MDB_PATH)) {
-                    mdbRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(mdbRequestHandler.handleRequest(ctx));
                 } else if(path[0].startsWith(COMMANDING_PATH)) {
-                    commandingRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(commandingRequestHandler.handleRequest(ctx));
                 } else if(path[0].startsWith(PARAMETER_PATH)) {
-                    parameterRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(parameterRequestHandler.handleRequest(ctx));
                 } else if(path[0].startsWith(MANAGEMENT_PATH)) {
-                    managementRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(managementRequestHandler.handleRequest(ctx));
                 } else if(path[0].startsWith(PROCESSOR_PATH)) {
-                    processorRequestHandler.handleRequest(ctx, req, yamcsInstance, choppedUri, authToken);
+                    sendResponse(processorRequestHandler.handleRequest(ctx));
                 } else {
                     log.warn("Unknown request received: '{}'", path[0]);
-                    sendError(ctx, HttpResponseStatus.NOT_FOUND);
+                    sendError(ctx.getChannelHandlerContext(), HttpResponseStatus.NOT_FOUND);
                 }
             } catch (InternalServerErrorException e) {
                 log.error("Reporting internal server error to rest client", e);
-                sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
+                sendError(ctx, e.getHttpResponseStatus(), e);
             } catch (RestException e) {
-                log.debug("Sending nominal exception back to rest client", e);
-                sendError(e, req, new QueryStringDecoder(remainingUri), ctx, e.getHttpResponseStatus());
+                log.warn("Sending nominal exception back to rest client", e);
+                sendError(ctx, e.getHttpResponseStatus(), e);
             } catch (Exception e) {
                 log.error("Unexpected error " + e, e);
-                sendError(e, req, new QueryStringDecoder(remainingUri), ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
             }
         }
+        return null;
     }
 }
