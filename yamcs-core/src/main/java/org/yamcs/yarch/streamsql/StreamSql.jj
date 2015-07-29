@@ -215,6 +215,8 @@ StreamSqlStatement OneStatement() throws StreamSqlException: {
 
 StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlStatement statement;}
 {
+    <EOF> {return null;}
+    |
     (LOOKAHEAD(2) statement=CreateTableStatement()
     |
     LOOKAHEAD(2) statement=CreateStreamStatement()
@@ -511,6 +513,7 @@ Expression RelationalExpression(): {
     Expression retExpr, expr;
     RelOp relOp;
     List<Expression> list;
+    LikeClause likeClause;
 } {
     expr=SimpleExpression(){retExpr=expr;}
     ( relOp=RelOp() expr=SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
@@ -519,7 +522,7 @@ Expression RelationalExpression(): {
       |
       LOOKAHEAD(2) BetweenClause()
       |
-      LOOKAHEAD(2) LikeClause()
+      LOOKAHEAD(2) likeClause = LikeClause() { retExpr = new LikeExpression(expr, likeClause);}
       |
       IsNullClause()
    )?
@@ -552,9 +555,16 @@ void BetweenClause(): {
     ["NOT"] "BETWEEN" SimpleExpression() "AND" SimpleExpression()
 }
 
-void LikeClause():{
+
+LikeClause LikeClause():{
+  LikeClause likeClause = new LikeClause();
+  String pattern;
 } {
-    ["NOT"] "LIKE" SimpleExpression() ["ESCAPE" SimpleExpression()]
+    ["NOT" {likeClause.setNegation(true);}]
+     "LIKE" <S_STRING> {likeClause.setPattern(getNonEscapedString(token.image));}
+     {
+       return likeClause;
+     }
 }
 
 void IsNullClause():{

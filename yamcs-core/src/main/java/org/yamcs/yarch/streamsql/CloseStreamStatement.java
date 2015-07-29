@@ -11,20 +11,19 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 
 public class CloseStreamStatement extends StreamSqlStatement {
-	String name;
-	
-	public CloseStreamStatement(String name) {
-		this.name=name;
-	}
-	
-	@Override
-	public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-		YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
-		//locking of the dictionary is performed inside the close
-		Stream s=dict.getStream(name);
-		if(s==null) throw new ResourceNotFoundException(name);
-		s.close();
-		return new StreamSqlResult();
-	}
+    String name;
 
+    public CloseStreamStatement(String name) {
+        this.name=name;
+    }
+
+    @Override
+    public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
+        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        //locking of the dictionary is performed inside the close
+        Stream s=dict.getStream(name);
+        if(s==null) throw new ResourceNotFoundException(name);
+        s.close();
+        return new StreamSqlResult();
+    }
 }

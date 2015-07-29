@@ -49,7 +49,7 @@ public class RelationalExpression extends Expression {
                 CompiledExpression compexpr=children[1].compile();
                 cvalue=compexpr.getValue(null);
             }
-            
+
             if(tableStream.addRelOpFilter(cexpr,relOp,cvalue))
                 return null;
             else 

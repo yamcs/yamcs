@@ -15,4 +15,9 @@ public class FieldReturnCompiledExpression implements CompiledExpression {
     public ColumnDefinition getDefinition() {
         return cdef;
     }
+    
+    @Override
+    public String toString() {
+        return "FieldReturnCompiledExpression(field: "+field+" columnDefinition: "+cdef+")";
+    }
 }

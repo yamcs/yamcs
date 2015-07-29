@@ -23,7 +23,6 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
         }
         @Override
         public ColumnDefinition getDefinition() {
-            // TODO Auto-generated method stub
             return null;
         }
     };
