@@ -114,6 +114,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
         HttpResponse httpResponse;
         if (restResponse.getBody() == null) {
             httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
+            setContentLength(httpResponse, 0);
         } else {
             httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
             setContentTypeHeader(httpResponse, restResponse.getContentType());

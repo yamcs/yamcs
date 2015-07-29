@@ -88,7 +88,7 @@ public class MdbRequestHandler implements RestRequestHandler {
      * Sends the parameters for the requested yamcs instance. If no namespaces are specified, send qualified names.
      */
     private RestResponse listAvailableParameters(RestRequest req) throws RestException {
-        RestListAvailableParametersRequest request = req.readMessage(SchemaRest.RestListAvailableParametersRequest.MERGE).build();
+        RestListAvailableParametersRequest request = req.bodyAsMessage(SchemaRest.RestListAvailableParametersRequest.MERGE).build();
         XtceDb mdb = loadMdb(req.yamcsInstance);
         RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
         if (request.getNamespacesCount() == 0) {
@@ -147,7 +147,7 @@ public class MdbRequestHandler implements RestRequestHandler {
     private RestResponse getParameterInfo(RestRequest req) throws RestException {
         XtceDb xtceDb = loadMdb(req.yamcsInstance);
         
-        RestGetParameterInfoRequest request = req.readMessage(SchemaRest.RestGetParameterInfoRequest.MERGE).build();
+        RestGetParameterInfoRequest request = req.bodyAsMessage(SchemaRest.RestGetParameterInfoRequest.MERGE).build();
         RestGetParameterInfoResponse.Builder responseb = RestGetParameterInfoResponse.newBuilder();
         for(NamedObjectId id:request.getListList() ){
             Parameter p = xtceDb.getParameter(id);

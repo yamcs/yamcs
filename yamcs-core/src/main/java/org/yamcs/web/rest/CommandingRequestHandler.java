@@ -63,7 +63,7 @@ public class CommandingRequestHandler implements RestRequestHandler {
     private RestResponse validateCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        RestValidateCommandRequest request = req.readMessage(SchemaRest.RestValidateCommandRequest.MERGE).build();
+        RestValidateCommandRequest request = req.bodyAsMessage(SchemaRest.RestValidateCommandRequest.MERGE).build();
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
         
         for (RestCommandType restCommand : request.getCommandsList()) {
@@ -108,7 +108,7 @@ public class CommandingRequestHandler implements RestRequestHandler {
     private RestResponse sendCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        RestSendCommandRequest request = req.readMessage(SchemaRest.RestSendCommandRequest.MERGE).build();
+        RestSendCommandRequest request = req.bodyAsMessage(SchemaRest.RestSendCommandRequest.MERGE).build();
         RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();
 
         // Validate all first

@@ -29,9 +29,13 @@ import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.GetTagsRequest;
 import org.yamcs.protobuf.Rest.GetTagsResponse;
+import org.yamcs.protobuf.Rest.InsertTagRequest;
+import org.yamcs.protobuf.Rest.InsertTagResponse;
 import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
 import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
+import org.yamcs.protobuf.Rest.UpdateTagRequest;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
@@ -151,7 +155,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      */
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
         req.assertGET();
-        RestDumpArchiveRequest request = req.readMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
+        RestDumpArchiveRequest request = req.bodyAsMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
 
         // Check if a profile has been specified in the request
         // Currently, profiles apply only for Parameter requests
@@ -399,14 +403,36 @@ public class ArchiveRequestHandler implements RestRequestHandler {
             if (req.isGET()) {
                 return getTags(req);
             } else if (req.isPOST()) {
-                // TODO
-                return null;
+                return insertTag(req);
             } else {
                 throw new MethodNotAllowedException(req);
             }            
         } else {
-            // TODO PUT & DELETE
-            return null;
+            if (!req.hasPathSegment(pathOffset + 1)) {
+                throw new NotFoundException(req);
+            }
+            
+            long tagTime;
+            try {
+                tagTime = Long.parseLong(req.getPathSegment(pathOffset));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Invalid tag time: " + req.getPathSegment(pathOffset));
+            }
+            
+            int tagId;
+            try {
+                tagId = Integer.parseInt(req.getPathSegment(pathOffset + 1));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Invalid tag id: " + req.getPathSegment(pathOffset + 1));
+            }
+            
+            if (req.isPUT()) {
+                return updateTag(req, tagTime, tagId);
+            } else if (req.isDELETE()) {
+                return deleteTag(req, tagTime, tagId);
+            } else {
+                throw new MethodNotAllowedException(req);
+            }
         }
     }
     
@@ -417,6 +443,19 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      */
     private RestResponse getTags(RestRequest req) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);
+        
+        // Start with default open-ended
+        TimeInterval interval = new TimeInterval();
+        
+        // Check any additional options
+        if (req.hasBody()) {
+            GetTagsRequest request = req.bodyAsMessage(SchemaRest.GetTagsRequest.MERGE).build();
+            if (request.hasStart()) interval.setStart(request.getStart());
+            if (request.hasStop()) interval.setStop(request.getStop());
+        }
+        
+        // Build response with a callback from the TagDb, this is all happening on
+        // the same thread.
         GetTagsResponse.Builder responseb = GetTagsResponse.newBuilder();
         try {
             tagDb.getTags(new TimeInterval(), new TagReceiver() {
@@ -431,6 +470,91 @@ public class ArchiveRequestHandler implements RestRequestHandler {
             throw new InternalServerErrorException("Could not load tags", e);
         }
         return new RestResponse(req, responseb.build(), SchemaRest.GetTagsResponse.WRITE);
+    }
+    
+    /**
+     * Adds a new tag. The newly added tag is returned as a response so the user
+     * knows the assigned id.
+     * <p>
+     * POST /(instance)/api/archive/tags
+     */
+    private RestResponse insertTag(RestRequest req) throws RestException {
+        TagDb tagDb = getTagDb(req.yamcsInstance);
+        InsertTagRequest request = req.bodyAsMessage(SchemaRest.InsertTagRequest.MERGE).build();
+        if (!request.hasName())
+            throw new BadRequestException("Name is required");
+        
+        // Translate to yamcs-api
+        ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
+        if (request.hasStart()) tagb.setStart(request.getStart());
+        if (request.hasStop()) tagb.setStop(request.getStop());
+        if (request.hasDescription()) tagb.setDescription(request.getDescription());
+        if (request.hasColor()) tagb.setColor(request.getColor());
+        
+        // Do the insert
+        ArchiveTag newTag;
+        try {
+            newTag = tagDb.insertTag(tagb.build());
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        // Echo back the tag, with its new ID
+        InsertTagResponse.Builder responseb = InsertTagResponse.newBuilder();
+        responseb.setTag(newTag);
+        return new RestResponse(req, responseb.build(), SchemaRest.InsertTagResponse.WRITE);
+    }
+    
+    /**
+     * Updates an existing tag. Returns nothing
+     * <p>
+     * PUT /(instance)/api/archive/tags/(tag-time)/(tag-id)
+     */
+    private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
+        TagDb tagDb = getTagDb(req.yamcsInstance);
+        UpdateTagRequest request = req.bodyAsMessage(SchemaRest.UpdateTagRequest.MERGE).build();
+        if (tagId < 1)
+            throw new BadRequestException("Invalid tag ID");
+        if (!request.hasName())
+            throw new BadRequestException("Name is required");
+        
+        // Translate to yamcs-api
+        ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
+        if (request.hasStart()) tagb.setStart(request.getStart());
+        if (request.hasStop()) tagb.setStop(request.getStop());
+        if (request.hasDescription()) tagb.setDescription(request.getDescription());
+        if (request.hasColor()) tagb.setColor(request.getColor());
+        
+        // Do the update
+        try {
+            tagDb.updateTag(tagTime, tagId, tagb.build());
+        } catch (YamcsException e) {
+            throw new InternalServerErrorException(e);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        
+        return new RestResponse(req);
+    }
+    
+    /**
+     * Deletes the identified tag. Returns nothing, but if the tag
+     * didn't exist, it returns a 404 Not Found
+     */
+    private RestResponse deleteTag(RestRequest req, long tagTime, int tagId) throws RestException {
+        if (tagId < 1)
+            throw new BadRequestException("Invalid tag ID");
+        
+        TagDb tagDb = getTagDb(req.yamcsInstance);
+        try {
+            tagDb.deleteTag(tagTime, tagId);
+        } catch (YamcsException e) { // Delete-tag returns an exception when it's not found
+            throw new NotFoundException(req);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        
+        return new RestResponse(req);
     }
     
     private static TagDb getTagDb(String yamcsInstance) throws RestException {

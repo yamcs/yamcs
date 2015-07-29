@@ -123,6 +123,10 @@ public class TagDb {
         return newTag;
     }
 
+    /**
+     * Deletes the specified tag
+     * @throws YamcsException if the id was invalid, or if the tag could not be found
+     */
     public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException {
         if(tagId<1) throw new YamcsException("Invalid or unexisting id");
         byte[] k=key(tagTime, tagId);

@@ -75,7 +75,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
                     return new RestResponse(req, pv, SchemaPvalue.ParameterValue.WRITE);
                 }
             } else if(req.isPOST()) {
-                Value v = req.readMessage(SchemaYamcs.Value.MERGE).build();
+                Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
                 RestSetParameterResponse response = setParameter(p, v, processor);
                 return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
             } else {
@@ -120,7 +120,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
      * sets multiple parameters parameters
      */
     private RestResponse setParameters(RestRequest req, YProcessor processor) throws RestException {
-        ParameterData pdata = req.readMessage(SchemaPvalue.ParameterData.MERGE).build();
+        ParameterData pdata = req.bodyAsMessage(SchemaPvalue.ParameterData.MERGE).build();
 
         SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
@@ -159,7 +159,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
      * Gets parameter values
      */
     private RestResponse getParameters(RestRequest req, YProcessor processor) throws RestException {
-        RestGetParameterRequest request = req.readMessage(SchemaRest.RestGetParameterRequest.MERGE).build();
+        RestGetParameterRequest request = req.bodyAsMessage(SchemaRest.RestGetParameterRequest.MERGE).build();
         if(request.getListCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }

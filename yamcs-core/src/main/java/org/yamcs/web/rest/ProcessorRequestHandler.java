@@ -56,7 +56,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
         
     private RestResponse handleProcessorRequest(RestRequest req, YProcessor yproc) throws RestException {
         req.assertPOST();
-        ProcessorRequest yprocReq = req.readMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
+        ProcessorRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
         switch(yprocReq.getOperation()) {
         case RESUME:
             if(!yproc.isReplay()) {
@@ -88,7 +88,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
     
     private RestResponse handleProcessorManagementRequest(RestRequest req) throws RestException {
         req.assertPOST();
-        ProcessorManagementRequest yprocReq = req.readMessage(SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
+        ProcessorManagementRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
         switch(yprocReq.getOperation()) {
         case CONNECT_TO_PROCESSOR:
             ManagementService mservice = ManagementService.getInstance();

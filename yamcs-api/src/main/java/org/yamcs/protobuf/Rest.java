@@ -13969,7 +13969,7 @@ public final class Rest {
    * Protobuf type {@code rest.GetTagsRequest}
    *
    * <pre>
-   * GET /api/(instance)/archive/tags
+   * GET /(instance)/api/archive/tags
    * </pre>
    */
   public static final class GetTagsRequest extends
@@ -14355,7 +14355,7 @@ public final class Rest {
      * Protobuf type {@code rest.GetTagsRequest}
      *
      * <pre>
-     * GET /api/(instance)/archive/tags
+     * GET /(instance)/api/archive/tags
      * </pre>
      */
     public static final class Builder extends
@@ -15527,7 +15527,7 @@ public final class Rest {
    * Protobuf type {@code rest.InsertTagRequest}
    *
    * <pre>
-   * POST /api/(instance)/archive/tags
+   * POST /(instance)/api/archive/tags
    * </pre>
    */
   public static final class InsertTagRequest extends
@@ -15949,7 +15949,7 @@ public final class Rest {
      * Protobuf type {@code rest.InsertTagRequest}
      *
      * <pre>
-     * POST /api/(instance)/archive/tags
+     * POST /(instance)/api/archive/tags
      * </pre>
      */
     public static final class Builder extends
@@ -16408,6 +16408,525 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:rest.InsertTagRequest)
   }
 
+  public interface InsertTagResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .yamcs.ArchiveTag tag = 1;
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    boolean hasTag();
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.ArchiveTag getTag();
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder();
+  }
+  /**
+   * Protobuf type {@code rest.InsertTagResponse}
+   */
+  public static final class InsertTagResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements InsertTagResponseOrBuilder {
+    // Use InsertTagResponse.newBuilder() to construct.
+    private InsertTagResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private InsertTagResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final InsertTagResponse defaultInstance;
+    public static InsertTagResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public InsertTagResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private InsertTagResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.Yamcs.ArchiveTag.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = tag_.toBuilder();
+              }
+              tag_ = input.readMessage(org.yamcs.protobuf.Yamcs.ArchiveTag.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(tag_);
+                tag_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_InsertTagResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_InsertTagResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.InsertTagResponse.class, org.yamcs.protobuf.Rest.InsertTagResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<InsertTagResponse> PARSER =
+        new com.google.protobuf.AbstractParser<InsertTagResponse>() {
+      public InsertTagResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new InsertTagResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<InsertTagResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional .yamcs.ArchiveTag tag = 1;
+    public static final int TAG_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Yamcs.ArchiveTag tag_;
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    public boolean hasTag() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.ArchiveTag getTag() {
+      return tag_;
+    }
+    /**
+     * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder() {
+      return tag_;
+    }
+
+    private void initFields() {
+      tag_ = org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (hasTag()) {
+        if (!getTag().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, tag_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, tag_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.InsertTagResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.InsertTagResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.InsertTagResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.InsertTagResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_InsertTagResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_InsertTagResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.InsertTagResponse.class, org.yamcs.protobuf.Rest.InsertTagResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.InsertTagResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getTagFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (tagBuilder_ == null) {
+          tag_ = org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance();
+        } else {
+          tagBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_InsertTagResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.InsertTagResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.InsertTagResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.InsertTagResponse build() {
+        org.yamcs.protobuf.Rest.InsertTagResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.InsertTagResponse buildPartial() {
+        org.yamcs.protobuf.Rest.InsertTagResponse result = new org.yamcs.protobuf.Rest.InsertTagResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (tagBuilder_ == null) {
+          result.tag_ = tag_;
+        } else {
+          result.tag_ = tagBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.InsertTagResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.InsertTagResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.InsertTagResponse other) {
+        if (other == org.yamcs.protobuf.Rest.InsertTagResponse.getDefaultInstance()) return this;
+        if (other.hasTag()) {
+          mergeTag(other.getTag());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasTag()) {
+          if (!getTag().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.InsertTagResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.InsertTagResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .yamcs.ArchiveTag tag = 1;
+      private org.yamcs.protobuf.Yamcs.ArchiveTag tag_ = org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> tagBuilder_;
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public boolean hasTag() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ArchiveTag getTag() {
+        if (tagBuilder_ == null) {
+          return tag_;
+        } else {
+          return tagBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public Builder setTag(org.yamcs.protobuf.Yamcs.ArchiveTag value) {
+        if (tagBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          tag_ = value;
+          onChanged();
+        } else {
+          tagBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public Builder setTag(
+          org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builderForValue) {
+        if (tagBuilder_ == null) {
+          tag_ = builderForValue.build();
+          onChanged();
+        } else {
+          tagBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public Builder mergeTag(org.yamcs.protobuf.Yamcs.ArchiveTag value) {
+        if (tagBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              tag_ != org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance()) {
+            tag_ =
+              org.yamcs.protobuf.Yamcs.ArchiveTag.newBuilder(tag_).mergeFrom(value).buildPartial();
+          } else {
+            tag_ = value;
+          }
+          onChanged();
+        } else {
+          tagBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public Builder clearTag() {
+        if (tagBuilder_ == null) {
+          tag_ = org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance();
+          onChanged();
+        } else {
+          tagBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder getTagBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getTagFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder() {
+        if (tagBuilder_ != null) {
+          return tagBuilder_.getMessageOrBuilder();
+        } else {
+          return tag_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.ArchiveTag tag = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> 
+          getTagFieldBuilder() {
+        if (tagBuilder_ == null) {
+          tagBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder>(
+                  tag_,
+                  getParentForChildren(),
+                  isClean());
+          tag_ = null;
+        }
+        return tagBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.InsertTagResponse)
+    }
+
+    static {
+      defaultInstance = new InsertTagResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.InsertTagResponse)
+  }
+
   public interface UpdateTagRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -16480,7 +16999,7 @@ public final class Rest {
    * Protobuf type {@code rest.UpdateTagRequest}
    *
    * <pre>
-   * PUT /api/(instance)/archive/tags/(old_start)/(id)
+   * PUT /(instance)/api/archive/tags/(old_start)/(id)
    * </pre>
    */
   public static final class UpdateTagRequest extends
@@ -16902,7 +17421,7 @@ public final class Rest {
      * Protobuf type {@code rest.UpdateTagRequest}
      *
      * <pre>
-     * PUT /api/(instance)/archive/tags/(old_start)/(id)
+     * PUT /(instance)/api/archive/tags/(old_start)/(id)
      * </pre>
      */
     public static final class Builder extends
@@ -25296,6 +25815,11 @@ public final class Rest {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_rest_InsertTagRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_InsertTagResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_InsertTagResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_rest_UpdateTagRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -25407,37 +25931,39 @@ public final class Rest {
       "(\t\"2\n\017GetTagsResponse\022\037\n\004tags\030\001 \003(\0132\021.ya" +
       "mcs.ArchiveTag\"a\n\020InsertTagRequest\022\014\n\004na" +
       "me\030\001 \001(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\023\n" +
-      "\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"a\n\020Upd" +
-      "ateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001",
-      "(\003\022\014\n\004stop\030\003 \001(\003\022\023\n\013description\030\004 \001(\t\022\r\n" +
-      "\005color\030\005 \001(\t\"A\n\026RestSendCommandRequest\022\'" +
-      "\n\010commands\030\001 \003(\0132\025.rest.RestCommandType\"" +
-      "\031\n\027RestSendCommandResponse\"\034\n\014RestUnitTy" +
-      "pe\022\014\n\004unit\030\001 \001(\t\"{\n\016RestAlarmRange\022#\n\005le" +
-      "vel\030\001 \001(\0162\024.rest.RestAlarmLevel\022\024\n\014minIn" +
-      "clusive\030\002 \001(\001\022\024\n\014maxInclusive\030\003 \001(\001\022\030\n\020e" +
-      "numerationValue\030\004 \001(\t\"W\n\rRestAlarmInfo\022\025" +
-      "\n\rminViolations\030\001 \001(\005\022/\n\021staticAlarmRang" +
-      "es\030\002 \003(\0132\024.rest.RestAlarmRange\"\212\001\n\021RestP",
-      "arameterType\022\017\n\007engType\030\001 \001(\t\022\024\n\014dataEnc" +
-      "oding\030\002 \001(\t\022#\n\007unitSet\030\003 \003(\0132\022.rest.Rest" +
-      "UnitType\022)\n\014defaultAlarm\030\004 \001(\0132\023.rest.Re" +
-      "stAlarmInfo\"\206\001\n\023RestNameDescription\022\025\n\rq" +
-      "ualifiedName\030\001 \001(\t\022\030\n\020shortDescription\030\002" +
-      " \001(\t\022\027\n\017longDescription\030\003 \001(\t\022%\n\007aliases" +
-      "\030\004 \003(\0132\024.yamcs.NamedObjectId\"\240\001\n\021RestPar" +
-      "ameterInfo\022 \n\002id\030\001 \001(\0132\024.yamcs.NamedObje" +
-      "ctId\022.\n\013description\030\002 \001(\0132\031.rest.RestNam" +
-      "eDescription\022%\n\004type\030\003 \001(\0132\027.rest.RestPa",
-      "rameterType\022\022\n\ndataSource\030\004 \001(\t\"A\n\033RestG" +
-      "etParameterInfoRequest\022\"\n\004list\030\001 \003(\0132\024.y" +
-      "amcs.NamedObjectId\"F\n\034RestGetParameterIn" +
-      "foResponse\022&\n\005pinfo\030\001 \003(\0132\027.rest.RestPar" +
-      "ameterInfo*G\n\016RestDataSource\022\017\n\013TELEMETE" +
-      "RED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCA" +
-      "L\020\003*\\\n\016RestAlarmLevel\022\n\n\006normal\020\000\022\t\n\005wat" +
-      "ch\020\001\022\013\n\007warning\020\002\022\014\n\010distress\020\003\022\014\n\010criti" +
-      "cal\020\004\022\n\n\006severe\020\005B\024\n\022org.yamcs.protobuf"
+      "\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"3\n\021Ins" +
+      "ertTagResponse\022\036\n\003tag\030\001 \001(\0132\021.yamcs.Arch",
+      "iveTag\"a\n\020UpdateTagRequest\022\014\n\004name\030\001 \001(\t" +
+      "\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\023\n\013descrip" +
+      "tion\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"A\n\026RestSendCom" +
+      "mandRequest\022\'\n\010commands\030\001 \003(\0132\025.rest.Res" +
+      "tCommandType\"\031\n\027RestSendCommandResponse\"" +
+      "\034\n\014RestUnitType\022\014\n\004unit\030\001 \001(\t\"{\n\016RestAla" +
+      "rmRange\022#\n\005level\030\001 \001(\0162\024.rest.RestAlarmL" +
+      "evel\022\024\n\014minInclusive\030\002 \001(\001\022\024\n\014maxInclusi" +
+      "ve\030\003 \001(\001\022\030\n\020enumerationValue\030\004 \001(\t\"W\n\rRe" +
+      "stAlarmInfo\022\025\n\rminViolations\030\001 \001(\005\022/\n\021st",
+      "aticAlarmRanges\030\002 \003(\0132\024.rest.RestAlarmRa" +
+      "nge\"\212\001\n\021RestParameterType\022\017\n\007engType\030\001 \001" +
+      "(\t\022\024\n\014dataEncoding\030\002 \001(\t\022#\n\007unitSet\030\003 \003(" +
+      "\0132\022.rest.RestUnitType\022)\n\014defaultAlarm\030\004 " +
+      "\001(\0132\023.rest.RestAlarmInfo\"\206\001\n\023RestNameDes" +
+      "cription\022\025\n\rqualifiedName\030\001 \001(\t\022\030\n\020short" +
+      "Description\030\002 \001(\t\022\027\n\017longDescription\030\003 \001" +
+      "(\t\022%\n\007aliases\030\004 \003(\0132\024.yamcs.NamedObjectI" +
+      "d\"\240\001\n\021RestParameterInfo\022 \n\002id\030\001 \001(\0132\024.ya" +
+      "mcs.NamedObjectId\022.\n\013description\030\002 \001(\0132\031",
+      ".rest.RestNameDescription\022%\n\004type\030\003 \001(\0132" +
+      "\027.rest.RestParameterType\022\022\n\ndataSource\030\004" +
+      " \001(\t\"A\n\033RestGetParameterInfoRequest\022\"\n\004l" +
+      "ist\030\001 \003(\0132\024.yamcs.NamedObjectId\"F\n\034RestG" +
+      "etParameterInfoResponse\022&\n\005pinfo\030\001 \003(\0132\027" +
+      ".rest.RestParameterInfo*G\n\016RestDataSourc" +
+      "e\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONST" +
+      "ANT\020\002\022\t\n\005LOCAL\020\003*\\\n\016RestAlarmLevel\022\n\n\006no" +
+      "rmal\020\000\022\t\n\005watch\020\001\022\013\n\007warning\020\002\022\014\n\010distre" +
+      "ss\020\003\022\014\n\010critical\020\004\022\n\n\006severe\020\005B\024\n\022org.ya",
+      "mcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -25576,68 +26102,74 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_InsertTagRequest_descriptor,
               new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
-          internal_static_rest_UpdateTagRequest_descriptor =
+          internal_static_rest_InsertTagResponse_descriptor =
             getDescriptor().getMessageTypes().get(22);
+          internal_static_rest_InsertTagResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_InsertTagResponse_descriptor,
+              new java.lang.String[] { "Tag", });
+          internal_static_rest_UpdateTagRequest_descriptor =
+            getDescriptor().getMessageTypes().get(23);
           internal_static_rest_UpdateTagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_UpdateTagRequest_descriptor,
               new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
           internal_static_rest_RestSendCommandRequest_descriptor =
-            getDescriptor().getMessageTypes().get(23);
+            getDescriptor().getMessageTypes().get(24);
           internal_static_rest_RestSendCommandRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandRequest_descriptor,
               new java.lang.String[] { "Commands", });
           internal_static_rest_RestSendCommandResponse_descriptor =
-            getDescriptor().getMessageTypes().get(24);
+            getDescriptor().getMessageTypes().get(25);
           internal_static_rest_RestSendCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandResponse_descriptor,
               new java.lang.String[] { });
           internal_static_rest_RestUnitType_descriptor =
-            getDescriptor().getMessageTypes().get(25);
+            getDescriptor().getMessageTypes().get(26);
           internal_static_rest_RestUnitType_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestUnitType_descriptor,
               new java.lang.String[] { "Unit", });
           internal_static_rest_RestAlarmRange_descriptor =
-            getDescriptor().getMessageTypes().get(26);
+            getDescriptor().getMessageTypes().get(27);
           internal_static_rest_RestAlarmRange_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestAlarmRange_descriptor,
               new java.lang.String[] { "Level", "MinInclusive", "MaxInclusive", "EnumerationValue", });
           internal_static_rest_RestAlarmInfo_descriptor =
-            getDescriptor().getMessageTypes().get(27);
+            getDescriptor().getMessageTypes().get(28);
           internal_static_rest_RestAlarmInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestAlarmInfo_descriptor,
               new java.lang.String[] { "MinViolations", "StaticAlarmRanges", });
           internal_static_rest_RestParameterType_descriptor =
-            getDescriptor().getMessageTypes().get(28);
+            getDescriptor().getMessageTypes().get(29);
           internal_static_rest_RestParameterType_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestParameterType_descriptor,
               new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", });
           internal_static_rest_RestNameDescription_descriptor =
-            getDescriptor().getMessageTypes().get(29);
+            getDescriptor().getMessageTypes().get(30);
           internal_static_rest_RestNameDescription_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestNameDescription_descriptor,
               new java.lang.String[] { "QualifiedName", "ShortDescription", "LongDescription", "Aliases", });
           internal_static_rest_RestParameterInfo_descriptor =
-            getDescriptor().getMessageTypes().get(30);
+            getDescriptor().getMessageTypes().get(31);
           internal_static_rest_RestParameterInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestParameterInfo_descriptor,
               new java.lang.String[] { "Id", "Description", "Type", "DataSource", });
           internal_static_rest_RestGetParameterInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(31);
+            getDescriptor().getMessageTypes().get(32);
           internal_static_rest_RestGetParameterInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterInfoRequest_descriptor,
               new java.lang.String[] { "List", });
           internal_static_rest_RestGetParameterInfoResponse_descriptor =
-            getDescriptor().getMessageTypes().get(32);
+            getDescriptor().getMessageTypes().get(33);
           internal_static_rest_RestGetParameterInfoResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterInfoResponse_descriptor,

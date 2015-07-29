@@ -152,6 +152,10 @@ public class RestRequest {
         return generator;
     }
     
+    public boolean hasBody() {
+        return HttpHeaders.getContentLength(httpRequest) > 0;
+    }
+    
     /**
      * Deserializes the incoming message extracted from the body. This does not
      * care about what the HTTP method is. Any required checks should be done
@@ -162,7 +166,7 @@ public class RestRequest {
      * else, it should check for that itself, and then use
      * {@link #bodyAsInputStream()}.
      */
-    public <T extends MessageLite.Builder> T readMessage(Schema<T> sourceSchema) throws BadRequestException {
+    public <T extends MessageLite.Builder> T bodyAsMessage(Schema<T> sourceSchema) throws BadRequestException {
         String sourceContentType = deriveSourceContentType();
         InputStream cin = bodyAsInputStream();
         T msg = sourceSchema.newMessage();
