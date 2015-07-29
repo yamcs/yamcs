@@ -1,11 +1,6 @@
 package org.yamcs.web.websocket;
 
-import io.protostuff.Schema;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import java.io.IOException;
 
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -16,8 +11,14 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscription
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.Statistics;
 
-import java.io.IOException;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.protostuff.Schema;
 
 public class ProtobufEncoder implements WebSocketEncoder {
 
@@ -52,6 +53,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setProcessorInfo((ProcessorInfo) message);
         } else if (dataType == ProtoDataType.CLIENT_INFO) {
             responseb.setClientInfo((ClientInfo) message);
+        } else if (dataType == ProtoDataType.PROCESSING_STATISTICS) {
+            responseb.setStatistics((Statistics) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }
@@ -65,7 +68,7 @@ public class ProtobufEncoder implements WebSocketEncoder {
 
     private static BinaryWebSocketFrame toFrame(WebSocketServerMessage message) throws IOException {
         // TODO This assumes that the frame is quite small (which it should be, but)
-	ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = Unpooled.buffer();
         try (ByteBufOutputStream cout = new ByteBufOutputStream(buf)) {
             message.writeTo(cout);
         }

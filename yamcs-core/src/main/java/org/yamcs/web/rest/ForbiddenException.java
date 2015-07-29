@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * When there was an authz exception
  */
 public class ForbiddenException extends RestException {
+    private static final long serialVersionUID = 1L;
 
     public ForbiddenException(String message) {
         super(message);

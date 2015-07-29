@@ -4,16 +4,11 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
-import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -25,59 +20,64 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
 import org.yamcs.protobuf.Rest.RestSetParameterResponse;
 import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.HttpSocketServerHandler;
 import org.yamcs.xtce.Parameter;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 /**
  * Handles incoming requests related to realtime Parameters (get/set).
- * 
+ * <p>
+ * /(instance)/api/parameter
  */
-public class ParameterRequestHandler extends AbstractRestRequestHandler {
+public class ParameterRequestHandler implements RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
+    
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken)
-            throws RestException {
-        org.yamcs.YProcessor yproc = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
-
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-        if ("_get".equals(qsDecoder.path())) {
-            RestGetParameterRequest request = readMessage(req, SchemaRest.RestGetParameterRequest.MERGE).build();
-            ParameterData pdata = getParameters(request, yproc, authToken);
-            writeMessage(ctx, req, qsDecoder, pdata, SchemaPvalue.ParameterData.WRITE);
-        } else if ("_set".equals(qsDecoder.path())) {
-            ParameterData pdata = readMessage(req, SchemaPvalue.ParameterData.MERGE).build();
-            RestSetParameterResponse response = setParameters(pdata, yproc, authToken);
-
-            writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSetParameterResponse.WRITE);
-        } else {
-            String fqname = "/"+qsDecoder.path();
-            NamedObjectId id = NamedObjectId.newBuilder().setName(fqname).build();
-            Parameter p = yproc.getXtceDb().getParameter(id);
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            throw new NotFoundException(req);
+        }
+        
+        YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
+        
+        switch (req.getPathSegment(pathOffset)) {
+        case "_get":
+            return getParameters(req, processor);
+            
+        case "_set":
+            return setParameters(req, processor);
+            
+        default:
+            // Interpret the remaining path as an absolute parameter name
+            String[] pathSegments = req.getPathSegments();
+            StringBuilder fqname = new StringBuilder();
+            for (int i=pathOffset; i<pathSegments.length; i++) {
+                fqname.append("/").append(pathSegments[i]);
+            }
+            NamedObjectId id = NamedObjectId.newBuilder().setName(fqname.toString()).build();
+            
+            Parameter p = processor.getXtceDb().getParameter(id);
             if(p==null) {
                 log.warn("Invalid parameter requested: {}", id);
-                sendError(ctx, NOT_FOUND);
-                return;
+                throw new NotFoundException(req);
             }
-            if(req.getMethod()==HttpMethod.GET) {
-                ParameterValue pv = getParameterFromCache(id, p, yproc);
+            if(req.isGET()) {
+                ParameterValue pv = getParameterFromCache(id, p, processor);
                 if(pv==null) {
                     log.debug("No value found in cache for parameter: {}", id);
-                    sendError(ctx, NOT_FOUND);
+                    // TODO this doesn't look like it should return an exception? (FDI)
+                    throw new NotFoundException(req);
                 } else {
-                    writeMessage(ctx, req, qsDecoder, pv, SchemaPvalue.ParameterValue.WRITE);
+                    return new RestResponse(req, pv, SchemaPvalue.ParameterValue.WRITE);
                 }
-            } else if(req.getMethod()==HttpMethod.POST) {
-                Value v = readMessage(req, SchemaYamcs.Value.MERGE).build();
-                RestSetParameterResponse response = setParameter(p, v, yproc);
-                writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSetParameterResponse.WRITE);
+            } else if(req.isPOST()) {
+                Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
+                RestSetParameterResponse response = setParameter(p, v, processor);
+                return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
             } else {
                 throw new BadRequestException("Only GET and POST methods supported for parameter");
             }
@@ -87,9 +87,9 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
 
 
-    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, YProcessor yamcsChannel) throws BadRequestException {
+    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, YProcessor processor) throws BadRequestException {
         //TODO permissions
-        ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
+        ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         if(!prm.hasParameterCache()) {
             throw new BadRequestException("ParameterCache not activated for this channel");
         }
@@ -102,8 +102,8 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets single parameter
      */
-    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor yamcsChannel) throws BadRequestException {
-        SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
+    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor processor) throws BadRequestException {
+        SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this channel");
         }
@@ -119,22 +119,23 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets multiple parameters parameters
      */
-    private RestSetParameterResponse setParameters(ParameterData pdata, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken) throws RestException {
+    private RestResponse setParameters(RestRequest req, YProcessor processor) throws RestException {
+        ParameterData pdata = req.bodyAsMessage(SchemaPvalue.ParameterData.MERGE).build();
 
-        SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
+        SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this channel");
         }
         // check permission
         {
-            ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
+            ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
             for(Pvalue.ParameterValue p : pdata.getParameterList())
             {
                 try {
                     String parameterName = prm.getParameter(p.getId()).getQualifiedName();
-                    if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER_SET, parameterName))
+                    if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER_SET, parameterName))
                     {
-                        throw  new ForbiddenException("User " + authToken + " has no set permission for parameter "
+                        throw  new ForbiddenException("User " + req.authToken + " has no set permission for parameter "
                                 + parameterName);
                     }
                 } catch (InvalidIdentification invalidIdentification) {
@@ -148,7 +149,8 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
             throw new BadRequestException(e.getMessage());
         }
 
-        return RestSetParameterResponse.newBuilder().build();
+        RestSetParameterResponse response = RestSetParameterResponse.newBuilder().build();
+        return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
     }
 
 
@@ -156,12 +158,12 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * Gets parameter values
      */
-    private ParameterData getParameters(RestGetParameterRequest request, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken)
-            throws RestException {
+    private RestResponse getParameters(RestRequest req, YProcessor processor) throws RestException {
+        RestGetParameterRequest request = req.bodyAsMessage(SchemaRest.RestGetParameterRequest.MERGE).build();
         if(request.getListCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }
-        ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
+        ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
         List<NamedObjectId> idList = request.getListList();
@@ -172,14 +174,14 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
                     throw new BadRequestException("ParameterCache not activated for this channel");
                 }
                 List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(idList, authToken);
+                l = pwirh.getValuesFromCache(idList, req.authToken);
                 for(ParameterValueWithId pvwi: l) {
                     pdatab.addParameter(pvwi.toGbpParameterValue());
                 }
             } else {
 
                 long timeout = getTimeout(request);
-                int reqId = pwirh.addRequest(idList, authToken);
+                int reqId = pwirh.addRequest(idList, req.authToken);
                 long t0 = System.currentTimeMillis();
                 long t1;
                 while(true) {
@@ -206,7 +208,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
             throw new ForbiddenException(e.getMessage(), e);
         }
 
-        return pdatab.build();
+        return new RestResponse(req, pdatab.build(), SchemaPvalue.ParameterData.WRITE);
     }
 
 
@@ -223,7 +225,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
 
     class MyConsumer implements ParameterWithIdConsumer {
-        LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<List<ParameterValueWithId>>();
+        LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<>();
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {

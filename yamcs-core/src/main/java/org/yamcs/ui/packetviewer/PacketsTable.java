@@ -12,11 +12,9 @@ import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -32,18 +30,13 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.ui.PacketListener;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
@@ -55,7 +48,6 @@ import com.fasterxml.jackson.core.JsonToken;
 public class PacketsTable extends JTable implements ListSelectionListener, PacketListener {
 
     private static final long serialVersionUID = 1L;
-    private static final String[] FIXED_COLUMNS = {"#", "Generation Time", "Packet Name"};
     private static final String MARK_PACKET = "Mark Packet";
     private static final String UNMARK_PACKET = "Unmark Packet";
     private static final Color LIGHT_GRAY = new Color(216, 216, 216);
@@ -68,52 +60,34 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     public static final String UP_ACTION_KEY = "up";
     public static final String DOWN_ACTION_KEY = "down";
     
-    
     public static final String PREF_COLNAMES = "columns";
+
+    private PacketsTableModel tableModel;
+    private TableRowSorter<PacketsTableModel> rowSorter;
 
     private PacketViewer packetViewer;
     private JPopupMenu popup; 
     private JMenuItem markPacketMenuItem;
     private int maxLines = 1000;
 
-    private Set<Integer> markedPacketNrs = new HashSet<Integer>(2);
-    private int continuousRowCount = 0; // Always increases, even when rows were removed
+    private Set<Integer> markedPacketNrs = new HashSet<>(2);
 
     // Store history of previously visited packet numbers
-    private List<Integer> history = new ArrayList<Integer>();
+    private List<Integer> history = new ArrayList<>();
     private int historyPosition = -1;
 
     //used for extracting parameters shown on the left overview table
     XtceTmExtractor tmExtractor;
 
     List<String> columnParaNames;
-    List<Parameter> shownColumnParameters;
 
 
     public PacketsTable(PacketViewer packetViewer) {
         super();
         this.packetViewer = packetViewer;
         readColumnsFromPreference();
-
-        DefaultTableModel packetsModel = new DefaultTableModel(FIXED_COLUMNS, 0) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Class<?> getColumnClass(int columnIndex) { 
-                if (columnIndex == 0)
-                    return Number.class;
-                return String.class; //TODO
-            }
-            @Override
-            public String getColumnName(int column) {
-                if(column<FIXED_COLUMNS.length) {
-                    return FIXED_COLUMNS[column];
-                } else {
-                    return shownColumnParameters.get(column-FIXED_COLUMNS.length).getName();
-                }
-            }
-        };
-        setModel(packetsModel);
+        tableModel = new PacketsTableModel();
+        setModel(tableModel);
 
         setPreferredScrollableViewportSize(new Dimension(400, 400));
         setFillsViewportHeight(true);
@@ -127,25 +101,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         setIntercellSpacing(new Dimension(0, 0));
         setRowHeight(getRowHeight() + 2);
 
-        TableRowSorter<DefaultTableModel> packetsSorter = new TableRowSorter<DefaultTableModel>(packetsModel);
-
-        Comparator<Number> numberComparator = new Comparator<Number>() {
-            @Override
-            public int compare(Number o1, Number o2) {
-                return o1.intValue() < o2.intValue() ? -1 : (o1.intValue() > o2.intValue() ? 1 : 0);
-            }
-        };
-        
-        Comparator<ListPacket> packetComparator = new Comparator<ListPacket>() {
-            @Override
-            public int compare(ListPacket o1, ListPacket o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        };
-        
-        packetsSorter.setComparator(0, numberComparator);
-        packetsSorter.setComparator(2, packetComparator);
-        setRowSorter(packetsSorter);
+        rowSorter = new TableRowSorter<>(tableModel);
+        setRowSorter(rowSorter);
+        configureRowSorting();
 
         // Swing highlights the selected cell with an annoying blue border.
         // Disable this behaviour by using a custom cell renderer
@@ -178,6 +136,29 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         createActions();
         installPopupMenu();
     }
+    
+    // It seems like this needs to be re-done after every model restructuring
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void configureRowSorting() {
+        rowSorter.setComparator(2, (ListPacket o1, ListPacket o2) -> {
+            return o1.getName().compareTo(o2.getName());   
+        });
+        
+        // Yamcs effective parameter types can theoretically change from one value to another
+        // So, unfortunately we can't statically determine it. Below code is a non-perfect workaround
+        for (int i=3; i<getColumnCount(); i++) {
+            rowSorter.setComparator(i, (Object o1, Object o2) -> {
+                if (o1 == null ^ o2 == null)
+                    return (o1 == null) ? -1 : 1;
+                if (o1 == null && o2 == null)
+                    return 0;
+                if (o1.getClass() == o2.getClass() && o1 instanceof Comparable<?>)
+                    return ((Comparable) o1).compareTo(o2);
+                else
+                    return String.valueOf(o1).compareTo(String.valueOf(o2));
+            });
+        }
+    }
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -197,22 +178,11 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
 
     public void clear() {
         clearSelection();
-        ((DefaultTableModel) getModel()).setRowCount(0);
-        continuousRowCount = 0;
+        tableModel.clear();
         markedPacketNrs.clear();
         history.clear();
         historyPosition = -1;
         updateActionStates();
-    }
-
-    public void addRow(Object[] rowData) {
-        Vector<Object> v = new Vector<Object>(rowData.length + 1);
-        v.add(++continuousRowCount);
-        for (Object o : rowData)
-            v.add(o);
-        ((DefaultTableModel) getModel()).addRow(v);
-
-        if (getRowCount() == 1) updateActionStates();
     }
 
     public void setMaxLines(int maxLines) {
@@ -488,8 +458,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
      * @param rowIndex row index in model, not in view
      */
     private void removeRow(int rowIndex) {
-        DefaultTableModel packetsModel = (DefaultTableModel) getModel();
-        int packetNr = (Integer) packetsModel.getValueAt(rowIndex, 0);
+        int packetNr = (Integer) tableModel.getValueAt(rowIndex, 0);
         markedPacketNrs.remove(packetNr);
 
         int historyIndex = history.indexOf(packetNr);
@@ -499,7 +468,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 historyPosition--;
         }
 
-        packetsModel.removeRow(0);
+        tableModel.removeRow(0);
     }
 
     @Override
@@ -520,51 +489,23 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         }
 
         packet.setName(name);
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                DefaultTableModel packetsModel = (DefaultTableModel) getModel();
-                List<Object> row = new ArrayList<Object>();
-                row.add( TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
-                row.add(packet);
-                for(Parameter p:shownColumnParameters) {
-                    ParameterValue pv = packet.getParameterColumn(p);
-                    if(pv!=null) {
-                        row.add(getValue(pv));
-                    } else {
-                        row.add(null);
-                    }
-                }
-                addRow(row.toArray());
-                while (packetsModel.getRowCount() > maxLines) {
-                    removeRow(0);
-                }
+        SwingUtilities.invokeLater(() -> {
+            tableModel.addPacket(packet);
+            if (getRowCount() == 1) updateActionStates();
+            while (tableModel.getRowCount() > maxLines) {
+                removeRow(0);
+            }
 
-                if (packetViewer.miAutoScroll.isSelected()) {
-                    int rowNum = convertRowIndexToModel(packetsModel.getRowCount() - 1);
-                    Rectangle rect = getCellRect(rowNum, 0, true);
-                    scrollRectToVisible(rect);
-                }
-                if (packetViewer.miAutoSelect.isSelected()) {
-                    int rowNum = convertRowIndexToModel(packetsModel.getRowCount() - 1);
-                    getSelectionModel().setSelectionInterval(rowNum, rowNum);
-                }
+            if (packetViewer.miAutoScroll.isSelected()) {
+                int rowNum = convertRowIndexToModel(tableModel.getRowCount() - 1);
+                Rectangle rect = getCellRect(rowNum, 0, true);
+                scrollRectToVisible(rect);
+            }
+            if (packetViewer.miAutoSelect.isSelected()) {
+                int rowNum = convertRowIndexToModel(tableModel.getRowCount() - 1);
+                getSelectionModel().setSelectionInterval(rowNum, rowNum);
             }
         });
-    }
-
-   private Object getValue(ParameterValue pv) {
-        Value v = pv.getEngValue();
-        
-        if(v==null) {
-            return getValue(pv.getRawValue());
-        } else {
-            return getValue(v);
-        }
-    }
-    
-    private Object getValue(Value v) {
-        return ValueUtility.getYarchValue(v);
     }
     
     //reads from the preferences the columns (parameters) that have to be shown in the left table
@@ -617,14 +558,14 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
      * */
     void setupParameterColumns() {
         tmExtractor=new XtceTmExtractor(packetViewer.xtcedb);
-        shownColumnParameters = new ArrayList<>();
+        tableModel.resetParameterColumns();
         for(String pn: columnParaNames) {
             Parameter p = packetViewer.xtcedb.getParameter(pn);
             if(p==null) {
                 log("Cannot find a parameter with name "+pn+" in XtceDB, ignoring");
             } else {
-                shownColumnParameters.add(p);
-                ((DefaultTableModel) getModel()).addColumn(p.getName());
+                tableModel.addParameterColumn(p);
+                configureRowSorting();
                 tmExtractor.startProviding(p);
             }
         }
@@ -633,8 +574,8 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     void addParameterColumn(Parameter p) {
         columnParaNames.add(p.getQualifiedName());
         saveColumnsToPreference();
-        shownColumnParameters.add(p);
-        ((DefaultTableModel) getModel()).addColumn(p.getName());
+        tableModel.addParameterColumn(p);
+        configureRowSorting();
         tmExtractor.startProviding(p);
     }
 

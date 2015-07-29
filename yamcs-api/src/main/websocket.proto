@@ -46,6 +46,7 @@ message WebSocketServerMessage {
     optional commanding.CommandHistoryEntry command = 4;
     optional yamcsManagement.ProcessorInfo processorInfo = 5;
     optional yamcsManagement.ClientInfo clientInfo = 6;
+    optional yamcsManagement.Statistics statistics = 7;
   }
 
   optional MessageType type=1;

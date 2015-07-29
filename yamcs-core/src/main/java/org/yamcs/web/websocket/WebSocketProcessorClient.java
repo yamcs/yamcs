@@ -13,7 +13,7 @@ import org.yamcs.security.AuthenticationToken;
  * Oversees the life cycle of a client web socket connection to a YProcessor. Combines multiple types of subscriptions
  * to keep them bundled as one client session.
  */
-public class WebSocketYProcClient implements YProcessorClient {
+public class WebSocketProcessorClient implements YProcessorClient {
 
     private final Logger log;
     private final int clientId;
@@ -22,19 +22,19 @@ public class WebSocketYProcClient implements YProcessorClient {
 
     private AuthenticationToken authToken = null;
 
-    private final ParameterClient paraClient;
-    private final CommandHistoryClient cmdhistClient;
-    private final ManagementClient mgmtClient;
+    private final ParameterResource paraClient;
+    private final CommandHistoryResource cmdhistClient;
+    private final ManagementResource mgmtClient;
    
-    public WebSocketYProcClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
+    public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
-        log = LoggerFactory.getLogger(WebSocketYProcClient.class.getName() + "[" + yamcsInstance + "]");
+        log = LoggerFactory.getLogger(WebSocketProcessorClient.class.getName() + "[" + yamcsInstance + "]");
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
-        paraClient = new ParameterClient(yproc, wsHandler);
-        cmdhistClient = new CommandHistoryClient(yproc, wsHandler);
-        mgmtClient = new ManagementClient(yproc, wsHandler, clientId);
+        paraClient = new ParameterResource(yproc, wsHandler);
+        cmdhistClient = new CommandHistoryResource(yproc, wsHandler);
+        mgmtClient = new ManagementResource(yproc, wsHandler, clientId);
         this.authToken = authToken;
         this.username = authToken != null ? authToken.getPrincipal().toString() : "unknown";
     }
@@ -83,6 +83,4 @@ public class WebSocketYProcClient implements YProcessorClient {
         cmdhistClient.quit();
         mgmtClient.quit();
     }
-
-   
 }

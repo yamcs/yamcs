@@ -23,7 +23,7 @@ realtime:
        args:
            stream: "tc_realtime"
     parameterProviders:
-#       - class: org.yamcs.tctm.YarchPpProvider
+#       - class: org.yamcs.tctm.StreamPpProvider
 #         args:
 #           stream: "pp_realtime"
        # implements XTCE algorithms
@@ -33,7 +33,7 @@ realtime:
        # manages software parameters
        - class: org.yamcs.parameter.SoftwareParameterManager
     config:
-        #check alarms and also enable the alarm server (that keeps track of unacknoledged alarms)
+        #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
             check: true
             server: enabled

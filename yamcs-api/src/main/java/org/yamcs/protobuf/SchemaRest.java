@@ -2258,6 +2258,642 @@ public final class SchemaRest
         }
     }
 
+    public static final class GetTagsRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.GetTagsRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.GetTagsRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.GetTagsRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.GetTagsRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.GetTagsRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.GetTagsRequest message) throws java.io.IOException
+            {
+                if(message.hasStart())
+                    output.writeInt64(1, message.getStart(), false);
+                if(message.hasStop())
+                    output.writeInt64(2, message.getStop(), false);
+                if(message.hasUtcStart())
+                    output.writeString(3, message.getUtcStart(), false);
+                if(message.hasUtcStop())
+                    output.writeString(4, message.getUtcStop(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.GetTagsRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.GetTagsRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.GetTagsRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.GetTagsRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.GetTagsRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.GetTagsRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setStart(input.readInt64());
+                            break;
+                        case 2:
+                            builder.setStop(input.readInt64());
+                            break;
+                        case 3:
+                            builder.setUtcStart(input.readString());
+                            break;
+                        case 4:
+                            builder.setUtcStop(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.GetTagsRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.GetTagsRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.GetTagsRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.GetTagsRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "start";
+                case 2: return "stop";
+                case 3: return "utcStart";
+                case 4: return "utcStop";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("start", 1);
+            fieldMap.put("stop", 2);
+            fieldMap.put("utcStart", 3);
+            fieldMap.put("utcStop", 4);
+        }
+    }
+
+    public static final class GetTagsResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.GetTagsResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.GetTagsResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.GetTagsResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.GetTagsResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.GetTagsResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.GetTagsResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Yamcs.ArchiveTag tags : message.getTagsList())
+                    output.writeObject(1, tags, org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.GetTagsResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.GetTagsResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.GetTagsResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.GetTagsResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.GetTagsResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.GetTagsResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addTags(input.mergeObject(org.yamcs.protobuf.Yamcs.ArchiveTag.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.GetTagsResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.GetTagsResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.GetTagsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.GetTagsResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.GetTagsResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.GetTagsResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "tags";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("tags", 1);
+        }
+    }
+
+    public static final class InsertTagRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.InsertTagRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.InsertTagRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.InsertTagRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.InsertTagRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.InsertTagRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.InsertTagRequest message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasStart())
+                    output.writeInt64(2, message.getStart(), false);
+                if(message.hasStop())
+                    output.writeInt64(3, message.getStop(), false);
+                if(message.hasDescription())
+                    output.writeString(4, message.getDescription(), false);
+                if(message.hasColor())
+                    output.writeString(5, message.getColor(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.InsertTagRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.InsertTagRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.InsertTagRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.InsertTagRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.InsertTagRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.InsertTagRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setStart(input.readInt64());
+                            break;
+                        case 3:
+                            builder.setStop(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setDescription(input.readString());
+                            break;
+                        case 5:
+                            builder.setColor(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.InsertTagRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.InsertTagRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.InsertTagRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.InsertTagRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "start";
+                case 3: return "stop";
+                case 4: return "description";
+                case 5: return "color";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("start", 2);
+            fieldMap.put("stop", 3);
+            fieldMap.put("description", 4);
+            fieldMap.put("color", 5);
+        }
+    }
+
+    public static final class InsertTagResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.InsertTagResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.InsertTagResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.InsertTagResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.InsertTagResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.InsertTagResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.InsertTagResponse message) throws java.io.IOException
+            {
+                if(message.hasTag())
+                    output.writeObject(1, message.getTag(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.InsertTagResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.InsertTagResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.InsertTagResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.InsertTagResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.InsertTagResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.InsertTagResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setTag(input.mergeObject(org.yamcs.protobuf.Yamcs.ArchiveTag.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.InsertTagResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.InsertTagResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.InsertTagResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.InsertTagResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.InsertTagResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.InsertTagResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "tag";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("tag", 1);
+        }
+    }
+
+    public static final class UpdateTagRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.UpdateTagRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.UpdateTagRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.UpdateTagRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.UpdateTagRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.UpdateTagRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.UpdateTagRequest message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasStart())
+                    output.writeInt64(2, message.getStart(), false);
+                if(message.hasStop())
+                    output.writeInt64(3, message.getStop(), false);
+                if(message.hasDescription())
+                    output.writeString(4, message.getDescription(), false);
+                if(message.hasColor())
+                    output.writeString(5, message.getColor(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.UpdateTagRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.UpdateTagRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.UpdateTagRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.UpdateTagRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.UpdateTagRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.UpdateTagRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.UpdateTagRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.UpdateTagRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setStart(input.readInt64());
+                            break;
+                        case 3:
+                            builder.setStop(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setDescription(input.readString());
+                            break;
+                        case 5:
+                            builder.setColor(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.UpdateTagRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.UpdateTagRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.UpdateTagRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.UpdateTagRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.UpdateTagRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.UpdateTagRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.UpdateTagRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "start";
+                case 3: return "stop";
+                case 4: return "description";
+                case 5: return "color";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("start", 2);
+            fieldMap.put("stop", 3);
+            fieldMap.put("description", 4);
+            fieldMap.put("color", 5);
+        }
+    }
+
     public static final class RestSendCommandRequest
     {
         public static final org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.MessageSchema WRITE =

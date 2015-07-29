@@ -1,21 +1,19 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
-import io.netty.handler.codec.http.HttpMethod;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,6 +60,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
+import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.tctm.TmPacketSource;
@@ -69,13 +68,16 @@ import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.ManagementClient;
-import org.yamcs.web.websocket.ParameterClient;
+import org.yamcs.web.websocket.ManagementResource;
+import org.yamcs.web.websocket.ParameterResource;
 import org.yamcs.xtce.SequenceContainer;
 
 import com.google.common.util.concurrent.AbstractService;
-import com.google.common.util.concurrent.Service;
 import com.google.protobuf.MessageLite;
+
+import io.netty.handler.codec.http.HttpMethod;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 public class IntegrationTest {
     PacketProvider packetProvider;
@@ -436,7 +438,7 @@ public class IntegrationTest {
         assertEquals("testReplay", cinfo.getProcessorName());
 
         NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
-        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterClient.WSR_subscribe, subscrList);
+        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterResource.WSR_subscribe, subscrList);
         wsClient.sendRequest(wsr);
 
         ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
@@ -687,7 +689,7 @@ public class IntegrationTest {
 
 
     private ClientInfo getClientInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementClient.OP_getClientInfo);
+        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);
         wsClient.sendRequest(wsr);
         ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
         assertNotNull(cinfo);
@@ -696,7 +698,7 @@ public class IntegrationTest {
 
 
     private ProcessorInfo getProcessorInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementClient.OP_getProcessorInfo);
+        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getProcessorInfo);
         wsClient.sendRequest(wsr);
         ProcessorInfo pinfo = wsListener.processorInfoList.poll(5, TimeUnit.SECONDS);
         assertNotNull(pinfo);
@@ -770,11 +772,12 @@ public class IntegrationTest {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
-        LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<NamedObjectId>();
-        LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<ParameterData>();
-        LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
-        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<ClientInfo>();
-        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<ProcessorInfo>();
+        LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
 
 
         int count =0;
@@ -817,6 +820,11 @@ public class IntegrationTest {
         @Override
         public void onProcessorInfoData(ProcessorInfo processorInfo) {
             processorInfoList.add(processorInfo);
+        }
+        
+        @Override
+        public void onStatisticsData(Statistics statistics) {
+            statisticsList.add(statistics);   
         }
     }
 

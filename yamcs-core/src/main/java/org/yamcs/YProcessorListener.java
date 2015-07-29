@@ -2,9 +2,9 @@ package org.yamcs;
 
 public interface YProcessorListener {
 
-    void processorAdded(YProcessor channel);
+    void processorAdded(YProcessor processor);
 
-    void yProcessorClosed(YProcessor channel);
+    void yProcessorClosed(YProcessor processor);
 
-    void processorStateChanged(YProcessor channel);
+    void processorStateChanged(YProcessor processor);
 }

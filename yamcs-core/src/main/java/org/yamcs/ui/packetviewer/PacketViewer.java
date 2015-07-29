@@ -100,7 +100,6 @@ import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -362,20 +361,17 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     void updateTitle() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                StringBuilder title = new StringBuilder("Yamcs Packet Viewer");
-                if (connectionParams != null) {
-                    title.append(" [").append(connectionParams.getUrl()).append("]");
-                } else if (lastFile != null) {
-                    title.append(" - ");
-                    title.append(lastFile.getName());
-                } else {
-                    title.append(" (no file loaded)");
-                }
-                setTitle(title.toString());
+        SwingUtilities.invokeLater(() -> {
+            StringBuilder title = new StringBuilder("Yamcs Packet Viewer");
+            if (connectionParams != null) {
+                title.append(" [").append(connectionParams.getUrl()).append("]");
+            } else if (lastFile != null) {
+                title.append(" - ");
+                title.append(lastFile.getName());
+            } else {
+                title.append(" (no file loaded)");
             }
+            setTitle(title.toString());
         });
     }
 
@@ -420,15 +416,12 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     @Override
     public void log(final String s) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if(logText!=null) {
-                    logText.append(s + "\n");
-                    logScrollpane.getVerticalScrollBar().setValue(logScrollpane.getVerticalScrollBar().getMaximum());
-                } else {
-                    System.err.println(s);
-                }
+        SwingUtilities.invokeLater(() -> {
+            if(logText!=null) {
+                logText.append(s + "\n");
+                logScrollpane.getVerticalScrollBar().setValue(logScrollpane.getVerticalScrollBar().getMaximum());
+            } else {
+                System.err.println(s);
             }
         });
     }
@@ -680,17 +673,14 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     void clearWindow() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                packetsTable.clear();
-                parametersTable.clear();
-                hexText.setText(null);
-                packetsTable.revalidate();
-                parametersTable.revalidate();
-                structureRoot.removeAllChildren();
-                structureTree.setRootVisible(false);
-            }
+        SwingUtilities.invokeLater(() -> {
+            packetsTable.clear();
+            parametersTable.clear();
+            hexText.setText(null);
+            packetsTable.revalidate();
+            parametersTable.revalidate();
+            structureRoot.removeAllChildren();
+            structureTree.setRootVisible(false);
         });
     }
 
@@ -835,7 +825,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                         } else if (encoding instanceof FloatDataEncoding) {
                             calib = ((FloatDataEncoding) encoding).getDefaultCalibrator();
                         }
-                        vec[9] = calib == null ? "IDENTICAL" : calib.toString();
+                        vec[9] = calib == null ? "" : calib.toString();
                     }
 
                     parametersTable.addRow(vec);

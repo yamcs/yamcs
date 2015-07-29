@@ -1,17 +1,11 @@
 package org.yamcs.web.rest;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.QueryStringDecoder;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
+import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.commanding.PreparedCommand;
@@ -24,61 +18,54 @@ import org.yamcs.protobuf.Rest.RestSendCommandResponse;
 import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
 import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.XtceDb;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 /**
- * Handles incoming requests related to Commanding (offset /commanding).
+ * Handles incoming requests related to Commanding
+ * <p>
+ * /(instance)/api/commanding
  */
-public class CommandingRequestHandler extends AbstractRestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(CommandingRequestHandler.class);
+public class CommandingRequestHandler implements RestRequestHandler {
 
     @Override
-    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            throw new NotFoundException(req);
+        }
+        
+        YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
+        if (!processor.hasCommanding()) {
+            throw new BadRequestException("Commanding not activated for this processor");
+        }
+        
+        switch (req.getPathSegment(pathOffset)) {
+            case Constants.CMD_queue:
+                req.assertPOST();
+                return sendCommand(req, processor);
 
-        org.yamcs.YProcessor yamcsChannel = org.yamcs.YProcessor.getInstance(yamcsInstance, "realtime");
-        if (!yamcsChannel.hasCommanding()) {
-            BadRequestException e = new BadRequestException("Commanding not activated for this channel");
-            log.warn("Throwing bad request: {}", e.getMessage());
-            throw e;
-        } else {
-            QueryStringDecoder qsDecoder = new QueryStringDecoder(remainingUri);
-            if (Constants.CMD_queue.equals(qsDecoder.path())) {
-                if (req.getMethod() == HttpMethod.POST) {
-                    RestSendCommandRequest request = readMessage(req, SchemaRest.RestSendCommandRequest.MERGE).build();
-                    RestSendCommandResponse response = sendCommand(request, yamcsChannel, authToken);
-                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestSendCommandResponse.WRITE);
-                } else {
-                    throw new MethodNotAllowedException(req.getMethod());
-                }
-            } else if (Constants.CMD_validator.equals(qsDecoder.path())) {
-                if (req.getMethod() == HttpMethod.POST) {
-                    RestValidateCommandRequest request = readMessage(req, SchemaRest.RestValidateCommandRequest.MERGE).build();
-                    RestValidateCommandResponse response = validateCommand(request, yamcsChannel, authToken);
-                    writeMessage(ctx, req, qsDecoder, response, SchemaRest.RestValidateCommandResponse.WRITE);
-                } else {
-                    throw new MethodNotAllowedException(req.getMethod());
-                }
-            } else {
-                log.warn("Invalid path called: '{}'", qsDecoder.path());
-                sendError(ctx, NOT_FOUND);
-            }
+            case Constants.CMD_validator:
+                req.assertPOST();
+                return validateCommand(req, processor);
+
+            default:
+                throw new NotFoundException(req);
         }
     }
 
     /**
-     * Validates commands
+     * Validates commands passed in request body
+     * <p>
+     * POST /api/(instance)/commanding/validator
      */
-    private RestValidateCommandResponse validateCommand(RestValidateCommandRequest request, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken) throws RestException {
+    private RestResponse validateCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
+        RestValidateCommandRequest request = req.bodyAsMessage(SchemaRest.RestValidateCommandRequest.MERGE).build();
         RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
-
+        
         for (RestCommandType restCommand : request.getCommandsList()) {
             MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
             if(mc==null) {
@@ -92,7 +79,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             String origin = required(restCommand.getOrigin(), "Origin needs to be specified");
             int seqId = restCommand.getSequenceNumber(); // will default to 0 if not set, which is fine for validation
             try {
-                yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, authToken);
+                yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, req.authToken);
             } catch (NoPermissionException e) {
                 throw new ForbiddenException(e);
             } catch (ErrorInCommand e) {
@@ -110,15 +97,18 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             }
         }
 
-        return responseb.build();
+        return new RestResponse(req, responseb.build(), SchemaRest.RestValidateCommandResponse.WRITE);
     }
 
     /**
-     * Validates and sends commands
+     * Validates and adds commands to the queue
+     * <p>
+     * POST /api/(instance)/commanding/queue
      */
-    private RestSendCommandResponse sendCommand(RestSendCommandRequest request, org.yamcs.YProcessor yamcsChannel, AuthenticationToken authToken) throws RestException {
+    private RestResponse sendCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
+        RestSendCommandRequest request = req.bodyAsMessage(SchemaRest.RestSendCommandRequest.MERGE).build();
         RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();
 
         // Validate all first
@@ -136,7 +126,7 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
             }
             int seqId = restCommand.getSequenceNumber();
             try {
-                PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, authToken);
+                PreparedCommand cmd = yamcsChannel.getCommandingManager().buildCommand(mc, assignments, origin, seqId, req.authToken);
                 //make the source - should perhaps come from the client
                 StringBuilder sb = new StringBuilder();
                 sb.append(restCommand.getId().getName());
@@ -165,9 +155,9 @@ public class CommandingRequestHandler extends AbstractRestRequestHandler {
 
         // Good, now send
         for (PreparedCommand cmd : validated) {
-            yamcsChannel.getCommandingManager().sendCommand(authToken, cmd);
+            yamcsChannel.getCommandingManager().sendCommand(req.authToken, cmd);
         }
 
-        return responseb.build();
+        return new RestResponse(req, responseb.build(), SchemaRest.RestSendCommandResponse.WRITE);
     }
 }

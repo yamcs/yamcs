@@ -1932,6 +1932,34 @@ public final class YamcsManagement {
      */
     com.google.protobuf.ByteString
         getProcessorNameBytes();
+
+    // optional .yamcsManagement.ClientInfo.ClientState state = 6;
+    /**
+     * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+     */
+    boolean hasState();
+    /**
+     * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState getState();
+
+    // optional bool currentClient = 7;
+    /**
+     * <code>optional bool currentClient = 7;</code>
+     *
+     * <pre>
+     *Only used for clients that register themselves (websocket)
+     * </pre>
+     */
+    boolean hasCurrentClient();
+    /**
+     * <code>optional bool currentClient = 7;</code>
+     *
+     * <pre>
+     *Only used for clients that register themselves (websocket)
+     * </pre>
+     */
+    boolean getCurrentClient();
   }
   /**
    * Protobuf type {@code yamcsManagement.ClientInfo}
@@ -2009,6 +2037,22 @@ public final class YamcsManagement {
               processorName_ = input.readBytes();
               break;
             }
+            case 48: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState value = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(6, rawValue);
+              } else {
+                bitField0_ |= 0x00000020;
+                state_ = value;
+              }
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
+              currentClient_ = input.readBool();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2046,6 +2090,88 @@ public final class YamcsManagement {
     @java.lang.Override
     public com.google.protobuf.Parser<ClientInfo> getParserForType() {
       return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code yamcsManagement.ClientInfo.ClientState}
+     */
+    public enum ClientState
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>CONNECTED = 0;</code>
+       */
+      CONNECTED(0, 0),
+      /**
+       * <code>DISCONNECTED = 1;</code>
+       */
+      DISCONNECTED(1, 1),
+      ;
+
+      /**
+       * <code>CONNECTED = 0;</code>
+       */
+      public static final int CONNECTED_VALUE = 0;
+      /**
+       * <code>DISCONNECTED = 1;</code>
+       */
+      public static final int DISCONNECTED_VALUE = 1;
+
+
+      public final int getNumber() { return value; }
+
+      public static ClientState valueOf(int value) {
+        switch (value) {
+          case 0: return CONNECTED;
+          case 1: return DISCONNECTED;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ClientState>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<ClientState>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ClientState>() {
+              public ClientState findValueByNumber(int number) {
+                return ClientState.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.ClientInfo.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final ClientState[] VALUES = values();
+
+      public static ClientState valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private ClientState(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcsManagement.ClientInfo.ClientState)
     }
 
     private int bitField0_;
@@ -2237,12 +2363,54 @@ public final class YamcsManagement {
       }
     }
 
+    // optional .yamcsManagement.ClientInfo.ClientState state = 6;
+    public static final int STATE_FIELD_NUMBER = 6;
+    private org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState state_;
+    /**
+     * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+     */
+    public boolean hasState() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState getState() {
+      return state_;
+    }
+
+    // optional bool currentClient = 7;
+    public static final int CURRENTCLIENT_FIELD_NUMBER = 7;
+    private boolean currentClient_;
+    /**
+     * <code>optional bool currentClient = 7;</code>
+     *
+     * <pre>
+     *Only used for clients that register themselves (websocket)
+     * </pre>
+     */
+    public boolean hasCurrentClient() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional bool currentClient = 7;</code>
+     *
+     * <pre>
+     *Only used for clients that register themselves (websocket)
+     * </pre>
+     */
+    public boolean getCurrentClient() {
+      return currentClient_;
+    }
+
     private void initFields() {
       instance_ = "";
       id_ = 0;
       username_ = "";
       applicationName_ = "";
       processorName_ = "";
+      state_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED;
+      currentClient_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2279,6 +2447,12 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBytes(5, getProcessorNameBytes());
       }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeEnum(6, state_.getNumber());
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBool(7, currentClient_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -2307,6 +2481,14 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(5, getProcessorNameBytes());
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(6, state_.getNumber());
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, currentClient_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2434,6 +2616,10 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000008);
         processorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
+        state_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        currentClient_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -2482,6 +2668,14 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000010;
         }
         result.processorName_ = processorName_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.state_ = state_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.currentClient_ = currentClient_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2520,6 +2714,12 @@ public final class YamcsManagement {
           bitField0_ |= 0x00000010;
           processorName_ = other.processorName_;
           onChanged();
+        }
+        if (other.hasState()) {
+          setState(other.getState());
+        }
+        if (other.hasCurrentClient()) {
+          setCurrentClient(other.getCurrentClient());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2881,6 +3081,91 @@ public final class YamcsManagement {
   }
   bitField0_ |= 0x00000010;
         processorName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional .yamcsManagement.ClientInfo.ClientState state = 6;
+      private org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState state_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED;
+      /**
+       * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+       */
+      public boolean hasState() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState getState() {
+        return state_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+       */
+      public Builder setState(org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000020;
+        state_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
+       */
+      public Builder clearState() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        state_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED;
+        onChanged();
+        return this;
+      }
+
+      // optional bool currentClient = 7;
+      private boolean currentClient_ ;
+      /**
+       * <code>optional bool currentClient = 7;</code>
+       *
+       * <pre>
+       *Only used for clients that register themselves (websocket)
+       * </pre>
+       */
+      public boolean hasCurrentClient() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool currentClient = 7;</code>
+       *
+       * <pre>
+       *Only used for clients that register themselves (websocket)
+       * </pre>
+       */
+      public boolean getCurrentClient() {
+        return currentClient_;
+      }
+      /**
+       * <code>optional bool currentClient = 7;</code>
+       *
+       * <pre>
+       *Only used for clients that register themselves (websocket)
+       * </pre>
+       */
+      public Builder setCurrentClient(boolean value) {
+        bitField0_ |= 0x00000040;
+        currentClient_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool currentClient = 7;</code>
+       *
+       * <pre>
+       *Only used for clients that register themselves (websocket)
+       * </pre>
+       */
+      public Builder clearCurrentClient() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        currentClient_ = false;
         onChanged();
         return this;
       }
@@ -9389,45 +9674,48 @@ public final class YamcsManagement {
       "nding\030\006 \001(\010\022,\n\005state\030\007 \001(\0162\035.yamcsManage" +
       "ment.ServiceState\022+\n\rreplayRequest\030\010 \001(\013" +
       "2\024.yamcs.ReplayRequest\0224\n\013replayState\030\t " +
-      "\001(\0162\037.yamcs.ReplayStatus.ReplayState\"l\n\n" +
-      "ClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005" +
-      "\022\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004 ",
-      "\001(\t\022\025\n\rprocessorName\030\005 \001(\t\"\213\001\n\014TmStatist" +
-      "ics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPacke" +
-      "ts\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026\n\016lastPa" +
-      "cketTime\030\004 \001(\003\022 \n\030subscribedParameterCou" +
-      "nt\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instance\030\001 \002(\t" +
-      "\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(" +
-      "\0132\035.yamcsManagement.TmStatistics\022\023\n\013last" +
-      "Updated\030\004 \001(\003\"\266\002\n\032ProcessorManagementReq" +
-      "uest\022H\n\toperation\030\001 \001(\01625.yamcsManagemen" +
-      "t.ProcessorManagementRequest.Operation\022\020",
-      "\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004" +
-      " \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\n" +
-      "persistent\030\007 \001(\010:\005false\022(\n\nreplaySpec\030\010 " +
-      "\001(\0132\024.yamcs.ReplayRequest\";\n\tOperation\022\024" +
-      "\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCE" +
-      "SSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\toperation" +
-      "\030\001 \001(\0162+.yamcsManagement.ProcessorReques" +
-      "t.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 " +
-      "\001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperation\022\t\n\005PA" +
-      "USE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010LinkInfo",
-      "\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type" +
-      "\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010" +
-      "disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCo" +
-      "unt\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\\n\014Ser" +
-      "viceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNN" +
-      "ING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006F" +
-      "AILED\020\0052\341\002\n\020ProcessorControl\022A\n\017CreatePr" +
-      "ocessor\022!.yamcsManagement.ProcessorReque" +
-      "st\032\013.yamcs.Void\022D\n\022ConnectToProcessor\022!." +
-      "yamcsManagement.ProcessorRequest\032\013.yamcs",
-      ".Void\022@\n\016PauseProcessor\022!.yamcsManagemen" +
-      "t.ProcessorRequest\032\013.yamcs.Void\022A\n\017Resum" +
-      "eProcessor\022!.yamcsManagement.ProcessorRe" +
-      "quest\032\013.yamcs.Void\022?\n\rSeekProcessor\022!.ya" +
-      "mcsManagement.ProcessorRequest\032\013.yamcs.V" +
-      "oidB\024\n\022org.yamcs.protobuf"
+      "\001(\0162\037.yamcs.ReplayStatus.ReplayState\"\353\001\n" +
+      "\nClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(" +
+      "\005\022\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004",
+      " \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005state\030\006 \001" +
+      "(\0162\'.yamcsManagement.ClientInfo.ClientSt" +
+      "ate\022\025\n\rcurrentClient\030\007 \001(\010\".\n\013ClientStat" +
+      "e\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"\213\001\n\014T" +
+      "mStatistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017recei" +
+      "vedPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026" +
+      "\n\016lastPacketTime\030\004 \001(\003\022 \n\030subscribedPara" +
+      "meterCount\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instan" +
+      "ce\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmst" +
+      "ats\030\003 \003(\0132\035.yamcsManagement.TmStatistics",
+      "\022\023\n\013lastUpdated\030\004 \001(\003\"\266\002\n\032ProcessorManag" +
+      "ementRequest\022H\n\toperation\030\001 \001(\01625.yamcsM" +
+      "anagement.ProcessorManagementRequest.Ope" +
+      "ration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014" +
+      "\n\004type\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006" +
+      " \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nrepla" +
+      "ySpec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOpe" +
+      "ration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_" +
+      "TO_PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\to" +
+      "peration\030\001 \001(\0162+.yamcsManagement.Process",
+      "orRequest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n" +
+      "\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperati" +
+      "on\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010" +
+      "LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t" +
+      "\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005" +
+      " \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021" +
+      "\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(" +
+      "\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001" +
+      "\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATE" +
+      "D\020\004\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorControl\022A\n\017",
+      "CreateProcessor\022!.yamcsManagement.Proces" +
+      "sorRequest\032\013.yamcs.Void\022D\n\022ConnectToProc" +
+      "essor\022!.yamcsManagement.ProcessorRequest" +
+      "\032\013.yamcs.Void\022@\n\016PauseProcessor\022!.yamcsM" +
+      "anagement.ProcessorRequest\032\013.yamcs.Void\022" +
+      "A\n\017ResumeProcessor\022!.yamcsManagement.Pro" +
+      "cessorRequest\032\013.yamcs.Void\022?\n\rSeekProces" +
+      "sor\022!.yamcsManagement.ProcessorRequest\032\013" +
+      ".yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9445,7 +9733,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ClientInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ClientInfo_descriptor,
-              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ProcessorName", });
+              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ProcessorName", "State", "CurrentClient", });
           internal_static_yamcsManagement_TmStatistics_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new

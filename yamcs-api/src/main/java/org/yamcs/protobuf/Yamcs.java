@@ -268,6 +268,10 @@ public final class Yamcs {
      * <code>CLIENT_INFO = 11;</code>
      */
     CLIENT_INFO(10, 11),
+    /**
+     * <code>PROCESSING_STATISTICS = 12;</code>
+     */
+    PROCESSING_STATISTICS(11, 12),
     ;
 
     /**
@@ -322,6 +326,10 @@ public final class Yamcs {
      * <code>CLIENT_INFO = 11;</code>
      */
     public static final int CLIENT_INFO_VALUE = 11;
+    /**
+     * <code>PROCESSING_STATISTICS = 12;</code>
+     */
+    public static final int PROCESSING_STATISTICS_VALUE = 12;
 
 
     public final int getNumber() { return value; }
@@ -339,6 +347,7 @@ public final class Yamcs {
         case 9: return CMD_HISTORY;
         case 10: return PROCESSOR_INFO;
         case 11: return CLIENT_INFO;
+        case 12: return PROCESSING_STATISTICS;
         default: return null;
       }
     }
@@ -26297,27 +26306,28 @@ public final class Yamcs {
       "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005" +
       "\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
       "\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n" +
-      "\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\272\001\n\rProtoDa" +
+      "\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\325\001\n\rProtoDa" +
       "taType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r" +
       "\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCH" +
       "IVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETE" +
       "R\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n" +
-      "\022\017\n\013CLIENT_INFO\020\0132\211\001\n\014YamcsControl\0227\n\021Ge",
-      "tYamcsInstances\022\013.yamcs.Void\032\025.yamcs.Yam" +
-      "csInstances\022@\n\022GetMissionDatabase\022\035.yamc" +
-      "s.MissionDatabaseRequest\032\013.yamcs.Void2\337\001" +
-      "\n\030RealtimeParameterService\0220\n\tSubscribe\022" +
-      "\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221\n\014" +
-      "SubscribeAll\022\024.yamcs.StringMessage\032\013.yam" +
-      "cs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedObje" +
-      "ctList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013." +
-      "yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveIndex" +
-      "\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.yamc",
-      "s.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexReq" +
-      "uest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027.ya" +
-      "mcs.UpsertTagRequest\032\021.yamcs.ArchiveTag\022" +
-      "1\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032\013." +
-      "yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTI",
+      "CS\020\0142\211\001\n\014YamcsControl\0227\n\021GetYamcsInstanc" +
+      "es\022\013.yamcs.Void\032\025.yamcs.YamcsInstances\022@" +
+      "\n\022GetMissionDatabase\022\035.yamcs.MissionData" +
+      "baseRequest\032\013.yamcs.Void2\337\001\n\030RealtimePar" +
+      "ameterService\0220\n\tSubscribe\022\026.yamcs.Named" +
+      "ObjectList\032\013.yamcs.Void\0221\n\014SubscribeAll\022" +
+      "\024.yamcs.StringMessage\032\013.yamcs.Void\0222\n\013Un" +
+      "subscribe\022\026.yamcs.NamedObjectList\032\013.yamc" +
+      "s.Void\022*\n\016UnsubscribeAll\022\013.yamcs.Void\032\013." +
+      "yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010GetIndex\022",
+      "\023.yamcs.IndexRequest\032\022.yamcs.IndexResult" +
+      "\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020.yamcs." +
+      "TagResult\0227\n\tUpsertTag\022\027.yamcs.UpsertTag" +
+      "Request\032\021.yamcs.ArchiveTag\0221\n\tDeleteTag\022" +
+      "\027.yamcs.DeleteTagRequest\032\013.yamcs.VoidB\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

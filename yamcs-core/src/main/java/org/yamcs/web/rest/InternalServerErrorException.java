@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * Something really wrong and unexpected occurred on the server. A bug.
  */
 public class InternalServerErrorException extends RestException {
+    private static final long serialVersionUID = 1L;
 
     public InternalServerErrorException(Throwable t) {
         super(t);
