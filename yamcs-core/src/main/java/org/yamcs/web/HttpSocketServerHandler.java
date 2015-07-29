@@ -22,7 +22,6 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.web.rest.ApiRequestHandler;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -133,8 +132,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else if(API_PATH.equals(handler)) {
-            RestRequest restRequest = new RestRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
-            apiRequestHandler.handleRequest(restRequest);
+            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else {
         	log.warn("Unknown handler {}", handler);
         	sendNegativeHttpResponse(ctx, req, NOT_FOUND);

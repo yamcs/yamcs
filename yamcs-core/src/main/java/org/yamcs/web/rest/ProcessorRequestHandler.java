@@ -14,23 +14,33 @@ import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
-public class ProcessorRequestHandler extends AbstractRestRequestHandler {
+/**
+ * /(instance)/api/processor
+ */
+public class ProcessorRequestHandler implements RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
-        String path = req.getRemainingUri();
-        if ("".equals(path)) {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
             return handleProcessorManagementRequest(req);
-        } else if ("list".equals(path)) {
+        }
+        
+        switch (req.getPathSegment(pathOffset)) {
+        case "list": // TODO move this as a GET of 'processors' without the 'list' stuff
             return handleProcessorListRequest(req);
-        } else {
-            String yprocName = path.split("/")[0];
-            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, yprocName);
-            if(processor==null) {
-                log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", yprocName);
+            
+        default:
+            String processorName = null;
+            if (req.hasPathSegment(pathOffset + 1)) {
+                processorName = req.getPathSegment(pathOffset + 1);
+            }
+            if (processorName==null) {
+                log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", processorName);
                 throw new NotFoundException(req);
             }
+            
+            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, processorName);
             return handleProcessorRequest(req, processor);
         }
     }

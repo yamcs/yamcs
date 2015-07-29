@@ -5,9 +5,15 @@ import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 
 import org.yamcs.security.AuthenticationToken;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBufInputStream;
@@ -29,18 +35,54 @@ public class RestRequest {
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
     String yamcsInstance;
-    @Deprecated
-    String remainingUri;
-    QueryStringDecoder qsDecoder;
+    private QueryStringDecoder qsDecoder;
     AuthenticationToken authToken;
+    private JsonFactory jsonFactory;
     
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri, AuthenticationToken authToken) {
+    private String[] pathSegments;
+    
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, String yamcsInstance, AuthenticationToken authToken, JsonFactory jsonFactory) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
         this.yamcsInstance = yamcsInstance;
-        this.remainingUri = remainingUri;
         this.authToken = authToken;
-        qsDecoder = new QueryStringDecoder(remainingUri);
+        this.jsonFactory = jsonFactory;
+        
+        // This is used for some operations that require the Query-String, and also
+        // to scan for the 'pretty'-argument, which prettifies any outputted JSON.
+        qsDecoder = new QueryStringDecoder(httpRequest.getUri());
+        
+        // Get splitted path, taking care that URL-encoded slashes are ignored for the split
+        pathSegments = httpRequest.getUri().split("/");
+        for (int i=0; i<pathSegments.length; i++) {
+            pathSegments[i] = QueryStringDecoder.decodeComponent(pathSegments[i]);
+        }
+    }
+    
+    /**
+     * Returns all decoded path segments. The structure varies from one operation to another
+     * but in broad lines amounts to this:
+     * <ul>
+     *  <li>0. The empty string (because uri's start with a "/")
+     *  <li>1. The yamcs instance.
+     *  <li>2. The string 'api', to identify anything REST.
+     *  <li>3. The general resource, e.g. 'mdb', or 'archive'
+     *  <li>4. Optionally, any number of other segments depending on the operation.
+     * </ul>
+     */
+    public String[] getPathSegments() {
+        return pathSegments;
+    }
+    
+    /**
+     * Returns the decoded URI path segment at the specified index
+     */
+    public String getPathSegment(int index) {
+        return pathSegments[index];
+    }
+    
+    public boolean hasPathSegment(int index) {
+        return pathSegments.length > index;
     }
     
     public String getRemainingUri() {
@@ -79,12 +121,35 @@ public class RestRequest {
         if (!isDELETE()) throw new MethodNotAllowedException(this); 
     }
     
+    public Map<String, List<String>> getQueryParameters() {
+        return qsDecoder.parameters();
+    }
+    
     ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
     }
     
     HttpRequest getHttpRequest() {
         return httpRequest;
+    }
+    
+    /**
+     * Returns a new Json Generator that will have pretty-printing enabled if the original request specified this.
+     */
+    public JsonGenerator createJsonGenerator(OutputStream out) throws IOException {
+        JsonGenerator generator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
+        if (qsDecoder.parameters().containsKey("pretty")) {
+            List<String> pretty = qsDecoder.parameters().get("pretty");
+            if (pretty != null) {
+                String arg = pretty.get(0);
+                if (arg == null || "".equals(arg)
+                        || "true".equalsIgnoreCase(arg)
+                        || "yes".equalsIgnoreCase(arg)) {
+                    generator.useDefaultPrettyPrinter();
+                }
+            }
+        }
+        return generator;
     }
     
     /**

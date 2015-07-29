@@ -48,7 +48,7 @@ public class RestResponse {
             if (BINARY_MIME_TYPE.equals(getContentType())) {
                 responseMsg.writeTo(channelOut);
             } else {
-                JsonGenerator generator = AbstractRestRequestHandler.createJsonGenerator(channelOut, restRequest.qsDecoder);
+                JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
                 generator.close();
             }

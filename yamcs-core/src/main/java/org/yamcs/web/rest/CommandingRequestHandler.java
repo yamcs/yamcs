@@ -26,26 +26,32 @@ import org.yamcs.xtce.XtceDb;
 /**
  * Handles incoming requests related to Commanding
  * <p>
- * /api/(instance)/commanding
+ * /(instance)/api/commanding
  */
-public class CommandingRequestHandler extends AbstractRestRequestHandler {
+public class CommandingRequestHandler implements RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            throw new NotFoundException(req);
+        }
+        
         YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
-        } else {
-            String path = req.getRemainingUri();
-            if (Constants.CMD_queue.equals(path)) {
+        }
+        
+        switch (req.getPathSegment(pathOffset)) {
+            case Constants.CMD_queue:
                 req.assertPOST();
                 return sendCommand(req, processor);
-            } else if (Constants.CMD_validator.equals(path)) {
+
+            case Constants.CMD_validator:
                 req.assertPOST();
                 return validateCommand(req, processor);
-            } else {
+
+            default:
                 throw new NotFoundException(req);
-            }
         }
     }
 

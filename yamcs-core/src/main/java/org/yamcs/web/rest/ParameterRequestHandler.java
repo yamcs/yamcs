@@ -30,23 +30,36 @@ import org.yamcs.xtce.Parameter;
 
 /**
  * Handles incoming requests related to realtime Parameters (get/set).
- * 
+ * <p>
+ * /(instance)/api/parameter
  */
-public class ParameterRequestHandler extends AbstractRestRequestHandler {
+public class ParameterRequestHandler implements RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            throw new NotFoundException(req);
+        }
+        
         YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
-
-        String path = req.getRemainingUri();
-        if ("_get".equals(path)) {
-            return getParameters(req, processor); 
-        } else if ("_set".equals(path)) {
+        
+        switch (req.getPathSegment(pathOffset)) {
+        case "_get":
+            return getParameters(req, processor);
+            
+        case "_set":
             return setParameters(req, processor);
-        } else {
-            String fqname = "/"+path;
-            NamedObjectId id = NamedObjectId.newBuilder().setName(fqname).build();
+            
+        default:
+            // Interpret the remaining path as an absolute parameter name
+            String[] pathSegments = req.getPathSegments();
+            StringBuilder fqname = new StringBuilder();
+            for (int i=pathOffset; i<pathSegments.length; i++) {
+                fqname.append("/").append(pathSegments[i]);
+            }
+            NamedObjectId id = NamedObjectId.newBuilder().setName(fqname.toString()).build();
+            
             Parameter p = processor.getXtceDb().getParameter(id);
             if(p==null) {
                 log.warn("Invalid parameter requested: {}", id);
@@ -74,9 +87,9 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
 
 
-    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, YProcessor yamcsChannel) throws BadRequestException {
+    private ParameterValue getParameterFromCache(NamedObjectId id, Parameter p, YProcessor processor) throws BadRequestException {
         //TODO permissions
-        ParameterRequestManagerImpl prm = yamcsChannel.getParameterRequestManager();
+        ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         if(!prm.hasParameterCache()) {
             throw new BadRequestException("ParameterCache not activated for this channel");
         }
@@ -89,8 +102,8 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
     /**
      * sets single parameter
      */
-    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor yamcsChannel) throws BadRequestException {
-        SoftwareParameterManager spm = yamcsChannel.getParameterRequestManager().getSoftwareParameterManager();
+    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor processor) throws BadRequestException {
+        SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this channel");
         }
@@ -212,7 +225,7 @@ public class ParameterRequestHandler extends AbstractRestRequestHandler {
 
 
     class MyConsumer implements ParameterWithIdConsumer {
-        LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<List<ParameterValueWithId>>();
+        LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<>();
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {

@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 
-public class AbstractRestRequestHandlerTest {
+public class RestRequestTest {
 
     @Test
     public void testMediaType_unspecified() {
@@ -77,6 +77,6 @@ public class AbstractRestRequestHandlerTest {
         if (accept != null) {
             req.headers().set(Names.ACCEPT, accept);
         }
-        return new RestRequest(null, req, null, "/a-path", null);
+        return new RestRequest(null, req, null, null, null);
     }
 }

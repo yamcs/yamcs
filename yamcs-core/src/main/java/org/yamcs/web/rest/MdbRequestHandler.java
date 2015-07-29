@@ -32,27 +32,35 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.protobuf.ByteString;
 
 /**
- * Handles incoming requests related to the Mission Database (offset /mdb).
+ * Handles incoming requests related to the Mission Database
+ * <p>
+ * /(instance)/api/mdb
  */
-public class MdbRequestHandler extends AbstractRestRequestHandler {
+public class MdbRequestHandler implements RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            throw new NotFoundException(req);
+        }
         
         //because it is difficult to send GET requests with body from some clients (including jquery), we allow POST requests here.
         //       req.assertGET();
-        if ("parameters".equals(req.qsDecoder.path())) {
+        switch (req.getPathSegment(pathOffset)) {
+        case "parameters":
             return listAvailableParameters(req);
-        } else if ("dump".equals(req.qsDecoder.path())) {
+            
+        case "dump":
             return dumpRawMdb(req);
-        } else if ("parameterInfo".equals(req.qsDecoder.path())) {
-            if (req.qsDecoder.parameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
-                String name = req.qsDecoder.parameters().get("name").get(0);                
+            
+        case "parameterInfo":
+            if (req.getQueryParameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
+                String name = req.getQueryParameters().get("name").get(0);                
                 NamedObjectId.Builder noib = NamedObjectId.newBuilder();
                 noib.setName(name);
-                if (req.qsDecoder.parameters().containsKey("namespace")) {
-                    noib.setNamespace(req.qsDecoder.parameters().get("namespace").get(0));
+                if (req.getQueryParameters().containsKey("namespace")) {
+                    noib.setNamespace(req.getQueryParameters().get("namespace").get(0));
                 }
                 NamedObjectId id = noib.build();
                 XtceDb xtceDb = loadMdb(req.yamcsInstance);
@@ -71,7 +79,7 @@ public class MdbRequestHandler extends AbstractRestRequestHandler {
                 return getParameterInfo(req);
             }
             
-        } else {
+        default:
             throw new NotFoundException(req);
         }
     }

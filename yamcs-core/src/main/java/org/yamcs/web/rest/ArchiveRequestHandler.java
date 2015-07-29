@@ -2,6 +2,8 @@ package org.yamcs.web.rest;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -64,7 +66,6 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpHeaders.Values;
 import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -75,8 +76,10 @@ import io.protostuff.Schema;
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server. At the
  * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
+ * <p>
+ * /(instance)/api/archive
  */
-public class ArchiveRequestHandler extends AbstractRestRequestHandler {
+public class ArchiveRequestHandler implements RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
 
@@ -84,41 +87,51 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     private static final int MAX_BYTE_SIZE = 1048576;
 
     // Same as ChannelFutureListener.CLOSE_ON_FAILURE, but outputs an additional log message
-    private static final ChannelFutureListener CLOSE_ON_FAILURE = new ChannelFutureListener() {
-        @Override
-        public void operationComplete(ChannelFuture future) {
-            if (!future.isSuccess()) {
-                log.warn("Exception while writing to client", future.cause());
-                future.channel().close();
-            }
+    private static final ChannelFutureListener CLOSE_ON_FAILURE = (future -> {
+        if (!future.isSuccess()) {
+            log.warn("Exception while writing to client", future.cause());
+            future.channel().close();
         }
-    };
+    });
+    
+    private CsvGenerator csvGenerator = null;
     
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
-        String[] path = req.remainingUri.split("/", 2);
-        if (path.length == 0) {
-            return handleDumpRequest(req); // GET /api/archive
-        } else {
-            QueryStringDecoder qsDecoder = new QueryStringDecoder(req.remainingUri);
-            if("tags".equals(qsDecoder.path())) {
-                return handleTagsRequest(req);
-            } else {
-                throw new NotFoundException(req);
-            }
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            return handleDumpRequest(req); // GET /(instance)/api/archive
+        }
+        
+        switch (req.getPathSegment(pathOffset)) {
+        case "tags":
+            return handleTagsRequest(req, pathOffset + 1);
+            
+        default:
+            throw new NotFoundException(req);
+        }
+    }
+    
+    /**
+     *  csv generator should be created only once per request since its insert a header in first row
+     */
+    private void initCsvGenerator(Yamcs.ReplayRequest replayRequest) {
+        csvGenerator = null;
+        if(replayRequest.hasParameterRequest()) {
+            csvGenerator = new CsvGenerator();
+            csvGenerator.initParameterFormatter(replayRequest.getParameterRequest().getNameFilterList());
         }
     }
 
     // Check if a profile has been specified in the request
     // Currently, profiles apply only for Parameter requests
     // Returns null if no profile is specified
-    private Yamcs.NamedObjectList getParametersProfile(QueryStringDecoder qsDecoder, String yamcsInstance) throws InternalServerErrorException {
+    private Yamcs.NamedObjectList getParametersProfile(RestRequest req) throws InternalServerErrorException {
         Yamcs.NamedObjectList requestedProfile = null;
-        if(qsDecoder.parameters().containsKey("profile"))
+        if(req.getQueryParameters().containsKey("profile"))
         {
             try {
-                String profile = qsDecoder.parameters().get("profile").get(0);
-                String filename = YarchDatabase.getHome() + "/" + yamcsInstance + "/profiles/" + profile + ".profile";
+                String profile = req.getQueryParameters().get("profile").get(0);
+                String filename = YarchDatabase.getHome() + "/" + req.yamcsInstance + "/profiles/" + profile + ".profile";
                 requestedProfile = Yamcs.NamedObjectList.newBuilder().addAllList(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(filename)))).build();
             }
             catch (Exception e)
@@ -142,7 +155,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
 
         // Check if a profile has been specified in the request
         // Currently, profiles apply only for Parameter requests
-        Yamcs.NamedObjectList requestedProfile = getParametersProfile(req.qsDecoder, req.yamcsInstance);
+        Yamcs.NamedObjectList requestedProfile = getParametersProfile(req);
         
         // This method also supports CSV as a response
         String targetContentType;
@@ -284,7 +297,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     csvGenerator.insertRows(builder.build(), channelOut);
                 }
             } else {
-                JsonGenerator generator = createJsonGenerator(channelOut, req.qsDecoder);
+                JsonGenerator generator = req.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                 generator.close();
             }
@@ -335,7 +348,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                     sizeEstimate += restMessage.message.getSerializedSize();
                 } else {
                     ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
-                    JsonGenerator generator = createJsonGenerator(tempOut, req.qsDecoder);
+                    JsonGenerator generator = req.createJsonGenerator(tempOut);
                     JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
                     generator.close();
                     sizeEstimate += tempOut.toByteArray().length;
@@ -376,13 +389,13 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     }
     
     /**
-     * GET /api/(instance)/archive/tags
-     * POST /api/(instance)/archive/tags
-     * PUT /api/(instance)/archive/tags/(old_start)/(id)
-     * DELETE /api/(instance)/archive/tags/(old_start)/(id)
+     * GET /(instance)/api/archive/tags
+     * POST /(instance)/api/archive/tags
+     * PUT /(instance)/api/archive/tags/(old_start)/(id)
+     * DELETE /(instance)/api/archive/tags/(old_start)/(id)
      */
-    private RestResponse handleTagsRequest(RestRequest req) throws RestException {
-        if ("tags".equals(req.qsDecoder.path())) {
+    private RestResponse handleTagsRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
                 return getTags(req);
             } else if (req.isPOST()) {
@@ -390,7 +403,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
                 return null;
             } else {
                 throw new MethodNotAllowedException(req);
-            }
+            }            
         } else {
             // TODO PUT & DELETE
             return null;
@@ -400,7 +413,7 @@ public class ArchiveRequestHandler extends AbstractRestRequestHandler {
     /**
      * Lists all tags (optionally filtered by request-body)
      * <p>
-     * GET /api/(instance)/archive/tags
+     * GET /(instance)/api/archive/tags
      */
     private RestResponse getTags(RestRequest req) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);

@@ -8,16 +8,17 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 
-public class ManagementRequestHandler extends AbstractRestRequestHandler {
+/**
+ * /(instance)/api/management
+ */
+public class ManagementRequestHandler implements RestRequestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req) throws RestException {
-        String[] path = req.getRemainingUri().split("/", 2);
-        
-        if (path.length == 0) {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
-        if("processor".equals(req.qsDecoder.path())) {
+        if("processor".equals(req.getPathSegment(pathOffset))) {
             return handleProcessorManagementRequest(req);
         } else {
             throw new NotFoundException(req);
