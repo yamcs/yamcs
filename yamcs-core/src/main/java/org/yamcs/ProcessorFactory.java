@@ -117,13 +117,13 @@ public class ProcessorFactory {
         return create(instance, name, type, tctms, creator, null);
     }
     /**
-     *  Create a Channel by specifying the service.
+     *  Create a Processor by specifying the service.
      *  The type is not used in this case, except for showing it in the yamcs monitor.
      **/
     static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws YProcessorException, ConfigurationException {
-        YProcessor channel=new YProcessor(instance, name, type, creator);
+        YProcessor yproc = new YProcessor(instance, name, type, creator);
 
-        channel.init(tctms, config);
-        return channel;
+        yproc.init(tctms, config);
+        return yproc;
     }
 }

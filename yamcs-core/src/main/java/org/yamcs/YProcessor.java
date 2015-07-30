@@ -34,6 +34,8 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
+import com.google.common.util.concurrent.AbstractService;
+
 
 /**
  * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the 
@@ -50,7 +52,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  * @author mache
  *
  */
-public class YProcessor {
+public class YProcessor extends AbstractService {
     static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
     private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
@@ -249,7 +251,8 @@ public class YProcessor {
      * starts processing by invoking the start method for all the associated processors
      *
      */
-    public void start() {
+    @Override
+    public void doStart() {
     	if(tmPacketProvider!=null) {
     		tmPacketProvider.startAsync();
     	}
@@ -273,9 +276,10 @@ public class YProcessor {
         if(tmPacketProvider!=null) {
         	tmPacketProvider.awaitRunning();
         }
-
+        notifyStarted();
         propagateChannelStateChange();
     }
+    
 
     public void pause() {
         ((ArchiveTmPacketProvider)tmPacketProvider).pause();
@@ -373,7 +377,7 @@ public class YProcessor {
                 hasToQuit=true;
             }
         }
-        if(hasToQuit) quit();
+        if(hasToQuit) stopAsync();
     }
 
 
@@ -389,7 +393,7 @@ public class YProcessor {
      * confusing :(
      *
      */
-    public void quit() {
+    public void doStop() {
         if(quitting)return;
         log.info("Channel "+name+" quitting");
         quitting=true;
@@ -407,6 +411,7 @@ public class YProcessor {
                 s.yProcessorQuit();
             }
         }
+        notifyStopped();
     }
 
 
@@ -438,6 +443,8 @@ public class YProcessor {
     }
 
     public boolean isReplay() {
+        if(tmPacketProvider==null) return false;
+        
         return tmPacketProvider.isArchiveReplay();
     }
 
@@ -458,7 +465,7 @@ public class YProcessor {
     }
 
     public ServiceState getState() {
-        return ServiceState.valueOf(tmPacketProvider.state().name());
+        return ServiceState.valueOf(state().name());
     }
 
     public CommandingManager getCommandingManager() {
@@ -506,5 +513,19 @@ public class YProcessor {
 
     public ScheduledThreadPoolExecutor getTimer() {
         return timer;
+    }
+
+
+
+    public void quit() {
+       stopAsync();
+       awaitTerminated();
+    }
+
+
+
+    public void start() {
+      startAsync();
+      awaitRunning();
     }
 }
