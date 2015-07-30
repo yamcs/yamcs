@@ -44,7 +44,7 @@ import org.yamcs.xtce.SequenceContainer;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
 
-public class AbstractIntegrationTest {
+public abstract class AbstractIntegrationTest {
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
@@ -69,9 +69,7 @@ public class AbstractIntegrationTest {
     @Before
     public void before() throws InterruptedException {
 
-
-        if(Privilege.getInstance().isEnabled())
-        {
+        if(Privilege.getInstance().isEnabled())  {
             currentUser = admin;
         }
 
@@ -176,7 +174,7 @@ public class AbstractIntegrationTest {
 
         @Override
         public void onCommandHistoryData(CommandHistoryEntry cmdhistData) {
-            System.out.println("COMMAND HISTORY-------------"+cmdhistData);
+            //System.out.println("COMMAND HISTORY-------------"+cmdhistData);
             cmdHistoryDataList.add(cmdhistData);
         }
 
@@ -260,7 +258,4 @@ public class AbstractIntegrationTest {
 
         }
     }
-
-
-
 }
