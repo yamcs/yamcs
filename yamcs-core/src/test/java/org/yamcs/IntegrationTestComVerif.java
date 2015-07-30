@@ -20,7 +20,6 @@ import org.yamcs.tctm.TcUplinker;
 import com.google.common.util.concurrent.AbstractService;
 
 public class IntegrationTestComVerif extends AbstractIntegrationTest {
-
     @Test
     public void testCommandVerificationContainter() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -38,8 +37,6 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         assertEquals(7, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
         packetGenerator.generateContVerifCmdAck((short)1001, (byte)0, 0);
-
-
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -180,7 +177,9 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
         @Override
         public void sendTc(PreparedCommand preparedCommand) {
-            commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
+            if(preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
+                commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
+            }
         }
 
         @Override
