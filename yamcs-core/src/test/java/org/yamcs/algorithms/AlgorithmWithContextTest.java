@@ -79,7 +79,7 @@ public class AlgorithmWithContextTest {
         
         AlgorithmManager algm = prm.getParameterProvider(AlgorithmManager.class);
         AlgorithmExecutionContext ctx = algm.createContext("test");
-        Algorithm alg= db.getAlgorithm("/REFMDB/SUBSYS1/cmdverif1");
+        Algorithm alg= db.getAlgorithm("/REFMDB/SUBSYS1/ctx_param_test");
         algm.activateAlgorithm(alg, ctx, new AlgorithmExecListener() {
             @Override
             public void algorithmRun(Object returnValue,   List<ParameterValue> outputValues) {
