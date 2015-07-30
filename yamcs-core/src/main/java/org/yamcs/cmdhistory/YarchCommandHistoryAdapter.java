@@ -1,6 +1,5 @@
 package org.yamcs.cmdhistory;
 
-import org.yamcs.InvalidCommandId;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.DataType;
@@ -13,8 +12,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 /**
- * Injects the command history updates in the yarch stream
- * it also creates the streams but that should be moved out
+ * Injects the command history updates in the command history stream
  * @author nm
  *
  */
@@ -32,7 +30,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
 
     @Override
-    public void updateStringKey(CommandId cmdId, String key, String value) throws InvalidCommandId {
+    public void updateStringKey(CommandId cmdId, String key, String value) {
         TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.STRING);
         
@@ -47,7 +45,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
 
     @Override
-    public void updateTimeKey(CommandId cmdId, String key, long instant) throws InvalidCommandId {
+    public void updateTimeKey(CommandId cmdId, String key, long instant) {
         TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.TIMESTAMP);
         
@@ -57,6 +55,25 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
                 cmdId.getSequenceNumber(),
                 cmdId.getCommandName(),
                 instant
+        });
+        stream.emitTuple(t);
+    }
+    
+    @Override
+    public void publish(CommandId cmdId, String key, int value) {
+        publish(cmdId, key, DataType.INT, value);
+    }
+    
+    public void publish(CommandId cmdId, String key, DataType dt, Object value) {
+        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        td.addColumn(key, dt);
+        
+        Tuple t=new Tuple(td, new Object[] {
+                cmdId.getGenerationTime(),
+                cmdId.getOrigin(),
+                cmdId.getSequenceNumber(),
+                cmdId.getCommandName(),
+                value
         });
         stream.emitTuple(t);
     }

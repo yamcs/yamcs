@@ -1,10 +1,8 @@
 ############################################ testinst configuration  ############################################################################
-services:
-    #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
-   
+services:  
     - org.yamcs.tctm.TmProviderAdapter
     - org.yamcs.tctm.PpProviderAdapter
-#    - org.yamcs.tctm.TcUplinkerAdapter
+    - org.yamcs.tctm.TcUplinkerAdapter
     - org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.FSEventDecoder
     - org.yamcs.archive.PpRecorder
@@ -36,7 +34,7 @@ eventDecoders: []
 
 #config the tm providers started by the TmProviderAdapter
 tmProviders:
-    - class: org.yamcs.IntegrationTest$PacketProvider
+    - class: org.yamcs.AbstractIntegrationTest$PacketProvider
       spec: /storage/yamcs-incoming/eyops/tm
       stream: tm_realtime
 
@@ -49,7 +47,9 @@ ppProviders: []
 
 
 # config the tc uplinkers
-#tcUplinkers: []
+tcUplinkers:
+    - class: org.yamcs.IntegrationTestComVerif$MyTcUplinliker
+      stream: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
 mdb: refmdb

@@ -47,14 +47,12 @@ public class TcUplinkerAdapter extends AbstractService {
     static public final String REALTIME_TC_STREAM_NAME="tc_realtime";
 
 
-    final private Stream realtimeStream;
     YamcsClient yclient;
 
     @SuppressWarnings({ "rawtypes", "static-access", "unchecked" })
     public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
 	this.yamcsInstance=yamcsInstance;
 	YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
-	realtimeStream=ydb.getStream(TcUplinkerAdapter.REALTIME_TC_STREAM_NAME);
 
 	//new StreamAdapter(realtimeStream, new SimpleString(archiveInstance+".tc.realtime"), new TmTupleTranslator());
 
@@ -65,8 +63,15 @@ public class TcUplinkerAdapter extends AbstractService {
 	for(Object o:uplinkers) {
 	    if(!(o instanceof Map)) throw new ConfigurationException("uplinker has to be Map and not a "+o.getClass());
 	    Map m=(Map)o;
+
 	    String className=c.getString(m, "class");
-	    String spec=c.getString(m, "spec");
+            Object args=null;
+            if(m.containsKey("args")) {
+                args=m.get("args");
+            } else if(m.containsKey("spec")) {
+                args=m.get("spec");
+            }
+
 	    String streamName=c.getString(m, "stream");
 	    boolean enabledAtStartup=true;
 	    if(m.containsKey("enabledAtStartup")) {
@@ -77,17 +82,15 @@ public class TcUplinkerAdapter extends AbstractService {
             if(m.containsKey("name")) {
                 name=m.get("name").toString();
             }
-	    if(streamName!=null) {
-		if(streamName.equals(REALTIME_TC_STREAM_NAME)) {
-		    stream=realtimeStream;
-		} else {
-		    throw new ConfigurationException("Stream '"+streamName+"' unkown. Only "+REALTIME_TC_STREAM_NAME+" supported for the moment.");
-		}
-	    } else {
-		stream=realtimeStream;
+            
+	    if(streamName==null) {
+		streamName = REALTIME_TC_STREAM_NAME;
 	    }
+	    stream = ydb.getStream(streamName);
+	    if(stream==null) throw new ConfigurationException("Cannot find stream '"+streamName+"'");
 	    YObjectLoader<TcUplinker> objloader=new YObjectLoader<TcUplinker>();
-	    final TcUplinker tcuplinker = objloader.loadObject(className, yamcsInstance, name, spec);
+	    
+	    final TcUplinker tcuplinker = (args==null)?objloader.loadObject(className, yamcsInstance, name): objloader.loadObject(className, yamcsInstance, name, args);
 	    if(!enabledAtStartup) tcuplinker.disable();
 
 	    stream.addSubscriber(new StreamSubscriber() {
@@ -102,9 +105,9 @@ public class TcUplinkerAdapter extends AbstractService {
 		}
 	    });
 
-	    tcuplinker.setCommandHistoryListener(new YarchCommandHistoryAdapter(yamcsInstance));
+	    tcuplinker.setCommandHistoryPublisher(new YarchCommandHistoryAdapter(yamcsInstance));
 	    tcuplinkers.add(tcuplinker);
-	    ManagementService.getInstance().registerLink(yamcsInstance, name, streamName, spec,  tcuplinker);
+	    ManagementService.getInstance().registerLink(yamcsInstance, name, streamName, args!=null?args.toString():"", tcuplinker);
 	    count++;
 	}
     }

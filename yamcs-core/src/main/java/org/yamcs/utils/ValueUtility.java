@@ -13,7 +13,7 @@ public class ValueUtility {
     }
 
     public static Value getSint32Value(int x) {
-        return Value.newBuilder().setType(Value.Type.SINT32).setUint32Value(x).build(); 
+        return Value.newBuilder().setType(Value.Type.SINT32).setSint32Value(x).build(); 
     }
 
     public static Value getStringValue(String x) {

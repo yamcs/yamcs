@@ -1,6 +1,5 @@
 package org.yamcs.commanding;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -8,11 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.InvalidCommandId;
 import org.yamcs.YProcessor;
+import org.yamcs.algorithms.AlgorithmExecutionContext;
+import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.container.ContainerConsumer;
-import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier;
@@ -36,44 +34,58 @@ public class CommandVerificationHandler {
     private List<Verifier> pendingVerifiers = new ArrayList<Verifier>();
     private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
     enum VerifResult {OK, NOK, TIMEOUT};
-    
+    AlgorithmExecutionContext algorithmCtx;
+
     public CommandVerificationHandler(YProcessor yproc, PreparedCommand pc) {
         this.yproc = yproc;
         this.preparedCommand = pc;
         this.timer = yproc.getTimer();
     }
-    
-    
+
+
     public void start() {
         MetaCommand cmd = preparedCommand.getMetaCommand();
         List<CommandVerifier> verifiers = cmd.getCommandVerifiers();
         Verifier prevVerifier = null;
-        
+
         for(CommandVerifier cv: verifiers) {
             SequenceContainer c = cv.getContainerRef();
             Verifier verifier;
-            
+
             if(c!=null) {
-                verifier = new ContainerVerifier(cv, c);
+                verifier = new ContainerVerifier(this, cv, c);
             } else {
-                return;
+                if(algorithmCtx==null)  createAlgorithmContext(); 
+                verifier = new AlgorithmVerifier(this, cv);
             }
             CheckWindow checkWindow = cv.getCheckWindow();
             boolean scheduleNow = true;
-            
+
             if(checkWindow.getTimeWindowIsRelativeTo()==TimeWindowIsRelativeToType.timeLastVerifierPassed) {
                 if(prevVerifier!=null) {
                     prevVerifier.nextVerifier = verifier;
                     scheduleNow = false;
                 }
             };
-            
+
             if(scheduleNow) {
                 scheduleVerifier(verifier, checkWindow.getTimeToStartChecking(), checkWindow.getTimeToStopChecking());
             }
-            
+
         }
     }
+
+    private void createAlgorithmContext() {
+        AlgorithmManager algMgr = yproc.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
+        if(algMgr==null) {
+            String msg = "Algorithm manager not configured for this processor, cannot run command verification based on algorithms";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+
+        algorithmCtx = algMgr.createContext(preparedCommand.getCmdName());
+    }
+
 
     private void scheduleVerifier(final Verifier verifier, long windowStart, long windowStop) {
         if(windowStart>0) {
@@ -87,11 +99,11 @@ public class CommandVerificationHandler {
             verifier.start();
         }
         pendingVerifiers.add(verifier);
-        
+
         if(windowStop<=0) {
             throw new IllegalArgumentException("The window stop has to be greater than 0");
         }
-        
+
         timer.schedule(new Runnable() {
             @Override
             public void run() {
@@ -100,9 +112,7 @@ public class CommandVerificationHandler {
         }, windowStop, TimeUnit.MILLISECONDS);
     }
 
-    private void onVerifierFinished(Verifier v, VerifResult result) {
-        log.debug("Command "+preparedCommand.getCmdName()+" verifier finished: "+v.cv+", result: "+result);
-        
+    void onVerifierFinished(Verifier v, VerifResult result) {
         if(!pendingVerifiers.remove(v)) {
             if(result!=VerifResult.TIMEOUT) {
                 log.warn("Got verifier finished for a verifier not in the pending list. cmd: "+preparedCommand.getCmdName()+" verifier:"+v.cv);
@@ -110,73 +120,51 @@ public class CommandVerificationHandler {
             return;
         }
         
+        log.debug("Command "+preparedCommand.getCmdName()+" verifier finished: "+v.cv+", result: "+result);
         CommandVerifier cv = v.cv;
         CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
-        try {
-            String histKey= CommandHistoryPublisher.Verifier_KEY_PREFIX+"_"+cv.getStage();
-            cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), histKey, result.toString());
-            TerminationAction ta = null;
-            switch(result) {
-            case OK:
-                ta = cv.getOnSuccess();
-                break;
-            case NOK:
-                ta = cv.getOnFail();
-                break;
-            case TIMEOUT:
-                ta = cv.getOnTimeout();
-                break;
-            } 
-            if(ta==TerminationAction.SUCCESS) {
-                cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
-            } else if(ta==TerminationAction.FAIL) {
-                cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "NOK");
-            }
-            
-        } catch (InvalidCommandId e) {
-            log.error("Got invalid command id when publishing verification result to the command history for"+preparedCommand.getCmdName()+" verifier: "+cv, e);
+        String histKey= CommandHistoryPublisher.Verifier_KEY_PREFIX+"_"+cv.getStage();
+        cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), histKey, result.toString());
+        TerminationAction ta = null;
+        switch(result) {
+        case OK:
+            ta = cv.getOnSuccess();
+            break;
+        case NOK:
+            ta = cv.getOnFail();
+            break;
+        case TIMEOUT:
+            ta = cv.getOnTimeout();
+            break;
+        } 
+        if(ta==TerminationAction.SUCCESS) {
+            cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
+        } else if(ta==TerminationAction.FAIL) {
+            cmdHistPublisher.updateStringKey(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "NOK");
         }
-        
+
+
         if(v.nextVerifier!=null && (result==VerifResult.OK)) {
             CheckWindow cw = v.nextVerifier.cv.getCheckWindow();
             scheduleVerifier(v.nextVerifier, cw.getTimeToStartChecking(), cw.getTimeToStopChecking());
         }
     }
 
-  
-    
-    abstract class Verifier {
-        final CommandVerifier cv;
-        
-        Verifier nextVerifier;
-        Verifier(CommandVerifier cv) {
-            this.cv = cv;
-        }
-        
-        abstract void start();
+
+    public YProcessor getProcessor() {
+        return yproc;
     }
-    
-    class ContainerVerifier extends Verifier implements ContainerConsumer {
-        SequenceContainer container;
-        
-        ContainerVerifier(CommandVerifier cv, SequenceContainer c) {
-            super(cv);
-            this.container = c;
-        }
-        
-        
-        @Override
-        public void processContainer(SequenceContainer sc, ByteBuffer content) {
-            ContainerRequestManager crm = yproc.getContainerRequestManager();
-            crm.unsubscribe(this, container);
-            onVerifierFinished(this, VerifResult.OK);
-        }
+
+    public AlgorithmExecutionContext getAlgorithmExecutionContext() {
+        return algorithmCtx;
+    }
+
+    public PreparedCommand getPreparedCommand() {
+        return preparedCommand;
+    }
 
 
-        @Override
-        void start() {
-            ContainerRequestManager crm = yproc.getContainerRequestManager();
-            crm.subscribe(this, container);
-        }
+    public AlgorithmManager getAlgorithmManager() {
+        return yproc.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);
     }
 }

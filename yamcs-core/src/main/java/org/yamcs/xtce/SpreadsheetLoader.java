@@ -13,6 +13,7 @@ import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 import java.io.*;
 import java.nio.ByteOrder;
@@ -89,7 +90,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     final static int IDX_ALGO_PARA_REF=5;
     final static int IDX_ALGO_PARA_INSTANCE=6;
     final static int IDX_ALGO_PARA_NAME=7;
-
+    final static int IDX_ALGO_PARA_FLAGS=8;
+    
     //columns in the alarms sheet
     final static int IDX_ALARM_PARAM_NAME=0;
     final static int IDX_ALARM_CONTEXT=1;
@@ -148,7 +150,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="5.0";
+    final static String FORMAT_VERSION="5.1";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION};
 
@@ -953,17 +955,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // get the next row, containing a measurement/aggregate reference
                 cells = jumpToRow(sheet, i);
+               
                 // determine whether we have not reached the end of the command definition.
-                if (!hasColumn(cells, IDX_CONT_RELPOS)) {
+                if (!hasColumn(cells, IDX_CMD_ARGNAME)) {
                     end = true; continue;
                 }
 
 
                 String argname = cells[IDX_CMD_ARGNAME].getContents();
-                if(!hasColumn(cells, IDX_CMD_RELPOS)) {
-                    throw new SpreadsheetLoadException(ctx, "relpos is not specified for "+argname+" on line "+(i+1));
+                int relpos = 0;
+                if (hasColumn(cells,  IDX_CMD_RELPOS)) {
+                    relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
                 }
-                int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
 
                 if(!hasColumn(cells, IDX_CMD_ENGTYPE)) {
                     throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
@@ -1181,19 +1184,38 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         }
                     } 
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
-                    CommandVerifier cmdVerifier = new CommandVerifier(stage, cw);
-
                     if(!hasColumn(cells, IDX_CMDVERIF_TYPE)) {
                         throw new  SpreadsheetLoadException(ctx, "No type specified for the command verifier ");
                     }
-                    String type  =  cells[IDX_CMDVERIF_TYPE].getContents();
-                    if("container".equalsIgnoreCase(type)) {
+                    String types  =  cells[IDX_CMDVERIF_TYPE].getContents();
+                    CommandVerifier.Type type = null;
+                    try {
+                        type = CommandVerifier.Type.valueOf(types);
+                    } catch (IllegalArgumentException e) {
+                        throw new SpreadsheetLoadException(ctx, "Invalid command verifier type '"+types+"' specified. Supported are: "+ Arrays.toString(CommandVerifier.Type.values()));
+                    }
+                    
+                    CommandVerifier cmdVerifier = new CommandVerifier(type, stage, cw);
+                    
+                    if(type==CommandVerifier.Type.container) {
                         String containerName =  cells[IDX_CMDVERIF_TEXT].getContents();
                         SequenceContainer container = spaceSystem.getSequenceContainer(containerName);
+                        if(container==null) {
+                            throw new SpreadsheetLoadException(ctx, "Cannot find sequence container '"+containerName+"' required for the verifier");
+                        }
                         cmdVerifier.setContainerRef(container);
+                    } else if(type==CommandVerifier.Type.algorithm) {
+                        String algoName = cells[IDX_CMDVERIF_TEXT].getContents();
+                        Algorithm algo = spaceSystem.getAlgorithm(algoName);
+                        if(algo==null) {
+                            throw new SpreadsheetLoadException(ctx, "Cannot find algorithm '"+algoName+"' required for the verifier");
+                        }
+                        cmdVerifier.setAlgorithm(algo);
                     } else {
-                        throw new  SpreadsheetLoadException(ctx, "Invalid type '"+type+"' specified for the command verifier. Supported types are: container ");
+                        throw new  SpreadsheetLoadException(ctx, "Command verifier type '"+type+"' not implemented ");
                     }
+                    
+                    
                     String tas = null;
                     try {
                         if(hasColumn(cells, IDX_CMDVERIF_ONSUCCESS)) {
@@ -1242,7 +1264,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     private int loadArgument(Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int absoluteOffset, int counter) {
         String engType = cells[IDX_CMD_ENGTYPE].getContents();
         String name = cells[IDX_CMD_ARGNAME].getContents();
-        int relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
+        
+        int relpos = hasColumn(cells,  IDX_CMD_RELPOS)?Integer.decode(cells[IDX_CMD_RELPOS].getContents()):0;
+        
         String calib = null;
         if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
             calib = cells[IDX_CMD_CALIBRATION].getContents();
@@ -1685,8 +1709,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
                     paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
                 }
+                
+                String flags = hasColumn(cells, IDX_ALGO_PARA_FLAGS)?cells[IDX_ALGO_PARA_FLAGS].getContents():"";
+                
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
+                    if(paraRef.startsWith(XtceDbFactory.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(XtceDbFactory.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
+                        algorithm.setScope(Algorithm.Scope.commandVerification);
+                    }
                     inputParameterRefs.add(paraRef);
                     Parameter param = spaceSystem.getParameter(paraRef);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef(null);
@@ -1713,13 +1743,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             parameterInstance.setInstance(instance);
                         }
                     }
-
+                    
                     InputParameter inputParameter = new InputParameter(parameterInstance);
                     if (cells.length > IDX_ALGO_PARA_NAME) {
                         if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
                             inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
                         }
                     }
+                    if(flags.contains("M")) inputParameter.setMandatory(true);
                     algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);

@@ -102,7 +102,6 @@ public class AlgorithmManagerTest {
                 assertEquals(0.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
             } else if(pvwi.getParameter().equals(floatAddition)) {
                 assertEquals(2.1672918, pvwi.getRawValue().getFloatValue(), 0.001);
-                assertEquals(2.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
             } else {
                 fail("Unexpected parameter "+pvwi.getParameter());
             }

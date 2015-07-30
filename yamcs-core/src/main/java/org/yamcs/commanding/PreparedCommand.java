@@ -2,9 +2,12 @@ package org.yamcs.commanding;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -34,6 +37,7 @@ public class PreparedCommand {
     private long transmissionContraintCheckStart = -1;
     
     List<CommandHistoryAttribute> attributes=new ArrayList<CommandHistoryAttribute>();
+    private Map<Argument, Value> argAssignment;
 
     //column names to use when converting to tuple
     public final static String CNAME_GENTIME = "gentime";
@@ -134,7 +138,7 @@ public class PreparedCommand {
 	return cha.getValue().getStringValue();
     }
 
-    public List<CommandHistoryAttribute> getAttirbutes() {
+    public List<CommandHistoryAttribute> getAttributes() {
 	return attributes;
     }
 
@@ -209,8 +213,16 @@ public class PreparedCommand {
 	return transmissionContraintCheckStart;
     }
 
-    public void setTransmissionContraintCheckStart(
-	    long transmissionContraintCheckStart) {
+    public void setTransmissionContraintCheckStart(long transmissionContraintCheckStart) {
 	this.transmissionContraintCheckStart = transmissionContraintCheckStart;
+    }
+
+    public void setArgAssignment(Map<Argument, Value> argAssignment) {
+        this.argAssignment = argAssignment;
     }	
+    
+    public Map<Argument, Value> getArgAssignment() {
+        return argAssignment;
+    }
+    
 }

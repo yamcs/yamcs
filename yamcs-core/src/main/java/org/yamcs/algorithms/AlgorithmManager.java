@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,17 +34,15 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.NamedDescriptionIndex;
-import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
@@ -78,18 +76,15 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     // Index of all available out params
     NamedDescriptionIndex<Parameter> outParamIndex=new NamedDescriptionIndex<Parameter>();
 
-    HashMap<Algorithm,AlgorithmEngine> engineByAlgorithm=new HashMap<Algorithm,AlgorithmEngine>();
-    ArrayList<Algorithm> executionOrder=new ArrayList<Algorithm>();
+    CopyOnWriteArrayList<AlgorithmEngine> executionOrder=new CopyOnWriteArrayList<AlgorithmEngine>();
     HashSet<Parameter> requiredInParams=new HashSet<Parameter>(); // required by this class
     ArrayList<Parameter> requestedOutParams=new ArrayList<Parameter>(); // requested by clients
     ParameterRequestManagerImpl parameterRequestManager;
 
-    // For storing a window of previous parameter instances
-    HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
-
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);;
     YProcessor yproc;
+    AlgorithmExecutionContext globalCtx = new AlgorithmExecutionContext("global", null);
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, null);
@@ -138,7 +133,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 // Put engine bindings in shared global scope - we want the variables in the libraries to be global
                 Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
                 Set<String> existingBindings = new HashSet<String>(scriptEngineManager.getBindings().keySet());
-                
+
                 existingBindings.retainAll(commonBindings.keySet());
                 if(!existingBindings.isEmpty()) {
                     throw new ConfigurationException("Overlapping definitions found while loading libraries for language "+language+": "+ existingBindings);
@@ -161,31 +156,34 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
-            loadAlgorithm(algo);
+            if(algo.getScope()==Algorithm.Scope.global) {
+                loadAlgorithm(algo, globalCtx);
+            }
         }
     }
 
 
-    private void loadAlgorithm(Algorithm algo) {
+    private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
         for(OutputParameter oParam:algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
         }
         // Eagerly activate the algorithm if no outputs (with lazy activation,
         // it would never trigger because there's nothing to subscribe to)
-        if(algo.getOutputSet().isEmpty() && !engineByAlgorithm.containsKey(algo)) {
-            activateAlgorithm(algo);
+        if(algo.getOutputSet().isEmpty() && !ctx.containsAlgorithm(algo)) {
+            activateAlgorithm(algo, ctx, null);
         }
 
         List<OnPeriodicRateTrigger> timedTriggers = algo.getTriggerSet().getOnPeriodicRateTriggers();
         if(!timedTriggers.isEmpty()) {
             // acts as a fixed-size pool
-            activateAlgorithm(algo);
-            final AlgorithmEngine engine = engineByAlgorithm.get(algo);
+            activateAlgorithm(algo, ctx, null);
+            final AlgorithmEngine engine = ctx.getEngine(algo);
             for(OnPeriodicRateTrigger trigger:timedTriggers) {
                 timer.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
-                        ArrayList<ParameterValue> params = runEngine(engine, TimeEncoding.currentInstant());
+                        long t = TimeEncoding.currentInstant();
+                        List<ParameterValue> params = engine.runAlgorithm(t, t);
                         parameterRequestManager.update(params);
                     }
                 }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
@@ -206,28 +204,56 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         for(Algorithm algo:xtcedb.getAlgorithms()) {
             for(OutputParameter oParam:algo.getOutputSet()) {
                 if(oParam.getParameter()==paramDef) {
-                    activateAlgorithm(algo);
+                    activateAlgorithm(algo, globalCtx, null);
                     requestedOutParams.add(paramDef);
                     return; // There shouldn't be more ...
                 }
             }
         }
     }
+    
+    /**
+     * Create a new algorithm execution context. 
+     * 
+     * @param name - name of the context 
+     * @return
+     */
+    public AlgorithmExecutionContext createContext(String name) {
+        return new AlgorithmExecutionContext(name, globalCtx);
+    }
 
-    private void activateAlgorithm(Algorithm algorithm) {
-        if(engineByAlgorithm.containsKey(algorithm)) {
-            log.trace("Already activated algorithm {}", algorithm.getQualifiedName());
+    
+    /**
+     * Activate an algorithm in a context if not already active.
+     * 
+     * If already active, the listener is added to the listener list.
+     * 
+     * @param algorithm
+     * @param execCtx
+     * @param listener
+     */
+    public void activateAlgorithm(Algorithm algorithm, AlgorithmExecutionContext execCtx, AlgorithmExecListener listener) {
+        AlgorithmEngine engine = execCtx.getEngine(algorithm);
+        if(engine!=null) {
+            log.trace("Already activated algorithm {} in context {}", algorithm.getQualifiedName(), execCtx.getName());
+            if(listener!=null) {
+                engine.addExecListener(listener);
+            }
             return;
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
 
         ScriptEngine scriptEngine=scriptEngineManager.getEngineByName(algorithm.getLanguage());
         if(scriptEngine==null) throw new RuntimeException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
-        
+
         scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
 
-        AlgorithmEngine engine=new AlgorithmEngine(algorithm, scriptEngine);
-        engineByAlgorithm.put(algorithm, engine);
+        engine=new AlgorithmEngine(algorithm, scriptEngine, execCtx);
+        if(listener!=null) {
+            engine.addExecListener(listener);
+        }
+    
+        execCtx.addAlgorithm(algorithm, engine);
         try {
             ArrayList<Parameter> newItems=new ArrayList<Parameter>();
             for(Parameter param:engine.getRequiredParameters()) {
@@ -239,31 +265,28 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                             if(algorithm != algo) {
                                 for(OutputParameter oParam:algo.getOutputSet()) {
                                     if(oParam.getParameter()==param) {
-                                        activateAlgorithm(algo);
+                                        activateAlgorithm(algo, execCtx, null);
                                     }
                                 }
                             }
                         }
-                    } else { // Don't ask items to PRM that we can provide ourselves
-                        newItems.add(param);
+                    } else { // Don't ask items to PRM that we can provide ourselves or command verifier context parameters that PRM cannot provide 
+                        if((param.getDataSource()!=DataSource.COMMAND) && param.getDataSource()!=DataSource.COMMAND_HISTORY) { 
+                            newItems.add(param);
+                        }
                     }
                 }
 
                 // Initialize a new Windowbuffer, or extend an existing one, if the algorithm requires going back in time
                 int lookbackSize=engine.getLookbackSize(param);
                 if(lookbackSize>0) {
-                    if(buffersByParam.containsKey(param)) {
-                        WindowBuffer buf = buffersByParam.get(param);
-                        buf.expandIfNecessary(lookbackSize+1);
-                    } else {
-                        buffersByParam.put(param, new WindowBuffer(lookbackSize+1));
-                    }
+                    execCtx.enableBuffer(param, lookbackSize);
                 }
             }
             if(!newItems.isEmpty()) {
                 parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
             }
-            executionOrder.add(algorithm); // Add at the back (dependent algorithms will come in front)
+            executionOrder.add(engine); // Add at the back (dependent algorithms will come in front)
         } catch (InvalidIdentification e) {
             log.error(String.format("InvalidIdentification caught when subscribing to the items "
                     + "required for the algorithm %s\n\t The invalid items are: %s"
@@ -273,7 +296,14 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     + engine.getAlgorithm().getName(), e);
         }
     }
-
+    
+    public void deactivateAlgorithm(Algorithm algorithm, AlgorithmExecutionContext execCtx) {
+        AlgorithmEngine engine = execCtx.remove(algorithm);
+        if(engine!=null) {
+            executionOrder.remove(engine);
+        }
+    }
+    
     @Override
     public void startProvidingAll() {
         for(Parameter p:outParamIndex.getObjects()) {
@@ -287,8 +317,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             // Remove algorithm engine (and any that are no longer needed as a consequence)
             // We need to clean-up three more internal structures: requiredInParams, executionOrder and engineByAlgorithm
             HashSet<Parameter> stillRequired=new HashSet<Parameter>(); // parameters still required by any other algorithm
-            for(Iterator<Algorithm> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
-                Algorithm algo=it.next();
+            for(Iterator<AlgorithmEngine> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
+                AlgorithmEngine engine = it.next();
+                Algorithm algo = engine.getAlgorithm();
                 boolean doRemove=true;
 
                 // Don't remove if any other output parameters are still subscribed to
@@ -306,7 +337,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                             doRemove=false;
                             break;
                         }
-                        for(Algorithm otherAlgo:engineByAlgorithm.keySet()) {
+                        for(Algorithm otherAlgo:globalCtx.getAlgorithms()) {
                             for(InputParameter ip:otherAlgo.getInputSet()) {
                                 if(ip.getParameterInstance().getParameter()==op.getParameter()) {
                                     doRemove=false;
@@ -320,7 +351,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
                 if(doRemove) {
                     it.remove();
-                    engineByAlgorithm.remove(algo);
+                    globalCtx.remove(algo);
                 } else {
                     for(InputParameter p:algo.getInputSet()) {
                         stillRequired.add(p.getParameterInstance().getParameter());
@@ -365,91 +396,37 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     @Override
     public ArrayList<ParameterValue> updateParameters(int subscriptionId, ArrayList<ParameterValue> items) {
-        ArrayList<ParameterValue> pvals=new ArrayList<ParameterValue>();
-        for(ParameterValue pv:items) {
-            pvals.add(pv);
-        }
-
-        updateHistoryWindows(pvals);
-        return doUpdateParameters(pvals);
+        return updateParameters(items, globalCtx);
     }
-
-    private ArrayList<ParameterValue> doUpdateParameters(ArrayList<ParameterValue> items) {
-
+    
+    /**
+     * Update parameters in context and run the affected algorithms 
+     * @param items
+     * @param ctx
+     * @return
+     */
+    public ArrayList<ParameterValue> updateParameters(List<ParameterValue> items, AlgorithmExecutionContext ctx) {
         ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
+        
+        ctx.updateHistoryWindows(items);
+        long acqTime = TimeEncoding.currentInstant();
+        long genTime = items.get(0).getGenerationTime();
+
         ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
-        for(Algorithm algorithm:executionOrder) {
-            AlgorithmEngine engine=engineByAlgorithm.get(algorithm);
-            boolean skipRun=false;
-
-            // Set algorithm arguments based on incoming values
-            for(InputParameter inputParameter:algorithm.getInputSet()) {
-                if(skipRun) break;
-                ParameterInstanceRef pInstance=inputParameter.getParameterInstance();
-                for(ParameterValue pval:allItems) {
-                    if(pInstance.getParameter().equals(pval.def)) {
-                        if(engine.getLookbackSize(pInstance.getParameter())==0) {
-                            engine.updateInput(inputParameter, pval);
-                        } else {
-                            ParameterValue historicValue=buffersByParam.get(pval.def)
-                                    .getHistoricValue(pInstance.getInstance());
-                            if(historicValue!=null) {
-                                engine.updateInput(inputParameter, historicValue);
-                            } else { // Exclude algo as soon as one param is not available
-                                skipRun=true;
-                            }
-                        }
+        for(AlgorithmEngine engine:executionOrder) {
+            if(ctx==globalCtx || engine.execCtx==ctx) {
+                boolean shouldRun = engine.updateParameters(allItems);
+                if(shouldRun) {
+                    List<ParameterValue> r = engine.runAlgorithm(acqTime, genTime);
+                    if(r!=null) {
+                        allItems.addAll(r);
+                        newItems.addAll(r);
+                        ctx.updateHistoryWindows(r);
                     }
                 }
-            }
-
-            // But run it only, if this satisfies an onParameterUpdate trigger
-            boolean triggered=false;
-            for(OnParameterUpdateTrigger trigger:algorithm.getTriggerSet().getOnParameterUpdateTriggers()) {
-                if(triggered) break;
-                for(ParameterValue pval:allItems) {
-                    if(pval.getParameter().equals(trigger.getParameter())) {
-                        triggered=true;
-                        break;
-                    }
-                }
-            }
-
-            if(!skipRun && triggered) {
-                ArrayList<ParameterValue> r=runEngine(engine, items.get(0).getGenerationTime());
-                newItems.addAll(r);
-                allItems.addAll(r);
             }
         }
         return newItems;
-    }
-
-    private ArrayList<ParameterValue> runEngine(AlgorithmEngine engine, long genTime) {
-        long acqTime=TimeEncoding.currentInstant();
-        ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
-        try {
-            List<ParameterValue> pvals=engine.runAlgorithm();
-            r.addAll(pvals);
-        } catch (Exception e) {
-            log.warn("Exception while updating algorithm "+engine.def, e);
-        }
-
-        for(ParameterValue pval:r) {
-            pval.setAcquisitionTime(acqTime);
-            pval.setGenerationTime(genTime);
-        }
-
-        updateHistoryWindows(r);
-
-        return r;
-    }
-
-    private void updateHistoryWindows(ArrayList<ParameterValue> pvals) {
-        for(ParameterValue pval:pvals) {
-            if(buffersByParam.containsKey(pval.def)) {
-                buffersByParam.get(pval.def).update(pval);
-            }
-        }
     }
 
     @Override

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
-import org.yamcs.InvalidCommandId;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.ThreadSafe;
@@ -251,11 +250,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void addToCommandHistory(PreparedCommand pc, String key, String value) {
-        try {
-            commandHistoryListener.updateStringKey(pc.getCommandId(), key, value);
-        } catch (InvalidCommandId e1) {
-            log.warn("got invalid commandId when nacking command "+pc.getCommandId());
-        }
+        commandHistoryListener.updateStringKey(pc.getCommandId(), key, value);
     }
     /**
      * send a negative ack for a command.

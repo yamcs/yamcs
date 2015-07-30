@@ -22,6 +22,6 @@ public class OnParameterUpdateTrigger implements Serializable {
     
     @Override
     public String toString() {
-        return parameter.toString();
+        return parameter.getQualifiedName();
     }
 }

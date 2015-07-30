@@ -22,6 +22,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
@@ -41,7 +42,17 @@ import org.yamcs.xtce.XtceLoader;
 
 public class XtceDbFactory {
     static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
+    /**
+     * Namespace for hosting system parameters
+     */
     public static String YAMCS_SPACESYSTEM_NAME = "/yamcs";
+    
+    /**
+     * Namespaces for hosting parameters valid in the command verification context
+     */
+    public static String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
+    public static String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
+    
     /**
      * map instance names and config names to databases
      */
@@ -175,7 +186,7 @@ public class XtceDbFactory {
             //Special case for system variables: they are created on the fly
             NameDescription nd;
             if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(YAMCS_SPACESYSTEM_NAME)) {
-                nd = getSystemVariable(rootSs, nr.getReference());
+                nd = getSystemParameter(rootSs, nr.getReference());
             } else {
                 nd =findReference(rootSs, nr, ss);
             }
@@ -197,13 +208,15 @@ public class XtceDbFactory {
     }
 
     /**
-     * Create if not already existing the systemvariables and the enclosing space systems
+     * Create if not already existing the system parameter and the enclosing space systems
      * 
      * @param rootSs
      * @param fqname
      * @return
      */
-    private static SystemParameter getSystemVariable(SpaceSystem yamcsSs, String fqname) {
+    private static SystemParameter getSystemParameter(SpaceSystem yamcsSs, String fqname) {
+        DataSource ds = getSystemParameterDataSource(fqname);
+        
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
 
         SpaceSystem ss = yamcsSs;
@@ -216,14 +229,20 @@ public class XtceDbFactory {
             ss=sss;
         }
         SystemParameter sv = (SystemParameter)ss.getParameter(a[a.length-1]);
-
+        
         if(sv==null) {
-            sv = SystemParameter.getForFullyQualifiedName(fqname);
+            sv = SystemParameter.getForFullyQualifiedName(fqname, ds);
             log.debug("adding new system variable for "+fqname+" in system "+ss);
             ss.addParameter(sv);
         }
-
+        
         return sv;
+    }
+
+    private static DataSource getSystemParameterDataSource(String fqname) {
+        if(fqname.startsWith(YAMCS_CMD_SPACESYSTEM_NAME)) return DataSource.COMMAND;
+        else if(fqname.startsWith(YAMCS_CMDHIST_SPACESYSTEM_NAME)) return DataSource.COMMAND_HISTORY;
+        else return DataSource.SYSTEM;
     }
 
     /**

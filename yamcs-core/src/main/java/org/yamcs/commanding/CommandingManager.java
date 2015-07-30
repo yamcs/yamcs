@@ -17,6 +17,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtceproc.MetaCommandProcessor;
+import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 import com.google.common.util.concurrent.AbstractService;
 /**
@@ -49,7 +50,7 @@ public class CommandingManager extends AbstractService {
      * parse the source populate the binary part and the definition.
      */
     public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin, int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
-        log.debug("building command {} with arguments", mc, argAssignmentList);
+        log.debug("building command {} with arguments {}", mc.getName(), argAssignmentList);
 
         if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TC, mc.getName()))
         {
@@ -58,15 +59,18 @@ public class CommandingManager extends AbstractService {
         if(origin == null)
             origin = "anonymous";
 
-        byte[] b = MetaCommandProcessor.buildCommand(mc,  argAssignmentList);
+        
+        CommandBuildResult cbr = MetaCommandProcessor.buildCommand(mc, argAssignmentList);
 
         CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(TimeEncoding.currentInstant()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
-
-        pc.setBinary(b);
+        pc.setMetaCommand(mc);
+        pc.setBinary(cbr.getCmdPacket());
+        pc.setArgAssignment(cbr.getArgs());
+        
+        
         String username = (authToken !=null && authToken.getPrincipal() != null)?authToken.getPrincipal().toString():"anonymous";
         pc.setUsername(username);
-        pc.setMetaCommand(mc);
 
         return pc;
     }

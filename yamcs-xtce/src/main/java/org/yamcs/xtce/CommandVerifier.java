@@ -13,7 +13,10 @@ import java.io.Serializable;
  */
 public class CommandVerifier implements Serializable {
     private static final long serialVersionUID = 2L;
-    
+    public enum Type {container, algorithm};
+
+    private final Type type;
+
     /**
      * what can happen when the verification finishes
      * XTCE does not specify very well, just that each verifier returns true or false. 
@@ -22,11 +25,11 @@ public class CommandVerifier implements Serializable {
      */
     public enum TerminationAction {
         SUCCESS, //the command is declared successful
-        FAIL //the command is declard failed
+        FAIL //the command is declared failed
     }      
     private TerminationAction onSuccess = null, onFail = null, onTimeout = null;
-    
-    
+
+
     /** 
      * differs from XTCE
      * 
@@ -36,27 +39,29 @@ public class CommandVerifier implements Serializable {
      */
     final private String stage;
 
-    
+
     /**
      * XTCE: A time based check window
      */
     final private CheckWindow checkWindow;
-    
-    
+
+
     /**
      * When verification is a new instance of the referenced Container; this verifier return true when the referenced container has been received and processed.
      */
     SequenceContainer containerRef;
+    Algorithm algorithm;
+
     //NOT implemented from XTCE
     /*       
      * comparisonList;
-     * customAlgorithm;
      * ParameterValueChange
      * BooleanExpression
      */
-    
 
-    public CommandVerifier(String stage, CheckWindow checkWindow) {
+
+    public CommandVerifier(Type type, String stage, CheckWindow checkWindow) {
+        this.type = type;
         this.stage = stage;
         this.checkWindow = checkWindow;
     }
@@ -65,6 +70,10 @@ public class CommandVerifier implements Serializable {
         return stage;
     }
 
+    public Type getType() {
+        return type;
+    }
+    
     public void setContainerRef(SequenceContainer containerRef) {
         this.containerRef = containerRef;
     }
@@ -73,11 +82,18 @@ public class CommandVerifier implements Serializable {
         return containerRef;
     }
 
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(Algorithm algo) {
+        this.algorithm = algo;        
+    }
 
     public CheckWindow getCheckWindow() {
         return checkWindow;
     }
-      
+
     public TerminationAction getOnTimeout() {
         return onTimeout;
     }
@@ -102,10 +118,17 @@ public class CommandVerifier implements Serializable {
         this.onSuccess = onSuccess;
     }
 
-    
+
     public String toString() {
-        return "{stage: "+stage+", containerRef: "+containerRef.getName()+", checkWindow: "+checkWindow+"}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{stage: ").append(stage);
+        if(containerRef!=null) {
+            sb.append(", containerRef: ").append(containerRef.getName());
+        }
+        if(algorithm!=null) {
+            sb.append(", algorithm: ").append(algorithm.getName());
+        }
+        sb.append(", checkWindow: ").append(checkWindow.toString()).append("}");
+        return sb.toString();
     }
-
-
 }

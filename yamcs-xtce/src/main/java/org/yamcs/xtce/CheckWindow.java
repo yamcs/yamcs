@@ -42,4 +42,9 @@ public class CheckWindow implements Serializable{
     public boolean hasStart() {
         return timeToStartChecking!=-1;
     }
+    
+    
+    public String toString() {
+        return timeWindowIsRelativeTo+"["+timeToStartChecking+","+timeToStopChecking+"]";
+    }
 }

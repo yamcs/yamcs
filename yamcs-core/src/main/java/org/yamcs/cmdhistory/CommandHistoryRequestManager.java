@@ -82,6 +82,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
         }
         log.warn("Received subscribe command for a command not in my active list: ("+cmdId+")");
         throw new InvalidCommandId("command "+cmdId+" is not in the list of active commands",cmdId);
+        
     }
 
 

@@ -35,7 +35,7 @@ public class OutputParameter implements Serializable {
     
     @Override
     public String toString() {
-        if(outputName==null) return parameter.toString();
-        else return parameter+" outputName:"+outputName;
+        if(outputName==null) return parameter.getQualifiedName();
+        else return parameter.getQualifiedName()+" outputName:"+outputName;
     }
 }

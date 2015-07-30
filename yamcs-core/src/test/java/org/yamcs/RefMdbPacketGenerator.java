@@ -42,7 +42,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt2Length=8;
 
 
-    public final int cmdAck_Length=headerLength+7;
+    public final int contVerifCmdAck_Length = headerLength+7;
+    public final int algVerifCmdAck_Length = headerLength+9;
 
     //raw values of parameters 
     public volatile short pIntegerPara1_1=5;
@@ -219,11 +220,24 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb;
     }
 
-    public ByteBuffer generateCmdAck(short cmdId, byte stage, int result) {
-        ByteBuffer bb=ByteBuffer.allocate(cmdAck_Length);
+    public ByteBuffer generateContVerifCmdAck(short cmdId, byte stage, int result) {
+        ByteBuffer bb=ByteBuffer.allocate(contVerifCmdAck_Length);
         fill_CcsdsHeader(bb, 101, 1000);
         bb.position(headerLength);
         bb.putShort(cmdId);
+        bb.put(stage);
+        bb.putInt(result);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    
+    
+    public ByteBuffer generateAlgVerifCmdAck(short cmdId, short packetSeq, byte stage, int result) {
+        ByteBuffer bb=ByteBuffer.allocate(algVerifCmdAck_Length);
+        fill_CcsdsHeader(bb, 101, 2000);
+        bb.position(headerLength);
+        bb.putShort(cmdId);
+        bb.putShort(packetSeq);
         bb.put(stage);
         bb.putInt(result);
         sendToTmProcessor(bb);
@@ -519,12 +533,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     }
 
-
     @Override
     protected void doStart() {
         notifyStarted();        
     }
-
 
     @Override
     protected void doStop() {

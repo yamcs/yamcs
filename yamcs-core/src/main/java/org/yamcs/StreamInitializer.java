@@ -13,6 +13,7 @@ import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
+import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
 
 /**
@@ -103,12 +104,12 @@ public class StreamInitializer {
         FileReader reader = new FileReader(f);
         StreamSqlParser parser=new StreamSqlParser(reader);
         try {
-            parser.StreamSqlStatement().execute(context);
+            StreamSqlStatement stmt;
+            while((stmt = parser.StreamSqlStatement())!=null) {
+                stmt.execute(context); 
+            }
         } catch (TokenMgrError e) {
             throw new ParseException(e.getMessage());
         }
     }
-
-  
-
 }

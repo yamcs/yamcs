@@ -56,6 +56,6 @@ public class ParameterInstanceRef implements Serializable {
 	
 	@Override
 	public String toString() {
-	    return parameter+" instance:"+instance;
+	    return parameter.getQualifiedName()+" instance:"+instance;
 	}
 }

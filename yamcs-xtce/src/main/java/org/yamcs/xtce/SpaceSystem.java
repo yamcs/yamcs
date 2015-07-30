@@ -97,6 +97,10 @@ public class SpaceSystem extends NameDescription {
         return containers.get(refName);
     }
 
+    public Algorithm getAlgorithm(String algoName) {
+        return algorithms.get(algoName);
+    }
+    
     public Parameter getParameter(String refName) {
         return parameters.get(refName);
     }
@@ -192,5 +196,7 @@ public class SpaceSystem extends NameDescription {
     public String toString() {
     	return "SpaceSystem["+getName()+"]";
     }
+
+    
     
 }

@@ -12,12 +12,5 @@ import com.google.common.util.concurrent.Service;
  */
 public interface TcUplinker extends Link, Service {
 	void sendTc(PreparedCommand preparedCommand);
-
-	void setCommandHistoryListener(CommandHistoryPublisher commandHistoryListener);
-
-	/** 
-	 * Returns one of "OK" or "NOK"
-	 * @return
-	 */
-	String getFwLinkStatus();
+	void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener);
 }

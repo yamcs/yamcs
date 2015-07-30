@@ -29,7 +29,7 @@ public class TestXtceCommandEncoding {
         arguments.add(argumentAssignment1);
         ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("double_arg", "1");
         arguments.add(argumentAssignment2);
-        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
         Assert.assertTrue(b[0] != 0);
     }
@@ -41,7 +41,7 @@ public class TestXtceCommandEncoding {
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg", "aaaa");
         arguments.add(argumentAssignment1);
-        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
         Assert.assertTrue(b[0] != 0);
     }
@@ -53,7 +53,7 @@ public class TestXtceCommandEncoding {
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("p2", "0x12");
         arguments.add(argumentAssignment1);
-        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         System.out.println("command buffer: "+StringConvertors.arrayToHexString(b));
@@ -68,7 +68,7 @@ public class TestXtceCommandEncoding {
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "true");
         arguments.add(argumentAssignment1);
-        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
         assertEquals(1<<7, b[0]&0xFF);
         
@@ -82,7 +82,7 @@ public class TestXtceCommandEncoding {
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "false");
         arguments.add(argumentAssignment1);
-        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
         assertEquals(0, b[0]&0xFF);
         

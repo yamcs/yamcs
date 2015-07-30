@@ -18,6 +18,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
@@ -111,7 +112,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         SystemParameter sv = variables.get(fqname);
         if(sv==null) {
             log.info("Creating new SystemParameter for fqname={}", fqname);
-            sv = SystemParameter.getForFullyQualifiedName(fqname);
+            sv = SystemParameter.getForFullyQualifiedName(fqname, DataSource.SYSTEM);
             variables.put(fqname, sv);
         }
 

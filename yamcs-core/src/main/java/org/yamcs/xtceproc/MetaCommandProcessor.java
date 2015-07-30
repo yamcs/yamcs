@@ -14,7 +14,7 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
 
 public class MetaCommandProcessor {
-    static public byte[] buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
+    static public CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
         if(mc.isAbstract()) {
             throw new ErrorInCommand("Will not build command "+mc.getQualifiedName()+" because it is abstract");
         }
@@ -29,7 +29,7 @@ public class MetaCommandProcessor {
         for(ArgumentAssignment aa: argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
         }
-
+        
         collectAndCheckArguments(mc, args, argAssignment);
 
         TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0);
@@ -37,11 +37,10 @@ public class MetaCommandProcessor {
         pcontext.mccProcessor.encode(mc);
 
 
-
         byte[] b = new byte[pcontext.size];
         pcontext.bb.position(0);
         pcontext.bb.get(b, 0, pcontext.size);
-        return b;
+        return new CommandBuildResult(b, args);
     }
 
 
@@ -106,5 +105,23 @@ public class MetaCommandProcessor {
             }
             collectAndCheckArguments(parent, args, argAssignment);
         }		
+    }
+
+    static public class CommandBuildResult {
+        byte[] cmdPacket;
+        Map<Argument, Value> args;
+        
+        public CommandBuildResult(byte[] b, Map<Argument, Value> args) {
+            this.cmdPacket = b;
+            this.args = args;
+        }
+        
+        public byte[] getCmdPacket() {
+            return cmdPacket;
+        }
+
+        public Map<Argument, Value> getArgs() {
+            return args;
+        }
     }
 }

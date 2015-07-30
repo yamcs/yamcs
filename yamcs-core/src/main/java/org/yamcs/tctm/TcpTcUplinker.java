@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.InvalidCommandId;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
@@ -223,17 +222,8 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     }
 
     @Override
-    public void setCommandHistoryListener(CommandHistoryPublisher commandHistoryListener) {
+    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
         this.commandHistoryListener=commandHistoryListener;
-    }
-
-    @Override
-    public String getFwLinkStatus() {
-        if(isSocketOpen()) {
-            return "OK";
-        } else {
-            return "UNAVAIL";
-        }
     }
 
     @Override
@@ -310,11 +300,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         }
         @Override
         public void run() {
-            try {
-                commandHistoryListener.updateStringKey(cmdId,name,value);
-            } catch (InvalidCommandId e) {
-                log.warn("InvalidCommandID got when inserting {} for cmdId: {}", name, cmdId);
-            }
+            commandHistoryListener.updateStringKey(cmdId,name,value);
         }       
     }
 
@@ -325,12 +311,8 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         @Override
         public void run() {
             long instant=TimeEncoding.currentInstant();
-            try {
-                commandHistoryListener.updateStringKey(cmdId,name+"_Status",value);
-                commandHistoryListener.updateTimeKey(cmdId,name+"_Time", instant);
-            } catch (InvalidCommandId e) {
-                log.warn("InvalidCommandID got when inserting {} for cmdId: {}", name, cmdId);
-            }
+            commandHistoryListener.updateStringKey(cmdId,name+"_Status",value);
+            commandHistoryListener.updateTimeKey(cmdId,name+"_Time", instant);
         }		
     }
 

@@ -2,25 +2,26 @@ package org.yamcs.xtce;
 
 
 /**
- * Fake parameter made on the fly
+ * Parameters made on the fly.
+ * 
+ * DataSource should be one of SYSTEM, COMMAND or COMMAND_HISTORY (so the class name is a misnomer);
  * 
  * @author nm
  * 
  */
-public class SystemParameter extends Parameter {
-
-   
-    public SystemParameter(String spaceSystemName, String name) {
+public class SystemParameter extends Parameter {   
+    public SystemParameter(String spaceSystemName, String name, DataSource ds) {
         super(name);
         setQualifiedName(spaceSystemName+"/"+name);
+        setDataSource(ds);
     }
-    
-    public static SystemParameter getForFullyQualifiedName(String fqname) {
-       return new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname));
+
+    public static SystemParameter getForFullyQualifiedName(String fqname, DataSource ds) {
+        return new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname), ds);
     }
-    
+
     @Override
     public String toString() {
-        return "SysVar(qname=" + getQualifiedName() + ")";
+        return "SysParam(qname=" + getQualifiedName() + ")";
     }
 }
