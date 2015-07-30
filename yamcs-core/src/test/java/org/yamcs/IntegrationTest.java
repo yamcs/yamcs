@@ -56,8 +56,6 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class IntegrationTest extends AbstractIntegrationTest {
     
-    
-
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();

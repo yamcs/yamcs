@@ -20,13 +20,13 @@ import org.yamcs.security.AuthenticationToken;
 /**
  * Provides realtime command history subscription via web.
  */
-public class CommandHistoryClient extends AbstractWebSocketResource implements CommandHistoryConsumer {
+public class CommandHistoryResource extends AbstractWebSocketResource implements CommandHistoryConsumer {
     Logger log;
     int subscriptionId=-1;
 
-    public CommandHistoryClient(YProcessor channel, WebSocketServerHandler wsHandler) {
+    public CommandHistoryResource(YProcessor channel, WebSocketServerHandler wsHandler) {
 	super(channel, wsHandler);
-	log = LoggerFactory.getLogger(CommandHistoryClient.class.getName() + "[" + channel.getInstance() + "]");
+	log = LoggerFactory.getLogger(CommandHistoryResource.class.getName() + "[" + channel.getInstance() + "]");
 	wsHandler.addResource("cmdhistory", this);
     }
 
