@@ -88,7 +88,7 @@ public class TagDb {
         while(hasNext) {
             ArchiveTag tag=ArchiveTag.parseFrom(cursor.val());
             if(intv.hasStop() && tag.hasStart() && intv.getStop()<tag.getStart()) break;
-            if(intv.hasStart() && tag.hasStop() && intv.getStop()<intv.getStart()) {
+            if(intv.hasStart() && tag.hasStop() && tag.getStop()<intv.getStart()) {
                 hasNext=cursor.next();
                 continue;
             }
