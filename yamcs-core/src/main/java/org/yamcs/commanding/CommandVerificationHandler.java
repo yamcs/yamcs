@@ -2,6 +2,7 @@ package org.yamcs.commanding;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +46,8 @@ public class CommandVerificationHandler {
 
     public void start() {
         MetaCommand cmd = preparedCommand.getMetaCommand();
-        List<CommandVerifier> verifiers = cmd.getCommandVerifiers();
+        List<CommandVerifier> verifiers = new ArrayList<CommandVerifier>();
+        collectVerifiers(cmd, verifiers);
         Verifier prevVerifier = null;
 
         for(CommandVerifier cv: verifiers) {
@@ -74,6 +76,24 @@ public class CommandVerificationHandler {
 
         }
     }
+
+    private void collectVerifiers(MetaCommand cmd,  List<CommandVerifier> verifiers) {        
+        for(CommandVerifier cv: cmd.getCommandVerifiers()) {
+            boolean found = false;
+            for(CommandVerifier existingv: verifiers) {
+                if(existingv.getStage().equals(cv.getStage())) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) verifiers.add(cv);
+        }
+        MetaCommand basecmd = cmd.getBaseMetaCommand();
+        if(basecmd!=null) {
+            collectVerifiers(basecmd, verifiers);
+        }
+    }
+
 
     private void createAlgorithmContext() {
         AlgorithmManager algMgr = yproc.getParameterRequestManager().getParameterProvider(AlgorithmManager.class);

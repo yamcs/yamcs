@@ -201,8 +201,8 @@ public class MetaCommand extends NameDescription {
     }
 
 
-    public boolean hasCommandVerifiers() {
-        return !verifierList.isEmpty();
+    public boolean hasCommandVerifiers() {        
+        return (!verifierList.isEmpty()) || ((baseMetaCommand!=null) && baseMetaCommand.hasCommandVerifiers());
     }
     
     public List<CommandVerifier> getCommandVerifiers() {
