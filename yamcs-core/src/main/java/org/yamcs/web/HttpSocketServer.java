@@ -4,15 +4,15 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
 
 /**
  * Runs a simple http server based on Netty
@@ -50,8 +50,7 @@ public class HttpSocketServer {
     }
     
     private void shutdown() {
-	bossGroup.shutdownGracefully();
-	
+        bossGroup.shutdownGracefully();
     }
 
     public boolean isInstanceRegistered( String yamcsInstance) {
@@ -60,17 +59,17 @@ public class HttpSocketServer {
     
     public void run() {
         // Configure the server.
-	
-	 bossGroup = new NioEventLoopGroup(1);
-	 //Note that while the thread pools created with this method are unbounded, netty will limit the number
-	        //of workers to 2*number of CPU
-	 EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+        bossGroup = new NioEventLoopGroup(1);
+        //Note that while the thread pools created with this method are unbounded, netty will limit the number
+        //of workers to 2*number of CPU
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
        
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-        	   .channel(NioServerSocketChannel.class)
-        	   .handler(new LoggingHandler(LogLevel.INFO))
-        	   .childHandler(new HttpServerInitializer());
+            .channel(NioServerSocketChannel.class)
+            .handler(new LoggingHandler(LogLevel.INFO))
+            .childHandler(new HttpServerInitializer());
         
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
