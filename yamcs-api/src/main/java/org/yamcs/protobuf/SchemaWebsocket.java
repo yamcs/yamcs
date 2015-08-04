@@ -438,6 +438,12 @@ public final class SchemaWebsocket
                     if(message.hasStatistics())
                         output.writeObject(7, message.getStatistics(), org.yamcs.protobuf.SchemaYamcsManagement.Statistics.WRITE, false);
 
+                    if(message.hasEvent())
+                        output.writeObject(8, message.getEvent(), org.yamcs.protobuf.SchemaYamcs.Event.WRITE, false);
+
+                    if(message.hasStreamData())
+                        output.writeObject(9, message.getStreamData(), org.yamcs.protobuf.SchemaYamcs.StreamData.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -503,6 +509,14 @@ public final class SchemaWebsocket
                                 builder.setStatistics(input.mergeObject(org.yamcs.protobuf.YamcsManagement.Statistics.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.Statistics.MERGE));
 
                                 break;
+                            case 8:
+                                builder.setEvent(input.mergeObject(org.yamcs.protobuf.Yamcs.Event.newBuilder(), org.yamcs.protobuf.SchemaYamcs.Event.MERGE));
+
+                                break;
+                            case 9:
+                                builder.setStreamData(input.mergeObject(org.yamcs.protobuf.Yamcs.StreamData.newBuilder(), org.yamcs.protobuf.SchemaYamcs.StreamData.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -550,6 +564,8 @@ public final class SchemaWebsocket
                     case 5: return "processorInfo";
                     case 6: return "clientInfo";
                     case 7: return "statistics";
+                    case 8: return "event";
+                    case 9: return "streamData";
                     default: return null;
                 }
             }
@@ -568,6 +584,8 @@ public final class SchemaWebsocket
                 fieldMap.put("processorInfo", 5);
                 fieldMap.put("clientInfo", 6);
                 fieldMap.put("statistics", 7);
+                fieldMap.put("event", 8);
+                fieldMap.put("streamData", 9);
             }
         }
 

@@ -1,15 +1,15 @@
 package org.yamcs.web.websocket;
 
-import io.protostuff.Schema;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketClientMessage;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
+
+import io.protostuff.Schema;
 
 /**
  * Decodes an incoming web socket message using protobuf.
@@ -35,7 +35,8 @@ public class ProtobufDecoder implements WebSocketDecoder {
                 throw new WebSocketException(requestId, "operation must be specified");
 
             WebSocketDecodeContext ctx = new WebSocketDecodeContext(request.getProtocolVersion(), WSConstants.MESSAGE_TYPE_REQUEST, requestId, request.getResource(), request.getOperation());
-            ctx.setData(request.getData());
+            if (request.hasData())
+                ctx.setData(request.getData());
             return ctx;
         } catch (IOException e) {
             throw new WebSocketException(requestId, e);

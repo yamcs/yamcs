@@ -2729,6 +2729,34 @@ public final class Websocket {
        * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
        */
       org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder getStatisticsOrBuilder();
+
+      // optional .yamcs.Event event = 8;
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      boolean hasEvent();
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      org.yamcs.protobuf.Yamcs.Event getEvent();
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder();
+
+      // optional .yamcs.StreamData streamData = 9;
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      boolean hasStreamData();
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      org.yamcs.protobuf.Yamcs.StreamData getStreamData();
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder();
     }
     /**
      * Protobuf type {@code websocket.WebSocketServerMessage.WebSocketSubscriptionData}
@@ -2866,6 +2894,32 @@ public final class Websocket {
                   statistics_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000040;
+                break;
+              }
+              case 66: {
+                org.yamcs.protobuf.Yamcs.Event.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000080) == 0x00000080)) {
+                  subBuilder = event_.toBuilder();
+                }
+                event_ = input.readMessage(org.yamcs.protobuf.Yamcs.Event.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(event_);
+                  event_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000080;
+                break;
+              }
+              case 74: {
+                org.yamcs.protobuf.Yamcs.StreamData.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000100) == 0x00000100)) {
+                  subBuilder = streamData_.toBuilder();
+                }
+                streamData_ = input.readMessage(org.yamcs.protobuf.Yamcs.StreamData.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(streamData_);
+                  streamData_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000100;
                 break;
               }
             }
@@ -3050,6 +3104,50 @@ public final class Websocket {
         return statistics_;
       }
 
+      // optional .yamcs.Event event = 8;
+      public static final int EVENT_FIELD_NUMBER = 8;
+      private org.yamcs.protobuf.Yamcs.Event event_;
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      public boolean hasEvent() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Event getEvent() {
+        return event_;
+      }
+      /**
+       * <code>optional .yamcs.Event event = 8;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder() {
+        return event_;
+      }
+
+      // optional .yamcs.StreamData streamData = 9;
+      public static final int STREAMDATA_FIELD_NUMBER = 9;
+      private org.yamcs.protobuf.Yamcs.StreamData streamData_;
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      public boolean hasStreamData() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.StreamData getStreamData() {
+        return streamData_;
+      }
+      /**
+       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder() {
+        return streamData_;
+      }
+
       private void initFields() {
         sequenceNumber_ = 0;
         type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
@@ -3058,6 +3156,8 @@ public final class Websocket {
         processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
         clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
         statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
+        event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+        streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -3094,6 +3194,18 @@ public final class Websocket {
             return false;
           }
         }
+        if (hasEvent()) {
+          if (!getEvent().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasStreamData()) {
+          if (!getStreamData().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
         memoizedIsInitialized = 1;
         return true;
       }
@@ -3121,6 +3233,12 @@ public final class Websocket {
         }
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           output.writeMessage(7, statistics_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          output.writeMessage(8, event_);
+        }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          output.writeMessage(9, streamData_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -3158,6 +3276,14 @@ public final class Websocket {
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(7, statistics_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(8, event_);
+        }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(9, streamData_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3278,6 +3404,8 @@ public final class Websocket {
             getProcessorInfoFieldBuilder();
             getClientInfoFieldBuilder();
             getStatisticsFieldBuilder();
+            getEventFieldBuilder();
+            getStreamDataFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3320,6 +3448,18 @@ public final class Websocket {
             statisticsBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000040);
+          if (eventBuilder_ == null) {
+            event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+          } else {
+            eventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000080);
+          if (streamDataBuilder_ == null) {
+            streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+          } else {
+            streamDataBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000100);
           return this;
         }
 
@@ -3396,6 +3536,22 @@ public final class Websocket {
           } else {
             result.statistics_ = statisticsBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          if (eventBuilder_ == null) {
+            result.event_ = event_;
+          } else {
+            result.event_ = eventBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+            to_bitField0_ |= 0x00000100;
+          }
+          if (streamDataBuilder_ == null) {
+            result.streamData_ = streamData_;
+          } else {
+            result.streamData_ = streamDataBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -3433,6 +3589,12 @@ public final class Websocket {
           if (other.hasStatistics()) {
             mergeStatistics(other.getStatistics());
           }
+          if (other.hasEvent()) {
+            mergeEvent(other.getEvent());
+          }
+          if (other.hasStreamData()) {
+            mergeStreamData(other.getStreamData());
+          }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
         }
@@ -3464,6 +3626,18 @@ public final class Websocket {
           }
           if (hasStatistics()) {
             if (!getStatistics().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasEvent()) {
+            if (!getEvent().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasStreamData()) {
+            if (!getStreamData().isInitialized()) {
               
               return false;
             }
@@ -4142,6 +4316,240 @@ public final class Websocket {
             statistics_ = null;
           }
           return statisticsBuilder_;
+        }
+
+        // optional .yamcs.Event event = 8;
+        private org.yamcs.protobuf.Yamcs.Event event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder> eventBuilder_;
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public boolean hasEvent() {
+          return ((bitField0_ & 0x00000080) == 0x00000080);
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.Event getEvent() {
+          if (eventBuilder_ == null) {
+            return event_;
+          } else {
+            return eventBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public Builder setEvent(org.yamcs.protobuf.Yamcs.Event value) {
+          if (eventBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            event_ = value;
+            onChanged();
+          } else {
+            eventBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public Builder setEvent(
+            org.yamcs.protobuf.Yamcs.Event.Builder builderForValue) {
+          if (eventBuilder_ == null) {
+            event_ = builderForValue.build();
+            onChanged();
+          } else {
+            eventBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public Builder mergeEvent(org.yamcs.protobuf.Yamcs.Event value) {
+          if (eventBuilder_ == null) {
+            if (((bitField0_ & 0x00000080) == 0x00000080) &&
+                event_ != org.yamcs.protobuf.Yamcs.Event.getDefaultInstance()) {
+              event_ =
+                org.yamcs.protobuf.Yamcs.Event.newBuilder(event_).mergeFrom(value).buildPartial();
+            } else {
+              event_ = value;
+            }
+            onChanged();
+          } else {
+            eventBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public Builder clearEvent() {
+          if (eventBuilder_ == null) {
+            event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+            onChanged();
+          } else {
+            eventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000080);
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.Event.Builder getEventBuilder() {
+          bitField0_ |= 0x00000080;
+          onChanged();
+          return getEventFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder() {
+          if (eventBuilder_ != null) {
+            return eventBuilder_.getMessageOrBuilder();
+          } else {
+            return event_;
+          }
+        }
+        /**
+         * <code>optional .yamcs.Event event = 8;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder> 
+            getEventFieldBuilder() {
+          if (eventBuilder_ == null) {
+            eventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder>(
+                    event_,
+                    getParentForChildren(),
+                    isClean());
+            event_ = null;
+          }
+          return eventBuilder_;
+        }
+
+        // optional .yamcs.StreamData streamData = 9;
+        private org.yamcs.protobuf.Yamcs.StreamData streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder> streamDataBuilder_;
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public boolean hasStreamData() {
+          return ((bitField0_ & 0x00000100) == 0x00000100);
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.StreamData getStreamData() {
+          if (streamDataBuilder_ == null) {
+            return streamData_;
+          } else {
+            return streamDataBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public Builder setStreamData(org.yamcs.protobuf.Yamcs.StreamData value) {
+          if (streamDataBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            streamData_ = value;
+            onChanged();
+          } else {
+            streamDataBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000100;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public Builder setStreamData(
+            org.yamcs.protobuf.Yamcs.StreamData.Builder builderForValue) {
+          if (streamDataBuilder_ == null) {
+            streamData_ = builderForValue.build();
+            onChanged();
+          } else {
+            streamDataBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000100;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public Builder mergeStreamData(org.yamcs.protobuf.Yamcs.StreamData value) {
+          if (streamDataBuilder_ == null) {
+            if (((bitField0_ & 0x00000100) == 0x00000100) &&
+                streamData_ != org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance()) {
+              streamData_ =
+                org.yamcs.protobuf.Yamcs.StreamData.newBuilder(streamData_).mergeFrom(value).buildPartial();
+            } else {
+              streamData_ = value;
+            }
+            onChanged();
+          } else {
+            streamDataBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000100;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public Builder clearStreamData() {
+          if (streamDataBuilder_ == null) {
+            streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+            onChanged();
+          } else {
+            streamDataBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000100);
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.StreamData.Builder getStreamDataBuilder() {
+          bitField0_ |= 0x00000100;
+          onChanged();
+          return getStreamDataFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder() {
+          if (streamDataBuilder_ != null) {
+            return streamDataBuilder_.getMessageOrBuilder();
+          } else {
+            return streamData_;
+          }
+        }
+        /**
+         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder> 
+            getStreamDataFieldBuilder() {
+          if (streamDataBuilder_ == null) {
+            streamDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder>(
+                    streamData_,
+                    getParentForChildren(),
+                    isClean());
+            streamData_ = null;
+          }
+          return streamDataBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:websocket.WebSocketServerMessage.WebSocketSubscriptionData)
@@ -4992,7 +5400,7 @@ public final class Websocket {
       "Management.proto\"|\n\026WebSocketClientMessa" +
       "ge\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequenceN" +
       "umber\030\002 \001(\r\022\020\n\010resource\030\003 \001(\t\022\021\n\toperati" +
-      "on\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\367\006\n\026WebSocketServ" +
+      "on\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\273\007\n\026WebSocketServ" +
       "erMessage\022;\n\004type\030\001 \001(\0162-.websocket.WebS" +
       "ocketServerMessage.MessageType\022C\n\005reply\030" +
       "\002 \001(\01324.websocket.WebSocketServerMessage" +
@@ -5005,7 +5413,7 @@ public final class Websocket {
       "(\005\032v\n\026WebSocketExceptionData\022\027\n\017protocol" +
       "Version\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n" +
       "\004type\030\003 \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001" +
-      "(\014\032\320\002\n\031WebSocketSubscriptionData\022\026\n\016sequ" +
+      "(\014\032\224\003\n\031WebSocketSubscriptionData\022\026\n\016sequ" +
       "enceNumber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.P",
       "rotoDataType\022,\n\rparameterData\030\003 \001(\0132\025.pv" +
       "alue.ParameterData\0220\n\007command\030\004 \001(\0132\037.co" +
@@ -5013,11 +5421,13 @@ public final class Websocket {
       "rInfo\030\005 \001(\0132\036.yamcsManagement.ProcessorI" +
       "nfo\022/\n\nclientInfo\030\006 \001(\0132\033.yamcsManagemen" +
       "t.ClientInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcs" +
-      "Management.Statistics\"1\n\013MessageType\022\t\n\005" +
-      "REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\0042g\n\020WebS" +
-      "ocketService\022S\n\013sendMessage\022!.websocket." +
-      "WebSocketClientMessage\032!.websocket.WebSo",
-      "cketServerMessageB\024\n\022org.yamcs.protobuf"
+      "Management.Statistics\022\033\n\005event\030\010 \001(\0132\014.y" +
+      "amcs.Event\022%\n\nstreamData\030\t \001(\0132\021.yamcs.S" +
+      "treamData\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tE" +
+      "XCEPTION\020\003\022\010\n\004DATA\020\0042g\n\020WebSocketService",
+      "\022S\n\013sendMessage\022!.websocket.WebSocketCli" +
+      "entMessage\032!.websocket.WebSocketServerMe" +
+      "ssageB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5053,7 +5463,7 @@ public final class Websocket {
           internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", });
           return null;
         }
       };

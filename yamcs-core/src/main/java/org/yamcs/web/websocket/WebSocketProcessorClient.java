@@ -22,9 +22,10 @@ public class WebSocketProcessorClient implements YProcessorClient {
 
     private AuthenticationToken authToken = null;
 
-    private final ParameterResource paraClient;
-    private final CommandHistoryResource cmdhistClient;
-    private final ManagementResource mgmtClient;
+    private final ParameterResource paraResource;
+    private final CommandHistoryResource cmdhistResource;
+    private final ManagementResource mgmtResource;
+    private final StreamResource streamResource;
    
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
@@ -32,9 +33,10 @@ public class WebSocketProcessorClient implements YProcessorClient {
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
-        paraClient = new ParameterResource(yproc, wsHandler);
-        cmdhistClient = new CommandHistoryResource(yproc, wsHandler);
-        mgmtClient = new ManagementResource(yproc, wsHandler, clientId);
+        paraResource = new ParameterResource(yproc, wsHandler);
+        cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
+        mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
+        streamResource = new StreamResource(yproc, wsHandler);
         this.authToken = authToken;
         this.username = authToken != null ? authToken.getPrincipal().toString() : "unknown";
     }
@@ -43,12 +45,12 @@ public class WebSocketProcessorClient implements YProcessorClient {
     public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
         log.info("switching yprocessor to {}", c);
         try {
-            paraClient.switchYProcessor(c, authToken);
+            paraResource.switchYProcessor(c, authToken);
         } catch (NoPermissionException e) {
             throw new YProcessorException("No permission", e);
         }
-        cmdhistClient.switchYProcessor(c);
-
+        cmdhistResource.switchYProcessor(c);
+        streamResource.switchYProcessor(c);
     }
     
     public int getClientId() {
@@ -79,8 +81,9 @@ public class WebSocketProcessorClient implements YProcessorClient {
      */
     public void quit() {
         ManagementService.getInstance().unregisterClient(clientId);
-        paraClient.quit();
-        cmdhistClient.quit();
-        mgmtClient.quit();
+        paraResource.quit();
+        cmdhistResource.quit();
+        mgmtResource.quit();
+        streamResource.quit();
     }
 }

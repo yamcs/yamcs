@@ -27,6 +27,7 @@ import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -143,6 +144,8 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<ClientInfo>();
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<ProcessorInfo>();
+        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<Statistics>();
+        LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<StreamData>();
 
 
         int count =0;
@@ -190,8 +193,12 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public void onStatisticsData(Statistics statistics) {
-            // TODO Auto-generated method stub
-            
+            statisticsList.add(statistics);
+        }
+
+        @Override
+        public void onStreamData(StreamData streamData) {
+            streamDataList.add(streamData);
         }
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
