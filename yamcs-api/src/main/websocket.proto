@@ -47,6 +47,8 @@ message WebSocketServerMessage {
     optional yamcsManagement.ProcessorInfo processorInfo = 5;
     optional yamcsManagement.ClientInfo clientInfo = 6;
     optional yamcsManagement.Statistics statistics = 7;
+    optional yamcs.Event event = 8;
+    optional yamcs.StreamData streamData = 9;
   }
 
   optional MessageType type=1;

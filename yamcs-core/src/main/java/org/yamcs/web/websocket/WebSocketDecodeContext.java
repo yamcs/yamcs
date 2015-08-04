@@ -44,7 +44,7 @@ public class WebSocketDecodeContext {
     public String getOperation() {
         return operation;
     }
-
+    
     void setData(Object data) {
         this.data = data;
     }
