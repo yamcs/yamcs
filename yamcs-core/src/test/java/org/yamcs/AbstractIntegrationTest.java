@@ -2,8 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +42,9 @@ import org.yamcs.xtce.SequenceContainer;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
 
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
+
 public abstract class AbstractIntegrationTest {
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
@@ -57,9 +58,8 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        enableDebugging();
-        setupYamcs();
         //enableDebugging();
+        setupYamcs();
     }
 
     static void enableDebugging() {
