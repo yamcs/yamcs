@@ -230,6 +230,7 @@ enum ProtoDataType {
        PROCESSOR_INFO = 10;
        CLIENT_INFO = 11;
        PROCESSING_STATISTICS = 12;
+       STREAM_DATA = 13;
 };
 
 //used to replay (concurrently) TM packets, parameters and events
@@ -313,3 +314,17 @@ message Event {
     extensions 100 to 10000;
 }
 
+message ColumnValue {
+    optional string columnName = 1;
+    optional Value value = 2;
+}
+
+message StreamData {
+    optional string stream = 1;
+    repeated ColumnValue columnValue = 2;
+}
+
+message StreamSubscribeRequest {
+    optional string stream = 1;
+    //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}

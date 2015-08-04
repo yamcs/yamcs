@@ -25,77 +25,78 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     int subscriptionId=-1;
 
     public CommandHistoryResource(YProcessor channel, WebSocketServerHandler wsHandler) {
-	super(channel, wsHandler);
-	log = LoggerFactory.getLogger(CommandHistoryResource.class.getName() + "[" + channel.getInstance() + "]");
-	wsHandler.addResource("cmdhistory", this);
+        super(channel, wsHandler);
+        log = LoggerFactory.getLogger(CommandHistoryResource.class.getName() + "[" + channel.getInstance() + "]");
+        wsHandler.addResource("cmdhistory", this);
     }
 
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
-	switch (ctx.getOperation()) {
-	    case "subscribe":
-		return subscribe(ctx.getRequestId());
-	    default:
-		throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
-	}
+        switch (ctx.getOperation()) {
+        case "subscribe":
+            return subscribe(ctx.getRequestId());
+        default:
+            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
+        }
     }
 
     private WebSocketReplyData subscribe(int requestId) {
-	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
-	subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
-	return toAckReply(requestId);
+        CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
+        subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
+        return toAckReply(requestId);
     }
 
     /**
      * called when the socket is closed
      */
+    @Override
     public void quit() {
-	if(subscriptionId == -1) return;
-	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
-	chrm.unsubscribeCommandHistory(subscriptionId);
+        if(subscriptionId == -1) return;
+        CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
+        chrm.unsubscribeCommandHistory(subscriptionId);
     }
 
     public void switchYProcessor(YProcessor c) throws YProcessorException {
-	if(subscriptionId == -1) return;
+        if(subscriptionId == -1) return;
 
-	CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
-	CommandHistoryFilter filter = null;
-	if (chrm != null) {
-		filter = chrm.unsubscribeCommandHistory(subscriptionId);
-	}
-
-	this.yproc = c;
+        CommandHistoryRequestManager chrm = yproc.getCommandHistoryManager();
+        CommandHistoryFilter filter = null;
+        if (chrm != null) {
+            filter = chrm.unsubscribeCommandHistory(subscriptionId);
+        }
+        
+        this.yproc = c;
 
         if (yproc.hasCommanding()) {
             chrm = yproc.getCommandHistoryManager();
             if (filter != null) {
-            	chrm.addSubscription(filter, this);
-	    } else {
-		chrm.subscribeCommandHistory(null, 0, this);
-	    }
-	}
+                chrm.addSubscription(filter, this);
+            } else {
+                chrm.subscribeCommandHistory(null, 0, this);
+            }
+        }
     }
 
     @Override
     public void addedCommand(PreparedCommand pc) {
-	CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).addAllAttr(pc.getAttributes()).build();
-	doSend(entry);
+        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).addAllAttr(pc.getAttributes()).build();
+        doSend(entry);
     }
 
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-	CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(value).build();
-	CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
-	doSend(entry);
+        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(value).build();
+        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
+        doSend(entry);
     }
 
 
     private void doSend(CommandHistoryEntry entry) {
-	try {
-	    wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry, SchemaCommanding.CommandHistoryEntry.WRITE);
-	} catch (Exception e) {
-	    log.warn("got error when sending command history updates, quitting", e);
-	    quit();
-	}
+        try {
+            wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry, SchemaCommanding.CommandHistoryEntry.WRITE);
+        } catch (Exception e) {
+            log.warn("got error when sending command history updates, quitting", e);
+            quit();
+        }
     }
 }

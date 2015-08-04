@@ -2,8 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +27,7 @@ import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -44,6 +43,9 @@ import org.yamcs.xtce.SequenceContainer;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
 
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
+
 public abstract class AbstractIntegrationTest {
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
@@ -57,9 +59,8 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        enableDebugging();
-        setupYamcs();
         //enableDebugging();
+        setupYamcs();
     }
 
     static void enableDebugging() {
@@ -143,6 +144,8 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<ClientInfo>();
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<ProcessorInfo>();
+        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<Statistics>();
+        LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<StreamData>();
 
 
         int count =0;
@@ -190,8 +193,12 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public void onStatisticsData(Statistics statistics) {
-            // TODO Auto-generated method stub
-            
+            statisticsList.add(statistics);
+        }
+
+        @Override
+        public void onStreamData(StreamData streamData) {
+            streamDataList.add(streamData);
         }
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
