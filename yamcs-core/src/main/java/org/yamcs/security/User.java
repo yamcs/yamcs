@@ -8,8 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Created by msc on 05/05/15.
  */
-class User {
-
+public class User {
 
 	AuthenticationToken authenticationToken;
 	long lastUpdated;
@@ -23,6 +22,26 @@ class User {
 	Set<String> tmPacketPrivileges;
 	Set<String> tcPrivileges;
 	Set<String> systemPrivileges;
+
+	public Set<String> getTmParaPrivileges() {
+		return tmParaPrivileges;
+	}
+
+	public Set<String> getTmParaSetPrivileges() {
+		return tmParaSetPrivileges;
+	}
+
+	public Set<String> getTmPacketPrivileges() {
+		return tmPacketPrivileges;
+	}
+
+	public Set<String> getTcPrivileges() {
+		return tcPrivileges;
+	}
+
+	public Set<String> getSystemPrivileges() {
+		return systemPrivileges;
+	}
 
 	/**
 	 * Constructor

@@ -214,3 +214,20 @@ message RestGetParameterInfoRequest {
 message RestGetParameterInfoResponse {
     repeated RestParameterInfo pinfo = 1;
 }
+
+message UserAuthorizationsInfo{
+    repeated string roles=1;
+	repeated string tmParaPrivileges=2;
+    repeated string tmParaSetPrivileges=3;
+	repeated string tmPacketPrivileges=4;
+	repeated string tcPrivileges=5;
+	repeated string systemPrivileges=6;
+
+}
+
+message RestListAuthorisationsRequest {
+}
+
+message RestListAuthorisationsResponse {
+     optional UserAuthorizationsInfo userAuthorizationsInfo=1;
+}

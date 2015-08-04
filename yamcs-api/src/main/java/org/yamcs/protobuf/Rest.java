@@ -25704,6 +25704,2244 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:rest.RestGetParameterInfoResponse)
   }
 
+  public interface UserAuthorizationsInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated string roles = 1;
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    java.util.List<java.lang.String>
+    getRolesList();
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    int getRolesCount();
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    java.lang.String getRoles(int index);
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRolesBytes(int index);
+
+    // repeated string tmParaPrivileges = 2;
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    java.util.List<java.lang.String>
+    getTmParaPrivilegesList();
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    int getTmParaPrivilegesCount();
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    java.lang.String getTmParaPrivileges(int index);
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTmParaPrivilegesBytes(int index);
+
+    // repeated string tmParaSetPrivileges = 3;
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    java.util.List<java.lang.String>
+    getTmParaSetPrivilegesList();
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    int getTmParaSetPrivilegesCount();
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    java.lang.String getTmParaSetPrivileges(int index);
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getTmParaSetPrivilegesBytes(int index);
+
+    // repeated string tmPacketPrivileges = 4;
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    java.util.List<java.lang.String>
+    getTmPacketPrivilegesList();
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    int getTmPacketPrivilegesCount();
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    java.lang.String getTmPacketPrivileges(int index);
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getTmPacketPrivilegesBytes(int index);
+
+    // repeated string tcPrivileges = 5;
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    java.util.List<java.lang.String>
+    getTcPrivilegesList();
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    int getTcPrivilegesCount();
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    java.lang.String getTcPrivileges(int index);
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getTcPrivilegesBytes(int index);
+
+    // repeated string systemPrivileges = 6;
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    java.util.List<java.lang.String>
+    getSystemPrivilegesList();
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    int getSystemPrivilegesCount();
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    java.lang.String getSystemPrivileges(int index);
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    com.google.protobuf.ByteString
+        getSystemPrivilegesBytes(int index);
+  }
+  /**
+   * Protobuf type {@code rest.UserAuthorizationsInfo}
+   */
+  public static final class UserAuthorizationsInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements UserAuthorizationsInfoOrBuilder {
+    // Use UserAuthorizationsInfo.newBuilder() to construct.
+    private UserAuthorizationsInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private UserAuthorizationsInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final UserAuthorizationsInfo defaultInstance;
+    public static UserAuthorizationsInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public UserAuthorizationsInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private UserAuthorizationsInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                roles_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              roles_.add(input.readBytes());
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                tmParaPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              tmParaPrivileges_.add(input.readBytes());
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                tmParaSetPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              tmParaSetPrivileges_.add(input.readBytes());
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                tmPacketPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              tmPacketPrivileges_.add(input.readBytes());
+              break;
+            }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                tcPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              tcPrivileges_.add(input.readBytes());
+              break;
+            }
+            case 50: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                systemPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              systemPrivileges_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          roles_ = new com.google.protobuf.UnmodifiableLazyStringList(roles_);
+        }
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          tmParaPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(tmParaPrivileges_);
+        }
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          tmParaSetPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(tmParaSetPrivileges_);
+        }
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          tmPacketPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(tmPacketPrivileges_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          tcPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(tcPrivileges_);
+        }
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          systemPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(systemPrivileges_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_UserAuthorizationsInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_UserAuthorizationsInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<UserAuthorizationsInfo> PARSER =
+        new com.google.protobuf.AbstractParser<UserAuthorizationsInfo>() {
+      public UserAuthorizationsInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new UserAuthorizationsInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UserAuthorizationsInfo> getParserForType() {
+      return PARSER;
+    }
+
+    // repeated string roles = 1;
+    public static final int ROLES_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList roles_;
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    public java.util.List<java.lang.String>
+        getRolesList() {
+      return roles_;
+    }
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    public int getRolesCount() {
+      return roles_.size();
+    }
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    public java.lang.String getRoles(int index) {
+      return roles_.get(index);
+    }
+    /**
+     * <code>repeated string roles = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRolesBytes(int index) {
+      return roles_.getByteString(index);
+    }
+
+    // repeated string tmParaPrivileges = 2;
+    public static final int TMPARAPRIVILEGES_FIELD_NUMBER = 2;
+    private com.google.protobuf.LazyStringList tmParaPrivileges_;
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    public java.util.List<java.lang.String>
+        getTmParaPrivilegesList() {
+      return tmParaPrivileges_;
+    }
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    public int getTmParaPrivilegesCount() {
+      return tmParaPrivileges_.size();
+    }
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    public java.lang.String getTmParaPrivileges(int index) {
+      return tmParaPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string tmParaPrivileges = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTmParaPrivilegesBytes(int index) {
+      return tmParaPrivileges_.getByteString(index);
+    }
+
+    // repeated string tmParaSetPrivileges = 3;
+    public static final int TMPARASETPRIVILEGES_FIELD_NUMBER = 3;
+    private com.google.protobuf.LazyStringList tmParaSetPrivileges_;
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    public java.util.List<java.lang.String>
+        getTmParaSetPrivilegesList() {
+      return tmParaSetPrivileges_;
+    }
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    public int getTmParaSetPrivilegesCount() {
+      return tmParaSetPrivileges_.size();
+    }
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    public java.lang.String getTmParaSetPrivileges(int index) {
+      return tmParaSetPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string tmParaSetPrivileges = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTmParaSetPrivilegesBytes(int index) {
+      return tmParaSetPrivileges_.getByteString(index);
+    }
+
+    // repeated string tmPacketPrivileges = 4;
+    public static final int TMPACKETPRIVILEGES_FIELD_NUMBER = 4;
+    private com.google.protobuf.LazyStringList tmPacketPrivileges_;
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    public java.util.List<java.lang.String>
+        getTmPacketPrivilegesList() {
+      return tmPacketPrivileges_;
+    }
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    public int getTmPacketPrivilegesCount() {
+      return tmPacketPrivileges_.size();
+    }
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    public java.lang.String getTmPacketPrivileges(int index) {
+      return tmPacketPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string tmPacketPrivileges = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTmPacketPrivilegesBytes(int index) {
+      return tmPacketPrivileges_.getByteString(index);
+    }
+
+    // repeated string tcPrivileges = 5;
+    public static final int TCPRIVILEGES_FIELD_NUMBER = 5;
+    private com.google.protobuf.LazyStringList tcPrivileges_;
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    public java.util.List<java.lang.String>
+        getTcPrivilegesList() {
+      return tcPrivileges_;
+    }
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    public int getTcPrivilegesCount() {
+      return tcPrivileges_.size();
+    }
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    public java.lang.String getTcPrivileges(int index) {
+      return tcPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string tcPrivileges = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTcPrivilegesBytes(int index) {
+      return tcPrivileges_.getByteString(index);
+    }
+
+    // repeated string systemPrivileges = 6;
+    public static final int SYSTEMPRIVILEGES_FIELD_NUMBER = 6;
+    private com.google.protobuf.LazyStringList systemPrivileges_;
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    public java.util.List<java.lang.String>
+        getSystemPrivilegesList() {
+      return systemPrivileges_;
+    }
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    public int getSystemPrivilegesCount() {
+      return systemPrivileges_.size();
+    }
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    public java.lang.String getSystemPrivileges(int index) {
+      return systemPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string systemPrivileges = 6;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSystemPrivilegesBytes(int index) {
+      return systemPrivileges_.getByteString(index);
+    }
+
+    private void initFields() {
+      roles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      tmParaPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      tmParaSetPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      tmPacketPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      tcPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < roles_.size(); i++) {
+        output.writeBytes(1, roles_.getByteString(i));
+      }
+      for (int i = 0; i < tmParaPrivileges_.size(); i++) {
+        output.writeBytes(2, tmParaPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < tmParaSetPrivileges_.size(); i++) {
+        output.writeBytes(3, tmParaSetPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < tmPacketPrivileges_.size(); i++) {
+        output.writeBytes(4, tmPacketPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < tcPrivileges_.size(); i++) {
+        output.writeBytes(5, tcPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < systemPrivileges_.size(); i++) {
+        output.writeBytes(6, systemPrivileges_.getByteString(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < roles_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(roles_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getRolesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < tmParaPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(tmParaPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getTmParaPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < tmParaSetPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(tmParaSetPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getTmParaSetPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < tmPacketPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(tmPacketPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getTmPacketPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < tcPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(tcPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getTcPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < systemPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(systemPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getSystemPrivilegesList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.UserAuthorizationsInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.UserAuthorizationsInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.UserAuthorizationsInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_UserAuthorizationsInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_UserAuthorizationsInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.UserAuthorizationsInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        roles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        tmParaPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        tmParaSetPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        tmPacketPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        tcPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_UserAuthorizationsInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfo build() {
+        org.yamcs.protobuf.Rest.UserAuthorizationsInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfo buildPartial() {
+        org.yamcs.protobuf.Rest.UserAuthorizationsInfo result = new org.yamcs.protobuf.Rest.UserAuthorizationsInfo(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          roles_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              roles_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.roles_ = roles_;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          tmParaPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              tmParaPrivileges_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.tmParaPrivileges_ = tmParaPrivileges_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          tmParaSetPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              tmParaSetPrivileges_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.tmParaSetPrivileges_ = tmParaSetPrivileges_;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          tmPacketPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              tmPacketPrivileges_);
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.tmPacketPrivileges_ = tmPacketPrivileges_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          tcPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              tcPrivileges_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.tcPrivileges_ = tcPrivileges_;
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          systemPrivileges_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              systemPrivileges_);
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.systemPrivileges_ = systemPrivileges_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.UserAuthorizationsInfo) {
+          return mergeFrom((org.yamcs.protobuf.Rest.UserAuthorizationsInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.UserAuthorizationsInfo other) {
+        if (other == org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance()) return this;
+        if (!other.roles_.isEmpty()) {
+          if (roles_.isEmpty()) {
+            roles_ = other.roles_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureRolesIsMutable();
+            roles_.addAll(other.roles_);
+          }
+          onChanged();
+        }
+        if (!other.tmParaPrivileges_.isEmpty()) {
+          if (tmParaPrivileges_.isEmpty()) {
+            tmParaPrivileges_ = other.tmParaPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureTmParaPrivilegesIsMutable();
+            tmParaPrivileges_.addAll(other.tmParaPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.tmParaSetPrivileges_.isEmpty()) {
+          if (tmParaSetPrivileges_.isEmpty()) {
+            tmParaSetPrivileges_ = other.tmParaSetPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureTmParaSetPrivilegesIsMutable();
+            tmParaSetPrivileges_.addAll(other.tmParaSetPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.tmPacketPrivileges_.isEmpty()) {
+          if (tmPacketPrivileges_.isEmpty()) {
+            tmPacketPrivileges_ = other.tmPacketPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureTmPacketPrivilegesIsMutable();
+            tmPacketPrivileges_.addAll(other.tmPacketPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.tcPrivileges_.isEmpty()) {
+          if (tcPrivileges_.isEmpty()) {
+            tcPrivileges_ = other.tcPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureTcPrivilegesIsMutable();
+            tcPrivileges_.addAll(other.tcPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.systemPrivileges_.isEmpty()) {
+          if (systemPrivileges_.isEmpty()) {
+            systemPrivileges_ = other.systemPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureSystemPrivilegesIsMutable();
+            systemPrivileges_.addAll(other.systemPrivileges_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.UserAuthorizationsInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.UserAuthorizationsInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated string roles = 1;
+      private com.google.protobuf.LazyStringList roles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureRolesIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          roles_ = new com.google.protobuf.LazyStringArrayList(roles_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public java.util.List<java.lang.String>
+          getRolesList() {
+        return java.util.Collections.unmodifiableList(roles_);
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public int getRolesCount() {
+        return roles_.size();
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public java.lang.String getRoles(int index) {
+        return roles_.get(index);
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRolesBytes(int index) {
+        return roles_.getByteString(index);
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public Builder setRoles(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureRolesIsMutable();
+        roles_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public Builder addRoles(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureRolesIsMutable();
+        roles_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public Builder addAllRoles(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureRolesIsMutable();
+        super.addAll(values, roles_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public Builder clearRoles() {
+        roles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string roles = 1;</code>
+       */
+      public Builder addRolesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureRolesIsMutable();
+        roles_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string tmParaPrivileges = 2;
+      private com.google.protobuf.LazyStringList tmParaPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTmParaPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          tmParaPrivileges_ = new com.google.protobuf.LazyStringArrayList(tmParaPrivileges_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public java.util.List<java.lang.String>
+          getTmParaPrivilegesList() {
+        return java.util.Collections.unmodifiableList(tmParaPrivileges_);
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public int getTmParaPrivilegesCount() {
+        return tmParaPrivileges_.size();
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public java.lang.String getTmParaPrivileges(int index) {
+        return tmParaPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTmParaPrivilegesBytes(int index) {
+        return tmParaPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public Builder setTmParaPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaPrivilegesIsMutable();
+        tmParaPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public Builder addTmParaPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaPrivilegesIsMutable();
+        tmParaPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public Builder addAllTmParaPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTmParaPrivilegesIsMutable();
+        super.addAll(values, tmParaPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public Builder clearTmParaPrivileges() {
+        tmParaPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaPrivileges = 2;</code>
+       */
+      public Builder addTmParaPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaPrivilegesIsMutable();
+        tmParaPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string tmParaSetPrivileges = 3;
+      private com.google.protobuf.LazyStringList tmParaSetPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTmParaSetPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          tmParaSetPrivileges_ = new com.google.protobuf.LazyStringArrayList(tmParaSetPrivileges_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public java.util.List<java.lang.String>
+          getTmParaSetPrivilegesList() {
+        return java.util.Collections.unmodifiableList(tmParaSetPrivileges_);
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public int getTmParaSetPrivilegesCount() {
+        return tmParaSetPrivileges_.size();
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public java.lang.String getTmParaSetPrivileges(int index) {
+        return tmParaSetPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTmParaSetPrivilegesBytes(int index) {
+        return tmParaSetPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public Builder setTmParaSetPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaSetPrivilegesIsMutable();
+        tmParaSetPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public Builder addTmParaSetPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaSetPrivilegesIsMutable();
+        tmParaSetPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public Builder addAllTmParaSetPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTmParaSetPrivilegesIsMutable();
+        super.addAll(values, tmParaSetPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public Builder clearTmParaSetPrivileges() {
+        tmParaSetPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmParaSetPrivileges = 3;</code>
+       */
+      public Builder addTmParaSetPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmParaSetPrivilegesIsMutable();
+        tmParaSetPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string tmPacketPrivileges = 4;
+      private com.google.protobuf.LazyStringList tmPacketPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTmPacketPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          tmPacketPrivileges_ = new com.google.protobuf.LazyStringArrayList(tmPacketPrivileges_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public java.util.List<java.lang.String>
+          getTmPacketPrivilegesList() {
+        return java.util.Collections.unmodifiableList(tmPacketPrivileges_);
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public int getTmPacketPrivilegesCount() {
+        return tmPacketPrivileges_.size();
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public java.lang.String getTmPacketPrivileges(int index) {
+        return tmPacketPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTmPacketPrivilegesBytes(int index) {
+        return tmPacketPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public Builder setTmPacketPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmPacketPrivilegesIsMutable();
+        tmPacketPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public Builder addTmPacketPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmPacketPrivilegesIsMutable();
+        tmPacketPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public Builder addAllTmPacketPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTmPacketPrivilegesIsMutable();
+        super.addAll(values, tmPacketPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public Builder clearTmPacketPrivileges() {
+        tmPacketPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tmPacketPrivileges = 4;</code>
+       */
+      public Builder addTmPacketPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTmPacketPrivilegesIsMutable();
+        tmPacketPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string tcPrivileges = 5;
+      private com.google.protobuf.LazyStringList tcPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTcPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          tcPrivileges_ = new com.google.protobuf.LazyStringArrayList(tcPrivileges_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public java.util.List<java.lang.String>
+          getTcPrivilegesList() {
+        return java.util.Collections.unmodifiableList(tcPrivileges_);
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public int getTcPrivilegesCount() {
+        return tcPrivileges_.size();
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public java.lang.String getTcPrivileges(int index) {
+        return tcPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTcPrivilegesBytes(int index) {
+        return tcPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public Builder setTcPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTcPrivilegesIsMutable();
+        tcPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public Builder addTcPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTcPrivilegesIsMutable();
+        tcPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public Builder addAllTcPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTcPrivilegesIsMutable();
+        super.addAll(values, tcPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public Builder clearTcPrivileges() {
+        tcPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string tcPrivileges = 5;</code>
+       */
+      public Builder addTcPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTcPrivilegesIsMutable();
+        tcPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string systemPrivileges = 6;
+      private com.google.protobuf.LazyStringList systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureSystemPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          systemPrivileges_ = new com.google.protobuf.LazyStringArrayList(systemPrivileges_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public java.util.List<java.lang.String>
+          getSystemPrivilegesList() {
+        return java.util.Collections.unmodifiableList(systemPrivileges_);
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public int getSystemPrivilegesCount() {
+        return systemPrivileges_.size();
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public java.lang.String getSystemPrivileges(int index) {
+        return systemPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSystemPrivilegesBytes(int index) {
+        return systemPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public Builder setSystemPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSystemPrivilegesIsMutable();
+        systemPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public Builder addSystemPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSystemPrivilegesIsMutable();
+        systemPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public Builder addAllSystemPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureSystemPrivilegesIsMutable();
+        super.addAll(values, systemPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public Builder clearSystemPrivileges() {
+        systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string systemPrivileges = 6;</code>
+       */
+      public Builder addSystemPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSystemPrivilegesIsMutable();
+        systemPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.UserAuthorizationsInfo)
+    }
+
+    static {
+      defaultInstance = new UserAuthorizationsInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.UserAuthorizationsInfo)
+  }
+
+  public interface RestListAuthorisationsRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * Protobuf type {@code rest.RestListAuthorisationsRequest}
+   */
+  public static final class RestListAuthorisationsRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements RestListAuthorisationsRequestOrBuilder {
+    // Use RestListAuthorisationsRequest.newBuilder() to construct.
+    private RestListAuthorisationsRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RestListAuthorisationsRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RestListAuthorisationsRequest defaultInstance;
+    public static RestListAuthorisationsRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RestListAuthorisationsRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RestListAuthorisationsRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RestListAuthorisationsRequest> PARSER =
+        new com.google.protobuf.AbstractParser<RestListAuthorisationsRequest>() {
+      public RestListAuthorisationsRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RestListAuthorisationsRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestListAuthorisationsRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private void initFields() {
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.RestListAuthorisationsRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.RestListAuthorisationsRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.RestListAuthorisationsRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsRequest build() {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsRequest buildPartial() {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsRequest result = new org.yamcs.protobuf.Rest.RestListAuthorisationsRequest(this);
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.RestListAuthorisationsRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.RestListAuthorisationsRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.RestListAuthorisationsRequest other) {
+        if (other == org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.RestListAuthorisationsRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.RestListAuthorisationsRequest)
+    }
+
+    static {
+      defaultInstance = new RestListAuthorisationsRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.RestListAuthorisationsRequest)
+  }
+
+  public interface RestListAuthorisationsResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    boolean hasUserAuthorizationsInfo();
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    org.yamcs.protobuf.Rest.UserAuthorizationsInfo getUserAuthorizationsInfo();
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder getUserAuthorizationsInfoOrBuilder();
+  }
+  /**
+   * Protobuf type {@code rest.RestListAuthorisationsResponse}
+   */
+  public static final class RestListAuthorisationsResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements RestListAuthorisationsResponseOrBuilder {
+    // Use RestListAuthorisationsResponse.newBuilder() to construct.
+    private RestListAuthorisationsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RestListAuthorisationsResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RestListAuthorisationsResponse defaultInstance;
+    public static RestListAuthorisationsResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RestListAuthorisationsResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RestListAuthorisationsResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = userAuthorizationsInfo_.toBuilder();
+              }
+              userAuthorizationsInfo_ = input.readMessage(org.yamcs.protobuf.Rest.UserAuthorizationsInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(userAuthorizationsInfo_);
+                userAuthorizationsInfo_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RestListAuthorisationsResponse> PARSER =
+        new com.google.protobuf.AbstractParser<RestListAuthorisationsResponse>() {
+      public RestListAuthorisationsResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RestListAuthorisationsResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestListAuthorisationsResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;
+    public static final int USERAUTHORIZATIONSINFO_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Rest.UserAuthorizationsInfo userAuthorizationsInfo_;
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    public boolean hasUserAuthorizationsInfo() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    public org.yamcs.protobuf.Rest.UserAuthorizationsInfo getUserAuthorizationsInfo() {
+      return userAuthorizationsInfo_;
+    }
+    /**
+     * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+     */
+    public org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder getUserAuthorizationsInfoOrBuilder() {
+      return userAuthorizationsInfo_;
+    }
+
+    private void initFields() {
+      userAuthorizationsInfo_ = org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, userAuthorizationsInfo_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, userAuthorizationsInfo_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.RestListAuthorisationsResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.RestListAuthorisationsResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.RestListAuthorisationsResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getUserAuthorizationsInfoFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (userAuthorizationsInfoBuilder_ == null) {
+          userAuthorizationsInfo_ = org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance();
+        } else {
+          userAuthorizationsInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestListAuthorisationsResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsResponse build() {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.RestListAuthorisationsResponse buildPartial() {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsResponse result = new org.yamcs.protobuf.Rest.RestListAuthorisationsResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (userAuthorizationsInfoBuilder_ == null) {
+          result.userAuthorizationsInfo_ = userAuthorizationsInfo_;
+        } else {
+          result.userAuthorizationsInfo_ = userAuthorizationsInfoBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.RestListAuthorisationsResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.RestListAuthorisationsResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.RestListAuthorisationsResponse other) {
+        if (other == org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.getDefaultInstance()) return this;
+        if (other.hasUserAuthorizationsInfo()) {
+          mergeUserAuthorizationsInfo(other.getUserAuthorizationsInfo());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.RestListAuthorisationsResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.RestListAuthorisationsResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;
+      private org.yamcs.protobuf.Rest.UserAuthorizationsInfo userAuthorizationsInfo_ = org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Rest.UserAuthorizationsInfo, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder, org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder> userAuthorizationsInfoBuilder_;
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public boolean hasUserAuthorizationsInfo() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfo getUserAuthorizationsInfo() {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          return userAuthorizationsInfo_;
+        } else {
+          return userAuthorizationsInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public Builder setUserAuthorizationsInfo(org.yamcs.protobuf.Rest.UserAuthorizationsInfo value) {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          userAuthorizationsInfo_ = value;
+          onChanged();
+        } else {
+          userAuthorizationsInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public Builder setUserAuthorizationsInfo(
+          org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder builderForValue) {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          userAuthorizationsInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          userAuthorizationsInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public Builder mergeUserAuthorizationsInfo(org.yamcs.protobuf.Rest.UserAuthorizationsInfo value) {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              userAuthorizationsInfo_ != org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance()) {
+            userAuthorizationsInfo_ =
+              org.yamcs.protobuf.Rest.UserAuthorizationsInfo.newBuilder(userAuthorizationsInfo_).mergeFrom(value).buildPartial();
+          } else {
+            userAuthorizationsInfo_ = value;
+          }
+          onChanged();
+        } else {
+          userAuthorizationsInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public Builder clearUserAuthorizationsInfo() {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          userAuthorizationsInfo_ = org.yamcs.protobuf.Rest.UserAuthorizationsInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          userAuthorizationsInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder getUserAuthorizationsInfoBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getUserAuthorizationsInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder getUserAuthorizationsInfoOrBuilder() {
+        if (userAuthorizationsInfoBuilder_ != null) {
+          return userAuthorizationsInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return userAuthorizationsInfo_;
+        }
+      }
+      /**
+       * <code>optional .rest.UserAuthorizationsInfo userAuthorizationsInfo = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Rest.UserAuthorizationsInfo, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder, org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder> 
+          getUserAuthorizationsInfoFieldBuilder() {
+        if (userAuthorizationsInfoBuilder_ == null) {
+          userAuthorizationsInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Rest.UserAuthorizationsInfo, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder, org.yamcs.protobuf.Rest.UserAuthorizationsInfoOrBuilder>(
+                  userAuthorizationsInfo_,
+                  getParentForChildren(),
+                  isClean());
+          userAuthorizationsInfo_ = null;
+        }
+        return userAuthorizationsInfoBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.RestListAuthorisationsResponse)
+    }
+
+    static {
+      defaultInstance = new RestListAuthorisationsResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.RestListAuthorisationsResponse)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_rest_RestExceptionMessage_descriptor;
   private static
@@ -25874,6 +28112,21 @@ public final class Rest {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_rest_RestGetParameterInfoResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_UserAuthorizationsInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_UserAuthorizationsInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_RestListAuthorisationsRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_RestListAuthorisationsRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_RestListAuthorisationsResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -25958,12 +28211,19 @@ public final class Rest {
       " \001(\t\"A\n\033RestGetParameterInfoRequest\022\"\n\004l" +
       "ist\030\001 \003(\0132\024.yamcs.NamedObjectId\"F\n\034RestG" +
       "etParameterInfoResponse\022&\n\005pinfo\030\001 \003(\0132\027" +
-      ".rest.RestParameterInfo*G\n\016RestDataSourc" +
-      "e\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONST" +
-      "ANT\020\002\022\t\n\005LOCAL\020\003*\\\n\016RestAlarmLevel\022\n\n\006no" +
-      "rmal\020\000\022\t\n\005watch\020\001\022\013\n\007warning\020\002\022\014\n\010distre" +
-      "ss\020\003\022\014\n\010critical\020\004\022\n\n\006severe\020\005B\024\n\022org.ya",
-      "mcs.protobuf"
+      ".rest.RestParameterInfo\"\252\001\n\026UserAuthoriz" +
+      "ationsInfo\022\r\n\005roles\030\001 \003(\t\022\030\n\020tmParaPrivi" +
+      "leges\030\002 \003(\t\022\033\n\023tmParaSetPrivileges\030\003 \003(\t" +
+      "\022\032\n\022tmPacketPrivileges\030\004 \003(\t\022\024\n\014tcPrivil" +
+      "eges\030\005 \003(\t\022\030\n\020systemPrivileges\030\006 \003(\t\"\037\n\035",
+      "RestListAuthorisationsRequest\"^\n\036RestLis" +
+      "tAuthorisationsResponse\022<\n\026userAuthoriza" +
+      "tionsInfo\030\001 \001(\0132\034.rest.UserAuthorization" +
+      "sInfo*G\n\016RestDataSource\022\017\n\013TELEMETERED\020\000" +
+      "\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003*\\" +
+      "\n\016RestAlarmLevel\022\n\n\006normal\020\000\022\t\n\005watch\020\001\022" +
+      "\013\n\007warning\020\002\022\014\n\010distress\020\003\022\014\n\010critical\020\004" +
+      "\022\n\n\006severe\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -26174,6 +28434,24 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterInfoResponse_descriptor,
               new java.lang.String[] { "Pinfo", });
+          internal_static_rest_UserAuthorizationsInfo_descriptor =
+            getDescriptor().getMessageTypes().get(34);
+          internal_static_rest_UserAuthorizationsInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_UserAuthorizationsInfo_descriptor,
+              new java.lang.String[] { "Roles", "TmParaPrivileges", "TmParaSetPrivileges", "TmPacketPrivileges", "TcPrivileges", "SystemPrivileges", });
+          internal_static_rest_RestListAuthorisationsRequest_descriptor =
+            getDescriptor().getMessageTypes().get(35);
+          internal_static_rest_RestListAuthorisationsRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_RestListAuthorisationsRequest_descriptor,
+              new java.lang.String[] { });
+          internal_static_rest_RestListAuthorisationsResponse_descriptor =
+            getDescriptor().getMessageTypes().get(36);
+          internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_RestListAuthorisationsResponse_descriptor,
+              new java.lang.String[] { "UserAuthorizationsInfo", });
           return null;
         }
       };

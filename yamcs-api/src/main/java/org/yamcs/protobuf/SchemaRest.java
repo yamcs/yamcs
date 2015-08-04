@@ -4108,4 +4108,367 @@ public final class SchemaRest
         }
     }
 
+    public static final class UserAuthorizationsInfo
+    {
+        public static final org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.UserAuthorizationsInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.UserAuthorizationsInfo message) throws java.io.IOException
+            {
+                for(String roles : message.getRolesList())
+                    output.writeString(1, roles, true);
+                for(String tmParaPrivileges : message.getTmParaPrivilegesList())
+                    output.writeString(2, tmParaPrivileges, true);
+                for(String tmParaSetPrivileges : message.getTmParaSetPrivilegesList())
+                    output.writeString(3, tmParaSetPrivileges, true);
+                for(String tmPacketPrivileges : message.getTmPacketPrivilegesList())
+                    output.writeString(4, tmPacketPrivileges, true);
+                for(String tcPrivileges : message.getTcPrivilegesList())
+                    output.writeString(5, tcPrivileges, true);
+                for(String systemPrivileges : message.getSystemPrivilegesList())
+                    output.writeString(6, systemPrivileges, true);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.UserAuthorizationsInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.UserAuthorizationsInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.UserAuthorizationsInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.UserAuthorizationsInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addRoles(input.readString());
+                            break;
+                        case 2:
+                            builder.addTmParaPrivileges(input.readString());
+                            break;
+                        case 3:
+                            builder.addTmParaSetPrivileges(input.readString());
+                            break;
+                        case 4:
+                            builder.addTmPacketPrivileges(input.readString());
+                            break;
+                        case 5:
+                            builder.addTcPrivileges(input.readString());
+                            break;
+                        case 6:
+                            builder.addSystemPrivileges(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.UserAuthorizationsInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.UserAuthorizationsInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "roles";
+                case 2: return "tmParaPrivileges";
+                case 3: return "tmParaSetPrivileges";
+                case 4: return "tmPacketPrivileges";
+                case 5: return "tcPrivileges";
+                case 6: return "systemPrivileges";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("roles", 1);
+            fieldMap.put("tmParaPrivileges", 2);
+            fieldMap.put("tmParaSetPrivileges", 3);
+            fieldMap.put("tmPacketPrivileges", 4);
+            fieldMap.put("tcPrivileges", 5);
+            fieldMap.put("systemPrivileges", 6);
+        }
+    }
+
+    public static final class RestListAuthorisationsRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAuthorisationsRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest message) throws java.io.IOException
+            {
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestListAuthorisationsRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestListAuthorisationsRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestListAuthorisationsRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAuthorisationsRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+        }
+    }
+
+    public static final class RestListAuthorisationsResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAuthorisationsResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse message) throws java.io.IOException
+            {
+                if(message.hasUserAuthorizationsInfo())
+                    output.writeObject(1, message.getUserAuthorizationsInfo(), org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestListAuthorisationsResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestListAuthorisationsResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestListAuthorisationsResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setUserAuthorizationsInfo(input.mergeObject(org.yamcs.protobuf.Rest.UserAuthorizationsInfo.newBuilder(), org.yamcs.protobuf.SchemaRest.UserAuthorizationsInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestListAuthorisationsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestListAuthorisationsResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "userAuthorizationsInfo";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("userAuthorizationsInfo", 1);
+        }
+    }
+
 }
