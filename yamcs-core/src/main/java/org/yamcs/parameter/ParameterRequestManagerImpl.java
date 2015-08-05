@@ -79,7 +79,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	    alarmChecker=new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
 	}
 	if(yproc.hasAlarmServer()) {
-	    alarmServer = new AlarmServer(yproc.getInstance(), "realtime_alarms");
+	    alarmServer = new AlarmServer(yproc.getInstance(), "alarms_realtime");
 	    alarmChecker.enableServer(alarmServer);
 	}
 	
