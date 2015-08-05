@@ -36,7 +36,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     final String yprocName;
     
     public AlarmReporter(String yamcsInstance) {
-        this(yamcsInstance, "realtime");
+        this(yamcsInstance, "tm_realtime");
     }
     
     public AlarmReporter(String yamcsInstance, String yprocName) {
