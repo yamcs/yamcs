@@ -8,7 +8,9 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.MessageType;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -55,6 +57,10 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setClientInfo((ClientInfo) message);
         } else if (dataType == ProtoDataType.PROCESSING_STATISTICS) {
             responseb.setStatistics((Statistics) message);
+        } else if (dataType == ProtoDataType.EVENT) {
+            responseb.setEvent((Event) message);
+        } else if (dataType == ProtoDataType.STREAM_DATA) {
+            responseb.setStreamData((StreamData) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }
