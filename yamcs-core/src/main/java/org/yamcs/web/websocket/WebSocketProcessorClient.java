@@ -29,6 +29,8 @@ public class WebSocketProcessorClient implements YProcessorClient {
    
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
+        this.authToken = authToken;
+        this.username = authToken != null ? authToken.getPrincipal().toString() : "unknown";
         log = LoggerFactory.getLogger(WebSocketProcessorClient.class.getName() + "[" + yamcsInstance + "]");
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         
@@ -37,8 +39,6 @@ public class WebSocketProcessorClient implements YProcessorClient {
         cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
         mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
         streamResource = new StreamResource(yproc, wsHandler);
-        this.authToken = authToken;
-        this.username = authToken != null ? authToken.getPrincipal().toString() : "unknown";
     }
 
     @Override
