@@ -78,7 +78,7 @@ public class SequenceContainerProcessor {
             //And then any derived containers
             int bitp=pcontext.bitPosition;
             for(SequenceContainer sc:inheritingContainers) {
-                if(pcontext.comparisonProcessor.matches(sc.getRestrictionCriteria())) {
+                if(sc.getRestrictionCriteria().isMet(pcontext.criteriaEvaluator)) {
                     hasDerived=true;
                     pcontext.bitPosition=bitp;
                     extract(sc);

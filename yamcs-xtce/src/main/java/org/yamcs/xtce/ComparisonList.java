@@ -18,8 +18,6 @@ public class ComparisonList implements MatchCriteria {
         comparisons.add(comparison);
     }
 
-
-
     @Override
     public Set<Parameter> getDependentParameters() {
         Set<Parameter> pset=new HashSet<Parameter>();
@@ -28,7 +26,19 @@ public class ComparisonList implements MatchCriteria {
         }
         return pset;
     }
-    public List<Comparison> getComparisonList() {
+    
+    @Override
+	public boolean isMet(CriteriaEvaluator evaluator) {
+        for(Comparison c:comparisons) {
+            if (!c.isMet(evaluator)) {
+            	return false;
+            }
+        }
+        
+        return true;
+	}
+
+	public List<Comparison> getComparisonList() {
         return comparisons;
     }
 

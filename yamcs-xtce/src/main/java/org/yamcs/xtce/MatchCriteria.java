@@ -5,4 +5,5 @@ import java.util.Set;
 
 public interface MatchCriteria extends Serializable {
     public Set<Parameter> getDependentParameters();
+    boolean isMet(CriteriaEvaluator evaluator);
 }
