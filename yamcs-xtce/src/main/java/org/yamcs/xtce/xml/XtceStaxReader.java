@@ -35,6 +35,7 @@ import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
+import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
@@ -1518,7 +1519,7 @@ public class XtceStaxReader {
             value = "=="; // default value
         }
 
-        Comparison.OperatorType optype = Comparison.stringToOperator(value);
+        OperatorType optype = Comparison.stringToOperator(value);
 
         String theValue;
         theValue = readAttribute("value", xmlEvent.asStartElement());

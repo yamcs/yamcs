@@ -17,8 +17,7 @@ public class Comparison implements MatchCriteria {
     ParameterInstanceRef instanceRef;
 
     OperatorType comparisonOperator;
-    public enum OperatorType { EQUALITY, INEQUALITY, LARGERTHAN, LARGEROREQUALTHAN, SMALLERTHAN, SMALLEROREQUALTHAN };
-
+    
     //the string is used to create the object and then is changed to the other type, depending on the valueType
     String stringValue;
     
@@ -54,8 +53,13 @@ public class Comparison implements MatchCriteria {
         this.stringValue = Long.toString(longValue);
         this.comparisonOperator = op;
     }
+    
+    @Override
+	public boolean isMet(CriteriaEvaluator evaluator) {
+		return evaluator.evaluate(comparisonOperator, instanceRef, value);
+	}
 
-    /**
+	/**
      * Called when the type of the parameter used for comparison is known, 
      * so we have to find the value from stringValue that we can compare to it 
      */
@@ -68,8 +72,7 @@ public class Comparison implements MatchCriteria {
             value = ptype.parseStringForRawValue(stringValue);
         }
     }
-    
-    
+        
     public ParameterInstanceRef getParameterRef() {
         return instanceRef;
     }

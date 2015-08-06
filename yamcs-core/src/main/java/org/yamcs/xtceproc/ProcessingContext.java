@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.CriteriaEvaluator;
 
 
 /**
@@ -38,7 +39,7 @@ public class ProcessingContext {
 	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
 	public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
 	public ValueProcessor valueProcessor=new ValueProcessor(this);
-	public ComparisonProcessor comparisonProcessor;
+	public CriteriaEvaluator criteriaEvaluator;
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
 		ParameterValueList params, ArrayList<ContainerExtractionResult> containers, 
@@ -52,6 +53,6 @@ public class ProcessingContext {
 		this.acquisitionTime = acquisitionTime;
 		this.generationTime = generationTime;
 		this.stats = stats;
-		this.comparisonProcessor=new ComparisonProcessor(paramResult);
+		this.criteriaEvaluator = new CriteriaEvaluatorImpl(paramResult);
 	}
 }
