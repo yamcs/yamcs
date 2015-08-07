@@ -78,13 +78,21 @@ public class Condition implements BooleanExpression {
 
     @Override
     public String toString() {
-    	if (stringValue != null) {
-    		return "Comparison: paraName("+ lValueRef.getParameter().getName()+")" + 
-    				OperatorType.operatorToString(comparisonOperator) + stringValue;
-    	} else {
-    		return "Comparison: paraName("+ lValueRef.getParameter().getName()+")" + 
-    				OperatorType.operatorToString(comparisonOperator) +
-    				((ParameterInstanceRef) rValueRef).getParameter().getName();    		
+    	String rValue = stringValue; 
+    	if (stringValue == null) {
+    		if (((ParameterInstanceRef)rValueRef).getParameter() == null) {
+    			rValue = "paraName(unresolved)";
+    		} else {
+    			rValue = "paramName(" + ((ParameterInstanceRef)rValueRef).getParameter().getName() + ")";
+    		}
+    	} 
+    	
+    	String lValue = "paraName(unresolved)";
+    	if (lValueRef.getParameter() != null) {
+    		lValue = "paraName(" + lValueRef.getParameter().getName() + ")";
     	}
+    	
+		return "Condition: " + lValue + OperatorType.operatorToString(comparisonOperator) + rValue;
+    	
     }        
 }

@@ -6,7 +6,7 @@ public class ORedConditions extends ExpressionList implements BooleanExpression 
 	@Override
 	public boolean isMet(CriteriaEvaluator evaluator) {
 		for (BooleanExpression exp: expressions) {
-			if (exp.isMet(evaluator)) {
+			if (exp.isMet(evaluator)) {				
 				return true;
 			}
 		}
