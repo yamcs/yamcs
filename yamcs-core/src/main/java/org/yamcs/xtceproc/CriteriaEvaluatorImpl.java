@@ -29,6 +29,8 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 		ResolvedValue lValue = resolveValue(lValueRef);
 		ResolvedValue rValue = resolveValue(rValueRef);
 		
+		//LOG.info("Evaluating " + lValue + OperatorType.operatorToString(op) + rValue);
+		
 		if ((lValue == null) || (rValue == null)) {
 			return false;
 		}
@@ -56,11 +58,11 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 		if (valueRef instanceof ParameterInstanceRef) {
 			return resolveParameter((ParameterInstanceRef)valueRef);
 		} else if(valueRef instanceof Integer) {			
-            return new ResolvedValue((Integer)valueRef, false, intEvaluator);
+            return new ResolvedValue(((Integer)valueRef).longValue(), false, intEvaluator);
         } else if(valueRef instanceof Long) {
             return new ResolvedValue((Long)valueRef, false, intEvaluator);
         } else if (valueRef instanceof Float) {
-        	return new ResolvedValue((Float)valueRef, false, floatEvaluator);
+        	return new ResolvedValue(((Float)valueRef).doubleValue(), false, floatEvaluator);
         } else if (valueRef instanceof Double) {
         	return new ResolvedValue((Double)valueRef, false, floatEvaluator);
         } else if (valueRef instanceof String) {
@@ -119,16 +121,22 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 	}
 
 	static class ResolvedValue {		
+		Object value;
+		boolean unsigned;
+		Evaluator evaluator;
+
 		public ResolvedValue(Object value, boolean unsigned, Evaluator evaluator) {
 			super();
 			this.value = value;
 			this.unsigned = unsigned;
 			this.evaluator = evaluator;
 		}
-		
-		Object value;
-		boolean unsigned;
-		Evaluator evaluator;
+
+		@Override
+		public String toString() {
+			return "Value(" + value + ") Signed(" + unsigned + ") "
+					+ "EvaluatorType(" + evaluator.getComparedType() + ")";
+		}
 	}
 	
 	// Some specific evaluators
@@ -137,14 +145,13 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 	private static final Evaluator intEvaluator = new Evaluator() {
 		@Override
 		public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
-			if (lValue.unsigned != rValue.unsigned) {
-				return false;
-			}
+			boolean unsigned = lValue.unsigned &rValue.unsigned;
+			// FIXME: signed/unsigned comparison should be warned, but frequently seen in 'Parameter op value'
 								
 			long lval = (long)lValue.value;
 			long rval = (long)rValue.value;
-			
-	        if(lValue.unsigned) {
+					
+	        if(unsigned) {
 	            switch (op) {
 	            case EQUALITY:
 	                return (lval == rval);
@@ -191,7 +198,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 		public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
 			double lval = (double)lValue.value;
 			double rval = (double)rValue.value;
-
+			
 	        switch (op) {
 	        case EQUALITY:
 	            return (lval == rval);

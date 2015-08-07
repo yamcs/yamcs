@@ -885,7 +885,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 // 2) extract the condition and create the restrictioncriteria
                 if(!"".equals(condition)) {
                     container.restrictionCriteria=toMatchCriteria(condition);
-                    printParsedMatchCriteria(container.restrictionCriteria, "");
+                    MatchCriteria.printParsedMatchCriteria(log, container.restrictionCriteria, "");
                 }
             } else {
                 if(spaceSystem.getRootSequenceContainer()==null) {
@@ -2037,38 +2037,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } else {
             return toComparison(criteriaString);
         }    	
-    }
-    
-    /**
-     * For debugging purpose
-     * 
-     * @param criteria
-     */
-    private void printParsedMatchCriteria(MatchCriteria criteria, String indent) {
-    	if (criteria instanceof Comparison) {
-    		log.info(indent + criteria.toString());
-    	} else if (criteria instanceof ComparisonList) {
-    		log.info(indent + "ComparisonList (");
-    		for (Comparison c: ((ComparisonList)criteria).comparisons) {
-    			log.info(indent + "  " + c.toString());
-    		}
-    		log.info(indent + ")");
-    	} else if (criteria instanceof Condition) {
-    		log.info(indent + criteria.toString());
-    	} else if (criteria instanceof ANDedConditions) {
-    		log.info(indent + "AND (");
-    		for (MatchCriteria c: ((ExpressionList)criteria).expressions) {
-    			printParsedMatchCriteria(c, indent + "  ");
-    		}
-    		log.info(indent + ")");    		
-    	} else if (criteria instanceof ORedConditions) {
-    		log.info(indent + "OR (");
-    		for (MatchCriteria c: ((ExpressionList)criteria).expressions) {
-    			printParsedMatchCriteria(c, indent + "  ");
-    		}
-    		log.info(indent + ")");    		
-    	}  
-    }
+    }    
     
     
     /**
@@ -2098,7 +2067,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     	rawExpression = rawExpression.trim();
     	
     	// Correct top-level expression 
-    	if (!rawExpression.startsWith("&") || !rawExpression.startsWith("|")) {
+    	if (!rawExpression.startsWith("&") && !rawExpression.startsWith("|")) {
     		rawExpression = "&(" + rawExpression + ")";
     	}
     	
@@ -2115,9 +2084,34 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
     
     private void parseConditionList(ExpressionList conditions, String spec, ArrayList<String> quotes) {
-    	String splitted[] = spec.split(";");
-        for (String part: splitted) {
-            conditions.addConditionExpression(toBooleanExpression(part, quotes));
+    	// Split top-level expressions
+    	ArrayList<String> expressions = new ArrayList<>();
+    	int balance = 0;
+    	String exp = "";
+    	for (int i = 0; i < spec.length(); i++) {
+    		if (spec.charAt(i) == '(') {
+    			balance++;
+    		} else if (spec.charAt(i) == ')') {
+    			balance--;
+    		} else if ((spec.charAt(i) == ';') && (balance == 0)) {    			    			
+    			if (!exp.isEmpty()) {
+    				expressions.add(exp);
+    			}
+    			
+    			exp = "";    			
+    			continue;    			
+    		} 
+    		
+    		exp += spec.charAt(i);    		
+    	}
+    	
+    	if (!exp.isEmpty()) {
+    		expressions.add(exp);
+    	}
+    	   
+    	// Parse each expression
+        for (String expression: expressions) {
+            conditions.addConditionExpression(toBooleanExpression(expression, quotes));
         }
     }
     
