@@ -1,6 +1,6 @@
 package org.yamcs.xtce;
 
-public class ORedConditions extends ConditionList implements BooleanExpression {
+public class ORedConditions extends ExpressionList implements BooleanExpression {
 	private static final long serialVersionUID = -971897455552714465L;
 
 	@Override

@@ -11,7 +11,7 @@ import java.util.Set;
  * @author dho
  *
  */
-public abstract class ConditionList implements BooleanExpression {
+public abstract class ExpressionList implements BooleanExpression {
 	private static final long serialVersionUID = 2333657095062539096L;
 	protected ArrayList<BooleanExpression> expressions = new ArrayList<>();	
 	
@@ -26,4 +26,14 @@ public abstract class ConditionList implements BooleanExpression {
         }
         return pset;
     }
+
+	@Override
+	public String toString() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("ExpressionList: ");
+        for(BooleanExpression exp: expressions) {
+            sb.append(exp.toString()).append(" ");
+        }
+        return sb.toString();
+	}
 }
