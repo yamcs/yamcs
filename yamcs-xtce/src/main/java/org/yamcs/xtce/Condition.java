@@ -75,4 +75,16 @@ public class Condition implements BooleanExpression {
         }
         return pset;
     }	
+
+    @Override
+    public String toString() {
+    	if (stringValue != null) {
+    		return "Comparison: paraName("+ lValueRef.getParameter().getName()+")" + 
+    				OperatorType.operatorToString(comparisonOperator) + stringValue;
+    	} else {
+    		return "Comparison: paraName("+ lValueRef.getParameter().getName()+")" + 
+    				OperatorType.operatorToString(comparisonOperator) +
+    				((ParameterInstanceRef) rValueRef).getParameter().getName();    		
+    	}
+    }        
 }
