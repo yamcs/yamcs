@@ -24,7 +24,7 @@ public class PacketFormatter {
         if(withoutCcsds) bb.position(16);
         else bb.position(0);
         if(onlyHeader) {
-            System.out.println("APID: "+CcsdsPacket.getAPID(bb)+", packetId: "+CcsdsPacket.getPacketID(bb)+" seqCount: "+CcsdsPacket.getSequenceCount(bb)+
+            System.out.println("APID: "+CcsdsPacket.getAPID(bb)+", packetId: "+c.getPacketID()+" seqCount: "+CcsdsPacket.getSequenceCount(bb)+
                     ", gentime: "+TimeEncoding.toCombinedFormat(CcsdsPacket.getInstant(bb)));
         } else if(hex) {
             out.write(("apid: "+c.getAPID()+", seqCount: "+c.getSequenceCount()+", packetid: "+c.getPacketID()+"\n").getBytes());
