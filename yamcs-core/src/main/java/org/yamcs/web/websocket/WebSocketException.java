@@ -1,23 +1,25 @@
 package org.yamcs.web.websocket;
 
-import io.protostuff.Schema;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
+import java.io.IOException;
 
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData;
 
-import java.io.IOException;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
+
+import io.protostuff.Schema;
 
 /**
  * When an exception occurred while handling an incoming web socket request. Used as a one-time response to a client request.
  */
 public class WebSocketException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     private int requestId;
 
     // Optional accompanying data
-    // eg. for InvalidIdentificationException we want to pass the names of the invalid parameters
+    // eg. for InvalidIdentification we want to pass the names of the invalid parameters
     private String dataType = "STRING";
     private MessageLite data;
     private Schema<MessageLite> dataSchema;
@@ -44,6 +46,7 @@ public class WebSocketException extends Exception {
         return requestId;
     }
 
+    @SuppressWarnings("unchecked")
     public void attachData(String dataType, MessageLite data, Schema<? extends MessageLite> dataSchema) {
         this.dataType = dataType;
         this.data = data;

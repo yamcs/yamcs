@@ -218,9 +218,9 @@ enum ProtoDataType {
        DT_ERROR = 1;
 
        //the replay status has changed (e.g.  stopped or closed) the body contains a ReplayStatus
-       STATE_CHANGE = 2; 
+       STATE_CHANGE = 2;
 
-       TM_PACKET = 3; 
+       TM_PACKET = 3;
        PP = 4;
        EVENT = 5;
        ARCHIVE_INDEX = 6;
@@ -231,6 +231,7 @@ enum ProtoDataType {
        CLIENT_INFO = 11;
        PROCESSING_STATISTICS = 12;
        STREAM_DATA = 13;
+       ALARM_NOTICE = 14;
 };
 
 //used to replay (concurrently) TM packets, parameters and events

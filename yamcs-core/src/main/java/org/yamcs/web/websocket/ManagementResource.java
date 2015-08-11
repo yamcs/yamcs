@@ -50,7 +50,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     
     private WebSocketReplyData processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
-        ProcessorInfo pinfo = ManagementService.getProcessorInfo(yproc);
+        ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
         try {
             wsHandler.sendReply(toAckReply(requestId));
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);

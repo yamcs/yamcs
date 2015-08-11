@@ -2757,6 +2757,20 @@ public final class Websocket {
        * <code>optional .yamcs.StreamData streamData = 9;</code>
        */
       org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder();
+
+      // optional .alarms.AlarmNotice alarmNotice = 10;
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      boolean hasAlarmNotice();
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      org.yamcs.protobuf.Alarms.AlarmNotice getAlarmNotice();
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder getAlarmNoticeOrBuilder();
     }
     /**
      * Protobuf type {@code websocket.WebSocketServerMessage.WebSocketSubscriptionData}
@@ -2920,6 +2934,19 @@ public final class Websocket {
                   streamData_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000100;
+                break;
+              }
+              case 82: {
+                org.yamcs.protobuf.Alarms.AlarmNotice.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000200) == 0x00000200)) {
+                  subBuilder = alarmNotice_.toBuilder();
+                }
+                alarmNotice_ = input.readMessage(org.yamcs.protobuf.Alarms.AlarmNotice.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(alarmNotice_);
+                  alarmNotice_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000200;
                 break;
               }
             }
@@ -3148,6 +3175,28 @@ public final class Websocket {
         return streamData_;
       }
 
+      // optional .alarms.AlarmNotice alarmNotice = 10;
+      public static final int ALARMNOTICE_FIELD_NUMBER = 10;
+      private org.yamcs.protobuf.Alarms.AlarmNotice alarmNotice_;
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      public boolean hasAlarmNotice() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      public org.yamcs.protobuf.Alarms.AlarmNotice getAlarmNotice() {
+        return alarmNotice_;
+      }
+      /**
+       * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+       */
+      public org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder getAlarmNoticeOrBuilder() {
+        return alarmNotice_;
+      }
+
       private void initFields() {
         sequenceNumber_ = 0;
         type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
@@ -3158,6 +3207,7 @@ public final class Websocket {
         statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
         event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
         streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+        alarmNotice_ = org.yamcs.protobuf.Alarms.AlarmNotice.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -3206,6 +3256,12 @@ public final class Websocket {
             return false;
           }
         }
+        if (hasAlarmNotice()) {
+          if (!getAlarmNotice().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
         memoizedIsInitialized = 1;
         return true;
       }
@@ -3239,6 +3295,9 @@ public final class Websocket {
         }
         if (((bitField0_ & 0x00000100) == 0x00000100)) {
           output.writeMessage(9, streamData_);
+        }
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          output.writeMessage(10, alarmNotice_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -3284,6 +3343,10 @@ public final class Websocket {
         if (((bitField0_ & 0x00000100) == 0x00000100)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(9, streamData_);
+        }
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(10, alarmNotice_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3406,6 +3469,7 @@ public final class Websocket {
             getStatisticsFieldBuilder();
             getEventFieldBuilder();
             getStreamDataFieldBuilder();
+            getAlarmNoticeFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3460,6 +3524,12 @@ public final class Websocket {
             streamDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000100);
+          if (alarmNoticeBuilder_ == null) {
+            alarmNotice_ = org.yamcs.protobuf.Alarms.AlarmNotice.getDefaultInstance();
+          } else {
+            alarmNoticeBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000200);
           return this;
         }
 
@@ -3552,6 +3622,14 @@ public final class Websocket {
           } else {
             result.streamData_ = streamDataBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+            to_bitField0_ |= 0x00000200;
+          }
+          if (alarmNoticeBuilder_ == null) {
+            result.alarmNotice_ = alarmNotice_;
+          } else {
+            result.alarmNotice_ = alarmNoticeBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -3594,6 +3672,9 @@ public final class Websocket {
           }
           if (other.hasStreamData()) {
             mergeStreamData(other.getStreamData());
+          }
+          if (other.hasAlarmNotice()) {
+            mergeAlarmNotice(other.getAlarmNotice());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -3638,6 +3719,12 @@ public final class Websocket {
           }
           if (hasStreamData()) {
             if (!getStreamData().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasAlarmNotice()) {
+            if (!getAlarmNotice().isInitialized()) {
               
               return false;
             }
@@ -4552,6 +4639,123 @@ public final class Websocket {
           return streamDataBuilder_;
         }
 
+        // optional .alarms.AlarmNotice alarmNotice = 10;
+        private org.yamcs.protobuf.Alarms.AlarmNotice alarmNotice_ = org.yamcs.protobuf.Alarms.AlarmNotice.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Alarms.AlarmNotice, org.yamcs.protobuf.Alarms.AlarmNotice.Builder, org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder> alarmNoticeBuilder_;
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public boolean hasAlarmNotice() {
+          return ((bitField0_ & 0x00000200) == 0x00000200);
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public org.yamcs.protobuf.Alarms.AlarmNotice getAlarmNotice() {
+          if (alarmNoticeBuilder_ == null) {
+            return alarmNotice_;
+          } else {
+            return alarmNoticeBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public Builder setAlarmNotice(org.yamcs.protobuf.Alarms.AlarmNotice value) {
+          if (alarmNoticeBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            alarmNotice_ = value;
+            onChanged();
+          } else {
+            alarmNoticeBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000200;
+          return this;
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public Builder setAlarmNotice(
+            org.yamcs.protobuf.Alarms.AlarmNotice.Builder builderForValue) {
+          if (alarmNoticeBuilder_ == null) {
+            alarmNotice_ = builderForValue.build();
+            onChanged();
+          } else {
+            alarmNoticeBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000200;
+          return this;
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public Builder mergeAlarmNotice(org.yamcs.protobuf.Alarms.AlarmNotice value) {
+          if (alarmNoticeBuilder_ == null) {
+            if (((bitField0_ & 0x00000200) == 0x00000200) &&
+                alarmNotice_ != org.yamcs.protobuf.Alarms.AlarmNotice.getDefaultInstance()) {
+              alarmNotice_ =
+                org.yamcs.protobuf.Alarms.AlarmNotice.newBuilder(alarmNotice_).mergeFrom(value).buildPartial();
+            } else {
+              alarmNotice_ = value;
+            }
+            onChanged();
+          } else {
+            alarmNoticeBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000200;
+          return this;
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public Builder clearAlarmNotice() {
+          if (alarmNoticeBuilder_ == null) {
+            alarmNotice_ = org.yamcs.protobuf.Alarms.AlarmNotice.getDefaultInstance();
+            onChanged();
+          } else {
+            alarmNoticeBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000200);
+          return this;
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public org.yamcs.protobuf.Alarms.AlarmNotice.Builder getAlarmNoticeBuilder() {
+          bitField0_ |= 0x00000200;
+          onChanged();
+          return getAlarmNoticeFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        public org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder getAlarmNoticeOrBuilder() {
+          if (alarmNoticeBuilder_ != null) {
+            return alarmNoticeBuilder_.getMessageOrBuilder();
+          } else {
+            return alarmNotice_;
+          }
+        }
+        /**
+         * <code>optional .alarms.AlarmNotice alarmNotice = 10;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Alarms.AlarmNotice, org.yamcs.protobuf.Alarms.AlarmNotice.Builder, org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder> 
+            getAlarmNoticeFieldBuilder() {
+          if (alarmNoticeBuilder_ == null) {
+            alarmNoticeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Alarms.AlarmNotice, org.yamcs.protobuf.Alarms.AlarmNotice.Builder, org.yamcs.protobuf.Alarms.AlarmNoticeOrBuilder>(
+                    alarmNotice_,
+                    getParentForChildren(),
+                    isClean());
+            alarmNotice_ = null;
+          }
+          return alarmNoticeBuilder_;
+        }
+
         // @@protoc_insertion_point(builder_scope:websocket.WebSocketServerMessage.WebSocketSubscriptionData)
       }
 
@@ -5396,38 +5600,40 @@ public final class Websocket {
   static {
     java.lang.String[] descriptorData = {
       "\n\017websocket.proto\022\twebsocket\032\013yamcs.prot" +
-      "o\032\020commanding.proto\032\014pvalue.proto\032\025yamcs" +
-      "Management.proto\"|\n\026WebSocketClientMessa" +
-      "ge\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequenceN" +
-      "umber\030\002 \001(\r\022\020\n\010resource\030\003 \001(\t\022\021\n\toperati" +
-      "on\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\273\007\n\026WebSocketServ" +
-      "erMessage\022;\n\004type\030\001 \001(\0162-.websocket.WebS" +
-      "ocketServerMessage.MessageType\022C\n\005reply\030" +
-      "\002 \001(\01324.websocket.WebSocketServerMessage" +
-      ".WebSocketReplyData\022K\n\texception\030\003 \001(\01328",
-      ".websocket.WebSocketServerMessage.WebSoc" +
-      "ketExceptionData\022I\n\004data\030\004 \001(\0132;.websock" +
-      "et.WebSocketServerMessage.WebSocketSubsc" +
-      "riptionData\032E\n\022WebSocketReplyData\022\027\n\017pro" +
-      "tocolVersion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001" +
-      "(\005\032v\n\026WebSocketExceptionData\022\027\n\017protocol" +
-      "Version\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n" +
-      "\004type\030\003 \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001" +
-      "(\014\032\224\003\n\031WebSocketSubscriptionData\022\026\n\016sequ" +
-      "enceNumber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.P",
-      "rotoDataType\022,\n\rparameterData\030\003 \001(\0132\025.pv" +
-      "alue.ParameterData\0220\n\007command\030\004 \001(\0132\037.co" +
-      "mmanding.CommandHistoryEntry\0225\n\rprocesso" +
-      "rInfo\030\005 \001(\0132\036.yamcsManagement.ProcessorI" +
-      "nfo\022/\n\nclientInfo\030\006 \001(\0132\033.yamcsManagemen" +
-      "t.ClientInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcs" +
-      "Management.Statistics\022\033\n\005event\030\010 \001(\0132\014.y" +
-      "amcs.Event\022%\n\nstreamData\030\t \001(\0132\021.yamcs.S" +
-      "treamData\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tE" +
-      "XCEPTION\020\003\022\010\n\004DATA\020\0042g\n\020WebSocketService",
-      "\022S\n\013sendMessage\022!.websocket.WebSocketCli" +
-      "entMessage\032!.websocket.WebSocketServerMe" +
-      "ssageB\024\n\022org.yamcs.protobuf"
+      "o\032\020commanding.proto\032\014pvalue.proto\032\014alarm" +
+      "s.proto\032\025yamcsManagement.proto\"|\n\026WebSoc" +
+      "ketClientMessage\022\027\n\017protocolVersion\030\001 \001(" +
+      "\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource\030\003 " +
+      "\001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\345\007\n" +
+      "\026WebSocketServerMessage\022;\n\004type\030\001 \001(\0162-." +
+      "websocket.WebSocketServerMessage.Message" +
+      "Type\022C\n\005reply\030\002 \001(\01324.websocket.WebSocke" +
+      "tServerMessage.WebSocketReplyData\022K\n\texc",
+      "eption\030\003 \001(\01328.websocket.WebSocketServer" +
+      "Message.WebSocketExceptionData\022I\n\004data\030\004" +
+      " \001(\0132;.websocket.WebSocketServerMessage." +
+      "WebSocketSubscriptionData\032E\n\022WebSocketRe" +
+      "plyData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequ" +
+      "enceNumber\030\002 \001(\005\032v\n\026WebSocketExceptionDa" +
+      "ta\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequenceN" +
+      "umber\030\002 \001(\005\022\014\n\004type\030\003 \001(\t\022\017\n\007message\030\004 \001" +
+      "(\t\022\014\n\004data\030\005 \001(\014\032\276\003\n\031WebSocketSubscripti" +
+      "onData\022\026\n\016sequenceNumber\030\001 \001(\r\022\"\n\004type\030\002",
+      " \001(\0162\024.yamcs.ProtoDataType\022,\n\rparameterD" +
+      "ata\030\003 \001(\0132\025.pvalue.ParameterData\0220\n\007comm" +
+      "and\030\004 \001(\0132\037.commanding.CommandHistoryEnt" +
+      "ry\0225\n\rprocessorInfo\030\005 \001(\0132\036.yamcsManagem" +
+      "ent.ProcessorInfo\022/\n\nclientInfo\030\006 \001(\0132\033." +
+      "yamcsManagement.ClientInfo\022/\n\nstatistics" +
+      "\030\007 \001(\0132\033.yamcsManagement.Statistics\022\033\n\005e" +
+      "vent\030\010 \001(\0132\014.yamcs.Event\022%\n\nstreamData\030\t" +
+      " \001(\0132\021.yamcs.StreamData\022(\n\013alarmNotice\030\n" +
+      " \001(\0132\023.alarms.AlarmNotice\"1\n\013MessageType",
+      "\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\0042g\n\020" +
+      "WebSocketService\022S\n\013sendMessage\022!.websoc" +
+      "ket.WebSocketClientMessage\032!.websocket.W" +
+      "ebSocketServerMessageB\024\n\022org.yamcs.proto" +
+      "buf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5463,7 +5669,7 @@ public final class Websocket {
           internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_websocket_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmNotice", });
           return null;
         }
       };
@@ -5473,6 +5679,7 @@ public final class Websocket {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Commanding.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
+          org.yamcs.protobuf.Alarms.getDescriptor(),
           org.yamcs.protobuf.YamcsManagement.getDescriptor(),
         }, assigner);
   }

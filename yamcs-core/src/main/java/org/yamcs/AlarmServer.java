@@ -97,7 +97,6 @@ public class AlarmServer extends AbstractService {
         update(pv, minViolations, false);
     }
     public void update(ParameterValue pv, int minViolations, boolean autoAck) {
-        log.info("request to update " + pv.getParameter().getQualifiedName());
         Parameter param = pv.getParameter();
         
         ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
@@ -115,7 +114,7 @@ public class AlarmServer extends AbstractService {
             }
         
             activeAlarm.currentValue = pv;
-            if((activeAlarm.acknoledged) ||(activeAlarm.autoAcknoledge)) {
+            if((activeAlarm.acknowledged) ||(activeAlarm.autoAcknowledge)) {
                 listener.notifyCleared(activeAlarm);
                 activeAlarms.remove(pv.getParameter());
             } else {
@@ -154,7 +153,7 @@ public class AlarmServer extends AbstractService {
             log.warn("Got acknowledge for parameter "+p+" but the id does not match");
             return;
         }
-        aa.acknoledged = true;
+        aa.acknowledged = true;
         aa.usernameThatAcknowledged = username;
         
         if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
@@ -185,9 +184,9 @@ public class AlarmServer extends AbstractService {
         static AtomicInteger counter = new AtomicInteger();
         public int id;
         
-        public boolean acknoledged;
+        public boolean acknowledged;
         
-        public boolean autoAcknoledge;
+        public boolean autoAcknowledge;
         
         //the value that triggered the alarm
         ParameterValue triggerValue;
@@ -213,7 +212,7 @@ public class AlarmServer extends AbstractService {
         
         ActiveAlarm(ParameterValue pv, boolean autoAck) {
             this(pv);
-            this.autoAcknoledge = autoAck;
+            this.autoAcknowledge = autoAck;
         }
     }
     
@@ -290,8 +289,8 @@ public class AlarmServer extends AbstractService {
             String username = activeAlarm.usernameThatAcknowledged;
             
             if(username==null) {
-                if(activeAlarm.autoAcknoledge) {
-                    username = "autoAcknoledged";
+                if(activeAlarm.autoAcknowledge) {
+                    username = "autoAcknowledged";
                 } else {
                     username = "unknown";
                 }

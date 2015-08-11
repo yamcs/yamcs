@@ -1,0 +1,19 @@
+package alarms;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+import "pvalue.proto";
+
+message AlarmNotice {
+   enum Type {
+      TRIGGERED = 1;
+      SEVERITY_INCREASED = 2;
+      UPDATED = 3;
+      CLEARED = 4;
+   }
+
+   optional Type type = 1;
+   optional int64 triggerTime = 2;
+   optional pvalue.ParameterValue pval = 3;
+   optional string username = 4;  // When the alarm was cleared
+}
