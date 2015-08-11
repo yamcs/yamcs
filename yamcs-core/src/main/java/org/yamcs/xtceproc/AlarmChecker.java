@@ -170,6 +170,9 @@ public class AlarmChecker {
         if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
+        if(alarmServer!=null) {
+            alarmServer.update(pv, minViolations);
+        }
     }
 
     private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
