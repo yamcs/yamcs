@@ -69,6 +69,9 @@ public class XtceTmRecorder extends AbstractService {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
 
+    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+        this(yamcsInstance, null);
+    }
 
     /**
      * old constructor for compatibility with older configuration files
@@ -80,28 +83,8 @@ public class XtceTmRecorder extends AbstractService {
      * @throws HornetQException
      * @throws YamcsApiException
      */
-    public XtceTmRecorder(String yamcsInstance, Map<String, String> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
 
-        if(!config.containsKey("REALTIME_TM_STREAM_NAME")) {
-           // throw new ConfigurationException("Did not specify the REALTIME_TM_STREAM_NAME");
-            log.warn("Did not specify the REALTIME_TM_STREAM_NAME");
-        }
-        this.REALTIME_TM_STREAM_NAME = config.get("REALTIME_TM_STREAM_NAME");
-        if(!config.containsKey("DUMP_TM_STREAM_NAME")) {
-           // throw new ConfigurationException("Did not specify the DUMP_TM_STREAM_NAME");
-            log.warn("Did not specify the DUMP_TM_STREAM_NAME");
-        }
-        this.DUMP_TM_STREAM_NAME = config.get("DUMP_TM_STREAM_NAME");
-
-        init(yamcsInstance, null);
-
-    }
-
-//    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
-//        init(yamcsInstance, config);
-//    }
-
-    private void init(String yamcsInstance, Map<String, Object> config)throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
         this.yamcsInstance = yamcsInstance;
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
 
@@ -118,12 +101,12 @@ public class XtceTmRecorder extends AbstractService {
         tmExtractor=new XtceTmExtractor(xtceDb);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-        if(config==null) {
+        if(config==null || !config.containsKey("streams")) {
             List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
             for(StreamConfigEntry sce: sceList){
                 createRecorder(sce);
             }
-        } else {
+        } else if(config != null && config.containsKey("streams")){
             @SuppressWarnings("unchecked")
             List<String> streamNames = YConfiguration.getList(config, "streams");
             for(String sn: streamNames) {
@@ -133,6 +116,15 @@ public class XtceTmRecorder extends AbstractService {
                 }
                 createRecorder(sce);
             }
+        }
+        if(config != null && config.containsKey("default_streams"))
+        {
+            List<String> default_streamNames = YConfiguration.getList(config, "default_streams");
+            if(default_streamNames.size() > 0)
+                this.REALTIME_TM_STREAM_NAME = default_streamNames.get(0);
+            if(default_streamNames.size() > 1)
+                this.DUMP_TM_STREAM_NAME = default_streamNames.get(1);
+
         }
     }
 
