@@ -187,7 +187,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if(subscriptionId==-1) {
             throw new WebSocketException(requestId, "Not subscribed");
         }
-        ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
+        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
         boolean r=prm.unsubscribeAll(subscriptionId);
         if(r) {
             subscriptionId=-1;
@@ -248,7 +248,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
      */
     @Override
     public void quit() {
-        ParameterRequestManagerImpl prm=yproc.getParameterRequestManager();
+        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
         if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
         if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
