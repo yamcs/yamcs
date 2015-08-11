@@ -106,6 +106,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             String state=config.getString(qn, "state");
             q.state=CommandQueueManager.stringToQueueState(state);
             q.roles=config.getList(qn, "roles");
+            if(config.containsKey(qn, "significances")) {
+                q.significances = config.getList(qn, "significances");
+            }
         }
     }
 
@@ -174,18 +177,24 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public synchronized void addCommand(AuthenticationToken authToken, PreparedCommand pc) {
         commandHistoryListener.addCommand(pc);
 
-        CommandQueue q=getQueue(authToken);
+        CommandQueue q=getQueue(authToken, pc);
+        q.add(pc);
+        notifyAdded(q, pc);
+
+
         if(q.state==QueueState.DISABLED) {
-            failedCommand(q, pc, "Commanding Queue disabled", false);
+            q.remove(pc, false);
+            failedCommand(q, pc, "Commanding Queue disabled", true);
+            notifyUpdateQueue(q);
         } else if(q.state==QueueState.BLOCKED) {
-            q.commands.add(pc);
-            notifyAdded(q, pc);
+          //  notifyAdded(q, pc);
         } else if(q.state==QueueState.ENABLED) {
             if(pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
                 addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-                releaseCommand(q, pc, false, false);
+                q.remove(pc, true);
+                releaseCommand(q, pc, true, false);
             }
         }
     }
@@ -193,9 +202,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
 
     private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
-        q.commands.add(pc);
-        notifyAdded(q, pc);
-        
+
+
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
         
@@ -221,10 +229,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if(q.getState()==QueueState.DISABLED) {
             log.debug("Command queue for command "+pc+" is disabled, dropping command");
-            q.remove(pc);
+            q.remove(pc, false);
         }
 
-        if(!q.remove(pc)) {
+        if(!q.remove(pc, true)) {
             return; //command has been removed in the meanwhile
         }
         if(status==TCStatus.OK) {
@@ -243,6 +251,33 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 m.commandAdded(q, pc);
             } catch (Exception e) {
                 e.printStackTrace();
+                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                monitoringClients.remove(m);
+            }
+        }
+        notifyUpdateQueue(q);
+    }
+
+    // Notify the monitoring clients
+    private void notifySent(CommandQueue q, PreparedCommand pc)
+    {
+        for(CommandQueueListener m:monitoringClients) {
+            try {
+                m.commandSent(q, pc);
+            } catch (Exception e) {
+                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                monitoringClients.remove(m);
+            }
+        }
+        notifyUpdateQueue(q);
+    }
+
+    private void notifyUpdateQueue(CommandQueue q)
+    {
+        for(CommandQueueListener m:monitoringClients) {
+            try {
+                m.updateQueue(q);
+            } catch (Exception e) {
                 log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
                 monitoringClients.remove(m);
             }
@@ -292,14 +327,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         commandReleaser.releaseCommand(pc);
         //Notify the monitoring clients
         if(notify) {
-            for(CommandQueueListener m:monitoringClients) {
-                try {
-                    m.commandSent(q, pc);
-                } catch (Exception e) {
-                    log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
-                    monitoringClients.remove(m);
-                }
-            }
+            notifySent(q, pc);
         }
     }
 
@@ -307,7 +335,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param pc
      * @return the queue where the command should be placed.
      */
-    private CommandQueue getQueue(AuthenticationToken authToken) {
+    private CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) {
         Privilege priv=Privilege.getInstance();
         if(authToken == null || !priv.isEnabled()) return queues.get("default");
 
@@ -318,7 +346,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 if(cq.roles==null)continue;
                 for(String r1:cq.roles) {
                     if(role.equals(r1)){
-                        return cq;
+                        if(cq.significances == null
+                                || (pc.getMetaCommand().getDefaultSignificance() == null && cq.significances.contains("none"))
+                                || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name())))
+                        {
+                            // return first queue that matches the role of the user and significance of the command
+                            return cq;
+                        }
                     }
                 }
             }
@@ -338,7 +372,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         PreparedCommand pc=null;
         CommandQueue queue=null;
         for(CommandQueue q:queues.values()) {
-            for(PreparedCommand c:q.commands) {
+            for(PreparedCommand c:q.getCommands()) {
                 if(c.getCommandId().equals(commandId)) {
                     pc=c;
                     queue=q;
@@ -347,8 +381,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if(pc!=null) {
+            queue.remove(pc, false);
             failedCommand(queue, pc, "Commmand rejected by "+username, true);
-            queue.commands.remove(pc);
+            notifyUpdateQueue(queue);
         } else {
             log.warn("command not found in any queue");
         }
@@ -365,7 +400,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         PreparedCommand command=null;
         CommandQueue queue=null;
         for(CommandQueue q:queues.values()) {
-            for(PreparedCommand pc:q.commands) {
+            for(PreparedCommand pc:q.getCommands()) {
                 if(pc.getCommandId().equals(commandId)) {
                     command=pc;
                     queue=q;
@@ -374,7 +409,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if(command!=null) {
-            queue.commands.remove(command);
+            queue.remove(command, true);
             releaseCommand(queue, command, true, rebuild);
         }
         return command;
@@ -400,30 +435,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         queue.state=newState;
         if(queue.state==QueueState.ENABLED) {
-            for(PreparedCommand pc:queue.commands) {
+            for(PreparedCommand pc:queue.getCommands()) {
                 if(pc.getMetaCommand().hasTransmissionConstraints()) {
                     startTransmissionConstraintChecker(queue, pc);
                 } else {
                     releaseCommand(queue, pc, true, false);
                 }
             }
-            queue.commands.clear();
+            queue.clear(true);
         }
         if(queue.state==QueueState.DISABLED) {
-            for(PreparedCommand pc:queue.commands) {
+            for(PreparedCommand pc:queue.getCommands()) {
                 failedCommand(queue, pc, "Commanding Queue disabled", true);
             }
-            queue.commands.clear();
+            queue.clear(false);
         }
         //	Notify the monitoring clients
-        for(CommandQueueListener m:monitoringClients) {
-            try {
-                m.updateQueue(queue);
-            } catch (Exception e) {
-                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
-                monitoringClients.remove(m);
-            }
-        }
+        notifyUpdateQueue(queue);
         return queue;
     }
     /**

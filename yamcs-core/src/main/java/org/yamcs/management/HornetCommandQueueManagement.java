@@ -183,7 +183,9 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 	YProcessor c=queue.getChannel();
 	CommandQueueInfo cqi=CommandQueueInfo.newBuilder()
 		.setInstance(c.getInstance()).setProcessorName(c.getName())
-		.setName(queue.getName()).setState(queue.getState()).build();
+		.setName(queue.getName()).setState(queue.getState())
+			.setNbRejectedCommands(queue.getNbRejectedCommands())
+			.setNbSentCommands(queue.getNbSentCommands()).build();
 
 	String lvn=c.getInstance()+"."+c.getName()+"."+queue.getName();
 	ClientMessage msg=ysession.session.createMessage(false);

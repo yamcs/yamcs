@@ -1005,6 +1005,26 @@ public final class Commanding {
      * <code>optional .commanding.QueueState state = 4;</code>
      */
     org.yamcs.protobuf.Commanding.QueueState getState();
+
+    // required int32 nbSentCommands = 5;
+    /**
+     * <code>required int32 nbSentCommands = 5;</code>
+     */
+    boolean hasNbSentCommands();
+    /**
+     * <code>required int32 nbSentCommands = 5;</code>
+     */
+    int getNbSentCommands();
+
+    // required int32 nbRejectedCommands = 6;
+    /**
+     * <code>required int32 nbRejectedCommands = 6;</code>
+     */
+    boolean hasNbRejectedCommands();
+    /**
+     * <code>required int32 nbRejectedCommands = 6;</code>
+     */
+    int getNbRejectedCommands();
   }
   /**
    * Protobuf type {@code commanding.CommandQueueInfo}
@@ -1081,6 +1101,16 @@ public final class Commanding {
                 bitField0_ |= 0x00000008;
                 state_ = value;
               }
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              nbSentCommands_ = input.readInt32();
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000020;
+              nbRejectedCommands_ = input.readInt32();
               break;
             }
           }
@@ -1268,11 +1298,45 @@ public final class Commanding {
       return state_;
     }
 
+    // required int32 nbSentCommands = 5;
+    public static final int NBSENTCOMMANDS_FIELD_NUMBER = 5;
+    private int nbSentCommands_;
+    /**
+     * <code>required int32 nbSentCommands = 5;</code>
+     */
+    public boolean hasNbSentCommands() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>required int32 nbSentCommands = 5;</code>
+     */
+    public int getNbSentCommands() {
+      return nbSentCommands_;
+    }
+
+    // required int32 nbRejectedCommands = 6;
+    public static final int NBREJECTEDCOMMANDS_FIELD_NUMBER = 6;
+    private int nbRejectedCommands_;
+    /**
+     * <code>required int32 nbRejectedCommands = 6;</code>
+     */
+    public boolean hasNbRejectedCommands() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>required int32 nbRejectedCommands = 6;</code>
+     */
+    public int getNbRejectedCommands() {
+      return nbRejectedCommands_;
+    }
+
     private void initFields() {
       instance_ = "";
       processorName_ = "";
       name_ = "";
       state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
+      nbSentCommands_ = 0;
+      nbRejectedCommands_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1288,6 +1352,14 @@ public final class Commanding {
         return false;
       }
       if (!hasName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasNbSentCommands()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasNbRejectedCommands()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -1309,6 +1381,12 @@ public final class Commanding {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeEnum(4, state_.getNumber());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt32(5, nbSentCommands_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeInt32(6, nbRejectedCommands_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1334,6 +1412,14 @@ public final class Commanding {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(4, state_.getNumber());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, nbSentCommands_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, nbRejectedCommands_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1459,6 +1545,10 @@ public final class Commanding {
         bitField0_ = (bitField0_ & ~0x00000004);
         state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
         bitField0_ = (bitField0_ & ~0x00000008);
+        nbSentCommands_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        nbRejectedCommands_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -1503,6 +1593,14 @@ public final class Commanding {
           to_bitField0_ |= 0x00000008;
         }
         result.state_ = state_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.nbSentCommands_ = nbSentCommands_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.nbRejectedCommands_ = nbRejectedCommands_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1537,6 +1635,12 @@ public final class Commanding {
         if (other.hasState()) {
           setState(other.getState());
         }
+        if (other.hasNbSentCommands()) {
+          setNbSentCommands(other.getNbSentCommands());
+        }
+        if (other.hasNbRejectedCommands()) {
+          setNbRejectedCommands(other.getNbRejectedCommands());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1551,6 +1655,14 @@ public final class Commanding {
           return false;
         }
         if (!hasName()) {
+          
+          return false;
+        }
+        if (!hasNbSentCommands()) {
+          
+          return false;
+        }
+        if (!hasNbRejectedCommands()) {
           
           return false;
         }
@@ -1830,6 +1942,72 @@ public final class Commanding {
       public Builder clearState() {
         bitField0_ = (bitField0_ & ~0x00000008);
         state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
+        onChanged();
+        return this;
+      }
+
+      // required int32 nbSentCommands = 5;
+      private int nbSentCommands_ ;
+      /**
+       * <code>required int32 nbSentCommands = 5;</code>
+       */
+      public boolean hasNbSentCommands() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>required int32 nbSentCommands = 5;</code>
+       */
+      public int getNbSentCommands() {
+        return nbSentCommands_;
+      }
+      /**
+       * <code>required int32 nbSentCommands = 5;</code>
+       */
+      public Builder setNbSentCommands(int value) {
+        bitField0_ |= 0x00000010;
+        nbSentCommands_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 nbSentCommands = 5;</code>
+       */
+      public Builder clearNbSentCommands() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        nbSentCommands_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // required int32 nbRejectedCommands = 6;
+      private int nbRejectedCommands_ ;
+      /**
+       * <code>required int32 nbRejectedCommands = 6;</code>
+       */
+      public boolean hasNbRejectedCommands() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>required int32 nbRejectedCommands = 6;</code>
+       */
+      public int getNbRejectedCommands() {
+        return nbRejectedCommands_;
+      }
+      /**
+       * <code>required int32 nbRejectedCommands = 6;</code>
+       */
+      public Builder setNbRejectedCommands(int value) {
+        bitField0_ |= 0x00000020;
+        nbRejectedCommands_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 nbRejectedCommands = 6;</code>
+       */
+      public Builder clearNbRejectedCommands() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        nbRejectedCommands_ = 0;
         onChanged();
         return this;
       }
@@ -6929,36 +7107,37 @@ public final class Commanding {
       "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
       "oto\"`\n\tCommandId\022\026\n\016generationTime\030\001 \002(\003" +
       "\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumber\030\003 \002(\005" +
-      "\022\023\n\013commandName\030\004 \001(\t\"p\n\020CommandQueueInf" +
-      "o\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002" +
-      "(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comman" +
-      "ding.QueueState\"\277\001\n\021CommandQueueEntry\022\020\n" +
-      "\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002(\t\022\021" +
-      "\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.comma" +
-      "nding.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006binar",
-      "y\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generationT" +
-      "ime\030\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\tque" +
-      "ueInfo\030\001 \001(\0132\034.commanding.CommandQueueIn" +
-      "fo\0221\n\nqueueEntry\030\002 \001(\0132\035.commanding.Comm" +
-      "andQueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"\333\001" +
-      "\n\023CommandSignificance\022\026\n\016sequenceNumber\030" +
-      "\001 \002(\005\022?\n\020consequenceLevel\030\002 \002(\0162%.comman" +
-      "ding.CommandSignificance.Level\022\030\n\020reason" +
-      "ForWarning\030\003 \001(\t\"Q\n\005Level\022\010\n\004none\020\001\022\t\n\005w" +
-      "atch\020\002\022\013\n\007warning\020\003\022\014\n\010distress\020\004\022\014\n\010cri",
-      "tical\020\005\022\n\n\006severe\020\006\"R\n\027CommandHistoryAtt" +
-      "ribute\022\014\n\004name\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.ya" +
-      "mcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023CommandHistor" +
-      "yEntry\022(\n\tcommandId\030\001 \002(\0132\025.commanding.C" +
-      "ommandId\0221\n\004attr\030\003 \003(\0132#.commanding.Comm" +
-      "andHistoryAttribute*4\n\nQueueState\022\013\n\007BLO" +
-      "CKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001\n\023Co" +
-      "mmandQueueControl\022:\n\rSetQueueState\022\034.com" +
-      "manding.CommandQueueInfo\032\013.yamcs.Void\022;\n" +
-      "\013SendCommand\022\037.commanding.CommandQueueRe",
-      "quest\032\013.yamcs.Void\022;\n\rRejectCommand\022\035.co" +
-      "mmanding.CommandQueueEntry\032\013.yamcs.VoidB" +
-      "\024\n\022org.yamcs.protobuf"
+      "\022\023\n\013commandName\030\004 \001(\t\"\244\001\n\020CommandQueueIn" +
+      "fo\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 " +
+      "\002(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comma" +
+      "nding.QueueState\022\026\n\016nbSentCommands\030\005 \002(\005" +
+      "\022\032\n\022nbRejectedCommands\030\006 \002(\005\"\277\001\n\021Command" +
+      "QueueEntry\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocesso" +
+      "rName\030\002 \002(\t\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030",
+      "\004 \002(\0132\025.commanding.CommandId\022\016\n\006source\030\005" +
+      " \001(\t\022\016\n\006binary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026" +
+      "\n\016generationTime\030\010 \001(\003\"\221\001\n\023CommandQueueR" +
+      "equest\022/\n\tqueueInfo\030\001 \001(\0132\034.commanding.C" +
+      "ommandQueueInfo\0221\n\nqueueEntry\030\002 \001(\0132\035.co" +
+      "mmanding.CommandQueueEntry\022\026\n\007rebuild\030\003 " +
+      "\001(\010:\005false\"\333\001\n\023CommandSignificance\022\026\n\016se" +
+      "quenceNumber\030\001 \002(\005\022?\n\020consequenceLevel\030\002" +
+      " \002(\0162%.commanding.CommandSignificance.Le" +
+      "vel\022\030\n\020reasonForWarning\030\003 \001(\t\"Q\n\005Level\022\010",
+      "\n\004none\020\001\022\t\n\005watch\020\002\022\013\n\007warning\020\003\022\014\n\010dist" +
+      "ress\020\004\022\014\n\010critical\020\005\022\n\n\006severe\020\006\"R\n\027Comm" +
+      "andHistoryAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005val" +
+      "ue\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023" +
+      "CommandHistoryEntry\022(\n\tcommandId\030\001 \002(\0132\025" +
+      ".commanding.CommandId\0221\n\004attr\030\003 \003(\0132#.co" +
+      "mmanding.CommandHistoryAttribute*4\n\nQueu" +
+      "eState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENA" +
+      "BLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQue" +
+      "ueState\022\034.commanding.CommandQueueInfo\032\013.",
+      "yamcs.Void\022;\n\013SendCommand\022\037.commanding.C" +
+      "ommandQueueRequest\032\013.yamcs.Void\022;\n\rRejec" +
+      "tCommand\022\035.commanding.CommandQueueEntry\032" +
+      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6976,7 +7155,7 @@ public final class Commanding {
           internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", });
+              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", });
           internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new

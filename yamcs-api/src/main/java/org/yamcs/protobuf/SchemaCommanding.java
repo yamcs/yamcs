@@ -158,6 +158,10 @@ public final class SchemaCommanding
                     output.writeString(3, message.getName(), false);
                 if(message.hasState())
                     output.writeEnum(4, message.getState().getNumber(), false);
+                if(message.hasNbSentCommands())
+                    output.writeInt32(5, message.getNbSentCommands(), false);
+                if(message.hasNbRejectedCommands())
+                    output.writeInt32(6, message.getNbRejectedCommands(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandQueueInfo message)
             {
@@ -209,6 +213,12 @@ public final class SchemaCommanding
                         case 4:
                             builder.setState(org.yamcs.protobuf.Commanding.QueueState.valueOf(input.readEnum()));
                             break;
+                        case 5:
+                            builder.setNbSentCommands(input.readInt32());
+                            break;
+                        case 6:
+                            builder.setNbRejectedCommands(input.readInt32());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -253,6 +263,8 @@ public final class SchemaCommanding
                 case 2: return "processorName";
                 case 3: return "name";
                 case 4: return "state";
+                case 5: return "nbSentCommands";
+                case 6: return "nbRejectedCommands";
                 default: return null;
             }
         }
@@ -268,6 +280,8 @@ public final class SchemaCommanding
             fieldMap.put("processorName", 2);
             fieldMap.put("name", 3);
             fieldMap.put("state", 4);
+            fieldMap.put("nbSentCommands", 5);
+            fieldMap.put("nbRejectedCommands", 6);
         }
     }
 
