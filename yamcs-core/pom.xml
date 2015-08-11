@@ -9,7 +9,7 @@
 
   <artifactId>yamcs-core</artifactId>
   <packaging>jar</packaging>
-  <name>YAMCS - Yet Another Mission Control System</name>
+  <name>Yamcs Core</name>
   <issueManagement>
     <system>Redmine</system>
     <url>https://redmine.spaceapplications.com/projects/yamcs</url>
