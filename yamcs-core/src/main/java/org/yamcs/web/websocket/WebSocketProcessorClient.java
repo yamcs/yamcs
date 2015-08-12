@@ -25,7 +25,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private final ParameterResource paraResource;
     private final CommandHistoryResource cmdhistResource;
     private final ManagementResource mgmtResource;
-    private final AlarmResource alarmResource;
+    private final AlarmsResource alarmResource;
     private final StreamResource streamResource;
    
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
@@ -39,7 +39,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         paraResource = new ParameterResource(yproc, wsHandler);
         cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
         mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
-        alarmResource = new AlarmResource(yproc, wsHandler);
+        alarmResource = new AlarmsResource(yproc, wsHandler);
         streamResource = new StreamResource(yproc, wsHandler);
     }
 

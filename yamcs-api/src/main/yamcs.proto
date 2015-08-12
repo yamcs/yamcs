@@ -231,7 +231,8 @@ enum ProtoDataType {
        CLIENT_INFO = 11;
        PROCESSING_STATISTICS = 12;
        STREAM_DATA = 13;
-       ALARM_NOTICE = 14;
+       ALARM = 14;
+       ALARM_NOTICE = 15;
 };
 
 //used to replay (concurrently) TM packets, parameters and events

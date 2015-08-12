@@ -21,6 +21,7 @@ import org.yamcs.api.ws.WebSocketClientCallbackListener;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -146,6 +147,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<AlarmNotice> alarmNoticeList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
 
@@ -196,6 +198,11 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void onStatisticsData(Statistics statistics) {
             statisticsList.add(statistics);
+        }
+        
+        @Override
+        public void onAlarm(Alarm alarm) {
+            alarmList.add(alarm);
         }
         
         @Override

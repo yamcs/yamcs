@@ -1,5 +1,6 @@
 package org.yamcs.api.ws;
 
+import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -21,6 +22,7 @@ public interface WebSocketClientCallbackListener {
     void onClientInfoData(ClientInfo clientInfo);
     void onProcessorInfoData(ProcessorInfo processorInfo);
     void onStatisticsData(Statistics statistics);
+    void onAlarm(Alarm alarm);
     void onAlarmNotice(AlarmNotice alarmNotice);
     void onStreamData(StreamData streamData);
 }

@@ -143,6 +143,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         case PROCESSING_STATISTICS:
             callback.onStatisticsData(data.getStatistics());
             break;
+        case ALARM:
+            callback.onAlarm(data.getAlarm());
+            break;
         case ALARM_NOTICE:
             callback.onAlarmNotice(data.getAlarmNotice());
             break;

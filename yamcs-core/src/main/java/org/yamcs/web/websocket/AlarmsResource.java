@@ -1,10 +1,16 @@
 package org.yamcs.web.websocket;
 
+import java.io.IOException;
+import java.util.Map.Entry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.AlarmServer;
+import org.yamcs.AlarmServer.ActiveAlarm;
 import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
+import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Alarms.AlarmNotice.Type;
 import org.yamcs.protobuf.SchemaAlarms;
@@ -12,6 +18,7 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -20,12 +27,12 @@ import org.yamcs.yarch.YarchDatabase;
 /**
  * Provides realtime alarm subscription via web.
  */
-public class AlarmResource extends AbstractWebSocketResource implements StreamSubscriber {
+public class AlarmsResource extends AbstractWebSocketResource implements StreamSubscriber {
     Logger log;
 
-    public AlarmResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+    public AlarmsResource(YProcessor channel, WebSocketServerHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(AlarmResource.class.getName() + "[" + channel.getInstance() + "]");
+        log = LoggerFactory.getLogger(AlarmsResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("alarms", this);
     }
 
@@ -41,13 +48,39 @@ public class AlarmResource extends AbstractWebSocketResource implements StreamSu
         }
     }
 
+    // TODO support a request body SubscribeAlarmsRequest
     private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
         if (!processor.hasAlarmServer()) {
-            throw new WebSocketException(requestId, "Alarms are not enabled for processor " + processor.getName());   
+            throw new WebSocketException(requestId, "Alarms are not enabled for processor " + processor.getName());
         }
         
-        doSubscribe();
-        return toAckReply(requestId);
+        try {
+            WebSocketReplyData reply = toAckReply(requestId);
+            wsHandler.sendReply(reply);
+            
+            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            try {
+                for (Entry<Parameter, ActiveAlarm> entry : alarmServer.getActiveAlarms().entrySet()) {
+                    NamedObjectId id = NamedObjectId.newBuilder().setName(entry.getKey().getQualifiedName()).build();
+                    Alarm.Builder alarmb = Alarm.newBuilder();
+                    alarmb.setTriggerValue(entry.getValue().triggerValue.toGpb(id));
+                    alarmb.setMostSevereValue(entry.getValue().mostSevereValue.toGpb(id));
+                    alarmb.setCurrentValue(entry.getValue().currentValue.toGpb(id));
+                    wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);   
+                }
+            } catch (IOException e) {
+                log.warn("got error when sending parameter updates, quitting", e);
+                quit();
+            }
+        
+            // TODO there could be something inbetween. The above thing is a concurrenthashmap
+            // so we should maybe subscribe before that, and store any delta in a temp structure
+            doSubscribe();
+            return null;
+        } catch (IOException e) {
+            log.error("Exception when sending data", e);
+            return null;
+        }
     }
     
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {

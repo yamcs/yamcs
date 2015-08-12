@@ -25,7 +25,6 @@ import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.Privilege;
-import org.yamcs.web.HttpSocketServerHandler;
 import org.yamcs.xtce.Parameter;
 
 /**
@@ -34,7 +33,7 @@ import org.yamcs.xtce.Parameter;
  * /(instance)/api/parameter
  */
 public class ParameterRequestHandler implements RestRequestHandler {
-    final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
+    final static Logger log=LoggerFactory.getLogger(ParameterRequestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -79,7 +78,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
                 RestSetParameterResponse response = setParameter(p, v, processor);
                 return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
             } else {
-                throw new BadRequestException("Only GET and POST methods supported for parameter");
+                throw new MethodNotAllowedException(req);
             }
         }
     }
@@ -171,7 +170,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
         try {
             if(request.hasFromCache()) {
                 if(!prm.hasParameterCache()) {
-                    throw new BadRequestException("ParameterCache not activated for this channel");
+                    throw new BadRequestException("ParameterCache not activated for this processor");
                 }
                 List<ParameterValueWithId> l;
                 l = pwirh.getValuesFromCache(idList, req.authToken);
