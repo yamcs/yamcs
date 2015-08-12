@@ -18,7 +18,8 @@ public class CommandQueueControlImpl extends StandardMBean  implements CommandQu
         this.queue=queue;
         this.cqm=cqm;
         cqi=CommandQueueInfo.newBuilder().setInstance(instance).setProcessorName(yprocName)
-            .setName(queue.getName()).setState(queue.getState()).build();
+            .setName(queue.getName()).setState(queue.getState()).setNbSentCommands(queue.getNbSentCommands())
+                .setNbRejectedCommands(queue.getNbRejectedCommands()).build();
     }
 
     @Override

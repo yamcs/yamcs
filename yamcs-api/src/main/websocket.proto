@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "alarms.proto";
 import "yamcsManagement.proto";
 
 // TODO we should probably include messages for all the sub-operations here.
@@ -49,6 +50,7 @@ message WebSocketServerMessage {
     optional yamcsManagement.Statistics statistics = 7;
     optional yamcs.Event event = 8;
     optional yamcs.StreamData streamData = 9;
+    optional alarms.AlarmNotice alarmNotice = 10;
   }
 
   optional MessageType type=1;

@@ -53,7 +53,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
     
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        YarchDatabase ydb = YarchDatabase.getInstance(yproc.getInstance());
+        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
@@ -66,7 +66,7 @@ public class StreamResource extends AbstractWebSocketResource {
                 throw new WebSocketException(ctx.getRequestId(), "No stream was provided");
             }
         } else {
-            stream = ydb.getStream(yproc.getName());
+            stream = ydb.getStream(processor.getName());
         }
         
         StreamSubscriber subscriber = new StreamSubscriber() {
@@ -134,7 +134,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
     
     private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        YarchDatabase ydb = YarchDatabase.getInstance(yproc.getInstance());
+        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         
         StreamData req = decoder.decodeMessageData(ctx, SchemaYamcs.StreamData.MERGE).build();
         Stream stream = ydb.getStream(req.getStream());
@@ -214,7 +214,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
     
     public void switchYProcessor(YProcessor processor) {
-        this.yproc = processor;
+        this.processor = processor;
     }
 
     @Override

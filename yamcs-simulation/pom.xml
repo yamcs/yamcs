@@ -11,7 +11,7 @@
 
   <artifactId>yamcs-simulation</artifactId>
   <packaging>jar</packaging>
-  <name>yamcs simulation</name>
+  <name>Yamcs Simulation</name>
   
   <dependencies>
     <dependency>

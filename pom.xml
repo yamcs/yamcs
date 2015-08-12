@@ -5,7 +5,7 @@
   <artifactId>yamcs</artifactId>
   <packaging>pom</packaging>
   <name>Yamcs</name>
-  <description>Yet Another Mission Control System.</description>
+  <description>Yet Another Mission Control System</description>
   <version>0.28.0</version>
 
   <scm>

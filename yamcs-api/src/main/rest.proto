@@ -29,6 +29,9 @@ enum RestDataSource {
   DERIVED=1;
   CONSTANT=2;
   LOCAL=3;
+  SYSTEM=4;
+  COMMAND=5;
+  COMMAND_HISTORY=6;
 }
 
 message RestListAvailableParametersRequest {

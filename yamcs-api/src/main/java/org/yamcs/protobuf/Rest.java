@@ -29,6 +29,18 @@ public final class Rest {
      * <code>LOCAL = 3;</code>
      */
     LOCAL(3, 3),
+    /**
+     * <code>SYSTEM = 4;</code>
+     */
+    SYSTEM(4, 4),
+    /**
+     * <code>COMMAND = 5;</code>
+     */
+    COMMAND(5, 5),
+    /**
+     * <code>COMMAND_HISTORY = 6;</code>
+     */
+    COMMAND_HISTORY(6, 6),
     ;
 
     /**
@@ -47,6 +59,18 @@ public final class Rest {
      * <code>LOCAL = 3;</code>
      */
     public static final int LOCAL_VALUE = 3;
+    /**
+     * <code>SYSTEM = 4;</code>
+     */
+    public static final int SYSTEM_VALUE = 4;
+    /**
+     * <code>COMMAND = 5;</code>
+     */
+    public static final int COMMAND_VALUE = 5;
+    /**
+     * <code>COMMAND_HISTORY = 6;</code>
+     */
+    public static final int COMMAND_HISTORY_VALUE = 6;
 
 
     public final int getNumber() { return value; }
@@ -57,6 +81,9 @@ public final class Rest {
         case 1: return DERIVED;
         case 2: return CONSTANT;
         case 3: return LOCAL;
+        case 4: return SYSTEM;
+        case 5: return COMMAND;
+        case 6: return COMMAND_HISTORY;
         default: return null;
       }
     }
@@ -28219,11 +28246,12 @@ public final class Rest {
       "RestListAuthorisationsRequest\"^\n\036RestLis" +
       "tAuthorisationsResponse\022<\n\026userAuthoriza" +
       "tionsInfo\030\001 \001(\0132\034.rest.UserAuthorization" +
-      "sInfo*G\n\016RestDataSource\022\017\n\013TELEMETERED\020\000" +
-      "\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003*\\" +
-      "\n\016RestAlarmLevel\022\n\n\006normal\020\000\022\t\n\005watch\020\001\022" +
-      "\013\n\007warning\020\002\022\014\n\010distress\020\003\022\014\n\010critical\020\004" +
-      "\022\n\n\006severe\020\005B\024\n\022org.yamcs.protobuf"
+      "sInfo*u\n\016RestDataSource\022\017\n\013TELEMETERED\020\000" +
+      "\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n" +
+      "\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTO" +
+      "RY\020\006*\\\n\016RestAlarmLevel\022\n\n\006normal\020\000\022\t\n\005wa" +
+      "tch\020\001\022\013\n\007warning\020\002\022\014\n\010distress\020\003\022\014\n\010crit" +
+      "ical\020\004\022\n\n\006severe\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

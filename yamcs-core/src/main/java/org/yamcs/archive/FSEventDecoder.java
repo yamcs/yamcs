@@ -42,7 +42,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     String instance;
     Map<String,PayloadModel> opsnameToPayloadModel =new HashMap<String,PayloadModel>();
     private Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    YamcsClient msgClient;
+    public YamcsClient msgClient;
     final SimpleString realtimeAddress, dumpAddress; //addresses where to send realtime and dump events
     
     final Stream realtimeTmStream, dumpTmStream; //TM packets come from here
@@ -124,9 +124,10 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     public void streamClosed(Stream stream) {//shouldn't happen
     }
 
-    private void processPacket(long rectime, byte[] packet, SimpleString address) {
+   public void processPacket(long rectime, byte[] packet, SimpleString address) {
+        CcsdsPacket ccsdsPacket = new CcsdsPacket(packet);
         ByteBuffer bb=ByteBuffer.wrap(packet);
-        int packetId=CcsdsPacket.getPacketID(bb);
+        int packetId=ccsdsPacket.getPacketID();
         int apid=CcsdsPacket.getAPID(bb);
         String opsName=xtceutil.getPacketNameByApidPacketid(apid, packetId, MdbMappings.MDB_OPSNAME);
         if(opsName==null) opsName=xtceutil.getPacketNameByPacketId(packetId, MdbMappings.MDB_OPSNAME);

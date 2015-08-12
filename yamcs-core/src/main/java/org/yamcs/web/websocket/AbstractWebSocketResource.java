@@ -11,12 +11,12 @@ import org.yamcs.security.AuthenticationToken;
  */
 public abstract class AbstractWebSocketResource {
 
-    protected YProcessor yproc;
+    protected YProcessor processor;
     protected WebSocketServerHandler wsHandler;
 
 
-    public AbstractWebSocketResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
-        this.yproc = yproc;
+    public AbstractWebSocketResource(YProcessor processor, WebSocketServerHandler wsHandler) {
+        this.processor = processor;
         this.wsHandler = wsHandler;
     }
 

@@ -11,6 +11,6 @@
 
   <artifactId>yamcs-web</artifactId>
   <packaging>jar</packaging>
-  <name>yamcs web server</name>
+  <name>Yamcs Web Server</name>
 
 </project>

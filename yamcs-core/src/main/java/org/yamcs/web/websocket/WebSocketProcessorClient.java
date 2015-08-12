@@ -25,6 +25,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private final ParameterResource paraResource;
     private final CommandHistoryResource cmdhistResource;
     private final ManagementResource mgmtResource;
+    private final AlarmResource alarmResource;
     private final StreamResource streamResource;
    
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
@@ -38,19 +39,21 @@ public class WebSocketProcessorClient implements YProcessorClient {
         paraResource = new ParameterResource(yproc, wsHandler);
         cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
         mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
+        alarmResource = new AlarmResource(yproc, wsHandler);
         streamResource = new StreamResource(yproc, wsHandler);
     }
 
     @Override
-    public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
-        log.info("switching yprocessor to {}", c);
+    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
+        log.info("switching yprocessor to {}", newProcessor);
         try {
-            paraResource.switchYProcessor(c, authToken);
+            paraResource.switchYProcessor(newProcessor, authToken);
         } catch (NoPermissionException e) {
             throw new YProcessorException("No permission", e);
         }
-        cmdhistResource.switchYProcessor(c);
-        streamResource.switchYProcessor(c);
+        cmdhistResource.switchYProcessor(newProcessor);
+        alarmResource.switchYProcessor(newProcessor);
+        streamResource.switchYProcessor(newProcessor);
     }
     
     public int getClientId() {
@@ -84,6 +87,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         paraResource.quit();
         cmdhistResource.quit();
         mgmtResource.quit();
+        alarmResource.quit();
         streamResource.quit();
     }
 }

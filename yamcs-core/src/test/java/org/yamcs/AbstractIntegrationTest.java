@@ -21,6 +21,7 @@ import org.yamcs.api.ws.WebSocketClientCallbackListener;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.RestArgumentType;
@@ -139,13 +140,14 @@ public abstract class AbstractIntegrationTest {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
-        LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<NamedObjectId>();
-        LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<ParameterData>();
-        LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<CommandHistoryEntry>();
-        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<ClientInfo>();
-        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<ProcessorInfo>();
-        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<Statistics>();
-        LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<StreamData>();
+        LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<AlarmNotice> alarmNoticeList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
 
 
         int count =0;
@@ -194,6 +196,11 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void onStatisticsData(Statistics statistics) {
             statisticsList.add(statistics);
+        }
+        
+        @Override
+        public void onAlarmNotice(AlarmNotice alarmNotice) {
+            alarmNoticeList.add(alarmNotice);
         }
 
         @Override

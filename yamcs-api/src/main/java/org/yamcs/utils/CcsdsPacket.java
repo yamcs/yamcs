@@ -123,17 +123,18 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	}
 
 	public int getPacketID() {
-		return bb.getInt(12);
+		if(getSecondaryHeaderFlag() != 0)
+			return bb.getInt(12);
+		else
+			return 0;
 	}
-	
+
 	public void setPacketID(int id) {
 	    bb.putInt(12, id);
 	}
-	
-	public static int getPacketID(ByteBuffer bb) {
-		return bb.getInt(12);
-	}
-	
+
+
+
 	public byte[] getBytes() {
 		return bb.array();
 	}
@@ -228,7 +229,4 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 		return sb.toString();
 	}
 
-    public static int getPacketID(byte[] buf) {
-        return getPacketID(ByteBuffer.wrap(buf));
-    }    
 }
