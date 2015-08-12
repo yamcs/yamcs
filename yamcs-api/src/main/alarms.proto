@@ -25,6 +25,7 @@ message AlarmNotice {
 
    optional Type type = 1;
    optional int64 triggerTime = 2;
-   optional pvalue.ParameterValue pval = 3;
-   optional string username = 4;  // When the alarm was cleared
+   optional string triggerTimeUTC = 3;
+   optional pvalue.ParameterValue pval = 4;
+   optional string username = 5;  // In case the alarm was cleared
 }

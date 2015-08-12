@@ -1467,42 +1467,57 @@ public final class Alarms {
      */
     long getTriggerTime();
 
-    // optional .pvalue.ParameterValue pval = 3;
+    // optional string triggerTimeUTC = 3;
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional string triggerTimeUTC = 3;</code>
+     */
+    boolean hasTriggerTimeUTC();
+    /**
+     * <code>optional string triggerTimeUTC = 3;</code>
+     */
+    java.lang.String getTriggerTimeUTC();
+    /**
+     * <code>optional string triggerTimeUTC = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getTriggerTimeUTCBytes();
+
+    // optional .pvalue.ParameterValue pval = 4;
+    /**
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
      */
     boolean hasPval();
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
      */
     org.yamcs.protobuf.Pvalue.ParameterValue getPval();
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
      */
     org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getPvalOrBuilder();
 
-    // optional string username = 4;
+    // optional string username = 5;
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     boolean hasUsername();
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     java.lang.String getUsername();
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -1576,8 +1591,13 @@ public final class Alarms {
               break;
             }
             case 26: {
+              bitField0_ |= 0x00000004;
+              triggerTimeUTC_ = input.readBytes();
+              break;
+            }
+            case 34: {
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 subBuilder = pval_.toBuilder();
               }
               pval_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
@@ -1585,11 +1605,11 @@ public final class Alarms {
                 subBuilder.mergeFrom(pval_);
                 pval_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000008;
               break;
             }
-            case 34: {
-              bitField0_ |= 0x00000008;
+            case 42: {
+              bitField0_ |= 0x00000010;
               username_ = input.readBytes();
               break;
             }
@@ -1765,46 +1785,89 @@ public final class Alarms {
       return triggerTime_;
     }
 
-    // optional .pvalue.ParameterValue pval = 3;
-    public static final int PVAL_FIELD_NUMBER = 3;
-    private org.yamcs.protobuf.Pvalue.ParameterValue pval_;
+    // optional string triggerTimeUTC = 3;
+    public static final int TRIGGERTIMEUTC_FIELD_NUMBER = 3;
+    private java.lang.Object triggerTimeUTC_;
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional string triggerTimeUTC = 3;</code>
      */
-    public boolean hasPval() {
+    public boolean hasTriggerTimeUTC() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional string triggerTimeUTC = 3;</code>
+     */
+    public java.lang.String getTriggerTimeUTC() {
+      java.lang.Object ref = triggerTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          triggerTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string triggerTimeUTC = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTriggerTimeUTCBytes() {
+      java.lang.Object ref = triggerTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        triggerTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional .pvalue.ParameterValue pval = 4;
+    public static final int PVAL_FIELD_NUMBER = 4;
+    private org.yamcs.protobuf.Pvalue.ParameterValue pval_;
+    /**
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
+     */
+    public boolean hasPval() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
      */
     public org.yamcs.protobuf.Pvalue.ParameterValue getPval() {
       return pval_;
     }
     /**
-     * <code>optional .pvalue.ParameterValue pval = 3;</code>
+     * <code>optional .pvalue.ParameterValue pval = 4;</code>
      */
     public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getPvalOrBuilder() {
       return pval_;
     }
 
-    // optional string username = 4;
-    public static final int USERNAME_FIELD_NUMBER = 4;
+    // optional string username = 5;
+    public static final int USERNAME_FIELD_NUMBER = 5;
     private java.lang.Object username_;
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     public boolean hasUsername() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     public java.lang.String getUsername() {
@@ -1822,10 +1885,10 @@ public final class Alarms {
       }
     }
     /**
-     * <code>optional string username = 4;</code>
+     * <code>optional string username = 5;</code>
      *
      * <pre>
-     * When the alarm was cleared
+     * In case the alarm was cleared
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -1845,6 +1908,7 @@ public final class Alarms {
     private void initFields() {
       type_ = org.yamcs.protobuf.Alarms.AlarmNotice.Type.TRIGGERED;
       triggerTime_ = 0L;
+      triggerTimeUTC_ = "";
       pval_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       username_ = "";
     }
@@ -1873,10 +1937,13 @@ public final class Alarms {
         output.writeInt64(2, triggerTime_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, pval_);
+        output.writeBytes(3, getTriggerTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getUsernameBytes());
+        output.writeMessage(4, pval_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getUsernameBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1897,11 +1964,15 @@ public final class Alarms {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, pval_);
+          .computeBytesSize(3, getTriggerTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getUsernameBytes());
+          .computeMessageSize(4, pval_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getUsernameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2024,14 +2095,16 @@ public final class Alarms {
         bitField0_ = (bitField0_ & ~0x00000001);
         triggerTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
+        triggerTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (pvalBuilder_ == null) {
           pval_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
         } else {
           pvalBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
-        username_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        username_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -2071,13 +2144,17 @@ public final class Alarms {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
+        result.triggerTimeUTC_ = triggerTimeUTC_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
         if (pvalBuilder_ == null) {
           result.pval_ = pval_;
         } else {
           result.pval_ = pvalBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.username_ = username_;
         result.bitField0_ = to_bitField0_;
@@ -2102,11 +2179,16 @@ public final class Alarms {
         if (other.hasTriggerTime()) {
           setTriggerTime(other.getTriggerTime());
         }
+        if (other.hasTriggerTimeUTC()) {
+          bitField0_ |= 0x00000004;
+          triggerTimeUTC_ = other.triggerTimeUTC_;
+          onChanged();
+        }
         if (other.hasPval()) {
           mergePval(other.getPval());
         }
         if (other.hasUsername()) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
           username_ = other.username_;
           onChanged();
         }
@@ -2212,18 +2294,92 @@ public final class Alarms {
         return this;
       }
 
-      // optional .pvalue.ParameterValue pval = 3;
+      // optional string triggerTimeUTC = 3;
+      private java.lang.Object triggerTimeUTC_ = "";
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public boolean hasTriggerTimeUTC() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public java.lang.String getTriggerTimeUTC() {
+        java.lang.Object ref = triggerTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          triggerTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTriggerTimeUTCBytes() {
+        java.lang.Object ref = triggerTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          triggerTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public Builder setTriggerTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        triggerTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public Builder clearTriggerTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        triggerTimeUTC_ = getDefaultInstance().getTriggerTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string triggerTimeUTC = 3;</code>
+       */
+      public Builder setTriggerTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        triggerTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional .pvalue.ParameterValue pval = 4;
       private org.yamcs.protobuf.Pvalue.ParameterValue pval_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> pvalBuilder_;
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public boolean hasPval() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public org.yamcs.protobuf.Pvalue.ParameterValue getPval() {
         if (pvalBuilder_ == null) {
@@ -2233,7 +2389,7 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public Builder setPval(org.yamcs.protobuf.Pvalue.ParameterValue value) {
         if (pvalBuilder_ == null) {
@@ -2245,11 +2401,11 @@ public final class Alarms {
         } else {
           pvalBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public Builder setPval(
           org.yamcs.protobuf.Pvalue.ParameterValue.Builder builderForValue) {
@@ -2259,15 +2415,15 @@ public final class Alarms {
         } else {
           pvalBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public Builder mergePval(org.yamcs.protobuf.Pvalue.ParameterValue value) {
         if (pvalBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
               pval_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
             pval_ =
               org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(pval_).mergeFrom(value).buildPartial();
@@ -2278,11 +2434,11 @@ public final class Alarms {
         } else {
           pvalBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public Builder clearPval() {
         if (pvalBuilder_ == null) {
@@ -2291,19 +2447,19 @@ public final class Alarms {
         } else {
           pvalBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public org.yamcs.protobuf.Pvalue.ParameterValue.Builder getPvalBuilder() {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return getPvalFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getPvalOrBuilder() {
         if (pvalBuilder_ != null) {
@@ -2313,7 +2469,7 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional .pvalue.ParameterValue pval = 3;</code>
+       * <code>optional .pvalue.ParameterValue pval = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> 
@@ -2329,23 +2485,23 @@ public final class Alarms {
         return pvalBuilder_;
       }
 
-      // optional string username = 4;
+      // optional string username = 5;
       private java.lang.Object username_ = "";
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public boolean hasUsername() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public java.lang.String getUsername() {
@@ -2360,10 +2516,10 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -2380,10 +2536,10 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public Builder setUsername(
@@ -2391,29 +2547,29 @@ public final class Alarms {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         username_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public Builder clearUsername() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         username_ = getDefaultInstance().getUsername();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string username = 4;</code>
+       * <code>optional string username = 5;</code>
        *
        * <pre>
-       * When the alarm was cleared
+       * In case the alarm was cleared
        * </pre>
        */
       public Builder setUsernameBytes(
@@ -2421,7 +2577,7 @@ public final class Alarms {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         username_ = value;
         onChanged();
         return this;
@@ -2468,13 +2624,13 @@ public final class Alarms {
       "e\030\001 \001(\0132\026.pvalue.ParameterValue\022/\n\017mostS" +
       "evereValue\030\002 \001(\0132\026.pvalue.ParameterValue" +
       "\022,\n\014currentValue\030\003 \001(\0132\026.pvalue.Paramete" +
-      "rValue\022\022\n\nviolations\030\004 \001(\r\"\313\001\n\013AlarmNoti" +
+      "rValue\022\022\n\nviolations\030\004 \001(\r\"\343\001\n\013AlarmNoti" +
       "ce\022&\n\004type\030\001 \001(\0162\030.alarms.AlarmNotice.Ty" +
-      "pe\022\023\n\013triggerTime\030\002 \001(\003\022$\n\004pval\030\003 \001(\0132\026." +
-      "pvalue.ParameterValue\022\020\n\010username\030\004 \001(\t\"",
-      "G\n\004Type\022\r\n\tTRIGGERED\020\001\022\026\n\022SEVERITY_INCRE" +
-      "ASED\020\002\022\013\n\007UPDATED\020\003\022\013\n\007CLEARED\020\004B\024\n\022org." +
-      "yamcs.protobuf"
+      "pe\022\023\n\013triggerTime\030\002 \001(\003\022\026\n\016triggerTimeUT" +
+      "C\030\003 \001(\t\022$\n\004pval\030\004 \001(\0132\026.pvalue.Parameter",
+      "Value\022\020\n\010username\030\005 \001(\t\"G\n\004Type\022\r\n\tTRIGG" +
+      "ERED\020\001\022\026\n\022SEVERITY_INCREASED\020\002\022\013\n\007UPDATE" +
+      "D\020\003\022\013\n\007CLEARED\020\004B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2498,7 +2654,7 @@ public final class Alarms {
           internal_static_alarms_AlarmNotice_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alarms_AlarmNotice_descriptor,
-              new java.lang.String[] { "Type", "TriggerTime", "Pval", "Username", });
+              new java.lang.String[] { "Type", "TriggerTime", "TriggerTimeUTC", "Pval", "Username", });
           return null;
         }
       };

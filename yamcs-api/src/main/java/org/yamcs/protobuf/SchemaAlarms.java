@@ -271,11 +271,13 @@ public final class SchemaAlarms
                     output.writeEnum(1, message.getType().getNumber(), false);
                 if(message.hasTriggerTime())
                     output.writeInt64(2, message.getTriggerTime(), false);
+                if(message.hasTriggerTimeUTC())
+                    output.writeString(3, message.getTriggerTimeUTC(), false);
                 if(message.hasPval())
-                    output.writeObject(3, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(4, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasUsername())
-                    output.writeString(4, message.getUsername(), false);
+                    output.writeString(5, message.getUsername(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmNotice message)
             {
@@ -322,10 +324,13 @@ public final class SchemaAlarms
                             builder.setTriggerTime(input.readInt64());
                             break;
                         case 3:
+                            builder.setTriggerTimeUTC(input.readString());
+                            break;
+                        case 4:
                             builder.setPval(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 4:
+                        case 5:
                             builder.setUsername(input.readString());
                             break;
                         default:
@@ -370,8 +375,9 @@ public final class SchemaAlarms
             {
                 case 1: return "type";
                 case 2: return "triggerTime";
-                case 3: return "pval";
-                case 4: return "username";
+                case 3: return "triggerTimeUTC";
+                case 4: return "pval";
+                case 5: return "username";
                 default: return null;
             }
         }
@@ -385,8 +391,9 @@ public final class SchemaAlarms
         {
             fieldMap.put("type", 1);
             fieldMap.put("triggerTime", 2);
-            fieldMap.put("pval", 3);
-            fieldMap.put("username", 4);
+            fieldMap.put("triggerTimeUTC", 3);
+            fieldMap.put("pval", 4);
+            fieldMap.put("username", 5);
         }
     }
 
