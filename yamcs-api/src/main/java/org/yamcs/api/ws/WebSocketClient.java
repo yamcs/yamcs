@@ -3,6 +3,7 @@ package org.yamcs.api.ws;
 import java.net.URI;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,7 +75,12 @@ public class WebSocketClient {
 	}
 
 	public void connect() {
-		enableReconnection.set(true);
+		enableReconnection.set(false);
+		createBootstrap();
+	}
+
+	public void connect(boolean enableReconnection) {
+		this.enableReconnection.set(enableReconnection);
 		createBootstrap();
 	}
 
@@ -123,10 +129,10 @@ public class WebSocketClient {
 			ChannelFuture future = bootstrap.connect(uri.getHost(), uri.getPort()).addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
-					if (!future.isSuccess()) {
+					if (!future.isSuccess() && (enableReconnection.get())) {
 						// Set-up reconnection attempts every second during initial set-up.
 						log.info("reconnect..");
-						//group.schedule(() -> createBootstrap(), 1L, TimeUnit.SECONDS);
+						group.schedule(() -> createBootstrap(), 1L, TimeUnit.SECONDS);
 					}
 				}
 			});
