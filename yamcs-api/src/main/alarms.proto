@@ -4,6 +4,17 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "pvalue.proto";
 
+message AlarmsSubscribeRequest {
+   optional bool getCurrent = 1; // Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+}
+
+message Alarm {
+   optional pvalue.ParameterValue triggerValue = 1;
+   optional pvalue.ParameterValue mostSevereValue = 2;
+   optional pvalue.ParameterValue currentValue = 3;
+   optional uint32 violations = 4;
+}
+
 message AlarmNotice {
    enum Type {
       TRIGGERED = 1;

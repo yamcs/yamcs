@@ -39,6 +39,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     public static final String MDB_PATH = "mdb";
     public static final String COMMANDING_PATH = "commanding";
     public static final String PARAMETER_PATH = "parameter";
+    public static final String ALARMS_PATH = "alarms";
     public static final String MANAGEMENT_PATH = "management";
     public static final String PROCESSOR_PATH = "processor";
     public static final String AUTHORIZATION_PATH = "authorization";
@@ -47,6 +48,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     static ParameterRequestHandler parameterRequestHandler=new ParameterRequestHandler();
+    static AlarmsRequestHandler alarmsRequestHandler=new AlarmsRequestHandler();
     static ManagementRequestHandler managementRequestHandler=new ManagementRequestHandler();
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     static AuthorizationRequestHandler authorizationRequestHandler=new AuthorizationRequestHandler();
@@ -90,15 +92,18 @@ public class ApiRequestHandler extends AbstractRequestHandler {
             case PARAMETER_PATH:
                 sendResponse(parameterRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
+            case ALARMS_PATH:
+                sendResponse(alarmsRequestHandler.handleRequest(req, handlerOffset + 1));
+                break;
             case MANAGEMENT_PATH:
                 sendResponse(managementRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
-                case PROCESSOR_PATH:
-                    sendResponse(processorRequestHandler.handleRequest(req, handlerOffset + 1));
-                    break;
-                case AUTHORIZATION_PATH:
-                    sendResponse(authorizationRequestHandler.handleRequest(req, handlerOffset + 1));
-                    break;
+            case PROCESSOR_PATH:
+                sendResponse(processorRequestHandler.handleRequest(req, handlerOffset + 1));
+                break;
+            case AUTHORIZATION_PATH:
+                sendResponse(authorizationRequestHandler.handleRequest(req, handlerOffset + 1));
+                break;
             default:
                 log.warn("Unknown request received: '{}'", req.getPathSegment(handlerOffset));
                 throw new NotFoundException(req);

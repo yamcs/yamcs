@@ -50,7 +50,8 @@ message WebSocketServerMessage {
     optional yamcsManagement.Statistics statistics = 7;
     optional yamcs.Event event = 8;
     optional yamcs.StreamData streamData = 9;
-    optional alarms.AlarmNotice alarmNotice = 10;
+    optional alarms.Alarm alarm = 10;
+    optional alarms.AlarmNotice alarmNotice = 11;
   }
 
   optional MessageType type=1;
