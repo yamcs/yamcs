@@ -1,8 +1,8 @@
 package org.yamcs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class AlarmServer extends AbstractService {
 
     private EventProducer eventProducer;
-    private Map<Parameter, ActiveAlarm> activeAlarms=new HashMap<Parameter, ActiveAlarm>();
+    private Map<Parameter, ActiveAlarm> activeAlarms=new ConcurrentHashMap<>();
     // Last value of each param (for detecting changes in value)
     final String yamcsInstance;
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
@@ -72,7 +72,15 @@ public class AlarmServer extends AbstractService {
     void setListener(AlarmListener listener) {
         this.listener = listener;
     }
-
+    
+    /**
+     * Returns the current set of active alarms
+     * TODO (FDI) I'm not sure whether this activeAlarms should be a concurrenthashmap
+     * this collectionview, could change between adding a listener.  
+     */
+    public Map<Parameter, ActiveAlarm> getActiveAlarms() {
+        return activeAlarms;
+    }
 
     @Override
     public void doStart() {
@@ -189,18 +197,18 @@ public class AlarmServer extends AbstractService {
         public boolean autoAcknowledge;
         
         //the value that triggered the alarm
-        ParameterValue triggerValue;
+        public ParameterValue triggerValue;
         
         //most severe value
-        ParameterValue mostSevereValue;
+        public ParameterValue mostSevereValue;
         
         //current value of the parameter
-        ParameterValue currentValue;
+        public ParameterValue currentValue;
         
         //message provided at triggering time  
         String message;
         
-        int violations=1;
+        public int violations=1;
         
         String usernameThatAcknowledged;
         

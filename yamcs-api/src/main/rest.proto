@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "alarms.proto";
 import "yamcsManagement.proto";
 
 // Generic holder for an exception
@@ -155,6 +156,10 @@ message UpdateTagRequest {
   optional int64 stop = 3;
   optional string description = 4;
   optional string color = 5;
+}
+
+message GetAlarmsResponse {
+   repeated alarms.Alarm alarms = 1;
 }
 
 message RestSendCommandRequest {

@@ -444,8 +444,11 @@ public final class SchemaWebsocket
                     if(message.hasStreamData())
                         output.writeObject(9, message.getStreamData(), org.yamcs.protobuf.SchemaYamcs.StreamData.WRITE, false);
 
+                    if(message.hasAlarm())
+                        output.writeObject(10, message.getAlarm(), org.yamcs.protobuf.SchemaAlarms.Alarm.WRITE, false);
+
                     if(message.hasAlarmNotice())
-                        output.writeObject(10, message.getAlarmNotice(), org.yamcs.protobuf.SchemaAlarms.AlarmNotice.WRITE, false);
+                        output.writeObject(11, message.getAlarmNotice(), org.yamcs.protobuf.SchemaAlarms.AlarmNotice.WRITE, false);
 
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message)
@@ -521,6 +524,10 @@ public final class SchemaWebsocket
 
                                 break;
                             case 10:
+                                builder.setAlarm(input.mergeObject(org.yamcs.protobuf.Alarms.Alarm.newBuilder(), org.yamcs.protobuf.SchemaAlarms.Alarm.MERGE));
+
+                                break;
+                            case 11:
                                 builder.setAlarmNotice(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmNotice.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmNotice.MERGE));
 
                                 break;
@@ -573,7 +580,8 @@ public final class SchemaWebsocket
                     case 7: return "statistics";
                     case 8: return "event";
                     case 9: return "streamData";
-                    case 10: return "alarmNotice";
+                    case 10: return "alarm";
+                    case 11: return "alarmNotice";
                     default: return null;
                 }
             }
@@ -594,7 +602,8 @@ public final class SchemaWebsocket
                 fieldMap.put("statistics", 7);
                 fieldMap.put("event", 8);
                 fieldMap.put("streamData", 9);
-                fieldMap.put("alarmNotice", 10);
+                fieldMap.put("alarm", 10);
+                fieldMap.put("alarmNotice", 11);
             }
         }
 

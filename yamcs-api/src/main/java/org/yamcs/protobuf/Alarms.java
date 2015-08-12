@@ -8,6 +8,1442 @@ public final class Alarms {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
+  public interface AlarmsSubscribeRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional bool getCurrent = 1;
+    /**
+     * <code>optional bool getCurrent = 1;</code>
+     *
+     * <pre>
+     * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+     * </pre>
+     */
+    boolean hasGetCurrent();
+    /**
+     * <code>optional bool getCurrent = 1;</code>
+     *
+     * <pre>
+     * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+     * </pre>
+     */
+    boolean getGetCurrent();
+  }
+  /**
+   * Protobuf type {@code alarms.AlarmsSubscribeRequest}
+   */
+  public static final class AlarmsSubscribeRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements AlarmsSubscribeRequestOrBuilder {
+    // Use AlarmsSubscribeRequest.newBuilder() to construct.
+    private AlarmsSubscribeRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AlarmsSubscribeRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AlarmsSubscribeRequest defaultInstance;
+    public static AlarmsSubscribeRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AlarmsSubscribeRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AlarmsSubscribeRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              getCurrent_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmsSubscribeRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmsSubscribeRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AlarmsSubscribeRequest> PARSER =
+        new com.google.protobuf.AbstractParser<AlarmsSubscribeRequest>() {
+      public AlarmsSubscribeRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AlarmsSubscribeRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AlarmsSubscribeRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional bool getCurrent = 1;
+    public static final int GETCURRENT_FIELD_NUMBER = 1;
+    private boolean getCurrent_;
+    /**
+     * <code>optional bool getCurrent = 1;</code>
+     *
+     * <pre>
+     * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+     * </pre>
+     */
+    public boolean hasGetCurrent() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool getCurrent = 1;</code>
+     *
+     * <pre>
+     * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+     * </pre>
+     */
+    public boolean getGetCurrent() {
+      return getCurrent_;
+    }
+
+    private void initFields() {
+      getCurrent_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, getCurrent_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, getCurrent_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code alarms.AlarmsSubscribeRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Alarms.AlarmsSubscribeRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmsSubscribeRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmsSubscribeRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        getCurrent_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmsSubscribeRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest build() {
+        org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest buildPartial() {
+        org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest result = new org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.getCurrent_ = getCurrent_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest) {
+          return mergeFrom((org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest other) {
+        if (other == org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.getDefaultInstance()) return this;
+        if (other.hasGetCurrent()) {
+          setGetCurrent(other.getGetCurrent());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional bool getCurrent = 1;
+      private boolean getCurrent_ ;
+      /**
+       * <code>optional bool getCurrent = 1;</code>
+       *
+       * <pre>
+       * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+       * </pre>
+       */
+      public boolean hasGetCurrent() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool getCurrent = 1;</code>
+       *
+       * <pre>
+       * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+       * </pre>
+       */
+      public boolean getGetCurrent() {
+        return getCurrent_;
+      }
+      /**
+       * <code>optional bool getCurrent = 1;</code>
+       *
+       * <pre>
+       * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+       * </pre>
+       */
+      public Builder setGetCurrent(boolean value) {
+        bitField0_ |= 0x00000001;
+        getCurrent_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool getCurrent = 1;</code>
+       *
+       * <pre>
+       * Whether to return the active set of alarms after a subscribe request is made (defaults to true)
+       * </pre>
+       */
+      public Builder clearGetCurrent() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        getCurrent_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:alarms.AlarmsSubscribeRequest)
+    }
+
+    static {
+      defaultInstance = new AlarmsSubscribeRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:alarms.AlarmsSubscribeRequest)
+  }
+
+  public interface AlarmOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .pvalue.ParameterValue triggerValue = 1;
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    boolean hasTriggerValue();
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValue getTriggerValue();
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getTriggerValueOrBuilder();
+
+    // optional .pvalue.ParameterValue mostSevereValue = 2;
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    boolean hasMostSevereValue();
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValue getMostSevereValue();
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getMostSevereValueOrBuilder();
+
+    // optional .pvalue.ParameterValue currentValue = 3;
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    boolean hasCurrentValue();
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValue getCurrentValue();
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getCurrentValueOrBuilder();
+
+    // optional uint32 violations = 4;
+    /**
+     * <code>optional uint32 violations = 4;</code>
+     */
+    boolean hasViolations();
+    /**
+     * <code>optional uint32 violations = 4;</code>
+     */
+    int getViolations();
+  }
+  /**
+   * Protobuf type {@code alarms.Alarm}
+   */
+  public static final class Alarm extends
+      com.google.protobuf.GeneratedMessage
+      implements AlarmOrBuilder {
+    // Use Alarm.newBuilder() to construct.
+    private Alarm(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private Alarm(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final Alarm defaultInstance;
+    public static Alarm getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public Alarm getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Alarm(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = triggerValue_.toBuilder();
+              }
+              triggerValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(triggerValue_);
+                triggerValue_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = mostSevereValue_.toBuilder();
+              }
+              mostSevereValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(mostSevereValue_);
+                mostSevereValue_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 26: {
+              org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = currentValue_.toBuilder();
+              }
+              currentValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(currentValue_);
+                currentValue_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              violations_ = input.readUInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_Alarm_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_Alarm_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Alarms.Alarm.class, org.yamcs.protobuf.Alarms.Alarm.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<Alarm> PARSER =
+        new com.google.protobuf.AbstractParser<Alarm>() {
+      public Alarm parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Alarm(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Alarm> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional .pvalue.ParameterValue triggerValue = 1;
+    public static final int TRIGGERVALUE_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_;
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    public boolean hasTriggerValue() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValue getTriggerValue() {
+      return triggerValue_;
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getTriggerValueOrBuilder() {
+      return triggerValue_;
+    }
+
+    // optional .pvalue.ParameterValue mostSevereValue = 2;
+    public static final int MOSTSEVEREVALUE_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_;
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    public boolean hasMostSevereValue() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValue getMostSevereValue() {
+      return mostSevereValue_;
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getMostSevereValueOrBuilder() {
+      return mostSevereValue_;
+    }
+
+    // optional .pvalue.ParameterValue currentValue = 3;
+    public static final int CURRENTVALUE_FIELD_NUMBER = 3;
+    private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_;
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    public boolean hasCurrentValue() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValue getCurrentValue() {
+      return currentValue_;
+    }
+    /**
+     * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getCurrentValueOrBuilder() {
+      return currentValue_;
+    }
+
+    // optional uint32 violations = 4;
+    public static final int VIOLATIONS_FIELD_NUMBER = 4;
+    private int violations_;
+    /**
+     * <code>optional uint32 violations = 4;</code>
+     */
+    public boolean hasViolations() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional uint32 violations = 4;</code>
+     */
+    public int getViolations() {
+      return violations_;
+    }
+
+    private void initFields() {
+      triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      violations_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (hasTriggerValue()) {
+        if (!getTriggerValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasMostSevereValue()) {
+        if (!getMostSevereValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasCurrentValue()) {
+        if (!getCurrentValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, triggerValue_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, mostSevereValue_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(3, currentValue_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt32(4, violations_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, triggerValue_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, mostSevereValue_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, currentValue_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(4, violations_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.Alarm parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Alarms.Alarm prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code alarms.Alarm}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Alarms.AlarmOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_Alarm_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_Alarm_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Alarms.Alarm.class, org.yamcs.protobuf.Alarms.Alarm.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Alarms.Alarm.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getTriggerValueFieldBuilder();
+          getMostSevereValueFieldBuilder();
+          getCurrentValueFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (triggerValueBuilder_ == null) {
+          triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+        } else {
+          triggerValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (mostSevereValueBuilder_ == null) {
+          mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+        } else {
+          mostSevereValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (currentValueBuilder_ == null) {
+          currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+        } else {
+          currentValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        violations_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_Alarm_descriptor;
+      }
+
+      public org.yamcs.protobuf.Alarms.Alarm getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Alarms.Alarm.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Alarms.Alarm build() {
+        org.yamcs.protobuf.Alarms.Alarm result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Alarms.Alarm buildPartial() {
+        org.yamcs.protobuf.Alarms.Alarm result = new org.yamcs.protobuf.Alarms.Alarm(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (triggerValueBuilder_ == null) {
+          result.triggerValue_ = triggerValue_;
+        } else {
+          result.triggerValue_ = triggerValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (mostSevereValueBuilder_ == null) {
+          result.mostSevereValue_ = mostSevereValue_;
+        } else {
+          result.mostSevereValue_ = mostSevereValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (currentValueBuilder_ == null) {
+          result.currentValue_ = currentValue_;
+        } else {
+          result.currentValue_ = currentValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.violations_ = violations_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Alarms.Alarm) {
+          return mergeFrom((org.yamcs.protobuf.Alarms.Alarm)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Alarms.Alarm other) {
+        if (other == org.yamcs.protobuf.Alarms.Alarm.getDefaultInstance()) return this;
+        if (other.hasTriggerValue()) {
+          mergeTriggerValue(other.getTriggerValue());
+        }
+        if (other.hasMostSevereValue()) {
+          mergeMostSevereValue(other.getMostSevereValue());
+        }
+        if (other.hasCurrentValue()) {
+          mergeCurrentValue(other.getCurrentValue());
+        }
+        if (other.hasViolations()) {
+          setViolations(other.getViolations());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasTriggerValue()) {
+          if (!getTriggerValue().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasMostSevereValue()) {
+          if (!getMostSevereValue().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasCurrentValue()) {
+          if (!getCurrentValue().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Alarms.Alarm parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Alarms.Alarm) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .pvalue.ParameterValue triggerValue = 1;
+      private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> triggerValueBuilder_;
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public boolean hasTriggerValue() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue getTriggerValue() {
+        if (triggerValueBuilder_ == null) {
+          return triggerValue_;
+        } else {
+          return triggerValueBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public Builder setTriggerValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (triggerValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          triggerValue_ = value;
+          onChanged();
+        } else {
+          triggerValueBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public Builder setTriggerValue(
+          org.yamcs.protobuf.Pvalue.ParameterValue.Builder builderForValue) {
+        if (triggerValueBuilder_ == null) {
+          triggerValue_ = builderForValue.build();
+          onChanged();
+        } else {
+          triggerValueBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public Builder mergeTriggerValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (triggerValueBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              triggerValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
+            triggerValue_ =
+              org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(triggerValue_).mergeFrom(value).buildPartial();
+          } else {
+            triggerValue_ = value;
+          }
+          onChanged();
+        } else {
+          triggerValueBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public Builder clearTriggerValue() {
+        if (triggerValueBuilder_ == null) {
+          triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+          onChanged();
+        } else {
+          triggerValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue.Builder getTriggerValueBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getTriggerValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getTriggerValueOrBuilder() {
+        if (triggerValueBuilder_ != null) {
+          return triggerValueBuilder_.getMessageOrBuilder();
+        } else {
+          return triggerValue_;
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue triggerValue = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> 
+          getTriggerValueFieldBuilder() {
+        if (triggerValueBuilder_ == null) {
+          triggerValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
+                  triggerValue_,
+                  getParentForChildren(),
+                  isClean());
+          triggerValue_ = null;
+        }
+        return triggerValueBuilder_;
+      }
+
+      // optional .pvalue.ParameterValue mostSevereValue = 2;
+      private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> mostSevereValueBuilder_;
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public boolean hasMostSevereValue() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue getMostSevereValue() {
+        if (mostSevereValueBuilder_ == null) {
+          return mostSevereValue_;
+        } else {
+          return mostSevereValueBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public Builder setMostSevereValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (mostSevereValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          mostSevereValue_ = value;
+          onChanged();
+        } else {
+          mostSevereValueBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public Builder setMostSevereValue(
+          org.yamcs.protobuf.Pvalue.ParameterValue.Builder builderForValue) {
+        if (mostSevereValueBuilder_ == null) {
+          mostSevereValue_ = builderForValue.build();
+          onChanged();
+        } else {
+          mostSevereValueBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public Builder mergeMostSevereValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (mostSevereValueBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              mostSevereValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
+            mostSevereValue_ =
+              org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(mostSevereValue_).mergeFrom(value).buildPartial();
+          } else {
+            mostSevereValue_ = value;
+          }
+          onChanged();
+        } else {
+          mostSevereValueBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public Builder clearMostSevereValue() {
+        if (mostSevereValueBuilder_ == null) {
+          mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+          onChanged();
+        } else {
+          mostSevereValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue.Builder getMostSevereValueBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getMostSevereValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getMostSevereValueOrBuilder() {
+        if (mostSevereValueBuilder_ != null) {
+          return mostSevereValueBuilder_.getMessageOrBuilder();
+        } else {
+          return mostSevereValue_;
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue mostSevereValue = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> 
+          getMostSevereValueFieldBuilder() {
+        if (mostSevereValueBuilder_ == null) {
+          mostSevereValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
+                  mostSevereValue_,
+                  getParentForChildren(),
+                  isClean());
+          mostSevereValue_ = null;
+        }
+        return mostSevereValueBuilder_;
+      }
+
+      // optional .pvalue.ParameterValue currentValue = 3;
+      private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> currentValueBuilder_;
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public boolean hasCurrentValue() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue getCurrentValue() {
+        if (currentValueBuilder_ == null) {
+          return currentValue_;
+        } else {
+          return currentValueBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public Builder setCurrentValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (currentValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          currentValue_ = value;
+          onChanged();
+        } else {
+          currentValueBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public Builder setCurrentValue(
+          org.yamcs.protobuf.Pvalue.ParameterValue.Builder builderForValue) {
+        if (currentValueBuilder_ == null) {
+          currentValue_ = builderForValue.build();
+          onChanged();
+        } else {
+          currentValueBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public Builder mergeCurrentValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
+        if (currentValueBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              currentValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
+            currentValue_ =
+              org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(currentValue_).mergeFrom(value).buildPartial();
+          } else {
+            currentValue_ = value;
+          }
+          onChanged();
+        } else {
+          currentValueBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public Builder clearCurrentValue() {
+        if (currentValueBuilder_ == null) {
+          currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
+          onChanged();
+        } else {
+          currentValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValue.Builder getCurrentValueBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getCurrentValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getCurrentValueOrBuilder() {
+        if (currentValueBuilder_ != null) {
+          return currentValueBuilder_.getMessageOrBuilder();
+        } else {
+          return currentValue_;
+        }
+      }
+      /**
+       * <code>optional .pvalue.ParameterValue currentValue = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> 
+          getCurrentValueFieldBuilder() {
+        if (currentValueBuilder_ == null) {
+          currentValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
+                  currentValue_,
+                  getParentForChildren(),
+                  isClean());
+          currentValue_ = null;
+        }
+        return currentValueBuilder_;
+      }
+
+      // optional uint32 violations = 4;
+      private int violations_ ;
+      /**
+       * <code>optional uint32 violations = 4;</code>
+       */
+      public boolean hasViolations() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional uint32 violations = 4;</code>
+       */
+      public int getViolations() {
+        return violations_;
+      }
+      /**
+       * <code>optional uint32 violations = 4;</code>
+       */
+      public Builder setViolations(int value) {
+        bitField0_ |= 0x00000008;
+        violations_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 violations = 4;</code>
+       */
+      public Builder clearViolations() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        violations_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:alarms.Alarm)
+    }
+
+    static {
+      defaultInstance = new Alarm(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:alarms.Alarm)
+  }
+
   public interface AlarmNoticeOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -1003,6 +2439,16 @@ public final class Alarms {
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_alarms_AlarmsSubscribeRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_alarms_AlarmsSubscribeRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_alarms_Alarm_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_alarms_Alarm_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_alarms_AlarmNotice_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -1017,20 +2463,38 @@ public final class Alarms {
   static {
     java.lang.String[] descriptorData = {
       "\n\014alarms.proto\022\006alarms\032\013yamcs.proto\032\014pva" +
-      "lue.proto\"\313\001\n\013AlarmNotice\022&\n\004type\030\001 \001(\0162" +
-      "\030.alarms.AlarmNotice.Type\022\023\n\013triggerTime" +
-      "\030\002 \001(\003\022$\n\004pval\030\003 \001(\0132\026.pvalue.ParameterV" +
-      "alue\022\020\n\010username\030\004 \001(\t\"G\n\004Type\022\r\n\tTRIGGE" +
-      "RED\020\001\022\026\n\022SEVERITY_INCREASED\020\002\022\013\n\007UPDATED" +
-      "\020\003\022\013\n\007CLEARED\020\004B\024\n\022org.yamcs.protobuf"
+      "lue.proto\",\n\026AlarmsSubscribeRequest\022\022\n\ng" +
+      "etCurrent\030\001 \001(\010\"\250\001\n\005Alarm\022,\n\014triggerValu" +
+      "e\030\001 \001(\0132\026.pvalue.ParameterValue\022/\n\017mostS" +
+      "evereValue\030\002 \001(\0132\026.pvalue.ParameterValue" +
+      "\022,\n\014currentValue\030\003 \001(\0132\026.pvalue.Paramete" +
+      "rValue\022\022\n\nviolations\030\004 \001(\r\"\313\001\n\013AlarmNoti" +
+      "ce\022&\n\004type\030\001 \001(\0162\030.alarms.AlarmNotice.Ty" +
+      "pe\022\023\n\013triggerTime\030\002 \001(\003\022$\n\004pval\030\003 \001(\0132\026." +
+      "pvalue.ParameterValue\022\020\n\010username\030\004 \001(\t\"",
+      "G\n\004Type\022\r\n\tTRIGGERED\020\001\022\026\n\022SEVERITY_INCRE" +
+      "ASED\020\002\022\013\n\007UPDATED\020\003\022\013\n\007CLEARED\020\004B\024\n\022org." +
+      "yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_alarms_AlarmNotice_descriptor =
+          internal_static_alarms_AlarmsSubscribeRequest_descriptor =
             getDescriptor().getMessageTypes().get(0);
+          internal_static_alarms_AlarmsSubscribeRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_alarms_AlarmsSubscribeRequest_descriptor,
+              new java.lang.String[] { "GetCurrent", });
+          internal_static_alarms_Alarm_descriptor =
+            getDescriptor().getMessageTypes().get(1);
+          internal_static_alarms_Alarm_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_alarms_Alarm_descriptor,
+              new java.lang.String[] { "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", });
+          internal_static_alarms_AlarmNotice_descriptor =
+            getDescriptor().getMessageTypes().get(2);
           internal_static_alarms_AlarmNotice_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alarms_AlarmNotice_descriptor,
