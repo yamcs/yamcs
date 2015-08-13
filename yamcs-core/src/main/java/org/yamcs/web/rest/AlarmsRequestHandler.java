@@ -45,6 +45,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
         for (Entry<Parameter, ActiveAlarm> entry : alarmServer.getActiveAlarms().entrySet()) {
             NamedObjectId id = NamedObjectId.newBuilder().setName(entry.getKey().getQualifiedName()).build();
             Alarm.Builder alarmb = Alarm.newBuilder();
+            alarmb.setId(entry.getValue().id);
             alarmb.setTriggerValue(entry.getValue().triggerValue.toGpb(id));
             alarmb.setMostSevereValue(entry.getValue().mostSevereValue.toGpb(id));
             alarmb.setCurrentValue(entry.getValue().currentValue.toGpb(id));

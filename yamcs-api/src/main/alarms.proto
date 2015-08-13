@@ -9,10 +9,11 @@ message AlarmsSubscribeRequest {
 }
 
 message Alarm {
-   optional pvalue.ParameterValue triggerValue = 1;
-   optional pvalue.ParameterValue mostSevereValue = 2;
-   optional pvalue.ParameterValue currentValue = 3;
-   optional uint32 violations = 4;
+   optional uint32 id = 1;
+   optional pvalue.ParameterValue triggerValue = 2;
+   optional pvalue.ParameterValue mostSevereValue = 3;
+   optional pvalue.ParameterValue currentValue = 4;
+   optional uint32 violations = 5;
 }
 
 message AlarmNotice {
@@ -23,9 +24,10 @@ message AlarmNotice {
       CLEARED = 4;
    }
 
-   optional Type type = 1;
-   optional int64 triggerTime = 2;
-   optional string triggerTimeUTC = 3;
-   optional pvalue.ParameterValue pval = 4;
-   optional string username = 5;  // In case the alarm was cleared
+   optional uint32 alarmId = 1;
+   optional Type type = 2;
+   optional int64 triggerTime = 3;
+   optional string triggerTimeUTC = 4;
+   optional pvalue.ParameterValue pval = 5;
+   optional string username = 6;  // In case the alarm was cleared
 }

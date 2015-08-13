@@ -64,6 +64,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements StreamS
                 for (Entry<Parameter, ActiveAlarm> entry : alarmServer.getActiveAlarms().entrySet()) {
                     NamedObjectId id = NamedObjectId.newBuilder().setName(entry.getKey().getQualifiedName()).build();
                     Alarm.Builder alarmb = Alarm.newBuilder();
+                    alarmb.setId(entry.getValue().id);
                     alarmb.setTriggerValue(entry.getValue().triggerValue.toGpb(id));
                     alarmb.setMostSevereValue(entry.getValue().mostSevereValue.toGpb(id));
                     alarmb.setCurrentValue(entry.getValue().currentValue.toGpb(id));
@@ -121,6 +122,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements StreamS
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         AlarmNotice.Builder alarmb = AlarmNotice.newBuilder();
+        alarmb.setAlarmId((Integer) tuple.getColumn("seqNum"));
         Long triggerTime = (Long) tuple.getColumn("triggerTime");
         alarmb.setTriggerTime(triggerTime);
         alarmb.setTriggerTimeUTC(TimeEncoding.toString(triggerTime));
