@@ -9,7 +9,7 @@ public class NotFoundException extends RestException {
     private static final long serialVersionUID = 1L;
 
     public NotFoundException(RestRequest request) {
-        super("No resource named '"+ request.getHttpRequest().getUri() +"'");
+        super("No resource named '"+ request.getFullPathWithoutQueryString() +"'");
     }
 
     public NotFoundException(Throwable t) {

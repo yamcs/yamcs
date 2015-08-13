@@ -53,7 +53,7 @@ public class RestRequest {
         qsDecoder = new QueryStringDecoder(httpRequest.getUri());
         
         // Get splitted path, taking care that URL-encoded slashes are ignored for the split
-        pathSegments = httpRequest.getUri().split("/");
+        pathSegments = qsDecoder.path().split("/");
         for (int i=0; i<pathSegments.length; i++) {
             pathSegments[i] = QueryStringDecoder.decodeComponent(pathSegments[i]);
         }
@@ -87,6 +87,12 @@ public class RestRequest {
     
     public String getRemainingUri() {
         return qsDecoder.path();
+    }
+    
+    public String getFullPathWithoutQueryString() {
+        String uri = httpRequest.getUri();
+        int qIndex = uri.lastIndexOf('?');
+        return qIndex == -1 ? uri : uri.substring(0, uri.lastIndexOf('?'));
     }
     
     public boolean isPOST() {
