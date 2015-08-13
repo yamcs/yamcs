@@ -138,6 +138,9 @@ public class StreamResource extends AbstractWebSocketResource {
         
         StreamData req = decoder.decodeMessageData(ctx, SchemaYamcs.StreamData.MERGE).build();
         Stream stream = ydb.getStream(req.getStream());
+        if (stream == null) {
+            throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
+        }
         
         int expectedColumnCount = stream.getDefinition().getColumnDefinitions().size();
         if (req.getColumnValueCount() != expectedColumnCount) {
