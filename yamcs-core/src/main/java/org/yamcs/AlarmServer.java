@@ -157,6 +157,9 @@ public class AlarmServer extends AbstractService {
 
     public void acknowledge(Parameter p, int id, String username) throws CouldNotClearAlarmException {
         ActiveAlarm aa = activeAlarms.get(p);
+        if(aa==null) {
+            throw new CouldNotClearAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
+        }
         if(aa.id!=id) {
             log.warn("Got acknowledge for parameter "+p+" but the id does not match");
             throw new CouldNotClearAlarmException("Alarm Id " + id + " does not match parameter " + p.getQualifiedName());

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.security.User;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -93,6 +95,22 @@ public class RestRequest {
         String uri = httpRequest.getUri();
         int qIndex = uri.lastIndexOf('?');
         return qIndex == -1 ? uri : uri.substring(0, uri.lastIndexOf('?'));
+    }
+    
+    /**
+     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
+     */
+    public User getUser() {
+        return Privilege.getInstance().getUser(authToken);
+    }
+    
+    /**
+     * Returns the username of the authenticated user. Or <tt>"unknown"</tt> if the user
+     * is not authenticated.
+     */
+    public String getUsername() {
+        User user = getUser();
+        return (user != null) ? user.getPrincipalName() : "unknown";
     }
     
     public boolean isPOST() {

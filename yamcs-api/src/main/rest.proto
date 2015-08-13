@@ -162,6 +162,10 @@ message GetAlarmsResponse {
    repeated alarms.Alarm alarms = 1;
 }
 
+message ClearAlarmResponse {
+   optional string errorMessage = 2;
+}
+
 message RestSendCommandRequest {
   repeated RestCommandType commands=1;
 }

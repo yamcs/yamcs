@@ -18593,6 +18593,477 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:rest.GetAlarmsResponse)
   }
 
+  public interface ClearAlarmResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string errorMessage = 2;
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    boolean hasErrorMessage();
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    java.lang.String getErrorMessage();
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getErrorMessageBytes();
+  }
+  /**
+   * Protobuf type {@code rest.ClearAlarmResponse}
+   */
+  public static final class ClearAlarmResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements ClearAlarmResponseOrBuilder {
+    // Use ClearAlarmResponse.newBuilder() to construct.
+    private ClearAlarmResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ClearAlarmResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ClearAlarmResponse defaultInstance;
+    public static ClearAlarmResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ClearAlarmResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ClearAlarmResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000001;
+              errorMessage_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_ClearAlarmResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_ClearAlarmResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.ClearAlarmResponse.class, org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ClearAlarmResponse> PARSER =
+        new com.google.protobuf.AbstractParser<ClearAlarmResponse>() {
+      public ClearAlarmResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ClearAlarmResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ClearAlarmResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string errorMessage = 2;
+    public static final int ERRORMESSAGE_FIELD_NUMBER = 2;
+    private java.lang.Object errorMessage_;
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    public boolean hasErrorMessage() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    public java.lang.String getErrorMessage() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          errorMessage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string errorMessage = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getErrorMessageBytes() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        errorMessage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      errorMessage_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(2, getErrorMessageBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getErrorMessageBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ClearAlarmResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.ClearAlarmResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.ClearAlarmResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.ClearAlarmResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_ClearAlarmResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_ClearAlarmResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.ClearAlarmResponse.class, org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.ClearAlarmResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        errorMessage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_ClearAlarmResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.ClearAlarmResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.ClearAlarmResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.ClearAlarmResponse build() {
+        org.yamcs.protobuf.Rest.ClearAlarmResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.ClearAlarmResponse buildPartial() {
+        org.yamcs.protobuf.Rest.ClearAlarmResponse result = new org.yamcs.protobuf.Rest.ClearAlarmResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.errorMessage_ = errorMessage_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.ClearAlarmResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.ClearAlarmResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.ClearAlarmResponse other) {
+        if (other == org.yamcs.protobuf.Rest.ClearAlarmResponse.getDefaultInstance()) return this;
+        if (other.hasErrorMessage()) {
+          bitField0_ |= 0x00000001;
+          errorMessage_ = other.errorMessage_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.ClearAlarmResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.ClearAlarmResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string errorMessage = 2;
+      private java.lang.Object errorMessage_ = "";
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public boolean hasErrorMessage() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public java.lang.String getErrorMessage() {
+        java.lang.Object ref = errorMessage_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          errorMessage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getErrorMessageBytes() {
+        java.lang.Object ref = errorMessage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          errorMessage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public Builder setErrorMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public Builder clearErrorMessage() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        errorMessage_ = getDefaultInstance().getErrorMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string errorMessage = 2;</code>
+       */
+      public Builder setErrorMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.ClearAlarmResponse)
+    }
+
+    static {
+      defaultInstance = new ClearAlarmResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.ClearAlarmResponse)
+  }
+
   public interface RestSendCommandRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -28781,6 +29252,11 @@ public final class Rest {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_rest_GetAlarmsResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_ClearAlarmResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_ClearAlarmResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_rest_RestSendCommandRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -28908,43 +29384,44 @@ public final class Rest {
       "\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 " +
       "\001(\003\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"" +
       "2\n\021GetAlarmsResponse\022\035\n\006alarms\030\001 \003(\0132\r.a" +
-      "larms.Alarm\"A\n\026RestSendCommandRequest\022\'\n" +
-      "\010commands\030\001 \003(\0132\025.rest.RestCommandType\"\031" +
-      "\n\027RestSendCommandResponse\"\034\n\014RestUnitTyp" +
-      "e\022\014\n\004unit\030\001 \001(\t\"{\n\016RestAlarmRange\022#\n\005lev" +
-      "el\030\001 \001(\0162\024.rest.RestAlarmLevel\022\024\n\014minInc" +
-      "lusive\030\002 \001(\001\022\024\n\014maxInclusive\030\003 \001(\001\022\030\n\020en",
-      "umerationValue\030\004 \001(\t\"W\n\rRestAlarmInfo\022\025\n" +
-      "\rminViolations\030\001 \001(\005\022/\n\021staticAlarmRange" +
-      "s\030\002 \003(\0132\024.rest.RestAlarmRange\"\212\001\n\021RestPa" +
-      "rameterType\022\017\n\007engType\030\001 \001(\t\022\024\n\014dataEnco" +
-      "ding\030\002 \001(\t\022#\n\007unitSet\030\003 \003(\0132\022.rest.RestU" +
-      "nitType\022)\n\014defaultAlarm\030\004 \001(\0132\023.rest.Res" +
-      "tAlarmInfo\"\206\001\n\023RestNameDescription\022\025\n\rqu" +
-      "alifiedName\030\001 \001(\t\022\030\n\020shortDescription\030\002 " +
-      "\001(\t\022\027\n\017longDescription\030\003 \001(\t\022%\n\007aliases\030" +
-      "\004 \003(\0132\024.yamcs.NamedObjectId\"\240\001\n\021RestPara",
-      "meterInfo\022 \n\002id\030\001 \001(\0132\024.yamcs.NamedObjec" +
-      "tId\022.\n\013description\030\002 \001(\0132\031.rest.RestName" +
-      "Description\022%\n\004type\030\003 \001(\0132\027.rest.RestPar" +
-      "ameterType\022\022\n\ndataSource\030\004 \001(\t\"A\n\033RestGe" +
-      "tParameterInfoRequest\022\"\n\004list\030\001 \003(\0132\024.ya" +
-      "mcs.NamedObjectId\"F\n\034RestGetParameterInf" +
-      "oResponse\022&\n\005pinfo\030\001 \003(\0132\027.rest.RestPara" +
-      "meterInfo\"\252\001\n\026UserAuthorizationsInfo\022\r\n\005" +
-      "roles\030\001 \003(\t\022\030\n\020tmParaPrivileges\030\002 \003(\t\022\033\n" +
-      "\023tmParaSetPrivileges\030\003 \003(\t\022\032\n\022tmPacketPr",
-      "ivileges\030\004 \003(\t\022\024\n\014tcPrivileges\030\005 \003(\t\022\030\n\020" +
-      "systemPrivileges\030\006 \003(\t\"\037\n\035RestListAuthor" +
-      "isationsRequest\"^\n\036RestListAuthorisation" +
-      "sResponse\022<\n\026userAuthorizationsInfo\030\001 \001(" +
-      "\0132\034.rest.UserAuthorizationsInfo*u\n\016RestD" +
-      "ataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022" +
-      "\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007" +
-      "COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016RestAl" +
-      "armLevel\022\n\n\006normal\020\000\022\t\n\005watch\020\001\022\013\n\007warni" +
-      "ng\020\002\022\014\n\010distress\020\003\022\014\n\010critical\020\004\022\n\n\006seve",
-      "re\020\005B\024\n\022org.yamcs.protobuf"
+      "larms.Alarm\"*\n\022ClearAlarmResponse\022\024\n\014err" +
+      "orMessage\030\002 \001(\t\"A\n\026RestSendCommandReques" +
+      "t\022\'\n\010commands\030\001 \003(\0132\025.rest.RestCommandTy" +
+      "pe\"\031\n\027RestSendCommandResponse\"\034\n\014RestUni" +
+      "tType\022\014\n\004unit\030\001 \001(\t\"{\n\016RestAlarmRange\022#\n" +
+      "\005level\030\001 \001(\0162\024.rest.RestAlarmLevel\022\024\n\014mi",
+      "nInclusive\030\002 \001(\001\022\024\n\014maxInclusive\030\003 \001(\001\022\030" +
+      "\n\020enumerationValue\030\004 \001(\t\"W\n\rRestAlarmInf" +
+      "o\022\025\n\rminViolations\030\001 \001(\005\022/\n\021staticAlarmR" +
+      "anges\030\002 \003(\0132\024.rest.RestAlarmRange\"\212\001\n\021Re" +
+      "stParameterType\022\017\n\007engType\030\001 \001(\t\022\024\n\014data" +
+      "Encoding\030\002 \001(\t\022#\n\007unitSet\030\003 \003(\0132\022.rest.R" +
+      "estUnitType\022)\n\014defaultAlarm\030\004 \001(\0132\023.rest" +
+      ".RestAlarmInfo\"\206\001\n\023RestNameDescription\022\025" +
+      "\n\rqualifiedName\030\001 \001(\t\022\030\n\020shortDescriptio" +
+      "n\030\002 \001(\t\022\027\n\017longDescription\030\003 \001(\t\022%\n\007alia",
+      "ses\030\004 \003(\0132\024.yamcs.NamedObjectId\"\240\001\n\021Rest" +
+      "ParameterInfo\022 \n\002id\030\001 \001(\0132\024.yamcs.NamedO" +
+      "bjectId\022.\n\013description\030\002 \001(\0132\031.rest.Rest" +
+      "NameDescription\022%\n\004type\030\003 \001(\0132\027.rest.Res" +
+      "tParameterType\022\022\n\ndataSource\030\004 \001(\t\"A\n\033Re" +
+      "stGetParameterInfoRequest\022\"\n\004list\030\001 \003(\0132" +
+      "\024.yamcs.NamedObjectId\"F\n\034RestGetParamete" +
+      "rInfoResponse\022&\n\005pinfo\030\001 \003(\0132\027.rest.Rest" +
+      "ParameterInfo\"\252\001\n\026UserAuthorizationsInfo" +
+      "\022\r\n\005roles\030\001 \003(\t\022\030\n\020tmParaPrivileges\030\002 \003(",
+      "\t\022\033\n\023tmParaSetPrivileges\030\003 \003(\t\022\032\n\022tmPack" +
+      "etPrivileges\030\004 \003(\t\022\024\n\014tcPrivileges\030\005 \003(\t" +
+      "\022\030\n\020systemPrivileges\030\006 \003(\t\"\037\n\035RestListAu" +
+      "thorisationsRequest\"^\n\036RestListAuthorisa" +
+      "tionsResponse\022<\n\026userAuthorizationsInfo\030" +
+      "\001 \001(\0132\034.rest.UserAuthorizationsInfo*u\n\016R" +
+      "estDataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVE" +
+      "D\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004" +
+      "\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016Re" +
+      "stAlarmLevel\022\n\n\006normal\020\000\022\t\n\005watch\020\001\022\013\n\007w",
+      "arning\020\002\022\014\n\010distress\020\003\022\014\n\010critical\020\004\022\n\n\006" +
+      "severe\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -29101,80 +29578,86 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_GetAlarmsResponse_descriptor,
               new java.lang.String[] { "Alarms", });
-          internal_static_rest_RestSendCommandRequest_descriptor =
+          internal_static_rest_ClearAlarmResponse_descriptor =
             getDescriptor().getMessageTypes().get(25);
+          internal_static_rest_ClearAlarmResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_ClearAlarmResponse_descriptor,
+              new java.lang.String[] { "ErrorMessage", });
+          internal_static_rest_RestSendCommandRequest_descriptor =
+            getDescriptor().getMessageTypes().get(26);
           internal_static_rest_RestSendCommandRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandRequest_descriptor,
               new java.lang.String[] { "Commands", });
           internal_static_rest_RestSendCommandResponse_descriptor =
-            getDescriptor().getMessageTypes().get(26);
+            getDescriptor().getMessageTypes().get(27);
           internal_static_rest_RestSendCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestSendCommandResponse_descriptor,
               new java.lang.String[] { });
           internal_static_rest_RestUnitType_descriptor =
-            getDescriptor().getMessageTypes().get(27);
+            getDescriptor().getMessageTypes().get(28);
           internal_static_rest_RestUnitType_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestUnitType_descriptor,
               new java.lang.String[] { "Unit", });
           internal_static_rest_RestAlarmRange_descriptor =
-            getDescriptor().getMessageTypes().get(28);
+            getDescriptor().getMessageTypes().get(29);
           internal_static_rest_RestAlarmRange_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestAlarmRange_descriptor,
               new java.lang.String[] { "Level", "MinInclusive", "MaxInclusive", "EnumerationValue", });
           internal_static_rest_RestAlarmInfo_descriptor =
-            getDescriptor().getMessageTypes().get(29);
+            getDescriptor().getMessageTypes().get(30);
           internal_static_rest_RestAlarmInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestAlarmInfo_descriptor,
               new java.lang.String[] { "MinViolations", "StaticAlarmRanges", });
           internal_static_rest_RestParameterType_descriptor =
-            getDescriptor().getMessageTypes().get(30);
+            getDescriptor().getMessageTypes().get(31);
           internal_static_rest_RestParameterType_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestParameterType_descriptor,
               new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", });
           internal_static_rest_RestNameDescription_descriptor =
-            getDescriptor().getMessageTypes().get(31);
+            getDescriptor().getMessageTypes().get(32);
           internal_static_rest_RestNameDescription_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestNameDescription_descriptor,
               new java.lang.String[] { "QualifiedName", "ShortDescription", "LongDescription", "Aliases", });
           internal_static_rest_RestParameterInfo_descriptor =
-            getDescriptor().getMessageTypes().get(32);
+            getDescriptor().getMessageTypes().get(33);
           internal_static_rest_RestParameterInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestParameterInfo_descriptor,
               new java.lang.String[] { "Id", "Description", "Type", "DataSource", });
           internal_static_rest_RestGetParameterInfoRequest_descriptor =
-            getDescriptor().getMessageTypes().get(33);
+            getDescriptor().getMessageTypes().get(34);
           internal_static_rest_RestGetParameterInfoRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterInfoRequest_descriptor,
               new java.lang.String[] { "List", });
           internal_static_rest_RestGetParameterInfoResponse_descriptor =
-            getDescriptor().getMessageTypes().get(34);
+            getDescriptor().getMessageTypes().get(35);
           internal_static_rest_RestGetParameterInfoResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestGetParameterInfoResponse_descriptor,
               new java.lang.String[] { "Pinfo", });
           internal_static_rest_UserAuthorizationsInfo_descriptor =
-            getDescriptor().getMessageTypes().get(35);
+            getDescriptor().getMessageTypes().get(36);
           internal_static_rest_UserAuthorizationsInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_UserAuthorizationsInfo_descriptor,
               new java.lang.String[] { "Roles", "TmParaPrivileges", "TmParaSetPrivileges", "TmPacketPrivileges", "TcPrivileges", "SystemPrivileges", });
           internal_static_rest_RestListAuthorisationsRequest_descriptor =
-            getDescriptor().getMessageTypes().get(36);
+            getDescriptor().getMessageTypes().get(37);
           internal_static_rest_RestListAuthorisationsRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestListAuthorisationsRequest_descriptor,
               new java.lang.String[] { });
           internal_static_rest_RestListAuthorisationsResponse_descriptor =
-            getDescriptor().getMessageTypes().get(37);
+            getDescriptor().getMessageTypes().get(38);
           internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestListAuthorisationsResponse_descriptor,
