@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.security.User;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -53,7 +55,7 @@ public class RestRequest {
         qsDecoder = new QueryStringDecoder(httpRequest.getUri());
         
         // Get splitted path, taking care that URL-encoded slashes are ignored for the split
-        pathSegments = httpRequest.getUri().split("/");
+        pathSegments = qsDecoder.path().split("/");
         for (int i=0; i<pathSegments.length; i++) {
             pathSegments[i] = QueryStringDecoder.decodeComponent(pathSegments[i]);
         }
@@ -87,6 +89,28 @@ public class RestRequest {
     
     public String getRemainingUri() {
         return qsDecoder.path();
+    }
+    
+    public String getFullPathWithoutQueryString() {
+        String uri = httpRequest.getUri();
+        int qIndex = uri.lastIndexOf('?');
+        return qIndex == -1 ? uri : uri.substring(0, uri.lastIndexOf('?'));
+    }
+    
+    /**
+     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
+     */
+    public User getUser() {
+        return Privilege.getInstance().getUser(authToken);
+    }
+    
+    /**
+     * Returns the username of the authenticated user. Or <tt>"unknown"</tt> if the user
+     * is not authenticated.
+     */
+    public String getUsername() {
+        User user = getUser();
+        return (user != null) ? user.getPrincipalName() : "unknown";
     }
     
     public boolean isPOST() {

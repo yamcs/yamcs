@@ -155,11 +155,14 @@ public class AlarmServer extends AbstractService {
         }
     }
 
-    public void acknowledge(Parameter p, int id, String username) {
+    public void acknowledge(Parameter p, int id, String username) throws CouldNotClearAlarmException {
         ActiveAlarm aa = activeAlarms.get(p);
+        if(aa==null) {
+            throw new CouldNotClearAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
+        }
         if(aa.id!=id) {
             log.warn("Got acknowledge for parameter "+p+" but the id does not match");
-            return;
+            throw new CouldNotClearAlarmException("Alarm Id " + id + " does not match parameter " + p.getQualifiedName());
         }
         aa.acknowledged = true;
         aa.usernameThatAcknowledged = username;
@@ -167,6 +170,8 @@ public class AlarmServer extends AbstractService {
         if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
             activeAlarms.remove(p);
             listener.notifyCleared(aa);
+        } else {
+            throw new CouldNotClearAlarmException("Parameter " + p.getQualifiedName() + " is still out of limits");   
         }
     }
 

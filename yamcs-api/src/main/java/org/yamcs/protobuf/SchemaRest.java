@@ -3007,6 +3007,117 @@ public final class SchemaRest
         }
     }
 
+    public static final class ClearAlarmResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ClearAlarmResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ClearAlarmResponse message) throws java.io.IOException
+            {
+                if(message.hasErrorMessage())
+                    output.writeString(2, message.getErrorMessage(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ClearAlarmResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ClearAlarmResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ClearAlarmResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ClearAlarmResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 2:
+                            builder.setErrorMessage(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ClearAlarmResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ClearAlarmResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ClearAlarmResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 2: return "errorMessage";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("errorMessage", 2);
+        }
+    }
+
     public static final class RestSendCommandRequest
     {
         public static final org.yamcs.protobuf.SchemaRest.RestSendCommandRequest.MessageSchema WRITE =
