@@ -50,9 +50,11 @@ message ClientInfo {
 message TmStatistics {
     required string packetName=1;
     optional int64 receivedPackets=2;
-    optional int64 lastReceived=3; 
+    optional int64 lastReceived=3;
+    optional string lastReceivedUTC=8;
     optional int64 lastPacketTime=4;
-    optional int32 subscribedParameterCount=5;
+    optional string lastPacketTimeUTC=7;
+    optional int32 subscribedParameterCount=6;
 }
 
 message Statistics {
@@ -60,6 +62,7 @@ message Statistics {
     required string yProcessorName=2;
     repeated TmStatistics tmstats=3;
     optional int64 lastUpdated=4; //java local time of the last update
+    optional string lastUpdatedUTC=5; // String representation in ISO8601 format
 }
 
 message ProcessorManagementRequest {

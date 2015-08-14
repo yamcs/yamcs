@@ -40,6 +40,7 @@ import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
 
 import com.google.common.util.concurrent.Service;
@@ -416,6 +417,7 @@ public class ManagementService implements YProcessorListener {
         ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb=Statistics.newBuilder();
         statsb.setLastUpdated(ps.getLastUpdated());
+        statsb.setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()));
         statsb.setInstance(processor.getInstance()).setYProcessorName(processor.getName());
         Collection<ProcessingStatistics.TmStats> tmstats=ps.stats.values();
         if(tmstats==null) {
@@ -426,6 +428,8 @@ public class ManagementService implements YProcessorListener {
             TmStatistics ts=TmStatistics.newBuilder()
                     .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
                     .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
+                    .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
+                    .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
                     .setSubscribedParameterCount(t.subscribedParameterCount).build();
             statsb.addTmstats(ts);
         }

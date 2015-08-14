@@ -3219,6 +3219,21 @@ public final class YamcsManagement {
      */
     long getLastReceived();
 
+    // optional string lastReceivedUTC = 8;
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    boolean hasLastReceivedUTC();
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    java.lang.String getLastReceivedUTC();
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getLastReceivedUTCBytes();
+
     // optional int64 lastPacketTime = 4;
     /**
      * <code>optional int64 lastPacketTime = 4;</code>
@@ -3229,13 +3244,28 @@ public final class YamcsManagement {
      */
     long getLastPacketTime();
 
-    // optional int32 subscribedParameterCount = 5;
+    // optional string lastPacketTimeUTC = 7;
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    boolean hasLastPacketTimeUTC();
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    java.lang.String getLastPacketTimeUTC();
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getLastPacketTimeUTCBytes();
+
+    // optional int32 subscribedParameterCount = 6;
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     boolean hasSubscribedParameterCount();
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     int getSubscribedParameterCount();
   }
@@ -3306,13 +3336,23 @@ public final class YamcsManagement {
               break;
             }
             case 32: {
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000010;
               lastPacketTime_ = input.readInt64();
               break;
             }
-            case 40: {
-              bitField0_ |= 0x00000010;
+            case 48: {
+              bitField0_ |= 0x00000040;
               subscribedParameterCount_ = input.readInt32();
+              break;
+            }
+            case 58: {
+              bitField0_ |= 0x00000020;
+              lastPacketTimeUTC_ = input.readBytes();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000008;
+              lastReceivedUTC_ = input.readBytes();
               break;
             }
           }
@@ -3430,6 +3470,49 @@ public final class YamcsManagement {
       return lastReceived_;
     }
 
+    // optional string lastReceivedUTC = 8;
+    public static final int LASTRECEIVEDUTC_FIELD_NUMBER = 8;
+    private java.lang.Object lastReceivedUTC_;
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public boolean hasLastReceivedUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public java.lang.String getLastReceivedUTC() {
+      java.lang.Object ref = lastReceivedUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastReceivedUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLastReceivedUTCBytes() {
+      java.lang.Object ref = lastReceivedUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastReceivedUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     // optional int64 lastPacketTime = 4;
     public static final int LASTPACKETTIME_FIELD_NUMBER = 4;
     private long lastPacketTime_;
@@ -3437,7 +3520,7 @@ public final class YamcsManagement {
      * <code>optional int64 lastPacketTime = 4;</code>
      */
     public boolean hasLastPacketTime() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional int64 lastPacketTime = 4;</code>
@@ -3446,17 +3529,60 @@ public final class YamcsManagement {
       return lastPacketTime_;
     }
 
-    // optional int32 subscribedParameterCount = 5;
-    public static final int SUBSCRIBEDPARAMETERCOUNT_FIELD_NUMBER = 5;
-    private int subscribedParameterCount_;
+    // optional string lastPacketTimeUTC = 7;
+    public static final int LASTPACKETTIMEUTC_FIELD_NUMBER = 7;
+    private java.lang.Object lastPacketTimeUTC_;
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
      */
-    public boolean hasSubscribedParameterCount() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+    public boolean hasLastPacketTimeUTC() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    public java.lang.String getLastPacketTimeUTC() {
+      java.lang.Object ref = lastPacketTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastPacketTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLastPacketTimeUTCBytes() {
+      java.lang.Object ref = lastPacketTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastPacketTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional int32 subscribedParameterCount = 6;
+    public static final int SUBSCRIBEDPARAMETERCOUNT_FIELD_NUMBER = 6;
+    private int subscribedParameterCount_;
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
+     */
+    public boolean hasSubscribedParameterCount() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     public int getSubscribedParameterCount() {
       return subscribedParameterCount_;
@@ -3466,7 +3592,9 @@ public final class YamcsManagement {
       packetName_ = "";
       receivedPackets_ = 0L;
       lastReceived_ = 0L;
+      lastReceivedUTC_ = "";
       lastPacketTime_ = 0L;
+      lastPacketTimeUTC_ = "";
       subscribedParameterCount_ = 0;
     }
     private byte memoizedIsInitialized = -1;
@@ -3494,11 +3622,17 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(3, lastReceived_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeInt64(4, lastPacketTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt32(5, subscribedParameterCount_);
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeInt32(6, subscribedParameterCount_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBytes(7, getLastPacketTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(8, getLastReceivedUTCBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -3521,13 +3655,21 @@ public final class YamcsManagement {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, lastReceived_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, lastPacketTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(5, subscribedParameterCount_);
+          .computeInt32Size(6, subscribedParameterCount_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(7, getLastPacketTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getLastReceivedUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3651,10 +3793,14 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000002);
         lastReceived_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
-        lastPacketTime_ = 0L;
+        lastReceivedUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        subscribedParameterCount_ = 0;
+        lastPacketTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000010);
+        lastPacketTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000020);
+        subscribedParameterCount_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -3698,9 +3844,17 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.lastPacketTime_ = lastPacketTime_;
+        result.lastReceivedUTC_ = lastReceivedUTC_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
+        }
+        result.lastPacketTime_ = lastPacketTime_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.lastPacketTimeUTC_ = lastPacketTimeUTC_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
         }
         result.subscribedParameterCount_ = subscribedParameterCount_;
         result.bitField0_ = to_bitField0_;
@@ -3730,8 +3884,18 @@ public final class YamcsManagement {
         if (other.hasLastReceived()) {
           setLastReceived(other.getLastReceived());
         }
+        if (other.hasLastReceivedUTC()) {
+          bitField0_ |= 0x00000008;
+          lastReceivedUTC_ = other.lastReceivedUTC_;
+          onChanged();
+        }
         if (other.hasLastPacketTime()) {
           setLastPacketTime(other.getLastPacketTime());
+        }
+        if (other.hasLastPacketTimeUTC()) {
+          bitField0_ |= 0x00000020;
+          lastPacketTimeUTC_ = other.lastPacketTimeUTC_;
+          onChanged();
         }
         if (other.hasSubscribedParameterCount()) {
           setSubscribedParameterCount(other.getSubscribedParameterCount());
@@ -3907,13 +4071,87 @@ public final class YamcsManagement {
         return this;
       }
 
+      // optional string lastReceivedUTC = 8;
+      private java.lang.Object lastReceivedUTC_ = "";
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public boolean hasLastReceivedUTC() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public java.lang.String getLastReceivedUTC() {
+        java.lang.Object ref = lastReceivedUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastReceivedUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLastReceivedUTCBytes() {
+        java.lang.Object ref = lastReceivedUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastReceivedUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder setLastReceivedUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        lastReceivedUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder clearLastReceivedUTC() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        lastReceivedUTC_ = getDefaultInstance().getLastReceivedUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder setLastReceivedUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        lastReceivedUTC_ = value;
+        onChanged();
+        return this;
+      }
+
       // optional int64 lastPacketTime = 4;
       private long lastPacketTime_ ;
       /**
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public boolean hasLastPacketTime() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional int64 lastPacketTime = 4;</code>
@@ -3925,7 +4163,7 @@ public final class YamcsManagement {
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public Builder setLastPacketTime(long value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         lastPacketTime_ = value;
         onChanged();
         return this;
@@ -3934,40 +4172,114 @@ public final class YamcsManagement {
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public Builder clearLastPacketTime() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         lastPacketTime_ = 0L;
         onChanged();
         return this;
       }
 
-      // optional int32 subscribedParameterCount = 5;
-      private int subscribedParameterCount_ ;
+      // optional string lastPacketTimeUTC = 7;
+      private java.lang.Object lastPacketTimeUTC_ = "";
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional string lastPacketTimeUTC = 7;</code>
        */
-      public boolean hasSubscribedParameterCount() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+      public boolean hasLastPacketTimeUTC() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public java.lang.String getLastPacketTimeUTC() {
+        java.lang.Object ref = lastPacketTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastPacketTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLastPacketTimeUTCBytes() {
+        java.lang.Object ref = lastPacketTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastPacketTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder setLastPacketTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        lastPacketTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder clearLastPacketTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        lastPacketTimeUTC_ = getDefaultInstance().getLastPacketTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder setLastPacketTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        lastPacketTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 subscribedParameterCount = 6;
+      private int subscribedParameterCount_ ;
+      /**
+       * <code>optional int32 subscribedParameterCount = 6;</code>
+       */
+      public boolean hasSubscribedParameterCount() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public int getSubscribedParameterCount() {
         return subscribedParameterCount_;
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public Builder setSubscribedParameterCount(int value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         subscribedParameterCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public Builder clearSubscribedParameterCount() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000040);
         subscribedParameterCount_ = 0;
         onChanged();
         return this;
@@ -4059,6 +4371,33 @@ public final class YamcsManagement {
      * </pre>
      */
     long getLastUpdated();
+
+    // optional string lastUpdatedUTC = 5;
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    boolean hasLastUpdatedUTC();
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    java.lang.String getLastUpdatedUTC();
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getLastUpdatedUTCBytes();
   }
   /**
    * Protobuf type {@code yamcsManagement.Statistics}
@@ -4132,6 +4471,11 @@ public final class YamcsManagement {
             case 32: {
               bitField0_ |= 0x00000004;
               lastUpdated_ = input.readInt64();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000008;
+              lastUpdatedUTC_ = input.readBytes();
               break;
             }
           }
@@ -4323,11 +4667,67 @@ public final class YamcsManagement {
       return lastUpdated_;
     }
 
+    // optional string lastUpdatedUTC = 5;
+    public static final int LASTUPDATEDUTC_FIELD_NUMBER = 5;
+    private java.lang.Object lastUpdatedUTC_;
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public boolean hasLastUpdatedUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public java.lang.String getLastUpdatedUTC() {
+      java.lang.Object ref = lastUpdatedUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastUpdatedUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getLastUpdatedUTCBytes() {
+      java.lang.Object ref = lastUpdatedUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastUpdatedUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       instance_ = "";
       yProcessorName_ = "";
       tmstats_ = java.util.Collections.emptyList();
       lastUpdated_ = 0L;
+      lastUpdatedUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4367,6 +4767,9 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(4, lastUpdated_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(5, getLastUpdatedUTCBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4391,6 +4794,10 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, lastUpdated_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getLastUpdatedUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4521,6 +4928,8 @@ public final class YamcsManagement {
         }
         lastUpdated_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
+        lastUpdatedUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -4570,6 +4979,10 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000004;
         }
         result.lastUpdated_ = lastUpdated_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.lastUpdatedUTC_ = lastUpdatedUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4624,6 +5037,11 @@ public final class YamcsManagement {
         }
         if (other.hasLastUpdated()) {
           setLastUpdated(other.getLastUpdated());
+        }
+        if (other.hasLastUpdatedUTC()) {
+          bitField0_ |= 0x00000010;
+          lastUpdatedUTC_ = other.lastUpdatedUTC_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5099,6 +5517,104 @@ public final class YamcsManagement {
       public Builder clearLastUpdated() {
         bitField0_ = (bitField0_ & ~0x00000008);
         lastUpdated_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string lastUpdatedUTC = 5;
+      private java.lang.Object lastUpdatedUTC_ = "";
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public boolean hasLastUpdatedUTC() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public java.lang.String getLastUpdatedUTC() {
+        java.lang.Object ref = lastUpdatedUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastUpdatedUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getLastUpdatedUTCBytes() {
+        java.lang.Object ref = lastUpdatedUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastUpdatedUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder setLastUpdatedUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        lastUpdatedUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder clearLastUpdatedUTC() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        lastUpdatedUTC_ = getDefaultInstance().getLastUpdatedUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder setLastUpdatedUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        lastUpdatedUTC_ = value;
         onChanged();
         return this;
       }
@@ -9680,42 +10196,44 @@ public final class YamcsManagement {
       " \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005state\030\006 \001" +
       "(\0162\'.yamcsManagement.ClientInfo.ClientSt" +
       "ate\022\025\n\rcurrentClient\030\007 \001(\010\".\n\013ClientStat" +
-      "e\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"\213\001\n\014T" +
+      "e\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"\277\001\n\014T" +
       "mStatistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017recei" +
-      "vedPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026" +
-      "\n\016lastPacketTime\030\004 \001(\003\022 \n\030subscribedPara" +
-      "meterCount\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instan" +
-      "ce\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmst" +
-      "ats\030\003 \003(\0132\035.yamcsManagement.TmStatistics",
-      "\022\023\n\013lastUpdated\030\004 \001(\003\"\266\002\n\032ProcessorManag" +
-      "ementRequest\022H\n\toperation\030\001 \001(\01625.yamcsM" +
-      "anagement.ProcessorManagementRequest.Ope" +
-      "ration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014" +
-      "\n\004type\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006" +
-      " \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nrepla" +
-      "ySpec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOpe" +
-      "ration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_" +
-      "TO_PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\to" +
-      "peration\030\001 \001(\0162+.yamcsManagement.Process",
-      "orRequest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n" +
-      "\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperati" +
-      "on\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010" +
-      "LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t" +
-      "\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005" +
-      " \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021" +
-      "\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(" +
-      "\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001" +
-      "\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATE" +
-      "D\020\004\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorControl\022A\n\017",
-      "CreateProcessor\022!.yamcsManagement.Proces" +
-      "sorRequest\032\013.yamcs.Void\022D\n\022ConnectToProc" +
-      "essor\022!.yamcsManagement.ProcessorRequest" +
-      "\032\013.yamcs.Void\022@\n\016PauseProcessor\022!.yamcsM" +
-      "anagement.ProcessorRequest\032\013.yamcs.Void\022" +
-      "A\n\017ResumeProcessor\022!.yamcsManagement.Pro" +
-      "cessorRequest\032\013.yamcs.Void\022?\n\rSeekProces" +
-      "sor\022!.yamcsManagement.ProcessorRequest\032\013" +
-      ".yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "vedPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027" +
+      "\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTim" +
+      "e\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030su" +
+      "bscribedParameterCount\030\006 \001(\005\"\223\001\n\nStatist" +
+      "ics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030",
+      "\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsManagement" +
+      ".TmStatistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016la" +
+      "stUpdatedUTC\030\005 \001(\t\"\266\002\n\032ProcessorManageme" +
+      "ntRequest\022H\n\toperation\030\001 \001(\01625.yamcsMana" +
+      "gement.ProcessorManagementRequest.Operat" +
+      "ion\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004t" +
+      "ype\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(" +
+      "\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nreplaySp" +
+      "ec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOperat" +
+      "ion\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_",
+      "PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\toper" +
+      "ation\030\001 \001(\0162+.yamcsManagement.ProcessorR" +
+      "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
+      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperation\022" +
+      "\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010Lin" +
+      "kInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n" +
+      "\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(" +
+      "\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\td" +
+      "ataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\" +
+      "\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n",
+      "\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004" +
+      "\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorControl\022A\n\017Cre" +
+      "ateProcessor\022!.yamcsManagement.Processor" +
+      "Request\032\013.yamcs.Void\022D\n\022ConnectToProcess" +
+      "or\022!.yamcsManagement.ProcessorRequest\032\013." +
+      "yamcs.Void\022@\n\016PauseProcessor\022!.yamcsMana" +
+      "gement.ProcessorRequest\032\013.yamcs.Void\022A\n\017" +
+      "ResumeProcessor\022!.yamcsManagement.Proces" +
+      "sorRequest\032\013.yamcs.Void\022?\n\rSeekProcessor" +
+      "\022!.yamcsManagement.ProcessorRequest\032\013.ya",
+      "mcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9739,13 +10257,13 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_TmStatistics_descriptor,
-              new java.lang.String[] { "PacketName", "ReceivedPackets", "LastReceived", "LastPacketTime", "SubscribedParameterCount", });
+              new java.lang.String[] { "PacketName", "ReceivedPackets", "LastReceived", "LastReceivedUTC", "LastPacketTime", "LastPacketTimeUTC", "SubscribedParameterCount", });
           internal_static_yamcsManagement_Statistics_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_yamcsManagement_Statistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_Statistics_descriptor,
-              new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", });
+              new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", "LastUpdatedUTC", });
           internal_static_yamcsManagement_ProcessorManagementRequest_descriptor =
             getDescriptor().getMessageTypes().get(4);
           internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable = new

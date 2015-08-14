@@ -349,7 +349,11 @@ public final class SchemaYamcsManagement
                 if(message.hasLastPacketTime())
                     output.writeInt64(4, message.getLastPacketTime(), false);
                 if(message.hasSubscribedParameterCount())
-                    output.writeInt32(5, message.getSubscribedParameterCount(), false);
+                    output.writeInt32(6, message.getSubscribedParameterCount(), false);
+                if(message.hasLastPacketTimeUTC())
+                    output.writeString(7, message.getLastPacketTimeUTC(), false);
+                if(message.hasLastReceivedUTC())
+                    output.writeString(8, message.getLastReceivedUTC(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.TmStatistics message)
             {
@@ -401,8 +405,14 @@ public final class SchemaYamcsManagement
                         case 4:
                             builder.setLastPacketTime(input.readInt64());
                             break;
-                        case 5:
+                        case 6:
                             builder.setSubscribedParameterCount(input.readInt32());
+                            break;
+                        case 7:
+                            builder.setLastPacketTimeUTC(input.readString());
+                            break;
+                        case 8:
+                            builder.setLastReceivedUTC(input.readString());
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -448,7 +458,9 @@ public final class SchemaYamcsManagement
                 case 2: return "receivedPackets";
                 case 3: return "lastReceived";
                 case 4: return "lastPacketTime";
-                case 5: return "subscribedParameterCount";
+                case 6: return "subscribedParameterCount";
+                case 7: return "lastPacketTimeUTC";
+                case 8: return "lastReceivedUTC";
                 default: return null;
             }
         }
@@ -464,7 +476,9 @@ public final class SchemaYamcsManagement
             fieldMap.put("receivedPackets", 2);
             fieldMap.put("lastReceived", 3);
             fieldMap.put("lastPacketTime", 4);
-            fieldMap.put("subscribedParameterCount", 5);
+            fieldMap.put("subscribedParameterCount", 6);
+            fieldMap.put("lastPacketTimeUTC", 7);
+            fieldMap.put("lastReceivedUTC", 8);
         }
     }
 
@@ -488,6 +502,8 @@ public final class SchemaYamcsManagement
 
                 if(message.hasLastUpdated())
                     output.writeInt64(4, message.getLastUpdated(), false);
+                if(message.hasLastUpdatedUTC())
+                    output.writeString(5, message.getLastUpdatedUTC(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.Statistics message)
             {
@@ -540,6 +556,9 @@ public final class SchemaYamcsManagement
                         case 4:
                             builder.setLastUpdated(input.readInt64());
                             break;
+                        case 5:
+                            builder.setLastUpdatedUTC(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -584,6 +603,7 @@ public final class SchemaYamcsManagement
                 case 2: return "yProcessorName";
                 case 3: return "tmstats";
                 case 4: return "lastUpdated";
+                case 5: return "lastUpdatedUTC";
                 default: return null;
             }
         }
@@ -599,6 +619,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("yProcessorName", 2);
             fieldMap.put("tmstats", 3);
             fieldMap.put("lastUpdated", 4);
+            fieldMap.put("lastUpdatedUTC", 5);
         }
     }
 
