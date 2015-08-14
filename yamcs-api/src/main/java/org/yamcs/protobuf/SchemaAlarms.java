@@ -129,17 +129,19 @@ public final class SchemaAlarms
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.Alarm message) throws java.io.IOException
             {
+                if(message.hasId())
+                    output.writeUInt32(1, message.getId(), false);
                 if(message.hasTriggerValue())
-                    output.writeObject(1, message.getTriggerValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(2, message.getTriggerValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasMostSevereValue())
-                    output.writeObject(2, message.getMostSevereValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(3, message.getMostSevereValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasCurrentValue())
-                    output.writeObject(3, message.getCurrentValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(4, message.getCurrentValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasViolations())
-                    output.writeUInt32(4, message.getViolations(), false);
+                    output.writeUInt32(5, message.getViolations(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Alarms.Alarm message)
             {
@@ -180,18 +182,21 @@ public final class SchemaAlarms
                         case 0:
                             return;
                         case 1:
+                            builder.setId(input.readUInt32());
+                            break;
+                        case 2:
                             builder.setTriggerValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 2:
+                        case 3:
                             builder.setMostSevereValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 3:
+                        case 4:
                             builder.setCurrentValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 4:
+                        case 5:
                             builder.setViolations(input.readUInt32());
                             break;
                         default:
@@ -234,10 +239,11 @@ public final class SchemaAlarms
         {
             switch(number)
             {
-                case 1: return "triggerValue";
-                case 2: return "mostSevereValue";
-                case 3: return "currentValue";
-                case 4: return "violations";
+                case 1: return "id";
+                case 2: return "triggerValue";
+                case 3: return "mostSevereValue";
+                case 4: return "currentValue";
+                case 5: return "violations";
                 default: return null;
             }
         }
@@ -249,10 +255,11 @@ public final class SchemaAlarms
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("triggerValue", 1);
-            fieldMap.put("mostSevereValue", 2);
-            fieldMap.put("currentValue", 3);
-            fieldMap.put("violations", 4);
+            fieldMap.put("id", 1);
+            fieldMap.put("triggerValue", 2);
+            fieldMap.put("mostSevereValue", 3);
+            fieldMap.put("currentValue", 4);
+            fieldMap.put("violations", 5);
         }
     }
 
@@ -267,15 +274,19 @@ public final class SchemaAlarms
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmNotice message) throws java.io.IOException
             {
+                if(message.hasAlarmId())
+                    output.writeUInt32(1, message.getAlarmId(), false);
                 if(message.hasType())
-                    output.writeEnum(1, message.getType().getNumber(), false);
+                    output.writeEnum(2, message.getType().getNumber(), false);
                 if(message.hasTriggerTime())
-                    output.writeInt64(2, message.getTriggerTime(), false);
+                    output.writeInt64(3, message.getTriggerTime(), false);
+                if(message.hasTriggerTimeUTC())
+                    output.writeString(4, message.getTriggerTimeUTC(), false);
                 if(message.hasPval())
-                    output.writeObject(3, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(5, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasUsername())
-                    output.writeString(4, message.getUsername(), false);
+                    output.writeString(6, message.getUsername(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmNotice message)
             {
@@ -316,16 +327,22 @@ public final class SchemaAlarms
                         case 0:
                             return;
                         case 1:
-                            builder.setType(org.yamcs.protobuf.Alarms.AlarmNotice.Type.valueOf(input.readEnum()));
+                            builder.setAlarmId(input.readUInt32());
                             break;
                         case 2:
-                            builder.setTriggerTime(input.readInt64());
+                            builder.setType(org.yamcs.protobuf.Alarms.AlarmNotice.Type.valueOf(input.readEnum()));
                             break;
                         case 3:
+                            builder.setTriggerTime(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setTriggerTimeUTC(input.readString());
+                            break;
+                        case 5:
                             builder.setPval(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 4:
+                        case 6:
                             builder.setUsername(input.readString());
                             break;
                         default:
@@ -368,10 +385,12 @@ public final class SchemaAlarms
         {
             switch(number)
             {
-                case 1: return "type";
-                case 2: return "triggerTime";
-                case 3: return "pval";
-                case 4: return "username";
+                case 1: return "alarmId";
+                case 2: return "type";
+                case 3: return "triggerTime";
+                case 4: return "triggerTimeUTC";
+                case 5: return "pval";
+                case 6: return "username";
                 default: return null;
             }
         }
@@ -383,10 +402,12 @@ public final class SchemaAlarms
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("type", 1);
-            fieldMap.put("triggerTime", 2);
-            fieldMap.put("pval", 3);
-            fieldMap.put("username", 4);
+            fieldMap.put("alarmId", 1);
+            fieldMap.put("type", 2);
+            fieldMap.put("triggerTime", 3);
+            fieldMap.put("triggerTimeUTC", 4);
+            fieldMap.put("pval", 5);
+            fieldMap.put("username", 6);
         }
     }
 

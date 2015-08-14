@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -63,9 +64,11 @@ public class AlarmsResource extends AbstractWebSocketResource implements StreamS
                 for (Entry<Parameter, ActiveAlarm> entry : alarmServer.getActiveAlarms().entrySet()) {
                     NamedObjectId id = NamedObjectId.newBuilder().setName(entry.getKey().getQualifiedName()).build();
                     Alarm.Builder alarmb = Alarm.newBuilder();
+                    alarmb.setId(entry.getValue().id);
                     alarmb.setTriggerValue(entry.getValue().triggerValue.toGpb(id));
                     alarmb.setMostSevereValue(entry.getValue().mostSevereValue.toGpb(id));
                     alarmb.setCurrentValue(entry.getValue().currentValue.toGpb(id));
+                    alarmb.setViolations(entry.getValue().violations);
                     wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);   
                 }
             } catch (IOException e) {
@@ -119,7 +122,10 @@ public class AlarmsResource extends AbstractWebSocketResource implements StreamS
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         AlarmNotice.Builder alarmb = AlarmNotice.newBuilder();
-        alarmb.setTriggerTime((Long) tuple.getColumn("triggerTime"));
+        alarmb.setAlarmId((Integer) tuple.getColumn("seqNum"));
+        Long triggerTime = (Long) tuple.getColumn("triggerTime");
+        alarmb.setTriggerTime(triggerTime);
+        alarmb.setTriggerTimeUTC(TimeEncoding.toString(triggerTime));
         
         String alarmEvent = (String) tuple.getColumn("event");
         ParameterValue pval;

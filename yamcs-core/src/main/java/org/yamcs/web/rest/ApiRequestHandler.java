@@ -191,6 +191,11 @@ public class ApiRequestHandler extends AbstractRequestHandler {
      * Just a little shortcut because builders are dead ugly
      */
     private static RestExceptionMessage.Builder toException(Throwable t) {
-        return RestExceptionMessage.newBuilder().setType(t.getClass().getSimpleName()).setMsg(t.getMessage());
+        RestExceptionMessage.Builder exceptionb = RestExceptionMessage.newBuilder();
+        exceptionb.setType(t.getClass().getSimpleName());
+        if (t.getMessage() != null) {
+            exceptionb.setMsg(t.getMessage());
+        }
+        return exceptionb;
     }
 }
