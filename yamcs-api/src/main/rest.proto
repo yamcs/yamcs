@@ -227,6 +227,10 @@ message RestGetParameterInfoResponse {
     repeated RestParameterInfo pinfo = 1;
 }
 
+message RestListClientsResponse {
+    repeated yamcsManagement.ClientInfo clientInfo = 1;
+}
+
 message UserAuthorizationsInfo{
     repeated string roles=1;
 	repeated string tmParaPrivileges=2;
