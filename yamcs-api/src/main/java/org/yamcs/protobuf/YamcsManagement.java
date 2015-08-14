@@ -3219,6 +3219,21 @@ public final class YamcsManagement {
      */
     long getLastReceived();
 
+    // optional string lastReceivedUTC = 8;
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    boolean hasLastReceivedUTC();
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    java.lang.String getLastReceivedUTC();
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getLastReceivedUTCBytes();
+
     // optional int64 lastPacketTime = 4;
     /**
      * <code>optional int64 lastPacketTime = 4;</code>
@@ -3229,13 +3244,28 @@ public final class YamcsManagement {
      */
     long getLastPacketTime();
 
-    // optional int32 subscribedParameterCount = 5;
+    // optional string lastPacketTimeUTC = 7;
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    boolean hasLastPacketTimeUTC();
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    java.lang.String getLastPacketTimeUTC();
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getLastPacketTimeUTCBytes();
+
+    // optional int32 subscribedParameterCount = 6;
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     boolean hasSubscribedParameterCount();
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     int getSubscribedParameterCount();
   }
@@ -3306,13 +3336,23 @@ public final class YamcsManagement {
               break;
             }
             case 32: {
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000010;
               lastPacketTime_ = input.readInt64();
               break;
             }
-            case 40: {
-              bitField0_ |= 0x00000010;
+            case 48: {
+              bitField0_ |= 0x00000040;
               subscribedParameterCount_ = input.readInt32();
+              break;
+            }
+            case 58: {
+              bitField0_ |= 0x00000020;
+              lastPacketTimeUTC_ = input.readBytes();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000008;
+              lastReceivedUTC_ = input.readBytes();
               break;
             }
           }
@@ -3430,6 +3470,49 @@ public final class YamcsManagement {
       return lastReceived_;
     }
 
+    // optional string lastReceivedUTC = 8;
+    public static final int LASTRECEIVEDUTC_FIELD_NUMBER = 8;
+    private java.lang.Object lastReceivedUTC_;
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public boolean hasLastReceivedUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public java.lang.String getLastReceivedUTC() {
+      java.lang.Object ref = lastReceivedUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastReceivedUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastReceivedUTC = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLastReceivedUTCBytes() {
+      java.lang.Object ref = lastReceivedUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastReceivedUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     // optional int64 lastPacketTime = 4;
     public static final int LASTPACKETTIME_FIELD_NUMBER = 4;
     private long lastPacketTime_;
@@ -3437,7 +3520,7 @@ public final class YamcsManagement {
      * <code>optional int64 lastPacketTime = 4;</code>
      */
     public boolean hasLastPacketTime() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional int64 lastPacketTime = 4;</code>
@@ -3446,17 +3529,60 @@ public final class YamcsManagement {
       return lastPacketTime_;
     }
 
-    // optional int32 subscribedParameterCount = 5;
-    public static final int SUBSCRIBEDPARAMETERCOUNT_FIELD_NUMBER = 5;
-    private int subscribedParameterCount_;
+    // optional string lastPacketTimeUTC = 7;
+    public static final int LASTPACKETTIMEUTC_FIELD_NUMBER = 7;
+    private java.lang.Object lastPacketTimeUTC_;
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
      */
-    public boolean hasSubscribedParameterCount() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+    public boolean hasLastPacketTimeUTC() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional int32 subscribedParameterCount = 5;</code>
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    public java.lang.String getLastPacketTimeUTC() {
+      java.lang.Object ref = lastPacketTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastPacketTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastPacketTimeUTC = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLastPacketTimeUTCBytes() {
+      java.lang.Object ref = lastPacketTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastPacketTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional int32 subscribedParameterCount = 6;
+    public static final int SUBSCRIBEDPARAMETERCOUNT_FIELD_NUMBER = 6;
+    private int subscribedParameterCount_;
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
+     */
+    public boolean hasSubscribedParameterCount() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional int32 subscribedParameterCount = 6;</code>
      */
     public int getSubscribedParameterCount() {
       return subscribedParameterCount_;
@@ -3466,7 +3592,9 @@ public final class YamcsManagement {
       packetName_ = "";
       receivedPackets_ = 0L;
       lastReceived_ = 0L;
+      lastReceivedUTC_ = "";
       lastPacketTime_ = 0L;
+      lastPacketTimeUTC_ = "";
       subscribedParameterCount_ = 0;
     }
     private byte memoizedIsInitialized = -1;
@@ -3494,11 +3622,17 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(3, lastReceived_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeInt64(4, lastPacketTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt32(5, subscribedParameterCount_);
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeInt32(6, subscribedParameterCount_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBytes(7, getLastPacketTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(8, getLastReceivedUTCBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -3521,13 +3655,21 @@ public final class YamcsManagement {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, lastReceived_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, lastPacketTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(5, subscribedParameterCount_);
+          .computeInt32Size(6, subscribedParameterCount_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(7, getLastPacketTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getLastReceivedUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3651,10 +3793,14 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000002);
         lastReceived_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
-        lastPacketTime_ = 0L;
+        lastReceivedUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        subscribedParameterCount_ = 0;
+        lastPacketTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000010);
+        lastPacketTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000020);
+        subscribedParameterCount_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -3698,9 +3844,17 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.lastPacketTime_ = lastPacketTime_;
+        result.lastReceivedUTC_ = lastReceivedUTC_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
+        }
+        result.lastPacketTime_ = lastPacketTime_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.lastPacketTimeUTC_ = lastPacketTimeUTC_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
         }
         result.subscribedParameterCount_ = subscribedParameterCount_;
         result.bitField0_ = to_bitField0_;
@@ -3730,8 +3884,18 @@ public final class YamcsManagement {
         if (other.hasLastReceived()) {
           setLastReceived(other.getLastReceived());
         }
+        if (other.hasLastReceivedUTC()) {
+          bitField0_ |= 0x00000008;
+          lastReceivedUTC_ = other.lastReceivedUTC_;
+          onChanged();
+        }
         if (other.hasLastPacketTime()) {
           setLastPacketTime(other.getLastPacketTime());
+        }
+        if (other.hasLastPacketTimeUTC()) {
+          bitField0_ |= 0x00000020;
+          lastPacketTimeUTC_ = other.lastPacketTimeUTC_;
+          onChanged();
         }
         if (other.hasSubscribedParameterCount()) {
           setSubscribedParameterCount(other.getSubscribedParameterCount());
@@ -3907,13 +4071,87 @@ public final class YamcsManagement {
         return this;
       }
 
+      // optional string lastReceivedUTC = 8;
+      private java.lang.Object lastReceivedUTC_ = "";
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public boolean hasLastReceivedUTC() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public java.lang.String getLastReceivedUTC() {
+        java.lang.Object ref = lastReceivedUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastReceivedUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLastReceivedUTCBytes() {
+        java.lang.Object ref = lastReceivedUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastReceivedUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder setLastReceivedUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        lastReceivedUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder clearLastReceivedUTC() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        lastReceivedUTC_ = getDefaultInstance().getLastReceivedUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastReceivedUTC = 8;</code>
+       */
+      public Builder setLastReceivedUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        lastReceivedUTC_ = value;
+        onChanged();
+        return this;
+      }
+
       // optional int64 lastPacketTime = 4;
       private long lastPacketTime_ ;
       /**
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public boolean hasLastPacketTime() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional int64 lastPacketTime = 4;</code>
@@ -3925,7 +4163,7 @@ public final class YamcsManagement {
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public Builder setLastPacketTime(long value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         lastPacketTime_ = value;
         onChanged();
         return this;
@@ -3934,40 +4172,114 @@ public final class YamcsManagement {
        * <code>optional int64 lastPacketTime = 4;</code>
        */
       public Builder clearLastPacketTime() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         lastPacketTime_ = 0L;
         onChanged();
         return this;
       }
 
-      // optional int32 subscribedParameterCount = 5;
-      private int subscribedParameterCount_ ;
+      // optional string lastPacketTimeUTC = 7;
+      private java.lang.Object lastPacketTimeUTC_ = "";
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional string lastPacketTimeUTC = 7;</code>
        */
-      public boolean hasSubscribedParameterCount() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+      public boolean hasLastPacketTimeUTC() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public java.lang.String getLastPacketTimeUTC() {
+        java.lang.Object ref = lastPacketTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastPacketTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLastPacketTimeUTCBytes() {
+        java.lang.Object ref = lastPacketTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastPacketTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder setLastPacketTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        lastPacketTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder clearLastPacketTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        lastPacketTimeUTC_ = getDefaultInstance().getLastPacketTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastPacketTimeUTC = 7;</code>
+       */
+      public Builder setLastPacketTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        lastPacketTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 subscribedParameterCount = 6;
+      private int subscribedParameterCount_ ;
+      /**
+       * <code>optional int32 subscribedParameterCount = 6;</code>
+       */
+      public boolean hasSubscribedParameterCount() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public int getSubscribedParameterCount() {
         return subscribedParameterCount_;
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public Builder setSubscribedParameterCount(int value) {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000040;
         subscribedParameterCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 subscribedParameterCount = 5;</code>
+       * <code>optional int32 subscribedParameterCount = 6;</code>
        */
       public Builder clearSubscribedParameterCount() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000040);
         subscribedParameterCount_ = 0;
         onChanged();
         return this;
@@ -4059,6 +4371,33 @@ public final class YamcsManagement {
      * </pre>
      */
     long getLastUpdated();
+
+    // optional string lastUpdatedUTC = 5;
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    boolean hasLastUpdatedUTC();
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    java.lang.String getLastUpdatedUTC();
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getLastUpdatedUTCBytes();
   }
   /**
    * Protobuf type {@code yamcsManagement.Statistics}
@@ -4132,6 +4471,11 @@ public final class YamcsManagement {
             case 32: {
               bitField0_ |= 0x00000004;
               lastUpdated_ = input.readInt64();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000008;
+              lastUpdatedUTC_ = input.readBytes();
               break;
             }
           }
@@ -4323,11 +4667,67 @@ public final class YamcsManagement {
       return lastUpdated_;
     }
 
+    // optional string lastUpdatedUTC = 5;
+    public static final int LASTUPDATEDUTC_FIELD_NUMBER = 5;
+    private java.lang.Object lastUpdatedUTC_;
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public boolean hasLastUpdatedUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public java.lang.String getLastUpdatedUTC() {
+      java.lang.Object ref = lastUpdatedUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          lastUpdatedUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string lastUpdatedUTC = 5;</code>
+     *
+     * <pre>
+     * String representation in ISO8601 format
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getLastUpdatedUTCBytes() {
+      java.lang.Object ref = lastUpdatedUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        lastUpdatedUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       instance_ = "";
       yProcessorName_ = "";
       tmstats_ = java.util.Collections.emptyList();
       lastUpdated_ = 0L;
+      lastUpdatedUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4367,6 +4767,9 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(4, lastUpdated_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(5, getLastUpdatedUTCBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4391,6 +4794,10 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, lastUpdated_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getLastUpdatedUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4521,6 +4928,8 @@ public final class YamcsManagement {
         }
         lastUpdated_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
+        lastUpdatedUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -4570,6 +4979,10 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000004;
         }
         result.lastUpdated_ = lastUpdated_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.lastUpdatedUTC_ = lastUpdatedUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4624,6 +5037,11 @@ public final class YamcsManagement {
         }
         if (other.hasLastUpdated()) {
           setLastUpdated(other.getLastUpdated());
+        }
+        if (other.hasLastUpdatedUTC()) {
+          bitField0_ |= 0x00000010;
+          lastUpdatedUTC_ = other.lastUpdatedUTC_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5099,6 +5517,104 @@ public final class YamcsManagement {
       public Builder clearLastUpdated() {
         bitField0_ = (bitField0_ & ~0x00000008);
         lastUpdated_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string lastUpdatedUTC = 5;
+      private java.lang.Object lastUpdatedUTC_ = "";
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public boolean hasLastUpdatedUTC() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public java.lang.String getLastUpdatedUTC() {
+        java.lang.Object ref = lastUpdatedUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          lastUpdatedUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getLastUpdatedUTCBytes() {
+        java.lang.Object ref = lastUpdatedUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          lastUpdatedUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder setLastUpdatedUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        lastUpdatedUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder clearLastUpdatedUTC() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        lastUpdatedUTC_ = getDefaultInstance().getLastUpdatedUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string lastUpdatedUTC = 5;</code>
+       *
+       * <pre>
+       * String representation in ISO8601 format
+       * </pre>
+       */
+      public Builder setLastUpdatedUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        lastUpdatedUTC_ = value;
         onChanged();
         return this;
       }
@@ -9623,6 +10139,744 @@ public final class YamcsManagement {
     // @@protoc_insertion_point(class_scope:yamcsManagement.LinkInfo)
   }
 
+  public interface ManagementSubscribeRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional bool enableClientInfo = 1;
+    /**
+     * <code>optional bool enableClientInfo = 1;</code>
+     */
+    boolean hasEnableClientInfo();
+    /**
+     * <code>optional bool enableClientInfo = 1;</code>
+     */
+    boolean getEnableClientInfo();
+
+    // optional bool enableProcessorInfo = 2;
+    /**
+     * <code>optional bool enableProcessorInfo = 2;</code>
+     */
+    boolean hasEnableProcessorInfo();
+    /**
+     * <code>optional bool enableProcessorInfo = 2;</code>
+     */
+    boolean getEnableProcessorInfo();
+
+    // optional bool enableProcessorStatistics = 3;
+    /**
+     * <code>optional bool enableProcessorStatistics = 3;</code>
+     */
+    boolean hasEnableProcessorStatistics();
+    /**
+     * <code>optional bool enableProcessorStatistics = 3;</code>
+     */
+    boolean getEnableProcessorStatistics();
+
+    // optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;
+    /**
+     * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+     */
+    boolean hasMode();
+    /**
+     * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode getMode();
+  }
+  /**
+   * Protobuf type {@code yamcsManagement.ManagementSubscribeRequest}
+   *
+   * <pre>
+   * Request datatype as used in the websocket API
+   * </pre>
+   */
+  public static final class ManagementSubscribeRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements ManagementSubscribeRequestOrBuilder {
+    // Use ManagementSubscribeRequest.newBuilder() to construct.
+    private ManagementSubscribeRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ManagementSubscribeRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ManagementSubscribeRequest defaultInstance;
+    public static ManagementSubscribeRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ManagementSubscribeRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ManagementSubscribeRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              enableClientInfo_ = input.readBool();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              enableProcessorInfo_ = input.readBool();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              enableProcessorStatistics_ = input.readBool();
+              break;
+            }
+            case 32: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode value = org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(4, rawValue);
+              } else {
+                bitField0_ |= 0x00000008;
+                mode_ = value;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ManagementSubscribeRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.class, org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ManagementSubscribeRequest> PARSER =
+        new com.google.protobuf.AbstractParser<ManagementSubscribeRequest>() {
+      public ManagementSubscribeRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ManagementSubscribeRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ManagementSubscribeRequest> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code yamcsManagement.ManagementSubscribeRequest.Mode}
+     */
+    public enum Mode
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>SELF = 1;</code>
+       */
+      SELF(0, 1),
+      /**
+       * <code>ALL = 2;</code>
+       */
+      ALL(1, 2),
+      ;
+
+      /**
+       * <code>SELF = 1;</code>
+       */
+      public static final int SELF_VALUE = 1;
+      /**
+       * <code>ALL = 2;</code>
+       */
+      public static final int ALL_VALUE = 2;
+
+
+      public final int getNumber() { return value; }
+
+      public static Mode valueOf(int value) {
+        switch (value) {
+          case 1: return SELF;
+          case 2: return ALL;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Mode>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Mode>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Mode>() {
+              public Mode findValueByNumber(int number) {
+                return Mode.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Mode[] VALUES = values();
+
+      public static Mode valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private Mode(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcsManagement.ManagementSubscribeRequest.Mode)
+    }
+
+    private int bitField0_;
+    // optional bool enableClientInfo = 1;
+    public static final int ENABLECLIENTINFO_FIELD_NUMBER = 1;
+    private boolean enableClientInfo_;
+    /**
+     * <code>optional bool enableClientInfo = 1;</code>
+     */
+    public boolean hasEnableClientInfo() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool enableClientInfo = 1;</code>
+     */
+    public boolean getEnableClientInfo() {
+      return enableClientInfo_;
+    }
+
+    // optional bool enableProcessorInfo = 2;
+    public static final int ENABLEPROCESSORINFO_FIELD_NUMBER = 2;
+    private boolean enableProcessorInfo_;
+    /**
+     * <code>optional bool enableProcessorInfo = 2;</code>
+     */
+    public boolean hasEnableProcessorInfo() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool enableProcessorInfo = 2;</code>
+     */
+    public boolean getEnableProcessorInfo() {
+      return enableProcessorInfo_;
+    }
+
+    // optional bool enableProcessorStatistics = 3;
+    public static final int ENABLEPROCESSORSTATISTICS_FIELD_NUMBER = 3;
+    private boolean enableProcessorStatistics_;
+    /**
+     * <code>optional bool enableProcessorStatistics = 3;</code>
+     */
+    public boolean hasEnableProcessorStatistics() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bool enableProcessorStatistics = 3;</code>
+     */
+    public boolean getEnableProcessorStatistics() {
+      return enableProcessorStatistics_;
+    }
+
+    // optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;
+    public static final int MODE_FIELD_NUMBER = 4;
+    private org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode mode_;
+    /**
+     * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+     */
+    public boolean hasMode() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode getMode() {
+      return mode_;
+    }
+
+    private void initFields() {
+      enableClientInfo_ = false;
+      enableProcessorInfo_ = false;
+      enableProcessorStatistics_ = false;
+      mode_ = org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode.SELF;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, enableClientInfo_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, enableProcessorInfo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBool(3, enableProcessorStatistics_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeEnum(4, mode_.getNumber());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, enableClientInfo_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, enableProcessorInfo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, enableProcessorStatistics_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(4, mode_.getNumber());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcsManagement.ManagementSubscribeRequest}
+     *
+     * <pre>
+     * Request datatype as used in the websocket API
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ManagementSubscribeRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.class, org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        enableClientInfo_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        enableProcessorInfo_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        enableProcessorStatistics_ = false;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        mode_ = org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode.SELF;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest build() {
+        org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest result = new org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.enableClientInfo_ = enableClientInfo_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.enableProcessorInfo_ = enableProcessorInfo_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.enableProcessorStatistics_ = enableProcessorStatistics_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.mode_ = mode_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.getDefaultInstance()) return this;
+        if (other.hasEnableClientInfo()) {
+          setEnableClientInfo(other.getEnableClientInfo());
+        }
+        if (other.hasEnableProcessorInfo()) {
+          setEnableProcessorInfo(other.getEnableProcessorInfo());
+        }
+        if (other.hasEnableProcessorStatistics()) {
+          setEnableProcessorStatistics(other.getEnableProcessorStatistics());
+        }
+        if (other.hasMode()) {
+          setMode(other.getMode());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional bool enableClientInfo = 1;
+      private boolean enableClientInfo_ ;
+      /**
+       * <code>optional bool enableClientInfo = 1;</code>
+       */
+      public boolean hasEnableClientInfo() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool enableClientInfo = 1;</code>
+       */
+      public boolean getEnableClientInfo() {
+        return enableClientInfo_;
+      }
+      /**
+       * <code>optional bool enableClientInfo = 1;</code>
+       */
+      public Builder setEnableClientInfo(boolean value) {
+        bitField0_ |= 0x00000001;
+        enableClientInfo_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool enableClientInfo = 1;</code>
+       */
+      public Builder clearEnableClientInfo() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        enableClientInfo_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool enableProcessorInfo = 2;
+      private boolean enableProcessorInfo_ ;
+      /**
+       * <code>optional bool enableProcessorInfo = 2;</code>
+       */
+      public boolean hasEnableProcessorInfo() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool enableProcessorInfo = 2;</code>
+       */
+      public boolean getEnableProcessorInfo() {
+        return enableProcessorInfo_;
+      }
+      /**
+       * <code>optional bool enableProcessorInfo = 2;</code>
+       */
+      public Builder setEnableProcessorInfo(boolean value) {
+        bitField0_ |= 0x00000002;
+        enableProcessorInfo_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool enableProcessorInfo = 2;</code>
+       */
+      public Builder clearEnableProcessorInfo() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        enableProcessorInfo_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool enableProcessorStatistics = 3;
+      private boolean enableProcessorStatistics_ ;
+      /**
+       * <code>optional bool enableProcessorStatistics = 3;</code>
+       */
+      public boolean hasEnableProcessorStatistics() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool enableProcessorStatistics = 3;</code>
+       */
+      public boolean getEnableProcessorStatistics() {
+        return enableProcessorStatistics_;
+      }
+      /**
+       * <code>optional bool enableProcessorStatistics = 3;</code>
+       */
+      public Builder setEnableProcessorStatistics(boolean value) {
+        bitField0_ |= 0x00000004;
+        enableProcessorStatistics_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool enableProcessorStatistics = 3;</code>
+       */
+      public Builder clearEnableProcessorStatistics() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        enableProcessorStatistics_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;
+      private org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode mode_ = org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode.SELF;
+      /**
+       * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+       */
+      public boolean hasMode() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode getMode() {
+        return mode_;
+      }
+      /**
+       * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+       */
+      public Builder setMode(org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
+        mode_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ManagementSubscribeRequest.Mode mode = 4;</code>
+       */
+      public Builder clearMode() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        mode_ = org.yamcs.protobuf.YamcsManagement.ManagementSubscribeRequest.Mode.SELF;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:yamcsManagement.ManagementSubscribeRequest)
+    }
+
+    static {
+      defaultInstance = new ManagementSubscribeRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcsManagement.ManagementSubscribeRequest)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcsManagement_ProcessorInfo_descriptor;
   private static
@@ -9658,6 +10912,11 @@ public final class YamcsManagement {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yamcsManagement_LinkInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_yamcsManagement_ManagementSubscribeRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -9680,42 +10939,50 @@ public final class YamcsManagement {
       " \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005state\030\006 \001" +
       "(\0162\'.yamcsManagement.ClientInfo.ClientSt" +
       "ate\022\025\n\rcurrentClient\030\007 \001(\010\".\n\013ClientStat" +
-      "e\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"\213\001\n\014T" +
+      "e\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"\277\001\n\014T" +
       "mStatistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017recei" +
-      "vedPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\026" +
-      "\n\016lastPacketTime\030\004 \001(\003\022 \n\030subscribedPara" +
-      "meterCount\030\005 \001(\005\"{\n\nStatistics\022\020\n\010instan" +
-      "ce\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmst" +
-      "ats\030\003 \003(\0132\035.yamcsManagement.TmStatistics",
-      "\022\023\n\013lastUpdated\030\004 \001(\003\"\266\002\n\032ProcessorManag" +
-      "ementRequest\022H\n\toperation\030\001 \001(\01625.yamcsM" +
-      "anagement.ProcessorManagementRequest.Ope" +
-      "ration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014" +
-      "\n\004type\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006" +
-      " \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nrepla" +
-      "ySpec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOpe" +
-      "ration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_" +
-      "TO_PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\to" +
-      "peration\030\001 \001(\0162+.yamcsManagement.Process",
-      "orRequest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n" +
-      "\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperati" +
-      "on\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010" +
-      "LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t" +
-      "\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005" +
-      " \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021" +
-      "\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(" +
-      "\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001" +
-      "\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATE" +
-      "D\020\004\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorControl\022A\n\017",
-      "CreateProcessor\022!.yamcsManagement.Proces" +
-      "sorRequest\032\013.yamcs.Void\022D\n\022ConnectToProc" +
-      "essor\022!.yamcsManagement.ProcessorRequest" +
-      "\032\013.yamcs.Void\022@\n\016PauseProcessor\022!.yamcsM" +
-      "anagement.ProcessorRequest\032\013.yamcs.Void\022" +
-      "A\n\017ResumeProcessor\022!.yamcsManagement.Pro" +
-      "cessorRequest\032\013.yamcs.Void\022?\n\rSeekProces" +
-      "sor\022!.yamcsManagement.ProcessorRequest\032\013" +
-      ".yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "vedPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027" +
+      "\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTim" +
+      "e\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030su" +
+      "bscribedParameterCount\030\006 \001(\005\"\223\001\n\nStatist" +
+      "ics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030",
+      "\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsManagement" +
+      ".TmStatistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016la" +
+      "stUpdatedUTC\030\005 \001(\t\"\266\002\n\032ProcessorManageme" +
+      "ntRequest\022H\n\toperation\030\001 \001(\01625.yamcsMana" +
+      "gement.ProcessorManagementRequest.Operat" +
+      "ion\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004t" +
+      "ype\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(" +
+      "\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nreplaySp" +
+      "ec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOperat" +
+      "ion\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_",
+      "PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\toper" +
+      "ation\030\001 \001(\0162+.yamcsManagement.ProcessorR" +
+      "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
+      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperation\022" +
+      "\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010Lin" +
+      "kInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n" +
+      "\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(" +
+      "\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\td" +
+      "ataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\321" +
+      "\001\n\032ManagementSubscribeRequest\022\030\n\020enableC",
+      "lientInfo\030\001 \001(\010\022\033\n\023enableProcessorInfo\030\002" +
+      " \001(\010\022!\n\031enableProcessorStatistics\030\003 \001(\010\022" +
+      ">\n\004mode\030\004 \001(\01620.yamcsManagement.Manageme" +
+      "ntSubscribeRequest.Mode\"\031\n\004Mode\022\010\n\004SELF\020" +
+      "\001\022\007\n\003ALL\020\002*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010S" +
+      "TARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\n" +
+      "TERMINATED\020\004\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorCo" +
+      "ntrol\022A\n\017CreateProcessor\022!.yamcsManageme" +
+      "nt.ProcessorRequest\032\013.yamcs.Void\022D\n\022Conn" +
+      "ectToProcessor\022!.yamcsManagement.Process",
+      "orRequest\032\013.yamcs.Void\022@\n\016PauseProcessor" +
+      "\022!.yamcsManagement.ProcessorRequest\032\013.ya" +
+      "mcs.Void\022A\n\017ResumeProcessor\022!.yamcsManag" +
+      "ement.ProcessorRequest\032\013.yamcs.Void\022?\n\rS" +
+      "eekProcessor\022!.yamcsManagement.Processor" +
+      "Request\032\013.yamcs.VoidB\024\n\022org.yamcs.protob" +
+      "uf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9739,13 +11006,13 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_TmStatistics_descriptor,
-              new java.lang.String[] { "PacketName", "ReceivedPackets", "LastReceived", "LastPacketTime", "SubscribedParameterCount", });
+              new java.lang.String[] { "PacketName", "ReceivedPackets", "LastReceived", "LastReceivedUTC", "LastPacketTime", "LastPacketTimeUTC", "SubscribedParameterCount", });
           internal_static_yamcsManagement_Statistics_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_yamcsManagement_Statistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_Statistics_descriptor,
-              new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", });
+              new java.lang.String[] { "Instance", "YProcessorName", "Tmstats", "LastUpdated", "LastUpdatedUTC", });
           internal_static_yamcsManagement_ProcessorManagementRequest_descriptor =
             getDescriptor().getMessageTypes().get(4);
           internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable = new
@@ -9764,6 +11031,12 @@ public final class YamcsManagement {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_LinkInfo_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Stream", "Disabled", "Status", "DataCount", "DetailedStatus", });
+          internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor =
+            getDescriptor().getMessageTypes().get(7);
+          internal_static_yamcsManagement_ManagementSubscribeRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_yamcsManagement_ManagementSubscribeRequest_descriptor,
+              new java.lang.String[] { "EnableClientInfo", "EnableProcessorInfo", "EnableProcessorStatistics", "Mode", });
           return null;
         }
       };
