@@ -167,7 +167,7 @@ public class AlarmChecker {
             pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
         // Notify when severity changes
-        if(alarmReporter!=null) {
+        if(alarmReporter!=null && alarmType!= null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
         if(alarmServer!=null) {
@@ -319,11 +319,13 @@ public class AlarmChecker {
                 pv.setMonitoringResult(MonitoringResult.SEVERE);
                 break;
             }
+
+            if(alarmReporter!=null) {
+                alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
+            }
         }
         
-        if(alarmReporter!=null) {
-            alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
-        }
+
         if(alarmServer!=null) {
             alarmServer.update(pv, minViolations);
         }
