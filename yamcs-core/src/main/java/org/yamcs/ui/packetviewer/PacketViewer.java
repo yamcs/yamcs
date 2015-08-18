@@ -89,7 +89,6 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
 import org.yamcs.protobuf.Yamcs.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
