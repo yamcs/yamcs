@@ -19,6 +19,13 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
+@Deprecated 
+/**
+ * Maps between packetid/apid and SequenceContainers.
+ * 
+ * Is deprecated because no such mappings exist when using not ccsds data 
+ *
+ */
 public class XtceUtil {
     HashMap<Long,SequenceContainer>apidPacketid2Name=new HashMap<Long,SequenceContainer>();
     HashMap<Integer,SequenceContainer>packetid2Name=new HashMap<Integer,SequenceContainer>();
