@@ -142,7 +142,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     Preferences uiPrefs; 
 
     ConnectionParameters connectionParams;
-    XtceUtil xtceutil;
     //used for decoding full packets
     XtceTmProcessor tmProcessor;
     
@@ -515,8 +514,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             return false;
         }
 
-        xtceutil=XtceUtil.getInstance(xtcedb);
-
         tmProcessor=new XtceTmProcessor(xtcedb);
         
         tmProcessor.setParameterListener(this);
@@ -549,7 +546,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             return false;
         }
 
-        xtceutil=XtceUtil.getInstance(xtcedb);
 
         tmProcessor=new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
