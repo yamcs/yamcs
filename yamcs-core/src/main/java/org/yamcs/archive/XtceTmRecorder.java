@@ -48,9 +48,6 @@ public class XtceTmRecorder extends AbstractService {
     private long totalNumPackets;
     protected Logger log;
 
-
-    boolean giveWarningIfMultipleMatches=true; //print a warning if a packet is saved multiple times
-
     String yamcsInstance;
     final Tuple END_MARK=new Tuple(TmProviderAdapter.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
     XtceTmExtractor tmExtractor;
@@ -283,17 +280,13 @@ public class XtceTmRecorder extends AbstractService {
 
 
             try {
-                int k=0;
-                if(result.size()>1) k++;
+                int leafContainer=result.size() - 1;
 
-                if((giveWarningIfMultipleMatches) && result.size()>2) {
-                    log.warn("Packet matches multiple sequence containers {}", result.toString());
-                }
                 List<Object> c=t.getColumns();
                 List<Object> columns=new ArrayList<Object>(c.size()+1);
                 columns.addAll(c);
 
-                columns.add(c.size(), result.get(k).getContainer().getQualifiedName());
+                columns.add(c.size(), result.get(leafContainer).getContainer().getQualifiedName());
                 Tuple tp=new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
                 outputStream.emitTuple(tp);
             } catch (Exception e) {
