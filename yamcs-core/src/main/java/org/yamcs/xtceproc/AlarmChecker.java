@@ -163,11 +163,9 @@ public class AlarmChecker {
         if(staticAlarmRanges!=null) {
             checkStaticAlarmRanges(pv, intCalValue, staticAlarmRanges);
         }
-        if(pv.getMonitoringResult()==null) {
-            pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
-        }
+
         // Notify when severity changes
-        if(alarmReporter!=null && alarmType!= null) {
+        if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
         if(alarmServer!=null) {
@@ -212,9 +210,6 @@ public class AlarmChecker {
         pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
         if(staticAlarmRanges!=null) {
             checkStaticAlarmRanges(pv, doubleCalValue, staticAlarmRanges);
-        }
-        if(pv.getMonitoringResult()==null) {
-            pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
         
         // Notify when severity changes

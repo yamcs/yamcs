@@ -107,6 +107,12 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
      */
     public void reportNumericParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
         boolean sendUpdateEvent=false;
+
+        if(alarmType == null)
+        {
+            // TODO: do something with more interesting
+            return;
+        }
         
         if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
             ParameterValue oldPv=lastValuePerParameter.get(pv.def);
@@ -146,7 +152,12 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     
     public void reportEnumeratedParameterEvent(ParameterValue pv, AlarmType alarmType, int minViolations) {
         boolean sendUpdateEvent=false;
-        
+
+        if(alarmType == null) {
+            // TODO: something more interesting
+            return;
+        }
+
         if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
             ParameterValue oldPv=lastValuePerParameter.get(pv.def);
             if(oldPv!=null && hasChanged(oldPv, pv)) {
@@ -184,6 +195,10 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     }
     
     private void sendValueChangeEvent(ParameterValue pv) {
+        if(pv.getMonitoringResult() == null)
+        {
+            throw new IllegalStateException("No monitoring result");
+        }
         switch(pv.getMonitoringResult()) {
         case WATCH_LOW:
         case WARNING_LOW:
