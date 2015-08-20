@@ -57,27 +57,9 @@ message RestValidateCommandResponse {
   repeated commanding.CommandSignificance commandsSignificance = 1;
 }
 
-message RestDumpRawMdbRequest {
-}
-
 message RestDumpRawMdbResponse {
   optional bytes rawMdb=2;
 }
-
-message RestSetParameterResponse {
-}
-
-message RestCreateProcessorResponse {
-}
-message RestConnectToProcessorResponse {
-}
-
-message RestProcessorResponse {
-}
-
-message RestListProcessorsRequest {
-}
-
 
 message RestListProcessorsResponse {
     repeated yamcsManagement.ProcessorInfo processor=1;
@@ -170,9 +152,6 @@ message RestSendCommandRequest {
   repeated RestCommandType commands=1;
 }
 
-message RestSendCommandResponse {
-}
-
 message RestUnitType {
    optional string unit = 1;
 }
@@ -227,7 +206,7 @@ message RestGetParameterInfoResponse {
     repeated RestParameterInfo pinfo = 1;
 }
 
-message RestListClientsResponse {
+message ListClientsResponse {
     repeated yamcsManagement.ClientInfo clientInfo = 1;
 }
 
@@ -239,9 +218,6 @@ message UserAuthorizationsInfo{
 	repeated string tcPrivileges=5;
 	repeated string systemPrivileges=6;
 
-}
-
-message RestListAuthorisationsRequest {
 }
 
 message RestListAuthorisationsResponse {

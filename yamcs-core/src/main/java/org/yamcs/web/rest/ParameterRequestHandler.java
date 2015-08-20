@@ -18,7 +18,6 @@ import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
-import org.yamcs.protobuf.Rest.RestSetParameterResponse;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -75,8 +74,8 @@ public class ParameterRequestHandler implements RestRequestHandler {
                 }
             } else if(req.isPOST()) {
                 Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
-                RestSetParameterResponse response = setParameter(p, v, processor);
-                return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
+                setParameter(p, v, processor);
+                return new RestResponse(req);
             } else {
                 throw new MethodNotAllowedException(req);
             }
@@ -101,7 +100,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
     /**
      * sets single parameter
      */
-    private RestSetParameterResponse setParameter(Parameter p, Value v, YProcessor processor) throws BadRequestException {
+    private void setParameter(Parameter p, Value v, YProcessor processor) throws BadRequestException {
         SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
         if(spm==null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this channel");
@@ -112,7 +111,6 @@ public class ParameterRequestHandler implements RestRequestHandler {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
-        return RestSetParameterResponse.newBuilder().build();
     }
 
     /**
@@ -148,8 +146,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
             throw new BadRequestException(e.getMessage());
         }
 
-        RestSetParameterResponse response = RestSetParameterResponse.newBuilder().build();
-        return new RestResponse(req, response, SchemaRest.RestSetParameterResponse.WRITE);
+        return new RestResponse(req);
     }
 
 
