@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Generates realtime alarm events automatically, by subscribing to all relevant
  * parameters.
+ * TODO should be moved into org.yamcs.alarms at some point
  */
 public class AlarmReporter extends AbstractService implements ParameterConsumer {
     

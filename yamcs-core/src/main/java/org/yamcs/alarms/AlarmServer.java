@@ -40,7 +40,6 @@ public class AlarmServer extends AbstractService {
         ALARM_TUPLE_DEFINITION.addColumn("parameter", DataType.STRING);
         ALARM_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
         ALARM_TUPLE_DEFINITION.addColumn("event", DataType.STRING);
-        ALARM_TUPLE_DEFINITION.addColumn("violations", DataType.INT);
     }
     
     /**
@@ -72,6 +71,10 @@ public class AlarmServer extends AbstractService {
     public Map<Parameter, ActiveAlarm> subscribe(AlarmListener listener) {
         alarmListeners.add(listener);
         return activeAlarms;
+    }
+    
+    public void unsubscribe(AlarmListener listener) {
+        alarmListeners.remove(listener);
     }
     
     /**

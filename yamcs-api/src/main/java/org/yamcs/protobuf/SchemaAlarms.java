@@ -7,117 +7,6 @@ package org.yamcs.protobuf;
 public final class SchemaAlarms
 {
 
-    public static final class AlarmsSubscribeRequest
-    {
-        public static final org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.BuilderSchema();
-        
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest>
-        {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest message) throws java.io.IOException
-            {
-                if(message.hasGetCurrent())
-                    output.writeBool(1, message.getGetCurrent(), false);
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest message)
-            {
-                return message.isInitialized();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest> typeClass()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class.getName();
-            }
-            //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest newMessage() { return null; }
-        }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder>
-        {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder builder) throws java.io.IOException
-            {
-                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
-                {
-                    switch(number)
-                    {
-                        case 0:
-                            return;
-                        case 1:
-                            builder.setGetCurrent(input.readBool());
-                            break;
-                        default:
-                            input.handleUnknownField(number, this);
-                    }
-                }
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder builder)
-            {
-                return builder.isInitialized();
-            }
-            public org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder newMessage()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.newBuilder();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmsSubscribeRequest.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder> typeClass()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.class.getName();
-            }
-            //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmsSubscribeRequest.Builder builder) throws java.io.IOException {}
-        }
-        public static java.lang.String getFieldName(int number)
-        {
-            switch(number)
-            {
-                case 1: return "getCurrent";
-                default: return null;
-            }
-        }
-        public static int getFieldNumber(java.lang.String name)
-        {
-            java.lang.Integer number = fieldMap.get(name);
-            return number == null ? 0 : number.intValue();
-        }
-        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
-        static
-        {
-            fieldMap.put("getCurrent", 1);
-        }
-    }
-
     public static final class Alarm
     {
         public static final org.yamcs.protobuf.SchemaAlarms.Alarm.MessageSchema WRITE =
@@ -278,15 +167,11 @@ public final class SchemaAlarms
                     output.writeUInt32(1, message.getAlarmId(), false);
                 if(message.hasType())
                     output.writeEnum(2, message.getType().getNumber(), false);
-                if(message.hasTriggerTime())
-                    output.writeInt64(3, message.getTriggerTime(), false);
-                if(message.hasTriggerTimeUTC())
-                    output.writeString(4, message.getTriggerTimeUTC(), false);
                 if(message.hasPval())
-                    output.writeObject(5, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
+                    output.writeObject(3, message.getPval(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
                 if(message.hasUsername())
-                    output.writeString(6, message.getUsername(), false);
+                    output.writeString(4, message.getUsername(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmNotice message)
             {
@@ -333,16 +218,10 @@ public final class SchemaAlarms
                             builder.setType(org.yamcs.protobuf.Alarms.AlarmNotice.Type.valueOf(input.readEnum()));
                             break;
                         case 3:
-                            builder.setTriggerTime(input.readInt64());
-                            break;
-                        case 4:
-                            builder.setTriggerTimeUTC(input.readString());
-                            break;
-                        case 5:
                             builder.setPval(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
 
                             break;
-                        case 6:
+                        case 4:
                             builder.setUsername(input.readString());
                             break;
                         default:
@@ -387,10 +266,8 @@ public final class SchemaAlarms
             {
                 case 1: return "alarmId";
                 case 2: return "type";
-                case 3: return "triggerTime";
-                case 4: return "triggerTimeUTC";
-                case 5: return "pval";
-                case 6: return "username";
+                case 3: return "pval";
+                case 4: return "username";
                 default: return null;
             }
         }
@@ -404,10 +281,8 @@ public final class SchemaAlarms
         {
             fieldMap.put("alarmId", 1);
             fieldMap.put("type", 2);
-            fieldMap.put("triggerTime", 3);
-            fieldMap.put("triggerTimeUTC", 4);
-            fieldMap.put("pval", 5);
-            fieldMap.put("username", 6);
+            fieldMap.put("pval", 3);
+            fieldMap.put("username", 4);
         }
     }
 
