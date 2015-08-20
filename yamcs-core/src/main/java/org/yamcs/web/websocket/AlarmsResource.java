@@ -5,11 +5,11 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.AlarmServer;
-import org.yamcs.AlarmServer.ActiveAlarm;
 import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
+import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Alarms.AlarmNotice.Type;

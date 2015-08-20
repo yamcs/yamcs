@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.alarms.AlarmServer;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.tctm.TmProviderAdapter;

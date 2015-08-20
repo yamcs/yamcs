@@ -4,10 +4,10 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.AlarmServer;
-import org.yamcs.AlarmServer.ActiveAlarm;
-import org.yamcs.CouldNotClearAlarmException;
 import org.yamcs.YProcessor;
+import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.CouldNotClearAlarmException;
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Rest.ClearAlarmResponse;
 import org.yamcs.protobuf.Rest.GetAlarmsResponse;
