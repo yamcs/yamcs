@@ -109,25 +109,31 @@ public class AlarmServer extends AbstractService {
         
         ActiveAlarm activeAlarm=activeAlarms.get(pv.getParameter());
         
-        if((activeAlarm==null) && (pv.getMonitoringResult()==MonitoringResult.IN_LIMITS)) {
+        if((activeAlarm==null) && (pv.getMonitoringResult()==MonitoringResult.IN_LIMITS
+        || pv.getMonitoringResult() == null
+                || pv.getMonitoringResult() == MonitoringResult.DISABLED)) {
             return;
         }
         
         
-        if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
-            if(activeAlarm.violations<minViolations) {
+        if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS
+                || pv.getMonitoringResult() == MonitoringResult.DISABLED
+                || pv.getMonitoringResult() == null) {
+
+            if (activeAlarm.violations < minViolations) {
                 log.debug("Clearing glitch for {}", param.getQualifiedName());
                 activeAlarms.remove(param);
                 return;
             }
-        
+
             activeAlarm.currentValue = pv;
-            if((activeAlarm.acknowledged) ||(activeAlarm.autoAcknowledge)) {
+            if ((activeAlarm.acknowledged) || (activeAlarm.autoAcknowledge)) {
                 listener.notifyCleared(activeAlarm);
                 activeAlarms.remove(pv.getParameter());
             } else {
                 listener.notifyUpdate(activeAlarm);
             }
+
         } else { // out of limits
             if(activeAlarm==null) {
                 activeAlarm=new ActiveAlarm(pv, autoAck);

@@ -89,7 +89,6 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.Yamcs.YamcsInstance;
 import org.yamcs.protobuf.Yamcs.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
@@ -142,7 +141,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     Preferences uiPrefs; 
 
     ConnectionParameters connectionParams;
-    XtceUtil xtceutil;
     //used for decoding full packets
     XtceTmProcessor tmProcessor;
     
@@ -515,8 +513,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             return false;
         }
 
-        xtceutil=XtceUtil.getInstance(xtcedb);
-
         tmProcessor=new XtceTmProcessor(xtcedb);
         
         tmProcessor.setParameterListener(this);
@@ -549,7 +545,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             return false;
         }
 
-        xtceutil=XtceUtil.getInstance(xtcedb);
 
         tmProcessor=new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
