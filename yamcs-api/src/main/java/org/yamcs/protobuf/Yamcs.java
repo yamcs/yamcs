@@ -280,10 +280,6 @@ public final class Yamcs {
      * <code>ALARM = 14;</code>
      */
     ALARM(13, 14),
-    /**
-     * <code>ALARM_NOTICE = 15;</code>
-     */
-    ALARM_NOTICE(14, 15),
     ;
 
     /**
@@ -350,10 +346,6 @@ public final class Yamcs {
      * <code>ALARM = 14;</code>
      */
     public static final int ALARM_VALUE = 14;
-    /**
-     * <code>ALARM_NOTICE = 15;</code>
-     */
-    public static final int ALARM_NOTICE_VALUE = 15;
 
 
     public final int getNumber() { return value; }
@@ -374,7 +366,6 @@ public final class Yamcs {
         case 12: return PROCESSING_STATISTICS;
         case 13: return STREAM_DATA;
         case 14: return ALARM;
-        case 15: return ALARM_NOTICE;
         default: return null;
       }
     }
@@ -28392,29 +28383,28 @@ public final class Yamcs {
       "equest\022\016\n\006stream\030\001 \001(\t*)\n\tEndAction\022\010\n\004L" +
       "OOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeed" +
       "Type\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALT" +
-      "IME\020\003*\203\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n",
+      "IME\020\003*\361\001\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n",
       "\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t" +
       "\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_" +
       "TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n" +
       "\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PR" +
       "OCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\t" +
-      "\n\005ALARM\020\016\022\020\n\014ALARM_NOTICE\020\0172\211\001\n\014YamcsCon" +
-      "trol\0227\n\021GetYamcsInstances\022\013.yamcs.Void\032\025" +
-      ".yamcs.YamcsInstances\022@\n\022GetMissionDatab" +
-      "ase\022\035.yamcs.MissionDatabaseRequest\032\013.yam" +
-      "cs.Void2\337\001\n\030RealtimeParameterService\0220\n\t",
-      "Subscribe\022\026.yamcs.NamedObjectList\032\013.yamc" +
-      "s.Void\0221\n\014SubscribeAll\022\024.yamcs.StringMes" +
-      "sage\032\013.yamcs.Void\0222\n\013Unsubscribe\022\026.yamcs" +
-      ".NamedObjectList\032\013.yamcs.Void\022*\n\016Unsubsc" +
-      "ribeAll\022\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014Ar" +
-      "chiveIndex\0223\n\010GetIndex\022\023.yamcs.IndexRequ" +
-      "est\032\022.yamcs.IndexResult\022/\n\006GetTag\022\023.yamc" +
-      "s.IndexRequest\032\020.yamcs.TagResult\0227\n\tUpse" +
-      "rtTag\022\027.yamcs.UpsertTagRequest\032\021.yamcs.A" +
-      "rchiveTag\0221\n\tDeleteTag\022\027.yamcs.DeleteTag",
-      "Request\032\013.yamcs.VoidB\024\n\022org.yamcs.protob" +
-      "uf"
+      "\n\005ALARM\020\0162\211\001\n\014YamcsControl\0227\n\021GetYamcsIn" +
+      "stances\022\013.yamcs.Void\032\025.yamcs.YamcsInstan" +
+      "ces\022@\n\022GetMissionDatabase\022\035.yamcs.Missio" +
+      "nDatabaseRequest\032\013.yamcs.Void2\337\001\n\030Realti" +
+      "meParameterService\0220\n\tSubscribe\022\026.yamcs.",
+      "NamedObjectList\032\013.yamcs.Void\0221\n\014Subscrib" +
+      "eAll\022\024.yamcs.StringMessage\032\013.yamcs.Void\022" +
+      "2\n\013Unsubscribe\022\026.yamcs.NamedObjectList\032\013" +
+      ".yamcs.Void\022*\n\016UnsubscribeAll\022\013.yamcs.Vo" +
+      "id\032\013.yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010GetI" +
+      "ndex\022\023.yamcs.IndexRequest\032\022.yamcs.IndexR" +
+      "esult\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020.y" +
+      "amcs.TagResult\0227\n\tUpsertTag\022\027.yamcs.Upse" +
+      "rtTagRequest\032\021.yamcs.ArchiveTag\0221\n\tDelet" +
+      "eTag\022\027.yamcs.DeleteTagRequest\032\013.yamcs.Vo",
+      "idB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

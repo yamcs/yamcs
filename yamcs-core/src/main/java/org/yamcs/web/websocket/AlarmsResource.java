@@ -1,7 +1,6 @@
 package org.yamcs.web.websocket;
 
 import java.io.IOException;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,13 +10,11 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.xtce.Parameter;
 
 /**
  * Provides realtime alarm subscription via web.
@@ -53,22 +50,9 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
             wsHandler.sendReply(reply);
             
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
-            try {
-                for (Entry<Parameter, ActiveAlarm> entry : alarmServer.getActiveAlarms().entrySet()) {
-                    NamedObjectId id = NamedObjectId.newBuilder().setName(entry.getKey().getQualifiedName()).build();
-                    Alarm.Builder alarmb = Alarm.newBuilder();
-                    alarmb.setId(entry.getValue().id);
-                    alarmb.setTriggerValue(entry.getValue().triggerValue.toGpb(id));
-                    alarmb.setMostSevereValue(entry.getValue().mostSevereValue.toGpb(id));
-                    alarmb.setCurrentValue(entry.getValue().currentValue.toGpb(id));
-                    alarmb.setViolations(entry.getValue().violations);
-                    wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);   
-                }
-            } catch (IOException e) {
-                log.warn("got error when sending parameter updates, quitting", e);
-                quit();
+            for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
+                sendAlarm(Alarm.Type.ACTIVE, activeAlarm);
             }
-        
             doSubscribe();
             return null;
         } catch (IOException e) {
@@ -109,6 +93,25 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
     
     @Override
     public void notifyTriggered(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.TRIGGERED, activeAlarm);
+    }
+    
+    @Override
+    public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.SEVERITY_INCREASED, activeAlarm);
+    }
+    
+    @Override
+    public void notifyUpdate(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.UPDATED, activeAlarm);
+    }
+    
+    @Override
+    public void notifyCleared(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.CLEARED, activeAlarm);
+    }
+    
+    private void sendAlarm(Alarm.Type type, ActiveAlarm activeAlarm) {
         NamedObjectId parameterId = NamedObjectId.newBuilder()
                 .setName(activeAlarm.triggerValue.getParameter().getQualifiedName())
                 .build();
@@ -119,60 +122,6 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
         alarmb.setCurrentValue(activeAlarm.currentValue.toGpb(parameterId));
         alarmb.setViolations(activeAlarm.violations);
         
-        try {
-            wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);
-        } catch (Exception e) {
-            log.warn("got error when sending alarm, quitting", e);
-            quit();
-        }
-    }
-    
-    @Override
-    public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-        NamedObjectId parameterId = NamedObjectId.newBuilder()
-                .setName(activeAlarm.mostSevereValue.getParameter().getQualifiedName())
-                .build();
-        AlarmNotice.Builder alarmb = AlarmNotice.newBuilder();        
-        alarmb.setType(AlarmNotice.Type.SEVERITY_INCREASED);
-        alarmb.setAlarmId(activeAlarm.id);
-        alarmb.setPval(activeAlarm.mostSevereValue.toGpb(parameterId));
-        
-        try {
-            wsHandler.sendData(ProtoDataType.ALARM_NOTICE, alarmb.build(), SchemaAlarms.AlarmNotice.WRITE);
-        } catch (Exception e) {
-            log.warn("got error when sending alarm updates, quitting", e);
-            quit();
-        }
-    }
-    
-    @Override
-    public void notifyUpdate(ActiveAlarm activeAlarm) {
-        NamedObjectId parameterId = NamedObjectId.newBuilder()
-                .setName(activeAlarm.currentValue.getParameter().getQualifiedName())
-                .build();
-        AlarmNotice.Builder alarmb = AlarmNotice.newBuilder();
-        alarmb.setType(AlarmNotice.Type.UPDATED);
-        alarmb.setAlarmId(activeAlarm.id);
-        alarmb.setPval(activeAlarm.currentValue.toGpb(parameterId));
-        
-        try {
-            wsHandler.sendData(ProtoDataType.ALARM_NOTICE, alarmb.build(), SchemaAlarms.AlarmNotice.WRITE);
-        } catch (Exception e) {
-            log.warn("got error when sending alarm updates, quitting", e);
-            quit();
-        }
-    }
-    
-    @Override
-    public void notifyCleared(ActiveAlarm activeAlarm) {
-        NamedObjectId parameterId = NamedObjectId.newBuilder()
-                .setName(activeAlarm.currentValue.getParameter().getQualifiedName())
-                .build();
-        AlarmNotice.Builder alarmb = AlarmNotice.newBuilder();
-        alarmb.setType(AlarmNotice.Type.CLEARED);
-        alarmb.setAlarmId(activeAlarm.id);
-        alarmb.setPval(activeAlarm.currentValue.toGpb(parameterId));
-        
         String username = activeAlarm.usernameThatAcknowledged;
         if (username == null) {
             username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : "unknown";
@@ -180,9 +129,9 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
         alarmb.setUsername(username);
         
         try {
-            wsHandler.sendData(ProtoDataType.ALARM_NOTICE, alarmb.build(), SchemaAlarms.AlarmNotice.WRITE);
+            wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);
         } catch (Exception e) {
-            log.warn("got error when sending alarm updates, quitting", e);
+            log.warn("got error when sending alarm, quitting", e);
             quit();
         }
     }

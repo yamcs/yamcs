@@ -5,22 +5,19 @@ import "yamcs.proto";
 import "pvalue.proto";
 
 message Alarm {
-   optional uint32 id = 1;
-   optional pvalue.ParameterValue triggerValue = 2;
-   optional pvalue.ParameterValue mostSevereValue = 3;
-   optional pvalue.ParameterValue currentValue = 4;
-   optional uint32 violations = 5;
-}
-
-message AlarmNotice {
    enum Type {
-      SEVERITY_INCREASED = 1;
-      UPDATED = 2;
-      CLEARED = 3;
+      ACTIVE = 1;  // Initial active alarms at the moment of request
+      TRIGGERED = 2;  // Whenever a new alarm triggers
+      SEVERITY_INCREASED = 3;  // Whenever an alarm jumps severity
+      UPDATED = 4;  // Whenever a pval is updated (even if that pval is not a violation by itself)
+      CLEARED = 5;  // Whenever somebody acknowledged an alarm.
    }
 
-   optional uint32 alarmId = 1;
+   optional uint32 id = 1;
    optional Type type = 2;
-   optional pvalue.ParameterValue pval = 3;
-   optional string username = 4;  // In case the alarm was cleared
+   optional pvalue.ParameterValue triggerValue = 3;
+   optional pvalue.ParameterValue mostSevereValue = 4;
+   optional pvalue.ParameterValue currentValue = 5;
+   optional uint32 violations = 6;
+   optional string username = 7;  // In case the alarm was cleared
 }
