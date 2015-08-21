@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.RestConnectToProcessorResponse;
-import org.yamcs.protobuf.Rest.RestCreateProcessorResponse;
 import org.yamcs.protobuf.Rest.RestListProcessorsResponse;
-import org.yamcs.protobuf.Rest.RestProcessorResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -82,8 +79,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
         default:
             throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
-        RestProcessorResponse response = RestProcessorResponse.newBuilder().build();
-        return new RestResponse(req, response, SchemaRest.RestProcessorResponse.WRITE);
+        return new RestResponse(req);
     }
     
     private RestResponse handleProcessorManagementRequest(RestRequest req) throws RestException {
@@ -94,8 +90,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             ManagementService mservice = ManagementService.getInstance();
             try {
                 mservice.connectToProcessor(yprocReq, req.authToken);
-                RestConnectToProcessorResponse response = RestConnectToProcessorResponse.newBuilder().build();
-                return new RestResponse(req, response, SchemaRest.RestConnectToProcessorResponse.WRITE);
+                return new RestResponse(req);
             } catch (YamcsException e) {
                 throw new BadRequestException(e.getMessage());
             }
@@ -104,8 +99,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             mservice = ManagementService.getInstance();
             try {
                 mservice.createProcessor(yprocReq, req.authToken);
-                RestCreateProcessorResponse response = RestCreateProcessorResponse.newBuilder().build();
-                return new RestResponse(req, response, SchemaRest.RestCreateProcessorResponse.WRITE);
+                return new RestResponse(req);
             } catch (YamcsException e) {
                 throw new BadRequestException(e.getMessage());
             }

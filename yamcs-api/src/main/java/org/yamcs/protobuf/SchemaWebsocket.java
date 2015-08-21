@@ -447,9 +447,6 @@ public final class SchemaWebsocket
                     if(message.hasAlarm())
                         output.writeObject(10, message.getAlarm(), org.yamcs.protobuf.SchemaAlarms.Alarm.WRITE, false);
 
-                    if(message.hasAlarmNotice())
-                        output.writeObject(11, message.getAlarmNotice(), org.yamcs.protobuf.SchemaAlarms.AlarmNotice.WRITE, false);
-
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -527,10 +524,6 @@ public final class SchemaWebsocket
                                 builder.setAlarm(input.mergeObject(org.yamcs.protobuf.Alarms.Alarm.newBuilder(), org.yamcs.protobuf.SchemaAlarms.Alarm.MERGE));
 
                                 break;
-                            case 11:
-                                builder.setAlarmNotice(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmNotice.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmNotice.MERGE));
-
-                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -581,7 +574,6 @@ public final class SchemaWebsocket
                     case 8: return "event";
                     case 9: return "streamData";
                     case 10: return "alarm";
-                    case 11: return "alarmNotice";
                     default: return null;
                 }
             }
@@ -603,7 +595,6 @@ public final class SchemaWebsocket
                 fieldMap.put("event", 8);
                 fieldMap.put("streamData", 9);
                 fieldMap.put("alarm", 10);
-                fieldMap.put("alarmNotice", 11);
             }
         }
 

@@ -4,9 +4,7 @@ import java.util.Set;
 
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.RestConnectToProcessorResponse;
-import org.yamcs.protobuf.Rest.RestCreateProcessorResponse;
-import org.yamcs.protobuf.Rest.RestListClientsResponse;
+import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -41,8 +39,7 @@ public class ManagementRequestHandler implements RestRequestHandler {
             ManagementService mservice = ManagementService.getInstance();
             try {
                 mservice.connectToProcessor(yprocReq, req.authToken);
-                RestConnectToProcessorResponse response = RestConnectToProcessorResponse.newBuilder().build();
-                return new RestResponse(req, response, SchemaRest.RestConnectToProcessorResponse.WRITE);
+                return new RestResponse(req);
             } catch (YamcsException e) {
                 throw new BadRequestException(e);
             }
@@ -51,8 +48,7 @@ public class ManagementRequestHandler implements RestRequestHandler {
             mservice = ManagementService.getInstance();
             try {
                 mservice.createProcessor(yprocReq, req.authToken);
-                RestCreateProcessorResponse response = RestCreateProcessorResponse.newBuilder().build();
-                return new RestResponse(req, response, SchemaRest.RestCreateProcessorResponse.WRITE);
+                return new RestResponse(req);
             } catch (YamcsException e) {
                 throw new BadRequestException(e);
             }
@@ -64,10 +60,10 @@ public class ManagementRequestHandler implements RestRequestHandler {
     
     private RestResponse listClients(RestRequest req) throws RestException {
         Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
-        RestListClientsResponse.Builder responseb = RestListClientsResponse.newBuilder();
+        ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
             responseb.addClientInfo(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.RestListClientsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 }
