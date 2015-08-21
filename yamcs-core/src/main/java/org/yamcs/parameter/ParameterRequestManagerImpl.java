@@ -3,10 +3,13 @@ package org.yamcs.parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +24,12 @@ import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.Container;
+import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
@@ -46,10 +54,12 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     //these are the consumers that may update the list of parameters
     // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also computed
     private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
+    
+    // Keep track the subscription's request
+    private Map<Integer, ParameterRequest> requests = new HashMap<Integer, ParameterRequest>();
 
     //contains subscribe all
     private SubscriptionArray subscribeAll = new SubscriptionArray();
-
 
     private AlarmChecker alarmChecker;
     private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
@@ -135,6 +145,34 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	return subscribeAll.remove(subscriptionId);
     }
     
+    public int addRequestByContainer(List<SequenceContainer> contList, ParameterConsumer tcp) throws InvalidIdentification {
+    	List<Parameter> paramList = new LinkedList<Parameter>();    	
+    	for (SequenceContainer sc: contList) {
+    		retrieveParamList(sc, paramList);
+    	}
+    	
+    	int idSubscription = addRequest(paramList, tcp);
+    	
+    	ParameterRequest newRequest = new ParameterRequest();    	
+    	newRequest.containers.addAll(contList);
+    	requests.put(idSubscription, newRequest);
+    	
+    	return idSubscription;
+    }
+        
+    private void retrieveParamList(SequenceContainer container, List<Parameter> paramList) {
+    	if (container != null) {
+    		for (SequenceEntry se: container.getEntryList()) {
+    			if (se instanceof ParameterEntry) {
+    				paramList.add(((ParameterEntry)se).getParameter());
+    			} else if (se instanceof ContainerEntry) {
+    				retrieveParamList(((ContainerEntry) se).getRefContainer(), paramList);
+    			}
+    		}
+    		
+    		retrieveParamList(container.getBaseContainer(), paramList);
+    	}
+    }
 
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) throws InvalidIdentification {
 	List<ParameterProvider> providers = getProviders(paraList);
@@ -208,6 +246,30 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	request2ParameterConsumerMap.put(id, tpc);
     }
 
+	private ParameterRequest getRequest(int subscriptionId) throws InvalidRequestIdentification {
+		ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
+		if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId) && alarmChecker != null
+				&& alarmChecker.getSubscriptionId() != subscriptionId) {
+			log.error(" addItemsToRequest called with an invalid subscriptionId=" + subscriptionId
+					+ "\n current subscr:\n" + request2ParameterConsumerMap + "dv subscr:\n"
+					+ request2DVParameterConsumerMap);
+			throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
+		}
+
+		if (!requests.containsKey(subscriptionId)) {
+			throw new InvalidRequestIdentification("no such subscriptionID", subscriptionId);
+		}
+		
+		return requests.get(subscriptionId);
+	}
+
+	public void addItemsToRequest(int subscriptionId, SequenceContainer container) throws InvalidIdentification, InvalidRequestIdentification {
+		log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, container);
+		ParameterRequest request = getRequest(subscriptionId);
+		
+	}
+    
+	
     /**
      * Add items to an request id. 
      * @param subscriptionID
@@ -291,14 +353,20 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 		}
 	    }
 	}
+	
+	ParameterRequest request = createNewRequest(id);
+	request.parameters.add(para);
+	
 	SubscriptionArray al_req = param2RequestMap.get(para);
 	al_req.add(id);
-    }
-
-   
-    
+    }    
 
     private void removeItemFromRequest(int subscriptionId, Parameter para, ParameterProvider provider) {
+    
+    if (requests.containsKey(subscriptionId)) {
+    	requests.get(subscriptionId).parameters.remove(para);
+    }
+    	
 	if(param2RequestMap.containsKey(para)) { //is there really any request associated to this parameter?
 	    SubscriptionArray al_req=param2RequestMap.get(para);
 	    //remove the subscription from the list of this parameter
@@ -346,6 +414,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	}
 	request2ParameterConsumerMap.remove(subscriptionId);
 	request2DVParameterConsumerMap.remove(subscriptionId);
+	requests.remove(subscriptionId);
+	
 	return result;
     }
 
@@ -543,5 +613,24 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 		pp.startProvidingAll();
 	    }
 	}
+    }
+    
+    private ParameterRequest createNewRequest(int idSubscription) {
+    	if (!requests.containsKey(idSubscription)) {
+    		requests.put(idSubscription, new ParameterRequest());
+    	}
+    	
+    	return requests.get(idSubscription);
+    }
+    
+    /**
+     * Store request contents
+     * 
+     * @author dho
+     *
+     */
+    private class ParameterRequest {
+    	Set<Parameter> parameters = new HashSet<Parameter>();
+    	Set<SequenceContainer> containers = new HashSet<SequenceContainer>();
     }
 }
