@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.alarms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -8,8 +8,7 @@ import java.util.Queue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.AlarmServer.ActiveAlarm;
-import org.yamcs.AlarmServer.AlarmListener;
+import org.yamcs.ParameterValue;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.Parameter;
@@ -34,7 +33,7 @@ public class AlarmServerTest {
     public void test1 () {
         AlarmServer as = new AlarmServer("toto");
         MyListener l = new MyListener();
-        as.setListener(l);
+        as.subscribe(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1);
         
@@ -82,7 +81,7 @@ public class AlarmServerTest {
     public void test2 () throws CouldNotClearAlarmException {
         AlarmServer as = new AlarmServer("toto");
         MyListener l = new MyListener();
-        as.setListener(l);
+        as.subscribe(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1);
         
@@ -112,7 +111,7 @@ public class AlarmServerTest {
     public void testAutoAck () {
         AlarmServer as = new AlarmServer("toto");
         MyListener l = new MyListener();
-        as.setListener(l);
+        as.subscribe(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1, true);
         
@@ -133,10 +132,10 @@ public class AlarmServerTest {
     
     
     class MyListener implements AlarmListener {
-        Queue<ActiveAlarm> triggered = new LinkedList<AlarmServer.ActiveAlarm>();
-        Queue<ActiveAlarm> updated = new LinkedList<AlarmServer.ActiveAlarm>();
-        Queue<ActiveAlarm> severityIncreased = new LinkedList<AlarmServer.ActiveAlarm>();
-        Queue<ActiveAlarm> cleared = new LinkedList<AlarmServer.ActiveAlarm>();
+        Queue<ActiveAlarm> triggered = new LinkedList<>();
+        Queue<ActiveAlarm> updated = new LinkedList<>();
+        Queue<ActiveAlarm> severityIncreased = new LinkedList<>();
+        Queue<ActiveAlarm> cleared = new LinkedList<>();
         
         @Override
         public void notifyTriggered(ActiveAlarm activeAlarm) {

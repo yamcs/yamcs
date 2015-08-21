@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.alarms;
 
 /**
  * Used by AlarmServer to indicate when the clear on an alarm did not work.

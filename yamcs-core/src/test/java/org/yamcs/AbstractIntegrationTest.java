@@ -22,7 +22,6 @@ import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Alarms.AlarmNotice;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.RestArgumentType;
@@ -148,7 +147,6 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<AlarmNotice> alarmNoticeList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
 
 
@@ -205,11 +203,6 @@ public abstract class AbstractIntegrationTest {
             alarmList.add(alarm);
         }
         
-        @Override
-        public void onAlarmNotice(AlarmNotice alarmNotice) {
-            alarmNoticeList.add(alarmNotice);
-        }
-
         @Override
         public void onStreamData(StreamData streamData) {
             streamDataList.add(streamData);

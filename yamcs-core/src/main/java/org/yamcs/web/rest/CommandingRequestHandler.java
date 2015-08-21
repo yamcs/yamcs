@@ -14,7 +14,6 @@ import org.yamcs.protobuf.Commanding.CommandSignificance.Level;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
-import org.yamcs.protobuf.Rest.RestSendCommandResponse;
 import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
 import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -109,7 +108,6 @@ public class CommandingRequestHandler implements RestRequestHandler {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
         RestSendCommandRequest request = req.bodyAsMessage(SchemaRest.RestSendCommandRequest.MERGE).build();
-        RestSendCommandResponse.Builder responseb = RestSendCommandResponse.newBuilder();
 
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<>();
@@ -158,6 +156,6 @@ public class CommandingRequestHandler implements RestRequestHandler {
             yamcsChannel.getCommandingManager().sendCommand(req.authToken, cmd);
         }
 
-        return new RestResponse(req, responseb.build(), SchemaRest.RestSendCommandResponse.WRITE);
+        return new RestResponse(req);
     }
 }
