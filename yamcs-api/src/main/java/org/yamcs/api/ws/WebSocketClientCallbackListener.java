@@ -5,6 +5,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
+import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -23,4 +24,5 @@ public interface WebSocketClientCallbackListener {
     void onStatisticsData(Statistics statistics);
     void onAlarm(Alarm alarm);
     void onStreamData(StreamData streamData);
+    void onTimeInfo(TimeInfo timeInfo);
 }

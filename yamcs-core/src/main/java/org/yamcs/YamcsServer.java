@@ -37,6 +37,8 @@ import org.yamcs.protobuf.Yamcs.YamcsInstances;
 import org.yamcs.security.HornetQAuthManager;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.time.RealtimeTimeService;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
@@ -70,17 +72,19 @@ public class YamcsServer {
 
     /**in the shutdown, allow servies this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
-
+    TimeService timeService;
+    
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
-
 	this.instance=instance;
 	log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
 
-
 	YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
+	loadTimeService();
+	        
 	ManagementService managementService=ManagementService.getInstance();
 	StreamInitializer.createStreams(instance);
+
 	
 	List<Object> services=conf.getList("services");
 	for(Object servobj:services) {
@@ -286,6 +290,31 @@ public class YamcsServer {
 	}
     }
 
+    private void loadTimeService() throws ConfigurationException, IOException {
+        YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
+        if(conf.containsKey("timeService")) {
+            Map<String, Object> m = conf.getMap("timeService");
+            String servclass = YConfiguration.getString(m, "class");            
+            Object args = m.get("args");
+            YObjectLoader<TimeService> objLoader = new YObjectLoader<TimeService>();
+            if(args == null) {
+                timeService = objLoader.loadObject(servclass, instance);
+            } else {
+                timeService = objLoader.loadObject(servclass, instance, args);
+            }
+        } else {
+            timeService = new RealtimeTimeService();
+        }
+    }
+    
+    public static YamcsServer getInstance(String yamcsInstance) {     
+        return instances.get(yamcsInstance);
+    }
+
+    public TimeService getTimeService() {
+        return timeService;
+    }
+    
     public static void configureNonBlocking(SimpleString dataAddress) {
 	//TODO
 	//Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
@@ -335,4 +364,6 @@ public class YamcsServer {
 	System.err.println("\t All options are taken from yamcs.yaml");
 	System.exit(-1);
     }
+
+   
 }

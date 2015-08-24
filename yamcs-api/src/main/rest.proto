@@ -223,3 +223,11 @@ message UserAuthorizationsInfo{
 message RestListAuthorisationsResponse {
      optional UserAuthorizationsInfo userAuthorizationsInfo=1;
 }
+
+message RestSetSimulationTimeRequest {
+   //one of the two have to be specified
+   optional int64 time0 = 1;   
+   optional string time0UTC = 2;
+   optional int64 simElapsedTime =3;
+   optional double simSpeed = 4;
+}

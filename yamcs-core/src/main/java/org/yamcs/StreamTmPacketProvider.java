@@ -31,7 +31,9 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     Stream stream;
     TmProcessor tmProcessor;
     volatile boolean disabled=false;
-
+    volatile long lastPacketTime;
+    
+    
     List<StreamReader> readers = new ArrayList<StreamReader>();
 
     public StreamTmPacketProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
@@ -104,6 +106,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
             long gentime = (Long)tuple.getColumn(TmProviderAdapter.GENTIME_COLUMN);
             byte[] packet=(byte[])tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
             PacketWithTime pwrt=new PacketWithTime(rectime,  gentime, packet);
+            lastPacketTime = gentime;
             tmProcessor.processPacket(pwrt);
         }
 

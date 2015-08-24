@@ -27340,6 +27340,752 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:rest.RestListAuthorisationsResponse)
   }
 
+  public interface RestSetSimulationTimeRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional int64 time0 = 1;
+    /**
+     * <code>optional int64 time0 = 1;</code>
+     *
+     * <pre>
+     *one of the two have to be specified
+     * </pre>
+     */
+    boolean hasTime0();
+    /**
+     * <code>optional int64 time0 = 1;</code>
+     *
+     * <pre>
+     *one of the two have to be specified
+     * </pre>
+     */
+    long getTime0();
+
+    // optional string time0UTC = 2;
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    boolean hasTime0UTC();
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    java.lang.String getTime0UTC();
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTime0UTCBytes();
+
+    // optional int64 simElapsedTime = 3;
+    /**
+     * <code>optional int64 simElapsedTime = 3;</code>
+     */
+    boolean hasSimElapsedTime();
+    /**
+     * <code>optional int64 simElapsedTime = 3;</code>
+     */
+    long getSimElapsedTime();
+
+    // optional double simSpeed = 4;
+    /**
+     * <code>optional double simSpeed = 4;</code>
+     */
+    boolean hasSimSpeed();
+    /**
+     * <code>optional double simSpeed = 4;</code>
+     */
+    double getSimSpeed();
+  }
+  /**
+   * Protobuf type {@code rest.RestSetSimulationTimeRequest}
+   */
+  public static final class RestSetSimulationTimeRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements RestSetSimulationTimeRequestOrBuilder {
+    // Use RestSetSimulationTimeRequest.newBuilder() to construct.
+    private RestSetSimulationTimeRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private RestSetSimulationTimeRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final RestSetSimulationTimeRequest defaultInstance;
+    public static RestSetSimulationTimeRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public RestSetSimulationTimeRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RestSetSimulationTimeRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              time0_ = input.readInt64();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              time0UTC_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              simElapsedTime_ = input.readInt64();
+              break;
+            }
+            case 33: {
+              bitField0_ |= 0x00000008;
+              simSpeed_ = input.readDouble();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestSetSimulationTimeRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_rest_RestSetSimulationTimeRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<RestSetSimulationTimeRequest> PARSER =
+        new com.google.protobuf.AbstractParser<RestSetSimulationTimeRequest>() {
+      public RestSetSimulationTimeRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RestSetSimulationTimeRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestSetSimulationTimeRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional int64 time0 = 1;
+    public static final int TIME0_FIELD_NUMBER = 1;
+    private long time0_;
+    /**
+     * <code>optional int64 time0 = 1;</code>
+     *
+     * <pre>
+     *one of the two have to be specified
+     * </pre>
+     */
+    public boolean hasTime0() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional int64 time0 = 1;</code>
+     *
+     * <pre>
+     *one of the two have to be specified
+     * </pre>
+     */
+    public long getTime0() {
+      return time0_;
+    }
+
+    // optional string time0UTC = 2;
+    public static final int TIME0UTC_FIELD_NUMBER = 2;
+    private java.lang.Object time0UTC_;
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    public boolean hasTime0UTC() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    public java.lang.String getTime0UTC() {
+      java.lang.Object ref = time0UTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          time0UTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string time0UTC = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTime0UTCBytes() {
+      java.lang.Object ref = time0UTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        time0UTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional int64 simElapsedTime = 3;
+    public static final int SIMELAPSEDTIME_FIELD_NUMBER = 3;
+    private long simElapsedTime_;
+    /**
+     * <code>optional int64 simElapsedTime = 3;</code>
+     */
+    public boolean hasSimElapsedTime() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int64 simElapsedTime = 3;</code>
+     */
+    public long getSimElapsedTime() {
+      return simElapsedTime_;
+    }
+
+    // optional double simSpeed = 4;
+    public static final int SIMSPEED_FIELD_NUMBER = 4;
+    private double simSpeed_;
+    /**
+     * <code>optional double simSpeed = 4;</code>
+     */
+    public boolean hasSimSpeed() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional double simSpeed = 4;</code>
+     */
+    public double getSimSpeed() {
+      return simSpeed_;
+    }
+
+    private void initFields() {
+      time0_ = 0L;
+      time0UTC_ = "";
+      simElapsedTime_ = 0L;
+      simSpeed_ = 0D;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt64(1, time0_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getTime0UTCBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, simElapsedTime_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeDouble(4, simSpeed_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, time0_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getTime0UTCBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, simElapsedTime_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeDoubleSize(4, simSpeed_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code rest.RestSetSimulationTimeRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.RestSetSimulationTimeRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestSetSimulationTimeRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestSetSimulationTimeRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        time0_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        time0UTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        simElapsedTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        simSpeed_ = 0D;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_rest_RestSetSimulationTimeRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest build() {
+        org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest buildPartial() {
+        org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest result = new org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.time0_ = time0_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.time0UTC_ = time0UTC_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.simElapsedTime_ = simElapsedTime_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.simSpeed_ = simSpeed_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest other) {
+        if (other == org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.getDefaultInstance()) return this;
+        if (other.hasTime0()) {
+          setTime0(other.getTime0());
+        }
+        if (other.hasTime0UTC()) {
+          bitField0_ |= 0x00000002;
+          time0UTC_ = other.time0UTC_;
+          onChanged();
+        }
+        if (other.hasSimElapsedTime()) {
+          setSimElapsedTime(other.getSimElapsedTime());
+        }
+        if (other.hasSimSpeed()) {
+          setSimSpeed(other.getSimSpeed());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional int64 time0 = 1;
+      private long time0_ ;
+      /**
+       * <code>optional int64 time0 = 1;</code>
+       *
+       * <pre>
+       *one of the two have to be specified
+       * </pre>
+       */
+      public boolean hasTime0() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int64 time0 = 1;</code>
+       *
+       * <pre>
+       *one of the two have to be specified
+       * </pre>
+       */
+      public long getTime0() {
+        return time0_;
+      }
+      /**
+       * <code>optional int64 time0 = 1;</code>
+       *
+       * <pre>
+       *one of the two have to be specified
+       * </pre>
+       */
+      public Builder setTime0(long value) {
+        bitField0_ |= 0x00000001;
+        time0_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 time0 = 1;</code>
+       *
+       * <pre>
+       *one of the two have to be specified
+       * </pre>
+       */
+      public Builder clearTime0() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        time0_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string time0UTC = 2;
+      private java.lang.Object time0UTC_ = "";
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public boolean hasTime0UTC() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public java.lang.String getTime0UTC() {
+        java.lang.Object ref = time0UTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          time0UTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTime0UTCBytes() {
+        java.lang.Object ref = time0UTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          time0UTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public Builder setTime0UTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        time0UTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public Builder clearTime0UTC() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        time0UTC_ = getDefaultInstance().getTime0UTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string time0UTC = 2;</code>
+       */
+      public Builder setTime0UTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        time0UTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 simElapsedTime = 3;
+      private long simElapsedTime_ ;
+      /**
+       * <code>optional int64 simElapsedTime = 3;</code>
+       */
+      public boolean hasSimElapsedTime() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int64 simElapsedTime = 3;</code>
+       */
+      public long getSimElapsedTime() {
+        return simElapsedTime_;
+      }
+      /**
+       * <code>optional int64 simElapsedTime = 3;</code>
+       */
+      public Builder setSimElapsedTime(long value) {
+        bitField0_ |= 0x00000004;
+        simElapsedTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 simElapsedTime = 3;</code>
+       */
+      public Builder clearSimElapsedTime() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        simElapsedTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional double simSpeed = 4;
+      private double simSpeed_ ;
+      /**
+       * <code>optional double simSpeed = 4;</code>
+       */
+      public boolean hasSimSpeed() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional double simSpeed = 4;</code>
+       */
+      public double getSimSpeed() {
+        return simSpeed_;
+      }
+      /**
+       * <code>optional double simSpeed = 4;</code>
+       */
+      public Builder setSimSpeed(double value) {
+        bitField0_ |= 0x00000008;
+        simSpeed_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional double simSpeed = 4;</code>
+       */
+      public Builder clearSimSpeed() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        simSpeed_ = 0D;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:rest.RestSetSimulationTimeRequest)
+    }
+
+    static {
+      defaultInstance = new RestSetSimulationTimeRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:rest.RestSetSimulationTimeRequest)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_rest_RestExceptionMessage_descriptor;
   private static
@@ -27500,6 +28246,11 @@ public final class Rest {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_rest_RestListAuthorisationsResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_rest_RestSetSimulationTimeRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_rest_RestSetSimulationTimeRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -27590,13 +28341,16 @@ public final class Rest {
       "leges\030\004 \003(\t\022\024\n\014tcPrivileges\030\005 \003(\t\022\030\n\020sys" +
       "temPrivileges\030\006 \003(\t\"^\n\036RestListAuthorisa",
       "tionsResponse\022<\n\026userAuthorizationsInfo\030" +
-      "\001 \001(\0132\034.rest.UserAuthorizationsInfo*u\n\016R" +
-      "estDataSource\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVE" +
-      "D\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004" +
-      "\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016Re" +
-      "stAlarmLevel\022\n\n\006normal\020\000\022\t\n\005watch\020\001\022\013\n\007w" +
-      "arning\020\002\022\014\n\010distress\020\003\022\014\n\010critical\020\004\022\n\n\006" +
-      "severe\020\005B\024\n\022org.yamcs.protobuf"
+      "\001 \001(\0132\034.rest.UserAuthorizationsInfo\"i\n\034R" +
+      "estSetSimulationTimeRequest\022\r\n\005time0\030\001 \001" +
+      "(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003" +
+      " \001(\003\022\020\n\010simSpeed\030\004 \001(\001*u\n\016RestDataSource" +
+      "\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTA" +
+      "NT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005" +
+      "\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016RestAlarmLevel\022" +
+      "\n\n\006normal\020\000\022\t\n\005watch\020\001\022\013\n\007warning\020\002\022\014\n\010d" +
+      "istress\020\003\022\014\n\010critical\020\004\022\n\n\006severe\020\005B\024\n\022o",
+      "rg.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -27795,6 +28549,12 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_rest_RestListAuthorisationsResponse_descriptor,
               new java.lang.String[] { "UserAuthorizationsInfo", });
+          internal_static_rest_RestSetSimulationTimeRequest_descriptor =
+            getDescriptor().getMessageTypes().get(32);
+          internal_static_rest_RestSetSimulationTimeRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_rest_RestSetSimulationTimeRequest_descriptor,
+              new java.lang.String[] { "Time0", "Time0UTC", "SimElapsedTime", "SimSpeed", });
           return null;
         }
       };

@@ -232,6 +232,7 @@ enum ProtoDataType {
        PROCESSING_STATISTICS = 12;
        STREAM_DATA = 13;
        ALARM = 14;
+       TIME_INFO = 15;
 };
 
 //used to replay (concurrently) TM packets, parameters and events
@@ -328,4 +329,9 @@ message StreamData {
 message StreamSubscribeRequest {
     optional string stream = 1;
     //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
+message TimeInfo {
+   optional int64 currentTime = 1;
+   optional string currentTimeUTC = 2;
 }

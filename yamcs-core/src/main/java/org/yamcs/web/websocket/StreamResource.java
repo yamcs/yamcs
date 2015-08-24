@@ -216,9 +216,6 @@ public class StreamResource extends AbstractWebSocketResource {
         return null;
     }
     
-    public void switchYProcessor(YProcessor processor) {
-        this.processor = processor;
-    }
 
     @Override
     public void quit() {

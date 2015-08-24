@@ -4094,4 +4094,122 @@ public final class SchemaYamcs
         }
     }
 
+    public static final class TimeInfo
+    {
+        public static final org.yamcs.protobuf.SchemaYamcs.TimeInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcs.TimeInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcs.TimeInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcs.TimeInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TimeInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TimeInfo message) throws java.io.IOException
+            {
+                if(message.hasCurrentTime())
+                    output.writeInt64(1, message.getCurrentTime(), false);
+                if(message.hasCurrentTimeUTC())
+                    output.writeString(2, message.getCurrentTimeUTC(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.TimeInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.TimeInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.TimeInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.TimeInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TimeInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Yamcs.TimeInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Yamcs.TimeInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Yamcs.TimeInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setCurrentTime(input.readInt64());
+                            break;
+                        case 2:
+                            builder.setCurrentTimeUTC(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Yamcs.TimeInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Yamcs.TimeInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.TimeInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcs.TimeInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Yamcs.TimeInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Yamcs.TimeInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.TimeInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "currentTime";
+                case 2: return "currentTimeUTC";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("currentTime", 1);
+            fieldMap.put("currentTimeUTC", 2);
+        }
+    }
+
 }

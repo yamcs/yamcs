@@ -277,32 +277,6 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         }
     }
 
-    /**
-     * Dummy class that does not do anything. All the packets are pushed to the tmprocessor directly
-     * in the transform method above. 
-     *
-     */
-    class MyTmPacketProvider extends AbstractService implements TmPacketProvider {
-
-        @Override
-        public void setTmProcessor(TmProcessor tmProcessor) {
-        }
-
-        @Override
-        public boolean isArchiveReplay() {
-            return false;
-        }
-
-        @Override
-        protected void doStart() {
-            notifyStarted();
-        }
-
-        @Override
-        public void doStop() {
-            notifyStopped();
-        }
-    }
     
     public class MyPpProvider extends AbstractService implements ParameterProvider {
         private volatile boolean disabled=false;
