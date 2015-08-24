@@ -77,6 +77,11 @@ public class YamcsServer {
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 	this.instance=instance;
+
+	//TODO - fix bootstrap issue 
+	instances.put(instance, this);
+	
+	
 	log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
 
 	YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
