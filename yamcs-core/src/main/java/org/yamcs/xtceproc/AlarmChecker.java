@@ -164,6 +164,8 @@ public class AlarmChecker {
             checkStaticAlarmRanges(pv, intCalValue, staticAlarmRanges);
         }
 
+
+
         // Notify when severity changes
         if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
@@ -174,6 +176,7 @@ public class AlarmChecker {
     }
 
     private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
+
         double doubleCalValue=0;
         if(pv.getEngValue().hasFloatValue()) {
             doubleCalValue=pv.getEngValue().getFloatValue();
@@ -225,6 +228,7 @@ public class AlarmChecker {
      * Verify limits, giving priority to highest severity
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
+        pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         FloatRange watchRange=staticAlarmRanges.getWatchRange();
         FloatRange warningRange=staticAlarmRanges.getWarningRange();
         FloatRange distressRange=staticAlarmRanges.getDistressRange();
@@ -274,7 +278,7 @@ public class AlarmChecker {
     }
 
     private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv, ComparisonProcessor comparisonProcessor) {
-        pv.setMonitoringResult(MonitoringResult.IN_LIMITS); // Default is DISABLED, but that doesn't seem fit when we are checking
+        pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
         String s=pv.getEngValue().getStringValue();
         
         EnumerationAlarm alarm=ept.getDefaultAlarm();
