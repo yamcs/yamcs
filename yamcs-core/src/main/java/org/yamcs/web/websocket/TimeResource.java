@@ -42,7 +42,6 @@ public class TimeResource extends AbstractWebSocketResource {
     
     
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        System.out.println("---scheduling timeinfo messages");
         future = timer.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
