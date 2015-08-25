@@ -1025,6 +1025,16 @@ public final class Commanding {
      * <code>required int32 nbRejectedCommands = 6;</code>
      */
     int getNbRejectedCommands();
+
+    // optional int32 stateExpirationTimeS = 7;
+    /**
+     * <code>optional int32 stateExpirationTimeS = 7;</code>
+     */
+    boolean hasStateExpirationTimeS();
+    /**
+     * <code>optional int32 stateExpirationTimeS = 7;</code>
+     */
+    int getStateExpirationTimeS();
   }
   /**
    * Protobuf type {@code commanding.CommandQueueInfo}
@@ -1111,6 +1121,11 @@ public final class Commanding {
             case 48: {
               bitField0_ |= 0x00000020;
               nbRejectedCommands_ = input.readInt32();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
+              stateExpirationTimeS_ = input.readInt32();
               break;
             }
           }
@@ -1330,6 +1345,22 @@ public final class Commanding {
       return nbRejectedCommands_;
     }
 
+    // optional int32 stateExpirationTimeS = 7;
+    public static final int STATEEXPIRATIONTIMES_FIELD_NUMBER = 7;
+    private int stateExpirationTimeS_;
+    /**
+     * <code>optional int32 stateExpirationTimeS = 7;</code>
+     */
+    public boolean hasStateExpirationTimeS() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional int32 stateExpirationTimeS = 7;</code>
+     */
+    public int getStateExpirationTimeS() {
+      return stateExpirationTimeS_;
+    }
+
     private void initFields() {
       instance_ = "";
       processorName_ = "";
@@ -1337,6 +1368,7 @@ public final class Commanding {
       state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
       nbSentCommands_ = 0;
       nbRejectedCommands_ = 0;
+      stateExpirationTimeS_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1388,6 +1420,9 @@ public final class Commanding {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeInt32(6, nbRejectedCommands_);
       }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeInt32(7, stateExpirationTimeS_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1420,6 +1455,10 @@ public final class Commanding {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(6, nbRejectedCommands_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, stateExpirationTimeS_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1549,6 +1588,8 @@ public final class Commanding {
         bitField0_ = (bitField0_ & ~0x00000010);
         nbRejectedCommands_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
+        stateExpirationTimeS_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -1601,6 +1642,10 @@ public final class Commanding {
           to_bitField0_ |= 0x00000020;
         }
         result.nbRejectedCommands_ = nbRejectedCommands_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.stateExpirationTimeS_ = stateExpirationTimeS_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1640,6 +1685,9 @@ public final class Commanding {
         }
         if (other.hasNbRejectedCommands()) {
           setNbRejectedCommands(other.getNbRejectedCommands());
+        }
+        if (other.hasStateExpirationTimeS()) {
+          setStateExpirationTimeS(other.getStateExpirationTimeS());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2008,6 +2056,39 @@ public final class Commanding {
       public Builder clearNbRejectedCommands() {
         bitField0_ = (bitField0_ & ~0x00000020);
         nbRejectedCommands_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 stateExpirationTimeS = 7;
+      private int stateExpirationTimeS_ ;
+      /**
+       * <code>optional int32 stateExpirationTimeS = 7;</code>
+       */
+      public boolean hasStateExpirationTimeS() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional int32 stateExpirationTimeS = 7;</code>
+       */
+      public int getStateExpirationTimeS() {
+        return stateExpirationTimeS_;
+      }
+      /**
+       * <code>optional int32 stateExpirationTimeS = 7;</code>
+       */
+      public Builder setStateExpirationTimeS(int value) {
+        bitField0_ |= 0x00000040;
+        stateExpirationTimeS_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 stateExpirationTimeS = 7;</code>
+       */
+      public Builder clearStateExpirationTimeS() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        stateExpirationTimeS_ = 0;
         onChanged();
         return this;
       }
@@ -7107,37 +7188,38 @@ public final class Commanding {
       "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
       "oto\"`\n\tCommandId\022\026\n\016generationTime\030\001 \002(\003" +
       "\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceNumber\030\003 \002(\005" +
-      "\022\023\n\013commandName\030\004 \001(\t\"\244\001\n\020CommandQueueIn" +
+      "\022\023\n\013commandName\030\004 \001(\t\"\302\001\n\020CommandQueueIn" +
       "fo\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 " +
       "\002(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 \001(\0162\026.comma" +
       "nding.QueueState\022\026\n\016nbSentCommands\030\005 \002(\005" +
-      "\022\032\n\022nbRejectedCommands\030\006 \002(\005\"\277\001\n\021Command" +
-      "QueueEntry\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocesso" +
-      "rName\030\002 \002(\t\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030",
-      "\004 \002(\0132\025.commanding.CommandId\022\016\n\006source\030\005" +
-      " \001(\t\022\016\n\006binary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026" +
-      "\n\016generationTime\030\010 \001(\003\"\221\001\n\023CommandQueueR" +
-      "equest\022/\n\tqueueInfo\030\001 \001(\0132\034.commanding.C" +
-      "ommandQueueInfo\0221\n\nqueueEntry\030\002 \001(\0132\035.co" +
-      "mmanding.CommandQueueEntry\022\026\n\007rebuild\030\003 " +
-      "\001(\010:\005false\"\333\001\n\023CommandSignificance\022\026\n\016se" +
-      "quenceNumber\030\001 \002(\005\022?\n\020consequenceLevel\030\002" +
-      " \002(\0162%.commanding.CommandSignificance.Le" +
-      "vel\022\030\n\020reasonForWarning\030\003 \001(\t\"Q\n\005Level\022\010",
-      "\n\004none\020\001\022\t\n\005watch\020\002\022\013\n\007warning\020\003\022\014\n\010dist" +
-      "ress\020\004\022\014\n\010critical\020\005\022\n\n\006severe\020\006\"R\n\027Comm" +
-      "andHistoryAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005val" +
-      "ue\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023" +
-      "CommandHistoryEntry\022(\n\tcommandId\030\001 \002(\0132\025" +
-      ".commanding.CommandId\0221\n\004attr\030\003 \003(\0132#.co" +
-      "mmanding.CommandHistoryAttribute*4\n\nQueu" +
-      "eState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENA" +
-      "BLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSetQue" +
-      "ueState\022\034.commanding.CommandQueueInfo\032\013.",
-      "yamcs.Void\022;\n\013SendCommand\022\037.commanding.C" +
-      "ommandQueueRequest\032\013.yamcs.Void\022;\n\rRejec" +
-      "tCommand\022\035.commanding.CommandQueueEntry\032" +
-      "\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "\022\032\n\022nbRejectedCommands\030\006 \002(\005\022\034\n\024stateExp" +
+      "irationTimeS\030\007 \001(\005\"\277\001\n\021CommandQueueEntry" +
+      "\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002(",
+      "\t\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.co" +
+      "mmanding.CommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006bi" +
+      "nary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022\026\n\016generati" +
+      "onTime\030\010 \001(\003\"\221\001\n\023CommandQueueRequest\022/\n\t" +
+      "queueInfo\030\001 \001(\0132\034.commanding.CommandQueu" +
+      "eInfo\0221\n\nqueueEntry\030\002 \001(\0132\035.commanding.C" +
+      "ommandQueueEntry\022\026\n\007rebuild\030\003 \001(\010:\005false" +
+      "\"\333\001\n\023CommandSignificance\022\026\n\016sequenceNumb" +
+      "er\030\001 \002(\005\022?\n\020consequenceLevel\030\002 \002(\0162%.com" +
+      "manding.CommandSignificance.Level\022\030\n\020rea",
+      "sonForWarning\030\003 \001(\t\"Q\n\005Level\022\010\n\004none\020\001\022\t" +
+      "\n\005watch\020\002\022\013\n\007warning\020\003\022\014\n\010distress\020\004\022\014\n\010" +
+      "critical\020\005\022\n\n\006severe\020\006\"R\n\027CommandHistory" +
+      "Attribute\022\014\n\004name\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014" +
+      ".yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023CommandHis" +
+      "toryEntry\022(\n\tcommandId\030\001 \002(\0132\025.commandin" +
+      "g.CommandId\0221\n\004attr\030\003 \003(\0132#.commanding.C" +
+      "ommandHistoryAttribute*4\n\nQueueState\022\013\n\007" +
+      "BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001\n" +
+      "\023CommandQueueControl\022:\n\rSetQueueState\022\034.",
+      "commanding.CommandQueueInfo\032\013.yamcs.Void" +
+      "\022;\n\013SendCommand\022\037.commanding.CommandQueu" +
+      "eRequest\032\013.yamcs.Void\022;\n\rRejectCommand\022\035" +
+      ".commanding.CommandQueueEntry\032\013.yamcs.Vo" +
+      "idB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -7155,7 +7237,7 @@ public final class Commanding {
           internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", });
+              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", "StateExpirationTimeS", });
           internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new

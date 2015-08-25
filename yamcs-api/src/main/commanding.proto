@@ -25,6 +25,7 @@ message CommandQueueInfo {
     optional QueueState state = 4;
     required int32 nbSentCommands = 5;
     required int32 nbRejectedCommands = 6;
+    optional int32 stateExpirationTimeS = 7;
 }
 
 /*One entry (command) in the command queue*/
