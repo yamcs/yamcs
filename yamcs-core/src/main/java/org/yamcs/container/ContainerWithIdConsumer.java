@@ -1,5 +1,7 @@
 package org.yamcs.container;
 
+import java.util.List;
+
 public interface ContainerWithIdConsumer {
-	void processContainer(int subscriptionId, ContainerValueWithId container);
+	void update(int subscriptionId, List<ContainerValueWithId> containers);
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.python.modules.synchronize;
 import org.slf4j.Logger;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
@@ -50,9 +51,7 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
     private ParameterRequestManagerImpl prm;
     private ContainerWithIdConsumer consumer;
     
-    private ConcurrentHashMap<SequenceContainer, SubscriptionArray> containerToSubscription = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<SequenceContainer, Set<Parameter>> cachedParameterSet = new ConcurrentHashMap<>();
-    
+    private ConcurrentHashMap<SequenceContainer, Set<Parameter>> cachedParameterSet = new ConcurrentHashMap<>();    
     Map<Integer, ListMultimap<SequenceContainer, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<SequenceContainer, NamedObjectId>>();    
     
     public ContainerWithIdRequestHelper(ParameterRequestManagerImpl prm, ContainerWithIdConsumer consumer) {
@@ -139,10 +138,11 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
      * 
      * @param subcriptionId
      * @param containers
+     * @throws NoPermissionException 
      */
-    public void unsubscribeContainer(int subscriptionId, Collection<NamedObjectId> idList) {
+    public void unsubscribeContainer(int subscriptionId, Collection<NamedObjectId> idList, AuthenticationToken authToken) throws NoPermissionException {
     	for (NamedObjectId id: idList) {
-    		unsubscribeContainer(subscriptionId, id);
+    		unsubscribeContainer(subscriptionId, id, authToken);
     	}
     }
 
@@ -152,8 +152,9 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
      * 
      * @param subscriptionId
      * @param container
+     * @throws NoPermissionException 
      */
-    public void unsubscribeContainer(int subscriptionId, NamedObjectId id) {
+    public void unsubscribeContainer(int subscriptionId, NamedObjectId id, AuthenticationToken authToken) throws NoPermissionException {
     	ListMultimap<SequenceContainer, NamedObjectId> subscription = subscriptions.get(subscriptionId);
     	if (subscription == null) {
     		log.warn("Trying to remove object from unknown subscription");
@@ -163,6 +164,12 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
     	XtceDb xtcedb = prm.getXtceDb();
     	SequenceContainer sc = xtcedb.getSequenceContainer(id);
     	
+        __checkContainerPrivilege(authToken, sc.getName());                
+        Set<Parameter> parameters = __getParameters(sc);
+        for (Parameter param: parameters) {
+        	__checkParameterPrivilege(authToken, param.getName());
+        }    	
+    	
     	synchronized (subscription) {    		   	    	
    			subscription.remove(sc, id);
    			if (subscription.size() == 0) {
@@ -171,6 +178,18 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
    		        prm.removeItemsFromRequest(subscriptionId, paramList);
    			}
 		}
+    }
+    
+    /**
+     * Remove a whole subscription
+     * 
+     * @param subscriptionId
+     */
+    public void removeSubscription(int subscriptionId) {
+    	if (subscriptions.containsKey(subscriptions)) {
+    		subscriptions.remove(subscriptionId);
+    		prm.removeRequest(subscriptionId);
+    	}
     }
         
     
@@ -244,17 +263,39 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
 						
 			if (!listId.isEmpty()) {
 				Set<Parameter> subscribed = cachedParameterSet.get(sc);
-				
-				ContainerValue.Builder containerValue = ContainerValue.newBuilder();
+				List<ParameterValue> paramList = new LinkedList<>();
 				
 				for (ParameterValue pv: items) {
 					if (subscribed.contains(pv.getParameter())) {
-						containerValue.addParameter(pv);
+						paramList.add(pv);
 					}
 				}
-								
-				consumer.updateItems(subscriptionId, containers, containerValue);
+				
+				List<ContainerValueWithId> containerValues = new LinkedList<>();
+				for (NamedObjectId id: listId) {
+					ContainerValueWithId containerValue = new ContainerValueWithId();
+					containerValue.setId(id);
+					containerValue.setParamVals(paramList);
+					containerValues.add(containerValue);
+				}
+				
+				consumer.update(subscriptionId, containerValues);				
 			}
 		}
 	}	
+    
+    public synchronized void switchPrm(ParameterRequestManagerImpl newPrm, AuthenticationToken authToken)
+            throws InvalidIdentification, NoPermissionException {
+    	
+        for(int subscriptionId: subscriptions.keySet()) {
+            List<Parameter> plist = prm.removeRequest(subscriptionId);
+            // checking permission
+            for(Parameter p : plist)
+                __checkParameterPrivilege(authToken, p.getQualifiedName());
+            
+            newPrm.addRequest(subscriptionId, plist, this);
+        }
+        
+        prm = newPrm;
+    }    
 }

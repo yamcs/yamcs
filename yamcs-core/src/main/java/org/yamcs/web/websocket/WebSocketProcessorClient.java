@@ -35,6 +35,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
         resources.add(new ParameterResource(yproc, wsHandler));
+	resources.add(new ContainerResource(yproc, wsHandler));
         resources.add(new CommandHistoryResource(yproc, wsHandler));
         resources.add(new ManagementResource(yproc, wsHandler, clientId));
         resources.add(new AlarmsResource(yproc, wsHandler));
