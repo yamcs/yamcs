@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidCommandId;
+import org.yamcs.YProcessor;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -53,12 +54,13 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
     //maps strings are requested in the getCommandHistory to strings as they appear in the commnad history
     AtomicInteger extendedId=new AtomicInteger();
     final String instance;
+    final YProcessor processor;
 
-
-    public CommandHistoryRequestManager(String instance) throws ConfigurationException {
-        this.instance=instance;
-        if(instance!=null) {
-            log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
+    public CommandHistoryRequestManager(YProcessor processor) throws ConfigurationException {
+        this.processor=processor;
+        this.instance = processor.getInstance();
+        if(processor!=null) {
+            log=LoggerFactory.getLogger(this.getClass().getName()+"["+processor.getName()+"]");
         } else {
             log=LoggerFactory.getLogger(this.getClass().getName());
         }
@@ -181,7 +183,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
         activeCommands.put(cmdId, che1);
 
 
-        long changeDate=TimeEncoding.currentInstant();
+        long changeDate = processor.getCurrentTime();
         for(Iterator<CommandHistoryFilter> it=historySubcriptions.keySet().iterator();it.hasNext();) {
             CommandHistoryFilter filter=it.next();
             if(filter.matches(che)){

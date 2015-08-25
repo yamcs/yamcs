@@ -54,9 +54,9 @@ public class EventSim {
         Random random=new Random();
         int i=0;
         while(!quitting) {
-            Event event=Event.newBuilder().setGenerationTime(TimeEncoding.currentInstant())
+            Event event=Event.newBuilder().setGenerationTime(TimeEncoding.getWallclockTime())
                 .setSource("EventSim").setSeqNumber(i++)
-                .setReceptionTime(TimeEncoding.currentInstant())
+                .setReceptionTime(TimeEncoding.getWallclockTime())
                 .setSeverity(EventSeverity.valueOf(random.nextInt(3)))
                 .setType("Fortune").setMessage(getFortune())
                 .build();

@@ -41,7 +41,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     Set<Parameter> subscribedParams = new HashSet<Parameter>();
     private static final Logger log=LoggerFactory.getLogger(SoftwareParameterManager.class);
     final String yamcsInstance;
-
+    YProcessor yproc;
 
     public SoftwareParameterManager(String yamcsInstance) {
 	this.yamcsInstance = yamcsInstance;
@@ -57,9 +57,9 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     @Override
-    public void init(YProcessor channel) throws ConfigurationException {
-	init(channel.getXtceDb());
-
+    public void init(YProcessor yproc) throws ConfigurationException {
+	init(yproc.getXtceDb());
+	this.yproc = yproc;
     }
 
     @Override
@@ -83,10 +83,10 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 		    pv.setProcessingStatus(true);
 		}
 		if(!gpv.hasGenerationTime()) {
-		    pv.setGenerationTime(TimeEncoding.currentInstant());
+		    pv.setGenerationTime(yproc.getCurrentTime());
 		}
 		if(!gpv.hasAcquisitionTime()) {
-		    pv.setAcquisitionTime(TimeEncoding.currentInstant());
+		    pv.setAcquisitionTime(yproc.getCurrentTime());
 		}
 		pvlist.add(pv);
 	    }
@@ -133,7 +133,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 	    public void run() {
 		ParameterValue pv = new ParameterValue(p);
 		pv.setEngineeringValue(engValue);
-		long t = TimeEncoding.currentInstant();
+		long t = yproc.getCurrentTime();
 		pv.setAcquisitionTime(t);
 		pv.setGenerationTime(t);
 		pv.setProcessingStatus(true);

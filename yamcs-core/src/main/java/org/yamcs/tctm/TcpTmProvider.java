@@ -15,13 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -35,7 +36,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private TmSink tmSink;
-
+    
 
     private SystemParametersCollector sysParamCollector;
     ParameterValue svConnectionStatus;
@@ -43,10 +44,12 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
     final String yamcsInstance;
     final String name;
-
+    final TimeService timeService;
+    
     protected TcpTmProvider(String instance, String name) {// dummy constructor needed by subclass constructors
 	this.yamcsInstance = instance;
 	this.name = name;
+	this.timeService = YamcsServer.getTimeService(instance);
     }
 
     public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
@@ -56,7 +59,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 	YConfiguration c=YConfiguration.getConfiguration("tcp");
 	host=c.getString(spec, "tmHost");
 	port=c.getInt(spec, "tmPort");
-
+	this.timeService = YamcsServer.getTimeService(instance);
     }
 
     protected void openSocket() throws IOException {
@@ -121,7 +124,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 	    }
 	}
 	if(bb!=null) {
-	    return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb.array());
+	    return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
 	} 
 	return null;
     }
@@ -235,7 +238,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
 
     @Override
     public Collection<ParameterValue> getSystemParameters() {
-	long time = TimeEncoding.currentInstant();
+	long time = timeService.getMissionTime();
 	ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
 	ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
 	return Arrays.asList(linkStatus, dataCount);

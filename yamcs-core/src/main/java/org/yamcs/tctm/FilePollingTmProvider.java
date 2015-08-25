@@ -3,13 +3,15 @@ package org.yamcs.tctm;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
-
+import org.yamcs.time.TimeService;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -25,10 +27,12 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
     volatile boolean disabled;
     TmSink tmSink;
     volatile long tmCount=0;
-
-    public FilePollingTmProvider(String archiveInstance, String name, String incomingDir) {
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+archiveInstance+"]");
+    final TimeService timeService;
+    
+    public FilePollingTmProvider(String yamcsInstance, String name, String incomingDir) {
+        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
         this.incomingDir=incomingDir;
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     /**
@@ -55,7 +59,7 @@ public class FilePollingTmProvider extends AbstractExecutionThreadService implem
                         try {
                             TmFileReader prov=new TmFileReader(f.getAbsolutePath());
                             PacketWithTime pwrt;
-                            while((pwrt=prov.readPacket())!=null) {
+                            while((pwrt=prov.readPacket(timeService.getMissionTime()))!=null) {
                                 tmSink.processPacket(pwrt);
                                 tmCount++;
                             }
