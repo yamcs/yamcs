@@ -1,21 +1,24 @@
 package org.yamcs.commanding;
 
 import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
 import org.yamcs.YProcessor;
 import org.yamcs.security.Privilege;
-
+import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Pvalue;
 
 public class CommandQueue {
     String name;
     private ConcurrentLinkedQueue<PreparedCommand> commands=new ConcurrentLinkedQueue<PreparedCommand>();
     QueueState defaultState=QueueState.BLOCKED;
     QueueState state=QueueState.BLOCKED;
-    YProcessor channel;
+    YProcessor processor;
 
     int nbSentCommands = 0;
     int nbRejectedCommands = 0;
@@ -27,15 +30,26 @@ public class CommandQueue {
     
     List<String> roles;
     List<String> significances;
-    
+    NamedObjectId sp_queueState_id;
+    NamedObjectId sp_numSentCommands_id;
+    NamedObjectId sp_numRejectedCommands_id;
+    NamedObjectId sp_numCommands_id;
+
     CommandQueue(YProcessor channel, String name) {
-        this.channel=channel;
+        this.processor=channel;
         this.name=name;
         if(!Privilege.getInstance().isEnabled()) state=QueueState.ENABLED;
     }
 
-    public ConcurrentLinkedQueue<PreparedCommand> getCommands()
-    {
+    void setupSysParameters() {
+        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
+        sp_queueState_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/state").build();
+        sp_numCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numCommands").build();
+        sp_numSentCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numSentCommands").build();
+        sp_numRejectedCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/numRejectedCommands").build();
+    }
+
+    public ConcurrentLinkedQueue<PreparedCommand> getCommands() {
         return commands;
     }
 
@@ -45,11 +59,11 @@ public class CommandQueue {
     public QueueState getState() {
         return state;
     }
-    
+
     public YProcessor getChannel() {
-        return channel;
+        return processor;
     }
-    
+
     public PreparedCommand[] getCommandArray() {
         return commands.toArray(new PreparedCommand[0]);
     }
@@ -59,13 +73,12 @@ public class CommandQueue {
     }
 
     public boolean contains(PreparedCommand pc) {
-	return commands.contains(pc);
+        return commands.contains(pc);
     }
 
 
 
-    public void add(PreparedCommand pc)
-    {
+    public void add(PreparedCommand pc) {
         commands.add(pc);
     }
 
@@ -77,8 +90,7 @@ public class CommandQueue {
      */
     public boolean remove(PreparedCommand pc, boolean isSent) {
         boolean removed = commands.remove(pc);
-        if(removed)
-        {
+        if(removed) {
             if(isSent)
                 nbSentCommands++;
             else
@@ -87,16 +99,12 @@ public class CommandQueue {
         return removed;
     }
 
-    public void clear(boolean areSent)
-    {
+    public void clear(boolean areSent) {
         int nbCommands = commands.size();
         commands.clear();
-        if(areSent)
-        {
+        if(areSent) {
             nbSentCommands += nbCommands;
-        }
-        else
-        {
+        } else {
             nbRejectedCommands += nbCommands;
         }
     }
@@ -112,5 +120,13 @@ public class CommandQueue {
 
     public int getNbSentCommands() {
         return nbSentCommands;
+    }
+
+    void fillInSystemParameters(List<Pvalue.ParameterValue> params, long time) {
+
+        params.add(SystemParametersCollector.getPV(sp_queueState_id, time, state.name()));
+        params.add(SystemParametersCollector.getPV(sp_numCommands_id, time, commands.size()));
+        params.add(SystemParametersCollector.getPV(sp_numSentCommands_id, time, nbSentCommands));
+        params.add(SystemParametersCollector.getPV(sp_numRejectedCommands_id, time, nbRejectedCommands));
     }
 }

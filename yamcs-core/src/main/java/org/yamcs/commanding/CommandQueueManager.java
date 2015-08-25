@@ -23,6 +23,9 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.security.AuthenticationToken;
@@ -39,7 +42,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * @author nm
- * Implements the management of the control queues for one channel:
+ * Implements the management of the control queues for one processor:
  *  - for each command that is sent, based on the sender it finds the queue where the command should go
  *  - depending on the queue state the command can be immediately sent, stored in the queue or rejected
  *  - when the command is immediately sent or rejected, the command queue monitor is not notified
@@ -50,7 +53,7 @@ import com.google.common.util.concurrent.AbstractService;
  *  most likely connected in the same LAN, I don't consider this to be an issue. 
  */
 @ThreadSafe
-public class CommandQueueManager extends AbstractService implements ParameterConsumer {
+public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues=new HashMap<String, CommandQueue>();
     CommandReleaser commandReleaser;
@@ -69,6 +72,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
+    
+
     /**
      * Constructs a Command Queue Manager having the given history manager and tc uplinker.
      *  The parameters have to be not null.
@@ -129,7 +134,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * called at channel startup, subscribe all parameters required for checking command constraints
+     * called at processor startup, subscribe all parameters required for checking command constraints
      */
     public void doStart() {
         XtceDb xtcedb = yproc.getXtceDb();
@@ -153,6 +158,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         } else {
             log.debug("No parameter required for post transmission contraint check");
+        }
+        
+        SystemParametersCollector  sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
+        if(sysParamCollector!=null) {
+            for(CommandQueue cq:queues.values()) {
+                cq.setupSysParameters();
+            }
+            sysParamCollector.registerProvider(this, null);
         }
         notifyStarted();
     }
@@ -639,5 +652,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
-
+    @Override
+    public Collection<Pvalue.ParameterValue> getSystemParameters() {
+        List<Pvalue.ParameterValue> pvlist = new ArrayList<Pvalue.ParameterValue>();
+        long time = yproc.getCurrentTime();
+        for(CommandQueue cq: queues.values()) {
+            cq.fillInSystemParameters(pvlist, time);
+        }
+        return pvlist;
+    }
 }
