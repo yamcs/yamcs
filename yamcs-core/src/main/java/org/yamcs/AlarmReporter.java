@@ -198,7 +198,8 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     private void sendValueChangeEvent(ParameterValue pv) {
         if(pv.getMonitoringResult() == null)
         {
-            throw new IllegalStateException("No monitoring result");
+            eventProducer.sendInfo("no monitoring", "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
+            return;
         }
         switch(pv.getMonitoringResult()) {
         case WATCH_LOW:

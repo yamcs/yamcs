@@ -137,7 +137,6 @@ public class WebSocketClient {
 				}
 			});
 
-			future.sync();
 			nettyChannel = future.sync().channel();
 		} catch (InterruptedException e) {
 			System.out.println("interrupted while trying to connect");

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Rest.RestExceptionMessage;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.AbstractRequestHandler;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -43,7 +44,9 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     public static final String MANAGEMENT_PATH = "management";
     public static final String PROCESSOR_PATH = "processor";
     public static final String AUTHORIZATION_PATH = "authorization";
+    public static final String SIMTIME_PATH = "simTime";
 
+    //TODO made this list dynamic allowing services to register things on the fly
     static ArchiveRequestHandler archiveRequestHandler=new ArchiveRequestHandler();
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
@@ -52,6 +55,8 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     static ManagementRequestHandler managementRequestHandler=new ManagementRequestHandler();
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     static AuthorizationRequestHandler authorizationRequestHandler=new AuthorizationRequestHandler();
+    static SimulationTimeService.SimTimeRequestHandler simTimeRequestHandler = new SimulationTimeService.SimTimeRequestHandler();
+    
     
     // This can be static, because the whole request-handling operates on a single thread
     private static JsonFactory jsonFactory = new JsonFactory();
@@ -103,6 +108,9 @@ public class ApiRequestHandler extends AbstractRequestHandler {
                 break;
             case AUTHORIZATION_PATH:
                 sendResponse(authorizationRequestHandler.handleRequest(req, handlerOffset + 1));
+                break;
+            case SIMTIME_PATH:
+                sendResponse(simTimeRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
             default:
                 log.warn("Unknown request received: '{}'", req.getPathSegment(handlerOffset));

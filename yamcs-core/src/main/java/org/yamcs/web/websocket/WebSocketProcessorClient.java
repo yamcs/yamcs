@@ -27,7 +27,8 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private final ManagementResource mgmtResource;
     private final AlarmsResource alarmResource;
     private final StreamResource streamResource;
-   
+    private final TimeResource timeResource;
+    
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
         this.authToken = authToken;
@@ -41,6 +42,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
         alarmResource = new AlarmsResource(yproc, wsHandler);
         streamResource = new StreamResource(yproc, wsHandler);
+        timeResource = new TimeResource(yproc, wsHandler);
     }
 
     @Override
@@ -54,6 +56,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         cmdhistResource.switchYProcessor(newProcessor);
         alarmResource.switchYProcessor(newProcessor);
         streamResource.switchYProcessor(newProcessor);
+        timeResource.switchYProcessor(newProcessor);
     }
     
     public int getClientId() {
@@ -89,5 +92,6 @@ public class WebSocketProcessorClient implements YProcessorClient {
         mgmtResource.quit();
         alarmResource.quit();
         streamResource.quit();
+        timeResource.quit();
     }
 }

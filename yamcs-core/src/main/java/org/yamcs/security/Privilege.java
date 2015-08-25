@@ -36,6 +36,16 @@ import org.yamcs.xtceproc.XtceDbFactory;
  * @author nm
  */
 public class Privilege {
+
+    public enum SystemPrivilege {
+        MayControlYProcessor,
+        MayModifyCommandHistory,
+        MayControlCommandQueue,
+        MayCommandPayload,
+        MayGetMissionDatabase,
+        MayControlArchiving
+    }
+
     public static boolean usePrivileges = true;
 
     private static Realm realm;
