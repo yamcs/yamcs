@@ -477,6 +477,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         byte[] buf = data.getPacket().toByteArray();        
         int len = buf.length;
         final ListPacket packet = new ListPacket(buf, len);
+        packet.setGenerationTime(data.getGenerationTime());
         tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime(), TimeEncoding.currentInstant());
         ParameterValueList pvlist = tmExtractor.getParameterResult();
         packet.setColumnParameters(pvlist);

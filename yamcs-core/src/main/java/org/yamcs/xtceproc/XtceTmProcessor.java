@@ -45,7 +45,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public final YProcessor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
-
+    
+    
     public XtceTmProcessor(YProcessor proc) {
 	log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
 	this.processor=proc;
@@ -123,7 +124,14 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	if(p==null) throw new InvalidIdentification(paraId);
 	return p;
     }
-
+    
+    private long getCurrentTime() {
+        if(processor!=null) {
+            return processor.getCurrentTime();
+        } else {
+            return TimeEncoding.getWallclockTime();
+        }
+    }
     /**
      * Process telemetry packets
      *
@@ -132,7 +140,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public void processPacket(PacketWithTime pwrt){
 	try {
 	    ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-	    tmExtractor.processPacket(bb, pwrt.getGenerationTime(), processor.getCurrentTime());
+	    tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
 
 	    ParameterValueList paramResult=tmExtractor.getParameterResult();
 	    ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
