@@ -105,11 +105,27 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             CommandQueue q=queues.get(qn);
             String state=config.getString(qn, "state");
             q.state=CommandQueueManager.stringToQueueState(state);
+            q.defaultState = q.state;
+            if(config.containsKey(qn, "stateExpirationTimeS"))
+            {
+                q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
+            }
             q.roles=config.getList(qn, "roles");
             if(config.containsKey(qn, "significances")) {
                 q.significances = config.getList(qn, "significances");
             }
         }
+        // schedule timer update to client
+        timer.scheduleAtFixedRate(()->{
+            for(CommandQueue q : queues.values())
+            {
+                if(q.stateExpirationJob != null && q.stateExpirationRemainingS > 0)
+                {
+                    q.stateExpirationRemainingS--;
+                    notifyUpdateQueue(q);
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -180,7 +196,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         CommandQueue q=getQueue(authToken, pc);
         q.add(pc);
         notifyAdded(q, pc);
-
 
         if(q.state==QueueState.DISABLED) {
             q.remove(pc, false);
@@ -429,10 +444,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 break;
             }
         }
+        final CommandQueue cq = queue;
         if(queue==null) return null;
 
-        if(queue.state == newState) return queue;
+        if(queue.state == newState) {
+            if(queue.stateExpirationJob != null && newState != queue.defaultState)
+            {
+                // reset state expiration date
+                timer.remove(queue.stateExpirationJob);
+                timer.purge();
+                scheduleStateExpiration(queue, newState);
+                //	Notify the monitoring clients
+                notifyUpdateQueue(queue);
+            }
+            return queue;
+        }
 
+        QueueState previousState = queue.state;
         queue.state=newState;
         if(queue.state==QueueState.ENABLED) {
             for(PreparedCommand pc:queue.getCommands()) {
@@ -450,10 +478,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
             queue.clear(false);
         }
+
+        if(queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
+            scheduleStateExpiration(queue, previousState);
+        }
+
         //	Notify the monitoring clients
         notifyUpdateQueue(queue);
         return queue;
     }
+
+    private void scheduleStateExpiration(final CommandQueue queue, QueueState previousState)
+    {
+        queue.stateExpirationJob = () -> {setQueueState(queue.name, previousState, false); queue.stateExpirationJob = null;};
+        queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
+        timer.schedule(queue.stateExpirationJob, queue.stateExpirationTimeS, TimeUnit.SECONDS);
+    }
+
     /**
      * Called from a queue monitor to register itself in order to be notified when 
      *   new commands are added/removed from the queue.

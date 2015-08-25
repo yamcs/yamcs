@@ -1,5 +1,6 @@
 package org.yamcs.commanding;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -12,11 +13,17 @@ import org.yamcs.protobuf.Commanding.QueueState;
 public class CommandQueue {
     String name;
     private ConcurrentLinkedQueue<PreparedCommand> commands=new ConcurrentLinkedQueue<PreparedCommand>();
+    QueueState defaultState=QueueState.BLOCKED;
     QueueState state=QueueState.BLOCKED;
     YProcessor channel;
 
     int nbSentCommands = 0;
     int nbRejectedCommands = 0;
+    int stateExpirationTimeS = 0;
+
+
+    int stateExpirationRemainingS = 0;
+    Runnable stateExpirationJob = null;
     
     List<String> roles;
     List<String> significances;
@@ -96,6 +103,11 @@ public class CommandQueue {
 
     public int getNbRejectedCommands() {
         return nbRejectedCommands;
+    }
+
+
+    public int getStateExpirationRemainingS() {
+        return stateExpirationRemainingS;
     }
 
     public int getNbSentCommands() {
