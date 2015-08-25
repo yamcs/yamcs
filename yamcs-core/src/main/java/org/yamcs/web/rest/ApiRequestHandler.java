@@ -40,6 +40,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     public static final String MDB_PATH = "mdb";
     public static final String COMMANDING_PATH = "commanding";
     public static final String PARAMETER_PATH = "parameter";
+    public static final String CONTAINER_PATH = "container";
     public static final String ALARMS_PATH = "alarms";
     public static final String MANAGEMENT_PATH = "management";
     public static final String PROCESSOR_PATH = "processor";
@@ -51,6 +52,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     static MdbRequestHandler mdbRequestHandler=new MdbRequestHandler();
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     static ParameterRequestHandler parameterRequestHandler=new ParameterRequestHandler();
+    static ContainerRequestHandler containerRequestHandler=new ContainerRequestHandler();
     static AlarmsRequestHandler alarmsRequestHandler=new AlarmsRequestHandler();
     static ManagementRequestHandler managementRequestHandler=new ManagementRequestHandler();
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
@@ -97,6 +99,9 @@ public class ApiRequestHandler extends AbstractRequestHandler {
             case PARAMETER_PATH:
                 sendResponse(parameterRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
+            case CONTAINER_PATH:
+                sendResponse(containerRequestHandler.handleRequest(req, handlerOffset + 1));
+               break; 
             case ALARMS_PATH:
                 sendResponse(alarmsRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;

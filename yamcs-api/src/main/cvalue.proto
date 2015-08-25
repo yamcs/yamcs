@@ -8,3 +8,8 @@ message ContainerValue {
 	optional yamcs.NamedObjectId id=1;
     repeated pvalue.ParameterValue parameter=2;
 }
+
+
+message ContainerData {
+	repeated ContainerValue container=1;
+}

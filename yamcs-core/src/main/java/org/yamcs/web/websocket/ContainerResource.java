@@ -13,6 +13,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.container.ContainerValueWithId;
 import org.yamcs.container.ContainerWithIdConsumer;
 import org.yamcs.container.ContainerWithIdRequestHelper;
+import org.yamcs.protobuf.Cvalue.ContainerData;
 import org.yamcs.protobuf.SchemaCvalue;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
@@ -108,14 +109,17 @@ public class ContainerResource extends AbstractWebSocketResource implements Cont
             return;
         }
         
+        ContainerData.Builder cdata= ContainerData.newBuilder();
         for (ContainerValueWithId container: containers) {
-            try {
-                wsHandler.sendData(ProtoDataType.CONTAINER, container.toGbpContainerData(), SchemaCvalue.ContainerValue.WRITE);
-            } catch (Exception e) {
-                log.warn("got error when sending container updates, quitting", e);
-                quit();
-            }        	
+        	cdata.addContainer(container.toGbpContainerData());
         }
+
+        try {
+            wsHandler.sendData(ProtoDataType.CONTAINER, cdata.build(), SchemaCvalue.ContainerData.WRITE);
+        } catch (Exception e) {
+            log.warn("got error when sending container updates, quitting", e);
+            quit();
+        }        	
 	}
 
 	@Override
