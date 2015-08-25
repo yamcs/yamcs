@@ -10,8 +10,8 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.container.ContainerConsumer;
-import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.container.RawContainerConsumer;
+import org.yamcs.container.RawContainerRequestManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -31,7 +31,7 @@ public class ContainerRequestManagerTest {
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
         YProcessor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
-        ContainerRequestManager rm = c.getContainerRequestManager();
+        RawContainerRequestManager rm = c.getRawContainerRequestManager();
         XtceDb xtceDb = c.getXtceDb();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();
@@ -96,7 +96,7 @@ public class ContainerRequestManagerTest {
     /**
      * PacketConsumer that stores whatever it consumes for later retrieval
      */
-    private static class RecordingPacketConsumer implements ContainerConsumer {
+    private static class RecordingPacketConsumer implements RawContainerConsumer {
         List<SequenceContainer> received = new ArrayList<SequenceContainer>();
 
         @Override

@@ -1,0 +1,10 @@
+package cvalue;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+import "pvalue.proto";
+
+message ContainerValue {
+	optional yamcs.NamedObjectId id=1;
+    repeated pvalue.ParameterValue parameter=2;
+}

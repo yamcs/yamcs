@@ -4,7 +4,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtceproc.ContainerListener;
+import org.yamcs.xtceproc.RawContainerListener;
 
 import com.google.common.util.concurrent.Service;
 
@@ -12,9 +12,9 @@ import com.google.common.util.concurrent.Service;
  * Interface implemented by all the classes that can provide containers to a
  * ContainerListener
  */
-public interface ContainerProvider extends Service {
+public interface RawContainerProvider extends Service {
 
-    public abstract void setContainerListener(ContainerListener containerListener);
+    public abstract void setContainerListener(RawContainerListener containerListener);
     
     public abstract void startProviding(SequenceContainer container);
     

@@ -2,6 +2,7 @@ package org.yamcs.parameter;
 
 import java.util.List;
 
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ParameterValue;
 
 /**
@@ -11,5 +12,5 @@ import org.yamcs.ParameterValue;
  *
  */
 public interface ParameterConsumer {
-    void updateItems(int subscriptionId, List<ParameterValue> items);
+    void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items);
 }

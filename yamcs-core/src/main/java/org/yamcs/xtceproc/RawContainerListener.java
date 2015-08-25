@@ -9,6 +9,6 @@ import org.yamcs.ContainerExtractionResult;
  * @author nm
  *
  */
-public interface ContainerListener {
+public interface RawContainerListener {
     public abstract void update(List<ContainerExtractionResult> c);
 }
