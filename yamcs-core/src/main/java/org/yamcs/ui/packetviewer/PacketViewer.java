@@ -72,6 +72,7 @@ import org.hornetq.utils.HornetQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ParameterValue;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
@@ -761,6 +762,11 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     @Override
     public void update(final Collection<ParameterValue> params) {
+    	update(null, params);
+    }
+    
+    @Override
+    public void update(List<ContainerExtractionResult> containers, final Collection<ParameterValue> params) {
         SwingUtilities.invokeLater(new Runnable() {
             Hashtable<String,TreeContainer> containers = new Hashtable<String,TreeContainer>();
             DefaultMutableTreeNode getTreeNode(SequenceContainer sc) {

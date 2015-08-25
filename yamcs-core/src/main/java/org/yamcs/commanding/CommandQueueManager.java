@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
@@ -505,7 +506,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     @Override
-    public void updateItems(int subscriptionId, final List<ParameterValue> items) {
+    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, final List<ParameterValue> items) {
         timer.execute(new Runnable() {
             @Override
             public void run() {

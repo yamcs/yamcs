@@ -1,9 +1,9 @@
 package org.yamcs.container;
 
-import java.nio.ByteBuffer;
+import java.util.List;
 
+import org.yamcs.ParameterValue;
 
 public interface ContainerWithIdConsumer {
-	void processContainer(ContainerWithId cwi, ByteBuffer content);
+	void processContainer(ContainerWithId cwi, List<ParameterValue> parameters);
 }
-

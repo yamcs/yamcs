@@ -17,6 +17,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
@@ -85,7 +86,7 @@ public class AlgorithmManagerPyTest {
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionPy");
         prm.addRequest(p, new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
         	params.addAll(items);
             }
         });
@@ -106,7 +107,7 @@ public class AlgorithmManagerPyTest {
         	prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome4")
         ), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });
@@ -125,7 +126,7 @@ public class AlgorithmManagerPyTest {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivisionPy"), new ParameterConsumer() {
             @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
+            public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
                 params.addAll(items);
             }
         });

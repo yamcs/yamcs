@@ -21,7 +21,8 @@ import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
-import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.container.ContainerWithIdRequestHelper;
+import org.yamcs.container.RawContainerRequestManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -55,7 +56,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class YProcessor extends AbstractService {
     static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
     private ParameterRequestManagerImpl parameterRequestManager;
-    private ContainerRequestManager containerRequestManager;
+    private RawContainerRequestManager rawContainerRequestManager;
     private CommandHistoryPublisher commandHistoryPublisher;
 
     private CommandHistoryRequestManager commandHistoryRequestManager;
@@ -153,8 +154,8 @@ public class YProcessor extends AbstractService {
             if(tmPacketProvider!=null) {
             	tmPacketProvider.setTmProcessor(tmProcessor);
             }
-            containerRequestManager=new ContainerRequestManager(this, tmProcessor);
-            parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
+            rawContainerRequestManager = new RawContainerRequestManager(this, tmProcessor);
+            parameterRequestManager = new ParameterRequestManagerImpl(this, tmProcessor);
 
             //    containerRequestManager.setPacketProvider(tmPacketProvider);
 
@@ -237,9 +238,9 @@ public class YProcessor extends AbstractService {
     public ParameterRequestManagerImpl getParameterRequestManager() {
         return parameterRequestManager;
     }
-
-    public ContainerRequestManager getContainerRequestManager() {
-        return containerRequestManager;
+    
+    public RawContainerRequestManager getRawContainerRequestManager() {
+        return rawContainerRequestManager;
     }
 
     public XtceTmProcessor getTmProcessor() {

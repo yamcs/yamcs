@@ -94,7 +94,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     }
     
     @Override
-    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
         // Nothing. The real business of sending events, happens while checking the alarms
         // because that's where we have easy access to the XTCE definition of the active
         // alarm. The PRM is only used to signal the parameter subscriptions.

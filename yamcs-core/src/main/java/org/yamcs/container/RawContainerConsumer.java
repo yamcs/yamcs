@@ -4,6 +4,6 @@ import java.nio.ByteBuffer;
 
 import org.yamcs.xtce.SequenceContainer;
 
-public interface ContainerConsumer {
+public interface RawContainerConsumer {
     void processContainer(SequenceContainer sc, ByteBuffer content);
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.ParameterValue;
@@ -144,7 +145,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 
     @Override
-    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
         ListMultimap<Parameter, NamedObjectId> subscription = subscriptions.get(subscriptionId);
         if(subscription==null) { //probably the subscription has just been removed
             log.debug("Recevied an updateItems for an unknown subscription "+subscriptionId);
