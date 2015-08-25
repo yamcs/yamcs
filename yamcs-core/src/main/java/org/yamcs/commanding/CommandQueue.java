@@ -46,7 +46,7 @@ public class CommandQueue {
         sp_queueState_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/state").build();
         sp_numCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numCommands").build();
         sp_numSentCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numSentCommands").build();
-        sp_numRejectedCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/numRejectedCommands").build();
+        sp_numRejectedCommands_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numRejectedCommands").build();
     }
 
     public ConcurrentLinkedQueue<PreparedCommand> getCommands() {
