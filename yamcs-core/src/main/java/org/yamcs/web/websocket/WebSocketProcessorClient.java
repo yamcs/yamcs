@@ -23,6 +23,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private AuthenticationToken authToken = null;
 
     private final ParameterResource paraResource;
+    private final ContainerResource contResource;
     private final CommandHistoryResource cmdhistResource;
     private final ManagementResource mgmtResource;
     private final AlarmsResource alarmResource;
@@ -38,6 +39,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
         paraResource = new ParameterResource(yproc, wsHandler);
+        contResource = new ContainerResource(yproc, wsHandler);
         cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
         mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
         alarmResource = new AlarmsResource(yproc, wsHandler);
@@ -50,6 +52,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         log.info("switching yprocessor to {}", newProcessor);
         try {
             paraResource.switchYProcessor(newProcessor, authToken);
+            contResource.switchYProcessor(newProcessor, authToken);            
         } catch (NoPermissionException e) {
             throw new YProcessorException("No permission", e);
         }
@@ -88,6 +91,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     public void quit() {
         ManagementService.getInstance().unregisterClient(clientId);
         paraResource.quit();
+        contResource.quit();
         cmdhistResource.quit();
         mgmtResource.quit();
         alarmResource.quit();

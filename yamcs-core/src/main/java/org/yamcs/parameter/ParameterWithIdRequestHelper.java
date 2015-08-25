@@ -205,6 +205,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public void switchPrm(ParameterRequestManagerImpl newPrm, AuthenticationToken authToken)
             throws InvalidIdentification, NoPermissionException {
+    	
         for(int subscriptionId: subscriptions.keySet()) {
             List<Parameter> plist = prm.removeRequest(subscriptionId);
             // checking permission

@@ -33,7 +33,7 @@ public class ContainerValueWithId {
 		this.paramVals = paramVals;
 	}
 
-	public org.yamcs.protobuf.Cvalue.ContainerValue toGbpParameterData() {
+	public org.yamcs.protobuf.Cvalue.ContainerValue toGbpContainerData() {
 		ContainerValue.Builder cvalue = ContainerValue.newBuilder();
 		cvalue.setId(id);
 		for (ParameterValue pv: paramVals) {
