@@ -17,6 +17,7 @@ import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.SubscriptionArray;
+import org.yamcs.protobuf.Cvalue.ContainerValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -52,9 +53,7 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
     private ConcurrentHashMap<SequenceContainer, SubscriptionArray> containerToSubscription = new ConcurrentHashMap<>();
     private ConcurrentHashMap<SequenceContainer, Set<Parameter>> cachedParameterSet = new ConcurrentHashMap<>();
     
-    Map<Integer, ListMultimap<SequenceContainer, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<SequenceContainer, NamedObjectId>>();
-    private int parameterSubscriptionId;
-    
+    Map<Integer, ListMultimap<SequenceContainer, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<SequenceContainer, NamedObjectId>>();    
     
     public ContainerWithIdRequestHelper(ParameterRequestManagerImpl prm, ContainerWithIdConsumer consumer) {
     	this.prm = prm;
@@ -174,32 +173,6 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
 		}
     }
         
-    /**
-     * Internal processing for subscribing to a container 
-     * 
-     * @param subscriptionId
-     * @param container
-     * @throws InvalidIdentification 
-     */
-    private void __subscribeContainer(int subscriptionId, SequenceContainer container) throws InvalidIdentification {
-    	SubscriptionArray subscription = containerToSubscription.get(subscriptionId);
-    	if (subscription == null) {
-    		subscription = new SubscriptionArray();
-    		containerToSubscription.put(container, subscription);
-    	}
-    	
-    	List<Parameter> paramList = new LinkedList<>();
-    	paramList.addAll(__getParameters(container));
-    	
-    	
-
-    	// Make a subscription to the ParameterRequestManager
-    	if (subscription.size()  == 0) {
-	    	prm.addItemsToRequest(parameterSubscriptionId, paramList);
-    	}
-    	
-    	subscription.add(subscriptionId);
-    }
     
     /**
      * Retrieve from the cache all the parameters contained in the specified container. If they are missing in the current cache,
@@ -264,19 +237,23 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
 
     @Override
 	public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers,	List<ParameterValue> items) {
+    	ListMultimap<SequenceContainer, NamedObjectId> subscription = subscriptions.get(subscriptionId);    	
 		for (ContainerExtractionResult container : containers) {
-			SequenceContainer sc = container.getContainer();
-			SubscriptionArray subscription = containerToSubscription.get(sc);
-			if ((subscription != null) && (subscription.size() > 0)) {
+			SequenceContainer sc = container.getContainer();			
+			List<NamedObjectId> listId = subscription.get(sc);
+						
+			if (!listId.isEmpty()) {
 				Set<Parameter> subscribed = cachedParameterSet.get(sc);
-				List<ParameterValue> containerValue = new LinkedList<>();
+				
+				ContainerValue.Builder containerValue = ContainerValue.newBuilder();
+				
 				for (ParameterValue pv: items) {
 					if (subscribed.contains(pv.getParameter())) {
-						containerValue.add(pv);
+						containerValue.addParameter(pv);
 					}
 				}
 								
-				//consumer.updateItems(subscriptionId, containers, containerValue);
+				consumer.updateItems(subscriptionId, containers, containerValue);
 			}
 		}
 	}	
