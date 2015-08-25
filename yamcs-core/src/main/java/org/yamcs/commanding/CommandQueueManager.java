@@ -24,6 +24,9 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.security.AuthenticationToken;
@@ -40,7 +43,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * @author nm
- * Implements the management of the control queues for one channel:
+ * Implements the management of the control queues for one processor:
  *  - for each command that is sent, based on the sender it finds the queue where the command should go
  *  - depending on the queue state the command can be immediately sent, stored in the queue or rejected
  *  - when the command is immediately sent or rejected, the command queue monitor is not notified
@@ -51,7 +54,7 @@ import com.google.common.util.concurrent.AbstractService;
  *  most likely connected in the same LAN, I don't consider this to be an issue. 
  */
 @ThreadSafe
-public class CommandQueueManager extends AbstractService implements ParameterConsumer {
+public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues=new HashMap<String, CommandQueue>();
     CommandReleaser commandReleaser;
@@ -70,6 +73,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
+    
+
     /**
      * Constructs a Command Queue Manager having the given history manager and tc uplinker.
      *  The parameters have to be not null.
@@ -106,15 +111,31 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             CommandQueue q=queues.get(qn);
             String state=config.getString(qn, "state");
             q.state=CommandQueueManager.stringToQueueState(state);
+            q.defaultState = q.state;
+            if(config.containsKey(qn, "stateExpirationTimeS"))
+            {
+                q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
+            }
             q.roles=config.getList(qn, "roles");
             if(config.containsKey(qn, "significances")) {
                 q.significances = config.getList(qn, "significances");
             }
         }
+        // schedule timer update to client
+        timer.scheduleAtFixedRate(()->{
+            for(CommandQueue q : queues.values())
+            {
+                if(q.stateExpirationJob != null && q.stateExpirationRemainingS > 0)
+                {
+                    q.stateExpirationRemainingS--;
+                    notifyUpdateQueue(q);
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     /**
-     * called at channel startup, subscribe all parameters required for checking command constraints
+     * called at processor startup, subscribe all parameters required for checking command constraints
      */
     public void doStart() {
         XtceDb xtcedb = yproc.getXtceDb();
@@ -138,6 +159,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         } else {
             log.debug("No parameter required for post transmission contraint check");
+        }
+        
+        SystemParametersCollector  sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
+        if(sysParamCollector!=null) {
+            for(CommandQueue cq:queues.values()) {
+                cq.setupSysParameters();
+            }
+            sysParamCollector.registerProvider(this, null);
         }
         notifyStarted();
     }
@@ -181,7 +210,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         CommandQueue q=getQueue(authToken, pc);
         q.add(pc);
         notifyAdded(q, pc);
-
 
         if(q.state==QueueState.DISABLED) {
             q.remove(pc, false);
@@ -430,10 +458,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 break;
             }
         }
+        final CommandQueue cq = queue;
         if(queue==null) return null;
 
-        if(queue.state == newState) return queue;
+        if(queue.state == newState) {
+            if(queue.stateExpirationJob != null && newState != queue.defaultState)
+            {
+                // reset state expiration date
+                timer.remove(queue.stateExpirationJob);
+                timer.purge();
+                scheduleStateExpiration(queue, newState);
+                //	Notify the monitoring clients
+                notifyUpdateQueue(queue);
+            }
+            return queue;
+        }
 
+        QueueState previousState = queue.state;
         queue.state=newState;
         if(queue.state==QueueState.ENABLED) {
             for(PreparedCommand pc:queue.getCommands()) {
@@ -451,10 +492,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
             queue.clear(false);
         }
+
+        if(queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
+            scheduleStateExpiration(queue, previousState);
+        }
+
         //	Notify the monitoring clients
         notifyUpdateQueue(queue);
         return queue;
     }
+
+    private void scheduleStateExpiration(final CommandQueue queue, QueueState previousState)
+    {
+        queue.stateExpirationJob = () -> {setQueueState(queue.name, previousState, false); queue.stateExpirationJob = null;};
+        queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
+        timer.schedule(queue.stateExpirationJob, queue.stateExpirationTimeS, TimeUnit.SECONDS);
+    }
+
     /**
      * Called from a queue monitor to register itself in order to be notified when 
      *   new commands are added/removed from the queue.
@@ -599,5 +653,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
-
+    @Override
+    public Collection<Pvalue.ParameterValue> getSystemParameters() {
+        List<Pvalue.ParameterValue> pvlist = new ArrayList<Pvalue.ParameterValue>();
+        long time = yproc.getCurrentTime();
+        for(CommandQueue cq: queues.values()) {
+            cq.fillInSystemParameters(pvlist, time);
+        }
+        return pvlist;
+    }
 }

@@ -228,7 +228,7 @@ public class AlarmChecker {
      * Verify limits, giving priority to highest severity
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
-        pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
+        pv.setMonitoringResult(null);
         FloatRange watchRange=staticAlarmRanges.getWatchRange();
         FloatRange warningRange=staticAlarmRanges.getWarningRange();
         FloatRange distressRange=staticAlarmRanges.getDistressRange();
@@ -268,6 +268,10 @@ public class AlarmChecker {
             } else if(watchRange.getMaxInclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.WATCH_HIGH);
             }
+        }
+        
+        if (pv.getMonitoringResult() == null) {
+        	pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
         
         pv.setWatchRange(watchRange);

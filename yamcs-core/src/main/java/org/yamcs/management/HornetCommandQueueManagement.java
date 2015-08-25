@@ -184,7 +184,8 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 	CommandQueueInfo cqi=CommandQueueInfo.newBuilder()
 		.setInstance(c.getInstance()).setProcessorName(c.getName())
 		.setName(queue.getName()).setState(queue.getState())
-			.setNbRejectedCommands(queue.getNbRejectedCommands())
+        .setStateExpirationTimeS(queue.getStateExpirationRemainingS())
+            .setNbRejectedCommands(queue.getNbRejectedCommands())
 			.setNbSentCommands(queue.getNbSentCommands()).build();
 
 	String lvn=c.getInstance()+"."+c.getName()+"."+queue.getName();
