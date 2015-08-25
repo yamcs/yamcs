@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import org.yamcs.YProcessor;
+import org.yamcs.YProcessorException;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.security.AuthenticationToken;
@@ -43,5 +44,9 @@ public abstract class AbstractWebSocketResource {
                 .setProtocolVersion(WSConstants.PROTOCOL_VERSION)
                 .setSequenceNumber(requestId)
                 .build();
+    }
+    
+    public void switchYProcessor(YProcessor processor)  throws YProcessorException {
+        this.processor = processor;
     }
 }

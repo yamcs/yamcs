@@ -51,6 +51,7 @@ message WebSocketServerMessage {
     optional yamcs.Event event = 8;
     optional yamcs.StreamData streamData = 9;
     optional alarms.Alarm alarm = 10;
+    optional yamcs.TimeInfo timeInfo = 11;
   }
 
   optional MessageType type=1;

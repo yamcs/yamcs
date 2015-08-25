@@ -31,6 +31,7 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
+import org.yamcs.time.TimeService;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -516,7 +517,21 @@ public class YProcessor extends AbstractService {
         return timer;
     }
 
-
+    /**
+     * Returns the processor time
+     * 
+     *  for realtime processors it is the mission time or simulation time
+     *  for replay processors it is the replay time
+     * @return 
+     */
+    public long getCurrentTime() {        
+        if(isReplay()) {
+            return ((ArchiveTmPacketProvider)tmPacketProvider).lastPacketTime();
+        } else {
+            TimeService ts = YamcsServer.getInstance(yamcsInstance).getTimeService();
+            return ts.getMissionTime();
+        }
+    }
 
     public void quit() {
        stopAsync();

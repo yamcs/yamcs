@@ -39,6 +39,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -49,7 +50,6 @@ import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.web.websocket.ParameterResource;
-
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -82,12 +82,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
         System.out.println("total time: "+(System.currentTimeMillis()-t0));
     }
 
-    @Ignore
     @Test
     public void testWsParameter() throws Exception {
+        enableDebugging();
         //subscribe to parameters
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
-
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
@@ -114,7 +113,13 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkPdata(pdata, packetGenerator);
     }
 
-
+    @Test
+    public void testWsTime() throws Exception {      
+        WebSocketRequest wsr = new WebSocketRequest("time", "subscribe");
+        wsClient.sendRequest(wsr);
+        TimeInfo ti = wsListener.timeInfoList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(ti);
+    }
 
     @Test
     public void testRestParameterGet() throws Exception {

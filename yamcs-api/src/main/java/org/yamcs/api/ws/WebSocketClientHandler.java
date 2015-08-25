@@ -149,6 +149,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         case STREAM_DATA:
             callback.onStreamData(data.getStreamData());
             break;
+        case TIME_INFO:
+            callback.onTimeInfo(data.getTimeInfo());
+            break;
         default:
             throw new IllegalStateException("Unsupported data type " + data.getType());
         }

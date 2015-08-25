@@ -3976,4 +3976,136 @@ public final class SchemaRest
         }
     }
 
+    public static final class RestSetSimulationTimeRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest message) throws java.io.IOException
+            {
+                if(message.hasTime0())
+                    output.writeInt64(1, message.getTime0(), false);
+                if(message.hasTime0UTC())
+                    output.writeString(2, message.getTime0UTC(), false);
+                if(message.hasSimElapsedTime())
+                    output.writeInt64(3, message.getSimElapsedTime(), false);
+                if(message.hasSimSpeed())
+                    output.writeDouble(4, message.getSimSpeed(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setTime0(input.readInt64());
+                            break;
+                        case 2:
+                            builder.setTime0UTC(input.readString());
+                            break;
+                        case 3:
+                            builder.setSimElapsedTime(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setSimSpeed(input.readDouble());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.RestSetSimulationTimeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "time0";
+                case 2: return "time0UTC";
+                case 3: return "simElapsedTime";
+                case 4: return "simSpeed";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("time0", 1);
+            fieldMap.put("time0UTC", 2);
+            fieldMap.put("simElapsedTime", 3);
+            fieldMap.put("simSpeed", 4);
+        }
+    }
+
 }

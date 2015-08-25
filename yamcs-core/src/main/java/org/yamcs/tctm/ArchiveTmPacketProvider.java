@@ -16,4 +16,5 @@ public interface ArchiveTmPacketProvider extends TmPacketProvider {
     public ReplaySpeed getSpeed();
 
     public abstract ReplayRequest getReplayRequest();
+    public abstract long lastPacketTime();
 }

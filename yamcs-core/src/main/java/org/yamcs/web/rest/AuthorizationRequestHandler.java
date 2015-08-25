@@ -30,12 +30,17 @@ public class AuthorizationRequestHandler implements RestRequestHandler {
     }
 
     /**
-     * Sends the parameters for the requested yamcs instance. If no namespaces are specified, send qualified names.
+     * Sends list of authorizations
      */
     private Rest.RestListAuthorisationsResponse listAuthorisations(AuthenticationToken authToken) throws RestException {
         Rest.RestListAuthorisationsResponse.Builder responseb = Rest.RestListAuthorisationsResponse.newBuilder();
 
         User user = Privilege.getInstance().getUser(authToken);
+        if(user == null) {
+
+            return buildFullAuthoriztion(responseb);
+        }
+
         Rest.UserAuthorizationsInfo.Builder userAuthorizationsInfob = Rest.UserAuthorizationsInfo.newBuilder();
         userAuthorizationsInfob.addAllRoles(Arrays.asList(user.getRoles()));
         userAuthorizationsInfob.addAllTmParaPrivileges(user.getTmParaPrivileges());
@@ -45,9 +50,22 @@ public class AuthorizationRequestHandler implements RestRequestHandler {
         userAuthorizationsInfob.addAllSystemPrivileges(user.getSystemPrivileges());
 
         responseb.setUserAuthorizationsInfo(userAuthorizationsInfob.build());
-
         return responseb.build();
+    }
 
+
+    private Rest.RestListAuthorisationsResponse buildFullAuthoriztion(Rest.RestListAuthorisationsResponse.Builder responseb) {
+        Rest.UserAuthorizationsInfo.Builder userAuthorizationsInfob = Rest.UserAuthorizationsInfo.newBuilder();
+        userAuthorizationsInfob.addRoles("admin");
+        userAuthorizationsInfob.addTmParaPrivileges(".*");
+        userAuthorizationsInfob.addTmParaSetPrivileges(".*");
+        userAuthorizationsInfob.addTmPacketPrivileges(".*");
+        userAuthorizationsInfob.addTcPrivileges(".*");
+        for(Privilege.SystemPrivilege sp : Privilege.SystemPrivilege.values()) {
+            userAuthorizationsInfob.addSystemPrivileges(sp.name());
+        }
+        responseb.setUserAuthorizationsInfo(userAuthorizationsInfob.build());
+        return responseb.build();
     }
 
 

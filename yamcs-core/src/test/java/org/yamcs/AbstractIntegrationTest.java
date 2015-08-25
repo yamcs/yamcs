@@ -29,6 +29,7 @@ import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
+import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -60,7 +61,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        //enableDebugging();
+        enableDebugging();
         setupYamcs();
     }
 
@@ -148,7 +149,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
-
+        LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -207,6 +208,12 @@ public abstract class AbstractIntegrationTest {
         public void onStreamData(StreamData streamData) {
             streamDataList.add(streamData);
         }
+        
+        @Override
+        public void onTimeInfo(TimeInfo timeInfo) {
+            timeInfoList.add(timeInfo);
+        }
+        
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
         static volatile PacketProvider instance;

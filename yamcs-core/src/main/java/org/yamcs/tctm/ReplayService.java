@@ -74,7 +74,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     TmProcessor tmProcessor;
     volatile long dataCount=0;
     XtceDb xtceDb;
-
+    volatile long lastPacketTime;
 
     private final String yamcsInstance;
     private final String archiveInstance;
@@ -201,6 +201,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
             case TM_PACKET:
                 dataCount++;
                 TmPacketData tpd=(TmPacketData)decode(msg, TmPacketData.newBuilder());
+                lastPacketTime = tpd.getGenerationTime();
                 tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
                 break;
             case PP:
@@ -354,5 +355,10 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
             log.warn("Got Exception when starting the packet replay: ", e);
             return ReplayState.ERROR;
         }
+    }
+
+    @Override
+    public long lastPacketTime() {
+        return lastPacketTime;
     }
 }

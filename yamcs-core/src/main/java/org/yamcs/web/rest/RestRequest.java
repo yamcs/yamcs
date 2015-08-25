@@ -250,4 +250,8 @@ public class RestRequest {
         // Unsupported content type or wildcard, like */*, just use default
         return deriveSourceContentType();
     }
+    
+    public String getYamcsInstance() {
+        return yamcsInstance;
+    }
 }
