@@ -164,7 +164,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
      * Generate a packet with configurable content
      */
     public ByteBuffer generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2) {
-        return generate_PKT1_6(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.currentInstant(), TimeEncoding.currentInstant());
+        return generate_PKT1_6(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
     }
 
     /**
@@ -477,9 +477,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     private void sendToTmProcessor(ByteBuffer bb) {
         long gentime = generationTime;
         if(gentime==TimeEncoding.INVALID_INSTANT) {
-            gentime = TimeEncoding.currentInstant();
+            gentime = TimeEncoding.getWallclockTime();
         }
-        sendToTmProcessor(bb, TimeEncoding.currentInstant(), gentime);
+        sendToTmProcessor(bb, TimeEncoding.getWallclockTime(), gentime);
     }
 
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {

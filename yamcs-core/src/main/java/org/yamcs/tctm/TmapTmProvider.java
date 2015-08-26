@@ -61,6 +61,6 @@ public class TmapTmProvider extends TcpTmProvider {
 				}
 			}
 		}
-		return new PacketWithTime(TimeEncoding.currentInstant(), CcsdsPacket.getInstant(bb), bb.array());
+		return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
 	}
 }

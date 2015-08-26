@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 
@@ -26,6 +27,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -51,7 +53,8 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private String yamcsInstance;
     private String name;
-
+    TimeService timeService;
+    
     public TcpTcUplinker(String yamcsInstance, String name, String spec) throws ConfigurationException {
         YConfiguration c=YConfiguration.getConfiguration("tcp");
         this.yamcsInstance=yamcsInstance;
@@ -63,7 +66,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         } catch (ConfigurationException e) {
             log.debug("minimumTcPacketLength not defined, using the default value "+minimumTcPacketLength);
         }
-
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     protected TcpTcUplinker() {} // dummy constructor which is automatically invoked by subclass constructors
@@ -74,6 +77,13 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         openSocket();
     }
 
+    protected long getCurrentTime() {
+        if(timeService!=null) {
+            return timeService.getMissionTime();
+        } else {
+            return TimeEncoding.fromUnixTime(System.currentTimeMillis());
+        }
+    }
     @Override
     protected void doStart() {
         setupSysVariables();
@@ -310,7 +320,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         }
         @Override
         public void run() {
-            long instant=TimeEncoding.currentInstant();
+            long instant = getCurrentTime();
             commandHistoryListener.updateStringKey(cmdId,name+"_Status",value);
             commandHistoryListener.updateTimeKey(cmdId,name+"_Time", instant);
         }		
@@ -338,7 +348,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     }
     @Override
     public Collection<ParameterValue> getSystemParameters() {
-        long time = TimeEncoding.currentInstant();
+        long time = getCurrentTime();
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);

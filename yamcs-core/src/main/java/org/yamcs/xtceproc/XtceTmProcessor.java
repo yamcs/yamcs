@@ -18,6 +18,7 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -43,14 +44,15 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     private RawContainerListener rawContainerRequestManager;
     private ContainerWithIdRequestHelper containerRequestManager;
 
-    public final YProcessor channel;
+    public final YProcessor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
-
-    public XtceTmProcessor(YProcessor chan) {
-	log=LoggerFactory.getLogger(this.getClass().getName()+"["+chan.getName()+"]");
-	this.channel=chan;
-	this.xtcedb=chan.getXtceDb();
+    
+    
+    public XtceTmProcessor(YProcessor proc) {
+	log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
+	this.processor=proc;
+	this.xtcedb=proc.getXtceDb();
 	tmExtractor=new XtceTmExtractor(xtcedb);
     }
 
@@ -61,7 +63,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      */
     public XtceTmProcessor(XtceDb xtcedb) {
 	log=LoggerFactory.getLogger(this.getClass().getName());
-	this.channel=null;
+	this.processor=null;
 	this.xtcedb=xtcedb;
 	tmExtractor=new XtceTmExtractor(xtcedb);
     }
@@ -124,7 +126,14 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	if(p==null) throw new InvalidIdentification(paraId);
 	return p;
     }
-
+    
+    private long getCurrentTime() {
+        if(processor!=null) {
+            return processor.getCurrentTime();
+        } else {
+            return TimeEncoding.getWallclockTime();
+        }
+    }
     /**
      * Process telemetry packets
      *
@@ -133,7 +142,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public void processPacket(PacketWithTime pwrt){
 	try {
 	    ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-	    tmExtractor.processPacket(bb, pwrt.getGenerationTime());
+	    tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
 
 	    ParameterValueList paramResult=tmExtractor.getParameterResult();
 	    ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
@@ -158,7 +167,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public void processPacket(PacketWithTime pwrt, SequenceContainer sc){
         try {
             ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), sc);
+            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
 
             ParameterValueList paramResult=tmExtractor.getParameterResult();
             ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
@@ -182,7 +191,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void finished() {
 	notifyStopped();
-	if(channel!=null) channel.quit();
+	if(processor!=null) processor.quit();
     }
 
     public void resetStatistics() {

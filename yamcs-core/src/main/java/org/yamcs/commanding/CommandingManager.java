@@ -27,17 +27,17 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class CommandingManager extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private YProcessor channel;
+    private YProcessor processor;
     private CommandQueueManager commandQueueManager;
 
     /**
      * Keeps a reference to the channel and creates the queue manager
-     * @param channel
+     * @param proc
      */
-    public CommandingManager(YProcessor channel) throws ConfigurationException{
-        this.channel=channel;
+    public CommandingManager(YProcessor proc) throws ConfigurationException{
+        this.processor=proc;
         this.commandQueueManager=new CommandQueueManager(this);
-        ManagementService.getInstance().registerCommandQueueManager(channel.getInstance(), channel.getName(), commandQueueManager);
+        ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
     }
 
     public CommandQueueManager getCommandQueueManager() {
@@ -62,7 +62,7 @@ public class CommandingManager extends AbstractService {
         
         CommandBuildResult cbr = MetaCommandProcessor.buildCommand(mc, argAssignmentList);
 
-        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(TimeEncoding.currentInstant()).build();
+        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
         pc.setBinary(cbr.getCmdPacket());
@@ -81,7 +81,7 @@ public class CommandingManager extends AbstractService {
     }
 
     public YProcessor getChannel() {
-        return channel;
+        return processor;
     }
 
     @Override

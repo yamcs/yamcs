@@ -148,7 +148,7 @@ public class AlgorithmManagerTest {
         });
 
         c.start();
-        long startTime=TimeEncoding.currentInstant();
+        long startTime=TimeEncoding.getWallclockTime();
         tmGenerator.generate_PKT1_6(1, 2, startTime, startTime);
         assertEquals(0, params.size()); // Windows:  [*  *  *  1]  &&  [*  2]
         

@@ -89,7 +89,7 @@ public class TestPpTupleTranslator extends YarchTestCase {
 
 	msg.putIntProperty( DATA_TYPE_HEADER_NAME, ProtoDataType.PP.getNumber() );
 
-	long curTime = TimeEncoding.currentInstant();
+	long curTime = TimeEncoding.getWallclockTime();
 	msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, curTime - 10 );
 	msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP, "no-group" );
 	msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, TestPpTupleTranslator.sequenceCount ++ );
@@ -105,10 +105,10 @@ public class TestPpTupleTranslator extends YarchTestCase {
 	tupleDef.addColumn( COL_DOUBLE, DataType.DOUBLE );
 
 	List<Object> cols=new ArrayList<Object>(4);
-	cols.add( TimeEncoding.currentInstant() - 10 );
+	cols.add( TimeEncoding.getWallclockTime() - 10 );
 	cols.add( "no-group" );
 	cols.add( TestPpTupleTranslator.sequenceCount ++ );
-	cols.add( TimeEncoding.currentInstant() );
+	cols.add( TimeEncoding.getWallclockTime() );
 
 	cols.add( 1 ); // byte
 	cols.add( "test" ); // string

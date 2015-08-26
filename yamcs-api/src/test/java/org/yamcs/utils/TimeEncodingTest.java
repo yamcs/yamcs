@@ -25,9 +25,9 @@ public class TimeEncodingTest {
     @Test
     public void testCurrentInstant() {
        
-        TimeEncoding.currentInstant();
+        TimeEncoding.getWallclockTime();
         long time=System.currentTimeMillis();
-        long instant=TimeEncoding.currentInstant();
+        long instant=TimeEncoding.getWallclockTime();
         long correction=Math.abs(instant-time)%1000;
         
         assertTrue(correction<3);

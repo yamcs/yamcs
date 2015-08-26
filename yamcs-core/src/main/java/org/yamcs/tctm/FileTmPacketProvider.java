@@ -5,9 +5,11 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.TmProcessor;
+import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.time.RealtimeTimeService;
+import org.yamcs.time.TimeService;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -29,9 +31,11 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     long tmCount=0;
 
     static Logger log=LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
-
+    TimeService timeService;
+    
     public FileTmPacketProvider(String instance, String name, String fileName) throws FileNotFoundException {
         this(fileName, "STOP",1000);
+        timeService = YamcsServer.getTimeService(instance);
     }
 
     /**
@@ -50,6 +54,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
         else if (eas.equalsIgnoreCase("STOP")) endAction=EndAction.STOP;
         log.debug("attempting to open file " + this.fileName);
         tmFileReader = new TmFileReader(this.fileName);
+        timeService = new RealtimeTimeService();
     }
 
     @Override
@@ -65,7 +70,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
                     Thread.sleep(1000);
                 }
                 PacketWithTime pwrt;
-                pwrt = tmFileReader.readPacket();
+                pwrt = tmFileReader.readPacket(timeService.getMissionTime());
 
                 if(pwrt==null) {
                     if ( endAction==EndAction.LOOP ) {

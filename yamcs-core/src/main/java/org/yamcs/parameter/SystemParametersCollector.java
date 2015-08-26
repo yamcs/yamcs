@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
 import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.time.TimeService;
 import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -58,6 +60,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     final private String serverId;
 
     final String instance;
+    TimeService timeService;
     
     
     static public SystemParametersCollector getInstance(String instance) {
@@ -78,7 +81,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             throw new ConfigurationException("Stream ' "+STREAM_NAME+"' does not exist");
         }
         stream=s;
-        
+        timeService = YamcsServer.getInstance(instance).getTimeService();
         
         try {
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
@@ -131,7 +134,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("Error getting parameters from provider "+p, e);
             }
         }
-        long gentime = TimeEncoding.currentInstant();
+        long gentime = timeService.getMissionTime();
+        
         if(params.isEmpty()) return;
 
         TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
@@ -139,7 +143,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         cols.add(gentime);
         cols.add(PP_GROUP);
         cols.add(seqCount);
-        cols.add(TimeEncoding.currentInstant());
+        cols.add(timeService.getMissionTime());
         for(ParameterValue pv:params) {
             String name = pv.getId().getName();
             int idx=tdef.getColumnIndex(name);

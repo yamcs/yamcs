@@ -23,7 +23,7 @@ public class RealtimeTimeService implements TimeService {
     
     @Override
     public long getMissionTime() {
-        return TimeEncoding.currentInstant();
+        return TimeEncoding.getWallclockTime();
     }
     
     

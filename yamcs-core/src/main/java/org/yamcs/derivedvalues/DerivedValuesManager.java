@@ -51,13 +51,13 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public DerivedValuesManager(String yamcsInstance) {
 	//do nothing here, all the work is done in init
     }
-
+    YProcessor yproc;
 
     @SuppressWarnings("unchecked")
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
 	this.parameterRequestManager = yproc.getParameterRequestManager();
-
+	this.yproc = yproc;
 	try {
 	    subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 	} catch (InvalidIdentification e) {
@@ -178,7 +178,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 		}
 	    }
 	}
-	long acqTime=TimeEncoding.currentInstant();
+	long acqTime = yproc.getCurrentTime();
 
 	ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
 	for(DerivedValue dv:needUpdate) {

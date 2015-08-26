@@ -9,7 +9,6 @@ import javax.swing.text.StyledDocument;
 
 import org.yamcs.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.xtce.Parameter;
 
 /**
@@ -105,7 +104,7 @@ public class ListPacket {
     }
 
     public long getGenerationTime() {
-        return CcsdsPacket.getInstant(buf);
+        return generationTime;
     }
     
     public int getLength() {        
@@ -126,5 +125,9 @@ public class ListPacket {
 
     public String getName() {
         return name;
+    }
+
+    public void setGenerationTime(long generationTime) {
+        this.generationTime = generationTime;
     }
 }

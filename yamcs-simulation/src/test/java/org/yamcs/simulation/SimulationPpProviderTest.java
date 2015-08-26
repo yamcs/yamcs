@@ -167,9 +167,9 @@ public class SimulationPpProviderTest {
 		target.enable();
 
 		// Act
-		long dateStart = TimeEncoding.currentInstant();
+		long dateStart = TimeEncoding.getWallclockTime();
 		target.ProcessSimulationData();
-		long dateEnd = TimeEncoding.currentInstant();
+		long dateEnd = TimeEncoding.getWallclockTime();
 
 		// Assert
 		assertTrue(ppListener.receivedValue.size() == 2);

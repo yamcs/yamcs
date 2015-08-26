@@ -11,10 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ParameterValue;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.PpListener;
 import org.yamcs.tctm.PpProvider;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
@@ -41,7 +43,7 @@ public class PpProviderAdapter extends AbstractService {
     public static final String PP_TUPLE_COL_SEQ_NUM = "seqNum";
     public static final String PP_TUPLE_COL_PPGROUP = "ppgroup";
     public static final String PP_TUPLE_COL_GENTIME = "gentime";
-    String archiveInstance;
+    String yamcsInstance;
     private Collection<PpProvider> ppproviders=new ArrayList<PpProvider>();
     final private Logger log;
 
@@ -57,13 +59,15 @@ public class PpProviderAdapter extends AbstractService {
     } 
     
     static public final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+    final TimeService timeService;
+    
+    public PpProviderAdapter(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException{
+        this.yamcsInstance=yamcsInstance;
+        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
 
-    public PpProviderAdapter(String archiveInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException{
-        this.archiveInstance=archiveInstance;
-        YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+archiveInstance+"]");
-
-        YConfiguration c=YConfiguration.getConfiguration("yamcs."+archiveInstance);
+        YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
         List providers=c.getList("ppProviders");
         int count=1;
@@ -96,16 +100,16 @@ public class PpProviderAdapter extends AbstractService {
 
             PpProvider prov= null;
             if(args!=null) {
-                prov = objloader.loadObject(className, archiveInstance, providerName, args);
+                prov = objloader.loadObject(className, yamcsInstance, providerName, args);
             } else {
-                prov = objloader.loadObject(className, archiveInstance, providerName);
+                prov = objloader.loadObject(className, yamcsInstance, providerName);
             }
 
             if(!enabledAtStartup) prov.disable();
 
             prov.setPpListener(new MyPpListener(stream));
 
-            ManagementService.getInstance().registerLink(archiveInstance, providerName, streamName, args!=null?args.toString():"", prov);
+            ManagementService.getInstance().registerLink(yamcsInstance, providerName, streamName, args!=null?args.toString():"", prov);
             ppproviders.add(prov);
             count++;
         }
@@ -149,7 +153,7 @@ public class PpProviderAdapter extends AbstractService {
             cols.add(gentime);
             cols.add(group);
             cols.add(seqNum);
-            cols.add(TimeEncoding.currentInstant());
+            cols.add(timeService.getMissionTime());
             for(ParameterValue pv:params) {
                 String qualifiedName = pv.def.getQualifiedName();
                 if( qualifiedName == null || qualifiedName.isEmpty() ) {
@@ -176,7 +180,7 @@ public class PpProviderAdapter extends AbstractService {
             cols.add(gentime);
             cols.add(group);
             cols.add(seqNum);
-            cols.add(TimeEncoding.currentInstant());
+            cols.add(timeService.getMissionTime());
             for(org.yamcs.protobuf.Pvalue.ParameterValue pv:params) {
                 NamedObjectId id = pv.getId();
                 String qualifiedName = id.getName();
