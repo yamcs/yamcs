@@ -8,6 +8,870 @@ public final class Alarms {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
+  public interface AcknowledgeInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string acknowledgedBy = 1;
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    boolean hasAcknowledgedBy();
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    java.lang.String getAcknowledgedBy();
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getAcknowledgedByBytes();
+
+    // optional string acknowledgeMessage = 2;
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    boolean hasAcknowledgeMessage();
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    java.lang.String getAcknowledgeMessage();
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getAcknowledgeMessageBytes();
+
+    // optional int64 acknowledgeTime = 3;
+    /**
+     * <code>optional int64 acknowledgeTime = 3;</code>
+     */
+    boolean hasAcknowledgeTime();
+    /**
+     * <code>optional int64 acknowledgeTime = 3;</code>
+     */
+    long getAcknowledgeTime();
+
+    // optional string acknowledgeTimeUTC = 4;
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    boolean hasAcknowledgeTimeUTC();
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    java.lang.String getAcknowledgeTimeUTC();
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getAcknowledgeTimeUTCBytes();
+  }
+  /**
+   * Protobuf type {@code alarms.AcknowledgeInfo}
+   */
+  public static final class AcknowledgeInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements AcknowledgeInfoOrBuilder {
+    // Use AcknowledgeInfo.newBuilder() to construct.
+    private AcknowledgeInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private AcknowledgeInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final AcknowledgeInfo defaultInstance;
+    public static AcknowledgeInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public AcknowledgeInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AcknowledgeInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              acknowledgedBy_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              acknowledgeMessage_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              acknowledgeTime_ = input.readInt64();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              acknowledgeTimeUTC_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Alarms.AcknowledgeInfo.class, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<AcknowledgeInfo> PARSER =
+        new com.google.protobuf.AbstractParser<AcknowledgeInfo>() {
+      public AcknowledgeInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new AcknowledgeInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AcknowledgeInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string acknowledgedBy = 1;
+    public static final int ACKNOWLEDGEDBY_FIELD_NUMBER = 1;
+    private java.lang.Object acknowledgedBy_;
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    public boolean hasAcknowledgedBy() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    public java.lang.String getAcknowledgedBy() {
+      java.lang.Object ref = acknowledgedBy_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          acknowledgedBy_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string acknowledgedBy = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAcknowledgedByBytes() {
+      java.lang.Object ref = acknowledgedBy_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        acknowledgedBy_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string acknowledgeMessage = 2;
+    public static final int ACKNOWLEDGEMESSAGE_FIELD_NUMBER = 2;
+    private java.lang.Object acknowledgeMessage_;
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    public boolean hasAcknowledgeMessage() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    public java.lang.String getAcknowledgeMessage() {
+      java.lang.Object ref = acknowledgeMessage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          acknowledgeMessage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string acknowledgeMessage = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAcknowledgeMessageBytes() {
+      java.lang.Object ref = acknowledgeMessage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        acknowledgeMessage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional int64 acknowledgeTime = 3;
+    public static final int ACKNOWLEDGETIME_FIELD_NUMBER = 3;
+    private long acknowledgeTime_;
+    /**
+     * <code>optional int64 acknowledgeTime = 3;</code>
+     */
+    public boolean hasAcknowledgeTime() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int64 acknowledgeTime = 3;</code>
+     */
+    public long getAcknowledgeTime() {
+      return acknowledgeTime_;
+    }
+
+    // optional string acknowledgeTimeUTC = 4;
+    public static final int ACKNOWLEDGETIMEUTC_FIELD_NUMBER = 4;
+    private java.lang.Object acknowledgeTimeUTC_;
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    public boolean hasAcknowledgeTimeUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    public java.lang.String getAcknowledgeTimeUTC() {
+      java.lang.Object ref = acknowledgeTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          acknowledgeTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAcknowledgeTimeUTCBytes() {
+      java.lang.Object ref = acknowledgeTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        acknowledgeTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      acknowledgedBy_ = "";
+      acknowledgeMessage_ = "";
+      acknowledgeTime_ = 0L;
+      acknowledgeTimeUTC_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getAcknowledgedByBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getAcknowledgeMessageBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, acknowledgeTime_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getAcknowledgeTimeUTCBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getAcknowledgedByBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getAcknowledgeMessageBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, acknowledgeTime_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getAcknowledgeTimeUTCBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Alarms.AcknowledgeInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code alarms.AcknowledgeInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Alarms.AcknowledgeInfo.class, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Alarms.AcknowledgeInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        acknowledgedBy_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        acknowledgeMessage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        acknowledgeTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        acknowledgeTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfo build() {
+        org.yamcs.protobuf.Alarms.AcknowledgeInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfo buildPartial() {
+        org.yamcs.protobuf.Alarms.AcknowledgeInfo result = new org.yamcs.protobuf.Alarms.AcknowledgeInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.acknowledgedBy_ = acknowledgedBy_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.acknowledgeMessage_ = acknowledgeMessage_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.acknowledgeTime_ = acknowledgeTime_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.acknowledgeTimeUTC_ = acknowledgeTimeUTC_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Alarms.AcknowledgeInfo) {
+          return mergeFrom((org.yamcs.protobuf.Alarms.AcknowledgeInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Alarms.AcknowledgeInfo other) {
+        if (other == org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance()) return this;
+        if (other.hasAcknowledgedBy()) {
+          bitField0_ |= 0x00000001;
+          acknowledgedBy_ = other.acknowledgedBy_;
+          onChanged();
+        }
+        if (other.hasAcknowledgeMessage()) {
+          bitField0_ |= 0x00000002;
+          acknowledgeMessage_ = other.acknowledgeMessage_;
+          onChanged();
+        }
+        if (other.hasAcknowledgeTime()) {
+          setAcknowledgeTime(other.getAcknowledgeTime());
+        }
+        if (other.hasAcknowledgeTimeUTC()) {
+          bitField0_ |= 0x00000008;
+          acknowledgeTimeUTC_ = other.acknowledgeTimeUTC_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Alarms.AcknowledgeInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Alarms.AcknowledgeInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string acknowledgedBy = 1;
+      private java.lang.Object acknowledgedBy_ = "";
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public boolean hasAcknowledgedBy() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public java.lang.String getAcknowledgedBy() {
+        java.lang.Object ref = acknowledgedBy_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          acknowledgedBy_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAcknowledgedByBytes() {
+        java.lang.Object ref = acknowledgedBy_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          acknowledgedBy_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public Builder setAcknowledgedBy(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        acknowledgedBy_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public Builder clearAcknowledgedBy() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        acknowledgedBy_ = getDefaultInstance().getAcknowledgedBy();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgedBy = 1;</code>
+       */
+      public Builder setAcknowledgedByBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        acknowledgedBy_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string acknowledgeMessage = 2;
+      private java.lang.Object acknowledgeMessage_ = "";
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public boolean hasAcknowledgeMessage() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public java.lang.String getAcknowledgeMessage() {
+        java.lang.Object ref = acknowledgeMessage_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          acknowledgeMessage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAcknowledgeMessageBytes() {
+        java.lang.Object ref = acknowledgeMessage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          acknowledgeMessage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public Builder setAcknowledgeMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        acknowledgeMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public Builder clearAcknowledgeMessage() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        acknowledgeMessage_ = getDefaultInstance().getAcknowledgeMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgeMessage = 2;</code>
+       */
+      public Builder setAcknowledgeMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        acknowledgeMessage_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 acknowledgeTime = 3;
+      private long acknowledgeTime_ ;
+      /**
+       * <code>optional int64 acknowledgeTime = 3;</code>
+       */
+      public boolean hasAcknowledgeTime() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int64 acknowledgeTime = 3;</code>
+       */
+      public long getAcknowledgeTime() {
+        return acknowledgeTime_;
+      }
+      /**
+       * <code>optional int64 acknowledgeTime = 3;</code>
+       */
+      public Builder setAcknowledgeTime(long value) {
+        bitField0_ |= 0x00000004;
+        acknowledgeTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 acknowledgeTime = 3;</code>
+       */
+      public Builder clearAcknowledgeTime() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        acknowledgeTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string acknowledgeTimeUTC = 4;
+      private java.lang.Object acknowledgeTimeUTC_ = "";
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public boolean hasAcknowledgeTimeUTC() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public java.lang.String getAcknowledgeTimeUTC() {
+        java.lang.Object ref = acknowledgeTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          acknowledgeTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAcknowledgeTimeUTCBytes() {
+        java.lang.Object ref = acknowledgeTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          acknowledgeTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public Builder setAcknowledgeTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        acknowledgeTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public Builder clearAcknowledgeTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        acknowledgeTimeUTC_ = getDefaultInstance().getAcknowledgeTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       */
+      public Builder setAcknowledgeTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        acknowledgeTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:alarms.AcknowledgeInfo)
+    }
+
+    static {
+      defaultInstance = new AcknowledgeInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:alarms.AcknowledgeInfo)
+  }
+
   public interface AlarmOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -83,32 +947,19 @@ public final class Alarms {
      */
     int getViolations();
 
-    // optional string username = 7;
+    // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    boolean hasUsername();
+    boolean hasAcknowledgeInfo();
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    java.lang.String getUsername();
+    org.yamcs.protobuf.Alarms.AcknowledgeInfo getAcknowledgeInfo();
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    com.google.protobuf.ByteString
-        getUsernameBytes();
+    org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder getAcknowledgeInfoOrBuilder();
   }
   /**
    * Protobuf type {@code alarms.Alarm}
@@ -222,8 +1073,16 @@ public final class Alarms {
               break;
             }
             case 58: {
+              org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+                subBuilder = acknowledgeInfo_.toBuilder();
+              }
+              acknowledgeInfo_ = input.readMessage(org.yamcs.protobuf.Alarms.AcknowledgeInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(acknowledgeInfo_);
+                acknowledgeInfo_ = subBuilder.buildPartial();
+              }
               bitField0_ |= 0x00000040;
-              username_ = input.readBytes();
               break;
             }
           }
@@ -295,21 +1154,29 @@ public final class Alarms {
        */
       SEVERITY_INCREASED(2, 3),
       /**
-       * <code>UPDATED = 4;</code>
+       * <code>PVAL_UPDATED = 4;</code>
        *
        * <pre>
        * Whenever a pval is updated (even if that pval is not a violation by itself)
        * </pre>
        */
-      UPDATED(3, 4),
+      PVAL_UPDATED(3, 4),
       /**
-       * <code>CLEARED = 5;</code>
+       * <code>ACKNOWLEDGED = 5;</code>
        *
        * <pre>
-       * Whenever somebody acknowledged an alarm.
+       * Whenever somebody acknowledged an alarm (it could be that it is still OOL)
        * </pre>
        */
-      CLEARED(4, 5),
+      ACKNOWLEDGED(4, 5),
+      /**
+       * <code>CLEARED = 6;</code>
+       *
+       * <pre>
+       * When the alarm was really cleared by the server (acknowledged &amp;&amp; not OOL)
+       * </pre>
+       */
+      CLEARED(5, 6),
       ;
 
       /**
@@ -337,21 +1204,29 @@ public final class Alarms {
        */
       public static final int SEVERITY_INCREASED_VALUE = 3;
       /**
-       * <code>UPDATED = 4;</code>
+       * <code>PVAL_UPDATED = 4;</code>
        *
        * <pre>
        * Whenever a pval is updated (even if that pval is not a violation by itself)
        * </pre>
        */
-      public static final int UPDATED_VALUE = 4;
+      public static final int PVAL_UPDATED_VALUE = 4;
       /**
-       * <code>CLEARED = 5;</code>
+       * <code>ACKNOWLEDGED = 5;</code>
        *
        * <pre>
-       * Whenever somebody acknowledged an alarm.
+       * Whenever somebody acknowledged an alarm (it could be that it is still OOL)
        * </pre>
        */
-      public static final int CLEARED_VALUE = 5;
+      public static final int ACKNOWLEDGED_VALUE = 5;
+      /**
+       * <code>CLEARED = 6;</code>
+       *
+       * <pre>
+       * When the alarm was really cleared by the server (acknowledged &amp;&amp; not OOL)
+       * </pre>
+       */
+      public static final int CLEARED_VALUE = 6;
 
 
       public final int getNumber() { return value; }
@@ -361,8 +1236,9 @@ public final class Alarms {
           case 1: return ACTIVE;
           case 2: return TRIGGERED;
           case 3: return SEVERITY_INCREASED;
-          case 4: return UPDATED;
-          case 5: return CLEARED;
+          case 4: return PVAL_UPDATED;
+          case 5: return ACKNOWLEDGED;
+          case 6: return CLEARED;
           default: return null;
         }
       }
@@ -529,59 +1405,26 @@ public final class Alarms {
       return violations_;
     }
 
-    // optional string username = 7;
-    public static final int USERNAME_FIELD_NUMBER = 7;
-    private java.lang.Object username_;
+    // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
+    public static final int ACKNOWLEDGEINFO_FIELD_NUMBER = 7;
+    private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_;
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    public boolean hasUsername() {
+    public boolean hasAcknowledgeInfo() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    public java.lang.String getUsername() {
-      java.lang.Object ref = username_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          username_ = s;
-        }
-        return s;
-      }
+    public org.yamcs.protobuf.Alarms.AcknowledgeInfo getAcknowledgeInfo() {
+      return acknowledgeInfo_;
     }
     /**
-     * <code>optional string username = 7;</code>
-     *
-     * <pre>
-     * In case the alarm was cleared
-     * </pre>
+     * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
-    public com.google.protobuf.ByteString
-        getUsernameBytes() {
-      java.lang.Object ref = username_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        username_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder getAcknowledgeInfoOrBuilder() {
+      return acknowledgeInfo_;
     }
 
     private void initFields() {
@@ -591,7 +1434,7 @@ public final class Alarms {
       mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       violations_ = 0;
-      username_ = "";
+      acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -642,7 +1485,7 @@ public final class Alarms {
         output.writeUInt32(6, violations_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeBytes(7, getUsernameBytes());
+        output.writeMessage(7, acknowledgeInfo_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -679,7 +1522,7 @@ public final class Alarms {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(7, getUsernameBytes());
+          .computeMessageSize(7, acknowledgeInfo_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -792,6 +1635,7 @@ public final class Alarms {
           getTriggerValueFieldBuilder();
           getMostSevereValueFieldBuilder();
           getCurrentValueFieldBuilder();
+          getAcknowledgeInfoFieldBuilder();
         }
       }
       private static Builder create() {
@@ -824,7 +1668,11 @@ public final class Alarms {
         bitField0_ = (bitField0_ & ~0x00000010);
         violations_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
-        username_ = "";
+        if (acknowledgeInfoBuilder_ == null) {
+          acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
+        } else {
+          acknowledgeInfoBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
@@ -893,7 +1741,11 @@ public final class Alarms {
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.username_ = username_;
+        if (acknowledgeInfoBuilder_ == null) {
+          result.acknowledgeInfo_ = acknowledgeInfo_;
+        } else {
+          result.acknowledgeInfo_ = acknowledgeInfoBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -928,10 +1780,8 @@ public final class Alarms {
         if (other.hasViolations()) {
           setViolations(other.getViolations());
         }
-        if (other.hasUsername()) {
-          bitField0_ |= 0x00000040;
-          username_ = other.username_;
-          onChanged();
+        if (other.hasAcknowledgeInfo()) {
+          mergeAcknowledgeInfo(other.getAcknowledgeInfo());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1431,102 +2281,121 @@ public final class Alarms {
         return this;
       }
 
-      // optional string username = 7;
-      private java.lang.Object username_ = "";
+      // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
+      private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder> acknowledgeInfoBuilder_;
       /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
-      public boolean hasUsername() {
+      public boolean hasAcknowledgeInfo() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
-      public java.lang.String getUsername() {
-        java.lang.Object ref = username_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          username_ = s;
-          return s;
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfo getAcknowledgeInfo() {
+        if (acknowledgeInfoBuilder_ == null) {
+          return acknowledgeInfo_;
         } else {
-          return (java.lang.String) ref;
+          return acknowledgeInfoBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
-      public com.google.protobuf.ByteString
-          getUsernameBytes() {
-        java.lang.Object ref = username_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          username_ = b;
-          return b;
+      public Builder setAcknowledgeInfo(org.yamcs.protobuf.Alarms.AcknowledgeInfo value) {
+        if (acknowledgeInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          acknowledgeInfo_ = value;
+          onChanged();
         } else {
-          return (com.google.protobuf.ByteString) ref;
+          acknowledgeInfoBuilder_.setMessage(value);
         }
-      }
-      /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
-       */
-      public Builder setUsername(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
-        username_ = value;
-        onChanged();
+        bitField0_ |= 0x00000040;
         return this;
       }
       /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
-      public Builder clearUsername() {
+      public Builder setAcknowledgeInfo(
+          org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder builderForValue) {
+        if (acknowledgeInfoBuilder_ == null) {
+          acknowledgeInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          acknowledgeInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
+       */
+      public Builder mergeAcknowledgeInfo(org.yamcs.protobuf.Alarms.AcknowledgeInfo value) {
+        if (acknowledgeInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              acknowledgeInfo_ != org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance()) {
+            acknowledgeInfo_ =
+              org.yamcs.protobuf.Alarms.AcknowledgeInfo.newBuilder(acknowledgeInfo_).mergeFrom(value).buildPartial();
+          } else {
+            acknowledgeInfo_ = value;
+          }
+          onChanged();
+        } else {
+          acknowledgeInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
+       */
+      public Builder clearAcknowledgeInfo() {
+        if (acknowledgeInfoBuilder_ == null) {
+          acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          acknowledgeInfoBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000040);
-        username_ = getDefaultInstance().getUsername();
-        onChanged();
         return this;
       }
       /**
-       * <code>optional string username = 7;</code>
-       *
-       * <pre>
-       * In case the alarm was cleared
-       * </pre>
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
-      public Builder setUsernameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
-        username_ = value;
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder getAcknowledgeInfoBuilder() {
+        bitField0_ |= 0x00000040;
         onChanged();
-        return this;
+        return getAcknowledgeInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
+       */
+      public org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder getAcknowledgeInfoOrBuilder() {
+        if (acknowledgeInfoBuilder_ != null) {
+          return acknowledgeInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return acknowledgeInfo_;
+        }
+      }
+      /**
+       * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder> 
+          getAcknowledgeInfoFieldBuilder() {
+        if (acknowledgeInfoBuilder_ == null) {
+          acknowledgeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder>(
+                  acknowledgeInfo_,
+                  getParentForChildren(),
+                  isClean());
+          acknowledgeInfo_ = null;
+        }
+        return acknowledgeInfoBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:alarms.Alarm)
@@ -1540,6 +2409,11 @@ public final class Alarms {
     // @@protoc_insertion_point(class_scope:alarms.Alarm)
   }
 
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_alarms_AcknowledgeInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_alarms_AcknowledgeInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_alarms_Alarm_descriptor;
   private static
@@ -1555,27 +2429,38 @@ public final class Alarms {
   static {
     java.lang.String[] descriptorData = {
       "\n\014alarms.proto\022\006alarms\032\013yamcs.proto\032\014pva" +
-      "lue.proto\"\275\002\n\005Alarm\022\n\n\002id\030\001 \001(\r\022 \n\004type\030" +
-      "\002 \001(\0162\022.alarms.Alarm.Type\022,\n\014triggerValu" +
-      "e\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017mostS" +
-      "evereValue\030\004 \001(\0132\026.pvalue.ParameterValue" +
-      "\022,\n\014currentValue\030\005 \001(\0132\026.pvalue.Paramete" +
-      "rValue\022\022\n\nviolations\030\006 \001(\r\022\020\n\010username\030\007" +
-      " \001(\t\"S\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022" +
-      "\026\n\022SEVERITY_INCREASED\020\003\022\013\n\007UPDATED\020\004\022\013\n\007" +
-      "CLEARED\020\005B\024\n\022org.yamcs.protobuf"
+      "lue.proto\"z\n\017AcknowledgeInfo\022\026\n\016acknowle" +
+      "dgedBy\030\001 \001(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t" +
+      "\022\027\n\017acknowledgeTime\030\003 \001(\003\022\032\n\022acknowledge" +
+      "TimeUTC\030\004 \001(\t\"\364\002\n\005Alarm\022\n\n\002id\030\001 \001(\r\022 \n\004t" +
+      "ype\030\002 \001(\0162\022.alarms.Alarm.Type\022,\n\014trigger" +
+      "Value\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017m" +
+      "ostSevereValue\030\004 \001(\0132\026.pvalue.ParameterV" +
+      "alue\022,\n\014currentValue\030\005 \001(\0132\026.pvalue.Para" +
+      "meterValue\022\022\n\nviolations\030\006 \001(\r\0220\n\017acknow",
+      "ledgeInfo\030\007 \001(\0132\027.alarms.AcknowledgeInfo" +
+      "\"j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022S" +
+      "EVERITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n" +
+      "\014ACKNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamc" +
+      "s.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_alarms_Alarm_descriptor =
+          internal_static_alarms_AcknowledgeInfo_descriptor =
             getDescriptor().getMessageTypes().get(0);
+          internal_static_alarms_AcknowledgeInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_alarms_AcknowledgeInfo_descriptor,
+              new java.lang.String[] { "AcknowledgedBy", "AcknowledgeMessage", "AcknowledgeTime", "AcknowledgeTimeUTC", });
+          internal_static_alarms_Alarm_descriptor =
+            getDescriptor().getMessageTypes().get(1);
           internal_static_alarms_Alarm_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alarms_Alarm_descriptor,
-              new java.lang.String[] { "Id", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "Username", });
+              new java.lang.String[] { "Id", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
           return null;
         }
       };

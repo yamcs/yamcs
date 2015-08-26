@@ -9,12 +9,14 @@ import org.yamcs.YProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Provides realtime alarm subscription via web.
@@ -71,6 +73,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
         doUnsubscribe();
     }
 
+    @Override
     public void switchYProcessor(YProcessor newProcessor) throws YProcessorException {
         doUnsubscribe();
         processor = newProcessor;
@@ -102,8 +105,13 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
     }
     
     @Override
-    public void notifyUpdate(ActiveAlarm activeAlarm) {
-        sendAlarm(Alarm.Type.UPDATED, activeAlarm);
+    public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.PVAL_UPDATED, activeAlarm);
+    }
+    
+    @Override
+    public void notifyAcknowledged(ActiveAlarm activeAlarm) {
+        sendAlarm(Alarm.Type.ACKNOWLEDGED, activeAlarm);
     }
     
     @Override
@@ -123,11 +131,18 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
         alarmb.setCurrentValue(activeAlarm.currentValue.toGpb(parameterId));
         alarmb.setViolations(activeAlarm.violations);
         
-        String username = activeAlarm.usernameThatAcknowledged;
-        if (username == null) {
-            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : "unknown";
+        if (activeAlarm.acknowledged) {
+            AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
+            String username = activeAlarm.usernameThatAcknowledged;
+            if (username == null) {
+                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : "unknown";
+            }
+            acknowledgeb.setAcknowledgedBy(username);
+            acknowledgeb.setAcknowledgeMessage(activeAlarm.message);
+            acknowledgeb.setAcknowledgeTime(activeAlarm.acknowledgeTime);
+            acknowledgeb.setAcknowledgeTimeUTC(TimeEncoding.toString(activeAlarm.acknowledgeTime));
+            alarmb.setAcknowledgeInfo(acknowledgeb.build());
         }
-        alarmb.setUsername(username);
         
         try {
             wsHandler.sendData(ProtoDataType.ALARM, alarmb.build(), SchemaAlarms.Alarm.WRITE);
