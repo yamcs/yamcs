@@ -370,5 +370,9 @@ public class YamcsServer {
 	System.exit(-1);
     }
 
+    public static TimeService getTimeService(String yamcsInstance) {
+        return instances.get(yamcsInstance).getTimeService();
+    }
+
    
 }

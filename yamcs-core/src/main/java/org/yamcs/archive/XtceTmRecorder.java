@@ -16,8 +16,11 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.tctm.TmProviderAdapter;
+import org.yamcs.time.TimeService;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -69,7 +72,8 @@ public class XtceTmRecorder extends AbstractService {
     public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
         this(yamcsInstance, null);
     }
-
+    final TimeService timeService;
+    
     /**
      * old constructor for compatibility with older configuration files
      * @param yamcsInstance
@@ -114,8 +118,7 @@ public class XtceTmRecorder extends AbstractService {
                 createRecorder(sce);
             }
         }
-        if(config != null && config.containsKey("default_streams"))
-        {
+        if(config != null && config.containsKey("default_streams"))  {
             List<String> default_streamNames = YConfiguration.getList(config, "default_streams");
             if(default_streamNames.size() > 0)
                 this.REALTIME_TM_STREAM_NAME = default_streamNames.get(0);
@@ -123,6 +126,7 @@ public class XtceTmRecorder extends AbstractService {
                 this.DUMP_TM_STREAM_NAME = default_streamNames.get(1);
 
         }
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
 
@@ -270,7 +274,7 @@ public class XtceTmRecorder extends AbstractService {
             totalNumPackets++;
 
             ByteBuffer bb=ByteBuffer.wrap(packet);
-            tmExtractor.processPacket(bb, gentime, sc);
+            tmExtractor.processPacket(bb, gentime, timeService.getMissionTime(), sc);
 
             //the result contains a list with all the matching containers, the first one is the root container
             //we should normally have just two elements in the list

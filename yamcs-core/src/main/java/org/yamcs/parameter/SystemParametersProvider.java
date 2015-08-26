@@ -194,8 +194,8 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     
     private ParameterValue getYProcPV(String name, String value) {
         ParameterValue pv = new ParameterValue(getSystemParameter(XtceDbFactory.YAMCS_SPACESYSTEM_NAME+"/yprocessor/"+name));
-        pv.setAcquisitionTime(TimeEncoding.currentInstant());
-        pv.setGenerationTime(TimeEncoding.currentInstant());
+        pv.setAcquisitionTime(yproc.getCurrentTime());
+        pv.setGenerationTime(yproc.getCurrentTime());
         pv.setStringValue(value);
         return pv;
     }
@@ -212,7 +212,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
     
     private void updateYProcParameters() {
-        yprocModePv.setGenerationTime(TimeEncoding.currentInstant());
+        yprocModePv.setGenerationTime(yproc.getCurrentTime());
         parameterListener.update(yprocParams);
     }
 }

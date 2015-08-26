@@ -7,6 +7,7 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
@@ -16,7 +17,7 @@ import org.yamcs.archive.PacketWithTime;
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.time.TimeService;
 import org.yamcs.hornetq.StreamAdapter;
 
 
@@ -34,7 +35,7 @@ public class HornetQTmProvider extends  AbstractService implements TmPacketSourc
     private TmSink tmSink;
     YamcsSession yamcsSession; 
     final private YamcsClient msgClient;
-
+    final TimeService timeService;
 
     public HornetQTmProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
         SimpleString queue=new SimpleString(hornetAddress+"-HornetQTmProvider");
@@ -48,6 +49,7 @@ public class HornetQTmProvider extends  AbstractService implements TmPacketSourc
         } catch (Exception e) {
             throw new ConfigurationException(e.getMessage(),e);
         }
+        timeService = YamcsServer.getTimeService(instance);
     }
 
 
@@ -107,7 +109,7 @@ public class HornetQTmProvider extends  AbstractService implements TmPacketSourc
             TmPacketData tm=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
             //System.out.println("mark 1: message received: "+msg);
-            PacketWithTime pwt =  new PacketWithTime(TimeEncoding.currentInstant(), tm.getGenerationTime(), tm.getPacket().toByteArray());
+            PacketWithTime pwt =  new PacketWithTime(timeService.getMissionTime(), tm.getGenerationTime(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
         } catch(YamcsApiException e){
             log.warn( "{} for message: {}", e.getMessage(), msg);

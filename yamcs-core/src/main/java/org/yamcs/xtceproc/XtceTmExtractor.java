@@ -72,19 +72,18 @@ public class XtceTmExtractor {
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public void processPacket(ByteBuffer bb, long generationTime) {
-	processPacket(bb, generationTime, rootContainer);
+    public void processPacket(ByteBuffer bb, long generationTime, long acquisitionTime) {
+	processPacket(bb, generationTime, acquisitionTime, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the specified container.
      */
-    public void processPacket(ByteBuffer bb, long generationTime, SequenceContainer startContainer) {
+    public void processPacket(ByteBuffer bb, long generationTime, long aquisitionTime, SequenceContainer startContainer) {
 	try {
 	    paramResult=new ParameterValueList();
 	    containerResult=new ArrayList<ContainerExtractionResult>();
 	    synchronized(subscription) {
-		long aquisitionTime=TimeEncoding.currentInstant(); //we do this in order that all the parameters inside this packet have the same acquisition time
 		ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats);
 		
 		

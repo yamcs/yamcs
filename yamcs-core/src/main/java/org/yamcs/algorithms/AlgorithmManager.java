@@ -182,7 +182,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 timer.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
-                        long t = TimeEncoding.currentInstant();
+                        long t = yproc.getCurrentTime();
                         List<ParameterValue> params = engine.runAlgorithm(t, t);
                         parameterRequestManager.update(params);
                     }
@@ -409,7 +409,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
         
         ctx.updateHistoryWindows(items);
-        long acqTime = TimeEncoding.currentInstant();
+        long acqTime = yproc.getCurrentTime();
         long genTime = items.get(0).getGenerationTime();
 
         ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);

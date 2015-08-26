@@ -96,6 +96,8 @@ public class YProcessor extends AbstractService {
 
     final private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
+    TimeService timeService;
+    
     @GuardedBy("this")
     HashSet<YProcessorClient> connectedClients= new HashSet<YProcessorClient>();
 
@@ -115,7 +117,7 @@ public class YProcessor extends AbstractService {
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-
+        timeService = YamcsServer.getInstance(yamcsInstance).getTimeService();
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
@@ -172,7 +174,7 @@ public class YProcessor extends AbstractService {
                 }
                 commandingManager=new CommandingManager(this);
                 commandReleaser.setCommandHistory(commandHistoryPublisher);
-                commandHistoryRequestManager = new CommandHistoryRequestManager(yamcsInstance);
+                commandHistoryRequestManager = new CommandHistoryRequestManager(this);
             } else {
                 commandingManager=null;
             }
@@ -527,8 +529,7 @@ public class YProcessor extends AbstractService {
         if(isReplay()) {
             return ((ArchiveTmPacketProvider)tmPacketProvider).lastPacketTime();
         } else {
-            TimeService ts = YamcsServer.getInstance(yamcsInstance).getTimeService();
-            return ts.getMissionTime();
+            return timeService.getMissionTime();
         }
     }
 

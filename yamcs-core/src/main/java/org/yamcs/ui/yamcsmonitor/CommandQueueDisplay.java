@@ -75,10 +75,9 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 	
 	/**
 	 * Just keeps a reference to the passed orb and rootPOA
-	 * @param poa the POA used to create references to this object (used as a command queue monitor)
+	 * 
 	 * @param cqs 
 	 * @throws CommandQueueException 
-	 * @throws WrongPolicy 
 	 * @throws ServantNotActive 
 	 * @throws InsufficientPrivileges 
 	 */

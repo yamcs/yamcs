@@ -34,11 +34,24 @@ public class TimeEncoding {
             throw new RuntimeException(e);
         }
     }
-
+    
+    /**
+     * Returns the current wall clock time. Is the same with getWallclockTime
+     * 
+     * Should use instead timeService.getMissionTime()
+     * 
+     * @return
+     */
+    @Deprecated
     public static long currentInstant() {
         return taiUtcConverter.unixToInstant(System.currentTimeMillis());
     }
 
+    public static long getWallclockTime() {
+        return taiUtcConverter.unixToInstant(System.currentTimeMillis());
+    }
+
+    
     private static void formatOn2Digits(int x, StringBuilder sb) {
     	if(x<10) sb.append("0").append(x);
     	else sb.append(x);

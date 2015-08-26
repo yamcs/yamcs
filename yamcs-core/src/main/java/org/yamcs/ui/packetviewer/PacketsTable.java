@@ -37,6 +37,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.PacketListener;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
@@ -476,7 +477,8 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         byte[] buf = data.getPacket().toByteArray();        
         int len = buf.length;
         final ListPacket packet = new ListPacket(buf, len);
-        tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime());
+        packet.setGenerationTime(data.getGenerationTime());
+        tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime(), TimeEncoding.currentInstant());
         ParameterValueList pvlist = tmExtractor.getParameterResult();
         packet.setColumnParameters(pvlist);
 
