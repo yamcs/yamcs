@@ -151,7 +151,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 		//careful out of the synchronized block in order to avoid dead locks 
 		//  with the parameterRequestManager trying to add/remove parameters 
 		//  while we are sending updates
-		parameterRequestManager.update(paramResult);		
+		parameterRequestManager.update(containerResult, paramResult);		
 	    }
 
 	    if((rawContainerRequestManager!=null) && (containerResult.size()>0)) {
@@ -176,7 +176,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
                 //careful out of the synchronized block in order to avoid dead locks 
                 //  with the parameterRequestManager trying to add/remove parameters 
                 //  while we are sending updates
-                parameterRequestManager.update(paramResult);
+                parameterRequestManager.update(containerResult, paramResult);
             }
 
             if((rawContainerRequestManager!=null) && (containerResult.size()>0)) {

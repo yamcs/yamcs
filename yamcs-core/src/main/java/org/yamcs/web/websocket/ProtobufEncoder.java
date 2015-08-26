@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Cvalue.ContainerData;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
@@ -58,7 +59,9 @@ public class ProtobufEncoder implements WebSocketEncoder {
         if (dataType == ProtoDataType.CMD_HISTORY) {
             responseb.setCommand((CommandHistoryEntry) message);
         } else if (dataType == ProtoDataType.PARAMETER) {
-            responseb.setParameterData((ParameterData) message);
+            responseb.setParameterData((ParameterData) message);           
+        } else if (dataType == ProtoDataType.CONTAINER) {
+            responseb.setContainerData((ContainerData) message);            
         } else if (dataType == ProtoDataType.PROCESSOR_INFO) {
             responseb.setProcessorInfo((ProcessorInfo) message);
         } else if (dataType == ProtoDataType.CLIENT_INFO) {
