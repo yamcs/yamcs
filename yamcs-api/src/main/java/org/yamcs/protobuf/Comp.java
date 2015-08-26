@@ -10,175 +10,387 @@ public final class Comp {
   }
   public interface ComputationDefOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
-    
+
     // required string name = 1;
+    /**
+     * <code>required string name = 1;</code>
+     */
     boolean hasName();
-    String getName();
-    
+    /**
+     * <code>required string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>required string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
     // required string expression = 2;
+    /**
+     * <code>required string expression = 2;</code>
+     */
     boolean hasExpression();
-    String getExpression();
-    
+    /**
+     * <code>required string expression = 2;</code>
+     */
+    java.lang.String getExpression();
+    /**
+     * <code>required string expression = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getExpressionBytes();
+
     // repeated .yamcs.NamedObjectId argument = 3;
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
         getArgumentList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     org.yamcs.protobuf.Yamcs.NamedObjectId getArgument(int index);
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     int getArgumentCount();
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getArgumentOrBuilderList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getArgumentOrBuilder(
         int index);
-    
+
     // optional string language = 4;
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
     boolean hasLanguage();
-    String getLanguage();
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
+    java.lang.String getLanguage();
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getLanguageBytes();
   }
+  /**
+   * Protobuf type {@code comp.ComputationDef}
+   *
+   * <pre>
+   *used to define a computation on the server (for the moment implemented only in yamcs-web)
+   * </pre>
+   */
   public static final class ComputationDef extends
       com.google.protobuf.GeneratedMessage
       implements ComputationDefOrBuilder {
     // Use ComputationDef.newBuilder() to construct.
-    private ComputationDef(Builder builder) {
+    private ComputationDef(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
+      this.unknownFields = builder.getUnknownFields();
     }
-    private ComputationDef(boolean noInit) {}
-    
+    private ComputationDef(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
     private static final ComputationDef defaultInstance;
     public static ComputationDef getDefaultInstance() {
       return defaultInstance;
     }
-    
+
     public ComputationDef getDefaultInstanceForType() {
       return defaultInstance;
     }
-    
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ComputationDef(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              expression_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                argument_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              argument_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000004;
+              language_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          argument_ = java.util.Collections.unmodifiableList(argument_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_descriptor;
     }
-    
+
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_fieldAccessorTable;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Comp.ComputationDef.class, org.yamcs.protobuf.Comp.ComputationDef.Builder.class);
     }
-    
+
+    public static com.google.protobuf.Parser<ComputationDef> PARSER =
+        new com.google.protobuf.AbstractParser<ComputationDef>() {
+      public ComputationDef parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ComputationDef(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ComputationDef> getParserForType() {
+      return PARSER;
+    }
+
     private int bitField0_;
     // required string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
+    /**
+     * <code>required string name = 1;</code>
+     */
     public boolean hasName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    public String getName() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public java.lang.String getName() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           name_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getNameBytes() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     // required string expression = 2;
     public static final int EXPRESSION_FIELD_NUMBER = 2;
     private java.lang.Object expression_;
+    /**
+     * <code>required string expression = 2;</code>
+     */
     public boolean hasExpression() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
-    public String getExpression() {
+    /**
+     * <code>required string expression = 2;</code>
+     */
+    public java.lang.String getExpression() {
       java.lang.Object ref = expression_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           expression_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getExpressionBytes() {
+    /**
+     * <code>required string expression = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getExpressionBytes() {
       java.lang.Object ref = expression_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         expression_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     // repeated .yamcs.NamedObjectId argument = 3;
     public static final int ARGUMENT_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> argument_;
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getArgumentList() {
       return argument_;
     }
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getArgumentOrBuilderList() {
       return argument_;
     }
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     public int getArgumentCount() {
       return argument_.size();
     }
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     public org.yamcs.protobuf.Yamcs.NamedObjectId getArgument(int index) {
       return argument_.get(index);
     }
+    /**
+     * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+     */
     public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getArgumentOrBuilder(
         int index) {
       return argument_.get(index);
     }
-    
+
     // optional string language = 4;
     public static final int LANGUAGE_FIELD_NUMBER = 4;
     private java.lang.Object language_;
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
     public boolean hasLanguage() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
-    public String getLanguage() {
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
+    public java.lang.String getLanguage() {
       java.lang.Object ref = language_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           language_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getLanguageBytes() {
+    /**
+     * <code>optional string language = 4;</code>
+     *
+     * <pre>
+     *for USS this is jformula, in the future default should probably be javascript
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getLanguageBytes() {
       java.lang.Object ref = language_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         language_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     private void initFields() {
       name_ = "";
       expression_ = "";
@@ -189,7 +401,7 @@ public final class Comp {
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
-      
+
       if (!hasName()) {
         memoizedIsInitialized = 0;
         return false;
@@ -207,7 +419,7 @@ public final class Comp {
       memoizedIsInitialized = 1;
       return true;
     }
-    
+
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -225,12 +437,12 @@ public final class Comp {
       }
       getUnknownFields().writeTo(output);
     }
-    
+
     private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
-    
+
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -252,94 +464,87 @@ public final class Comp {
       memoizedSerializedSize = size;
       return size;
     }
-    
+
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
         throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
-    
+
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDef parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
-    
+
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(org.yamcs.protobuf.Comp.ComputationDef prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-    
+
     @java.lang.Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
+    /**
+     * Protobuf type {@code comp.ComputationDef}
+     *
+     * <pre>
+     *used to define a computation on the server (for the moment implemented only in yamcs-web)
+     * </pre>
+     */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.yamcs.protobuf.Comp.ComputationDefOrBuilder {
@@ -347,18 +552,21 @@ public final class Comp {
           getDescriptor() {
         return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_descriptor;
       }
-      
+
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_fieldAccessorTable;
+        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Comp.ComputationDef.class, org.yamcs.protobuf.Comp.ComputationDef.Builder.class);
       }
-      
+
       // Construct using org.yamcs.protobuf.Comp.ComputationDef.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
-      
-      private Builder(BuilderParent parent) {
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -370,7 +578,7 @@ public final class Comp {
       private static Builder create() {
         return new Builder();
       }
-      
+
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -387,20 +595,20 @@ public final class Comp {
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
-      
+
       public Builder clone() {
         return create().mergeFrom(buildPartial());
       }
-      
+
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Comp.ComputationDef.getDescriptor();
+        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_descriptor;
       }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDef getDefaultInstanceForType() {
         return org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance();
       }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDef build() {
         org.yamcs.protobuf.Comp.ComputationDef result = buildPartial();
         if (!result.isInitialized()) {
@@ -408,17 +616,7 @@ public final class Comp {
         }
         return result;
       }
-      
-      private org.yamcs.protobuf.Comp.ComputationDef buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.yamcs.protobuf.Comp.ComputationDef result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDef buildPartial() {
         org.yamcs.protobuf.Comp.ComputationDef result = new org.yamcs.protobuf.Comp.ComputationDef(this);
         int from_bitField0_ = bitField0_;
@@ -448,7 +646,7 @@ public final class Comp {
         onBuilt();
         return result;
       }
-      
+
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Comp.ComputationDef) {
           return mergeFrom((org.yamcs.protobuf.Comp.ComputationDef)other);
@@ -457,14 +655,18 @@ public final class Comp {
           return this;
         }
       }
-      
+
       public Builder mergeFrom(org.yamcs.protobuf.Comp.ComputationDef other) {
         if (other == org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance()) return this;
         if (other.hasName()) {
-          setName(other.getName());
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
         }
         if (other.hasExpression()) {
-          setExpression(other.getExpression());
+          bitField0_ |= 0x00000002;
+          expression_ = other.expression_;
+          onChanged();
         }
         if (argumentBuilder_ == null) {
           if (!other.argument_.isEmpty()) {
@@ -493,12 +695,14 @@ public final class Comp {
           }
         }
         if (other.hasLanguage()) {
-          setLanguage(other.getLanguage());
+          bitField0_ |= 0x00000008;
+          language_ = other.language_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
-      
+
       public final boolean isInitialized() {
         if (!hasName()) {
           
@@ -516,73 +720,69 @@ public final class Comp {
         }
         return true;
       }
-      
+
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000002;
-              expression_ = input.readBytes();
-              break;
-            }
-            case 26: {
-              org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder();
-              input.readMessage(subBuilder, extensionRegistry);
-              addArgument(subBuilder.buildPartial());
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              language_ = input.readBytes();
-              break;
-            }
+        org.yamcs.protobuf.Comp.ComputationDef parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Comp.ComputationDef) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
           }
         }
+        return this;
       }
-      
       private int bitField0_;
-      
+
       // required string name = 1;
       private java.lang.Object name_ = "";
+      /**
+       * <code>required string name = 1;</code>
+       */
       public boolean hasName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      public String getName() {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public java.lang.String getName() {
         java.lang.Object ref = name_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           name_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setName(String value) {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -591,34 +791,72 @@ public final class Comp {
         onChanged();
         return this;
       }
+      /**
+       * <code>required string name = 1;</code>
+       */
       public Builder clearName() {
         bitField0_ = (bitField0_ & ~0x00000001);
         name_ = getDefaultInstance().getName();
         onChanged();
         return this;
       }
-      void setName(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000001;
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
         name_ = value;
         onChanged();
+        return this;
       }
-      
+
       // required string expression = 2;
       private java.lang.Object expression_ = "";
+      /**
+       * <code>required string expression = 2;</code>
+       */
       public boolean hasExpression() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
-      public String getExpression() {
+      /**
+       * <code>required string expression = 2;</code>
+       */
+      public java.lang.String getExpression() {
         java.lang.Object ref = expression_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           expression_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setExpression(String value) {
+      /**
+       * <code>required string expression = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getExpressionBytes() {
+        java.lang.Object ref = expression_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          expression_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string expression = 2;</code>
+       */
+      public Builder setExpression(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -627,18 +865,29 @@ public final class Comp {
         onChanged();
         return this;
       }
+      /**
+       * <code>required string expression = 2;</code>
+       */
       public Builder clearExpression() {
         bitField0_ = (bitField0_ & ~0x00000002);
         expression_ = getDefaultInstance().getExpression();
         onChanged();
         return this;
       }
-      void setExpression(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000002;
+      /**
+       * <code>required string expression = 2;</code>
+       */
+      public Builder setExpressionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
         expression_ = value;
         onChanged();
+        return this;
       }
-      
+
       // repeated .yamcs.NamedObjectId argument = 3;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> argument_ =
         java.util.Collections.emptyList();
@@ -648,10 +897,13 @@ public final class Comp {
           bitField0_ |= 0x00000004;
          }
       }
-      
+
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> argumentBuilder_;
-      
+
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getArgumentList() {
         if (argumentBuilder_ == null) {
           return java.util.Collections.unmodifiableList(argument_);
@@ -659,6 +911,9 @@ public final class Comp {
           return argumentBuilder_.getMessageList();
         }
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public int getArgumentCount() {
         if (argumentBuilder_ == null) {
           return argument_.size();
@@ -666,6 +921,9 @@ public final class Comp {
           return argumentBuilder_.getCount();
         }
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public org.yamcs.protobuf.Yamcs.NamedObjectId getArgument(int index) {
         if (argumentBuilder_ == null) {
           return argument_.get(index);
@@ -673,6 +931,9 @@ public final class Comp {
           return argumentBuilder_.getMessage(index);
         }
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder setArgument(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (argumentBuilder_ == null) {
@@ -687,6 +948,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder setArgument(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
         if (argumentBuilder_ == null) {
@@ -698,6 +962,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder addArgument(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (argumentBuilder_ == null) {
           if (value == null) {
@@ -711,6 +978,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder addArgument(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (argumentBuilder_ == null) {
@@ -725,6 +995,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder addArgument(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
         if (argumentBuilder_ == null) {
@@ -736,6 +1009,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder addArgument(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
         if (argumentBuilder_ == null) {
@@ -747,6 +1023,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder addAllArgument(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (argumentBuilder_ == null) {
@@ -758,6 +1037,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder clearArgument() {
         if (argumentBuilder_ == null) {
           argument_ = java.util.Collections.emptyList();
@@ -768,6 +1050,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public Builder removeArgument(int index) {
         if (argumentBuilder_ == null) {
           ensureArgumentIsMutable();
@@ -778,10 +1063,16 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getArgumentBuilder(
           int index) {
         return getArgumentFieldBuilder().getBuilder(index);
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getArgumentOrBuilder(
           int index) {
         if (argumentBuilder_ == null) {
@@ -789,6 +1080,9 @@ public final class Comp {
           return argumentBuilder_.getMessageOrBuilder(index);
         }
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
            getArgumentOrBuilderList() {
         if (argumentBuilder_ != null) {
@@ -797,15 +1091,24 @@ public final class Comp {
           return java.util.Collections.unmodifiableList(argument_);
         }
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addArgumentBuilder() {
         return getArgumentFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addArgumentBuilder(
           int index) {
         return getArgumentFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
+      /**
+       * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
+       */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
            getArgumentBuilderList() {
         return getArgumentFieldBuilder().getBuilderList();
@@ -824,23 +1127,66 @@ public final class Comp {
         }
         return argumentBuilder_;
       }
-      
+
       // optional string language = 4;
       private java.lang.Object language_ = "";
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
       public boolean hasLanguage() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
-      public String getLanguage() {
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
+      public java.lang.String getLanguage() {
         java.lang.Object ref = language_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           language_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setLanguage(String value) {
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getLanguageBytes() {
+        java.lang.Object ref = language_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          language_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
+      public Builder setLanguage(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -849,91 +1195,213 @@ public final class Comp {
         onChanged();
         return this;
       }
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
       public Builder clearLanguage() {
         bitField0_ = (bitField0_ & ~0x00000008);
         language_ = getDefaultInstance().getLanguage();
         onChanged();
         return this;
       }
-      void setLanguage(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000008;
+      /**
+       * <code>optional string language = 4;</code>
+       *
+       * <pre>
+       *for USS this is jformula, in the future default should probably be javascript
+       * </pre>
+       */
+      public Builder setLanguageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
         language_ = value;
         onChanged();
+        return this;
       }
-      
+
       // @@protoc_insertion_point(builder_scope:comp.ComputationDef)
     }
-    
+
     static {
       defaultInstance = new ComputationDef(true);
       defaultInstance.initFields();
     }
-    
+
     // @@protoc_insertion_point(class_scope:comp.ComputationDef)
   }
-  
+
   public interface ComputationDefListOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
-    
+
     // repeated .comp.ComputationDef compDef = 1;
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     java.util.List<org.yamcs.protobuf.Comp.ComputationDef> 
         getCompDefList();
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index);
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     int getCompDefCount();
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
         getCompDefOrBuilderList();
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
         int index);
   }
+  /**
+   * Protobuf type {@code comp.ComputationDefList}
+   */
   public static final class ComputationDefList extends
       com.google.protobuf.GeneratedMessage
       implements ComputationDefListOrBuilder {
     // Use ComputationDefList.newBuilder() to construct.
-    private ComputationDefList(Builder builder) {
+    private ComputationDefList(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
+      this.unknownFields = builder.getUnknownFields();
     }
-    private ComputationDefList(boolean noInit) {}
-    
+    private ComputationDefList(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
     private static final ComputationDefList defaultInstance;
     public static ComputationDefList getDefaultInstance() {
       return defaultInstance;
     }
-    
+
     public ComputationDefList getDefaultInstanceForType() {
       return defaultInstance;
     }
-    
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ComputationDefList(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                compDef_ = new java.util.ArrayList<org.yamcs.protobuf.Comp.ComputationDef>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              compDef_.add(input.readMessage(org.yamcs.protobuf.Comp.ComputationDef.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          compDef_ = java.util.Collections.unmodifiableList(compDef_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_descriptor;
     }
-    
+
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_fieldAccessorTable;
+      return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Comp.ComputationDefList.class, org.yamcs.protobuf.Comp.ComputationDefList.Builder.class);
     }
-    
+
+    public static com.google.protobuf.Parser<ComputationDefList> PARSER =
+        new com.google.protobuf.AbstractParser<ComputationDefList>() {
+      public ComputationDefList parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ComputationDefList(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ComputationDefList> getParserForType() {
+      return PARSER;
+    }
+
     // repeated .comp.ComputationDef compDef = 1;
     public static final int COMPDEF_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_;
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getCompDefList() {
       return compDef_;
     }
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     public java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
         getCompDefOrBuilderList() {
       return compDef_;
     }
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     public int getCompDefCount() {
       return compDef_.size();
     }
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     public org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index) {
       return compDef_.get(index);
     }
+    /**
+     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     */
     public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
         int index) {
       return compDef_.get(index);
     }
-    
+
     private void initFields() {
       compDef_ = java.util.Collections.emptyList();
     }
@@ -941,7 +1409,7 @@ public final class Comp {
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
-      
+
       for (int i = 0; i < getCompDefCount(); i++) {
         if (!getCompDef(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -951,7 +1419,7 @@ public final class Comp {
       memoizedIsInitialized = 1;
       return true;
     }
-    
+
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -960,12 +1428,12 @@ public final class Comp {
       }
       getUnknownFields().writeTo(output);
     }
-    
+
     private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
-    
+
       size = 0;
       for (int i = 0; i < compDef_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -975,94 +1443,83 @@ public final class Comp {
       memoizedSerializedSize = size;
       return size;
     }
-    
+
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
         throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
-    
+
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.yamcs.protobuf.Comp.ComputationDefList parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
-    
+
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(org.yamcs.protobuf.Comp.ComputationDefList prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-    
+
     @java.lang.Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
+    /**
+     * Protobuf type {@code comp.ComputationDefList}
+     */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.yamcs.protobuf.Comp.ComputationDefListOrBuilder {
@@ -1070,18 +1527,21 @@ public final class Comp {
           getDescriptor() {
         return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_descriptor;
       }
-      
+
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_fieldAccessorTable;
+        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Comp.ComputationDefList.class, org.yamcs.protobuf.Comp.ComputationDefList.Builder.class);
       }
-      
+
       // Construct using org.yamcs.protobuf.Comp.ComputationDefList.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
-      
-      private Builder(BuilderParent parent) {
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1093,7 +1553,7 @@ public final class Comp {
       private static Builder create() {
         return new Builder();
       }
-      
+
       public Builder clear() {
         super.clear();
         if (compDefBuilder_ == null) {
@@ -1104,20 +1564,20 @@ public final class Comp {
         }
         return this;
       }
-      
+
       public Builder clone() {
         return create().mergeFrom(buildPartial());
       }
-      
+
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Comp.ComputationDefList.getDescriptor();
+        return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_descriptor;
       }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDefList getDefaultInstanceForType() {
         return org.yamcs.protobuf.Comp.ComputationDefList.getDefaultInstance();
       }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDefList build() {
         org.yamcs.protobuf.Comp.ComputationDefList result = buildPartial();
         if (!result.isInitialized()) {
@@ -1125,17 +1585,7 @@ public final class Comp {
         }
         return result;
       }
-      
-      private org.yamcs.protobuf.Comp.ComputationDefList buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.yamcs.protobuf.Comp.ComputationDefList result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
+
       public org.yamcs.protobuf.Comp.ComputationDefList buildPartial() {
         org.yamcs.protobuf.Comp.ComputationDefList result = new org.yamcs.protobuf.Comp.ComputationDefList(this);
         int from_bitField0_ = bitField0_;
@@ -1151,7 +1601,7 @@ public final class Comp {
         onBuilt();
         return result;
       }
-      
+
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Comp.ComputationDefList) {
           return mergeFrom((org.yamcs.protobuf.Comp.ComputationDefList)other);
@@ -1160,7 +1610,7 @@ public final class Comp {
           return this;
         }
       }
-      
+
       public Builder mergeFrom(org.yamcs.protobuf.Comp.ComputationDefList other) {
         if (other == org.yamcs.protobuf.Comp.ComputationDefList.getDefaultInstance()) return this;
         if (compDefBuilder_ == null) {
@@ -1192,7 +1642,7 @@ public final class Comp {
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
-      
+
       public final boolean isInitialized() {
         for (int i = 0; i < getCompDefCount(); i++) {
           if (!getCompDef(i).isInitialized()) {
@@ -1202,42 +1652,26 @@ public final class Comp {
         }
         return true;
       }
-      
+
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              org.yamcs.protobuf.Comp.ComputationDef.Builder subBuilder = org.yamcs.protobuf.Comp.ComputationDef.newBuilder();
-              input.readMessage(subBuilder, extensionRegistry);
-              addCompDef(subBuilder.buildPartial());
-              break;
-            }
+        org.yamcs.protobuf.Comp.ComputationDefList parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Comp.ComputationDefList) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
           }
         }
+        return this;
       }
-      
       private int bitField0_;
-      
+
       // repeated .comp.ComputationDef compDef = 1;
       private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_ =
         java.util.Collections.emptyList();
@@ -1247,10 +1681,13 @@ public final class Comp {
           bitField0_ |= 0x00000001;
          }
       }
-      
+
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Comp.ComputationDef, org.yamcs.protobuf.Comp.ComputationDef.Builder, org.yamcs.protobuf.Comp.ComputationDefOrBuilder> compDefBuilder_;
-      
+
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getCompDefList() {
         if (compDefBuilder_ == null) {
           return java.util.Collections.unmodifiableList(compDef_);
@@ -1258,6 +1695,9 @@ public final class Comp {
           return compDefBuilder_.getMessageList();
         }
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public int getCompDefCount() {
         if (compDefBuilder_ == null) {
           return compDef_.size();
@@ -1265,6 +1705,9 @@ public final class Comp {
           return compDefBuilder_.getCount();
         }
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index) {
         if (compDefBuilder_ == null) {
           return compDef_.get(index);
@@ -1272,6 +1715,9 @@ public final class Comp {
           return compDefBuilder_.getMessage(index);
         }
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder setCompDef(
           int index, org.yamcs.protobuf.Comp.ComputationDef value) {
         if (compDefBuilder_ == null) {
@@ -1286,6 +1732,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder setCompDef(
           int index, org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
         if (compDefBuilder_ == null) {
@@ -1297,6 +1746,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder addCompDef(org.yamcs.protobuf.Comp.ComputationDef value) {
         if (compDefBuilder_ == null) {
           if (value == null) {
@@ -1310,6 +1762,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder addCompDef(
           int index, org.yamcs.protobuf.Comp.ComputationDef value) {
         if (compDefBuilder_ == null) {
@@ -1324,6 +1779,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder addCompDef(
           org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
         if (compDefBuilder_ == null) {
@@ -1335,6 +1793,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder addCompDef(
           int index, org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
         if (compDefBuilder_ == null) {
@@ -1346,6 +1807,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder addAllCompDef(
           java.lang.Iterable<? extends org.yamcs.protobuf.Comp.ComputationDef> values) {
         if (compDefBuilder_ == null) {
@@ -1357,6 +1821,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder clearCompDef() {
         if (compDefBuilder_ == null) {
           compDef_ = java.util.Collections.emptyList();
@@ -1367,6 +1834,9 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public Builder removeCompDef(int index) {
         if (compDefBuilder_ == null) {
           ensureCompDefIsMutable();
@@ -1377,10 +1847,16 @@ public final class Comp {
         }
         return this;
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public org.yamcs.protobuf.Comp.ComputationDef.Builder getCompDefBuilder(
           int index) {
         return getCompDefFieldBuilder().getBuilder(index);
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
           int index) {
         if (compDefBuilder_ == null) {
@@ -1388,6 +1864,9 @@ public final class Comp {
           return compDefBuilder_.getMessageOrBuilder(index);
         }
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
            getCompDefOrBuilderList() {
         if (compDefBuilder_ != null) {
@@ -1396,15 +1875,24 @@ public final class Comp {
           return java.util.Collections.unmodifiableList(compDef_);
         }
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public org.yamcs.protobuf.Comp.ComputationDef.Builder addCompDefBuilder() {
         return getCompDefFieldBuilder().addBuilder(
             org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance());
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public org.yamcs.protobuf.Comp.ComputationDef.Builder addCompDefBuilder(
           int index) {
         return getCompDefFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance());
       }
+      /**
+       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       */
       public java.util.List<org.yamcs.protobuf.Comp.ComputationDef.Builder> 
            getCompDefBuilderList() {
         return getCompDefFieldBuilder().getBuilderList();
@@ -1423,18 +1911,18 @@ public final class Comp {
         }
         return compDefBuilder_;
       }
-      
+
       // @@protoc_insertion_point(builder_scope:comp.ComputationDefList)
     }
-    
+
     static {
       defaultInstance = new ComputationDefList(true);
       defaultInstance.initFields();
     }
-    
+
     // @@protoc_insertion_point(class_scope:comp.ComputationDefList)
   }
-  
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_comp_ComputationDef_descriptor;
   private static
@@ -1445,7 +1933,7 @@ public final class Comp {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_comp_ComputationDefList_fieldAccessorTable;
-  
+
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
@@ -1471,17 +1959,13 @@ public final class Comp {
           internal_static_comp_ComputationDef_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_comp_ComputationDef_descriptor,
-              new java.lang.String[] { "Name", "Expression", "Argument", "Language", },
-              org.yamcs.protobuf.Comp.ComputationDef.class,
-              org.yamcs.protobuf.Comp.ComputationDef.Builder.class);
+              new java.lang.String[] { "Name", "Expression", "Argument", "Language", });
           internal_static_comp_ComputationDefList_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_comp_ComputationDefList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_comp_ComputationDefList_descriptor,
-              new java.lang.String[] { "CompDef", },
-              org.yamcs.protobuf.Comp.ComputationDefList.class,
-              org.yamcs.protobuf.Comp.ComputationDefList.Builder.class);
+              new java.lang.String[] { "CompDef", });
           return null;
         }
       };
@@ -1491,6 +1975,6 @@ public final class Comp {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
         }, assigner);
   }
-  
+
   // @@protoc_insertion_point(outer_class_scope)
 }
