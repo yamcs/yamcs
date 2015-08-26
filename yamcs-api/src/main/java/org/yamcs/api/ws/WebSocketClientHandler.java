@@ -131,6 +131,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         case PARAMETER:
             callback.onParameterData(data.getParameterData());
             break;
+        case CONTAINER:
+        	callback.onContainerData(data.getContainerData());
+        	break;
         case CMD_HISTORY:
             callback.onCommandHistoryData(data.getCommand());
             break;

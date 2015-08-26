@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "cvalue.proto";
 import "alarms.proto";
 import "yamcsManagement.proto";
 
@@ -52,6 +53,7 @@ message WebSocketServerMessage {
     optional yamcs.StreamData streamData = 9;
     optional alarms.Alarm alarm = 10;
     optional yamcs.TimeInfo timeInfo = 11;
+    optional cvalue.ContainerData containerData = 12;
   }
 
   optional MessageType type=1;
