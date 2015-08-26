@@ -144,8 +144,12 @@ message GetAlarmsResponse {
    repeated alarms.Alarm alarms = 1;
 }
 
-message ClearAlarmResponse {
-   optional string errorMessage = 2;
+message AcknowledgeAlarmRequest {
+   optional string message = 1;
+}
+
+message AcknowledgeAlarmResponse {
+   optional string errorMessage = 1;
 }
 
 message RestSendCommandRequest {

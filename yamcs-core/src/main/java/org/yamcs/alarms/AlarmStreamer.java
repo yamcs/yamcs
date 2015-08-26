@@ -11,7 +11,7 @@ import org.yamcs.yarch.TupleDefinition;
 
 public class AlarmStreamer implements AlarmListener {
     enum AlarmEvent {
-        TRIGGERED, UPDATED, SEVERITY_INCREASED, CLEARED;
+        TRIGGERED, UPDATED, SEVERITY_INCREASED, ACKNOWLEDGED, CLEARED;
     }
     final DataType PP_DATA_TYPE=DataType.protobuf(ParameterValue.class.getName());
     
@@ -60,13 +60,21 @@ public class AlarmStreamer implements AlarmListener {
     }
     
     @Override
-    public void notifyUpdate(ActiveAlarm activeAlarm) {   
+    public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {   
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
         
         tdef.addColumn("updatedPV", PpProviderAdapter.PP_DATA_TYPE);
         al.add(activeAlarm.currentValue);
     
+        Tuple t = new Tuple(tdef, al);
+        stream.emitTuple(t);
+    }
+    
+    @Override
+    public void notifyAcknowledged(ActiveAlarm activeAlarm) {   
+        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.ACKNOWLEDGED);
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
     }
