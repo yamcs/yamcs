@@ -64,7 +64,6 @@ public class ContainerResource extends AbstractWebSocketResource implements Cont
 			if (subscriptionId != -1) {
 				cidrm.subscribeContainers(subscriptionId, idlist, authToken);
 			} else {
-				log.debug("Subscribing to " + idlist);
 				subscriptionId = cidrm.subscribeContainers(idlist, authToken);
 			}
 			WebSocketReplyData reply = toAckReply(requestId);
