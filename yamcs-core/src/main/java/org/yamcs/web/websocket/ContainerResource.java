@@ -34,7 +34,7 @@ public class ContainerResource extends AbstractWebSocketResource implements Cont
 	public ContainerResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
 		super(yproc, wsHandler);
 		 
-        log = LoggerFactory.getLogger(ParameterResource.class.getName() + "[" + yproc.getInstance() + "]");
+        log = LoggerFactory.getLogger(ContainerResource.class.getName() + "[" + yproc.getInstance() + "]");
         
         cidrm = new ContainerWithIdRequestHelper(yproc.getParameterRequestManager(), this);
         
@@ -64,6 +64,7 @@ public class ContainerResource extends AbstractWebSocketResource implements Cont
 			if (subscriptionId != -1) {
 				cidrm.subscribeContainers(subscriptionId, idlist, authToken);
 			} else {
+				log.debug("Subscribing to " + idlist);
 				subscriptionId = cidrm.subscribeContainers(idlist, authToken);
 			}
 			WebSocketReplyData reply = toAckReply(requestId);
