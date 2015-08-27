@@ -23,6 +23,7 @@ import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Cvalue.ContainerData;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
@@ -213,6 +214,12 @@ public abstract class AbstractIntegrationTest {
         public void onTimeInfo(TimeInfo timeInfo) {
             timeInfoList.add(timeInfo);
         }
+
+		@Override
+		public void onContainerData(ContainerData cdata) {
+			// TODO Auto-generated method stub
+			
+		}
         
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
