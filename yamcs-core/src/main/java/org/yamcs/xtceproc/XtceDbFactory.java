@@ -188,7 +188,7 @@ public class XtceDbFactory {
             if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(YAMCS_SPACESYSTEM_NAME)) {
                 nd = getSystemParameter(rootSs, nr.getReference());
             } else {
-                nd =findReference(rootSs, nr, ss);
+                nd = findReference(rootSs, nr, ss);
             }
             if(nd==null) throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
             if(nr.resolved(nd)) {
@@ -283,7 +283,7 @@ public class XtceDbFactory {
 
     }
     /**
-     * find reference sarting at startSs and looking through the SpaceSystem path
+     * find reference starting at startSs and looking through the SpaceSystem path
      * @param startSs
      * @param nr
      * @return
