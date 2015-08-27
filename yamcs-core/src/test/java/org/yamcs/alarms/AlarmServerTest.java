@@ -30,7 +30,7 @@ public class AlarmServerTest {
     }
     
     @Test
-    public void test1 () {
+    public void test1 () throws CouldNotAcknowledgeAlarmException {
         AlarmServer as = new AlarmServer("toto");
         MyListener l = new MyListener();
         as.subscribe(l);
@@ -59,14 +59,12 @@ public class AlarmServerTest {
         assertEquals(pv1_2, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
         
-        boolean errored = false;
-        try {
-            as.acknowledge(p1, aa.id, "test1");
-        } catch (CouldNotClearAlarmException e) {
-            errored = true;
-        }
-        assertTrue(errored);
+        long ackTime = 123L;
+        as.acknowledge(p1, aa.id, "test1", ackTime, "bla");
         assertTrue(l.cleared.isEmpty());
+        
+        assertEquals(1, l.acknowledged.size());
+        assertEquals(aa, l.acknowledged.remove());
         
         ParameterValue pv1_3 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
         as.update(pv1_3, 1);
@@ -75,10 +73,12 @@ public class AlarmServerTest {
         assertEquals(pv1_2, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
         assertEquals("test1", aa.usernameThatAcknowledged);
+        assertEquals(ackTime, aa.acknowledgeTime);
+        assertEquals("bla", aa.message);
     }
     
     @Test
-    public void test2 () throws CouldNotClearAlarmException {
+    public void test2 () throws CouldNotAcknowledgeAlarmException {
         AlarmServer as = new AlarmServer("toto");
         MyListener l = new MyListener();
         as.subscribe(l);
@@ -98,13 +98,19 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
         
-        as.acknowledge(p1, aa.id, "test2");
+        long ackTime = 123L;
+        as.acknowledge(p1, aa.id, "test2", ackTime, "bla");
+        
+        assertEquals(1, l.acknowledged.size());
+        assertEquals(aa, l.acknowledged.remove());
         
         aa = l.cleared.remove();
         assertEquals(pv1_1, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
         assertEquals("test2", aa.usernameThatAcknowledged);
+        assertEquals(ackTime, aa.acknowledgeTime);
+        assertEquals("bla", aa.message);
     }    
 
     @Test
@@ -127,14 +133,40 @@ public class AlarmServerTest {
         assertEquals(pv1_1, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
-    }    
-
+    }
     
+    @Test(expected = CouldNotAcknowledgeAlarmException.class)
+    public void testAcknowledgeButNoAlarm() throws CouldNotAcknowledgeAlarmException {
+        AlarmServer as = new AlarmServer("toto");
+        MyListener l = new MyListener();
+        as.subscribe(l);
+        
+        long ackTime = 123L;
+        as.acknowledge(p1, 1, "a-user", ackTime, "bla");
+    }
+    
+    @Test(expected = CouldNotAcknowledgeAlarmException.class)
+    public void testAcknowledgeButNoParameterMatch() throws CouldNotAcknowledgeAlarmException {
+        AlarmServer as = new AlarmServer("toto");
+        MyListener l = new MyListener();
+        as.subscribe(l);
+        ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
+        as.update(pv1_0, 1, true);
+        
+        ActiveAlarm aa = l.triggered.remove();
+        assertEquals(pv1_0, aa.currentValue);
+        assertEquals(pv1_0, aa.mostSevereValue);
+        assertEquals(pv1_0, aa.triggerValue);
+        
+        long ackTime = 123L;
+        as.acknowledge(p2 /* not p1 */, aa.id, "a-user", ackTime, "bla");
+    }
     
     class MyListener implements AlarmListener {
         Queue<ActiveAlarm> triggered = new LinkedList<>();
         Queue<ActiveAlarm> updated = new LinkedList<>();
         Queue<ActiveAlarm> severityIncreased = new LinkedList<>();
+        Queue<ActiveAlarm> acknowledged = new LinkedList<>();
         Queue<ActiveAlarm> cleared = new LinkedList<>();
         
         @Override
@@ -143,13 +175,18 @@ public class AlarmServerTest {
         }
         
         @Override
-        public void notifyUpdate(ActiveAlarm activeAlarm) {
+        public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
             updated.add(activeAlarm);
         }
         
         @Override
         public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
             severityIncreased.add(activeAlarm);
+        }
+        
+        @Override
+        public void notifyAcknowledged(ActiveAlarm activeAlarm) {
+            acknowledged.add(activeAlarm);
         }
         
         @Override

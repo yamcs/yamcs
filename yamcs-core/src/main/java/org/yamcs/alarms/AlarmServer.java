@@ -137,7 +137,7 @@ public class AlarmServer extends AbstractService {
                 activeAlarms.remove(pv.getParameter());
             } else {
                 for (AlarmListener l : alarmListeners) {
-                    l.notifyUpdate(activeAlarm);                    
+                    l.notifyParameterValueUpdate(activeAlarm);                    
                 }
             }
 
@@ -165,7 +165,7 @@ public class AlarmServer extends AbstractService {
                     }
                 } else {
                     for (AlarmListener l : alarmListeners) {
-                        l.notifyUpdate(activeAlarm);                        
+                        l.notifyParameterValueUpdate(activeAlarm);                        
                     }
                 }
             }
@@ -174,23 +174,28 @@ public class AlarmServer extends AbstractService {
         }
     }
 
-    public void acknowledge(Parameter p, int id, String username) throws CouldNotClearAlarmException {
+    public void acknowledge(Parameter p, int id, String username, long ackTime, String message) throws CouldNotAcknowledgeAlarmException {
         ActiveAlarm aa = activeAlarms.get(p);
         if(aa==null) {
-            throw new CouldNotClearAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
+            throw new CouldNotAcknowledgeAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
         }
         if(aa.id!=id) {
             log.warn("Got acknowledge for parameter "+p+" but the id does not match");
-            throw new CouldNotClearAlarmException("Alarm Id " + id + " does not match parameter " + p.getQualifiedName());
+            throw new CouldNotAcknowledgeAlarmException("Alarm Id " + id + " does not match parameter " + p.getQualifiedName());
         }
+        
         aa.acknowledged = true;
         aa.usernameThatAcknowledged = username;
+        aa.acknowledgeTime = ackTime;
+        aa.message = message;
+        alarmListeners.forEach(l -> l.notifyAcknowledged(aa));
         
-        if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
+        if(aa.currentValue.getMonitoringResult()==MonitoringResult.IN_LIMITS
+                || aa.currentValue.getMonitoringResult()==MonitoringResult.DISABLED
+                || aa.currentValue.getMonitoringResult()==null) {
+            
             activeAlarms.remove(p);
             alarmListeners.forEach(l -> l.notifyCleared(aa));
-        } else {
-            throw new CouldNotClearAlarmException("Parameter " + p.getQualifiedName() + " is still out of limits");   
         }
     }
 

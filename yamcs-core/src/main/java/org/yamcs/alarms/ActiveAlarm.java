@@ -3,6 +3,7 @@ package org.yamcs.alarms;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ParameterValue;
+import org.yamcs.utils.TimeEncoding;
 
 public class ActiveAlarm {
     
@@ -12,6 +13,8 @@ public class ActiveAlarm {
     public boolean acknowledged;
     
     public boolean autoAcknowledge;
+    
+    public long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
     
     //the value that triggered the alarm
     public ParameterValue triggerValue;

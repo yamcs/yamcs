@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
-import org.yamcs.alarms.CouldNotClearAlarmException;
+import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Rest.ClearAlarmResponse;
+import org.yamcs.protobuf.Rest.AcknowledgeAlarmRequest;
+import org.yamcs.protobuf.Rest.AcknowledgeAlarmResponse;
 import org.yamcs.protobuf.Rest.GetAlarmsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -27,15 +28,14 @@ public class AlarmsRequestHandler implements RestRequestHandler {
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
         if (!req.hasPathSegment(pathOffset)) {
-            if (req.isGET()) {
-                return getAlarms(req, processor);
-            } else {
-                throw new MethodNotAllowedException(req);   
-            }
-        } else {
+            req.assertGET();
+            return getAlarms(req, processor);
+        } else if (req.getPathSegment(pathOffset).equals("acknowledge")) {
+            req.assertPOST();
+            
             int alarmId;
             try {
-                alarmId = Integer.parseInt(req.getPathSegment(pathOffset));
+                alarmId = Integer.parseInt(req.getPathSegment(pathOffset + 1));
             } catch (NumberFormatException e) {
                 throw new NotFoundException(req);
             }
@@ -43,7 +43,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
             // The rest of the path should be the qualified parameter name
             String[] pathSegments = req.getPathSegments();
             StringBuilder fqname = new StringBuilder();
-            for (int i = pathOffset + 1; i < pathSegments.length; i++) {
+            for (int i = pathOffset + 2; i < pathSegments.length; i++) {
                 fqname.append("/").append(pathSegments[i]);
             }
             NamedObjectId id = NamedObjectId.newBuilder().setName(fqname.toString()).build();
@@ -52,11 +52,10 @@ public class AlarmsRequestHandler implements RestRequestHandler {
             if (p == null) {
                 throw new NotFoundException(req);
             }
-            if(req.isDELETE()) {
-                return clearAlarm(req, alarmId, p, processor);
-            } else {
-                throw new MethodNotAllowedException(req);
-            }
+            
+            return acknowledgeAlarm(req, alarmId, p, processor);
+        } else {
+            throw new NotFoundException(req);
         }
     }
 
@@ -86,24 +85,26 @@ public class AlarmsRequestHandler implements RestRequestHandler {
     }
     
     /**
-     * Clears an alarm
+     * Acknowledges an alarm
      * <p>
-     * DELETE /(instance)/api/alarms/(alarmId)/my/sample/qualified/parameter
+     * POST /(instance)/api/alarms/acknowledge/(alarmId)/my/sample/qualified/parameter
      */
-    private RestResponse clearAlarm(RestRequest req, int alarmId, Parameter p, YProcessor processor) throws RestException {
+    private RestResponse acknowledgeAlarm(RestRequest req, int alarmId, Parameter p, YProcessor processor) throws RestException {
         if (!processor.hasAlarmServer()) {
             throw new BadRequestException("Alarms are not enabled for this instance");
         }
         
-        ClearAlarmResponse.Builder responseb = ClearAlarmResponse.newBuilder();
+        AcknowledgeAlarmRequest request = req.bodyAsMessage(SchemaRest.AcknowledgeAlarmRequest.MERGE).build();
+        
+        AcknowledgeAlarmResponse.Builder responseb = AcknowledgeAlarmResponse.newBuilder();
         AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
         try {
             // TODO permissions on AlarmServer
-            alarmServer.acknowledge(p, alarmId, req.getUsername());
-        } catch (CouldNotClearAlarmException e) {
-            log.debug("Did not clear alarm " + alarmId + ". " + e.getMessage());
+            alarmServer.acknowledge(p, alarmId, req.getUsername(), processor.getCurrentTime(), request.getMessage());
+        } catch (CouldNotAcknowledgeAlarmException e) {
+            log.debug("Did not acknowledge alarm " + alarmId + ". " + e.getMessage());
             responseb.setErrorMessage(e.getMessage());
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ClearAlarmResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.AcknowledgeAlarmResponse.WRITE);
     }
 }
