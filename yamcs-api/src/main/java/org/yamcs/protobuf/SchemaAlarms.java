@@ -7,6 +7,138 @@ package org.yamcs.protobuf;
 public final class SchemaAlarms
 {
 
+    public static final class AcknowledgeInfo
+    {
+        public static final org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AcknowledgeInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AcknowledgeInfo message) throws java.io.IOException
+            {
+                if(message.hasAcknowledgedBy())
+                    output.writeString(1, message.getAcknowledgedBy(), false);
+                if(message.hasAcknowledgeMessage())
+                    output.writeString(2, message.getAcknowledgeMessage(), false);
+                if(message.hasAcknowledgeTime())
+                    output.writeInt64(3, message.getAcknowledgeTime(), false);
+                if(message.hasAcknowledgeTimeUTC())
+                    output.writeString(4, message.getAcknowledgeTimeUTC(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Alarms.AcknowledgeInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Alarms.AcknowledgeInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AcknowledgeInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Alarms.AcknowledgeInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setAcknowledgedBy(input.readString());
+                            break;
+                        case 2:
+                            builder.setAcknowledgeMessage(input.readString());
+                            break;
+                        case 3:
+                            builder.setAcknowledgeTime(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setAcknowledgeTimeUTC(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Alarms.AcknowledgeInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "acknowledgedBy";
+                case 2: return "acknowledgeMessage";
+                case 3: return "acknowledgeTime";
+                case 4: return "acknowledgeTimeUTC";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("acknowledgedBy", 1);
+            fieldMap.put("acknowledgeMessage", 2);
+            fieldMap.put("acknowledgeTime", 3);
+            fieldMap.put("acknowledgeTimeUTC", 4);
+        }
+    }
+
     public static final class Alarm
     {
         public static final org.yamcs.protobuf.SchemaAlarms.Alarm.MessageSchema WRITE =
@@ -33,8 +165,9 @@ public final class SchemaAlarms
 
                 if(message.hasViolations())
                     output.writeUInt32(6, message.getViolations(), false);
-                if(message.hasUsername())
-                    output.writeString(7, message.getUsername(), false);
+                if(message.hasAcknowledgeInfo())
+                    output.writeObject(7, message.getAcknowledgeInfo(), org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Alarms.Alarm message)
             {
@@ -96,7 +229,8 @@ public final class SchemaAlarms
                             builder.setViolations(input.readUInt32());
                             break;
                         case 7:
-                            builder.setUsername(input.readString());
+                            builder.setAcknowledgeInfo(input.mergeObject(org.yamcs.protobuf.Alarms.AcknowledgeInfo.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -144,7 +278,7 @@ public final class SchemaAlarms
                 case 4: return "mostSevereValue";
                 case 5: return "currentValue";
                 case 6: return "violations";
-                case 7: return "username";
+                case 7: return "acknowledgeInfo";
                 default: return null;
             }
         }
@@ -162,7 +296,7 @@ public final class SchemaAlarms
             fieldMap.put("mostSevereValue", 4);
             fieldMap.put("currentValue", 5);
             fieldMap.put("violations", 6);
-            fieldMap.put("username", 7);
+            fieldMap.put("acknowledgeInfo", 7);
         }
     }
 
