@@ -27,6 +27,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Cvalue.ContainerData;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -241,6 +242,21 @@ public abstract class AbstractIntegrationTest {
                 throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
         }
+<<<<<<< HEAD
+=======
+        
+        @Override
+        public void onTimeInfo(TimeInfo timeInfo) {
+            timeInfoList.add(timeInfo);
+        }
+
+		@Override
+		public void onContainerData(ContainerData cdata) {
+			// TODO Auto-generated method stub
+			
+		}
+        
+>>>>>>> Add onContainer to AbstractIntegrationTest
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
         static volatile PacketProvider instance;
