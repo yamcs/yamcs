@@ -1,11 +1,10 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
@@ -36,6 +35,28 @@ public class StreamSqlParserTest extends YarchTestCase {
 		assertNull(tbl);
 	}
 	
+    @Test
+    public void testExists() throws ParseException, StreamSqlException {
+        ydb.execute("create table if not exists existstest_test1(col1 int, primary key(col1))");
+        TableDefinition tbl=ydb.getTable("existstest_test1");
+        assertNotNull(tbl);
+        assertEquals(tbl.getName(), "existstest_test1");
+        assertNotNull(tbl.getColumnDefinition("col1"));
+        
+        ydb.execute("create table if not exists existstest_test1(col1 int, col2 int, primary key(col1))");
+        tbl=ydb.getTable("existstest_test1");
+        assertNotNull(tbl);
+        assertEquals(tbl.getName(), "existstest_test1");
+        assertNotNull(tbl.getColumnDefinition("col1"));
+        assertNull(tbl.getColumnDefinition("col2"));
+        
+        ydb.execute("drop table if exists existstest_test1");
+        tbl=ydb.getTable("existstest_test1");
+        
+        assertNull(tbl);
+        
+        ydb.execute("drop table if exists sometablethatreallydoesntexist");
+    }
 	
 	@Test
     public void testErrors() throws Exception{

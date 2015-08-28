@@ -3,26 +3,24 @@ package org.yamcs.yarch.streamsql;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
-
 
 public class DropTableStatement extends StreamSqlStatement {
+    boolean ifExists;
     String tblName;
 
-    public DropTableStatement(String name) {
+    public DropTableStatement(boolean ifExists, String name) {
+        this.ifExists=ifExists;
         this.tblName=name;
     }
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
         try {
-            synchronized(dict) {
-                dict.dropTable(tblName);
+            synchronized(ydb) {
+                if (!ifExists || ydb.getTable(tblName)!=null) {
+                    ydb.dropTable(tblName);
+                }
             }
         } catch (YarchException e) {
             throw new GenericStreamSqlException(e.getMessage());
