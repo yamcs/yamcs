@@ -37,7 +37,8 @@ public class StreamSqlParserTest extends YarchTestCase {
 	}
 	
 	
-	public void testErrors() throws Exception{
+	@Test
+    public void testErrors() throws Exception{
 		StreamSqlException e=null;
 		try {
 			res=execute("close stream testerr_stream");
@@ -57,6 +58,7 @@ public class StreamSqlParserTest extends YarchTestCase {
 		assertEquals("RESOURCE_NOT_FOUND Stream or table 'unexistent_stream' not found", e.getMessage());
 	}
 	
+	//@Test
 	public void testShowStreams() throws Exception {
 	    ydb.execute("create input stream testshow_is1(a int, b timestamp)");
 		
