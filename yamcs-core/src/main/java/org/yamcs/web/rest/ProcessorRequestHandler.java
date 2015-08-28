@@ -81,6 +81,9 @@ public class ProcessorRequestHandler implements RestRequestHandler {
     private RestResponse handleProcessorManagementRequest(RestRequest req) throws RestException {
         req.assertPOST();
         ProcessorManagementRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
+        if(!yprocReq.hasInstance()) throw new BadRequestException("No instance has been specified");
+        if(!yprocReq.hasName()) throw new BadRequestException("No processor name has been specified");
+        
         switch(yprocReq.getOperation()) {
         case CONNECT_TO_PROCESSOR:
             ManagementService mservice = ManagementService.getInstance();
@@ -92,6 +95,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             }
         
         case CREATE_PROCESSOR:
+            if(!yprocReq.hasType()) throw new BadRequestException("No processor type has been specified");
             mservice = ManagementService.getInstance();
             try {
                 mservice.createProcessor(yprocReq, req.authToken);
