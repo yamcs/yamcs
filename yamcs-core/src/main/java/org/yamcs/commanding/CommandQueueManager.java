@@ -124,8 +124,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         timer.scheduleAtFixedRate(()->{
             for(CommandQueue q : queues.values())
             {
-                if(q.stateExpirationJob != null && q.stateExpirationRemainingS > 0)
+                if(q.stateExpirationRemainingS >= 0)
                 {
+                    log.debug("notifying update queue with new remaining seconds: " + q.stateExpirationRemainingS);
                     q.stateExpirationRemainingS--;
                     notifyUpdateQueue(q);
                 }
@@ -463,10 +464,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if(queue.state == newState) {
             if(queue.stateExpirationJob != null && newState != queue.defaultState)
             {
+                log.debug("same state selected, resetting expiration time");
                 // reset state expiration date
-                timer.remove(queue.stateExpirationJob);
-                timer.purge();
-                scheduleStateExpiration(queue, newState);
+                scheduleStateExpiration(queue);
                 //	Notify the monitoring clients
                 notifyUpdateQueue(queue);
             }
@@ -493,7 +493,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
 
         if(queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
-            scheduleStateExpiration(queue, previousState);
+            log.info("scheduling expiration state for new state " + newState +" for queue " + queue.name);
+            scheduleStateExpiration(queue);
         }
 
         //	Notify the monitoring clients
@@ -501,11 +502,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         return queue;
     }
 
-    private void scheduleStateExpiration(final CommandQueue queue, QueueState previousState)
+    private void scheduleStateExpiration(final CommandQueue queue)
     {
-        queue.stateExpirationJob = () -> {setQueueState(queue.name, previousState, false); queue.stateExpirationJob = null;};
+
+        if(queue.stateExpirationJob != null) {
+            log.debug("expiration job existing, removing...");
+            queue.stateExpirationJob.cancel(false);
+            queue.stateExpirationJob = null;
+        }
+        Runnable r = () -> {
+            log.info("executing epiration state, reverting to " + queue.defaultState);
+            setQueueState(queue.name, queue.defaultState, false);
+            queue.stateExpirationJob = null;
+        };
+
+        log.info("sceduling expiration time in " + queue.stateExpirationTimeS);
         queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
-        timer.schedule(queue.stateExpirationJob, queue.stateExpirationTimeS, TimeUnit.SECONDS);
+        queue.stateExpirationJob  = timer.schedule(r , queue.stateExpirationTimeS, TimeUnit.SECONDS);
     }
 
     /**
