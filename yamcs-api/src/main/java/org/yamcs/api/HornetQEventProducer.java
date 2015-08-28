@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -104,6 +105,10 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
     @Override
     public String toString() {
         return HornetQEventProducer.class.getName()+" connected to "+yconnector.getUrl();
+    }
+    @Override
+    public long getMissionTime() {       
+        return TimeEncoding.currentInstant();
     }
  
 }
