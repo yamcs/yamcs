@@ -1,7 +1,5 @@
 package org.yamcs.web.rest;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
 
@@ -60,22 +58,16 @@ import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpHeaders.Values;
-import io.netty.handler.codec.http.HttpResponse;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
 /** 
- * Serves archived data through a web api. The Archived data is fetched from the
- * ReplayServer using HornetQ.
+ * Serves archived data through a web api.
  *
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server. At the
@@ -89,14 +81,6 @@ public class ArchiveRequestHandler implements RestRequestHandler {
 
     // This is a guideline, not a hard limit because because calculations don't include wrapping message
     private static final int MAX_BYTE_SIZE = 1048576;
-
-    // Same as ChannelFutureListener.CLOSE_ON_FAILURE, but outputs an additional log message
-    private static final ChannelFutureListener CLOSE_ON_FAILURE = (future -> {
-        if (!future.isSuccess()) {
-            log.warn("Exception while writing to client", future.cause());
-            future.channel().close();
-        }
-    });
     
     private CsvGenerator csvGenerator = null;
     
@@ -259,23 +243,14 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     private void streamResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
     throws HornetQException, YamcsApiException, IOException {
 
-        // Return base HTTP response, indicating that we'll used chunked encoding
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-        response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
-        response.headers().set(Names.CONTENT_TYPE, targetContentType);
-        
+        RestUtils.startChunkedTransfer(req, targetContentType);
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
-
-        ChannelFuture writeFuture=ctx.write(response);
-        writeFuture.addListener(CLOSE_ON_FAILURE);
 
         while(true) {
             ClientMessage msg = msgClient.dataConsumer.receive();
 
             if (Protocol.endOfStream(msg)) {
-                // Send empty chunk downstream to signal end of response
-                ChannelFuture chunkWriteFuture = ctx.writeAndFlush(new DefaultHttpContent(Unpooled.EMPTY_BUFFER));
-                chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
+                RestUtils.stopChunkedTransfer(req);
                 log.trace("All chunks were written out");
                 break;
             }
@@ -307,7 +282,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
             }
 
             Channel ch = ctx.channel();
-            writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
+            ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
             try {
                 while (!ch.isWritable() && ch.isOpen()) {
                     writeFuture.await(5, TimeUnit.SECONDS);
