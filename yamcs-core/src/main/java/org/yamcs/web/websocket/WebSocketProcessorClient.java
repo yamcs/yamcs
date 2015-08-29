@@ -38,6 +38,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         resources.add(new CommandHistoryResource(yproc, wsHandler));
         resources.add(new ManagementResource(yproc, wsHandler, clientId));
         resources.add(new AlarmsResource(yproc, wsHandler));
+        resources.add(new EventsResource(yproc, wsHandler));
         resources.add(new StreamResource(yproc, wsHandler));
         resources.add(new TimeResource(yproc, wsHandler));
     }
