@@ -46,7 +46,7 @@ public abstract class AbstractWebSocketResource {
                 .build();
     }
     
-    public void switchYProcessor(YProcessor processor)  throws YProcessorException {
+    public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws YProcessorException {
         this.processor = processor;
     }
 }
