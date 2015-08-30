@@ -3,6 +3,7 @@ package org.yamcs.api.ws;
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -23,6 +24,7 @@ public interface WebSocketClientCallbackListener {
     void onProcessorInfoData(ProcessorInfo processorInfo);
     void onStatisticsData(Statistics statistics);
     void onAlarm(Alarm alarm);
+    void onEvent(Event event);
     void onStreamData(StreamData streamData);
     void onTimeInfo(TimeInfo timeInfo);
 }
