@@ -28,16 +28,12 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             return handleProcessorListRequest(req);
             
         default:
-            String processorName = null;
-            if (req.hasPathSegment(pathOffset + 1)) {
-                processorName = req.getPathSegment(pathOffset + 1);
-            }
-            if (processorName==null) {
+            String processorName = req.getPathSegment(pathOffset);
+            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, processorName);
+            if (processor==null) {
                 log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", processorName);
                 throw new NotFoundException(req);
             }
-            
-            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, processorName);
             return handleProcessorRequest(req, processor);
         }
     }
