@@ -42,6 +42,7 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -73,7 +74,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     private YamcsSession ysession;
     TmProcessor tmProcessor;
     volatile long dataCount=0;
-    XtceDb xtceDb;
+    final XtceDb xtceDb;
     volatile long lastPacketTime;
 
     private final String yamcsInstance;
@@ -153,6 +154,7 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
         this.yamcsInstance = instance;
         this.archiveInstance = instance;
         this.replayRequest = spec;
+        xtceDb = XtceDbFactory.getInstance(instance);
         createReplay();
     }
 
@@ -209,8 +211,8 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
                 ParameterData pd=(ParameterData)decode(msg, ParameterData.newBuilder());
                 ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
                 for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
-                    Parameter ppDef=xtceDb.getParameter(pbPv.getId());
-                    ParameterValue pv=ParameterValue.fromGpb(ppDef, pbPv);
+                    Parameter ppDef = xtceDb.getParameter(pbPv.getId());
+                    ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
                     if(pv!=null) params.add(pv);
                 }
                 parameterRequestManager.update(params);
@@ -316,20 +318,36 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 
     @Override
     public boolean canProvide(NamedObjectId id) {
-        if(xtceDb.getParameter(id)!=null) return true;
-        else return false;
+        boolean result = false;
+        if(xtceDb.getParameter(id)!=null) {
+            result=true;
+        } else { //check if it's system parameter
+           if(SystemParameterDb.isSystemParameter(id)) {
+               result = true;
+           }
+        }
+        return result;
     }
 
     @Override
     public boolean canProvide(Parameter p) {
-        return xtceDb.getParameterEntries(p)!=null;
+        return true;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-        Parameter p=xtceDb.getParameter(id);
-        if(p==null) throw new InvalidIdentification();
-        else return p;
+        Parameter p = xtceDb.getParameter(id);
+        if(p==null) {
+            if(SystemParameterDb.isSystemParameter(id)) {
+                p = xtceDb.getSystemParameterDb().getSystemParameter(id);
+            }
+            
+        }
+        if(p==null) {
+            throw new InvalidIdentification();
+        } else {
+            return p;
+        }
     }
 
     @Override

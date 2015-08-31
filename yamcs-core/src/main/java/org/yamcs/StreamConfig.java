@@ -83,7 +83,7 @@ public class StreamConfig {
                             String containerName  = (String) streamConf.get("rootContainer");
                             rootContainer = xtceDb.getSequenceContainer(containerName);
                             if(rootContainer==null) {
-                                throw new ConfigurationException("Unknown sequence container: "+rootContainer);
+                                throw new ConfigurationException("Unknown sequence container: "+containerName);
                             }
                         }
                     }

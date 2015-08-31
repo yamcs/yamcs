@@ -165,7 +165,11 @@ public class YProcessor extends AbstractService {
                 pprov.init(this);
                 parameterRequestManager.addParameterProvider(pprov);
             }
-
+            //QUICK HACK  TODO
+            if((tmPacketProvider!=null) && (tmPacketProvider instanceof ParameterProvider) ) {
+                parameterRequestManager.addParameterProvider((ParameterProvider)tmPacketProvider);
+            }
+            
             if(commandReleaser!=null) {
                 try {
                     this.commandHistoryPublisher=new YarchCommandHistoryAdapter(yamcsInstance);

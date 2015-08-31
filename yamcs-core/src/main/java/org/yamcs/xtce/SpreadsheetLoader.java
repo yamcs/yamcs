@@ -13,7 +13,6 @@ import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import java.io.*;
 import java.nio.ByteOrder;
@@ -1714,7 +1713,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
-                    if(paraRef.startsWith(XtceDbFactory.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(XtceDbFactory.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
+                    if(paraRef.startsWith(SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(SystemParameterDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
                         algorithm.setScope(Algorithm.Scope.commandVerification);
                     }
                     inputParameterRefs.add(paraRef);
