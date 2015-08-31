@@ -144,7 +144,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         long t0 = System.currentTimeMillis();
         req = RestGetParameterRequest.newBuilder()
                 .setTimeout(2000).addAllList(validSubscrList.getListList()).build();
-        System.out.println("sending request :" +toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
 
         Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
 
@@ -224,7 +223,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", 5, "uint32_arg", "1000");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -258,7 +257,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 6, "p1", "2");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -293,7 +292,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC2", 6, "p1", "2");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -483,7 +482,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/INT_ARG_TC", 5, "uint32_arg", "1000");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC", 5, "float_arg", "-15", "double_arg", "0");
