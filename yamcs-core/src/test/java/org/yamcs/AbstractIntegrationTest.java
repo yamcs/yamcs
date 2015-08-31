@@ -62,7 +62,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        enableDebugging();
+      //  enableDebugging();
         setupYamcs();
     }
 

@@ -84,7 +84,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWsParameter() throws Exception {
-        enableDebugging();
         //subscribe to parameters
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
 
@@ -98,7 +97,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
-        for (int i=0;i <1000; i++) packetGenerator.generate_PKT1_1();
+        for (int i=0;i <10; i++) packetGenerator.generate_PKT1_1();
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         checkPdata(pdata, packetGenerator);
 
