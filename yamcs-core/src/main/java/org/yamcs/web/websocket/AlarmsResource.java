@@ -74,7 +74,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor) throws YProcessorException {
+    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
         doUnsubscribe();
         processor = newProcessor;
         doSubscribe();

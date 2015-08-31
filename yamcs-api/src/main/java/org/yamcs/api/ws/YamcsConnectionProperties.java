@@ -15,6 +15,18 @@ public class YamcsConnectionProperties {
         this.port = port;
         this.instance = instance;
     }
+    
+    public String getHost() {
+        return host;
+    }
+    
+    public int getPort() {
+        return port;
+    }
+    
+    public String getInstance() {
+        return instance;
+    }
 
     public URI webResourceURI(String relativePath) {
         if (!relativePath.startsWith("/")) {
@@ -33,5 +45,9 @@ public class YamcsConnectionProperties {
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }
+    }
+    
+    public String getYamcsConnectionString() {
+        return "yamcs://" + host + ":" + port + "/" + instance;
     }
 }

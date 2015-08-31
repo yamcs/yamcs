@@ -57,7 +57,7 @@ public class AbstractRequestHandler {
      * @param type
      *            content type of file to extract
      */
-    protected void setContentTypeHeader(HttpResponse response, String type) {
+    protected static void setContentTypeHeader(HttpResponse response, String type) {
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, type);
     }
     

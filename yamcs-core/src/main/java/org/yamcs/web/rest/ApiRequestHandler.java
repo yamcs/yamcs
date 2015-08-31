@@ -1,9 +1,8 @@
 package org.yamcs.web.rest;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static org.yamcs.web.rest.RestUtils.sendResponse;
 
 import java.io.IOException;
 
@@ -20,7 +19,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -41,6 +39,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     public static final String COMMANDING_PATH = "commanding";
     public static final String PARAMETER_PATH = "parameter";
     public static final String ALARMS_PATH = "alarms";
+    public static final String EVENTS_PATH = "events";
     public static final String MANAGEMENT_PATH = "management";
     public static final String PROCESSOR_PATH = "processor";
     public static final String AUTHORIZATION_PATH = "authorization";
@@ -52,6 +51,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
     static CommandingRequestHandler commandingRequestHandler=new CommandingRequestHandler();
     static ParameterRequestHandler parameterRequestHandler=new ParameterRequestHandler();
     static AlarmsRequestHandler alarmsRequestHandler=new AlarmsRequestHandler();
+    static EventsRequestHandler eventsRequestHandler=new EventsRequestHandler();
     static ManagementRequestHandler managementRequestHandler=new ManagementRequestHandler();
     static ProcessorRequestHandler processorRequestHandler=new ProcessorRequestHandler();
     static AuthorizationRequestHandler authorizationRequestHandler=new AuthorizationRequestHandler();
@@ -100,6 +100,9 @@ public class ApiRequestHandler extends AbstractRequestHandler {
             case ALARMS_PATH:
                 sendResponse(alarmsRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
+            case EVENTS_PATH:
+                sendResponse(eventsRequestHandler.handleRequest(req, handlerOffset + 1));
+                break;
             case MANAGEMENT_PATH:
                 sendResponse(managementRequestHandler.handleRequest(req, handlerOffset + 1));
                 break;
@@ -127,27 +130,6 @@ public class ApiRequestHandler extends AbstractRequestHandler {
             sendError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
-    
-    private void sendResponse(RestResponse restResponse) throws RestException {
-        HttpResponse httpResponse;
-        if (restResponse.getBody() == null) {
-            httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
-            setContentLength(httpResponse, 0);
-        } else {
-            httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
-            setContentTypeHeader(httpResponse, restResponse.getContentType());
-            setContentLength(httpResponse, restResponse.getBody().readableBytes());
-        }
-
-        RestRequest restRequest = restResponse.getRestRequest();
-        ChannelFuture writeFuture = restRequest.getChannelHandlerContext().writeAndFlush(httpResponse);
-
-        // Decide whether to close the connection or not.
-        if (!isKeepAlive(restRequest.getHttpRequest())) {
-            // Close the connection when the whole content is written out.
-            writeFuture.addListener(ChannelFutureListener.CLOSE);
-        }
-    }    
     
     private void sendError(RestRequest ctx, HttpResponseStatus status) {
         sendError(ctx.getChannelHandlerContext(), status);

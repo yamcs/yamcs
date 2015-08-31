@@ -7,25 +7,22 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 public class CreateTableStatement extends StreamSqlStatement {
 
+    boolean ifNotExists;
     String tableName;
     TupleDefinition tupleDefinition;
     ArrayList<String> primaryKey;
     ArrayList<String> histoColumns;
-    PartitioningSpec partitioningSpec;;
+    PartitioningSpec partitioningSpec;
     String dataDir;
     String engine;
 
     private boolean compressed=false;
 
-    public CreateTableStatement(String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
+    public CreateTableStatement(boolean ifNotExists, String tableName, TupleDefinition tupleDefinition, ArrayList<String> primaryKey) {
+        this.ifNotExists=ifNotExists;
         this.tableName=tableName;
         this.tupleDefinition=tupleDefinition;
         this.primaryKey=primaryKey;
@@ -83,7 +80,9 @@ public class CreateTableStatement extends StreamSqlStatement {
             }
 
             try {
-                ydb.createTable(tableDefinition);
+                if(!ifNotExists || ydb.getTable(tableName)==null) {
+                    ydb.createTable(tableDefinition);
+                }
                 return new StreamSqlResult();
             } catch(YarchException e) {
                 throw new GenericStreamSqlException("Cannot create table: "+e.getMessage());
