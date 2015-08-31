@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -100,6 +101,7 @@ public class ReplayServer extends AbstractExecutionThreadService {
             throw new YamcsException("maximum number of replays reached");
         }
         ReplayRequest replayRequest=(ReplayRequest)decode(msg, ReplayRequest.newBuilder());
+        log.debug("Creating a replay for time: [{}, {})", TimeEncoding.toString(replayRequest.getStart()), TimeEncoding.toString(replayRequest.getStop()));
         HqClientMessageToken authToken = null;
         if( Privilege.usePrivileges ) {
             Privilege priv = Privilege.getInstance();
