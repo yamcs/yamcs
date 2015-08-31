@@ -213,8 +213,13 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
                 for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
                     Parameter ppDef = xtceDb.getParameter(pbPv.getId());
                     ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
-                    if(pv!=null) params.add(pv);
+                    if(pv!=null) {
+                        params.add(pv);
+                        lastPacketTime = pv.getGenerationTime();
+                    }
+                
                 }
+                
                 parameterRequestManager.update(params);
                 break;
             case STATE_CHANGE:
