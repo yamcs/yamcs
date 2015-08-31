@@ -117,7 +117,7 @@ public class YProcessor extends AbstractService {
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-        timeService = YamcsServer.getInstance(yamcsInstance).getTimeService();
+        timeService = YamcsServer.getTimeService(yamcsInstance);
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {

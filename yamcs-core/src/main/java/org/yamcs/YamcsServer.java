@@ -74,6 +74,8 @@ public class YamcsServer {
     public static int SERVICE_STOP_GRACE_TIME = 10;
     TimeService timeService;
     
+    static TimeService realtimeTimeService = new RealtimeTimeService();
+    
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 	this.instance=instance;
@@ -371,7 +373,12 @@ public class YamcsServer {
     }
 
     public static TimeService getTimeService(String yamcsInstance) {
-        return instances.get(yamcsInstance).getTimeService();
+        if(instances.containsKey(yamcsInstance)) {
+            return instances.get(yamcsInstance).getTimeService();
+        } else {
+            return realtimeTimeService; //happends from unit tests
+        }
+        
     }
 
    
