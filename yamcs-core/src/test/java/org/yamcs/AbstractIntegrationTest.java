@@ -164,6 +164,10 @@ public abstract class AbstractIntegrationTest {
         public void onDisconnect() {
             onDisconnect.release();
         }
+        
+        @Override
+        public void onException(Throwable t) {
+        }
 
         @Override
         public void onInvalidIdentification(NamedObjectId id) {

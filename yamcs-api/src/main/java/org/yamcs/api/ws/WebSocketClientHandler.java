@@ -203,11 +203,11 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-
+        log.error("WebSocket exception. Closing channel", cause);
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);
         }
         ctx.close();
+        callback.onException(cause);
     }
 }

@@ -16,6 +16,7 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
  */
 public interface WebSocketClientCallbackListener {
     void onConnect();
+    void onException(Throwable t);
     void onDisconnect();
     void onInvalidIdentification(NamedObjectId id);
     void onParameterData(ParameterData pdata);
