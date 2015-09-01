@@ -161,7 +161,7 @@ public class Privilege {
     public boolean hasRole(final AuthenticationToken authenticationToken, String role ) {
         if(!usePrivileges) return false;
         if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
-        if( authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) ) return true;
+        if (isSystemToken(authenticationToken)) return true;
 
         // Load user and read role from result
         User user = getUser(authenticationToken);
@@ -169,6 +169,9 @@ public class Privilege {
         return user.hasRole(role);
     }
 
+    private boolean isSystemToken(final AuthenticationToken authenticationToken) {
+        return authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) || (authenticationToken instanceof SystemToken); 
+    }
 
     /**
      *
@@ -180,7 +183,8 @@ public class Privilege {
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege) {
         if (!usePrivileges)	return true;
         if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
-        if( authenticationToken.getPrincipal().equals( YamcsSession.hornetqInvmUser ) ) return true;
+        
+        if (isSystemToken(authenticationToken)) return true;
 
         User user = getUser(authenticationToken);
         if(user == null) return false;
