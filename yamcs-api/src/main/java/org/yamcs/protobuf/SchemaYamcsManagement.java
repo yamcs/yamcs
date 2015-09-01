@@ -804,6 +804,9 @@ public final class SchemaYamcsManagement
                     output.writeString(3, message.getName(), false);
                 if(message.hasSeekTime())
                     output.writeInt64(4, message.getSeekTime(), false);
+                if(message.hasReplaySpeed())
+                    output.writeObject(5, message.getReplaySpeed(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorRequest message)
             {
@@ -855,6 +858,10 @@ public final class SchemaYamcsManagement
                         case 4:
                             builder.setSeekTime(input.readInt64());
                             break;
+                        case 5:
+                            builder.setReplaySpeed(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplaySpeed.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -899,6 +906,7 @@ public final class SchemaYamcsManagement
                 case 2: return "instance";
                 case 3: return "name";
                 case 4: return "seekTime";
+                case 5: return "replaySpeed";
                 default: return null;
             }
         }
@@ -914,6 +922,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("instance", 2);
             fieldMap.put("name", 3);
             fieldMap.put("seekTime", 4);
+            fieldMap.put("replaySpeed", 5);
         }
     }
 

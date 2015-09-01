@@ -22,6 +22,8 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.SpeedLimitStream;
+import org.yamcs.yarch.SpeedSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -206,9 +208,9 @@ public class YarchReplay implements StreamSubscriber {
 
         String query=sb.toString();
         log.debug("running query "+query);
-        YarchDatabase db=YarchDatabase.getInstance(instance);
-        db.execute(query);
-        Stream s=db.getStream(streamName);
+        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        ydb.execute(query);
+        Stream s=ydb.getStream(streamName);
         s.addSubscriber(this);
         numPacketsSent=0;
         s.start();
@@ -241,7 +243,35 @@ public class YarchReplay implements StreamSubscriber {
         }
         start();
     }
+    public void changeSpeed(ReplaySpeed newSpeed) {
+        log.debug("Changing speed to {}", newSpeed);
+        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        Stream s=ydb.getStream(streamName);
+        if(!(s instanceof SpeedLimitStream)) {
+            throw new RuntimeException("Cannot change speed on a "+s.getClass()+" stream");
+        } else {
+            ((SpeedLimitStream)s).setSpeedSpec(toSpeedSpec(newSpeed));
+        }
+    }
 
+    private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
+        SpeedSpec ss;;
+        switch(speed.getType()) {
+        case  AFAP: 
+            ss=new SpeedSpec(SpeedSpec.Type.AFAP);
+            break;
+        case FIXED_DELAY:            
+            ss=new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, (int) speed.getParam());
+            break;
+        case REALTIME:
+            ss=new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
+            break;
+        default:
+            throw new RuntimeException("Unkown speed type "+speed.getType());                
+        }
+        return ss;
+    }
+    
     public void pause() {
         state=ReplayState.PAUSED;
     }

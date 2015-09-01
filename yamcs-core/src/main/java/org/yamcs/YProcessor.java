@@ -26,6 +26,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
@@ -305,6 +306,10 @@ public class YProcessor extends AbstractService {
         getTmProcessor().resetStatistics();
         ((ArchiveTmPacketProvider)tmPacketProvider).seek(instant);
     }
+    
+    public void changeSpeed(ReplaySpeed speed) {        
+        ((ArchiveTmPacketProvider)tmPacketProvider).changeSpeed(speed);
+    }
 
     /**
      * @return the tcUplinker
@@ -531,7 +536,7 @@ public class YProcessor extends AbstractService {
      */
     public long getCurrentTime() {        
         if(isReplay()) {
-            return ((ArchiveTmPacketProvider)tmPacketProvider).lastPacketTime();
+            return ((ArchiveTmPacketProvider)tmPacketProvider).getReplayTime();
         } else {
             return timeService.getMissionTime();
         }

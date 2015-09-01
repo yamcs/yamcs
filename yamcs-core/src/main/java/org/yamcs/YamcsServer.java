@@ -380,6 +380,21 @@ public class YamcsServer {
         }
         
     }
+    public <T> T getService(Class<T> serviceClass) {
+        for(Service s: serviceList) {
+            if(serviceClass == s.getClass()) {
+                return (T) s;
+            }
+        }
+        return null;
+    }
+
+
+    public static <T> T getService(String yamcsInstance, Class<T> serviceClass) {
+        YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
+        if(ys==null) return null;
+        return ys.getService(serviceClass);
+    }
 
    
 }

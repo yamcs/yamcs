@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.TimeEncoding;
@@ -41,8 +42,9 @@ public class ReplayServer extends AbstractService {
 
     /**
      * create a new packet replay object
+     * @throws YamcsException 
      */
-    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, HqClientMessageToken authToken) throws Exception {
+    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, AuthenticationToken authToken) throws YamcsException {
         if(replayCount.get()>=MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
@@ -100,8 +102,8 @@ public class ReplayServer extends AbstractService {
             replayCount.incrementAndGet();
             return yr;
         } catch (final Exception e) {
-            log.warn("Got exception when creating a PacketReplay object: ", e);
-            throw e;
+            log.warn("Got exception when creating a replay object: ", e);
+            throw new YamcsException("Got exception when creating a replay", e);
         }
     }
 

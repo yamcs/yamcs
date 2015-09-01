@@ -37,7 +37,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             return handleProcessorRequest(req, processor);
         }
     }
-
+    
     private RestResponse handleProcessorListRequest(RestRequest req) throws RestException {
         req.assertGET();
         RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
@@ -72,6 +72,15 @@ public class ProcessorRequestHandler implements RestRequestHandler {
             }
             yproc.seek(yprocReq.getSeekTime());
             break;
+        case CHANGE_SPEED:
+            if(!yproc.isReplay()) {
+                throw new BadRequestException("Cannot seek a non replay processor ");
+            }
+            if(!yprocReq.hasReplaySpeed()) {
+                throw new BadRequestException("No replay speed specified");                
+            }
+            yproc.changeSpeed(yprocReq.getReplaySpeed());
+            break;
         default:
             throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
@@ -81,6 +90,7 @@ public class ProcessorRequestHandler implements RestRequestHandler {
     private RestResponse handleProcessorManagementRequest(RestRequest req) throws RestException {
         req.assertPOST();
         ProcessorManagementRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorManagementRequest.MERGE).build();
+
         if(!yprocReq.hasInstance()) throw new BadRequestException("No instance has been specified");
         if(!yprocReq.hasName()) throw new BadRequestException("No processor name has been specified");
         

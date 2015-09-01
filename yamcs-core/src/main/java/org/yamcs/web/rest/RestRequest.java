@@ -235,7 +235,7 @@ public class RestRequest {
                 } else {
                     JsonIOUtil.mergeFrom(cin, msg, sourceSchema, false);
                 }
-            } catch(IOException e) {
+            } catch(IOException|NullPointerException e) {
                 throw new BadRequestException(e);
             } finally {
                 // GPB's mergeFrom does not close the stream, not sure about JsonIOUtil
