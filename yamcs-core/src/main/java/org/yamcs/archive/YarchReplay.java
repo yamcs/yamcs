@@ -227,8 +227,12 @@ public class YarchReplay implements StreamSubscriber {
             ignoreClose=true;
             try {
                 YarchDatabase db=YarchDatabase.getInstance(instance);
-                log.debug("running query: "+query);
-                db.execute(query);
+                if(db.getStream(streamName)!=null) {
+                    log.debug("running query: "+query);
+                    db.execute(query);
+                } else {
+                    log.debug("Stream already closed");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("Got exception when closing the stream: ", e);
