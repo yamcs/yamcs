@@ -270,7 +270,7 @@ public abstract class AbstractIntegrationTest {
         }
         @Override
         protected void doStart() {
-            mdbPacketGenerator.setTmProcessor(this);
+            mdbPacketGenerator.init(null, this);
             notifyStarted();
         }
         @Override

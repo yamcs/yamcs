@@ -155,7 +155,7 @@ public class YProcessor extends AbstractService {
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this);
             if(tmPacketProvider!=null) {
-            	tmPacketProvider.setTmProcessor(tmProcessor);
+            	tmPacketProvider.init(this, tmProcessor);
             }
             containerRequestManager=new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
@@ -285,30 +285,33 @@ public class YProcessor extends AbstractService {
         	tmPacketProvider.awaitRunning();
         }
         notifyStarted();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
     
 
     public void pause() {
         ((ArchiveTmPacketProvider)tmPacketProvider).pause();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
 
     public void resume() {
         ((ArchiveTmPacketProvider)tmPacketProvider).resume();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
 
-    private void propagateChannelStateChange() {
+     private void propagateProcessorStateChange() {
         listeners.forEach(l -> l.processorStateChanged(this));
     }
+    
     public void seek(long instant) {
         getTmProcessor().resetStatistics();
         ((ArchiveTmPacketProvider)tmPacketProvider).seek(instant);
+        propagateProcessorStateChange();
     }
     
     public void changeSpeed(ReplaySpeed speed) {        
         ((ArchiveTmPacketProvider)tmPacketProvider).changeSpeed(speed);
+        propagateProcessorStateChange();
     }
 
     /**
@@ -552,5 +555,11 @@ public class YProcessor extends AbstractService {
     public void start() {
       startAsync();
       awaitRunning();
+    }
+
+
+
+    public void notifyStateChange() {
+        propagateProcessorStateChange();        
     }
 }

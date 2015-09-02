@@ -57,7 +57,7 @@ public class YarchReplay implements StreamSubscriber {
     static AtomicInteger counter=new AtomicInteger();
     XtceDb xtceDb;
    
-    ReplayRequest currentRequest;
+    volatile ReplayRequest currentRequest;
 
     Map<ProtoDataType,ReplayHandler> handlers;
     
@@ -106,7 +106,7 @@ public class YarchReplay implements StreamSubscriber {
             throw new YamcsException("stop has to be greater than start");
         }
 
-        currentRequest=newRequest;
+        currentRequest = newRequest;
         handlers=new HashMap<ProtoDataType,ReplayHandler>();
         
         
@@ -245,6 +245,7 @@ public class YarchReplay implements StreamSubscriber {
     }
     public void changeSpeed(ReplaySpeed newSpeed) {
         log.debug("Changing speed to {}", newSpeed);
+        
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(streamName);
         if(!(s instanceof SpeedLimitStream)) {
@@ -252,6 +253,10 @@ public class YarchReplay implements StreamSubscriber {
         } else {
             ((SpeedLimitStream)s).setSpeedSpec(toSpeedSpec(newSpeed));
         }
+        ReplayRequest.Builder b = ReplayRequest.newBuilder(currentRequest);
+        b.setSpeed(newSpeed);
+        currentRequest = b.build(); 
+        
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
@@ -360,5 +365,12 @@ public class YarchReplay implements StreamSubscriber {
         } catch (Exception e) {
             log.warn("got exception while signaling the sate change: ", e);
         }
+    }
+
+
+
+
+    public ReplayRequest getCurrentReplayRequest() {
+        return currentRequest;
     }
 }

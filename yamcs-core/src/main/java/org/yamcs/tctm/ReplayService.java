@@ -64,7 +64,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     private final String yamcsInstance;
     YarchReplay yarchReplay;
-    
+    YProcessor yprocessor;
     
    
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
@@ -90,12 +90,14 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     
     
     @Override
-    public void init(YProcessor channel) throws ConfigurationException {
+    public void init(YProcessor proc) throws ConfigurationException {
+        this.yprocessor = proc;
     }
 
     @Override
-    public void setTmProcessor(TmProcessor tmProcessor) {
+    public void init(YProcessor proc, TmProcessor tmProcessor) {
         this.tmProcessor=tmProcessor;
+        this.yprocessor = proc;
     }
 
     @Override
@@ -140,6 +142,8 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             log.debug("End signal received");
             notifyStopped();
             tmProcessor.finished();
+        } else {
+            yprocessor.notifyStateChange();
         }
     }
 
@@ -246,7 +250,11 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public ReplayRequest getReplayRequest() {
-        return replayRequest;
+        if(yarchReplay!=null) {
+            return yarchReplay.getCurrentReplayRequest();
+        } else {
+            return replayRequest;
+        }
     }
 
     @Override
