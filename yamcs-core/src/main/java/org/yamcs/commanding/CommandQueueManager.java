@@ -124,6 +124,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         timer.scheduleAtFixedRate(()->{
             for(CommandQueue q : queues.values())
             {
+
+                if(q.state == q.defaultState)
+                {
+                    q.stateExpirationRemainingS = 0;
+                }
                 if(q.stateExpirationRemainingS >= 0)
                 {
                     log.debug("notifying update queue with new remaining seconds: " + q.stateExpirationRemainingS);
