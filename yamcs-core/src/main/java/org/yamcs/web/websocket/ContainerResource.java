@@ -125,13 +125,16 @@ public class ContainerResource extends AbstractWebSocketResource implements Cont
 		}
 	}
 	
-    public void switchYProcessor(YProcessor c, AuthenticationToken authToken)
-            throws YProcessorException, NoPermissionException {
+	@Override
+	public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws YProcessorException {
         try {
-            cidrm.switchPrm(c.getParameterRequestManager(), authToken);
+            cidrm.switchPrm(processor.getParameterRequestManager(), authToken);
         } catch (InvalidIdentification e) {
             log.warn("got InvalidIdentification when resubscribing");
             e.printStackTrace();
+        } catch (NoPermissionException e) {
+            log.warn("got NoPermissionException when resubscribing");
+            e.printStackTrace();        	
         }
     }	
 }
