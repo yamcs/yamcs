@@ -3,9 +3,12 @@ package org.yamcs.api;
 import java.util.Queue;
 
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.utils.TimeEncoding;
 
 /**
- * prints all the events to the console (to be used by unit tests)
+ * saves events into a queue (to be used by unit tests)
+ * 
+ * 
  * @author nm
  *
  */
@@ -26,5 +29,9 @@ public class MockupEventProducer extends AbstractEventProducer {
     @Override
     public void close() {
     }
-
+    
+    @Override
+    public long getMissionTime() {       
+        return TimeEncoding.getWallclockTime();
+    }
 }

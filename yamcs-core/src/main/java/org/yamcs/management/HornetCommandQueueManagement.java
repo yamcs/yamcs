@@ -165,7 +165,8 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
 	msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
 	msg.putStringProperty(HDR_EVENT_NAME, eventName);
 	if(expire) {
-	    msg.setExpiration(System.currentTimeMillis()+5000);
+        int oneDay = 24*60*60*1000;
+	    msg.setExpiration(System.currentTimeMillis()+oneDay);
 	}
 
 	Protocol.encode(msg, cqe);

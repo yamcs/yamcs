@@ -5,12 +5,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 /**
  *XtceDB database
- * currently contains only containers (packets) and parameters
  * 
  * It contains a SpaceSystem as defined in the Xtce schema and has lots of hashes to help find things quickly
  * 
@@ -27,6 +27,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 public class XtceDb implements Serializable {
     private static final long  serialVersionUID   = 50L;
     SpaceSystem rootSystem;
+    
+    SystemParameterDb sysParamDb;
     
     public XtceDb(SpaceSystem spaceSystem) {
         this.rootSystem=spaceSystem;
@@ -241,7 +243,6 @@ public class XtceDb implements Serializable {
      * 
      */
     public void buildIndexMaps() {
-
         buildSpaceSystemsMap(rootSystem) ;
         buildParameterMap(rootSystem);
         buildSequenceContainerMap(rootSystem);
@@ -410,35 +411,11 @@ public class XtceDb implements Serializable {
             }
         }
         if(!systemVariables.isEmpty()) {
-            out.println("System Variables: ");
+            out.println("System Parrmeters: ");
             SystemParameter[] sva=systemVariables.toArray(new SystemParameter[0]);
             Arrays.sort(sva, comparator);
             for (SystemParameter sv : sva) {
                 out.println("\t"+sv.getName());
-            }
-        }
-        
-        //print parameters that are not linked to containers or algorithms
-        List<Parameter> algoParams=new ArrayList<Parameter>(); // On-the-fly index, don't need it for anything else
-        for(Algorithm a:ss.getAlgorithms()) {
-            for(InputParameter p:a.getInputSet()) {
-                algoParams.add(p.getParameterInstance().getParameter());
-            }
-            for(OutputParameter p:a.getOutputSet()) {
-                algoParams.add(p.getParameter());
-            }
-        }        
-        List<Parameter> orphanedParameters = new ArrayList<Parameter>();
-        for(Parameter p:ss.getParameters()) {
-            if(!parameter2ParameterEntryMap.containsKey(p) && !algoParams.contains(p)) {
-                orphanedParameters.add(p);
-            }
-        }
-        if(!orphanedParameters.isEmpty()) {
-            out.println("Orphaned parameters:");
-            Collections.sort(orphanedParameters, comparator);
-            for(Parameter p:orphanedParameters) {
-                out.println(p);
             }
         }
         
@@ -451,5 +428,40 @@ public class XtceDb implements Serializable {
     
     public void print(PrintStream out) {
         print(rootSystem, out);
+        
+        Set<Parameter> orphanedParameters = new HashSet<Parameter>();
+        orphanedParameters.addAll(parameters.values());
+        removeNonOrphaned(rootSystem, orphanedParameters);
+        orphanedParameters.removeAll(parameter2ParameterEntryMap.keySet());
+                
+                
+        if(!orphanedParameters.isEmpty()) {
+            out.println("================ Orphaned parameters (not referenced in any container or algorithm):");            
+            for(Parameter p:orphanedParameters) {
+                out.println(p.getQualifiedName()+", datasource: "+p.getDataSource());
+            }
+        }
+    }
+    
+    private void removeNonOrphaned(SpaceSystem ss, Set<Parameter> orphanedParameters) {
+        for(Algorithm a:ss.getAlgorithms()) {
+            for(InputParameter p:a.getInputSet()) {
+                orphanedParameters.remove(p.getParameterInstance().getParameter());
+            }
+            for(OutputParameter p:a.getOutputSet()) {
+                orphanedParameters.remove(p.getParameter());
+            }
+        }
+        for(SpaceSystem ss1:ss.getSubSystems()) {
+            removeNonOrphaned(ss1, orphanedParameters);
+        }        
+    }
+
+    public void setSystemParameterDb(SystemParameterDb sysParamDb) {
+        this.sysParamDb = sysParamDb;
+    }
+    
+    public SystemParameterDb getSystemParameterDb() {
+        return sysParamDb;
     }
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledFuture;
 
 import org.yamcs.YProcessor;
 import org.yamcs.security.Privilege;
@@ -25,8 +26,8 @@ public class CommandQueue {
     int stateExpirationTimeS = 0;
 
 
-    int stateExpirationRemainingS = 0;
-    Runnable stateExpirationJob = null;
+    int stateExpirationRemainingS = -1;
+    ScheduledFuture<?> stateExpirationJob = null;
     
     List<String> roles;
     List<String> significances;

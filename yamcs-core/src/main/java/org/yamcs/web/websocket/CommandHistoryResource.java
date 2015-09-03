@@ -42,7 +42,9 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
 
     private WebSocketReplyData subscribe(int requestId) {
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
-        subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
+        if (chrm != null) {
+            subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
+        }
         return toAckReply(requestId);
     }
 
@@ -53,7 +55,9 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     public void quit() {
         if(subscriptionId == -1) return;
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
-        chrm.unsubscribeCommandHistory(subscriptionId);
+        if (chrm != null) {
+            chrm.unsubscribeCommandHistory(subscriptionId);
+        }
     }
 
     public void switchYProcessor(YProcessor c) throws YProcessorException {

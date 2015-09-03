@@ -10,11 +10,12 @@ public interface ArchiveTmPacketProvider extends TmPacketProvider {
     public abstract void seek(long time);
     public abstract void pause();
     public abstract void resume();
+    public void changeSpeed(ReplaySpeed speed);
     
     public ReplayState getReplayState();
     
     public ReplaySpeed getSpeed();
 
     public abstract ReplayRequest getReplayRequest();
-    public abstract long lastPacketTime();
+    public abstract long getReplayTime();
 }

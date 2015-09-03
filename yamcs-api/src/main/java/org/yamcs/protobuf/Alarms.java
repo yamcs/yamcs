@@ -2428,21 +2428,20 @@ public final class Alarms {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014alarms.proto\022\006alarms\032\013yamcs.proto\032\014pva" +
-      "lue.proto\"z\n\017AcknowledgeInfo\022\026\n\016acknowle" +
-      "dgedBy\030\001 \001(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t" +
-      "\022\027\n\017acknowledgeTime\030\003 \001(\003\022\032\n\022acknowledge" +
-      "TimeUTC\030\004 \001(\t\"\364\002\n\005Alarm\022\n\n\002id\030\001 \001(\r\022 \n\004t" +
-      "ype\030\002 \001(\0162\022.alarms.Alarm.Type\022,\n\014trigger" +
-      "Value\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017m" +
-      "ostSevereValue\030\004 \001(\0132\026.pvalue.ParameterV" +
-      "alue\022,\n\014currentValue\030\005 \001(\0132\026.pvalue.Para" +
-      "meterValue\022\022\n\nviolations\030\006 \001(\r\0220\n\017acknow",
-      "ledgeInfo\030\007 \001(\0132\027.alarms.AcknowledgeInfo" +
-      "\"j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022S" +
-      "EVERITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n" +
-      "\014ACKNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamc" +
-      "s.protobuf"
+      "\n\014alarms.proto\022\006alarms\032\014pvalue.proto\"z\n\017" +
+      "AcknowledgeInfo\022\026\n\016acknowledgedBy\030\001 \001(\t\022" +
+      "\032\n\022acknowledgeMessage\030\002 \001(\t\022\027\n\017acknowled" +
+      "geTime\030\003 \001(\003\022\032\n\022acknowledgeTimeUTC\030\004 \001(\t" +
+      "\"\364\002\n\005Alarm\022\n\n\002id\030\001 \001(\r\022 \n\004type\030\002 \001(\0162\022.a" +
+      "larms.Alarm.Type\022,\n\014triggerValue\030\003 \001(\0132\026" +
+      ".pvalue.ParameterValue\022/\n\017mostSevereValu" +
+      "e\030\004 \001(\0132\026.pvalue.ParameterValue\022,\n\014curre" +
+      "ntValue\030\005 \001(\0132\026.pvalue.ParameterValue\022\022\n" +
+      "\nviolations\030\006 \001(\r\0220\n\017acknowledgeInfo\030\007 \001",
+      "(\0132\027.alarms.AcknowledgeInfo\"j\n\004Type\022\n\n\006A" +
+      "CTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SEVERITY_INCRE" +
+      "ASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014ACKNOWLEDGED" +
+      "\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2467,7 +2466,6 @@ public final class Alarms {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
         }, assigner);
   }

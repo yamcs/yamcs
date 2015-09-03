@@ -15,7 +15,6 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
-import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;

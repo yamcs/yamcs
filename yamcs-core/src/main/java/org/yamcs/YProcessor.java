@@ -26,6 +26,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
@@ -117,7 +118,7 @@ public class YProcessor extends AbstractService {
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
-        timeService = YamcsServer.getInstance(yamcsInstance).getTimeService();
+        timeService = YamcsServer.getTimeService(yamcsInstance);
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
@@ -154,7 +155,7 @@ public class YProcessor extends AbstractService {
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this);
             if(tmPacketProvider!=null) {
-            	tmPacketProvider.setTmProcessor(tmProcessor);
+            	tmPacketProvider.init(this, tmProcessor);
             }
             containerRequestManager=new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager=new ParameterRequestManagerImpl(this, tmProcessor);
@@ -165,7 +166,11 @@ public class YProcessor extends AbstractService {
                 pprov.init(this);
                 parameterRequestManager.addParameterProvider(pprov);
             }
-
+            //QUICK HACK  TODO
+            if((tmPacketProvider!=null) && (tmPacketProvider instanceof ParameterProvider) ) {
+                parameterRequestManager.addParameterProvider((ParameterProvider)tmPacketProvider);
+            }
+            
             if(commandReleaser!=null) {
                 try {
                     this.commandHistoryPublisher=new YarchCommandHistoryAdapter(yamcsInstance);
@@ -280,26 +285,33 @@ public class YProcessor extends AbstractService {
         	tmPacketProvider.awaitRunning();
         }
         notifyStarted();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
     
 
     public void pause() {
         ((ArchiveTmPacketProvider)tmPacketProvider).pause();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
 
     public void resume() {
         ((ArchiveTmPacketProvider)tmPacketProvider).resume();
-        propagateChannelStateChange();
+        propagateProcessorStateChange();
     }
 
-    private void propagateChannelStateChange() {
+     private void propagateProcessorStateChange() {
         listeners.forEach(l -> l.processorStateChanged(this));
     }
+    
     public void seek(long instant) {
         getTmProcessor().resetStatistics();
         ((ArchiveTmPacketProvider)tmPacketProvider).seek(instant);
+        propagateProcessorStateChange();
+    }
+    
+    public void changeSpeed(ReplaySpeed speed) {        
+        ((ArchiveTmPacketProvider)tmPacketProvider).changeSpeed(speed);
+        propagateProcessorStateChange();
     }
 
     /**
@@ -527,7 +539,7 @@ public class YProcessor extends AbstractService {
      */
     public long getCurrentTime() {        
         if(isReplay()) {
-            return ((ArchiveTmPacketProvider)tmPacketProvider).lastPacketTime();
+            return ((ArchiveTmPacketProvider)tmPacketProvider).getReplayTime();
         } else {
             return timeService.getMissionTime();
         }
@@ -543,5 +555,11 @@ public class YProcessor extends AbstractService {
     public void start() {
       startAsync();
       awaitRunning();
+    }
+
+
+
+    public void notifyStateChange() {
+        propagateProcessorStateChange();        
     }
 }

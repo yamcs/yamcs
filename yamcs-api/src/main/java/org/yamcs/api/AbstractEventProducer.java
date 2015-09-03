@@ -150,9 +150,11 @@ public abstract class AbstractEventProducer implements EventProducer {
 
     @Override
     public Event.Builder newEvent() {
-        long t=TimeEncoding.currentInstant();
+        long t = getMissionTime();
         return Event.newBuilder().setSource(source).
             setSeqNumber(seqNo.getAndIncrement()).setGenerationTime(t).
             setReceptionTime(t);
     }
+    
+    public abstract long getMissionTime() ;
 }

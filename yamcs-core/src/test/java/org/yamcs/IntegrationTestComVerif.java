@@ -27,7 +27,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC", 7);
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -76,13 +76,14 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
+        enableDebugging();
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
        
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ALG_VERIF_TC", 4, "p1", "10", "p2", "20");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 

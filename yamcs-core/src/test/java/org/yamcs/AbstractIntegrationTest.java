@@ -27,6 +27,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -61,7 +62,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        enableDebugging();
+      //  enableDebugging();
         setupYamcs();
     }
 
@@ -148,6 +149,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
 
@@ -161,6 +163,10 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void onDisconnect() {
             onDisconnect.release();
+        }
+        
+        @Override
+        public void onException(Throwable t) {
         }
 
         @Override
@@ -202,6 +208,11 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void onAlarm(Alarm alarm) {
             alarmList.add(alarm);
+        }
+        
+        @Override
+        public void onEvent(Event event) {
+            eventList.add(event);
         }
         
         @Override
@@ -259,7 +270,7 @@ public abstract class AbstractIntegrationTest {
         }
         @Override
         protected void doStart() {
-            mdbPacketGenerator.setTmProcessor(this);
+            mdbPacketGenerator.init(null, this);
             notifyStarted();
         }
         @Override
