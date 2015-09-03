@@ -7,6 +7,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.protobuf.Rest.RestAlarmInfo;
+import org.yamcs.protobuf.Rest.RestAlarmLevel;
+import org.yamcs.protobuf.Rest.RestAlarmRange;
 import org.yamcs.protobuf.Rest.RestDataSource;
 import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
 import org.yamcs.protobuf.Rest.RestGetParameterInfoRequest;
@@ -21,8 +24,13 @@ import org.yamcs.protobuf.Rest.RestUnitType;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
+import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatRange;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.UnitType;
@@ -154,7 +162,7 @@ public class MdbRequestHandler implements RestRequestHandler {
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-             if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }
@@ -182,6 +190,18 @@ public class MdbRequestHandler implements RestRequestHandler {
         for(UnitType ut: parameterType.getUnitSet()) {
             rptb.addUnitSet(getUnitType(ut));
         }
+        
+        if (parameterType instanceof IntegerParameterType) {
+            IntegerParameterType ipt = (IntegerParameterType) parameterType;
+            if (ipt.getDefaultAlarm() != null) {
+                rptb.setDefaultAlarm(getAlarmInfo(ipt.getDefaultAlarm()));
+            }
+        } else if (parameterType instanceof FloatParameterType) {
+            FloatParameterType fpt = (FloatParameterType) parameterType;
+            if (fpt.getDefaultAlarm() != null) {
+                rptb.setDefaultAlarm(getAlarmInfo(fpt.getDefaultAlarm()));
+            }
+        }
         return rptb.build();
     }
 
@@ -201,6 +221,44 @@ public class MdbRequestHandler implements RestRequestHandler {
             rnb.addAliases(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()).build());
         }
         return rnb.build();
+    }
+    
+    private RestAlarmInfo getAlarmInfo(NumericAlarm numericAlarm) {
+        RestAlarmInfo.Builder alarmInfob = RestAlarmInfo.newBuilder();
+        alarmInfob.setMinViolations(numericAlarm.getMinViolations());
+        AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
+        if (staticRanges.getWatchRange() != null) {
+            RestAlarmRange watchRange = getAlarmRange(RestAlarmLevel.watch, staticRanges.getWatchRange());
+            alarmInfob.addStaticAlarmRanges(watchRange);
+        }
+        if (staticRanges.getWarningRange() != null) {
+            RestAlarmRange warningRange = getAlarmRange(RestAlarmLevel.warning, staticRanges.getWarningRange());
+            alarmInfob.addStaticAlarmRanges(warningRange);
+        }
+        if (staticRanges.getDistressRange() != null) {
+            RestAlarmRange distressRange = getAlarmRange(RestAlarmLevel.distress, staticRanges.getDistressRange());
+            alarmInfob.addStaticAlarmRanges(distressRange);
+        }
+        if (staticRanges.getCriticalRange() != null) {
+            RestAlarmRange criticalRange = getAlarmRange(RestAlarmLevel.critical, staticRanges.getCriticalRange());
+            alarmInfob.addStaticAlarmRanges(criticalRange);
+        }
+        if (staticRanges.getSevereRange() != null) {
+            RestAlarmRange severeRange = getAlarmRange(RestAlarmLevel.severe, staticRanges.getSevereRange());
+            alarmInfob.addStaticAlarmRanges(severeRange);
+        }
+            
+        return alarmInfob.build();
+    }
+    
+    private RestAlarmRange getAlarmRange(RestAlarmLevel level, FloatRange alarmRange) {
+        RestAlarmRange.Builder resultb = RestAlarmRange.newBuilder();
+        resultb.setLevel(level);
+        if (Double.isFinite(alarmRange.getMinInclusive()))
+            resultb.setMinInclusive(alarmRange.getMinInclusive());
+        if (Double.isFinite(alarmRange.getMaxInclusive()))
+            resultb.setMaxInclusive(alarmRange.getMaxInclusive());
+        return resultb.build();
     }
 
     private XtceDb loadMdb(String yamcsInstance) throws RestException {

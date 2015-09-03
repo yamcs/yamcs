@@ -1,15 +1,9 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.decode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
@@ -19,46 +13,40 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.YamcsException;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.archive.ReplayListener;
+import org.yamcs.archive.ReplayServer;
+import org.yamcs.archive.YarchReplay;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.Instant;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.PpReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.xtce.MdbMappings;
+import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.protobuf.MessageLite;
 
 
 /**
- * Provides telemetry packets and processed parameters from the yamcs archive received via hornetq.
- * 
- * TODO: there should be a way to receive this data directly without the need of hornetq - that will avoid translating PP parameters
+ * Provides telemetry packets and processed parameters from the yamcs archive.
  * 
  * @author nm
  * 
  */
-public class ReplayService extends AbstractService implements MessageHandler, ArchiveTmPacketProvider, ParameterProvider {
+public class ReplayService extends AbstractService implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider {
     static final long timeout=10000;
-    private SimpleString packetReplayAddress;
 
     boolean loop;
     long start, stop; // start and stop times of playback request
@@ -69,222 +57,129 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
     ReplayRequest replayRequest;
     private HashSet<Parameter> subscribedParameters=new HashSet<Parameter>();
     private ParameterRequestManager parameterRequestManager;
-    private YamcsClient yclient;
-    private YamcsSession ysession;
     TmProcessor tmProcessor;
     volatile long dataCount=0;
-    XtceDb xtceDb;
-    volatile long lastPacketTime;
+    final XtceDb xtceDb;
+    volatile long replayTime;
 
     private final String yamcsInstance;
-    private final String archiveInstance;
-
-    @Deprecated
-    public ReplayService(String instance, String spec) throws YProcessorException, ConfigurationException {
-        this.yamcsInstance = instance;
-        xtceDb = XtceDbFactory.getInstance(instance);
-        String[] parts = spec.split(" ");
-        archiveInstance=parts[0];
-        
-        
-        try {
-            start = Long.parseLong(parts[1]);
-            stop = Long.parseLong(parts[2]);
-        } catch (NumberFormatException e) {
-            throw new YProcessorException("could not parse:" +e);
-        }
-        try {
-            if("STOP".equals(parts[3])) {
-                endAction=EndAction.QUIT;
-            }  else {
-                endAction=EndAction.valueOf(parts[3]);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new YProcessorException(e.getMessage());
-        }
-
-        int cnt=4;
-        ReplaySpeed speed;
-
-        if(parts[cnt].equalsIgnoreCase("REALTIME")) {
-            cnt++;
-            speed=ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(Float.parseFloat(parts[cnt++])).build();
-        } else if (parts[cnt].equalsIgnoreCase("AFAP")) {
-            cnt++;
-            speed=ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
-        } else if(parts[cnt].equalsIgnoreCase("FIXED_DELAY")) {
-            cnt++;
-            speed=ReplaySpeed.newBuilder().setType(ReplaySpeedType.FIXED_DELAY).setParam(Float.parseFloat(parts[cnt++])).build();
-        } else {
-            throw new YProcessorException("speed has to be one of REALTIME, AFAP or FIXED_DELAY");
-        }
-
-        if ( parts.length > cnt ) {
-            packets = new String[parts.length - cnt];
-            for ( int i = cnt; i < parts.length; ++i ) {
-                packets[i - cnt] = parts[i];
-            }
-        } else {
-            throw new YProcessorException("no packets specified");
-        }
-
-        ReplayRequest.Builder rrbuilder=ReplayRequest.newBuilder().setStart(start).setStop(stop).
-                setEndAction(endAction).setSpeed(speed);
-        PacketReplayRequest.Builder packetRequestBuilder = PacketReplayRequest.newBuilder();
-        PpReplayRequest.Builder ppRequestBuilder = PpReplayRequest.newBuilder();
-        for(String packet:packets) {
-            if(packet.startsWith("PP_")) {
-                ppRequestBuilder.addGroupNameFilter(packet);
-            } else {
-                packetRequestBuilder.addNameFilter(NamedObjectId.newBuilder().setName(packet).setNamespace(MdbMappings.MDB_OPSNAME));
-            }
-        }
-
-        if (!packetRequestBuilder.getNameFilterList().isEmpty())
-            rrbuilder.setPacketRequest(packetRequestBuilder);
-        if (!ppRequestBuilder.getGroupNameFilterList().isEmpty())
-            rrbuilder.setPpRequest(ppRequestBuilder);
-
-        replayRequest=rrbuilder.build();
-        createReplay();
-    }
-
+    YarchReplay yarchReplay;
+    YProcessor yprocessor;
+    
+   
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
-        this.archiveInstance = instance;
         this.replayRequest = spec;
+        xtceDb = XtceDbFactory.getInstance(instance);
         createReplay();
     }
 
 
     private void createReplay() throws YProcessorException {
+        ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
+        if(replayServer==null) {
+            throw new YProcessorException("ReplayServer not configured for this instance");
+        }
         try {
-            ysession=YamcsSession.newBuilder().build();
-            yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(archiveInstance),
-                    "createReplay", replayRequest, StringMessage.newBuilder());
-            packetReplayAddress=new SimpleString(answer.getMessage());
-            yclient.dataConsumer.setMessageHandler(this);
-
-        } catch (HornetQException e) {
-            throw new YProcessorException(e.toString());
+            yarchReplay = replayServer.createReplay(replayRequest, this, new SystemToken());
         } catch (YamcsException e) {
-            throw new YProcessorException(e.toString());
-        } catch (YamcsApiException e) {
-            throw new YProcessorException(e.getMessage(), e);
-        }        
+            log.error("Exception creating the replay", e);
+            throw new YProcessorException("Exception creating the replay",e);
+        }
     }
+    
+    
     @Override
-    public void init(YProcessor channel) throws ConfigurationException {
+    public void init(YProcessor proc) throws ConfigurationException {
+        this.yprocessor = proc;
     }
 
     @Override
-    public void setTmProcessor(TmProcessor tmProcessor) {
+    public void init(YProcessor proc, TmProcessor tmProcessor) {
         this.tmProcessor=tmProcessor;
+        this.yprocessor = proc;
     }
 
     @Override
     public boolean isArchiveReplay() {
         return true;
     }
+    
+    @Override
+    public void newData(ProtoDataType type, MessageLite data) {
+      //  System.out.println("ReplayService new Data received: "+data);
+        switch(type) {
+        case TM_PACKET:
+            dataCount++;
+            TmPacketData tpd=(TmPacketData)data;
+            replayTime = tpd.getGenerationTime();
+            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
+            break;
+        case PP:
+            //convert from protobuf ParameterValue to internal ParameterValue 
+            ParameterData pd=(ParameterData)data;
+            ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
+            for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
+                Parameter ppDef = xtceDb.getParameter(pbPv.getId());
+                ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
+                if(pv!=null) {
+                    params.add(pv);
+                    replayTime = pv.getGenerationTime();
+                }
+                
+            }
+            parameterRequestManager.update(params);
+            break;
+          default:
+                log.error("Unexpected data type {} received");            
+        }
+        
+    }
 
     @Override
-    public void onMessage(ClientMessage msg) {
-        try {
-            if(msg==null) {
-                log.warn("Null message received (maybe the yarch server has quit?)");
-                tmProcessor.finished();
-                return;
-            }
-            ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(DATA_TYPE_HEADER_NAME));
-            switch(dt) {
-            case TM_PACKET:
-                dataCount++;
-                TmPacketData tpd=(TmPacketData)decode(msg, TmPacketData.newBuilder());
-                lastPacketTime = tpd.getGenerationTime();
-                tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
-                break;
-            case PP:
-                //convert from protobuf ParameterValue to internal ParameterValue 
-                ParameterData pd=(ParameterData)decode(msg, ParameterData.newBuilder());
-                ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
-                for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
-                    Parameter ppDef=xtceDb.getParameter(pbPv.getId());
-                    ParameterValue pv=ParameterValue.fromGpb(ppDef, pbPv);
-                    if(pv!=null) params.add(pv);
-                }
-                parameterRequestManager.update(params);
-                break;
-            case STATE_CHANGE:
-                ReplayStatus rs=(ReplayStatus)decode(msg, ReplayStatus.newBuilder());
-                if(rs.getState()==ReplayState.CLOSED) {
-                    log.debug("End signal received");
-                    notifyStopped();
-                    closeYSession();
-                    tmProcessor.finished();
-                }
-                break;
-            }
-        } catch (Exception e) {
-            log.warn("Error when receiving data : ", e);
-            e.printStackTrace();
+    public void stateChanged(ReplayStatus rs) {
+        if(rs.getState()==ReplayState.CLOSED) {
+            log.debug("End signal received");
+            notifyStopped();
             tmProcessor.finished();
+        } else {
+            yprocessor.notifyStateChange();
         }
     }
 
 
     @Override
     public void doStop() {
-        try {
-            yclient.sendRequest(packetReplayAddress, "quit", null);
-            closeYSession();
-        } catch (HornetQException e) {
-            log.warn("Got Exception when quitting the packet replay: ", e);
+        if(yarchReplay!=null) {
+            yarchReplay.quit();
         }
         notifyStopped();
     }
 
-    private void closeYSession() throws HornetQException {
-        yclient.close();
-        ysession.close();
-    }
 
     @Override
     public void doStart() {
-        try {
-            yclient.executeRpc(packetReplayAddress, "Start", null, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.warn("Got Exception when starting the packet replay: ", e);
-        }
+        yarchReplay.start();
         notifyStarted();
     }
 
     @Override
     public void pause() {
-        try {
-            yclient.executeRpc(packetReplayAddress, "Pause", null, null);
-        } catch (Exception e) {
-            log.warn("Got Exception when pausing the packet replay: ", e);
-        }
+        yarchReplay.pause();
     }
 
     @Override
     public void resume() {
-        try {
-            yclient.executeRpc(packetReplayAddress, "Resume", null, null);
-        } catch (Exception e) {
-            log.warn("Got Exception when resuming the packet replay: ", e);
-        }
+        yarchReplay.start();
     }
 
 
     @Override
     public void seek(long time) {
         try {
-            yclient.executeRpc(packetReplayAddress, "Seek", Instant.newBuilder().setInstant(time).build(), null);
-        } catch (Exception e) {
-            log.warn("Got Exception when seeking the packet replay: ", e);
+            yarchReplay.seek(time);
+        } catch (YamcsException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -316,20 +211,36 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 
     @Override
     public boolean canProvide(NamedObjectId id) {
-        if(xtceDb.getParameter(id)!=null) return true;
-        else return false;
+        boolean result = false;
+        if(xtceDb.getParameter(id)!=null) {
+            result=true;
+        } else { //check if it's system parameter
+           if(SystemParameterDb.isSystemParameter(id)) {
+               result = true;
+           }
+        }
+        return result;
     }
 
     @Override
     public boolean canProvide(Parameter p) {
-        return xtceDb.getParameterEntries(p)!=null;
+        return true;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-        Parameter p=xtceDb.getParameter(id);
-        if(p==null) throw new InvalidIdentification();
-        else return p;
+        Parameter p = xtceDb.getParameter(id);
+        if(p==null) {
+            if(SystemParameterDb.isSystemParameter(id)) {
+                p = xtceDb.getSystemParameterDb().getSystemParameter(id);
+            }
+            
+        }
+        if(p==null) {
+            throw new InvalidIdentification();
+        } else {
+            return p;
+        }
     }
 
     @Override
@@ -339,7 +250,11 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
 
     @Override
     public ReplayRequest getReplayRequest() {
-        return replayRequest;
+        if(yarchReplay!=null) {
+            return yarchReplay.getCurrentReplayRequest();
+        } else {
+            return replayRequest;
+        }
     }
 
     @Override
@@ -347,18 +262,17 @@ public class ReplayService extends AbstractService implements MessageHandler, Ar
         if(!isRunning()) {
             return ReplayState.CLOSED;
         }
-        try {
-            ReplayStatus status=(ReplayStatus)yclient.executeRpc(packetReplayAddress, "GetReplayStatus", null, ReplayStatus.newBuilder());
-            return status.getState();
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.warn("Got Exception when starting the packet replay: ", e);
-            return ReplayState.ERROR;
-        }
+        return yarchReplay.getState();
     }
 
     @Override
-    public long lastPacketTime() {
-        return lastPacketTime;
+    public long getReplayTime() {
+        return replayTime;
+    }
+
+
+    @Override
+    public void changeSpeed(ReplaySpeed speed) {
+       yarchReplay.changeSpeed(speed);        
     }
 }

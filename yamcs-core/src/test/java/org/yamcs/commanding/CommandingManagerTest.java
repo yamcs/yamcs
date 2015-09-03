@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.YConfiguration;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
@@ -24,9 +25,10 @@ public class CommandingManagerTest {
     static XtceDb xtceDb;
 
     @BeforeClass 
-    public static void beforeClass() throws ConfigurationException {
-        xtceDb = XtceDbFactory.getInstanceByConfig("refmdb");
+    public static void beforeClass() throws ConfigurationException {        
         TimeEncoding.setUp();
+        YConfiguration.setup();
+        xtceDb = XtceDbFactory.getInstanceByConfig("refmdb");
     }
             
     @Test

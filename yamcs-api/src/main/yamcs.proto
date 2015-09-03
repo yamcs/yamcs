@@ -283,13 +283,12 @@ message PpReplayRequest {
 
 message ReplayStatus {
      enum ReplayState {
-         INITIALIZATION=0;/* just at the beginning or when the
-                         replay request (start, stop or packet selection) changes*/
+         INITIALIZATION=0; // just at the beginning or when the replay request (start, stop or packet selection) changes
          RUNNING=1;
-         STOPPED=2; /*the replay has reached the end with the endaction stop*/
-         ERROR=3;   /*the replay stopped due to an error.*/
+         STOPPED=2; //the replay has reached the end with the endaction stop
+         ERROR=3;   //the replay stopped due to an error.
          PAUSED=4;
-         CLOSED=5; /*the replay is finished and closed*/
+         CLOSED=5; //the replay is finished and closed
     };
     required ReplayState state=1;
     optional ReplayRequest request=2; //this is send only when answering getReplayStatus

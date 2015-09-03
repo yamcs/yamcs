@@ -70,6 +70,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setStreamData((StreamData) message);
         } else if (dataType == ProtoDataType.TIME_INFO) {
             responseb.setTimeInfo((TimeInfo) message);
+        } else if (dataType == ProtoDataType.EVENT) {
+            responseb.setEvent((Event) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }

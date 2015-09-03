@@ -1,8 +1,10 @@
 package org.yamcs.web.websocket;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
@@ -22,13 +24,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
 
     private AuthenticationToken authToken = null;
 
-    private final ParameterResource paraResource;
-    private final ContainerResource contResource;
-    private final CommandHistoryResource cmdhistResource;
-    private final ManagementResource mgmtResource;
-    private final AlarmsResource alarmResource;
-    private final StreamResource streamResource;
-    private final TimeResource timeResource;
+    private List<AbstractWebSocketResource> resources = new ArrayList<>();
     
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
@@ -38,28 +34,22 @@ public class WebSocketProcessorClient implements YProcessorClient {
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
-        paraResource = new ParameterResource(yproc, wsHandler);
-        contResource = new ContainerResource(yproc, wsHandler);
-        cmdhistResource = new CommandHistoryResource(yproc, wsHandler);
-        mgmtResource = new ManagementResource(yproc, wsHandler, clientId);
-        alarmResource = new AlarmsResource(yproc, wsHandler);
-        streamResource = new StreamResource(yproc, wsHandler);
-        timeResource = new TimeResource(yproc, wsHandler);
+        resources.add(new ParameterResource(yproc, wsHandler));
+		resources.add(new ContainerResource(yproc, wsHandler));
+        resources.add(new CommandHistoryResource(yproc, wsHandler));
+        resources.add(new ManagementResource(yproc, wsHandler, clientId));
+        resources.add(new AlarmsResource(yproc, wsHandler));
+        resources.add(new EventsResource(yproc, wsHandler));
+        resources.add(new StreamResource(yproc, wsHandler));
+        resources.add(new TimeResource(yproc, wsHandler));
     }
 
     @Override
     public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
         log.info("switching yprocessor to {}", newProcessor);
-        try {
-            paraResource.switchYProcessor(newProcessor, authToken);
-            contResource.switchYProcessor(newProcessor, authToken);            
-        } catch (NoPermissionException e) {
-            throw new YProcessorException("No permission", e);
+        for (AbstractWebSocketResource resource : resources) {
+            resource.switchYProcessor(newProcessor, authToken);
         }
-        cmdhistResource.switchYProcessor(newProcessor);
-        alarmResource.switchYProcessor(newProcessor);
-        streamResource.switchYProcessor(newProcessor);
-        timeResource.switchYProcessor(newProcessor);
     }
     
     public int getClientId() {
@@ -90,12 +80,6 @@ public class WebSocketProcessorClient implements YProcessorClient {
      */
     public void quit() {
         ManagementService.getInstance().unregisterClient(clientId);
-        paraResource.quit();
-        contResource.quit();
-        cmdhistResource.quit();
-        mgmtResource.quit();
-        alarmResource.quit();
-        streamResource.quit();
-        timeResource.quit();
+        resources.forEach(r -> r.quit());
     }
 }

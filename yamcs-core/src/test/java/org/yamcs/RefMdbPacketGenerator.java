@@ -113,7 +113,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public void setTmProcessor(TmProcessor tmProcessor) {
+    public void init(YProcessor proc, TmProcessor tmProcessor) {
         this.tmProcessor=tmProcessor;
     }
 
@@ -501,7 +501,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         final Semaphore s=new Semaphore(0);
         final AtomicInteger count=new AtomicInteger(0);
 
-        mdbgen.setTmProcessor(new TmProcessor() {
+        mdbgen.init(null, new TmProcessor() {
             @Override
             public void processPacket(PacketWithTime pwrt) {
                 try {

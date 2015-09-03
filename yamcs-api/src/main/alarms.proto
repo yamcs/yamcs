@@ -1,7 +1,6 @@
 package alarms;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
 import "pvalue.proto";
 
 message AcknowledgeInfo {

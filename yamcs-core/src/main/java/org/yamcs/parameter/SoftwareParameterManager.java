@@ -75,6 +75,12 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 	    Parameter p = getParam(gpv.getId());
 	    if(subscribedParams.contains(p)) {
 		org.yamcs.ParameterValue pv =  org.yamcs.ParameterValue.fromGpb(p, gpv);
+		long t;
+		if(yproc!=null) {
+		    t=yproc.getCurrentTime();
+		} else {
+		    t = TimeEncoding.getWallclockTime();
+		}
 		
 		if(gpv.hasAcquisitionStatus()) {
 		    pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
@@ -83,10 +89,10 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 		    pv.setProcessingStatus(true);
 		}
 		if(!gpv.hasGenerationTime()) {
-		    pv.setGenerationTime(yproc.getCurrentTime());
+		    pv.setGenerationTime(t);
 		}
 		if(!gpv.hasAcquisitionTime()) {
-		    pv.setAcquisitionTime(yproc.getCurrentTime());
+		    pv.setAcquisitionTime(t);
 		}
 		pvlist.add(pv);
 	    }
@@ -110,12 +116,11 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 	    }
 	    ParameterTypeProcessor.checkEngValueAssignment(p, gpv.getEngValue());
 	}
-
 	//then filter out the subscribed ones and send it to PRM
 	executor.submit(new Runnable() {
 	    @Override
 	    public void run() {
-		doUpdate(gpvList);
+	        doUpdate(gpvList);
 	    }
 	});
     }

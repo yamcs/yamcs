@@ -1,6 +1,7 @@
 package org.yamcs.api;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class EventProducerFactory {
      */
     static private boolean mockup=false;
     static private Queue<Event>mockupQueue;
-    
+
     static Logger log = LoggerFactory.getLogger(EventProducerFactory.class);
     /**
      * Configure the factory to produce mockup objects, optionally queuing the events in a queue
@@ -31,7 +32,7 @@ public class EventProducerFactory {
     static public Queue<Event> getMockupQueue() {
         return mockupQueue;
     }
-    
+
     /**
      * Creates an event producer based on the event-producer.yaml properties loaded from the classpath.
      * The yamcsURL in the file has to contain the yamcs instance.
@@ -43,7 +44,7 @@ public class EventProducerFactory {
     static public EventProducer getEventProducer() throws RuntimeException {
         return getEventProducer(null);
     }
-    
+
     /**
      *
      * The instance passed as parameter will overwrite the instance in the config file if any.
@@ -53,11 +54,11 @@ public class EventProducerFactory {
      * @throws RuntimeException
      */
     static public EventProducer getEventProducer(String instance) throws RuntimeException {
-        
+
         if(mockup)  {
             log.debug("Creating a ConsoleEventProducer with mockupQueue: "+mockupQueue);
             return new MockupEventProducer(mockupQueue);
-            
+
         }
         String configFile = "/event-producer.yaml";
         InputStream is=EventProducerFactory.class.getResourceAsStream(configFile);
@@ -87,11 +88,28 @@ public class EventProducerFactory {
         }
 
         if(instance==null) {
-             if (ycd.instance==null) throw new RuntimeException("yamcs instance has to be part of the URL");
+            if (ycd.instance==null) throw new RuntimeException("yamcs instance has to be part of the URL");
         } else {
             ycd.instance=instance;
         }
-        log.debug("Creating a YamcsEventProducer connected to {}", ycd.getUrl());
-        return new HornetQEventProducer(ycd);
+        EventProducer producer = null;
+        if(ycd.host==null) {
+            try {
+                //try to load the stream event producer from yamcs core becasue probably we are running inside the yamcs server
+                @SuppressWarnings("unchecked")
+                Class<EventProducer> ic=(Class<EventProducer>) Class.forName("org.yamcs.StreamEventProducer");
+                Constructor<EventProducer> constructor = ic.getConstructor(String.class);
+                producer =  constructor.newInstance(instance);
+            } catch (Exception e) {
+                log.warn("Failed to load the internal StreamEventProducer", e);
+            }
+        }
+
+        if(producer==null) {
+            log.debug("Creating a YamcsEventProducer connected to {}", ycd.getUrl());
+            producer = new HornetQEventProducer(ycd);
+        }
+        
+        return producer;
     }
 }

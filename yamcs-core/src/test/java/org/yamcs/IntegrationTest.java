@@ -84,7 +84,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWsParameter() throws Exception {
-        enableDebugging();
         //subscribe to parameters
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
 
@@ -98,7 +97,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // should fix this - we should have an ack that the thing has been subscribed 
         Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
-        for (int i=0;i <1000; i++) packetGenerator.generate_PKT1_1();
+        for (int i=0;i <10; i++) packetGenerator.generate_PKT1_1();
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         checkPdata(pdata, packetGenerator);
 
@@ -145,7 +144,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         long t0 = System.currentTimeMillis();
         req = RestGetParameterRequest.newBuilder()
                 .setTimeout(2000).addAllList(validSubscrList.getListList()).build();
-        System.out.println("sending request :" +toJson(req, SchemaRest.RestGetParameterRequest.WRITE));
 
         Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.RestGetParameterRequest.WRITE), currentUser);
 
@@ -225,7 +223,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", 5, "uint32_arg", "1000");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -259,7 +257,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 6, "p1", "2");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -294,7 +292,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC2", 6, "p1", "2");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -354,7 +352,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
                 .setReplaySpec(rr).build();
 
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/management/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -380,7 +378,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         //go back to realtime
         prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
                 .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/management/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -484,7 +482,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         RestSendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/INT_ARG_TC", 5, "uint32_arg", "1000");
         String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.RestSendCommandRequest.WRITE), currentUser);
-        assertEquals("{}", resp);
+        assertEquals("", resp);
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC", 5, "float_arg", "-15", "double_arg", "0");

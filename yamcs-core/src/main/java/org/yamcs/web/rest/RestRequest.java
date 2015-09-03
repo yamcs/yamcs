@@ -145,8 +145,47 @@ public class RestRequest {
         if (!isDELETE()) throw new MethodNotAllowedException(this); 
     }
     
+    public boolean hasQueryParameter(String name) {
+        return qsDecoder.parameters().containsKey(name);
+    }
+    
     public Map<String, List<String>> getQueryParameters() {
         return qsDecoder.parameters();
+    }
+    
+    public List<String> getQueryParameterList(String name) {
+        return qsDecoder.parameters().get(name);
+    }
+    
+    public String getQueryParameter(String name) {
+        List<String> param = qsDecoder.parameters().get(name);
+        if (param.isEmpty()) return null;
+        return param.get(0);
+    }
+    
+    public int getQueryParameterAsInt(String name) throws BadRequestException {
+        String param = getQueryParameter(name);
+        try {
+            return Integer.parseInt(param);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Query parameter '" + name + "' does not have a valid integer value");
+        }
+    }
+    
+    public long getQueryParameterAsLong(String name) throws BadRequestException {
+        String param = getQueryParameter(name);
+        try {
+            return Long.parseLong(param);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Query parameter '" + name + "' does not have a valid integer value");
+        }
+    }
+    
+    public boolean getQueryParameterAsBoolean(String name) {
+        List<String> paramList = getQueryParameterList(name);
+        String param = paramList.get(0);
+        return (param == null || "".equals(param) || "true".equalsIgnoreCase(param)
+                || "yes".equalsIgnoreCase(param));
     }
     
     ChannelHandlerContext getChannelHandlerContext() {
@@ -163,14 +202,8 @@ public class RestRequest {
     public JsonGenerator createJsonGenerator(OutputStream out) throws IOException {
         JsonGenerator generator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
         if (qsDecoder.parameters().containsKey("pretty")) {
-            List<String> pretty = qsDecoder.parameters().get("pretty");
-            if (pretty != null) {
-                String arg = pretty.get(0);
-                if (arg == null || "".equals(arg)
-                        || "true".equalsIgnoreCase(arg)
-                        || "yes".equalsIgnoreCase(arg)) {
-                    generator.useDefaultPrettyPrinter();
-                }
+            if (hasQueryParameter("pretty") && getQueryParameterAsBoolean("pretty")) {
+                generator.useDefaultPrettyPrinter();
             }
         }
         return generator;
@@ -202,7 +235,7 @@ public class RestRequest {
                 } else {
                     JsonIOUtil.mergeFrom(cin, msg, sourceSchema, false);
                 }
-            } catch(IOException e) {
+            } catch(IOException|NullPointerException e) {
                 throw new BadRequestException(e);
             } finally {
                 // GPB's mergeFrom does not close the stream, not sure about JsonIOUtil

@@ -265,7 +265,7 @@ public class YProcessorsTest {
         }
 
         @Override
-        public void setTmProcessor(TmProcessor tmProcessor) {
+        public void init(YProcessor proc, TmProcessor tmProcessor) {
             this.tmProcessor = tmProcessor;
         }
     }

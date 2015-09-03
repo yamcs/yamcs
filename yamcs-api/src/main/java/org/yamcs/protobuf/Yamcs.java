@@ -23141,8 +23141,7 @@ public final class Yamcs {
        * <code>INITIALIZATION = 0;</code>
        *
        * <pre>
-       * just at the beginning or when the
-       *replay request (start, stop or packet selection) changes
+       * just at the beginning or when the replay request (start, stop or packet selection) changes
        * </pre>
        */
       INITIALIZATION(0, 0),
@@ -23184,8 +23183,7 @@ public final class Yamcs {
        * <code>INITIALIZATION = 0;</code>
        *
        * <pre>
-       * just at the beginning or when the
-       *replay request (start, stop or packet selection) changes
+       * just at the beginning or when the replay request (start, stop or packet selection) changes
        * </pre>
        */
       public static final int INITIALIZATION_VALUE = 0;

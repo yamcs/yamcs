@@ -7603,6 +7603,32 @@ public final class YamcsManagement {
      * </pre>
      */
     long getSeekTime();
+
+    // optional .yamcs.ReplaySpeed replaySpeed = 5;
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    boolean hasReplaySpeed();
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.ReplaySpeed getReplaySpeed();
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder getReplaySpeedOrBuilder();
   }
   /**
    * Protobuf type {@code yamcsManagement.ProcessorRequest}
@@ -7685,6 +7711,19 @@ public final class YamcsManagement {
               seekTime_ = input.readInt64();
               break;
             }
+            case 42: {
+              org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                subBuilder = replaySpeed_.toBuilder();
+              }
+              replaySpeed_ = input.readMessage(org.yamcs.protobuf.Yamcs.ReplaySpeed.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(replaySpeed_);
+                replaySpeed_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000010;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -7741,6 +7780,10 @@ public final class YamcsManagement {
        * <code>SEEK = 4;</code>
        */
       SEEK(2, 4),
+      /**
+       * <code>CHANGE_SPEED = 5;</code>
+       */
+      CHANGE_SPEED(3, 5),
       ;
 
       /**
@@ -7755,6 +7798,10 @@ public final class YamcsManagement {
        * <code>SEEK = 4;</code>
        */
       public static final int SEEK_VALUE = 4;
+      /**
+       * <code>CHANGE_SPEED = 5;</code>
+       */
+      public static final int CHANGE_SPEED_VALUE = 5;
 
 
       public final int getNumber() { return value; }
@@ -7764,6 +7811,7 @@ public final class YamcsManagement {
           case 2: return PAUSE;
           case 3: return RESUME;
           case 4: return SEEK;
+          case 5: return CHANGE_SPEED;
           default: return null;
         }
       }
@@ -7966,17 +8014,58 @@ public final class YamcsManagement {
       return seekTime_;
     }
 
+    // optional .yamcs.ReplaySpeed replaySpeed = 5;
+    public static final int REPLAYSPEED_FIELD_NUMBER = 5;
+    private org.yamcs.protobuf.Yamcs.ReplaySpeed replaySpeed_;
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    public boolean hasReplaySpeed() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.ReplaySpeed getReplaySpeed() {
+      return replaySpeed_;
+    }
+    /**
+     * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+     *
+     * <pre>
+     *for CHANGE_SPEED
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder getReplaySpeedOrBuilder() {
+      return replaySpeed_;
+    }
+
     private void initFields() {
       operation_ = org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.PAUSE;
       instance_ = "";
       name_ = "";
       seekTime_ = 0L;
+      replaySpeed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      if (hasReplaySpeed()) {
+        if (!getReplaySpeed().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -7995,6 +8084,9 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt64(4, seekTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, replaySpeed_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -8020,6 +8112,10 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, seekTime_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, replaySpeed_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8133,6 +8229,7 @@ public final class YamcsManagement {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getReplaySpeedFieldBuilder();
         }
       }
       private static Builder create() {
@@ -8149,6 +8246,12 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000004);
         seekTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
+        if (replaySpeedBuilder_ == null) {
+          replaySpeed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
+        } else {
+          replaySpeedBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -8193,6 +8296,14 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000008;
         }
         result.seekTime_ = seekTime_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        if (replaySpeedBuilder_ == null) {
+          result.replaySpeed_ = replaySpeed_;
+        } else {
+          result.replaySpeed_ = replaySpeedBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8225,11 +8336,20 @@ public final class YamcsManagement {
         if (other.hasSeekTime()) {
           setSeekTime(other.getSeekTime());
         }
+        if (other.hasReplaySpeed()) {
+          mergeReplaySpeed(other.getReplaySpeed());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
+        if (hasReplaySpeed()) {
+          if (!getReplaySpeed().isInitialized()) {
+            
+            return false;
+          }
+        }
         return true;
       }
 
@@ -8531,6 +8651,159 @@ public final class YamcsManagement {
         seekTime_ = 0L;
         onChanged();
         return this;
+      }
+
+      // optional .yamcs.ReplaySpeed replaySpeed = 5;
+      private org.yamcs.protobuf.Yamcs.ReplaySpeed replaySpeed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ReplaySpeed, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder, org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder> replaySpeedBuilder_;
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public boolean hasReplaySpeed() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplaySpeed getReplaySpeed() {
+        if (replaySpeedBuilder_ == null) {
+          return replaySpeed_;
+        } else {
+          return replaySpeedBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public Builder setReplaySpeed(org.yamcs.protobuf.Yamcs.ReplaySpeed value) {
+        if (replaySpeedBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          replaySpeed_ = value;
+          onChanged();
+        } else {
+          replaySpeedBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public Builder setReplaySpeed(
+          org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder builderForValue) {
+        if (replaySpeedBuilder_ == null) {
+          replaySpeed_ = builderForValue.build();
+          onChanged();
+        } else {
+          replaySpeedBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public Builder mergeReplaySpeed(org.yamcs.protobuf.Yamcs.ReplaySpeed value) {
+        if (replaySpeedBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+              replaySpeed_ != org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance()) {
+            replaySpeed_ =
+              org.yamcs.protobuf.Yamcs.ReplaySpeed.newBuilder(replaySpeed_).mergeFrom(value).buildPartial();
+          } else {
+            replaySpeed_ = value;
+          }
+          onChanged();
+        } else {
+          replaySpeedBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public Builder clearReplaySpeed() {
+        if (replaySpeedBuilder_ == null) {
+          replaySpeed_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.getDefaultInstance();
+          onChanged();
+        } else {
+          replaySpeedBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder getReplaySpeedBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getReplaySpeedFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder getReplaySpeedOrBuilder() {
+        if (replaySpeedBuilder_ != null) {
+          return replaySpeedBuilder_.getMessageOrBuilder();
+        } else {
+          return replaySpeed_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.ReplaySpeed replaySpeed = 5;</code>
+       *
+       * <pre>
+       *for CHANGE_SPEED
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.ReplaySpeed, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder, org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder> 
+          getReplaySpeedFieldBuilder() {
+        if (replaySpeedBuilder_ == null) {
+          replaySpeedBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Yamcs.ReplaySpeed, org.yamcs.protobuf.Yamcs.ReplaySpeed.Builder, org.yamcs.protobuf.Yamcs.ReplaySpeedOrBuilder>(
+                  replaySpeed_,
+                  getParentForChildren(),
+                  isClean());
+          replaySpeed_ = null;
+        }
+        return replaySpeedBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:yamcsManagement.ProcessorRequest)
@@ -10213,27 +10486,29 @@ public final class YamcsManagement {
       "\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n\nreplaySp" +
       "ec\030\010 \001(\0132\024.yamcs.ReplayRequest\";\n\tOperat" +
       "ion\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_",
-      "PROCESSOR\020\001\"\262\001\n\020ProcessorRequest\022>\n\toper" +
+      "PROCESSOR\020\001\"\355\001\n\020ProcessorRequest\022>\n\toper" +
       "ation\030\001 \001(\0162+.yamcsManagement.ProcessorR" +
       "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
-      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\",\n\tOperation\022" +
-      "\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\"\243\001\n\010Lin" +
-      "kInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n" +
-      "\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(" +
-      "\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\td" +
-      "ataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t*\\" +
-      "\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n",
-      "\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004" +
-      "\022\n\n\006FAILED\020\0052\341\002\n\020ProcessorControl\022A\n\017Cre" +
-      "ateProcessor\022!.yamcsManagement.Processor" +
-      "Request\032\013.yamcs.Void\022D\n\022ConnectToProcess" +
-      "or\022!.yamcsManagement.ProcessorRequest\032\013." +
-      "yamcs.Void\022@\n\016PauseProcessor\022!.yamcsMana" +
-      "gement.ProcessorRequest\032\013.yamcs.Void\022A\n\017" +
-      "ResumeProcessor\022!.yamcsManagement.Proces" +
-      "sorRequest\032\013.yamcs.Void\022?\n\rSeekProcessor" +
-      "\022!.yamcsManagement.ProcessorRequest\032\013.ya",
-      "mcs.VoidB\024\n\022org.yamcs.protobuf"
+      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replaySpee" +
+      "d\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOperation" +
+      "\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHA" +
+      "NGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002" +
+      "(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004" +
+      " \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016" +
+      "\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016det",
+      "ailedStatus\030\t \001(\t*\\\n\014ServiceState\022\007\n\003NEW" +
+      "\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPIN" +
+      "G\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\0052\341\002\n\020Proc" +
+      "essorControl\022A\n\017CreateProcessor\022!.yamcsM" +
+      "anagement.ProcessorRequest\032\013.yamcs.Void\022" +
+      "D\n\022ConnectToProcessor\022!.yamcsManagement." +
+      "ProcessorRequest\032\013.yamcs.Void\022@\n\016PausePr" +
+      "ocessor\022!.yamcsManagement.ProcessorReque" +
+      "st\032\013.yamcs.Void\022A\n\017ResumeProcessor\022!.yam" +
+      "csManagement.ProcessorRequest\032\013.yamcs.Vo",
+      "id\022?\n\rSeekProcessor\022!.yamcsManagement.Pr" +
+      "ocessorRequest\032\013.yamcs.VoidB\024\n\022org.yamcs" +
+      ".protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10275,7 +10550,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ProcessorRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ProcessorRequest_descriptor,
-              new java.lang.String[] { "Operation", "Instance", "Name", "SeekTime", });
+              new java.lang.String[] { "Operation", "Instance", "Name", "SeekTime", "ReplaySpeed", });
           internal_static_yamcsManagement_LinkInfo_descriptor =
             getDescriptor().getMessageTypes().get(6);
           internal_static_yamcsManagement_LinkInfo_fieldAccessorTable = new

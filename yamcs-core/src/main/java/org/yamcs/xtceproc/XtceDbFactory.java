@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
@@ -35,23 +33,14 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SpreadsheetLoader;
-import org.yamcs.xtce.SystemParameter;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.XtceLoader;
 
 
 public class XtceDbFactory {
     static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
-    /**
-     * Namespace for hosting system parameters
-     */
-    public static String YAMCS_SPACESYSTEM_NAME = "/yamcs";
-    
-    /**
-     * Namespaces for hosting parameters valid in the command verification context
-     */
-    public static String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
-    public static String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
+
     
     /**
      * map instance names and config names to databases
@@ -124,17 +113,20 @@ public class XtceDbFactory {
         if (db == null) {
             //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
             SpaceSystem rootSs = loaderTree.load();
-            //rootSs.addSpaceSystem(xss);
-            rootSs.addSpaceSystem(new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1)));
+            SystemParameterDb sysDb = new SystemParameterDb();
+            
+            rootSs.addSpaceSystem(sysDb.getYamcsSpaceSystem());
             //rootSs.setHeader(xss.getHeader());
             
             int n;
-            while((n=resolveReferences(rootSs, rootSs))>0 ){};
+            while((n=resolveReferences(rootSs, rootSs, sysDb))>0 ){};
             StringBuffer sb=new StringBuffer();
             collectUnresolvedReferences(rootSs, sb);
             if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
+            
+            db.setSystemParameterDb(sysDb);
             
             //set the root sequence container as the first root sequence container found in the sub-systems. 
             for(SpaceSystem ss: rootSs.getSubSystems()) {
@@ -173,9 +165,10 @@ public class XtceDbFactory {
      * resolves references in ss by going recursively to all sub-space systems (in the first call ss=rootSs)
      * 
      * @param ss
+     * @param sysDb 
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
-    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws ConfigurationException {
+    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, SystemParameterDb sysDb) throws ConfigurationException {
         List<NameReference> refs=ss.getUnresolvedReferences();
         int n= (refs.size()==0)?-1:0;
 
@@ -183,12 +176,12 @@ public class XtceDbFactory {
         while (it.hasNext()) {
             NameReference nr=it.next();
 
-            //Special case for system variables: they are created on the fly
+            //Special case for system parameters: they are created on the fly
             NameDescription nd;
-            if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(YAMCS_SPACESYSTEM_NAME)) {
-                nd = getSystemParameter(rootSs, nr.getReference());
+            if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME)) {
+                nd = sysDb.getSystemParameter(nr.getReference());
             } else {
-                nd =findReference(rootSs, nr, ss);
+                nd = findReference(rootSs, nr, ss);
             }
             if(nd==null) throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
             if(nr.resolved(nd)) {
@@ -197,7 +190,7 @@ public class XtceDbFactory {
             }
         }
         for(SpaceSystem ss1:ss.getSubSystems()) {
-            int m=resolveReferences(rootSs, ss1);
+            int m = resolveReferences(rootSs, ss1, sysDb);
             if(n==-1) {
                 n=m;
             } else if(m>0) {
@@ -207,43 +200,8 @@ public class XtceDbFactory {
         return n;
     }
 
-    /**
-     * Create if not already existing the system parameter and the enclosing space systems
-     * 
-     * @param rootSs
-     * @param fqname
-     * @return
-     */
-    private static SystemParameter getSystemParameter(SpaceSystem yamcsSs, String fqname) {
-        DataSource ds = getSystemParameterDataSource(fqname);
-        
-        String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
+    
 
-        SpaceSystem ss = yamcsSs;
-        for(int i=1; i<a.length-1;i++) {
-            SpaceSystem sss = ss.getSubsystem(a[i]);
-            if(sss==null) {
-                sss=new SpaceSystem(a[i]);
-                ss.addSpaceSystem(sss);
-            }
-            ss=sss;
-        }
-        SystemParameter sv = (SystemParameter)ss.getParameter(a[a.length-1]);
-        
-        if(sv==null) {
-            sv = SystemParameter.getForFullyQualifiedName(fqname, ds);
-            log.debug("adding new system variable for "+fqname+" in system "+ss);
-            ss.addParameter(sv);
-        }
-        
-        return sv;
-    }
-
-    private static DataSource getSystemParameterDataSource(String fqname) {
-        if(fqname.startsWith(YAMCS_CMD_SPACESYSTEM_NAME)) return DataSource.COMMAND;
-        else if(fqname.startsWith(YAMCS_CMDHIST_SPACESYSTEM_NAME)) return DataSource.COMMAND_HISTORY;
-        else return DataSource.SYSTEM;
-    }
 
     /**
      * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in the parent hierarchy if relative reference
@@ -283,7 +241,7 @@ public class XtceDbFactory {
 
     }
     /**
-     * find reference sarting at startSs and looking through the SpaceSystem path
+     * find reference starting at startSs and looking through the SpaceSystem path
      * @param startSs
      * @param nr
      * @return
@@ -595,5 +553,5 @@ public class XtceDbFactory {
             return rootSs;
         }
         
-    }
+    }    
 }

@@ -253,13 +253,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
     }
 
-    public void switchYProcessor(YProcessor c, AuthenticationToken authToken)
-            throws YProcessorException, NoPermissionException {
+    @Override
+    public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
         try {
             pidrm.switchPrm(c.getParameterRequestManager(), authToken);
         } catch (InvalidIdentification e) {
-            log.warn("got InvalidIdentification when resubscribing");
-            e.printStackTrace();
+            log.warn("got InvalidIdentification when resubscribing", e);
+        } catch (NoPermissionException e) {
+            throw new YProcessorException("No permission", e);
         }
     }
 }

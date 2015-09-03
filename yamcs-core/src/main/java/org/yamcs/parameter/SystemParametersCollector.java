@@ -23,10 +23,9 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -92,8 +91,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 id = InetAddress.getLocalHost().getHostName();
             }
             serverId = id;
-            namespace = XtceDbFactory.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
-            log.info("Using {} as serverId, and {} as namespace for system variables", serverId, namespace);
+            namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
+            log.info("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         } catch (ConfigurationException e) {
             throw e;
         } catch (UnknownHostException e) {

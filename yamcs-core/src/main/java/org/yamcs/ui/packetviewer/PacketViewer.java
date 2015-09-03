@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -105,6 +106,8 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
+
+import com.google.protobuf.ByteString;
 
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterRequestManager, ConnectionListener {
@@ -560,7 +563,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
 
     void loadFile() {
-        new SwingWorker<Void, ListPacket>() {
+        new SwingWorker<Void, TmPacketData>() {
             ProgressMonitor progress;
             @Override
             protected Void doInBackground() throws Exception {
@@ -570,7 +573,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 try {
                     FileInputStream reader = new FileInputStream(lastFile);
                     byte[] fourb = new byte[4];
-                    ListPacket packet;
+                    TmPacketData packet;
                     ByteBuffer buf;
                     int res;
                     int len, offset = 0;
@@ -584,13 +587,13 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             res = reader.read(fourb, 0, 4);
             if (res != 4) break;
             buf = ByteBuffer.allocate(16);
-            if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
-                offset+=10;
-                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
-            } else if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+            if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                 buf.put(fourb, 0, 4);
                 if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
+            } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
+                if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
+                offset+=10;
+                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);            
             } else {//pacts packet
                 isPacts=true;
                 //System.out.println("pacts packet");
@@ -613,11 +616,16 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 }
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
-            len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;           
-            packet = new ListPacket(buf.array(), len, offset);
-
-            r = reader.skip(len - 16);
+            len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
+            byte[] bufn = new byte[len];
+            System.arraycopy(buf.array(), 0, bufn, 0, 16);
+            r=reader.read(bufn, 16, len-16);
             if (r != len - 16) throw new ShortReadException(len-16, r, offset);
+            
+            packet = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
+                    .setReceptionTime(TimeEncoding.getWallclockTime()).build();
+            
+            
             offset += len;
             if(isPacts) {
                 if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
@@ -642,11 +650,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             }
 
             @Override
-            protected void process(final List<ListPacket> chunks) {
-                for (ListPacket packet:chunks) {
-                   /* packetsTable.addRow(new Object[] {
-                            TimeEncoding.toCombinedFormat(packet.getInstant()),
-                            packet.getAPID(), packet, packet.getLength()      });*/
+            protected void process(final List<TmPacketData> chunks) {
+                for (TmPacketData packet:chunks) {
+                    packetsTable.packetReceived(packet);
                 }
             }
 
