@@ -352,7 +352,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
                 .setReplaySpec(rr).build();
 
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/management/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -378,7 +378,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         //go back to realtime
         prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
                 .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/management/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
