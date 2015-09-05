@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.ws.WebSocketClient;
-import org.yamcs.api.ws.WebSocketClientCallbackListener;
+import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
@@ -27,6 +27,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.RestArgumentType;
 import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
+import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
@@ -83,7 +84,7 @@ public abstract class AbstractIntegrationTest {
         if(currentUser != null)
             wsClient = new WebSocketClient(ycp, wsListener, currentUser.getUsername(), currentUser.getPasswordS());
         else
-            wsClient = new WebSocketClient(ycp, wsListener, null, null);
+            wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
@@ -138,7 +139,7 @@ public abstract class AbstractIntegrationTest {
         return msg;
     }
 
-    class MyWsListener implements WebSocketClientCallbackListener {
+    class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
@@ -155,76 +156,61 @@ public abstract class AbstractIntegrationTest {
 
         int count =0;
         @Override
-        public void onConnect() {
+        public void connected() {
             onConnect.release();
 
         }
 
         @Override
-        public void onDisconnect() {
+        public void disconnected() {
             onDisconnect.release();
         }
         
-        @Override
-        public void onException(Throwable t) {
-        }
-
         @Override
         public void onInvalidIdentification(NamedObjectId id) {
             invalidIdentificationList.add(id);
         }
 
         @Override
-        public void onParameterData(ParameterData pdata) {
-            count++;
-            if((count %1000) ==0 ){
-                System.out.println("received pdata "+count);
+        public void onMessage(WebSocketSubscriptionData data) {
+            switch (data.getType()) {
+            case PARAMETER:
+                count++;
+                if((count %1000) ==0 ){
+                    System.out.println("received pdata "+count);
+                }
+
+                parameterDataList.add(data.getParameterData());
+                break;
+            case CMD_HISTORY:
+                //System.out.println("COMMAND HISTORY-------------"+cmdhistData);
+                cmdHistoryDataList.add(data.getCommand());
+                break;
+            case CLIENT_INFO:
+                clientInfoList.add(data.getClientInfo());
+                break;
+            case PROCESSOR_INFO:
+                processorInfoList.add(data.getProcessorInfo());
+                break;
+            case PROCESSING_STATISTICS:
+                statisticsList.add(data.getStatistics());
+                break;
+            case ALARM:
+                alarmList.add(data.getAlarm());
+                break;
+            case EVENT:
+                eventList.add(data.getEvent());
+                break;
+            case STREAM_DATA:
+                streamDataList.add(data.getStreamData());
+                break;
+            case TIME_INFO:
+                timeInfoList.add(data.getTimeInfo());
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
-
-            parameterDataList.add(pdata);
         }
-
-        @Override
-        public void onCommandHistoryData(CommandHistoryEntry cmdhistData) {
-            //System.out.println("COMMAND HISTORY-------------"+cmdhistData);
-            cmdHistoryDataList.add(cmdhistData);
-        }
-
-        @Override
-        public void onClientInfoData(ClientInfo clientInfo) {
-            clientInfoList.add(clientInfo);
-        }
-
-        @Override
-        public void onProcessorInfoData(ProcessorInfo processorInfo) {
-            processorInfoList.add(processorInfo);
-        }
-
-        @Override
-        public void onStatisticsData(Statistics statistics) {
-            statisticsList.add(statistics);
-        }
-        
-        @Override
-        public void onAlarm(Alarm alarm) {
-            alarmList.add(alarm);
-        }
-        
-        @Override
-        public void onEvent(Event event) {
-            eventList.add(event);
-        }
-        
-        @Override
-        public void onStreamData(StreamData streamData) {
-            streamDataList.add(streamData);
-        }
-        
-        @Override
-        public void onTimeInfo(TimeInfo timeInfo) {
-            timeInfoList.add(timeInfo);
-        }
-        
     }
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
         static volatile PacketProvider instance;

@@ -3,12 +3,13 @@ package org.yamcs.api.ws;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.ws.WebSocketClient.RequestResponsePair;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 
@@ -31,13 +32,16 @@ import io.netty.util.CharsetUtil;
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
-
+    
     private final WebSocketClientHandshaker handshaker;
     private final WebSocketClient client;
-    private final WebSocketClientCallbackListener callback;
+    
+    private WebSocketClientCallback callback;
+    
     private ChannelPromise handshakeFuture;
 
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client, WebSocketClientCallbackListener callback) {
+    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client,
+            WebSocketClientCallback callback) {
         this.handshaker = handshaker;
         this.client = client;
         this.callback = callback;
@@ -60,12 +64,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected!");
-        client.setConnected(false);
-        callback.onDisconnect();
-        if (client.isReconnectionEnabled()) {
-            // TODO this is actually not enough. we would also need to resubscribe
-            // ctx.channel().eventLoop().schedule(() -> client.connect(), 1L, TimeUnit.SECONDS);
-        }
+        callback.disconnected();
+        
+        if (client.isReconnectionEnabled())
+            ctx.channel().eventLoop().schedule(() -> client.connect(), 1L, TimeUnit.SECONDS);
     }
 
     @Override
@@ -74,9 +76,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         if (!handshaker.isHandshakeComplete()) {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
             log.info("WebSocket Client connected!!");
-            client.setConnected(true);
             handshakeFuture.setSuccess();
-            callback.onConnect();
+            callback.connected();
             return;
         }
 
@@ -116,7 +117,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 processExceptionData(message.getException());
                 break;
             case DATA:
-                processSubscriptionData(message.getData());
+                callback.onMessage(message.getData());
                 break;
             default:
                 throw new IllegalStateException("Invalid message type received: " + message.getType());
@@ -126,54 +127,22 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         }
     }
 
-    private void processSubscriptionData(WebSocketSubscriptionData data) throws IOException {
-        switch (data.getType()) {
-        case PARAMETER:
-            callback.onParameterData(data.getParameterData());
-            break;
-        case CMD_HISTORY:
-            callback.onCommandHistoryData(data.getCommand());
-            break;
-        case CLIENT_INFO:
-            callback.onClientInfoData(data.getClientInfo());
-            break;
-        case PROCESSOR_INFO:
-            callback.onProcessorInfoData(data.getProcessorInfo());
-            break;
-        case PROCESSING_STATISTICS:
-            callback.onStatisticsData(data.getStatistics());
-            break;
-        case ALARM:
-            callback.onAlarm(data.getAlarm());
-            break;
-        case STREAM_DATA:
-            callback.onStreamData(data.getStreamData());
-            break;
-        case TIME_INFO:
-            callback.onTimeInfo(data.getTimeInfo());
-            break;
-        case EVENT:
-            callback.onEvent(data.getEvent());
-            break;
-        default:
-            throw new IllegalStateException("Unsupported data type " + data.getType());
-        }
-    }
-
     private void processExceptionData(WebSocketExceptionData exceptionData) throws IOException {
+        int reqId = exceptionData.getSequenceNumber();
+        RequestResponsePair pair =  client.getRequestResponsePair(reqId);
+        if (pair == null) {
+            log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
+            return;
+        }
+        
+        // TODO this doesn't belong here, we should make this an option in the request and do it server-side
         if ("InvalidIdentification".equals(exceptionData.getType())) {
             // Well that's unfortunate, we need to resend another subscription with
             // the invalid parameters excluded
             byte[] barray = exceptionData.getData().toByteArray();
             NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
-            int reqId = exceptionData.getSequenceNumber();
             
-            WebSocketRequest req = client.getUpstreamRequest(exceptionData.getSequenceNumber());
-        
-            if(req==null) {
-                log.warn("Received an InvalidIdentification exception for a request I did not send (or was already finished) seqNum: {}", reqId);
-                return;
-            }
+            WebSocketRequest req = pair.request;
             if(!req.getResource().equals("parameter") || !req.getOperation().equals("subscribe")) {
                 log.warn("Received an InvalidIdentification exception for a request that is not a parameter/subscribe request, seqNum: {}", reqId);
                 return;
@@ -182,7 +151,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             NamedObjectList requestedIdList = (NamedObjectList) req.getRequestData();
             Set<NamedObjectId> requestedIds = new HashSet<>(requestedIdList.getListList());
             for (NamedObjectId invalidId : invalidList.getListList()) {
-                // Notify downstream channels
+                // Notify downstream
                 callback.onInvalidIdentification(invalidId);
                 requestedIds.remove(invalidId);
             }
@@ -196,8 +165,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 client.sendRequest(new WebSocketRequest("parameter", "subscribe", nol));
             }
         } else {
-            // TODO we should throw this up based on seqNr.
-            log.error("Got exception message " + exceptionData.getMessage());
+            log.warn("Got exception message " + exceptionData.getMessage());
+            if (pair.responseHandler != null) {
+                pair.responseHandler.onException(exceptionData);
+            }
         }
     }
 
@@ -208,6 +179,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             handshakeFuture.setFailure(cause);
         }
         ctx.close();
-        callback.onException(cause);
+        callback.connectionFailed(cause);
     }
 }
