@@ -1,7 +1,22 @@
 package org.yamcs.xtce;
 
-import jxl.*;
-import jxl.read.biff.BiffException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteOrder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +29,12 @@ import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
-import java.io.*;
-import java.nio.ByteOrder;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import jxl.Cell;
+import jxl.CellType;
+import jxl.NumberCell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 
 /**
  * This class loads database from excel spreadsheets. Used for the Solar instruments for which the TM 
@@ -690,11 +704,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
-                log.debug("Ignoring line {} because it's empty",ctx.row);
+                log.trace("Ignoring line {} because it's empty",ctx.row);
                 continue;
             }
             if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 continue;
             }
             // at this point, cells contains the data (name, path, ...) of either
@@ -898,11 +912,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
-                log.debug("Ignoring line {} because it's empty", ctx.row);
+                log.trace("Ignoring line {} because it's empty", ctx.row);
                 continue;
             }
             if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 continue;
             }
 
@@ -1057,12 +1071,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
-                log.debug("Ignoring line {} because it's empty", ctx.row);
+                log.trace("Ignoring line {} because it's empty", ctx.row);
                 i++;
                 continue;
             }
             if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 i++;
                 continue;
             }
@@ -1130,12 +1144,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
-                log.debug("Ignoring line {} because it's empty", ctx.row);
+                log.trace("Ignoring line {} because it's empty", ctx.row);
                 i++;
                 continue;
             }
             if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
-                log.debug("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 i++;
                 continue;
             }
