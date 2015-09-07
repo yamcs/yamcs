@@ -44,15 +44,17 @@ public class RdbTableWriter extends TableWriter {
 			RdbPartition partition = getDbPartition(t);
 			YRDB db = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().valueColumnType), false);
 
-			boolean inserted=false; 
+			boolean inserted=false;
+			boolean updated=false;
 
 			switch (mode) {
 			case INSERT:
 				inserted=insert(db, partition, t);
 				break;
-				/*	case UPSERT:
-			    upsert(db,t);
-                break;*/
+			case UPSERT:
+			    inserted=upsert(db, partition, t);
+			    updated=!inserted;
+                break;
 			case INSERT_APPEND:
 				inserted=insertAppend(db,partition, t);
 				break;
@@ -64,6 +66,9 @@ public class RdbTableWriter extends TableWriter {
 			if(inserted && tableDefinition.hasHistogram()) {
 				addHistogram(t);
 			}
+            if(updated && tableDefinition.hasHistogram()) {
+                // TODO updateHistogram(t);
+            }
 		} catch (IOException e) {
 			log.error("failed to insert a record: ", e);
 			e.printStackTrace();
@@ -106,12 +111,22 @@ public class RdbTableWriter extends TableWriter {
 			return false;
 		}
 	}
-	/* commented out because not tested TODO
-	private void upsert(YBDB db, Tuple t) throws IOException {
+
+	private boolean upsert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k=tableDefinition.serializeKey(t);
         byte[] v=tableDefinition.serializeValue(t);
-        db.put(k, v);
-    }*/
+        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(partition.getValue());
+        if(cfh==null) {
+            cfh = db.createColumnFamily(partition.getValue());
+        }
+        if(db.get(cfh, k)==null) {
+            db.put(cfh, k, v);
+            return true;
+        } else {
+            db.put(cfh, k, v);
+            return false;
+        }
+    }
 
 	/**
 	 * returns true if a new record has been inserted and false if an record was already existing with this key (even if modified)

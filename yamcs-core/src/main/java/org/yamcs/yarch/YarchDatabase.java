@@ -75,7 +75,6 @@ public class YarchDatabase {
     static Map<String,YarchDatabase> databases=new HashMap<String,YarchDatabase>();
     private String dbname;
 
-    @SuppressWarnings("unchecked")
     private YarchDatabase(String dbname) throws YarchException {
 	this.dbname=dbname;
 	managementService=ManagementService.getInstance();

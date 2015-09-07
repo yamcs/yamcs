@@ -20,7 +20,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -111,7 +110,6 @@ public class XtceTmRecorder extends AbstractService {
                 createRecorder(sce);
             }
         } else if(config != null && config.containsKey("streams")){
-            @SuppressWarnings("unchecked")
             List<String> streamNames = YConfiguration.getList(config, "streams");
             for(String sn: streamNames) {
                 StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);

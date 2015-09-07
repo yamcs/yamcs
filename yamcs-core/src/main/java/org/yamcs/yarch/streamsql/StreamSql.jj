@@ -147,6 +147,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TUPLES:"TUPLES">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UPDATE:"UPDATE">
+|   <K_UPSERT:"UPSERT">
 |   <K_USE:"USE">
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
@@ -227,6 +228,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     statement=InsertStatement()
     |
     statement=InsertAppendStatement()
+    |
+    statement=UpsertStatement()
     |
     statement=CloseStreamStatement()
     |
@@ -426,6 +429,16 @@ InsertStatement InsertStatement(): {
     "INSERT" "INTO" name=ObjectName() expression=StreamExpression()
     {
        return new InsertStatement(name, expression, InsertMode.INSERT);
+    }
+}
+
+InsertStatement UpsertStatement(): {
+    String name;
+    StreamExpression expression;
+} {
+    <K_UPSERT> "INTO" name=ObjectName() expression=StreamExpression()
+    {
+       return new InsertStatement(name, expression, InsertMode.UPSERT);
     }
 }
 

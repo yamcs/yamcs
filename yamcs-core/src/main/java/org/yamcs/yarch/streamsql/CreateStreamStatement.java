@@ -6,14 +6,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamAlreadyExistsException;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
-
 public class CreateStreamStatement extends StreamSqlStatement {
     String streamName;
     StreamExpression expression;
@@ -34,7 +26,7 @@ public class CreateStreamStatement extends StreamSqlStatement {
         YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
         synchronized(dict) {
             if(dict.streamOrTableExists(streamName))
-                throw new StreamAlreadyExistsException("a stream or table '"+streamName+"' already exists");
+                throw new StreamAlreadyExistsException(streamName);
 
             AbstractStream stream;
             if(expression!=null) { 
