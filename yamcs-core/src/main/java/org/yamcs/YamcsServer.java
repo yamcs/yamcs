@@ -79,7 +79,7 @@ public class YamcsServer {
     
     static TimeService realtimeTimeService = new RealtimeTimeService();
     
-    static private String serverId = deriveServerId();
+    static private String serverId;
     
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
@@ -90,8 +90,6 @@ public class YamcsServer {
         
         
         log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
-        
-        deriveServerId();
         
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
@@ -375,6 +373,7 @@ public class YamcsServer {
 
 	try {
 	    YConfiguration.setup();
+            serverId = deriveServerId();
 		setupSecurity();
 	    setupHornet();
 	    org.yamcs.yarch.management.ManagementService.setup(true);
