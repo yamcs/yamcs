@@ -18,7 +18,7 @@ USS.loadDisplay = function(div, filename, yamcsWebSocket, doneFunction) {
     console.log('loading ', filename, 'in ', div);
     $(div).svg({onLoad: function() {
         $.ajax({
-            url: "/_static/displays/"+filename,
+            url: '/_static/' + yamcsInstance + '/displays/' + filename,
             eventdataType: 'xml'
         }).done(function(data) {
             var d=new USS.Display(div);
@@ -31,12 +31,12 @@ USS.loadDisplay = function(div, filename, yamcsWebSocket, doneFunction) {
                 yamcsWebSocket.subscribeParameters(d.parameters);
                 yamcsWebSocket.subscribeComputations(d.parameters);
             }
-            if(doneFunction) doneFunction(d)
+            if(doneFunction) doneFunction(d);
             //console.log(d);
             // console.log(computations);
         })
     }});
-}
+};
 
 USS.updateWidget = function(db, para) {
     var widget=db.widget;
@@ -60,7 +60,7 @@ USS.updateWidget = function(db, para) {
         default:
             console.log('TODO update dynamic property: ', db.dynamicProperty);
     }
-}
+};
 
 USS.parseDataBinding = function(e) {
     var db=new Object();
@@ -108,7 +108,7 @@ USS.parseDataBinding = function(e) {
        db.parameterName=pname;
     }
     return db;
-}
+};
 
 /*
 /*
@@ -144,7 +144,7 @@ USS.writeText = function(svg, parent, opts, textStyle, text) {
         t.setAttribute('dy', opts.y - bbox.y + opts.height - bbox.height);
     }
     return t;
-}
+};
 
 USS.parseFillStyle = function(e) {
     var fs=new Object();
@@ -157,7 +157,7 @@ USS.parseFillStyle = function(e) {
         fs.fillOpacity=0;
     }
    return fs
-}
+};
 
 USS.parseDrawStyle = function(e) {
     var ds=new Object();
@@ -171,7 +171,7 @@ USS.parseDrawStyle = function(e) {
     ds.stroke=USS.parseColor($(obj).children('Color'));
     ds.strokeWidth=$(obj).children('Width').text();
     return ds;
-}
+};
 
 USS.parseTextStyle=function(e) {
     var ts=new Object();
@@ -188,7 +188,7 @@ USS.parseTextStyle=function(e) {
     if(underline) ts.textDecoration="underline";
     ts.fill=USS.parseColor($(e).children('Color')[0]);
     return ts;
-}
+};
 
 
 USS.parseColor =function(e, defaultColor) {
@@ -199,7 +199,7 @@ USS.parseColor =function(e, defaultColor) {
     var blue=$e.children('blue').text();
     var alpha=$e.children('alpha').text();
     return "rgba("+red+","+green+","+blue+","+alpha+")";
-}
+};
 
 USS.getReferencedElement = function(e) {
     var tokens=e.getAttribute('reference').split('/');
@@ -221,7 +221,7 @@ USS.getReferencedElement = function(e) {
         }
     }
    return e; 
-}
+};
 
 //creates a definition section in the SVG and adds the markers that will be used for polylines arrows
 // TODO: It is broken currently because the markers will show all in black, instead of the color of the line
@@ -240,7 +240,7 @@ USS.addArrowMarkers = function(svg) {
         path = path.reset();
         svg.path(arrowMarkerEnd, path.move(0, -15).line(-20, 0).line(0, 15),
             {fillRule: 'evenodd', fillOpacity: '1.0', transform: 'scale(0.2, 0.2) rotate(180) translate(20, 0)'});
-}
+};
 
 USS.engValueToString = function(engValue, decimals) {
    switch(engValue.type) {
@@ -252,7 +252,7 @@ USS.engValueToString = function(engValue, decimals) {
    for(var idx in engValue) {
       if(idx!='type') return engValue[idx];
    }
-}
+};
 
 USS.getParameterValue = function(param, usingRaw) {
     if(usingRaw) {
@@ -278,7 +278,7 @@ USS.getParameterValue = function(param, usingRaw) {
             if(idx!='type') return ev[idx];
         }
     }
-}
+};
 
 //used from the NavigationButton
 USS.openDisplay = function(displayBaseName) {
@@ -287,7 +287,7 @@ USS.openDisplay = function(displayBaseName) {
     } else {
         alert("This button only works when the display is running inside the full USS app");
     }
-}
+};
 
 
 //get the parameter id for the parameter shown in the widget for plotting or info
@@ -298,4 +298,4 @@ USS.getParameterFromWidget = function(widget) {
 	    return {name: p.parameterName, namespace: p.parameterNamespace}
        }
    }
-}
+};

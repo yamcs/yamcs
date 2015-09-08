@@ -121,7 +121,7 @@ function showWindow(name, onShowFunction, resizable, scrollable) {
 		 onShowFunction(div, name, yamcsWebSocket, function(width, height) {
                      console.log("resizing to ", width, height);
                      wnd.resize(width, height+25); //the 24 comes from  css .window_header_normal height+2*padding: 20*2*2
-                     var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+name+"</span>";        
+                     var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+name+"</span>";
                      $("#yamcs-task-list").append(s);
                      var e = document.getElementById("task-"+name);
                      var $e = $(e);s
@@ -151,12 +151,12 @@ function showDisplay(filename) {
     if(wnd) {
         wnd.select();
     } else {
-      var dname=filename.substring(0, filename.length-4);
-      showWindow(filename, function(div, filename, yamcsWebSocket, onLoadContent) {
-	USS.loadDisplay(div, filename, yamcsWebSocket, function(displ) {
-	  onLoadContent(displ.width, displ.height);
-	});
-      });
+        var dname=filename.substring(0, filename.length-4);
+        showWindow(filename, function(div, filename, yamcsWebSocket, onLoadContent) {
+	        USS.loadDisplay(div, filename, yamcsWebSocket, function(displ) {
+	            onLoadContent(displ.width, displ.height);
+	        });
+        });
     }
 }
 

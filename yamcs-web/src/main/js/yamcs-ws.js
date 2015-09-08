@@ -4,12 +4,12 @@ var YamcsWebSocket = function(instance) {
     var MESSAGE_TYPE_REPLY=2;
     var MESSAGE_TYPE_EXCEPTION=3;
     var MESSAGE_TYPE_DATA=4;
-    
-    var requestSeqCount=-1;    
+
+    var requestSeqCount=-1;
     var wsproto = "ws";
 
     if(window.location.protocol=='https:') {
-        wsproto = "wss"   
+        wsproto = "wss"
     }
     var conn = new WebSocket(wsproto+"://"+window.location.host+"/"+instance+"/_websocket");
 
@@ -27,24 +27,24 @@ var YamcsWebSocket = function(instance) {
      */
 
     conn.onmessage = function(msg) {
-        var json = JSON.parse(msg.data)
-	
+        var json = JSON.parse(msg.data);
+
         switch(json[1]) {
         case MESSAGE_TYPE_REPLY:
-            dispatchReply(json[2], json[3]); 
+            dispatchReply(json[2], json[3]);
             break;
         case MESSAGE_TYPE_EXCEPTION:
-            dispatchException(json[2], json[3]); 
+            dispatchException(json[2], json[3]);
             break;
         case MESSAGE_TYPE_DATA:
             var data=json[3];
             dispatchData(data.dt, data.data);
             break;
-        } 
+        }
     };
 
-    conn.onclose = function(event){dispatchData('close',event)}
-    conn.onopen = function(){dispatchData('open',null)}
+    conn.onclose = function(event){dispatchData('close',event)};
+    conn.onopen = function(){dispatchData('open',null)};
 
 
 
@@ -56,7 +56,7 @@ var YamcsWebSocket = function(instance) {
         conn.send( payload ); // <= send JSON data to socket server
         return this;
     };
-    
+
     var dispatchException = function(requestId, data) {
        var h = exceptionHandlers[requestId];
        delete exceptionHandlers[requestId];
@@ -65,9 +65,9 @@ var YamcsWebSocket = function(instance) {
        if(h === undefined) {
            console.log("Exception received for request id "+requestId+", and no handler available. Exception data: ", data);
            return;
-       } 
+       }
        h(data.et, data.msg);
-   }
+   };
 
    var dispatchReply = function(requestId, data) {
        var h = replyHandlers[requestId];
@@ -76,7 +76,7 @@ var YamcsWebSocket = function(instance) {
 
        if(h === undefined)  return;
        h(data);
-   }
+   };
 
     this.bindDataHandler = function(dataType, callback){
         dataCallbacks[dataType] = dataCallbacks[dataType] || [];
@@ -85,24 +85,25 @@ var YamcsWebSocket = function(instance) {
     };
 
     var dispatchData = function(dataType, message) {
-        
+
         var chain = dataCallbacks[dataType];
 
         if(chain == undefined) return; // no callbacks for this event
-     
+
         for(var i = 0; i < chain.length; i++){
             chain[i]( message )
         }
-    }
-    
+    };
+
     this.isConnected = function() {
         return conn.readyState == WebSocket.OPEN;
-    }
+    };
 
 /************** Parameter subscription (could be moved to its own 'class' *************/
     var subscribedParameters = {}; //this collects the databindings from all the open displays
 
     var addSubscribedParameter = function(paraname, p) {
+        console.log('adding ' + paraname);
        var dbs=subscribedParameters[paraname];
        if(!dbs) {
            dbs = [];
@@ -112,9 +113,9 @@ var YamcsWebSocket = function(instance) {
        for(var j = 0; j < pdb.length; j++){
            dbs.push(pdb[j]);
        }
-    }
+    };
 
-    var doSubscribeParameters = function(parameters, namespace, addToList) {
+    var doSubscribeParameters = function(parameters, addToList) {
         var paraList=[];
         for(var paraname in parameters) {
             var p=parameters[paraname];
@@ -123,7 +124,7 @@ var YamcsWebSocket = function(instance) {
                 paraList.push({name: p.name, namespace: p.namespace});
             }
         }
-        if(paraList.length==0) return;
+        if(          paraList.length==0) return;
         //console.log(paraList);
         var that=this;
         sendRequest("subscribe", {list: paraList}, null,
@@ -133,7 +134,7 @@ var YamcsWebSocket = function(instance) {
                     console.log('The following parameters are invalid: ', invalidParams);
                     for(var i=0; i<invalidParams.length; i++) {
                         var name=invalidParams[i].name;
-                        var db=parameters[name];			
+                        var db=parameters[name];
                         delete parameters[name];
                         invalidDataBindings[name]=db;
                     }
@@ -143,11 +144,11 @@ var YamcsWebSocket = function(instance) {
                 console.log('got exception from subscription: ',exceptionType, exceptionMsg);
             }
         });
-    }
+    };
 
     this.subscribeParameters = function(parameters) {
         doSubscribeParameters(parameters, true);
-    }
+    };
 
     var doSubscribeComputations = function(parameters, addToList) {
         var compDefList=[];
@@ -191,7 +192,7 @@ var YamcsWebSocket = function(instance) {
                             if(cnameToRemove) break;
                             }
                         }
-                        if(cnameToRemove) { 
+                        if(cnameToRemove) {
                             var db=parameters[cnameToRemove];
                             delete parameters[cnameToRemove];
                             invalidDataBindings[cnameToRemove]=db;
@@ -203,11 +204,11 @@ var YamcsWebSocket = function(instance) {
                     console.log('got exception from subscription: ',exceptionType, exceptionMsg);
                 }
             });
-    }
+    };
 
     this.subscribeComputations = function(parameters) {
         doSubscribeComputations(parameters,true)
-    }
+    };
 
     this.bindDataHandler('PARAMETER', function(pdata){
         var params=pdata.parameter;
@@ -216,10 +217,11 @@ var YamcsWebSocket = function(instance) {
             var dbs = subscribedParameters[p.id.name];
             if(!dbs) {
                 console.log("cannot find bindings for "+ p.id.name, subscribedParameters);
+                continue;
             }
             for(var j = 0; j < dbs.length; j++){
                 USS.updateWidget(dbs[j], p);
             }
         }
-    });  
+    });
 };

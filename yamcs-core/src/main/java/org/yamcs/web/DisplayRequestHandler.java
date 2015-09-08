@@ -1,14 +1,5 @@
 package org.yamcs.web;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -19,11 +10,19 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -61,12 +60,13 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
     }
 
     private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws IOException {
-	ByteBuf cb=Unpooled.buffer(1024);
+        System.out.println("request for list displays");
+        ByteBuf cb=Unpooled.buffer(1024);
 	ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
         JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8);
         json.writeStartArray();
-        writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root+"/displays/"+yamcsInstance));
+        writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root + "/" + yamcsInstance + "/displays"));
         json.close();
         
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, cb);
