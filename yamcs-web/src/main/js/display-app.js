@@ -3,7 +3,7 @@ var loadedDisplays = {};
 var openWindows = {};
 var lastSelectedWindow = null;
 
-var yamcsWebSocket
+var yamcsWebSocket;
 
 $(document).ready(function(){
     configureMenu();
@@ -121,10 +121,10 @@ function showWindow(name, onShowFunction, resizable, scrollable) {
 		 onShowFunction(div, name, yamcsWebSocket, function(width, height) {
                      console.log("resizing to ", width, height);
                      wnd.resize(width, height+25); //the 24 comes from  css .window_header_normal height+2*padding: 20*2*2
-                     var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/symlib/images/U23_led_grey.svg' height='12' width='12' class='yamcs-task-icon' >"+name+"</span>";
+                     var s="<span class='yamcs-task' id='task-"+name+"'><img src='/_static/images/undef.png' class='yamcs-task-icon' >"+name+"</span>";
                      $("#yamcs-task-list").append(s);
                      var e = document.getElementById("task-"+name);
-                     var $e = $(e);s
+                     var $e = $(e);
                      $e.bind( "mouseenter.button", function() {
                          $e.addClass( "ui-state-hover" );
                      }).bind( "mouseleave.button", function() {
