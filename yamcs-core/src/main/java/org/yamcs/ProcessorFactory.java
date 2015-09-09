@@ -67,7 +67,7 @@ public class ProcessorFactory {
                 }
 
                 if(conf.containsKey(type,"parameterProviders")) {
-                    List<Map<String, Object>> l = (List<Map<String, Object>>) conf.getList(type, "parameterProviders");
+                    List<Map<String, Object>> l = conf.getList(type, "parameterProviders");
                     for(Map<String, Object> m:l) {
                         String paramClass = YConfiguration.getString(m, "class");
                         Object paramArgs = m.get("args");

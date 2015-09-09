@@ -1,7 +1,5 @@
 package org.yamcs.parameter;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,14 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
-import org.yamcs.tctm.PpProviderAdapter;
-import org.yamcs.time.TimeService;
-import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.time.TimeService;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameterDb;
@@ -47,7 +44,6 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
     final static String PP_GROUP =  "yamcs";
     final static String STREAM_NAME="sys_param";
-    final static public String SERVER_ID_KEY="serverId";
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
     
@@ -82,24 +78,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         stream=s;
         timeService = YamcsServer.getInstance(instance).getTimeService();
         
-        try {
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-            String id;
-            if(yconf.containsKey(SERVER_ID_KEY)) {
-                id = yconf.getString(SERVER_ID_KEY);
-            } else {
-                id = InetAddress.getLocalHost().getHostName();
-            }
-            serverId = id;
-            namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
-            log.info("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
-        } catch (ConfigurationException e) {
-            throw e;
-        } catch (UnknownHostException e) {
-            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or altenatively add 'serverId: <name>' to yamcs.yaml";
-            log.warn(msg);
-            throw new ConfigurationException(msg, e);
-        }
+        serverId = YamcsServer.getServerId();
+        namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
+        log.info("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         
         synchronized(instances) {
             instances.put(instance, this);    

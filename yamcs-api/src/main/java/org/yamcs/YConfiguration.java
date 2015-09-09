@@ -14,7 +14,6 @@ import java.util.logging.LogManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -286,8 +285,9 @@ public class YConfiguration {
 	return getString(m, key2);
     }
 
-    public List getList(String key) throws ConfigurationException {
-	return getList(root, key);
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getList(String key) throws ConfigurationException {
+        return (List<T>) getList(root, key);
     }
 
 
@@ -295,7 +295,8 @@ public class YConfiguration {
     /*
      * The key has to point to a list
      */
-    static public  List getList(Map<String, Object> m, String key) throws ConfigurationException {
+    @SuppressWarnings("unchecked")
+    static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
 	checkKey(m, key);
 	Object o=m.get(key);
 	if(o instanceof List) {
@@ -313,12 +314,12 @@ public class YConfiguration {
 	}
     }
 
-    public List getList(String key, String key1, String key2) throws ConfigurationException {
+    public <T> List<T> getList(String key, String key1, String key2) throws ConfigurationException {
 	Map<String, Object> m=getMap(key,key1);
 	return getList(m, key2);
     }
 
-    public List getList(String key, String key1) throws ConfigurationException {
+    public <T> List<T> getList(String key, String key1) throws ConfigurationException {
 	Map<String, Object> m=getMap(key);
 	return getList(m, key1);
     }

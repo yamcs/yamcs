@@ -6,6 +6,8 @@ import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -62,6 +64,7 @@ import com.google.common.util.concurrent.Service.State;
 public class YamcsServer {
     static EmbeddedHornetQ hornetServer;
     static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
+    final static private String SERVER_ID_KEY="serverId";
 
     String instance;
     ReplayServer replay;
@@ -76,59 +79,63 @@ public class YamcsServer {
     
     static TimeService realtimeTimeService = new RealtimeTimeService();
     
+    static private String serverId = deriveServerId();
+    
     @SuppressWarnings("unchecked")
     YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
-	this.instance=instance;
-
-	//TODO - fix bootstrap issue 
-	instances.put(instance, this);
-	
-	
-	log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
-
-	YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
-	loadTimeService();
-	        
-	ManagementService managementService=ManagementService.getInstance();
-	StreamInitializer.createStreams(instance);
-
-	
-	List<Object> services=conf.getList("services");
-	for(Object servobj:services) {
-	    String servclass;
-	    Object args = null;
-	    if(servobj instanceof String) {
-		servclass = (String)servobj;
-	    } else if (servobj instanceof Map<?, ?>) {
-		Map<String, Object> m = (Map<String, Object>) servobj;
-		servclass = YConfiguration.getString(m, "class");
-		args = m.get("args");
-	    } else {
-		throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
-	    }
-	    log.info("loading service from "+servclass);
-	    YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
-	    Service serv;
-	    if(args == null) {
-		serv = objLoader.loadObject(servclass, instance);
-	    } else {
-		serv = objLoader.loadObject(servclass, instance, args);
-	    }
-	    serviceList.add(serv);
-	    managementService.registerService(instance, servclass, serv);
-	}
-	for(Service serv:serviceList) {
-	    serv.startAsync();
-	    try {
-		serv.awaitRunning();
-	    } catch (IllegalStateException e) {
-		//this happens when it fails, the next check will throw an error in this case
-	    }
-	    State result = serv.state();
-	    if(result==State.FAILED) {
-		throw new ConfigurationException("Failed to start service "+serv, serv.failureCause());
-	    }
-	}
+        this.instance=instance;
+        
+        //TODO - fix bootstrap issue 
+        instances.put(instance, this);
+        
+        
+        log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
+        
+        deriveServerId();
+        
+        YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
+        loadTimeService();
+                
+        ManagementService managementService=ManagementService.getInstance();
+        StreamInitializer.createStreams(instance);
+        
+        
+        List<Object> services=conf.getList("services");
+        for(Object servobj:services) {
+            String servclass;
+            Object args = null;
+            if(servobj instanceof String) {
+                servclass = (String)servobj;
+            } else if (servobj instanceof Map<?, ?>) {
+                Map<String, Object> m = (Map<String, Object>) servobj;
+                servclass = YConfiguration.getString(m, "class");
+                args = m.get("args");
+            } else {
+                throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
+            }
+            log.info("loading service from "+servclass);
+            YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
+            Service serv;
+            if(args == null) {
+                serv = objLoader.loadObject(servclass, instance);
+            } else {
+                serv = objLoader.loadObject(servclass, instance, args);
+            }
+            serviceList.add(serv);
+            managementService.registerService(instance, servclass, serv);
+        }
+        for(Service serv:serviceList) {
+            serv.startAsync();
+            try {
+                serv.awaitRunning();
+            } catch (IllegalStateException e) {
+                //this happens when it fails, the next check will throw an error in this case
+            }
+            State result = serv.state();
+            if(result==State.FAILED) {
+                throw new ConfigurationException("Failed to start service "+serv, serv.failureCause());
+            }
+        }
     }
 
 
@@ -187,7 +194,11 @@ public class YamcsServer {
     public static boolean hasInstance(String instance) {
 	return instances.containsKey(instance);
     }
-    @SuppressWarnings("unchecked")
+    
+    public static String getServerId() {
+        return serverId;
+    }
+
     public static void setupYamcsServer() throws Exception  {
 
 	YConfiguration c=YConfiguration.getConfiguration("yamcs");
@@ -295,6 +306,27 @@ public class YamcsServer {
 	} catch (IOException e) { //this should not happen since all the ObjectOutputStream happens in memory
 	    throw new RuntimeException(e);
 	}
+    }
+    
+    private static String deriveServerId() {
+        try {
+            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+            String id;
+            if(yconf.containsKey(SERVER_ID_KEY)) {
+                id = yconf.getString(SERVER_ID_KEY);
+            } else {
+                id = InetAddress.getLocalHost().getHostName();
+            }
+            serverId = id;
+            staticlog.info("Using {} as serverId", serverId);
+            return serverId;
+        } catch (ConfigurationException e) {
+            throw e;
+        } catch (UnknownHostException e) {
+            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or altenatively add 'serverId: <name>' to yamcs.yaml";
+            staticlog.warn(msg);
+            throw new ConfigurationException(msg, e);
+        }
     }
 
     private void loadTimeService() throws ConfigurationException, IOException {

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.tctm.PpProviderAdapter;
@@ -29,6 +31,7 @@ import org.yamcs.yarch.streamsql.TokenMgrError;
  *
  */
 public class StreamInitializer {
+    private static final Logger log = LoggerFactory.getLogger(StreamInitializer.class);
     final String yamcsInstance;
     YarchDatabase ydb;
   
@@ -99,6 +102,7 @@ public class StreamInitializer {
         if(!(o instanceof String)) {
             throw new ConfigurationException("Expected to have a filename to load as SQL File");
         }
+        log.debug("Loading SQL File {}", o);
         String filename = (String)o;
         File f = new File(filename);
         ExecutionContext context=new ExecutionContext(yamcsInstance);
