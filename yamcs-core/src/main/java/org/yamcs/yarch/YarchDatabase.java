@@ -57,8 +57,9 @@ public class YarchDatabase {
     public static String TC_ENGINE_NAME="tokyocabinet";	
     public static String RDB_ENGINE_NAME="rocksdb";
 
-    public static String DEFAULT_STORAGE_ENGINE=TC_ENGINE_NAME;
-
+    private static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
+    private final String defaultStorageEngine;
+    
     static {
 	try {
 	    config=YConfiguration.getConfiguration("yamcs");
@@ -88,6 +89,16 @@ public class YarchDatabase {
 	} else {
 	    se = Arrays.asList(RDB_ENGINE_NAME, TC_ENGINE_NAME);
 	}
+	
+	if(config.containsKey("defaultStorageEngine")) {
+	    defaultStorageEngine = config.getString("defaultStorageEngine");
+	    if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngine) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngine)) {
+	        throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngine);
+	    }
+	} else {
+	    defaultStorageEngine = DEFAULT_STORAGE_ENGINE;
+	}
+	
 	if(se!=null) {
 	    for(String s:se) {
 		if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
@@ -122,6 +133,10 @@ public class YarchDatabase {
      */
     public String getName() {
 	return dbname;
+    }
+    
+    public String getDefaultStorageEngine() {
+        return defaultStorageEngine;
     }
 
     /**
