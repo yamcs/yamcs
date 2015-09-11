@@ -109,7 +109,7 @@ public class RdbStorageEngine implements StorageEngine {
 
 
     @Override
-    public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException {		
+    public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException {
 	try {
 	    return RdbHistogramDb.getInstance(ydb, tbl);
 	} catch (IOException e) {
