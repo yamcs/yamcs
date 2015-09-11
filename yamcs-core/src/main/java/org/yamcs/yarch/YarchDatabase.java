@@ -53,7 +53,7 @@ public class YarchDatabase {
     private static String home;
     private TCBFactory tcbFactory=TCBFactory.getInstance();
 
-    static Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
+    private Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
     public static String TC_ENGINE_NAME="tokyocabinet";	
     public static String RDB_ENGINE_NAME="rocksdb";
 
@@ -154,7 +154,7 @@ public class YarchDatabase {
 		String fn=f.getName();
 		if(fn.endsWith(".def")) {
 		    try {
-			TableDefinition tblDef=deserializeTableDefinition(f);
+			TableDefinition tblDef = deserializeTableDefinition(f);
 			StorageEngine storageEngine = getStorageEngine(tblDef);
 			if(storageEngine==null) {
 			    throw new YarchException("Do not have a storage engine '"+tblDef.getStorageEngineName()+"'. Check storageEngines key in yamcs.yaml");
@@ -162,7 +162,6 @@ public class YarchDatabase {
 		    
 			getStorageEngine(tblDef).loadTable(tblDef);
 			managementService.registerTable(dbname, tblDef);
-			//System.out.println("loaded table: "+tblDef);
 			tables.put(tblDef.getName(), tblDef);
 			log.debug("loaded table definition "+tblDef.getName()+" from "+f);
 		    } catch (IOException e) {
