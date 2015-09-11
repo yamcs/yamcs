@@ -18,7 +18,7 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 
 /**
- * converts between hornet addresses and yarch streams
+ * converts between hornet addresses and yamcs streams
  * 
  * To avoid a ping-pong effect:
  *  - it creates a queue with a filter on hornet side

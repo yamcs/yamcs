@@ -58,7 +58,7 @@ public class YarchDatabase {
     public static String RDB_ENGINE_NAME="rocksdb";
 
     private static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
-    private final String defaultStorageEngine;
+    private final String defaultStorageEngineName;
     
     static {
 	try {
@@ -91,12 +91,12 @@ public class YarchDatabase {
 	}
 	
 	if(config.containsKey("defaultStorageEngine")) {
-	    defaultStorageEngine = config.getString("defaultStorageEngine");
-	    if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngine) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngine)) {
-	        throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngine);
+	    defaultStorageEngineName = config.getString("defaultStorageEngine");
+	    if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
+	        throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngineName);
 	    }
 	} else {
-	    defaultStorageEngine = DEFAULT_STORAGE_ENGINE;
+	    defaultStorageEngineName = DEFAULT_STORAGE_ENGINE;
 	}
 	
 	if(se!=null) {
@@ -135,10 +135,15 @@ public class YarchDatabase {
 	return dbname;
     }
     
-    public String getDefaultStorageEngine() {
-        return defaultStorageEngine;
+    public String getDefaultStorageEngineName() {
+        return defaultStorageEngineName;
     }
 
+    public StorageEngine getDefaultStorageEngine() {
+        return storageEngines.get(defaultStorageEngineName);
+    }
+    
+    
     /**
      * loads all the .def files from the disk. The ascii def file is structed as follows
      * col1 type1, col2 type2, col3 type3     <- definition of the columns

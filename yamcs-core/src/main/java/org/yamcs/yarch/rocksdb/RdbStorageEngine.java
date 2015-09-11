@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.archive.TagDb;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.HistogramDb;
@@ -33,87 +35,99 @@ public class RdbStorageEngine implements StorageEngine {
     final YarchDatabase ydb;
     static Map<YarchDatabase, RdbStorageEngine> instances = new HashMap<YarchDatabase, RdbStorageEngine>();
     static {
-	RocksDB.loadLibrary();
+        RocksDB.loadLibrary();
     }
     static Logger log=LoggerFactory.getLogger(RdbStorageEngine.class.getName());
+    RdbTagDb rdbTagDb = null;
 
-    public RdbStorageEngine(YarchDatabase ydb) {
-	this.ydb = ydb;
-	instances.put(ydb, this);
+    public RdbStorageEngine(YarchDatabase ydb) throws YarchException {
+        this.ydb = ydb;
+        instances.put(ydb, this);
+        try {
+            rdbTagDb = new RdbTagDb(ydb);
+        } catch (RocksDBException e) {
+            throw new YarchException("Cannot create tag db",e);
+        }
     }
 
 
     @Override
     public void loadTable(TableDefinition tbl) throws YarchException {
-	if(tbl.hasPartitioning()) {
-	    RdbPartitionManager pm = new RdbPartitionManager(ydb, tbl);
-	    pm.readPartitionsFromDisk();
-	    partitionManagers.put(tbl, pm);
-	}
+        if(tbl.hasPartitioning()) {
+            RdbPartitionManager pm = new RdbPartitionManager(ydb, tbl);
+            pm.readPartitionsFromDisk();
+            partitionManagers.put(tbl, pm);
+        }
     }
 
     @Override
     public void dropTable(TableDefinition tbl) throws YarchException {
-	RdbPartitionManager pm = partitionManagers.remove(tbl);
+        RdbPartitionManager pm = partitionManagers.remove(tbl);
 
-	for(Partition p:pm.getPartitions()) {
-	    RdbPartition rdbp = (RdbPartition)p;
-	    File f=new File(tbl.getDataDir()+"/"+rdbp.dir);
-	    RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-	    rdbFactory.closeIfOpen(f.getAbsolutePath());
-	    try {
-		if(f.exists()) {
-		    log.debug("Recursively removing {}", f);
-		    FileUtils.deleteRecursively(f.toPath());
-		}
-	    } catch (IOException e) {
-		throw new YarchException("Cannot remove "+f, e);
-	    }
-	}
+        for(Partition p:pm.getPartitions()) {
+            RdbPartition rdbp = (RdbPartition)p;
+            File f=new File(tbl.getDataDir()+"/"+rdbp.dir);
+            RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+            rdbFactory.closeIfOpen(f.getAbsolutePath());
+            try {
+                if(f.exists()) {
+                    log.debug("Recursively removing {}", f);
+                    FileUtils.deleteRecursively(f.toPath());
+                }
+            } catch (IOException e) {
+                throw new YarchException("Cannot remove "+f, e);
+            }
+        }
 
     }
 
     @Override
     public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException {
-	if(!partitionManagers.containsKey(tbl)) {
-	    throw new IllegalArgumentException("Do not have a partition manager for this table");
-	}
-	try {
-	    return new RdbTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
-	} catch (IOException e) {
-	    throw new YarchException("Failed to create writer", e);
-	} 
+        if(!partitionManagers.containsKey(tbl)) {
+            throw new IllegalArgumentException("Do not have a partition manager for this table");
+        }
+        try {
+            return new RdbTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+        } catch (IOException e) {
+            throw new YarchException("Failed to create writer", e);
+        } 
     }
 
     @Override
     public AbstractStream newTableReaderStream(TableDefinition tbl) {
-	if(!partitionManagers.containsKey(tbl)) {
-	    throw new IllegalArgumentException("Do not have a partition manager for this table");
-	}
-	return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
+        if(!partitionManagers.containsKey(tbl)) {
+            throw new IllegalArgumentException("Do not have a partition manager for this table");
+        }
+        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
     }
 
     @Override
     public void createTable(TableDefinition def) {		
-	RdbPartitionManager pm = new RdbPartitionManager(ydb, def);
-	partitionManagers.put(def, pm);
+        RdbPartitionManager pm = new RdbPartitionManager(ydb, def);
+        partitionManagers.put(def, pm);
     }
 
     public static RdbStorageEngine getInstance(YarchDatabase ydb) {
-	return instances.get(ydb);
+        return instances.get(ydb);
     }
 
     public RdbPartitionManager getPartitionManager(TableDefinition tdef) {      
-	return partitionManagers.get(tdef);
+        return partitionManagers.get(tdef);
     }
 
 
     @Override
     public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException {
-	try {
-	    return RdbHistogramDb.getInstance(ydb, tbl);
-	} catch (IOException e) {
-	    throw new YarchException(e);
-	}
+        try {
+            return RdbHistogramDb.getInstance(ydb, tbl);
+        } catch (IOException e) {
+            throw new YarchException(e);
+        }
+    }
+
+
+    @Override
+    public TagDb getTagDb() throws YarchException {
+        return rdbTagDb;
     }
 }

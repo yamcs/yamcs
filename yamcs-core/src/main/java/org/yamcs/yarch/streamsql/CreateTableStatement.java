@@ -66,7 +66,7 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(engine!=null) {
                 tableDefinition.setStorageEngineName(engine);
             } else {
-                tableDefinition.setStorageEngineName(ydb.getDefaultStorageEngine());
+                tableDefinition.setStorageEngineName(ydb.getDefaultStorageEngineName());
             }
 
             tableDefinition.setCompressed(compressed);
