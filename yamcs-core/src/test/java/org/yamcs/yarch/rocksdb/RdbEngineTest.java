@@ -35,6 +35,8 @@ public class RdbEngineTest extends YarchTestCase {
 
 
         PartitioningSpec pspec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+        pspec.setValueColumnType(DataType.INT);
+
         tblDef.setPartitioningSpec(pspec);
         IllegalArgumentException iae=null;
         try {

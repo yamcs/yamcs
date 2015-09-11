@@ -43,7 +43,7 @@ public class RDBFactoryTest {
     public void testDispose() throws Exception {
 	TableDefinition tblDef= getTableDef();
 	YRDB[] dbs=new YRDB[RDBFactory.maxOpenDbs*2];
-	RDBFactory rdbf=new RDBFactory();
+	RDBFactory rdbf=new RDBFactory("testDispose");
 	ColumnValueSerializer cvs= new ColumnValueSerializer(tblDef);
 
 	for(int i=0;i<RDBFactory.maxOpenDbs;i++) {

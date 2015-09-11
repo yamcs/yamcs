@@ -31,6 +31,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         case TIME_AND_VALUE:
             assertEquals(ps1in.timeColumn, ps1out.timeColumn);
             assertEquals(ps1in.valueColumn, ps1out.valueColumn);
+            assertEquals(ps1in.getValueColumnType(), ps1out.getValueColumnType());
             break;
         case NONE:
             break;
@@ -134,6 +135,78 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
     }
 
 
+
+
+    @Test
+    public void testTableDefinitionSerializationTimeAndValue() throws Exception {
+        ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time_and_value(aak1('YYYY'), aak2) table_format=compressed");
+        TableDefinition td1=ydb.getTable("abcde1");
+
+        PartitioningSpec pspec = td1.getPartitioningSpec();
+        assertNotNull(pspec);           
+        assertEquals(TimePartitionSchema.YYYY.class , pspec.timePartitioningSchema.getClass() );
+
+        TupleDefinition tplDef=td1.getTupleDefinition().copy();
+        tplDef.addColumn("bbv1", DataType.DOUBLE);
+        Tuple t=new Tuple(tplDef, new Object[]{1000, 10, "aaaa", new byte[0], "xyz", 3.3d});
+        //this should add the bbb1 column and write the definition to disk
+        td1.serializeValue(t);
+
+        String cmd="cp "+ydb.getRoot()+"/abcde1.def "+ydb.getRoot()+"/abcde2.def";
+        Process p=Runtime.getRuntime().exec(cmd);
+        assertEquals(0, p.waitFor());
+
+        ydb.loadTables();
+        TableDefinition td2 = ydb.getTable("abcde2");
+        assertDefEquals("aak1", DataType.TIMESTAMP, td2.getColumnDefinition("aak1"));
+        assertDefEquals("aak2", DataType.INT, td2.getColumnDefinition("aak2"));
+        assertDefEquals("aav1", DataType.STRING, td2.getColumnDefinition("aav1"));
+        assertDefEquals("aav2", DataType.BINARY, td2.getColumnDefinition("aav2"));
+        assertDefEquals("aav3", DataType.ENUM, td2.getColumnDefinition("aav3"));
+        assertDefEquals("bbv1", DataType.DOUBLE, td2.getColumnDefinition("bbv1"));
+        assertEquals(ydb.getDefaultStorageEngine(), td2.getStorageEngineName());
+        
+        assertTrue(td2.hasHistogram());
+        List<String> al=td2.getHistogramColumns();
+        assertEquals(2, al.size());
+        assertEquals("aak2", al.get(0));
+        assertEquals("aav1", al.get(1));
+
+        assertPsEquals(td1.getPartitioningSpec(), td2.getPartitioningSpec());
+
+
+        BiMap<String, Short>ev =td2.getEnumValues("aav3");
+        assertNotNull(ev);
+        assertEquals("xyz", ev.inverse().get((short)0));
+
+        assertTrue(td2.isCompressed());
+
+
+        tplDef=new TupleDefinition();
+        tplDef.addColumn("aak1", DataType.TIMESTAMP);
+        tplDef.addColumn("aak2", DataType.INT);
+        tplDef.addColumn("ccv1", DataType.ENUM);
+        tplDef.addColumn("aav3", DataType.ENUM);
+        t=new Tuple(tplDef, new Object[]{1001, 10, "uvw", "aav3-second"});
+        //this should add the bbb1 column and write the definition to disk
+        td2.serializeValue(t);
+
+
+        cmd="cp "+ydb.getRoot()+"/abcde2.def "+ydb.getRoot()+"/abcde3.def";
+        p=Runtime.getRuntime().exec(cmd);
+        assertEquals(0, p.waitFor());
+
+        ydb.loadTables();
+        TableDefinition td3=ydb.getTable("abcde3");
+
+        ev = td3.getEnumValues("ccv1");
+        assertNotNull(ev);
+        assertEquals("uvw", ev.inverse().get((short)0));
+
+        ev =td3.getEnumValues("aav3");
+        assertNotNull(ev);
+        assertEquals((short)1, (short)(Short)ev.get("aav3-second"));
+    }
 
 
     @Test
