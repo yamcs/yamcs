@@ -85,7 +85,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         assertDefEquals("aav2", DataType.BINARY, td2.getColumnDefinition("aav2"));
         assertDefEquals("aav3", DataType.ENUM, td2.getColumnDefinition("aav3"));
         assertDefEquals("bbv1", DataType.DOUBLE, td2.getColumnDefinition("bbv1"));
-        assertEquals(ydb.getDefaultStorageEngine(), td2.getStorageEngineName());
+        assertEquals(ydb.getDefaultStorageEngineName(), td2.getStorageEngineName());
         
         assertTrue(td2.hasHistogram());
         List<String> al=td2.getHistogramColumns();
@@ -164,7 +164,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         assertDefEquals("aav2", DataType.BINARY, td2.getColumnDefinition("aav2"));
         assertDefEquals("aav3", DataType.ENUM, td2.getColumnDefinition("aav3"));
         assertDefEquals("bbv1", DataType.DOUBLE, td2.getColumnDefinition("bbv1"));
-        assertEquals(ydb.getDefaultStorageEngine(), td2.getStorageEngineName());
+        assertEquals(ydb.getDefaultStorageEngineName(), td2.getStorageEngineName());
         
         assertTrue(td2.hasHistogram());
         List<String> al=td2.getHistogramColumns();
