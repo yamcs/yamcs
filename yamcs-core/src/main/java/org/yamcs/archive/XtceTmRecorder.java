@@ -130,7 +130,17 @@ public class XtceTmRecorder extends AbstractService {
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
-
+    private void startProviding(SequenceContainer rootsc) {
+        if(xtceDb.getInheritingContainers(rootsc) == null ) {
+            log.info( "Root container has no inheriting containers, so providing TM from root container: "+rootsc.getName() );
+            tmExtractor.startProviding(rootsc);
+        } else {
+            for(SequenceContainer sc:xtceDb.getInheritingContainers(rootsc)) {
+                startProviding(sc);
+            }
+        }    	    
+    }
+    
     private void createRecorder(StreamConfigEntry streamConf) {
        
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -142,19 +152,14 @@ public class XtceTmRecorder extends AbstractService {
             throw new ConfigurationException("XtceDb does not have a root sequence container and no container was specified for decoding packets from "+streamConf.getName()+" stream");
         }
 
-        if(xtceDb.getInheritingContainers(rootsc) == null ) {
-            log.info( "Root container has no inheriting containers, so providing TM from root container: "+rootsc.getName() );
-            tmExtractor.startProviding(rootsc);
-        } else {
-            for(SequenceContainer sc:xtceDb.getInheritingContainers(rootsc)) {
-                tmExtractor.startProviding(sc);
-            }
-        }
-        Stream inputStream=ydb.getStream(streamConf.getName());
+        startProviding(rootsc);
+        
+        Stream inputStream=ydb.getStream(streamConf.getName());    
 
         if(inputStream==null) {
             throw new ConfigurationException("Cannot find stream '"+streamConf.getName()+"'");
         }
+        
         Stream tm_is = ydb.getStream("tm_is");
         StreamRecorder recorder = new StreamRecorder(inputStream, tm_is, rootsc, streamConf.isAsync());
         recorders.add(recorder);
