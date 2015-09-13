@@ -103,7 +103,6 @@ var YamcsWebSocket = function(instance) {
     var subscribedParameters = {}; //this collects the databindings from all the open displays
 
     var addSubscribedParameter = function(paraname, p) {
-        console.log('adding ' + paraname);
        var dbs=subscribedParameters[paraname];
        if(!dbs) {
            dbs = [];

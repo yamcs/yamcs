@@ -135,37 +135,37 @@
 }
 
 .window_panel .window_header .bookmarkImg {
-	background: url(../images/buttons.gif) no-repeat;
+	background: url('images/buttons.gif') no-repeat;
 	background-position: 0;
 	top: 4px;
 }
 
 .window_panel .window_header .minimizeImg {
-	background: url(../images/buttons.gif) no-repeat;
+	background: url('images/buttons.gif') no-repeat;
 	background-position: -16px;
 	top: 4px;
 }
 
 .window_panel .window_header .cascadeImg {
-	background: url(../images/buttons.gif) no-repeat;
+	background: url('images/buttons.gif') no-repeat;
 	background-position: -32px;
 	top: 4px;
 }
 
 .window_panel .window_header .maximizeImg {
-	background: url(../images/buttons.gif) no-repeat;
+	background: url('images/buttons.gif') no-repeat;
 	background-position: -48px;
 	top: 4px;
 }
 
 .window_panel .window_header .closeImg {
-	background: url(../images/buttons.gif) no-repeat;
+	background: url('images/buttons.gif') no-repeat;
 	background-position: -64px;
 	top: 4px;
 }
 
 .window_panel .frame_loading {
-	background: url('../images/loading.gif') no-repeat;
+	background: url('images/loading.gif') no-repeat;
 	width: 16px;
 	height: 16px;
 	position: absolute;

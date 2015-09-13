@@ -1,30 +1,33 @@
+<!doctype html>
 <html>
   <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
   <link type="text/css" href="/_static/css/display.css" rel="stylesheet"/>
   <link type="text/css" href="/_static/css/uss.dqi.css" rel="stylesheet"/>
-  <link type="text/css" href="/_static/css/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
-  <link type="text/css" href="/_static/css/jquery.ui.menu.css" rel="stylesheet" />
-  <link type="text/css" href="/_static/css/jquery.ui.menubar.css" rel="stylesheet" />
-  <link type="text/css" href="/_static/css/jquery.window.css" rel="stylesheet" />
-  <link type="text/css" href="/_static/css/jquery.contextMenu.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/lib/css/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/lib/css/jquery.ui.menu.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/lib/css/jquery.ui.menubar.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/lib/css/jquery.window.css" rel="stylesheet" />
+  <link type="text/css" href="/_static/lib/css/jquery.contextMenu.css" rel="stylesheet" />
 
-  <script src="/_static/js/jquery-1.7.2.min.js"></script>
-  <script src="/_static/js/jquery.svg.js"></script>
-  <script src="/_static/js/jquery.window.js"></script>
-  <script src="/_static/js/highcharts.src.js"></script>
-  <script src="/_static/js/sprintf-0.7-beta1.js"></script>
-  <script src="/_static/js/jquery.ui.core.js"></script>
-  <script src="/_static/js/jquery.ui.widget.js"></script>
-  <script src="/_static/js/jquery.ui.mouse.js"></script>
-  <script src="/_static/js/jquery.ui.draggable.js"></script>
-  <script src="/_static/js/jquery.ui.resizable.js"></script>
-  <script src="/_static/js/jquery.ui.position.js"></script>
-  <script src="/_static/js/jquery.ui.button.js"></script>
-  <script src="/_static/js/jquery.ui.menu.js"></script>
-  <script src="/_static/js/jquery.ui.menubar.js"></script>
-  <script src="/_static/js/jquery.contextMenu.js"></script>
+  <script src="/_static/lib/js/jquery-1.7.2.min.js"></script>
+  <script src="/_static/lib/js/jquery.svg.js"></script>
+  <script src="/_static/lib/js/jquery.window.js"></script>
+  <script src="/_static/lib/js/highcharts.src.js"></script>
+  <script src="/_static/lib/js/sprintf-0.7-beta1.js"></script>
+  <script src="/_static/lib/js/dygraph-combined.js"></script>
+  <script src="/_static/lib/js/swig.min.js"></script>
+  <script src="/_static/lib/js/jquery.ui.core.js"></script>
+  <script src="/_static/lib/js/jquery.ui.widget.js"></script>
+  <script src="/_static/lib/js/jquery.ui.mouse.js"></script>
+  <script src="/_static/lib/js/jquery.ui.draggable.js"></script>
+  <script src="/_static/lib/js/jquery.ui.resizable.js"></script>
+  <script src="/_static/lib/js/jquery.ui.position.js"></script>
+  <script src="/_static/lib/js/jquery.ui.button.js"></script>
+  <script src="/_static/lib/js/jquery.ui.menu.js"></script>
+  <script src="/_static/lib/js/jquery.ui.menubar.js"></script>
+  <script src="/_static/lib/js/jquery.contextMenu.js"></script>
   <script src="/_static/js/yamcs-ws.js"> </script>
   <script src="/_static/js/uss.js"> </script>
   <script src="/_static/js/uss.basic-widgets.js"> </script>
@@ -53,7 +56,25 @@
          <span class="yamcs-task" id="button3"><img src="symlib/images/U22_led_green.svg" height="12" width="12" style="margin: 0px 5px">SOLACES Overview</span>-->
        </div>
    </div>
-    <div id="yamcs-body"  style="width:100%; height:100%;" ></div>
+    <div id="yamcs-body"  style="width:100%; height:100%;" >
+
+        <div id="graphdiv"></div>
+        <script type="text/javascript">
+          g = new Dygraph(
+
+            // containing div
+            document.getElementById("graphdiv"),
+
+            // CSV or path to a CSV file.
+            "Date,Temperature\n" +
+            "2008-05-07,75\n" +
+            "2008-05-08,70\n" +
+            "2008-05-09,80\n"
+
+          );
+        </script>
+
+    </div>
  </body>
 </html>
 
