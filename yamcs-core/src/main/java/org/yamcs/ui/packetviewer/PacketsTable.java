@@ -39,6 +39,8 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.PacketListener;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceTmExtractor;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -478,16 +480,23 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         int len = buf.length;
         final ListPacket packet = new ListPacket(buf, len);
         packet.setGenerationTime(data.getGenerationTime());
-        tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime(), TimeEncoding.currentInstant());
+        tmExtractor.processPacket(ByteBuffer.wrap(buf), data.getGenerationTime(), TimeEncoding.getWallclockTime());
         ParameterValueList pvlist = tmExtractor.getParameterResult();
         packet.setColumnParameters(pvlist);
 
         List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
-        String name;
+        String name = null;
         if(containers.isEmpty()) {
             name = "unknown";
         } else {
-            name = containers.get(containers.size()-1).getContainer().getName();
+            SequenceContainer sc = containers.get(containers.size()-1).getContainer();
+            String defaultNamespace = packetViewer.getDefaultNamespace();
+            if(defaultNamespace!=null) {
+                name = sc.getAlias(defaultNamespace);
+            } 
+            if (name==null) {
+                name = sc.getName(); 
+            }
         }
 
         packet.setName(name);
@@ -559,7 +568,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
      * 
      * */
     void setupParameterColumns() {
-        tmExtractor=new XtceTmExtractor(packetViewer.xtcedb);
+        XtceDb xtceDb = packetViewer.xtcedb;
+    
+        tmExtractor=new XtceTmExtractor(xtceDb);
         tableModel.resetParameterColumns();
         for(String pn: columnParaNames) {
             Parameter p = packetViewer.xtcedb.getParameter(pn);
@@ -569,6 +580,15 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 tableModel.addParameterColumn(p);
                 configureRowSorting();
                 tmExtractor.startProviding(p);
+            }
+        }
+        
+        SequenceContainer rootsc = xtceDb.getRootSequenceContainer();
+        if(xtceDb.getInheritingContainers(rootsc) == null ) {
+            tmExtractor.startProviding(rootsc);
+        } else {
+            for(SequenceContainer sc:xtceDb.getInheritingContainers(rootsc)) {
+                tmExtractor.startProviding(sc);
             }
         }
     }
