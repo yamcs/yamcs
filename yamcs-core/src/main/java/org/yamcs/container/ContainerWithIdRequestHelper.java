@@ -132,7 +132,7 @@ public class ContainerWithIdRequestHelper implements ParameterConsumer {
 		synchronized (subscription) {
 			subscription.put(sc, id);
 
-			if (subscription.size() == 1) {
+			if (subscription.get(sc).size() == 1) {
 				List<Parameter> paramList = new ArrayList<>();
 				paramList.addAll(parameters);
 				prm.addItemsToRequest(subscriptionId, paramList);
