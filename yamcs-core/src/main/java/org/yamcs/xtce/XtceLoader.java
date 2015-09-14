@@ -42,6 +42,9 @@ public class XtceLoader implements SpaceSystemLoader {
 
     @SuppressWarnings("unchecked")
     public XtceLoader(Map<String, Object> config) {
+        if(!config.containsKey("file")) {
+            throw new ConfigurationException("the configuration has to contain the keyword 'file' pointing to the XTCE file to be loaded");
+        }
         this.xtceFileName = (String) config.get("file");
         Object o = config.get("excludeTmContainers");
         if(o instanceof List<?>)  {
