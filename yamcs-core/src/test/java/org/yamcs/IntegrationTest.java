@@ -445,9 +445,16 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(pdata);
 
         assertEquals(2, pdata.getParameterCount());
+        
         org.yamcs.protobuf.Pvalue.ParameterValue p1 = pdata.getParameter(0);
         org.yamcs.protobuf.Pvalue.ParameterValue p2 = pdata.getParameter(1);
-
+        if(!"/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(p1.getId().getName())) {
+            //swap the parameters because they may be sent in the reverse order from the cache.
+            //TODO: shouldn't the paramerter cache keep track of the correct order
+            org.yamcs.protobuf.Pvalue.ParameterValue ptmp = p1;
+            p1 = p2;
+            p2 = ptmp;
+        }
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1.getId().getName());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", p2.getId().getName());
 
