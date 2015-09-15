@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -45,7 +43,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
@@ -56,19 +53,8 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class IntegrationTest extends AbstractIntegrationTest {
     
-    @AfterClass
-    public static void shutDownYamcs()  throws Exception {
-        YamcsServer.shutDown();
-        YamcsServer.stopHornet();
-    }
-
+  
     
-    @After
-    public void after() throws InterruptedException {
-        wsClient.disconnect();
-        assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
-    }
-
     @Ignore
     @Test
     public void testWsParameterSubscriPerformance() throws Exception {
@@ -386,23 +372,23 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRetrieveDataFromArchive() throws Exception {
-        generateData("2015-02-03T10:00:00", 3600);
+        generateData("2015-01-02T10:00:00", 3600);
         NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
         NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
 
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
         RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2015-02-03T10:10:00").setUtcStop("2015-02-03T10:10:02").build();
+                .setUtcStart("2015-01-02T10:10:00").setUtcStop("2015-01-02T10:10:02").build();
         String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
         RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
         assertEquals(4, plist.size());
         ParameterValue pv0 = plist.get(0).getParameter(0);
-        assertEquals("2015-02-03T10:10:00.000", pv0.getGenerationTimeUTC());
+        assertEquals("2015-01-02T10:10:00.000", pv0.getGenerationTimeUTC());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
         ParameterValue pv3 = plist.get(3).getParameter(0);
-        assertEquals("2015-02-03T10:10:01.000", pv3.getGenerationTimeUTC());
+        assertEquals("2015-01-02T10:10:01.000", pv3.getGenerationTimeUTC());
         assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
     }
 
@@ -412,21 +398,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
 
-    @Test
-    public void testAuthenticationWebServices() throws Exception {
-        UsernamePasswordToken wrongUser = new UsernamePasswordToken("baduser", "wrongpassword");
-        currentUser = wrongUser;
-        boolean gotException = false;
-        try {
-            testRetrieveDataFromArchive();
-        }catch (Exception e)
-        {
-            gotException = true;
-        }
-        assertTrue("replay request should be denied to user", gotException);
-    }
-    
-    
     private RestValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) {
         NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
 

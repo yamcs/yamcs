@@ -2,93 +2,53 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandSignificance;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.RestArgumentType;
-import org.yamcs.protobuf.Rest.RestCommandType;
 import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
 import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
 import org.yamcs.protobuf.Rest.RestGetParameterRequest;
 import org.yamcs.protobuf.Rest.RestSendCommandRequest;
-import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
-import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.TimeInfo;
-import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.ManagementResource;
-import org.yamcs.web.websocket.ParameterResource;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 
 public class PermissionsTest extends AbstractIntegrationTest {
-    
-    @AfterClass
-    public static void shutDownYamcs()  throws Exception {
-        YamcsServer.shutDown();
-        YamcsServer.stopHornet();
-    }
-
-    
-    @After
-    public void after() throws InterruptedException {
-        wsClient.disconnect();
-        assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
-    }
-
+      
 
     @Test
     public void testRetrieveDataFromArchive() throws Exception {
-        generateData("2015-02-03T10:00:00", 3600);
+        generateData("2016-02-03T10:00:00", 3600);
         NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
         NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
 
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
         RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2015-02-03T10:10:00").setUtcStop("2015-02-03T10:10:02").build();
+                .setUtcStart("2016-02-03T10:10:00").setUtcStop("2016-02-03T10:10:02").build();
         String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
         RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
         assertEquals(4, plist.size());
         ParameterValue pv0 = plist.get(0).getParameter(0);
-        assertEquals("2015-02-03T10:10:00.000", pv0.getGenerationTimeUTC());
+        assertEquals("2016-02-03T10:10:00.000", pv0.getGenerationTimeUTC());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
         ParameterValue pv3 = plist.get(3).getParameter(0);
-        assertEquals("2015-02-03T10:10:01.000", pv3.getGenerationTimeUTC());
+        assertEquals("2016-02-03T10:10:01.000", pv3.getGenerationTimeUTC());
         assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
     }
 
@@ -120,28 +80,27 @@ public class PermissionsTest extends AbstractIntegrationTest {
         currentUser = testuser;
 
         // Check that integer parameter replay is ok
-        generateData("2015-02-02T10:00:00", 3600);
+        generateData("2015-03-02T10:00:00", 3600);
         NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).build();
         RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2015-02-02T10:10:00").setUtcStop("2015-02-02T10:10:02").build();
+                .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
         String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
         RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
         assertEquals(2, plist.size());
         ParameterValue pv0 = plist.get(0).getParameter(0);
-        assertEquals("2015-02-02T10:10:00.000", pv0.getGenerationTimeUTC());
+        assertEquals("2015-03-02T10:10:00.000", pv0.getGenerationTimeUTC());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
 
         // Check that string parameter replay is denied
         boolean gotException = false;
         try {
-            generateData("2015-02-02T10:00:00", 3600);
             NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
             prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_3_1id).build();
             dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                    .setUtcStart("2015-02-02T10:10:00").setUtcStop("2015-02-02T10:10:02").build();
+                    .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
             response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
             rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
             plist = rdar.getParameterDataList();
@@ -150,8 +109,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 throw  new Exception("should get parameters");
             }
         }
-        catch(Exception e)
-        {
+        catch(Exception e) {
             gotException = true;
         }
         assertTrue("Permission should be denied for String parameter", gotException);
