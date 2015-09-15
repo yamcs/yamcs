@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
@@ -82,7 +84,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     //used for extracting parameters shown on the left overview table
     XtceTmExtractor tmExtractor;
 
-    List<String> columnParaNames;
+    LinkedHashSet<String> columnParaNames;
 
 
     public PacketsTable(PacketViewer packetViewer) {
@@ -137,7 +139,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         setDefaultRenderer(Number.class, numberRenderer);
 
         createActions();
-        installPopupMenu();
+        installPopupMenus();
     }
     
     // It seems like this needs to be re-done after every model restructuring
@@ -372,7 +374,31 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         updateActionStates();
     }
 
-    private void installPopupMenu() {
+    private void installPopupMenus() {
+        // Header
+        getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    int columnIndex = convertColumnIndexToModel(columnAtPoint(e.getPoint()));
+                    if (columnIndex >= 0) {
+                        ColumnHeaderPopUp menu = new ColumnHeaderPopUp(columnIndex);
+                        menu.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+
+        // Content
         popup = new JPopupMenu();
         markPacketMenuItem = new JMenuItem(getActionMap().get(TOGGLE_MARK_ACTION_KEY));
         popup.add(markPacketMenuItem);
@@ -521,7 +547,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     
     //reads from the preferences the columns (parameters) that have to be shown in the left table
     private void readColumnsFromPreference() {
-        columnParaNames = new ArrayList<String>();
+        columnParaNames = new LinkedHashSet<>();
         String  jsons = packetViewer.uiPrefs.get(PREF_COLNAMES, null);
         if(jsons==null) {
             log("No columns definition found in ui preferences");
@@ -571,7 +597,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         XtceDb xtceDb = packetViewer.xtcedb;
     
         tmExtractor=new XtceTmExtractor(xtceDb);
-        tableModel.resetParameterColumns();
+        resetDynamicColumns();
         for(String pn: columnParaNames) {
             Parameter p = packetViewer.xtcedb.getParameter(pn);
             if(p==null) {
@@ -594,11 +620,37 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     }
 
     void addParameterColumn(Parameter p) {
-        columnParaNames.add(p.getQualifiedName());
-        saveColumnsToPreference();
-        tableModel.addParameterColumn(p);
+        if (columnParaNames.add(p.getQualifiedName())) {
+            saveColumnsToPreference();
+            tableModel.addParameterColumn(p);
+            configureRowSorting();
+            tmExtractor.startProviding(p);
+        }
+    }
+    
+    /**
+     * Doesn't remove columns from preferences, but resets GUI.
+     * Used on start-up, and when changing connections.
+     */
+    void resetDynamicColumns() {
+        List<TableColumn> toDelete = new ArrayList<>();
+        for (int i = tableModel.getFixedColumnsSize(); i < tableModel.getColumnCount(); i++) {
+            toDelete.add(getColumnModel().getColumn(i));
+        }
+        toDelete.forEach(c -> getColumnModel().removeColumn(c));
+        tableModel.resetParameterColumns();
         configureRowSorting();
-        tmExtractor.startProviding(p);
+    }
+    
+    // index in model
+    void hideParameterColumn(int columnIndex) {
+        TableColumn tableColumn = getColumnModel().getColumn(columnIndex);
+        getColumnModel().removeColumn(tableColumn);
+        Parameter p = tableModel.getParameter(columnIndex);
+        columnParaNames.remove(p.getQualifiedName());
+        tableModel.removeColumn(columnIndex);
+        saveColumnsToPreference();
+        configureRowSorting();
     }
 
     @Override
@@ -643,6 +695,19 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                     repaint(); // !
                 }
             }
+        }
+    }
+
+    private class ColumnHeaderPopUp extends JPopupMenu {
+        private static final long serialVersionUID = 1L;
+
+        public ColumnHeaderPopUp(int column){
+            JMenuItem hideColumnItem = new JMenuItem("Hide Column");
+            hideColumnItem.addActionListener(e -> {
+                hideParameterColumn(column);
+            });
+            hideColumnItem.setEnabled(column >= tableModel.getFixedColumnsSize());
+            add(hideColumnItem);
         }
     }
 

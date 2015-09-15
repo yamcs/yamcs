@@ -40,7 +40,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Color GRAYISH_COLOR = new Color(235, 235, 235);
-    private static final String ADD_PARAMETER_TO_LEFT = "Add Parameter to the left table";
+    private static final String ADD_PARAMETER_TO_LEFT = "Apply as Left Column";
     
     private static final String[] COLUMNS = { "Name", "Eng Value",
         "Raw Value", "Nominal Low", "Nominal High", "Danger Low",
@@ -352,8 +352,11 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 int row = rowAtPoint(e.getPoint());
-                rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
-                rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+                if (row != -1) {
+                    setRowSelectionInterval(row, row);
+                    rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
+                    rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
 
