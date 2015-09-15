@@ -28,6 +28,7 @@ public class RdbTagDb implements TagDb {
     RdbTagDb(YarchDatabase ydb) throws RocksDBException {
         this(ydb.getRoot()+"/tags");
     }
+    
     RdbTagDb(String path) throws RocksDBException {
         db = RocksDB.open(path);
 
@@ -151,5 +152,13 @@ public class RdbTagDb implements TagDb {
             throw new IOException(e);
         }
       
+    }
+    
+    
+    /** 
+     * Called from Unit tests to cleanup before the next test
+     */
+    public void shutdown() {
+        db.close();
     }
 }

@@ -43,11 +43,6 @@ public class RdbStorageEngine implements StorageEngine {
     public RdbStorageEngine(YarchDatabase ydb) throws YarchException {
         this.ydb = ydb;
         instances.put(ydb, this);
-        try {
-            rdbTagDb = new RdbTagDb(ydb);
-        } catch (RocksDBException e) {
-            throw new YarchException("Cannot create tag db",e);
-        }
     }
 
 
@@ -107,7 +102,7 @@ public class RdbStorageEngine implements StorageEngine {
         partitionManagers.put(def, pm);
     }
 
-    public static RdbStorageEngine getInstance(YarchDatabase ydb) {
+    public static synchronized RdbStorageEngine getInstance(YarchDatabase ydb) {
         return instances.get(ydb);
     }
 
@@ -127,7 +122,34 @@ public class RdbStorageEngine implements StorageEngine {
 
 
     @Override
-    public TagDb getTagDb() throws YarchException {
+    public synchronized TagDb getTagDb() throws YarchException {
+        if(rdbTagDb==null) {
+            try {
+                rdbTagDb = new RdbTagDb(ydb);
+            } catch (RocksDBException e) {
+                throw new YarchException("Cannot create tag db",e);
+            }
+        }
         return rdbTagDb;
+    }
+
+    /** 
+     * Called from Unit tests to cleanup before the next test
+     */
+    public void shutdown() {
+        if(rdbTagDb!=null) {
+            rdbTagDb.shutdown();
+        }
+    }
+
+    /**
+     * Called from unit tests to cleanup before the next test
+     * @param ydb2
+     */
+    public static synchronized void removeInstance(YarchDatabase ydb) {
+        RdbStorageEngine rse = instances.remove(ydb);
+        if(rse!=null) {
+            rse.shutdown();
+        }
     }
 }
