@@ -2,6 +2,7 @@ package org.yamcs.ui.packetviewer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -43,10 +44,22 @@ public class PacketsTableModel extends DefaultTableModel {
             return shownColumnParameters.get(column-FIXED_COLUMNS.length).getName();
         }
     }
+    
+    public int getFixedColumnsSize() {
+        return FIXED_COLUMNS.length;
+    }
 
     public void addParameterColumn(Parameter p) {
         shownColumnParameters.add(p);
         addColumn(p.getName());
+    }
+    
+    public Parameter getParameter(int column) {
+        if (column < FIXED_COLUMNS.length) {
+            return null;
+        } else {
+            return shownColumnParameters.get(column - FIXED_COLUMNS.length);
+        }
     }
 
     public void resetParameterColumns() {
@@ -54,7 +67,7 @@ public class PacketsTableModel extends DefaultTableModel {
     }
     
     public void addPacket(ListPacket packet) {
-        List<Object> row = new ArrayList<Object>();
+        List<Object> row = new ArrayList<>();
         row.add(++continuousRowCount);
         row.add( TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
         row.add(packet);
@@ -86,5 +99,22 @@ public class PacketsTableModel extends DefaultTableModel {
     public void clear() {
         setRowCount(0);
         continuousRowCount = 0;
+    }
+
+    public void removeColumn(int column) {
+        if (column < FIXED_COLUMNS.length) {
+            // FIXME, shouldn't have the concept of fixed columns other than #
+            throw new IllegalArgumentException("Can't remove fixed columns");
+        }
+
+        shownColumnParameters.remove(column - FIXED_COLUMNS.length);
+        for (Object o : getDataVector()) {
+            Vector<?> row = (Vector<?>) o;
+            if (row.size() > column) {
+                row.removeElementAt(column);
+            }
+        }
+        columnIdentifiers.removeElementAt(column);
+        fireTableStructureChanged();
     }
 }
