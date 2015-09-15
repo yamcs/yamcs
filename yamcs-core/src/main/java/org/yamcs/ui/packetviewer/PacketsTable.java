@@ -391,7 +391,6 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 if (e.isPopupTrigger()) {
                     int columnIndex = convertColumnIndexToModel(columnAtPoint(e.getPoint()));
                     if (columnIndex >= 0) {
-                        System.out.println("registered a click on " + columnIndex);
                         ColumnHeaderPopUp menu = new ColumnHeaderPopUp(columnIndex);
                         menu.show(e.getComponent(), e.getX(), e.getY());
                     }
@@ -576,9 +575,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             JsonGenerator jsg = jsonFactory.createGenerator(baos);
             jsg.writeStartArray();
-            System.out.println("--");
             for(String s: columnParaNames) {
-                System.out.println("Store " + s);
                 jsg.writeString(s);
             }
             jsg.writeEndArray();
@@ -600,7 +597,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         XtceDb xtceDb = packetViewer.xtcedb;
     
         tmExtractor=new XtceTmExtractor(xtceDb);
-        tableModel.resetParameterColumns();
+        resetDynamicColumns();
         for(String pn: columnParaNames) {
             Parameter p = packetViewer.xtcedb.getParameter(pn);
             if(p==null) {
@@ -631,8 +628,22 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         }
     }
     
+    /**
+     * Doesn't remove columns from preferences, but resets GUI.
+     * Used on start-up, and when changing connections.
+     */
+    void resetDynamicColumns() {
+        List<TableColumn> toDelete = new ArrayList<>();
+        for (int i = tableModel.getFixedColumnsSize(); i < tableModel.getColumnCount(); i++) {
+            toDelete.add(getColumnModel().getColumn(i));
+        }
+        toDelete.forEach(c -> getColumnModel().removeColumn(c));
+        tableModel.resetParameterColumns();
+        configureRowSorting();
+    }
+    
     // index in model
-    void removeParameterColumn(int columnIndex) {
+    void hideParameterColumn(int columnIndex) {
         TableColumn tableColumn = getColumnModel().getColumn(columnIndex);
         getColumnModel().removeColumn(tableColumn);
         Parameter p = tableModel.getParameter(columnIndex);
@@ -693,8 +704,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         public ColumnHeaderPopUp(int column){
             JMenuItem hideColumnItem = new JMenuItem("Hide Column");
             hideColumnItem.addActionListener(e -> {
-                System.out.println("hide " + column);
-                removeParameterColumn(column);
+                hideParameterColumn(column);
             });
             hideColumnItem.setEnabled(column >= tableModel.getFixedColumnsSize());
             add(hideColumnItem);

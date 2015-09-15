@@ -64,12 +64,14 @@ public class PacketsTableModel extends DefaultTableModel {
 
     public void resetParameterColumns() {
         shownColumnParameters = new ArrayList<>();
+        setColumnCount(FIXED_COLUMNS.length);
+        fireTableStructureChanged();
     }
     
     public void addPacket(ListPacket packet) {
         List<Object> row = new ArrayList<>();
         row.add(++continuousRowCount);
-        row.add( TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
+        row.add(TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
         row.add(packet);
         for(Parameter p:shownColumnParameters) {
             ParameterValue pv = packet.getParameterColumn(p);
