@@ -36,7 +36,11 @@ function configureMenu() {
 }
 
 function configureContextMenu() {
-     $.contextMenu({
+    $(document).on('click', '[class~=context-menu-field]', function(e) {
+        $(this).contextMenu({ x: e.offsetX, y: e.offsetY });
+    });
+
+    $.contextMenu({
         selector: '[class~=context-menu-field]', 
         trigger: 'right',
         callback: function(key, options) {
