@@ -7,7 +7,7 @@ $.extend(USS.LinearTickMeter.prototype, {
         var cx = width / 2;
         var cy = height / 2;
         
-        var $e=$(e)
+        var $e=$(e);
         var meterMin = this.meterMin = parseFloat($e.children('Minimum').text());
         var meterMax = this.meterMax = parseFloat($e.children('Maximum').text());
         var meterRange = this.meterRange = this.meterMax - this.meterMin;

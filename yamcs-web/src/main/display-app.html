@@ -38,43 +38,26 @@
 
 </head>
 <body height="800">
-   <div style="position:fixed; z-index:100000; width:100%">
-     <div style="float:left"  >
-         <ul style="display:inline-block; flaoat:left" id="yamcs-menu" >
-          <li> <a href="#">Open</a>
-             <ul id="yamcs-displays-menu"> </ul>
-          </li>
-        </ul> 
-     </div> 
-       <div style="float:right" class="ui-widget-header ui-widget">
-           <!-- <span class="yamcs-task"> </span> -->
-       </div>
-        
-       <div style="width:100%" class="ui-widget-header ui-widget yamcs-task-list" id="yamcs-task-list">
-         <!--<span id="button1">blublu</span>
-         <span class="yamcs-task usi-state-hover"><img src="symlib/images/U23_led_grey.svg" height="12" width="12" style="margin: 0px 5px">SOLAR Main</span>
-         <span class="yamcs-task" id="button3"><img src="symlib/images/U22_led_green.svg" height="12" width="12" style="margin: 0px 5px">SOLACES Overview</span>-->
-       </div>
-   </div>
-    <div id="yamcs-body"  style="width:100%; height:100%;" >
-
-        <div id="graphdiv"></div>
-        <script type="text/javascript">
-          g = new Dygraph(
-
-            // containing div
-            document.getElementById("graphdiv"),
-
-            // CSV or path to a CSV file.
-            "Date,Temperature\n" +
-            "2008-05-07,75\n" +
-            "2008-05-08,70\n" +
-            "2008-05-09,80\n"
-
-          );
-        </script>
-
+  <div style="position:fixed; z-index:100000; width:100%">
+    <div style="float:left"  >
+      <ul style="display:inline-block;" id="yamcs-menu" >
+        <li> <a href="#">Open</a>
+          <ul id="yamcs-displays-menu"></ul>
+        </li>
+      </ul>
     </div>
- </body>
+    <div style="float:right" class="ui-widget-header ui-widget">
+      <!-- <span class="yamcs-task"> </span> -->
+    </div>
+        
+    <div style="width:100%" class="ui-widget-header ui-widget yamcs-task-list" id="yamcs-task-list">
+      <!--<span id="button1">blublu</span>
+      <span class="yamcs-task usi-state-hover"><img src="symlib/images/U23_led_grey.svg" height="12" width="12" style="margin: 0px 5px">SOLAR Main</span>
+      <span class="yamcs-task" id="button3"><img src="symlib/images/U22_led_green.svg" height="12" width="12" style="margin: 0px 5px">SOLACES Overview</span>-->
+    </div>
+  </div>
+  <div id="yamcs-body"  style="width:100%; height:100%;" >
+  </div>
+</body>
 </html>
 

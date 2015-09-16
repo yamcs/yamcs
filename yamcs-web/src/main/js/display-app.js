@@ -204,18 +204,14 @@ function showParameterInfo(parameter) {
 }
 
 function showParameterPlot(parameter) {
-    var name = parameter.name + ' :: Plot';
-    showWindow(name, function(div, name, yamcsWebSocket, onLoadContent) {
-        $.ajax({
-	        url: '/' + yamcsInstance + '/api/mdb/parameterInfo',
-            data: parameter
-        }).done(function(pinfo) {
-	        $(div).html("<pre class='yamcs-pplot'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
+    $.get('/_static/parameter-plot.html', function(data) {
+        var template = swig.compile(data);
+        var html = template();
+
+        var name = parameter.name + ' :: Plot';
+        showWindow(name, function(div, name, yamcsWebSocket, onLoadContent) {
+            $(div).html(html);
             onLoadContent(800,500);
-        }).fail(function(xhr, textStatus, errorThrown) {
-            var r = JSON.parse(xhr.responseText);
-	        $(div).html("<pre class='yamcs-pplot'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
-            onLoadContent(800,500);
-        })
-    }, true, true);
+        }, true, true);
+    });
 }
