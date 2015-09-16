@@ -123,7 +123,7 @@ var YamcsWebSocket = function(instance) {
                 paraList.push({name: p.name, namespace: p.namespace});
             }
         }
-        if(          paraList.length==0) return;
+        if(paraList.length==0) return;
         //console.log(paraList);
         var that=this;
         sendRequest("subscribe", {list: paraList}, null,

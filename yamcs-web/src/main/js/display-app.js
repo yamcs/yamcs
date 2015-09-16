@@ -61,9 +61,7 @@ function configureContextMenu() {
     });
 }
 
-
 function loadDisplayList() {
-    console.log('ugh');
     function addDisplay(sb, path, d) {
          if(d instanceof Array) {
              sb.push('<li><a href="#">'+d[0]+'</a>');
@@ -82,7 +80,6 @@ function loadDisplayList() {
     $.ajax({
          url: "/"+yamcsInstance+"/displays/listDisplays"
     }).done(function(dlist) {
-        console.log('got responseee', dlist);
          var sb=[];
          for(var i=0; i<dlist.length; i++) {
              var d=dlist[i];
@@ -90,8 +87,6 @@ function loadDisplayList() {
          }
          $("#yamcs-displays-menu").append(sb.join(""));
          updateMenu();
-    }).fail(function (a,b,c) {
-        console.log("filaed",a,b,c);
     });
 }
 
@@ -213,8 +208,34 @@ function showParameterPlot(parameter) {
         var html = template();
 
         var name = parameter.name + ' :: Plot';
-        showWindow(name, function(div, name, yamcsWebSocket, onLoadContent) {
-            $(div).html(html);
+        showWindow(name, function(divEl, name, yamcsWebSocket, onLoadContent) {
+            var div = $(divEl);
+            div.html(html);
+            var graphDiv = div.find('.graphdiv')[0];
+            var data = [];
+            var g = new Dygraph(graphDiv, 'X\n', {
+              drawPoints: true,
+              showRoller: true,
+              labels: ['Time', 'Value']
+            });
+
+            yamcsWebSocket.bindDataHandler('PARAMETER', function(pdata) {
+                var params = pdata['parameter'];
+                for(var i=0; i<params.length; i++) {
+                    var p = params[i];
+                    if (p.id.name === parameter.name) {
+                        var t = new Date();
+                        t.setTime(Date.parse(p['generationTimeUTC']));
+                        var v = USS.getParameterValue(p, true);
+                        data.push([t, v]);
+                        if (data.length == 50) {
+                            g.updateOptions({ drawPoints: false, showRoller: false });
+                        }
+                        g.updateOptions({ file: data });
+                        break;
+                    }
+                }
+            });
             onLoadContent(800,500);
         }, true, true);
     });

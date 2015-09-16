@@ -34,7 +34,7 @@ USS.loadDisplay = function(div, filename, yamcsWebSocket, doneFunction) {
             if(doneFunction) doneFunction(d);
             //console.log(d);
             // console.log(computations);
-        })
+        });
     }});
 };
 
@@ -76,7 +76,7 @@ USS.parseDataBinding = function(e) {
             db[n]=$('string:nth-child(2)', val).text();
         });
         if(db.Opsname!==undefined) {
-            db.parameterName=db.Opsname
+            db.parameterName=db.Opsname;
             db.parameterNamespace = USS.opsNamespace;
          } else {
             console.log("External Data source without Opsname", ds);
@@ -87,7 +87,7 @@ USS.parseDataBinding = function(e) {
        USS.computationCount++;
        var c=new Object();
        c.expression=$(ds).children('Expression').text();
-       c.args=[]
+       c.args=[];
        c.parameterName=pname;
 
        $('Arguments ExternalDataSource', e).each(function(idx, val) {
@@ -292,8 +292,8 @@ USS.openDisplay = function(displayBaseName) {
 
 //get the parameter id for the parameter shown in the widget for plotting or info
 USS.getParameterFromWidget = function(widget) {
-   for(i in widget.dataBindings) {
-       p = widget.dataBindings[i];
+   for(var i in widget.dataBindings) {
+       var p = widget.dataBindings[i];
        if(p.dynamicProperty==USS.dp_VALUE) {
 	    return {name: p.parameterName, namespace: p.parameterNamespace}
        }
