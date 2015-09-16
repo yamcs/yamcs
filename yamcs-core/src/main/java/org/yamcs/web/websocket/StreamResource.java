@@ -142,19 +142,16 @@ public class StreamResource extends AbstractWebSocketResource {
             throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
         }
         
-        int expectedColumnCount = stream.getDefinition().getColumnDefinitions().size();
-        if (req.getColumnValueCount() != expectedColumnCount) {
+        int maxColumnCount = stream.getDefinition().getColumnDefinitions().size();
+        if (req.getColumnValueCount() > maxColumnCount) {
             throw new WebSocketException(ctx.getRequestId(),
-                    String.format("Expected %d columns, but found %d", req.getColumnValueCount(), expectedColumnCount));
+                    String.format("Too many columns. Max %d columns, but received %d", maxColumnCount, req.getColumnValueCount()));
         }
         
         List<Object> tupleColumns = new ArrayList<>();
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             ColumnValue providedValue = findColumnValue(req, cdef.getName());
-            if (providedValue == null) {
-                throw new WebSocketException(ctx.getRequestId(), "Could not find a column named " + cdef.getName());
-            }
-            
+            if (providedValue == null) continue;
             if (!providedValue.hasValue()) {
                 throw new WebSocketException(ctx.getRequestId(), "No value was provided for column " + cdef.getName());
             }
@@ -217,7 +214,6 @@ public class StreamResource extends AbstractWebSocketResource {
         }
         return null;
     }
-    
 
     @Override
     public void quit() {
