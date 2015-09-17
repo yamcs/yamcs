@@ -2,10 +2,12 @@ package org.yamcs.yarch.tokyocabinet;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.archive.TagDb;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.HistogramDb;
 import org.yamcs.yarch.PartitionManager;
@@ -91,5 +93,14 @@ public class TcStorageEngine implements StorageEngine {
     @Override
     public HistogramDb getHistogramDb(TableDefinition tbl) {		
 	return TcHistogramDb.getInstance(ydb, tbl);
+    }
+
+    @Override
+    public TagDb getTagDb() throws YarchException {
+        try {
+            return TcTagDb.getInstance(ydb.getName(), false);
+        } catch (IOException e) {
+            throw new YarchException(e);
+        }
     }
 }

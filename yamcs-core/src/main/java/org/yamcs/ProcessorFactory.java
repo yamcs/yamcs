@@ -38,7 +38,6 @@ public class ProcessorFactory {
      * @throws YProcessorException
      * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
     static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws YProcessorException,  ConfigurationException {
         boolean initialized = false;
         TcTmService tctms=null;

@@ -1,5 +1,6 @@
 package org.yamcs.yarch;
 
+import org.yamcs.archive.TagDb;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
 public interface StorageEngine {
@@ -49,4 +50,6 @@ public interface StorageEngine {
      * @throws YarchException
      */
     public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException;
+
+    public TagDb getTagDb() throws YarchException;
 }

@@ -41,6 +41,7 @@ import org.yamcs.protobuf.Yamcs.TagResult;
 import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchException;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -66,11 +67,11 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
      * Maps instance names to archive directories
      */
     final HashSet<String> instances=new HashSet<String>();
-    public IndexServer(String instance) throws HornetQException, IOException, ConfigurationException, YamcsApiException {
+    public IndexServer(String instance) throws HornetQException, IOException, ConfigurationException, YarchException, YamcsApiException {
         this(instance, null);
     }
     
-    public IndexServer(String yamcsInstance, Map<String, Object> config) throws HornetQException, IOException, ConfigurationException, YamcsApiException {
+    public IndexServer(String yamcsInstance, Map<String, Object> config) throws HornetQException, YarchException, ConfigurationException, YamcsApiException, IOException {
         boolean readonly=false;
         this.yamcsInstance=yamcsInstance;
         YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
@@ -102,7 +103,8 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
                 }
         }
         
-        tagDb=TagDb.getInstance(yamcsInstance, readonly);
+        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
+        
         ys=YamcsSession.newBuilder().build();
         msgClient=ys.newClientBuilder().setRpcAddress(Protocol.getYarchIndexControlAddress(yamcsInstance)).
                 setDataProducer(true).build();

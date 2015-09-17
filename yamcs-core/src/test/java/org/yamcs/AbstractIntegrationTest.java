@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
@@ -125,7 +127,19 @@ public abstract class AbstractIntegrationTest {
 
     }
 
+    @After
+    public void after() throws InterruptedException {
+        wsClient.disconnect();
+        assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
+    }
 
+    @AfterClass
+    public static void shutDownYamcs()  throws Exception {
+        YamcsServer.shutDown();
+        YamcsServer.stopHornet();
+    }
+
+    
     <T extends MessageLite> String toJson(T msg, Schema<T> schema) throws IOException {
         StringWriter writer = new StringWriter();
         JsonIOUtil.writeTo(writer, msg, schema, false);

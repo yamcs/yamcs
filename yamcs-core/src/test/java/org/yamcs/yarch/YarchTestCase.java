@@ -10,9 +10,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.management.ManagementService;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -52,8 +52,14 @@ public abstract class YarchTestCase {
 	FileUtils.deleteRecursively(ytdir.toPath());
 
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
-	YarchDatabase.removeInstance(instance);
-	ydb=YarchDatabase.getInstance(instance);
+	
+	if(YarchDatabase.hasInstance(instance)) {	
+	    YarchDatabase ydb = YarchDatabase.getInstance(instance);
+	    RdbStorageEngine.removeInstance(ydb);	
+	    YarchDatabase.removeInstance(instance);		
+	}
+	
+	ydb = YarchDatabase.getInstance(instance);
     }
 
     

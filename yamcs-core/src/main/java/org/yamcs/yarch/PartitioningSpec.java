@@ -12,8 +12,8 @@ public class PartitioningSpec {
     final public String timeColumn;
     final public String valueColumn;
     
-    //this thing is not final because it is set from the TableDefinition when attaching the pspec. Probably should be changed.
-    public DataType valueColumnType;
+    //this thing is not final because it is determined the TableDefinition when attaching the pspec. Could be  changed into a builder pattern.
+    private DataType valueColumnType;
     
     
     public TimePartitionSchema timePartitioningSchema = TimePartitionSchema.getInstance("YYYY/MM"); 
@@ -52,5 +52,13 @@ public class PartitioningSpec {
     @Override
     public String toString() {
         return "timeColumn: "+timeColumn+" valueColumn:"+valueColumn;
+    }
+
+    public DataType getValueColumnType() {
+        return valueColumnType;
+    }
+
+    public void setValueColumnType(DataType valueColumnType) {
+        this.valueColumnType = valueColumnType;
     }
 }

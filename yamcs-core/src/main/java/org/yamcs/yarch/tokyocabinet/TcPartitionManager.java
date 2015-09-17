@@ -136,7 +136,7 @@ public class TcPartitionManager extends PartitionManager {
 		if(pinfo==null) continue;
 
 		String so=m.group(1);
-		DataType reqType=partitioningSpec.valueColumnType;
+		DataType reqType=partitioningSpec.getValueColumnType();
 		try {
 		    Object o=partitionToValue(so, reqType);
 		    addPartition(pinfo, dir+"/"+s, o);

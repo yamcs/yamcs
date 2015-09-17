@@ -1,4 +1,4 @@
-package org.yamcs.archive;
+package org.yamcs.yarch.tokyocabinet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -11,24 +11,23 @@ import java.util.Comparator;
 
 import org.junit.Test;
 import org.yamcs.TimeInterval;
+import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.yarch.YarchTestCase;
+import org.yamcs.yarch.tokyocabinet.TcTagDb;
 
 public class TestTags extends YarchTestCase {
 
     private ArrayList<ArchiveTag> tags;
     private String instance;
-    private TagDb tagDb;
+    private TcTagDb tagDb;
     
     @Test
     public void testTags() throws Exception {
         final int n=1000;
         tags=new ArrayList<ArchiveTag>(n+4);
         instance=context.getDbName();
-        tagDb=TagDb.getInstance(instance, false);
-        execute("create stream tm_realtime "+TmProviderAdapter.TM_TUPLE_DEFINITION.getStringDefinition());
-        execute("create stream tm_dump "+TmProviderAdapter.TM_TUPLE_DEFINITION.getStringDefinition());
+        tagDb = TcTagDb.getInstance(instance, false);
         
         //insert two tags without stop
         insertTag(ArchiveTag.newBuilder().setName("plusinfinity1").setStart(1000).build());
@@ -41,7 +40,6 @@ public class TestTags extends YarchTestCase {
         insertTag(ArchiveTag.newBuilder().setName("minusinfinity2").setStop(2000).build());//n+4
         Collections.sort(tags, new ArchiveTagComparator());
         
-        Thread.sleep(1000);//wait to finish the indexing
         checkRetrieval(-1, -1);
 
         checkRetrieval(-1, n/2);

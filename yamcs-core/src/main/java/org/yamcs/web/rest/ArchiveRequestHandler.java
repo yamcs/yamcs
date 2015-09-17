@@ -52,6 +52,7 @@ import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
@@ -534,8 +535,8 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     
     private static TagDb getTagDb(String yamcsInstance) throws RestException {
         try {
-            return TagDb.getInstance(yamcsInstance, false);
-        } catch (IOException e) {
+            return YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
+        } catch (YarchException e) {
             throw new InternalServerErrorException("Could not load tag-db", e);
         }
     }

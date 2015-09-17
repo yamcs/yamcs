@@ -10,7 +10,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -20,7 +19,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -42,7 +40,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Color GRAYISH_COLOR = new Color(235, 235, 235);
-    private static final String ADD_PARAMETER_TO_LEFT = "Add Parameter to the left table";
+    private static final String ADD_PARAMETER_TO_LEFT = "Apply as Left Column";
     
     private static final String[] COLUMNS = { "Name", "Eng Value",
         "Raw Value", "Nominal Low", "Nominal High", "Danger Low",
@@ -354,8 +352,11 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 int row = rowAtPoint(e.getPoint());
-                rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
-                rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+                if (row != -1) {
+                    setRowSelectionInterval(row, row);
+                    rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
+                    rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
 

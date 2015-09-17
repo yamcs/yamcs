@@ -8,6 +8,6 @@ before_script:
  - tar xzvf tokyocabinet-java-1.24.tar.gz
  - cd tokyocabinet-java-1.24 && ./configure && make && sudo make install && cd ..
 
-script: mvn -Dsurefire.useFile=false test && mvn -Dtest=IntegrationTest -pl yamcs-core test
+script: mvn -Dsurefire.useFile=false test && mvn -Dtest=PermissionsTest -pl yamcs-core test
 
 

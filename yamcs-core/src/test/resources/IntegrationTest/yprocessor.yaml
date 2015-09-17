@@ -1,13 +1,13 @@
-# this file defines the diferrent channels
-# channel is where TM/TC processing happends inside Yamcs.
+# this file defines the different processors types
+# a processor is where TM/TC processing happens inside Yamcs.
 #
-# each channel uses a source of TM packets, one or more sources of parameters and a command releaser
+# each processor uses a source of TM packets, one or more sources of parameters and a command releaser
 #  all of these are optional
 #
 # Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
 #
 #
-#all the supported channel types
+# all the supported processor types
 # 
 types: [realtime, Archive]
 
