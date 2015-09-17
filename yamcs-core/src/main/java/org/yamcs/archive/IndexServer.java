@@ -82,7 +82,6 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
         } else {
             tmIndexer=new CccsdsTmIndex(yamcsInstance, readonly);
         }
-        YarchDatabase dict=YarchDatabase.getInstance(yamcsInstance);
         
         if(!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
@@ -113,9 +112,9 @@ public class IndexServer extends AbstractExecutionThreadService implements Runna
 
     private void subscribe(StreamConfigEntry sce) {
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
-        Stream realtimeTmStream=ydb.getStream(XtceTmRecorder.REALTIME_TM_STREAM_NAME);
-        if(realtimeTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.REALTIME_TM_STREAM_NAME);
-        realtimeTmStream.addSubscriber(tmIndexer);
+        Stream tmStream = ydb.getStream(sce.getName());
+        if(tmStream==null) throw new ConfigurationException("There is no stream named "+sce.getName());
+        tmStream.addSubscriber(tmIndexer);
     }
     private static TmIndex loadIndexerFromClass(String icn, String instance, boolean readonly) throws ConfigurationException, IOException {
         try {
