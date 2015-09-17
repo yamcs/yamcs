@@ -179,13 +179,79 @@ function bringWindowToFront(name) {
     lastSelectedWindow.select();
 }
 
+function updateGraph(g, data) {
+    var options = { file: data };
+    if (data.length > 50) {
+        options.drawPoints = false;
+        options.showRoller = false;
+    }
+    g.updateOptions(options);
+}
+
+var archiveFetched = false;
+
+function showHistoricData(g, parameter, plotMode, data) {
+    var now = new Date();
+    var nowIso = now.toISOString();
+    var before = new Date(now.getTime());
+    var beforeIso = nowIso;
+    if (plotMode === '15m') {
+        before.setMinutes(now.getMinutes() - 15);
+        beforeIso = before.toISOString();
+    } else if (plotMode === '30m') {
+        before.setMinutes(now.getMinutes() - 30);
+        beforeIso = before.toISOString();
+    } else if (plotMode === '1h') {
+        before.setHours(now.getHours() - 1);
+        beforeIso = before.toISOString();
+    } else if (plotMode === '5h') {
+        before.setHours(now.getHours() - 5);
+        beforeIso = before.toISOString();
+    } else if (plotMode === '1d') {
+        before.setDate(now.getDate() - 1);
+        beforeIso = before.toISOString();
+    } else if (plotMode === '1w') {
+        before.setDate(now.getDate() - 7);
+        beforeIso = before.toISOString();
+    }
+
+    archiveFetched = false;
+    $.ajax({
+        type: 'POST',
+        url: '/'+yamcsInstance+'/api/archive',
+        data: JSON.stringify({
+            utcStart: beforeIso.slice(0, -1),
+            utcStop: nowIso.slice(0, -1),
+            parameterRequest: {
+                nameFilter: [parameter],
+                sendRaw: true
+            }
+        })
+    }).done(function(response) {
+        data.length = 0; // clear first
+        for (var i = 0; i < response['parameterData'].length; i++) {
+            var pdata = response['parameterData'][i];
+            for (var j = 0; j < pdata['parameter'].length; j++) {
+                var p = pdata['parameter'][j];
+                var t = new Date();
+                t.setTime(Date.parse(p['generationTimeUTC']));
+                var v = USS.getParameterValue(p, true);
+                data.push([t, v]);
+            }
+        }
+        updateGraph(g, (data.length > 0) ? data : 'x\n');
+        console.log('fetched');
+        archiveFetched = true;
+    });
+}
+
 function showParameterDetail(parameter) {
     $.get('/_static/parameter.html', function(templateData) {
         var name = parameter.name;
-        var plotMode = '1h';
+        var plotMode = '30m';
         showWindow(name, {
             onopen: function(divEl, name, webSocketClient, onLoadContent) {
-                console.log("getting parameter info for ", parameter);
+                console.log("getting parameter detail for ", parameter);
                 $.ajax({
                     url: '/'+yamcsInstance+'/api/mdb/parameterInfo',
                     data: parameter
@@ -211,17 +277,6 @@ function showParameterDetail(parameter) {
                     var generated = div.find('.para-generated')[0];
                     var status = div.find('.para-status')[0];
 
-                    function updateGraph() {
-                        var options = { file: data };
-                        if (data.length > 50) {
-                            options.drawPoints = false;
-                            options.showRoller = false;
-                        }
-                        g.updateOptions(options);
-                    }
-
-                    var archiveFetched = false;
-
                     // Subscribe realtime
                     var tempData = []; // Store while processing archive
                     webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
@@ -232,12 +287,12 @@ function showParameterDetail(parameter) {
                                 var t = new Date();
                                 t.setTime(Date.parse(p['generationTimeUTC']));
                                 var v = USS.getParameterValue(p, true);
-                                latestUpdate.innerText = v;
-                                generated.innerText = p['generationTimeUTC'];
-                                //status.innerText = 'bla';
                                 if (archiveFetched) {
+                                    latestUpdate.innerText = v;
+                                    generated.innerText = p['generationTimeUTC'];
+                                    //status.innerText = 'bla';
                                     data.push([t, v]);
-                                    updateGraph();
+                                    updateGraph(g, data);
                                 } else {
                                     tempData.push([t, v]);
                                     // TODO do something with tempData
@@ -247,40 +302,13 @@ function showParameterDetail(parameter) {
                         }
                     });
 
-                    // Fetch latest hour
-                    var now = new Date();
-                    var nowIso = now.toISOString();
-
-                    var before = new Date(now.getTime());
-                    before.setHours(now.getHours() - 1);
-                    var beforeIso = before.toISOString();
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '/'+yamcsInstance+'/api/archive',
-                        data: JSON.stringify({
-                            utcStart: beforeIso.slice(0, -1),
-                            utcStop: nowIso.slice(0, -1),
-                            parameterRequest: {
-                                nameFilter: [parameter],
-                                sendRaw: true
-                            }
-                        })
-                    }).done(function(response) {
-                        for (var i = 0; i < response['parameterData'].length; i++) {
-                            var pdata = response['parameterData'][i];
-                            for (var j = 0; j < pdata['parameter'].length; j++) {
-                                var p = pdata['parameter'][j];
-                                var t = new Date();
-                                t.setTime(Date.parse(p['generationTimeUTC']));
-                                var v = USS.getParameterValue(p, true);
-                                data.push([t, v]);
-                            }
-                        }
-                        updateGraph();
-                        archiveFetched = true;
+                    showHistoricData(g, parameter, plotMode, data);
+                    div.find('.plotrange').on('click', function(e) {
+                        $(this).siblings().removeClass('nolink');
+                        $(this).addClass('nolink');
+                        var newPlotMode = e.target.innerText;
+                        showHistoricData(g, parameter, newPlotMode, data);
                     });
-
                     onLoadContent(800,500);
                 }).fail(function(xhr, textStatus, errorThrown) {
                     var r = JSON.parse(xhr.responseText);
