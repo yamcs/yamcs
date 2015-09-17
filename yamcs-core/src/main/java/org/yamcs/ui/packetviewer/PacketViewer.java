@@ -618,6 +618,10 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
             }
             len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
+            if(len<16) {
+                log("Short packet read: length: "+len);
+                break;
+            }
             byte[] bufn = new byte[len];
             System.arraycopy(buf.array(), 0, bufn, 0, 16);
             r=reader.read(bufn, 16, len-16);
