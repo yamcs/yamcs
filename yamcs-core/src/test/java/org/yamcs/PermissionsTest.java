@@ -28,9 +28,7 @@ import io.netty.handler.codec.http.HttpMethod;
 
 
 public class PermissionsTest extends AbstractIntegrationTest {
-      
-
-    @Test
+          
     public void testRetrieveDataFromArchive() throws Exception {
         generateData("2016-02-03T10:00:00", 3600);
         NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
@@ -52,11 +50,6 @@ public class PermissionsTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
     }
 
-    @Test
-    public void testRetrieveIndex() throws Exception {
-
-    }
-
 
     @Test
     public void testAuthenticationWebServices() throws Exception {
@@ -65,8 +58,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         boolean gotException = false;
         try {
             testRetrieveDataFromArchive();
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             gotException = true;
         }
         assertTrue("replay request should be denied to user", gotException);
