@@ -203,7 +203,9 @@ public class StreamResource extends AbstractWebSocketResource {
             }
         }
         
-        stream.emitTuple(new Tuple(stream.getDefinition(), tupleColumns));
+        Tuple t = new Tuple(stream.getDefinition(), tupleColumns);
+        log.debug("Emitting tuple {} to {}", t, stream.getName());
+        stream.emitTuple(t);
         return toAckReply(ctx.getRequestId());
     }
     

@@ -24,14 +24,15 @@ import org.yamcs.utils.TimeEncoding;
  *
  */
 public class RdbHistogramDb extends HistogramDb {
-	YRDB histoDb;
+    YRDB histoDb;
 
     int nextId=1;
     static Logger log=LoggerFactory.getLogger(RdbHistogramDb.class.getName());
     long lastSync;
-   
-    static Map<TableDefinition, RdbHistogramDb> instances=new HashMap<TableDefinition, RdbHistogramDb>();
 
+    static Map<TableDefinition, RdbHistogramDb> instances=new HashMap<TableDefinition, RdbHistogramDb>();
+    final YarchDatabase ydb;
+    
     static final byte[] zerobytes=new byte[0];
     /**
      * Open the  histogram db
@@ -41,23 +42,24 @@ public class RdbHistogramDb extends HistogramDb {
      * @throws IOException
      */
     public RdbHistogramDb(YarchDatabase ydb, String filename, boolean readonly) throws IOException {
-    	RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-    	histoDb = rdbFactory.getRdb(filename, new ColumnValueSerializer(DataType.STRING), readonly);
+        this.ydb = ydb;
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        histoDb = rdbFactory.getRdb(filename, new ColumnValueSerializer(DataType.STRING), readonly);
 
         lastSync=System.currentTimeMillis();
     }
 
-//    private void initDb() throws IOException {
-      
-  //  }
+    //    private void initDb() throws IOException {
+
+    //  }
 
     @Override
     public HistogramIterator getIterator(String colName, TimeInterval interval, long mergeTime) throws IOException {
         try {
-			return new RdbHistogramIterator(colName, interval, mergeTime);
-		} catch (RocksDBException e) {
-			throw new IOException(e);
-		}
+            return new RdbHistogramIterator(colName, interval, mergeTime);
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -66,76 +68,78 @@ public class RdbHistogramDb extends HistogramDb {
     }
 
 
-    
-    
+
+
     public static synchronized RdbHistogramDb getInstance(YarchDatabase ydb, TableDefinition tblDef) throws IOException {
         RdbHistogramDb db=instances.get(tblDef);
         if(db==null) {
             db=new RdbHistogramDb(ydb, tblDef.getDataDir()+"/"+tblDef.getName()+"-histo", false);
             instances.put(tblDef, db);
         }
+        assert(db.ydb==ydb);
+        
         return db;
     }
 
-    
+
     protected byte[] segmentGet(String colName, byte[] segkey) throws IOException {
-    	try {
-    		ColumnFamilyHandle cfh= histoDb.getColumnFamilyHandle(colName);
-    		if(cfh==null) return null;
-    		
-			return histoDb.get(cfh, segkey);
-		} catch (RocksDBException e) {
-			throw new IOException(e);
-		}
+        try {
+            ColumnFamilyHandle cfh= histoDb.getColumnFamilyHandle(colName);
+            if(cfh==null) return null;
+
+            return histoDb.get(cfh, segkey);
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }
     }
-    
+
     protected void segmentPut(String colName, byte[] segkey, byte[] segval) throws IOException {    	
-    	try {
-    		ColumnFamilyHandle cfh= histoDb.getColumnFamilyHandle(colName);
-    		if(cfh==null) {
-    			cfh = histoDb.createColumnFamily(colName);
-    			  //add a record at the end to make sure the cursor doesn't run out
-    			histoDb.put(cfh, Segment.key(Integer.MAX_VALUE, zerobytes), new byte[0]);
-    		}    		
-    		histoDb.put(cfh, segkey, segval);
-		} catch (RocksDBException e) {
-			throw new IOException(e);
-		}
+        try {
+            ColumnFamilyHandle cfh= histoDb.getColumnFamilyHandle(colName);
+            if(cfh==null) {
+                cfh = histoDb.createColumnFamily(colName);
+                //add a record at the end to make sure the cursor doesn't run out
+                histoDb.put(cfh, Segment.key(Integer.MAX_VALUE, zerobytes), new byte[0]);
+            }    		
+            histoDb.put(cfh, segkey, segval);
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }
     }
-    
+
     /**
      * Print the content of the index files
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception{
-    	if(args.length<2) printUsageAndExit();
-		TimeInterval interval = new TimeInterval();
-		long mergeTime=2000;
-		TimeEncoding.setUp();
+        if(args.length<2) printUsageAndExit();
+        TimeInterval interval = new TimeInterval();
+        long mergeTime=2000;
+        TimeEncoding.setUp();
 
-		int i;
-		for(i=0;i<args.length;i++) {
-			if("-s".equals(args[i])) {
-				String s=args[++i];
-				interval.setStart(TimeEncoding.parse(s));
-			} else 	if("-e".equals(args[i])) {
-				interval.setStop(TimeEncoding.parse(args[++i]));
-			} else 	if("-m".equals(args[i])) {
-				mergeTime=Integer.parseInt(args[++i])*1000;
-			} else {
-				break;
-			}
-		}
-		if(i+2<args.length) printUsageAndExit();
-		String dbpath = args[i];
-		String colName = args[i+1];
-		
-	
+        int i;
+        for(i=0;i<args.length;i++) {
+            if("-s".equals(args[i])) {
+                String s=args[++i];
+                interval.setStart(TimeEncoding.parse(s));
+            } else 	if("-e".equals(args[i])) {
+                interval.setStop(TimeEncoding.parse(args[++i]));
+            } else 	if("-m".equals(args[i])) {
+                mergeTime=Integer.parseInt(args[++i])*1000;
+            } else {
+                break;
+            }
+        }
+        if(i+2<args.length) printUsageAndExit();
+        String dbpath = args[i];
+        String colName = args[i+1];
 
-		YarchDatabase ydb=YarchDatabase.getInstance("test");
-		RdbHistogramDb index=new RdbHistogramDb(ydb, dbpath, true);
-		index.printDb(colName, interval, mergeTime);
+
+
+        YarchDatabase ydb=YarchDatabase.getInstance("test");
+        RdbHistogramDb index=new RdbHistogramDb(ydb, dbpath, true);
+        index.printDb(colName, interval, mergeTime);
     }
 
     private static void printUsageAndExit() {
@@ -150,8 +154,8 @@ public class RdbHistogramDb extends HistogramDb {
      *
      */
     class RdbHistogramIterator extends HistogramIterator {
-    	RocksIterator it;
-        
+        RocksIterator it;
+
         /**
          * 
          * @param interval start,stop         * 
@@ -159,23 +163,23 @@ public class RdbHistogramDb extends HistogramDb {
          * @throws RocksDBException 
          */
         public RdbHistogramIterator(String colName, TimeInterval interval, long mergeTime) throws RocksDBException {
-        	super(interval, mergeTime);
-        	
-        	ColumnFamilyHandle cfh = histoDb.getColumnFamilyHandle(colName);
-        	if(cfh==null) {
-        		finished = true;
-        	} else {
-        		it=histoDb.newIterator(cfh);
-        		if(!interval.hasStart()) {
-        			it.seek(Segment.key(0, zerobytes));
-        		} else {
-        			int sstart=(int)(interval.getStart()/groupingFactor);
-        			it.seek(Segment.key(sstart, zerobytes));
-        		}
-        		if(!readNextSegments()) {
-        			finished=true;
-        		}
-        	}
+            super(interval, mergeTime);
+
+            ColumnFamilyHandle cfh = histoDb.getColumnFamilyHandle(colName);
+            if(cfh==null) {
+                finished = true;
+            } else {
+                it=histoDb.newIterator(cfh);
+                if(!interval.hasStart()) {
+                    it.seek(Segment.key(0, zerobytes));
+                } else {
+                    int sstart=(int)(interval.getStart()/groupingFactor);
+                    it.seek(Segment.key(sstart, zerobytes));
+                }
+                if(!readNextSegments()) {
+                    finished=true;
+                }
+            }
         }
 
         //reads all the segments with the same sstart time
@@ -186,7 +190,7 @@ public class RdbHistogramDb extends HistogramDb {
             records.clear();
             while(true) {
                 addRecords(it.key(), it.value());
-                
+
                 it.next();
                 if(!it.isValid()) break; 
                 bb=ByteBuffer.wrap(it.key());

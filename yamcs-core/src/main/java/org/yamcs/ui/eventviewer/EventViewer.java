@@ -811,6 +811,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
      * (horizontal position remains unchanged)
      */
     private void updateVerticalScrollPosition() {
+        if(eventTable.getRowCount()<=0) return;
+        
         int row = eventTable.convertRowIndexToView(eventTable.getRowCount()-1);
         int col = eventTable.convertColumnIndexToView(0);
         Rectangle rect = eventTable.getCellRect(row, col, true);

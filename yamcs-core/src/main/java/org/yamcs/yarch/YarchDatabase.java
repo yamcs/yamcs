@@ -53,12 +53,13 @@ public class YarchDatabase {
     private static String home;
     private TCBFactory tcbFactory=TCBFactory.getInstance();
 
-    static Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
+    private Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
     public static String TC_ENGINE_NAME="tokyocabinet";	
     public static String RDB_ENGINE_NAME="rocksdb";
 
-    public static String DEFAULT_STORAGE_ENGINE=TC_ENGINE_NAME;
-
+    private static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
+    private final String defaultStorageEngineName;
+    
     static {
 	try {
 	    config=YConfiguration.getConfiguration("yamcs");
@@ -88,6 +89,16 @@ public class YarchDatabase {
 	} else {
 	    se = Arrays.asList(RDB_ENGINE_NAME, TC_ENGINE_NAME);
 	}
+	
+	if(config.containsKey("defaultStorageEngine")) {
+	    defaultStorageEngineName = config.getString("defaultStorageEngine");
+	    if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
+	        throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngineName);
+	    }
+	} else {
+	    defaultStorageEngineName = DEFAULT_STORAGE_ENGINE;
+	}
+	
 	if(se!=null) {
 	    for(String s:se) {
 		if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
@@ -123,7 +134,16 @@ public class YarchDatabase {
     public String getName() {
 	return dbname;
     }
+    
+    public String getDefaultStorageEngineName() {
+        return defaultStorageEngineName;
+    }
 
+    public StorageEngine getDefaultStorageEngine() {
+        return storageEngines.get(defaultStorageEngineName);
+    }
+    
+    
     /**
      * loads all the .def files from the disk. The ascii def file is structed as follows
      * col1 type1, col2 type2, col3 type3     <- definition of the columns
@@ -139,7 +159,7 @@ public class YarchDatabase {
 		String fn=f.getName();
 		if(fn.endsWith(".def")) {
 		    try {
-			TableDefinition tblDef=deserializeTableDefinition(f);
+			TableDefinition tblDef = deserializeTableDefinition(f);
 			StorageEngine storageEngine = getStorageEngine(tblDef);
 			if(storageEngine==null) {
 			    throw new YarchException("Do not have a storage engine '"+tblDef.getStorageEngineName()+"'. Check storageEngines key in yamcs.yaml");
@@ -147,7 +167,6 @@ public class YarchDatabase {
 		    
 			getStorageEngine(tblDef).loadTable(tblDef);
 			managementService.registerTable(dbname, tblDef);
-			//System.out.println("loaded table: "+tblDef);
 			tables.put(tblDef.getName(), tblDef);
 			log.debug("loaded table definition "+tblDef.getName()+" from "+f);
 		    } catch (IOException e) {

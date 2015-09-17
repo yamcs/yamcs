@@ -35,6 +35,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     public HistogramReaderStream(YarchDatabase ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
         super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer=tblDef.getColumnSerializer(histoColumnName);
+        
         this.histoDb = ydb.getStorageEngine(tblDef).getHistogramDb(tblDef);
     }
 

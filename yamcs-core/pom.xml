@@ -99,7 +99,7 @@
     <dependency>
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
-      <version>3.10.0</version>
+      <version>3.10.1</version>
     </dependency>
   </dependencies>
 
@@ -151,7 +151,7 @@
    		   </property>
             </systemProperties>
           <excludes>
-             <exclude>**/IntegrationTest.java</exclude>
+             <exclude>**/PermissionsTest.java</exclude>
              <exclude>**/*$*</exclude> <!-- this excludes the inner classes which causes maven to get stuck somehow -->
           </excludes> 
         </configuration>

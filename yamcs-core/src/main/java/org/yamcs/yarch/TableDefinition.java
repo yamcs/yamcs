@@ -135,8 +135,9 @@ public class TableDefinition {
     public void setDb(YarchDatabase ydb) {
         this.ydb=ydb;
     }
+   
     
-	/**
+    /**
      * time based partitions can be on the first column of the key (which has to be of type timestamp)
      * value based partitions can be on any other mandatory column
      * @param pspec
@@ -156,13 +157,13 @@ public class TableDefinition {
             ColumnDefinition c=null;
             
             if(keyDef.hasColumn(pspec.valueColumn)) {
-                c=keyDef.getColumn(pspec.valueColumn);
+                c = keyDef.getColumn(pspec.valueColumn);
             } else if(valueDef.hasColumn(pspec.valueColumn)) {
-                c=valueDef.getColumn(pspec.valueColumn);
+                c = valueDef.getColumn(pspec.valueColumn);
             } else {
                 throw new ColumnNotFoundException(pspec.valueColumn);
             }
-            pspec.valueColumnType=c.getType();
+            pspec.setValueColumnType(c.getType());
         }
         
         this.partitioningSpec=pspec;
@@ -485,6 +486,4 @@ public class TableDefinition {
     public void setStorageEngineName(String storageEngineName) {
         this.storageEngineName = storageEngineName;
     }
-
 }
-

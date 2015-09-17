@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -150,6 +149,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     
     boolean authenticationEnabled = false;
     String streamName;
+    private String defaultNamespace;
    
     
     public PacketViewer() throws ConfigurationException {
@@ -161,7 +161,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
-
+        if(config.containsKey("defaultNamespace")) {
+            defaultNamespace = config.getString("defaultNamespace");
+        }
         // table to the left which shows one row per packet
 
         packetsTable = new PacketsTable(this);
@@ -1117,5 +1119,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     public void addParameterToTheLeftTable(Parameter selectedParameter) {
         packetsTable.addParameterColumn(selectedParameter);
+    }
+
+    public String getDefaultNamespace() {
+        return defaultNamespace;
     }
 }

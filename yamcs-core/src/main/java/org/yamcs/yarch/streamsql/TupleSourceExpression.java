@@ -1,7 +1,5 @@
 package org.yamcs.yarch.streamsql;
 
-
-import java.io.IOException;
 import java.math.BigDecimal;
 
 import org.slf4j.Logger;
@@ -34,7 +32,7 @@ class TupleSourceExpression {
     String objectName=null;
     StreamExpression streamExpression=null;
     BigDecimal histogramMergeTime=null;
-    
+
     //when histoColumn is set, the objectName must be a table having histograms on that column
     String histoColumn;
 
@@ -70,7 +68,7 @@ class TupleSourceExpression {
                         throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN, "No histogram configured for table "+tbl.getName());
                     if(!tbl.getHistogramColumns().contains(histoColumn)) 
                         throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN, "Histogram is not configured for column "+histoColumn);
-                    
+
                     definition=new TupleDefinition();
                     definition.addColumn(tbl.getColumnDefinition(histoColumn));
                     definition.addColumn(new ColumnDefinition("first", DataType.TIMESTAMP));
@@ -87,9 +85,9 @@ class TupleSourceExpression {
     }
     public void setHistogramMergeTime(BigDecimal mergeTime) {
         histogramMergeTime=mergeTime;
-        
+
     }
-    
+
     AbstractStream execute(ExecutionContext c) throws StreamSqlException {
         AbstractStream stream;
         if(streamExpression!=null) {        	
@@ -103,11 +101,11 @@ class TupleSourceExpression {
                     stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl);
                 } else {
                     HistogramReaderStream histoStream;
-					try {
-						histoStream = new HistogramReaderStream(ydb, tbl, histoColumn, definition);
-					} catch (YarchException e) {
-						throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
-					}
+                    try {
+                        histoStream = new HistogramReaderStream(ydb, tbl, histoColumn, definition);
+                    } catch (YarchException e) {
+                        throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
+                    }
                     if(histogramMergeTime!=null) {
                         histoStream.setMergeTime(histogramMergeTime.longValue());
                     }
@@ -120,15 +118,12 @@ class TupleSourceExpression {
         } else {
             throw new NoneSpecifiedException();
         }
-        
-        
+
+
         return stream;
     }
 
     TupleDefinition getDefinition() {
         return definition;
     }
-
-   
-
 }

@@ -55,7 +55,7 @@ ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
 
 # copy simulation config files
-cp $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
+cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
 
 cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
