@@ -17,9 +17,11 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.protobuf.ByteString;
@@ -133,6 +135,62 @@ public class StreamResource extends AbstractWebSocketResource {
         return toAckReply(ctx.getRequestId());
     }
     
+    private static DataType dataTypeFromValue(Value value) {
+        switch (value.getType()) {    
+        case SINT32:
+            return DataType.INT;
+        case DOUBLE:
+            return DataType.DOUBLE;
+        case BINARY:
+            return DataType.BINARY;
+        case TIMESTAMP:
+            return DataType.TIMESTAMP;
+        case STRING:
+            return DataType.STRING;
+        default:
+            throw new IllegalArgumentException("Unexpected value type " + value.getType());
+        }
+    }
+    
+    private Object makeTupleColumn(WebSocketDecodeContext ctx, String name, Value value, DataType columnType) throws WebSocketException {
+        // Sanity check. We should perhaps find a better way to do all of this
+        switch (columnType.val) {
+        case SHORT:
+            if (value.getType() != Type.SINT32)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.SINT32));
+            return value.getSint32Value();
+        case DOUBLE:
+            if (value.getType() != Type.DOUBLE)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.DOUBLE));
+            return value.getDoubleValue();
+        case BINARY:
+            if (value.getType() != Type.BINARY)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.BINARY));
+            return value.getBinaryValue().toByteArray();
+        case INT:
+            if (value.getType() != Type.SINT32)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.SINT32));
+            return value.getSint32Value();
+        case TIMESTAMP:
+            if (value.getType() != Type.TIMESTAMP)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.TIMESTAMP));
+            return value.getTimestampValue();
+        case ENUM:
+        case STRING:
+            if (value.getType() != Type.STRING)
+                throw new WebSocketException(ctx.getRequestId(), String.format(
+                        "Value type for column %s should be '%s'", name, Type.STRING));
+            return value.getStringValue();
+        default:
+            throw new IllegalArgumentException("Tuple column type " + columnType.val + " is currently not supported");
+        }
+    }
+    
     private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         
@@ -142,66 +200,32 @@ public class StreamResource extends AbstractWebSocketResource {
             throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
         }
         
-        int maxColumnCount = stream.getDefinition().getColumnDefinitions().size();
-        if (req.getColumnValueCount() > maxColumnCount) {
-            throw new WebSocketException(ctx.getRequestId(),
-                    String.format("Too many columns. Max %d columns, but received %d", maxColumnCount, req.getColumnValueCount()));
-        }
-        
+        TupleDefinition tdef = stream.getDefinition();
         List<Object> tupleColumns = new ArrayList<>();
+        
+        // 'fixed' colums
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             ColumnValue providedValue = findColumnValue(req, cdef.getName());
             if (providedValue == null) continue;
             if (!providedValue.hasValue()) {
                 throw new WebSocketException(ctx.getRequestId(), "No value was provided for column " + cdef.getName());
             }
-            
-            // Sanity check. We should perhaps find a better way to do all of this
-            switch (cdef.getType().val) {
-            case SHORT:
-                if (providedValue.getValue().getType() != Type.SINT32)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.SINT32));
-                tupleColumns.add(providedValue.getValue().getSint32Value());
-                break;
-            case DOUBLE:
-                if (providedValue.getValue().getType() != Type.DOUBLE)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.DOUBLE));
-                tupleColumns.add(providedValue.getValue().getDoubleValue());
-                break;
-            case BINARY:
-                if (providedValue.getValue().getType() != Type.BINARY)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.BINARY));
-                tupleColumns.add(providedValue.getValue().getBinaryValue().toByteArray());
-                break;
-            case INT:
-                if (providedValue.getValue().getType() != Type.SINT32)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.SINT32));
-                tupleColumns.add(providedValue.getValue().getSint32Value());
-                break;
-            case TIMESTAMP:
-                if (providedValue.getValue().getType() != Type.TIMESTAMP)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.TIMESTAMP));
-                tupleColumns.add(providedValue.getValue().getTimestampValue());
-                break;
-            case ENUM:
-            case STRING:
-                if (providedValue.getValue().getType() != Type.STRING)
-                    throw new WebSocketException(ctx.getRequestId(), String.format(
-                            "Value type for column %s should be '%s'", cdef.getName(), Type.STRING));
-                tupleColumns.add(providedValue.getValue().getStringValue());
-                break;
-            default:
-                throw new IllegalArgumentException("Tuple column type " + cdef.getType().val + " is currently not supported");
+            Object column = makeTupleColumn(ctx, cdef.getName(), providedValue.getValue(), cdef.getType());
+            tupleColumns.add(column);
+        }
+        
+        // 'dynamic' columns
+        for (ColumnValue val : req.getColumnValueList()) {
+            if (stream.getDefinition().getColumn(val.getColumnName()) == null) {
+                DataType type = dataTypeFromValue(val.getValue());
+                tdef.addColumn(val.getColumnName(), type);
+                Object column = makeTupleColumn(ctx, val.getColumnName(), val.getValue(), type);
+                tupleColumns.add(column);
             }
         }
         
-        Tuple t = new Tuple(stream.getDefinition(), tupleColumns);
-        log.debug("Emitting tuple {} to {}", t, stream.getName());
+        Tuple t = new Tuple(tdef, tupleColumns);
+        log.info("Emitting tuple {} to {}", t, stream.getName());
         stream.emitTuple(t);
         return toAckReply(ctx.getRequestId());
     }
