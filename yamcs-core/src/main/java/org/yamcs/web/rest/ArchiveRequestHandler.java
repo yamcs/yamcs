@@ -139,7 +139,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      * is true).
      */
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
-        req.assertGET();
+       // req.assertGET();
         RestDumpArchiveRequest request = req.bodyAsMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
 
         // Check if a profile has been specified in the request
