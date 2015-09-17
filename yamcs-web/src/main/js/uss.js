@@ -12,26 +12,23 @@ var USS = {
    dp_FILL_COLOR: 'FILL_COLOR'
 }; //USS namespace
 
-
-
-USS.loadDisplay = function(div, filename, yamcsWebSocket, doneFunction) {
-    console.log('loading ', filename, 'in ', div);
+USS.loadDisplay = function(div, filename, webSocketClient, doneFunction) {
     $(div).svg({onLoad: function() {
         $.ajax({
             url: '/_static/' + yamcsInstance + '/displays/' + filename,
             eventdataType: 'xml'
         }).done(function(data) {
-            var d=new USS.Display(div);
-            d.parseAndDraw(data);
-            yamcsWebSocket.bindDataHandler('open', function() {
-                yamcsWebSocket.subscribeParameters(d.parameters);
-                yamcsWebSocket.subscribeComputations(d.parameters);
+            var display=new USS.Display(div);
+            display.parseAndDraw(data);
+            webSocketClient.bindDataHandler('open', function() {
+                webSocketClient.subscribeParameters(display.parameters);
+                webSocketClient.subscribeComputations(display.parameters);
             });
-            if(yamcsWebSocket.isConnected()) {
-                yamcsWebSocket.subscribeParameters(d.parameters);
-                yamcsWebSocket.subscribeComputations(d.parameters);
+            if(webSocketClient.isConnected()) {
+                webSocketClient.subscribeParameters(display.parameters);
+                webSocketClient.subscribeComputations(display.parameters);
             }
-            if(doneFunction) doneFunction(d);
+            if(doneFunction) doneFunction(display);
             //console.log(d);
             // console.log(computations);
         });

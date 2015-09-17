@@ -242,6 +242,8 @@ $.extend(USS.Field.prototype, {
         }
         var svg = this.svg;
         var ftxt=svg.getElementById(this.id);
+        if (!ftxt)
+            return; // TODO temp until we unregister bindings upon window close
         ftxt.textContent = v;
         var dqi=this.getDqi(para);
         svg.configure(ftxt, {class: dqi + "-foreground"});

@@ -36,8 +36,22 @@
          console.log(p);
          var div=document.getElementById('display-div');
          console.log("div: ", div);
-         var yamcsWebSocket = new YamcsWebSocket(p[1]);
-         USS.loadDisplay(div, filename, yamcsWebSocket, null);
+         var webSocketClient = yamcsWebSocket(p[1]);
+         webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
+             var params=pdata.parameter;
+             for(var i=0; i<params.length; i++) {
+                 var p=params[i];
+                 var dbs = webSocketClient.subscribedParameters[p.id.name];
+                 if(!dbs) {
+                     console.log("cannot find bindings for "+ p.id.name, webSocketClient.subscribedParameters);
+                     continue;
+                 }
+                 for(var j = 0; j < dbs.length; j++){
+                     USS.updateWidget(dbs[j], p);
+                 }
+             }
+         });
+         USS.loadDisplay(div, filename, webSocketClient, null);
      });
    </script>
    <div id='display-div'>
