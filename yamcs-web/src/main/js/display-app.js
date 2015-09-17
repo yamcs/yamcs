@@ -45,9 +45,8 @@ function configureMenu() {
 
 function configureContextMenu() {
     $(document).on('click', '[class~=context-menu-field]', function(e) {
-        console.log('hm', e.currentTarget);
         var parameter = USS.getParameterFromWidget(e.currentTarget.ussWidget);
-        showParameterPlot(parameter);
+        showParameterDetail(parameter);
     });
 }
 
@@ -180,31 +179,10 @@ function bringWindowToFront(name) {
     lastSelectedWindow.select();
 }
 
-function showParameterInfo(parameter) {
-    var name = parameter.name + ' :: Info';
-    showWindow(name, {
-        onopen: function(div, name, webSocketClient, onLoadContent) {
-            console.log("getting parameter info for ", parameter);
-            $.ajax({
-                url: "/"+yamcsInstance+"/api/mdb/parameterInfo",
-                data: parameter
-            }).done(function(pinfo) {
-                $(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
-                onLoadContent(800,500);
-            }).fail(function(xhr, textStatus, errorThrown) {
-                var r = JSON.parse(xhr.responseText);
-                $(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
-                onLoadContent(800,500);
-            });
-        },
-        resizable: true,
-        scrollable: true
-    });
-}
-
-function showParameterPlot(parameter) {
+function showParameterDetail(parameter) {
     $.get('/_static/parameter.html', function(templateData) {
         var name = parameter.name;
+        var plotMode = '1h';
         showWindow(name, {
             onopen: function(divEl, name, webSocketClient, onLoadContent) {
                 console.log("getting parameter info for ", parameter);
@@ -213,18 +191,25 @@ function showParameterPlot(parameter) {
                     data: parameter
                 }).done(function(pinfo) {
                     //$(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
+                    console.log('pinfo', pinfo);
                     var template = swig.compile(templateData);
 
                     var div = $(divEl);
-                    div.html(template({ pinfo: pinfo }));
+                    div.html(template({ pinfo: pinfo, plotMode: plotMode }));
                     var graphDiv = div.find('.graphdiv')[0];
                     var data = [];
                     var g = new Dygraph(graphDiv, 'X\n', {
                         drawPoints: true,
                         showRoller: true,
+                        gridLineColor: 'lightgray',
+                        axisLabelColor: '#666',
                         axisLabelFontSize: 11,
                         labels: ['Time', 'Value']
                     });
+
+                    var latestUpdate = div.find('.para-latest-update')[0];
+                    var generated = div.find('.para-generated')[0];
+                    var status = div.find('.para-status')[0];
 
                     webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
                         var params = pdata['parameter'];
@@ -234,6 +219,9 @@ function showParameterPlot(parameter) {
                                 var t = new Date();
                                 t.setTime(Date.parse(p['generationTimeUTC']));
                                 var v = USS.getParameterValue(p, true);
+                                latestUpdate.innerText = v;
+                                generated.innerText = p['generationTimeUTC'];
+                                //status.innerText = 'bla';
                                 data.push([t, v]);
                                 if (data.length == 50) {
                                     g.updateOptions({ drawPoints: false, showRoller: false });
@@ -246,7 +234,6 @@ function showParameterPlot(parameter) {
 
                     onLoadContent(800,500);
                 }).fail(function(xhr, textStatus, errorThrown) {
-                    console.log("uh", xhr, textStatus, errorThrown);
                     var r = JSON.parse(xhr.responseText);
                     $(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
                     onLoadContent(800,500);
@@ -255,7 +242,7 @@ function showParameterPlot(parameter) {
             onclose: function(webSocketClient) {
                 // TODO unregister handler or sth
             },
-            resizable: true,
+            resizable: false,
             scrollable: true
         });
     });

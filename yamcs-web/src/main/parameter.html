@@ -1,18 +1,59 @@
 <div style="padding: 1em;">
-  <table class="kv-table">
+  <table>
     <tr>
-      <td class="label">Qualified&nbsp;Name</td>
-      <td>{{ pinfo.description.qualifiedName }}</td>
-    </tr>
-    <tr>
-      <td class="label">Aliases</td>
-      <td>
-        {% for id in pinfo.description.aliases %}
-          {{ id.namespace }}; {{ id.name }}<br>
-        {% endfor %}
+      <td style="vertical-align: top;">
+        <table class="kv-table">
+          <tr>
+            <td class="label">Qualified&nbsp;Name</td>
+            <td>{{ pinfo.description.qualifiedName }}</td>
+          </tr>
+          <tr>
+            <td class="label">Aliases</td>
+            <td>
+              {% for id in pinfo.description.aliases %}
+                {{ id.namespace }}; {{ id.name }}<br>
+              {% endfor %}
+            </td>
+          </tr>
+          <tr>
+            <td class="label">Eng. Type</td>
+            <td>{{ pinfo.type.engType }}</td>
+          </tr>
+          <tr>
+            <td class="label">Encoding</td>
+            <td>{{ pinfo.type.dataEncoding }}</td>
+          </tr>
+          <tr>
+            <td class="label">Datasource</td>
+            <td>{{ pinfo.dataSource }}</td>
+          </tr>
+        </table>
+      </td>
+      <td style="vertical-align: top; padding-left: 3em;">
+        <table class="kv-table">
+          <tr>
+            <td class="label">Latest Value</td>
+            <td class="para-update para-latest-update">-</td>
+          </tr>
+          <tr>
+            <td class="label">Generated</td>
+            <td class="para-update para-generated">-</td>
+          </tr>
+          <tr>
+            <td class="label">Status</td>
+            <td class="para-update para-status">OK</td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
-  <hr>
-  <div class="graphdiv" style="width:600px; height:200px;"></div>
+  <div class="inline-header" style="text-align: right;">
+    <a href="#" class="plotrange {% if plotMode == '1h' %}nolink{% endif %}">1h</a>&nbsp;&nbsp;
+    <a href="#" class="plotrange {% if plotMode == '5h' %}nolink{% endif %}">5h</a>&nbsp;&nbsp;
+    <a href="#" class="plotrange {% if plotMode == '1d' %}nolink{% endif %}">1d</a>&nbsp;&nbsp;
+    <a href="#" class="plotrange {% if plotMode == '5d' %}nolink{% endif %}">5d</a>&nbsp;&nbsp;
+    <a href="#" class="plotrange {% if plotMode == '1m' %}nolink{% endif %}">1m</a>&nbsp;&nbsp;
+    <a href="#" class="plotrange {% if plotMode == '3m' %}nolink{% endif %}">3m</a>
+  </div>
+  <div class="graphdiv" style="text-align: center; width:760px; height:200px;"></div>
 </div>
