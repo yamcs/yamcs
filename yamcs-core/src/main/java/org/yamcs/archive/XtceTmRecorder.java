@@ -119,14 +119,7 @@ public class XtceTmRecorder extends AbstractService {
                 createRecorder(sce);
             }
         }
-        if(config != null && config.containsKey("default_streams"))  {
-            List<String> default_streamNames = YConfiguration.getList(config, "default_streams");
-            if(default_streamNames.size() > 0)
-                this.REALTIME_TM_STREAM_NAME = default_streamNames.get(0);
-            if(default_streamNames.size() > 1)
-                this.DUMP_TM_STREAM_NAME = default_streamNames.get(1);
-
-        }
+        
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
