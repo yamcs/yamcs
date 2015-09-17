@@ -1,0 +1,18 @@
+<div style="padding: 1em;">
+  <table class="kv-table">
+    <tr>
+      <td class="label">Qualified&nbsp;Name</td>
+      <td>{{ pinfo.description.qualifiedName }}</td>
+    </tr>
+    <tr>
+      <td class="label">Aliases</td>
+      <td>
+        {% for id in pinfo.description.aliases %}
+          {{ id.namespace }}; {{ id.name }}<br>
+        {% endfor %}
+      </td>
+    </tr>
+  </table>
+  <hr>
+  <div class="graphdiv" style="width:600px; height:200px;"></div>
+</div>

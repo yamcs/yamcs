@@ -45,27 +45,9 @@ function configureMenu() {
 
 function configureContextMenu() {
     $(document).on('click', '[class~=context-menu-field]', function(e) {
-        $(this).contextMenu({ x: e.offsetX, y: e.offsetY });
-    });
-
-    $.contextMenu({
-        selector: '[class~=context-menu-field]', 
-        trigger: 'right',
-        callback: function(key, options) {
-            console.log('clicked', key, options);
-            parameter = USS.getParameterFromWidget(options.$trigger[0].ussWidget);
-            if (key === 'info') {
-                showParameterInfo(parameter);
-            } else if (key === 'plot') {
-                showParameterPlot(parameter);
-            } else {
-                alert(key+" not implemented");
-            }
-       },
-       items: {
-           "info": {name: "Info", icon: "info"},
-           "plot": {name: "Plot", icon: "plot"}
-       }
+        console.log('hm', e.currentTarget);
+        var parameter = USS.getParameterFromWidget(e.currentTarget.ussWidget);
+        showParameterPlot(parameter);
     });
 }
 
@@ -221,41 +203,54 @@ function showParameterInfo(parameter) {
 }
 
 function showParameterPlot(parameter) {
-    $.get('/_static/parameter-plot.html', function(data) {
-        var template = swig.compile(data);
-        var html = template();
-
-        var name = parameter.name + ' :: Plot';
+    $.get('/_static/parameter.html', function(templateData) {
+        var name = parameter.name;
         showWindow(name, {
             onopen: function(divEl, name, webSocketClient, onLoadContent) {
-                var div = $(divEl);
-                div.html(html);
-                var graphDiv = div.find('.graphdiv')[0];
-                var data = [];
-                var g = new Dygraph(graphDiv, 'X\n', {
-                    drawPoints: true,
-                    showRoller: true,
-                    labels: ['Time', 'Value']
-                });
+                console.log("getting parameter info for ", parameter);
+                $.ajax({
+                    url: '/'+yamcsInstance+'/api/mdb/parameterInfo',
+                    data: parameter
+                }).done(function(pinfo) {
+                    //$(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
+                    var template = swig.compile(templateData);
 
-                webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
-                    var params = pdata['parameter'];
-                    for(var i=0; i<params.length; i++) {
-                        var p = params[i];
-                        if (p.id.name === parameter.name) {
-                            var t = new Date();
-                            t.setTime(Date.parse(p['generationTimeUTC']));
-                            var v = USS.getParameterValue(p, true);
-                            data.push([t, v]);
-                            if (data.length == 50) {
-                                g.updateOptions({ drawPoints: false, showRoller: false });
+                    var div = $(divEl);
+                    div.html(template({ pinfo: pinfo }));
+                    var graphDiv = div.find('.graphdiv')[0];
+                    var data = [];
+                    var g = new Dygraph(graphDiv, 'X\n', {
+                        drawPoints: true,
+                        showRoller: true,
+                        axisLabelFontSize: 11,
+                        labels: ['Time', 'Value']
+                    });
+
+                    webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
+                        var params = pdata['parameter'];
+                        for(var i=0; i<params.length; i++) {
+                            var p = params[i];
+                            if (p.id.name === parameter.name) {
+                                var t = new Date();
+                                t.setTime(Date.parse(p['generationTimeUTC']));
+                                var v = USS.getParameterValue(p, true);
+                                data.push([t, v]);
+                                if (data.length == 50) {
+                                    g.updateOptions({ drawPoints: false, showRoller: false });
+                                }
+                                g.updateOptions({ file: data });
+                                break;
                             }
-                            g.updateOptions({ file: data });
-                            break;
                         }
-                    }
+                    });
+
+                    onLoadContent(800,500);
+                }).fail(function(xhr, textStatus, errorThrown) {
+                    console.log("uh", xhr, textStatus, errorThrown);
+                    var r = JSON.parse(xhr.responseText);
+                    $(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
+                    onLoadContent(800,500);
                 });
-                onLoadContent(800,500);
             },
             onclose: function(webSocketClient) {
                 // TODO unregister handler or sth

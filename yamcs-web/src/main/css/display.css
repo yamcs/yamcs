@@ -61,3 +61,13 @@ body {
 text {
     pointer-events: none;
 }
+
+.kv-table {
+    font-size: 11px;
+}
+
+.kv-table .label {
+    color: #333;
+    vertical-align: top;
+    min-width: 150px;
+}
