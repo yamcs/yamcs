@@ -1,5 +1,3 @@
-'use strict';
-
 var yamcsInstance=location.pathname.match(/\/([^\/]*)\//)[1];
 var loadedDisplays = {};
 var openWindows = {};
@@ -199,9 +197,7 @@ function updateGraph(g, data) {
     g.updateOptions(options);
 }
 
-var archiveFetched = false;
-
-function showHistoricData(g, parameter, plotMode, data) {
+function showHistoricData(g, parameter, plotMode, data, ctx) {
     var now = new Date();
     var nowIso = now.toISOString();
     var before = new Date(now.getTime());
@@ -226,7 +222,7 @@ function showHistoricData(g, parameter, plotMode, data) {
         beforeIso = before.toISOString();
     }
 
-    archiveFetched = false;
+    ctx.archiveFetched = false;
     $.ajax({
         type: 'POST',
         url: '/'+yamcsInstance+'/api/archive',
@@ -240,19 +236,29 @@ function showHistoricData(g, parameter, plotMode, data) {
         })
     }).done(function(response) {
         data.length = 0; // clear first
+        var p;
         for (var i = 0; i < response['parameterData'].length; i++) {
             var pdata = response['parameterData'][i];
             for (var j = 0; j < pdata['parameter'].length; j++) {
-                var p = pdata['parameter'][j];
+                p = pdata['parameter'][j];
                 var t = new Date();
                 t.setTime(Date.parse(p['generationTimeUTC']));
                 var v = USS.getParameterValue(p, true);
                 data.push([t, v]);
             }
         }
-        updateGraph(g, (data.length > 0) ? data : 'x\n');
-        console.log('fetched');
-        archiveFetched = true;
+        if (data.length > 0) {
+            updateGraph(g, data);
+            ctx.latestUpdate.innerText = data[data.length - 1][1];
+            ctx.generated.innerText = p['generationTimeUTC'];
+            //ctx.status.innerText = 'bla';
+        } else {
+            updateGraph(g, 'x\n');
+            ctx.latestUpdate.innerText = '-';
+            ctx.generated.innerText = '-';
+            //ctx.status.innerText = 'bla';
+        }
+        ctx.archiveFetched = true;
     });
 }
 
@@ -271,7 +277,6 @@ function showParameterDetail(parameter) {
                         url: '/'+yamcsInstance+'/api/mdb/parameterInfo',
                         data: parameter
                     }).done(function(pinfo) {
-                        //$(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
                         console.log('pinfo', pinfo);
                         var template = swig.compile(templateData);
 
@@ -288,9 +293,12 @@ function showParameterDetail(parameter) {
                             labels: ['Time', 'Value']
                         });
 
-                        var latestUpdate = div.find('.para-latest-update')[0];
-                        var generated = div.find('.para-generated')[0];
-                        var status = div.find('.para-status')[0];
+                        var ctx = {
+                            archiveFetched: false,
+                            latestUpdate: div.find('.para-latest-update')[0],
+                            generated: div.find('.para-generated')[0],
+                            status: div.find('.para-status')[0]
+                        };
 
                         // Subscribe realtime
                         var tempData = []; // Store while processing archive
@@ -302,10 +310,10 @@ function showParameterDetail(parameter) {
                                     var t = new Date();
                                     t.setTime(Date.parse(p['generationTimeUTC']));
                                     var v = USS.getParameterValue(p, true);
-                                    if (archiveFetched) {
-                                        latestUpdate.innerText = v;
-                                        generated.innerText = p['generationTimeUTC'];
-                                        //status.innerText = 'bla';
+                                    if (ctx.archiveFetched) {
+                                        ctx.latestUpdate.innerText = v;
+                                        ctx.generated.innerText = p['generationTimeUTC'];
+                                        //ctx.status.innerText = 'bla';
                                         data.push([t, v]);
                                         updateGraph(g, data);
                                     } else {
@@ -317,12 +325,14 @@ function showParameterDetail(parameter) {
                             }
                         });
 
-                        showHistoricData(g, parameter, plotMode, data);
+                        showHistoricData(g, parameter, plotMode, data, ctx);
                         div.find('.plotrange').on('click', function(e) {
                             $(this).siblings().removeClass('nolink');
                             $(this).addClass('nolink');
                             var newPlotMode = e.target.innerText;
-                            showHistoricData(g, parameter, newPlotMode, data);
+                            showHistoricData(g, parameter, newPlotMode, data, ctx);
+                            e.preventDefault();
+                            return false;
                         });
                         onLoadContent(800,500);
                     }).fail(function(xhr, textStatus, errorThrown) {
