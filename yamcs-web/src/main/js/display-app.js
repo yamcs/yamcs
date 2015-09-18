@@ -1,3 +1,5 @@
+'use strict';
+
 var yamcsInstance=location.pathname.match(/\/([^\/]*)\//)[1];
 var loadedDisplays = {};
 var openWindows = {};
@@ -89,6 +91,8 @@ function updateMenu() {
             var filename = $(ui.item).data('display');
             if(!filename) return;
             showDisplay(filename);
+            event.preventDefault();
+            return false;
         }
     });
 }
