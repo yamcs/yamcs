@@ -31,7 +31,6 @@ public class AbstractHornetQTranslatorService extends AbstractService {
     final private TupleTranslator translator;
     YamcsSession yamcsSession;
 
-
     List<Stream> streams = new ArrayList<Stream>();
     Map<Stream, StreamSubscriber> streamSubscribers = new HashMap<Stream, StreamSubscriber>();
 
@@ -41,10 +40,12 @@ public class AbstractHornetQTranslatorService extends AbstractService {
 
     private final ThreadLocal<YamcsClient> yamcsClient =
             new ThreadLocal<YamcsClient>() {
+        YamcsSession yamcsSession;
+        YamcsClient yClient;
         @Override protected YamcsClient initialValue() {
             try {
-                YamcsSession yamcsSession = YamcsSession.newBuilder().build();
-                YamcsClient yClient=yamcsSession.newClientBuilder().setDataProducer(true).build();
+                yamcsSession = YamcsSession.newBuilder().build();
+                yClient = yamcsSession.newClientBuilder().setDataProducer(true).build();
                 return yClient;
             } catch (Exception e) {
                 throw new RuntimeException("Cannot create a hornetq client", e);
