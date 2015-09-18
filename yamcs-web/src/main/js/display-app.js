@@ -246,81 +246,86 @@ function showHistoricData(g, parameter, plotMode, data) {
 }
 
 function showParameterDetail(parameter) {
-    $.get('/_static/parameter.html', function(templateData) {
-        var name = parameter.name;
-        var plotMode = '30m';
-        showWindow(name, {
-            onopen: function(divEl, name, webSocketClient, onLoadContent) {
-                console.log("getting parameter detail for ", parameter);
-                $.ajax({
-                    url: '/'+yamcsInstance+'/api/mdb/parameterInfo',
-                    data: parameter
-                }).done(function(pinfo) {
-                    //$(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
-                    console.log('pinfo', pinfo);
-                    var template = swig.compile(templateData);
+    var name = parameter.name;
+    var wnd = openWindows[name];
+    if (wnd) {
+        wnd.select();
+    } else {
+        $.get('/_static/parameter.html', function(templateData) {
+            var plotMode = '30m';
+            showWindow(name, {
+                onopen: function(divEl, name, webSocketClient, onLoadContent) {
+                    console.log('getting parameter detail for ', parameter);
+                    $.ajax({
+                        url: '/'+yamcsInstance+'/api/mdb/parameterInfo',
+                        data: parameter
+                    }).done(function(pinfo) {
+                        //$(div).html("<pre class='yamcs-pinfo'>"+JSON.stringify(pinfo, null, '  ')+"</pre>");
+                        console.log('pinfo', pinfo);
+                        var template = swig.compile(templateData);
 
-                    var div = $(divEl);
-                    div.html(template({ pinfo: pinfo, plotMode: plotMode }));
-                    var graphDiv = div.find('.graphdiv')[0];
-                    var data = [];
-                    var g = new Dygraph(graphDiv, 'X\n', {
-                        drawPoints: true,
-                        showRoller: true,
-                        gridLineColor: 'lightgray',
-                        axisLabelColor: '#666',
-                        axisLabelFontSize: 11,
-                        labels: ['Time', 'Value']
-                    });
+                        var div = $(divEl);
+                        div.html(template({ pinfo: pinfo, plotMode: plotMode }));
+                        var graphDiv = div.find('.graphdiv')[0];
+                        var data = [];
+                        var g = new Dygraph(graphDiv, 'X\n', {
+                            drawPoints: true,
+                            showRoller: true,
+                            gridLineColor: 'lightgray',
+                            axisLabelColor: '#666',
+                            axisLabelFontSize: 11,
+                            labels: ['Time', 'Value']
+                        });
 
-                    var latestUpdate = div.find('.para-latest-update')[0];
-                    var generated = div.find('.para-generated')[0];
-                    var status = div.find('.para-status')[0];
+                        var latestUpdate = div.find('.para-latest-update')[0];
+                        var generated = div.find('.para-generated')[0];
+                        var status = div.find('.para-status')[0];
 
-                    // Subscribe realtime
-                    var tempData = []; // Store while processing archive
-                    webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
-                        var params = pdata['parameter'];
-                        for(var i=0; i<params.length; i++) {
-                            var p = params[i];
-                            if (p.id.name === parameter.name) {
-                                var t = new Date();
-                                t.setTime(Date.parse(p['generationTimeUTC']));
-                                var v = USS.getParameterValue(p, true);
-                                if (archiveFetched) {
-                                    latestUpdate.innerText = v;
-                                    generated.innerText = p['generationTimeUTC'];
-                                    //status.innerText = 'bla';
-                                    data.push([t, v]);
-                                    updateGraph(g, data);
-                                } else {
-                                    tempData.push([t, v]);
-                                    // TODO do something with tempData
+                        // Subscribe realtime
+                        var tempData = []; // Store while processing archive
+                        webSocketClient.bindDataHandler('PARAMETER', function(pdata) {
+                            var params = pdata['parameter'];
+                            for(var i=0; i<params.length; i++) {
+                                var p = params[i];
+                                if (p.id.name === parameter.name) {
+                                    var t = new Date();
+                                    t.setTime(Date.parse(p['generationTimeUTC']));
+                                    var v = USS.getParameterValue(p, true);
+                                    if (archiveFetched) {
+                                        latestUpdate.innerText = v;
+                                        generated.innerText = p['generationTimeUTC'];
+                                        //status.innerText = 'bla';
+                                        data.push([t, v]);
+                                        updateGraph(g, data);
+                                    } else {
+                                        tempData.push([t, v]);
+                                        // TODO do something with tempData
+                                    }
+                                    break;
                                 }
-                                break;
                             }
-                        }
-                    });
+                        });
 
-                    showHistoricData(g, parameter, plotMode, data);
-                    div.find('.plotrange').on('click', function(e) {
-                        $(this).siblings().removeClass('nolink');
-                        $(this).addClass('nolink');
-                        var newPlotMode = e.target.innerText;
-                        showHistoricData(g, parameter, newPlotMode, data);
+                        showHistoricData(g, parameter, plotMode, data);
+                        div.find('.plotrange').on('click', function(e) {
+                            $(this).siblings().removeClass('nolink');
+                            $(this).addClass('nolink');
+                            var newPlotMode = e.target.innerText;
+                            showHistoricData(g, parameter, newPlotMode, data);
+                        });
+                        onLoadContent(800,500);
+                    }).fail(function(xhr, textStatus, errorThrown) {
+                        var r = JSON.parse(xhr.responseText);
+                        $(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
+                        onLoadContent(800,500);
                     });
-                    onLoadContent(800,500);
-                }).fail(function(xhr, textStatus, errorThrown) {
-                    var r = JSON.parse(xhr.responseText);
-                    $(div).html("<pre class='yamcs-pinfo'> ERROR:\n"+JSON.stringify(r, null, '  ')+"</pre>");
-                    onLoadContent(800,500);
-                });
-            },
-            onclose: function(webSocketClient) {
-                // TODO unregister handler or sth
-            },
-            resizable: false,
-            scrollable: true
+                },
+                onclose: function(webSocketClient) {
+                    // TODO unregister handler or sth
+                },
+                resizable: false,
+                scrollable: true
+            });
         });
-    });
+    }
 }
