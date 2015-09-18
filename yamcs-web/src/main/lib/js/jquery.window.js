@@ -709,8 +709,8 @@ $.Window = (function()  {
 							container.css("position", "fixed");
 							container.css(targetCssStyle);
 						}
-						showOverlay();
-						hideContent();
+						//showOverlay();
+						//hideContent();
 						// callback
 						if( options.onDrag ) {
 							options.onDrag(_this);
@@ -722,8 +722,8 @@ $.Window = (function()  {
 							container.css("position", "fixed");
 							container.css(targetCssStyle);
 						}
-						hideOverlay();
-						showContent();
+						//hideOverlay();
+						//showContent();
 						// callback
 						if( options.afterDrag ) {
 							options.afterDrag(_this);
@@ -750,8 +750,8 @@ $.Window = (function()  {
 						if( minimized || maximized ) { // if window is minimized or maximized, reset the css style
 							return false;
 						}
-						showOverlay();
-						hideContent();
+						//showOverlay();
+						//hideContent();
 						// callback
 						if( options.onResize ) {
 							options.onResize(_this);
@@ -762,9 +762,9 @@ $.Window = (function()  {
 						if( minimized || maximized ) { // if window is minimized or maximized, reset the css style
 							return false;
 						}
-						hideOverlay();
+						//hideOverlay();
 						adjustHeaderTextPanelWidth();
-						showContent();
+						//showContent();
 						// callback
 						if( options.afterResize ) {
 							options.afterResize(_this);

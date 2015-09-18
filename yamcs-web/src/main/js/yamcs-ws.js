@@ -1,15 +1,15 @@
-var YamcsWebSocket = function(instance) {
+var yamcsWebSocket = function(instance) {
     var PROTOCOL_VERSION=1;
     var MESSAGE_TYPE_REQUEST=1;
     var MESSAGE_TYPE_REPLY=2;
     var MESSAGE_TYPE_EXCEPTION=3;
     var MESSAGE_TYPE_DATA=4;
-    
-    var requestSeqCount=-1;    
+
+    var requestSeqCount=-1;
     var wsproto = "ws";
 
     if(window.location.protocol=='https:') {
-        wsproto = "wss"   
+        wsproto = "wss"
     }
     var conn = new WebSocket(wsproto+"://"+window.location.host+"/"+instance+"/_websocket");
 
@@ -27,82 +27,71 @@ var YamcsWebSocket = function(instance) {
      */
 
     conn.onmessage = function(msg) {
-        var json = JSON.parse(msg.data)
-	
+        var json = JSON.parse(msg.data);
+
         switch(json[1]) {
         case MESSAGE_TYPE_REPLY:
-            dispatchReply(json[2], json[3]); 
+            dispatchReply(json[2], json[3]);
             break;
         case MESSAGE_TYPE_EXCEPTION:
-            dispatchException(json[2], json[3]); 
+            dispatchException(json[2], json[3]);
             break;
         case MESSAGE_TYPE_DATA:
             var data=json[3];
             dispatchData(data.dt, data.data);
             break;
-        } 
+        }
     };
 
-    conn.onclose = function(event){dispatchData('close',event)}
-    conn.onopen = function(){dispatchData('open',null)}
+    conn.onclose = function(event){dispatchData('close',event)};
+    conn.onopen = function(){dispatchData('open',null)};
 
 
 
-    var sendRequest = function(requestName, requestData, replyHandler, exceptionHandler){
+    function sendRequest(requestName, requestData, replyHandler, exceptionHandler){
         requestSeqCount++;
         if(replyHandler) replyHandlers[requestSeqCount]=replyHandler;
         if(exceptionHandler) exceptionHandlers[requestSeqCount]=exceptionHandler;
         var payload = JSON.stringify([PROTOCOL_VERSION, MESSAGE_TYPE_REQUEST, requestSeqCount, {request:requestName, data: requestData}]);
-        conn.send( payload ); // <= send JSON data to socket server
+        conn.send(payload); // <= send JSON data to socket server
         return this;
-    };
-    
-    var dispatchException = function(requestId, data) {
-       var h = exceptionHandlers[requestId];
-       delete exceptionHandlers[requestId];
-       delete replyHandlers[requestId];
+    }
 
-       if(h === undefined) {
-           console.log("Exception received for request id "+requestId+", and no handler available. Exception data: ", data);
-           return;
-       } 
-       h(data.et, data.msg);
-   }
+    function dispatchException(requestId, data) {
+        var h = exceptionHandlers[requestId];
+        delete exceptionHandlers[requestId];
+        delete replyHandlers[requestId];
 
-   var dispatchReply = function(requestId, data) {
+        if(h === undefined) {
+            console.log("Exception received for request id "+requestId+", and no handler available. Exception data: ", data);
+            return;
+        }
+        h(data.et, data.msg);
+    }
+
+   function dispatchReply(requestId, data) {
        var h = replyHandlers[requestId];
        delete exceptionHandlers[requestId];
        delete replyHandlers[requestId];
 
        if(h === undefined)  return;
        h(data);
-   }
+    }
 
-    this.bindDataHandler = function(dataType, callback){
-        dataCallbacks[dataType] = dataCallbacks[dataType] || [];
-        dataCallbacks[dataType].push(callback);
-        return this;// chainable
-    };
-
-    var dispatchData = function(dataType, message) {
-        
+    function dispatchData(dataType, message) {
         var chain = dataCallbacks[dataType];
 
         if(chain == undefined) return; // no callbacks for this event
-     
+
         for(var i = 0; i < chain.length; i++){
-            chain[i]( message )
+            chain[i](message)
         }
-    }
-    
-    this.isConnected = function() {
-        return conn.readyState == WebSocket.OPEN;
     }
 
 /************** Parameter subscription (could be moved to its own 'class' *************/
     var subscribedParameters = {}; //this collects the databindings from all the open displays
 
-    var addSubscribedParameter = function(paraname, p) {
+    function addSubscribedParameter(paraname, p) {
        var dbs=subscribedParameters[paraname];
        if(!dbs) {
            dbs = [];
@@ -114,7 +103,7 @@ var YamcsWebSocket = function(instance) {
        }
     }
 
-    var doSubscribeParameters = function(parameters, namespace, addToList) {
+    function doSubscribeParameters(parameters, addToList) {
         var paraList=[];
         for(var paraname in parameters) {
             var p=parameters[paraname];
@@ -133,7 +122,7 @@ var YamcsWebSocket = function(instance) {
                     console.log('The following parameters are invalid: ', invalidParams);
                     for(var i=0; i<invalidParams.length; i++) {
                         var name=invalidParams[i].name;
-                        var db=parameters[name];			
+                        var db=parameters[name];
                         delete parameters[name];
                         invalidDataBindings[name]=db;
                     }
@@ -145,11 +134,7 @@ var YamcsWebSocket = function(instance) {
         });
     }
 
-    this.subscribeParameters = function(parameters) {
-        doSubscribeParameters(parameters, true);
-    }
-
-    var doSubscribeComputations = function(parameters, addToList) {
+    function doSubscribeComputations(parameters, addToList) {
         var compDefList=[];
         for(var paraname in parameters) {
             var p=parameters[paraname];
@@ -191,7 +176,7 @@ var YamcsWebSocket = function(instance) {
                             if(cnameToRemove) break;
                             }
                         }
-                        if(cnameToRemove) { 
+                        if(cnameToRemove) {
                             var db=parameters[cnameToRemove];
                             delete parameters[cnameToRemove];
                             invalidDataBindings[cnameToRemove]=db;
@@ -205,21 +190,52 @@ var YamcsWebSocket = function(instance) {
             });
     }
 
-    this.subscribeComputations = function(parameters) {
-        doSubscribeComputations(parameters,true)
-    }
-
-    this.bindDataHandler('PARAMETER', function(pdata){
-        var params=pdata.parameter;
-        for(var i=0; i<params.length; i++) {
-            var p=params[i];
-            var dbs = subscribedParameters[p.id.name];
-            if(!dbs) {
-                console.log("cannot find bindings for "+ p.id.name, subscribedParameters);
-            }
-            for(var j = 0; j < dbs.length; j++){
-                USS.updateWidget(dbs[j], p);
+    // FIXME doesn't work yet
+    function unregisterParameterBinding(parameterBinding) {
+        console.log('unregistering binding', parameterBinding);
+        for (var paraname in subscribedParameters) {
+            if (subscribedParameters.hasOwnProperty(paraname)) {
+                console.log('found existing binding ', subscribedParameters[paraname]);
+                if (parameterBinding.bindings === subscribedParameters[paraname]) {
+                    console.log('match');
+                }
             }
         }
-    });  
+    }
+
+    return {
+        subscribedParameters: subscribedParameters,
+        bindDataHandler: function(dataType, callback){
+            dataCallbacks[dataType] = dataCallbacks[dataType] || [];
+            dataCallbacks[dataType].push(callback);
+            return this;// chainable
+        },
+        isConnected: function() {
+            return conn.readyState == WebSocket.OPEN;
+        },
+        subscribeParameters: function(parameters) {
+            doSubscribeParameters(parameters, true);
+        },
+        // FIXME doesn't work yet
+        unregisterParameterBindings: function(parameterBindings) {
+            for (var paraname_i in parameterBindings) {
+                if (parameterBindings.hasOwnProperty(paraname_i)) {
+                    var parameterBinding = parameterBindings[paraname_i];
+                    unregisterParameterBinding(parameterBinding);
+                }
+            }
+    /*        var dbs=subscribedParameters[paraname];
+            if(!dbs) {
+                dbs = [];
+                subscribedParameters[paraname]=dbs;
+            }
+            var pdb = p.bindings;
+            for(var j = 0; j < pdb.length; j++){
+                dbs.push(pdb[j]);
+            } */
+        },
+        subscribeComputations: function(parameters) {
+            doSubscribeComputations(parameters,true)
+        }
+    };
 };

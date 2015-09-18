@@ -25,7 +25,7 @@ $.extend(USS.LineGraph.prototype, {
                  }, 
                  series:{lineWidth:1}
              }
-       }
+       };
        settings.xAxis=this.parseDomainAxis($e.children('DefaultDomainAxis'));
        settings.yAxis=this.parseRangeAxis($e.children('DefaultRangeAxis'));
        settings.series= [{

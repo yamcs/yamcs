@@ -34,7 +34,7 @@ USS.Display.prototype = {
         USS.addArrowMarkers(svg);
         
         //draw background
-        var bgcolor=USS.parseColor($(display).children( "BackgroundColor")[0], '#D4D4D4');
+        var bgcolor=USS.parseColor($(display).children("BackgroundColor")[0], '#D4D4D4');
         
         svg.rect(0, 0, width, height, {fill: bgcolor});
         this.drawElements(svg, null, display.children("Elements").children());
@@ -125,10 +125,10 @@ USS.Display.prototype = {
         $(e).children('DataBindings').children('DataBinding').each(function(idx,val) {
             var db=USS.parseDataBinding(val);
             opts.dataBindings.push(db);
-         });
-    return opts;
+        });
+        return opts;
     }
-}
+};
 
 //basic widget, all the other ones are inheriting from this
 USS.AbstractWidget = function() {};
@@ -162,7 +162,7 @@ USS.Display.createWidgetTypes = function(widgetTypes) {
         USS[wt] = function () {};
         USS[wt].prototype = new USS.AbstractWidget();
         USS[wt].prototype.constructor = USS[wt];
-    };
+    }
 
     /************ Label **********/
     $.extend(USS.Label.prototype, {
@@ -173,7 +173,7 @@ USS.Display.createWidgetTypes = function(widgetTypes) {
             USS.writeText(svg, parent, this, textStyle, text);
         }
     });
-}
+};
 
 var widgetTypes=['Label', 'Field', 'Polyline', 'Rectangle', 'Symbol', 'ExternalImage', 'NavigationButton'];
 USS.Display.createWidgetTypes(widgetTypes);
@@ -186,10 +186,10 @@ $.extend(USS.Field.prototype, {
         //make a group to put the text and the bounding box together
         var settings = {
             transform: "translate("+this.x+","+this.y+")",
-	    class: "context-menu-field"   
-	}
+            class: "context-menu-field"
+        };
         parent = svg.group(parent, this.id+'-group', settings);
-	parent.ussWidget = this;
+        parent.ussWidget = this;
 
         var $e = $(e);
         var unit=$e.children('Unit').text();
@@ -242,6 +242,8 @@ $.extend(USS.Field.prototype, {
         }
         var svg = this.svg;
         var ftxt=svg.getElementById(this.id);
+        if (!ftxt)
+            return; // TODO temp until we unregister bindings upon window close
         ftxt.textContent = v;
         var dqi=this.getDqi(para);
         svg.configure(ftxt, {class: dqi + "-foreground"});
@@ -319,7 +321,7 @@ USS.Rectangle.prototype.parseAndDraw = function(svg, parent, e) {
     }
     //console.log("Drawing rectangle with settings: ", settings);
     svg.rect(parent, this.x, this.y, this.width, this.height, settings);
-}
+};
 
 /************* Symbol *****************/
 $.extend(USS.Symbol.prototype, {
@@ -363,7 +365,7 @@ $.extend(USS.Symbol.prototype, {
                 var s=new Object();
                 s.type=$(val).children('type').text();
                 s.name=$(val).children('name').text();
-                s.states = {}
+                s.states = {};
                 $('image', val).each(function(idx,val1) {
                     var state=val1.getAttribute('state');
                     var img=$(val1).text();

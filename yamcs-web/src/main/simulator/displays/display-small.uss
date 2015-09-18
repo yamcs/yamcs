@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <USSObject>
   <Generator>uss-2.19.0</Generator>
   <FormatVersion>6</FormatVersion>
@@ -115,7 +114,7 @@
               <Names class="linked-hash-map">
                 <entry>
                   <string>Opsname</string>
-                  <string>aces_PHA_Time</string>
+                  <string>SIMULATOR_Altitude</string>
                 </entry>
                 <entry>
                   <string>Pathname</string>

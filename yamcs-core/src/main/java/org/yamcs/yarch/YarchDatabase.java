@@ -231,7 +231,7 @@ public class YarchDatabase {
 	if(streams.containsKey(def.getName())) throw new YarchException("A stream named '"+def.getName()+"' already exists");
 
 	StorageEngine se = storageEngines.get(def.getStorageEngineName());
-	if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+" specified. Valid names are: "+storageEngines.keySet());
+	if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+"' specified. Valid names are: "+storageEngines.keySet());
 	se.createTable(def);
 
 	tables.put(def.getName(),def);
