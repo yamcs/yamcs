@@ -136,6 +136,12 @@ function showWindow(name, options) {
                 document.body.style.cursor='default';
             });
         },
+        onSelect: function () {
+            document.title = name;
+        },
+        onUnselect: function () {
+            document.title = 'Web Displays';
+        },
         onClose: function(wnd) {
             for(var f in openWindows) {
                 if(openWindows[f] === wnd) {
@@ -143,6 +149,7 @@ function showWindow(name, options) {
                     closeWindow(f);
                 }
             }
+            document.title = 'Web Displays';
         }
     });
     openWindows[name] = wnd;
