@@ -176,7 +176,10 @@ public class MdbRequestHandler implements RestRequestHandler {
     private RestParameterInfo getParameterInfo(NamedObjectId id, Parameter p) {
         RestParameterInfo.Builder rpib = RestParameterInfo.newBuilder();
         rpib.setId(id);
-        rpib.setDataSource(p.getDataSource().name());
+        DataSource ds = p.getDataSource();
+        if(ds!=null) {
+            rpib.setDataSource(ds.name());
+        }
         rpib.setDescription(getNameDescription(p));
         rpib.setType(getParameterType(p.getParameterType()));
         
