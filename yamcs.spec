@@ -30,6 +30,7 @@ mkdir -p %{buildroot}/%{prefix}/cache
 mkdir -p %{buildroot}/etc # For system /etc
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/lib/ext
+mkdir -p %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-core/lib %{buildroot}/%{prefix}/
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
@@ -39,9 +40,7 @@ cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
-#cp -a yamcs-web/target/yamcs-web*.jar %{buildroot}/%{prefix}/lib/
-#cp -a yamcs-web/target/dependency/*.jar %{buildroot}/%{prefix}/lib/
-cp -a yamcs-web/src/main/display*  %{buildroot}/%{prefix}/web/
+cp -a yamcs-web/src/main/*  %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
