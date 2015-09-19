@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 
-public class CVSHandlerEPS extends CSVHandler{
+public class CVSHandlerEPS extends CSVHandler {
 	
 	final static String csvName = "test_data/ESPLVPDU.csv";
 
@@ -24,8 +24,7 @@ public class CVSHandlerEPS extends CSVHandler{
 	
 	void loadCSV(String filename) {
 		entries = new Vector<EpsLVPDUData>(100, 100);
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
+		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
 
@@ -42,7 +41,6 @@ public class CVSHandlerEPS extends CSVHandler{
 				
 				entries.add(entry);
 			}
-
 		} catch (IOException e) {
 			System.out.println(e);
 		}
@@ -63,8 +61,7 @@ public class CVSHandlerEPS extends CSVHandler{
 	}
 
 	@Override
-    void processElement(int index)
-	{
+    void processElement(int index) {
 		EpsLVPDUData entry = entries.elementAt(index);
 		//entry.sendMavlinkPackets(uplink);
 	}
@@ -74,5 +71,4 @@ public class CVSHandlerEPS extends CSVHandler{
 		return false;
 	}
 */	
-
 }

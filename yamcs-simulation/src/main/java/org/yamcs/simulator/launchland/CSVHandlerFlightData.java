@@ -27,13 +27,11 @@ class CSVHandlerFlightData extends CSVHandler
 	void loadCSV(String filename)
 	{
 		entries = new Vector<>(1000, 500);
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
+		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
 
 			while ((line = in.readLine()) != null) {
-
 				line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
 				String[] parts = line.split(";");
 				FlightData entry = new FlightData();
@@ -72,7 +70,6 @@ class CSVHandlerFlightData extends CSVHandler
 
 				entries.add(entry);
 			}
-
 		} catch (IOException e) {
 			System.out.println(e);
 		}
@@ -91,18 +88,11 @@ class CSVHandlerFlightData extends CSVHandler
 	}
 
 	@Override
-    void processElement(int index)
-	{
+    void processElement(int index) {
 		FlightData entry = entries.elementAt(index);
 		//entry.sendMavlinkPackets(uplink);
 
-		//
-		// Check waypoints
-		//
-
 		if (wpHandler != null)
 			wpHandler.checkForNextWaypoint(entry.latitude, entry.longitude, entry.altitude);
-
 	}
-
 }

@@ -1,8 +1,5 @@
 package org.yamcs.simulator;
 
-import org.yamcs.simulator.ui.SimWindow;
-
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
@@ -35,8 +32,8 @@ public class ServerConnection {
 		
 	private int id;
 	
-	Queue<CCSDSPacket> tmQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);//no more than 100 pending commands
-	Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);
+	Queue<CCSDSPacket> tmQueue = new ArrayBlockingQueue<>(1000);//no more than 100 pending commands
+	Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
 
 	public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
         this.id = id;

@@ -22,13 +22,11 @@ class CSVHandlerDHS extends CSVHandler {
 
     protected void loadCSV(String filename) {
         entries = new Vector<DHSData>(100, 100);
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(filename));
+        try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
             String line;
             in.readLine(); // skip column titles
 
             while ((line = in.readLine()) != null) {
-
                 line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
                 String[] parts = line.split(";");
                 DHSData entry = new DHSData();
@@ -45,7 +43,6 @@ class CSVHandlerDHS extends CSVHandler {
 
                 entries.add(entry);
             }
-
         } catch (IOException e) {
             System.out.println(e);
         }

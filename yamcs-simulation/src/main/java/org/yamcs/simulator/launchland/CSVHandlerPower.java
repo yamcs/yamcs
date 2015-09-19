@@ -1,8 +1,8 @@
 package org.yamcs.simulator.launchland;
 
-import java.net.*;
-import java.io.*;
-import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Vector;
 
 class CSVHandlerPower extends CSVHandler
@@ -24,13 +24,11 @@ class CSVHandlerPower extends CSVHandler
 	void loadCSV(String filename)
 	{
 		entries = new Vector<PowerData>(100, 100);
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
+		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
 
 			while ((line = in.readLine()) != null) {
-				
 				line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
 				String[] parts = line.split(";");
 							
@@ -56,27 +54,26 @@ class CSVHandlerPower extends CSVHandler
 				
 				entries.add(entry);
 			}
-
 		} catch (IOException e) {
 			System.out.println(e);
 		}
 		System.out.println("have "+entries.size()+" power data records");
 	}
 
-	int getNumberOfEntries() {
+	@Override
+    int getNumberOfEntries() {
 		return entries.size();
 	}
 
-	double getTimestampAtIndex(int index) {
+	@Override
+    double getTimestampAtIndex(int index) {
 		PowerData entry = entries.elementAt(index);
 		return entry.timestamp;
 	}
 
-	void processElement(int index)
-	{
+	@Override
+    void processElement(int index) {
 		PowerData entry = entries.elementAt(index);
 		//entry.sendMavlinkPackets(uplink);
 	}
-
-	
 }

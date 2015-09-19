@@ -1,18 +1,18 @@
 package org.yamcs.simulator.launchland;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Vector;
-import java.util.Enumeration;
 
-class CSVHandlerWaypoints extends CSVHandler
-{
-	class Waypoint
-	{
+class CSVHandlerWaypoints extends CSVHandler {
+    
+	class Waypoint {
 		public double latitude, longitude, altitude;
 		boolean reached;
 
-		public String toString() {
+		@Override
+        public String toString() {
 			return String.format("[Waypoint lat=%.6f lon=%.6f alt=%.2fm reached=%d]", latitude, longitude, altitude, reached);
 		}
 	}
@@ -35,11 +35,9 @@ class CSVHandlerWaypoints extends CSVHandler
 		currentWaypoint = 0;
 	}
 
-	void loadCSV(String filename)
-	{
+	void loadCSV(String filename) {
 		entries = new Vector<Waypoint>(20, 20);
-		try {
-			BufferedReader in = new BufferedReader(new FileReader(filename));
+		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
 
@@ -62,18 +60,21 @@ class CSVHandlerWaypoints extends CSVHandler
 		System.out.println("have "+entries.size()+" waypoint records");
 	}
 
+	@Override
 	public void run() {} // just in case
 
+	@Override
 	int getNumberOfEntries() {
 		return entries.size();
 	}
 
+	@Override
 	double getTimestampAtIndex(int index) {
 		return 0;
 	}
 
-	void processElement(int index)
-	{
+	@Override
+	void processElement(int index) {
 		// to implement the abstract superclass
 	}
 

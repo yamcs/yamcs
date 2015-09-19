@@ -1,16 +1,13 @@
 package org.yamcs.simulator.launchland;
 
-import java.net.*;
-import java.io.*;
-import java.util.Vector;
-
 abstract class CSVHandler extends Thread
 {
 	abstract int getNumberOfEntries();
 	abstract double getTimestampAtIndex(int index);
 	abstract void processElement(int index);
 
-	public void run()
+	@Override
+    public void run()
 	{
 		try {
 
