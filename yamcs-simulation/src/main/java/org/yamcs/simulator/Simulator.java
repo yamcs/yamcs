@@ -1,10 +1,5 @@
 package org.yamcs.simulator;
 
-import org.yamcs.YConfiguration;
-import org.yamcs.simulator.ui.SimWindow;
-
-import java.io.FileInputStream;
-import java.net.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,9 +9,17 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.yamcs.YConfiguration;
+import org.yamcs.simulator.launchland.CCSDSHandlerAck;
+import org.yamcs.simulator.launchland.CCSDSHandlerDHS;
+import org.yamcs.simulator.launchland.CCSDSHandlerEPSLVPDU;
+import org.yamcs.simulator.launchland.CCSDSHandlerFlightData;
+import org.yamcs.simulator.launchland.CCSDSHandlerPower;
+import org.yamcs.simulator.launchland.CCSDSHandlerRCS;
+import org.yamcs.simulator.ui.SimWindow;
+
 
 public class Simulator extends Thread {
-
 
     CCSDSHandlerFlightData 	flightDataHandler;
     CCSDSHandlerDHS 		dhsHandler;
@@ -24,7 +27,6 @@ public class Simulator extends Thread {
     CCSDSHandlerRCS 		rcsHandler;
     CCSDSHandlerEPSLVPDU 	ESPLvpduHandler;
     CCSDSHandlerAck         AckDataHandler;
-
 
     // configured via config file
     static boolean ui = false;
@@ -50,9 +52,7 @@ public class Simulator extends Thread {
     private int battTwoCommand;
     private int battThreeCommand;
 
-
-    Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<CCSDSPacket>(100);//no more than 100 pending commands
-
+    Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);//no more than 100 pending commands
 
     public static SimWindow simWindow = null;
 
@@ -72,13 +72,12 @@ public class Simulator extends Thread {
 
     }
 
-
-
+    @Override
     public void run() {
 
         for(ServerConnection serverConnection : serversConnections ) {
 
-            tl.yamcsServerConnect(serverConnection);
+            TelemetryLink.yamcsServerConnect(serverConnection);
 
             //start the TC reception thread;
             new Thread(() -> {
@@ -89,7 +88,7 @@ public class Simulator extends Thread {
                         Thread.sleep(4000);
                     } catch (IOException e) {
                         serverConnection.setConnected(false);
-                        tl.yamcsServerConnect(serverConnection);
+                        TelemetryLink.yamcsServerConnect(serverConnection);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
@@ -98,18 +97,12 @@ public class Simulator extends Thread {
             }).start();
 
             // start the TM transmission thread;
-            (new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    tl.packetSend(serverConnection);
-                }
-            })).start();
+            (new Thread(() -> tl.packetSend(serverConnection))).start();
         }
 
         CCSDSPacket packet = null;
 
         try {
-
             for (int i = 0;;) {
                 CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
                 CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
@@ -284,7 +277,6 @@ public class Simulator extends Thread {
                                 ackPacket = new CCSDSPacket(1, 2, 7);
                                 AckDataHandler.fillAckPacket(ackPacket, 1);
                                 tl.tmTransmit(ackPacket);
-
                         }
                         break;
                     case 2: commandPacket.packetid = 2 ; //switch off
@@ -349,12 +341,9 @@ public class Simulator extends Thread {
 
     /**
      * this runs in a separate thread but pushes commands to the main TM thread
-     * @throws IOException
-     *
      */
     private Queue<CCSDSPacket> readPackets(DataInputStream dIn) {
-
-        Queue<CCSDSPacket> packetQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);
+        Queue<CCSDSPacket> packetQueue = new ArrayBlockingQueue<>(1000);
         try {
             while(dIn.available() > 0) {
                 //READ IN PACKET
@@ -441,10 +430,10 @@ public class Simulator extends Thread {
         Map<String, Object> servers=  yconfig.getMap("servers");
         for(String serverName : servers.keySet())
         {
-            Map serverConfig = yconfig.getMap("servers", serverName);
-            int tmPort = yconfig.getInt(serverConfig, "tmPort");
-            int tcPort = yconfig.getInt(serverConfig, "tcPort");
-            int dumPort = yconfig.getInt(serverConfig, "dumpPort");
+            Map<String, Object> serverConfig = yconfig.getMap("servers", serverName);
+            int tmPort = YConfiguration.getInt(serverConfig, "tmPort");
+            int tcPort = YConfiguration.getInt(serverConfig, "tcPort");
+            int dumPort = YConfiguration.getInt(serverConfig, "dumpPort");
             serversConnections .add(new ServerConnection(i++, tmPort, tcPort, dumPort));
         };
 
@@ -480,6 +469,4 @@ public class Simulator extends Thread {
             e.printStackTrace();
         }
     }
-
-
 }

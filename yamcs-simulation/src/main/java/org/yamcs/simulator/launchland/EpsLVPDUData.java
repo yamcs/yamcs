@@ -1,6 +1,8 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
+
+import org.yamcs.simulator.CCSDSPacket;
 
 public class EpsLVPDUData {
 	
@@ -9,7 +11,6 @@ public class EpsLVPDUData {
 	float LVPDUVoltage;
 	
 	EpsLVPDUData(CCSDSPacket packet) {
-		
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		
 		LVPDUStatus = (float)buffer.get(0);
@@ -20,7 +21,8 @@ public class EpsLVPDUData {
 	EpsLVPDUData() {
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[EpsLVPDUData]");
 	}
 

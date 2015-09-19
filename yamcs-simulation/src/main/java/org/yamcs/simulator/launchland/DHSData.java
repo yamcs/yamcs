@@ -1,9 +1,10 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
 
-class DHSData
-{
+import org.yamcs.simulator.CCSDSPacket;
+
+class DHSData {
 	float timestamp;
 	float primBusVoltage1, primBusCurrent1;
 	float primBusVoltage2, primBusCurrent2;
@@ -25,7 +26,8 @@ class DHSData
 	DHSData() {
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[DHSData]");
 	}
 

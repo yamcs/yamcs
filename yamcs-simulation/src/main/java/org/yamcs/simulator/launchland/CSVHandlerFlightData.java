@@ -1,7 +1,8 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Vector;
 
 class CSVHandlerFlightData extends CSVHandler
@@ -25,7 +26,7 @@ class CSVHandlerFlightData extends CSVHandler
 
 	void loadCSV(String filename)
 	{
-		entries = new Vector<FlightData>(1000, 500);
+		entries = new Vector<>(1000, 500);
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(filename));
 			String line;
@@ -78,16 +79,19 @@ class CSVHandlerFlightData extends CSVHandler
 		System.out.println("have "+entries.size()+" flight data records");
 	}
 
-	int getNumberOfEntries() {
+	@Override
+    int getNumberOfEntries() {
 		return entries.size();
 	}
 
-	double getTimestampAtIndex(int index) {
+	@Override
+    double getTimestampAtIndex(int index) {
 		FlightData entry = entries.elementAt(index);
 		return entry.timestamp;
 	}
 
-	void processElement(int index)
+	@Override
+    void processElement(int index)
 	{
 		FlightData entry = entries.elementAt(index);
 		//entry.sendMavlinkPackets(uplink);

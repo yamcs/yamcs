@@ -1,6 +1,8 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
+
+import org.yamcs.simulator.CCSDSPacket;
 
 public class AckData {
 	
@@ -23,7 +25,8 @@ public class AckData {
 	AckData() {
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[AckData]");
 	}
 

@@ -1,15 +1,13 @@
 package org.yamcs.simulator;
 
-
-import java.nio.ByteOrder;
-import java.nio.ByteBuffer;
-import java.nio.BufferOverflowException;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 
-class CCSDSPacket
-{
+public class CCSDSPacket {
 /*
 primary header (6 bytes):
 	3 bit = version

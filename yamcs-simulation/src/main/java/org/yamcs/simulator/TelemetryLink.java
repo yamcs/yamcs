@@ -1,13 +1,8 @@
 package org.yamcs.simulator;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by msc on 29/05/15.
@@ -183,8 +178,4 @@ public class TelemetryLink {
         if(Simulator.simWindow != null)
             Simulator.simWindow.addLog(serverId, message + "\n");
     }
-
-
-
-
 }

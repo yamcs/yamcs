@@ -1,6 +1,8 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
+
+import org.yamcs.simulator.CCSDSPacket;
 
 class PowerData
 {
@@ -37,7 +39,8 @@ class PowerData
 	PowerData() {
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[PowerData]");
 	}
 

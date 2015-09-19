@@ -1,6 +1,8 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
+
+import org.yamcs.simulator.CCSDSPacket;
 
 class RCSData
 {
@@ -29,7 +31,8 @@ class RCSData
 	RCSData() {
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[RCSData]");
 	}
 

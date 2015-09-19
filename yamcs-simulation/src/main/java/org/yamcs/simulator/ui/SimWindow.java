@@ -1,29 +1,25 @@
 package org.yamcs.simulator.ui;
 
-import java.awt.*;
-
-import javax.swing.JFrame;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.CaretListener;
-import javax.swing.event.CaretEvent;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-
-import org.jgroups.stack.RouterStub;
-import org.yamcs.simulator.ServerConnection;
-import org.yamcs.simulator.Simulator;
-
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.util.LinkedList;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+import org.yamcs.simulator.ServerConnection;
+import org.yamcs.simulator.Simulator;
 
 public class SimWindow {
 
@@ -42,16 +38,21 @@ public class SimWindow {
 		initialize(client.getNbServerNodes());
 
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     getFrame().setVisible(true);
-                    setSimClient(client);
+                    //setSimClient(client);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.exit(-1);
                 }
             }
         });
+	}
+	
+	public static void main(String... args) {
+	    new SimWindow(null);
 	}
 
 
@@ -141,7 +142,8 @@ public class SimWindow {
 			}
 		});
 		losBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+			@Override
+            public void actionPerformed(ActionEvent arg0) {
 			}
 		});
 		
@@ -154,6 +156,7 @@ public class SimWindow {
             }
         });
 		tLosButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
             }
         });

@@ -1,6 +1,9 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.nio.ByteBuffer;
+
+import org.yamcs.simulator.CCSDSPacket;
+import org.yamcs.simulator.Vector3d;
 
 class FlightData
 {
@@ -37,7 +40,8 @@ class FlightData
 		verticalSpeed = -1;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return String.format("[CSVEntry lat=%.6f lon=%.6f alt=%.2fm time=%.3fs]", latitude, longitude, altitude, timestamp);
 	}
 

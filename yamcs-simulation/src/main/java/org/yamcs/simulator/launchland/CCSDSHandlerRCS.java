@@ -1,13 +1,11 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
-import java.nio.ByteBuffer;
+import org.yamcs.simulator.CCSDSPacket;
 
-class CCSDSHandlerRCS extends CSVHandlerRCS
-{
+public class CCSDSHandlerRCS extends CSVHandlerRCS {
 	private int currentEntry = 0;
 
-	public void fillPacket(CCSDSPacket packet)
-	{
+	public void fillPacket(CCSDSPacket packet) {
 		if (getNumberOfEntries() == 0) return;
 
 		if (currentEntry >= getNumberOfEntries()) {

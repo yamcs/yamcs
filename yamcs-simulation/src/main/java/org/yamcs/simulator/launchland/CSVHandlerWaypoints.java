@@ -1,4 +1,4 @@
-package org.yamcs.simulator;
+package org.yamcs.simulator.launchland;
 
 import java.net.*;
 import java.io.*;
