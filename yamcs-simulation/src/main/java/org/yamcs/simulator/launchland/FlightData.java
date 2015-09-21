@@ -5,8 +5,7 @@ import java.nio.ByteBuffer;
 import org.yamcs.simulator.CCSDSPacket;
 import org.yamcs.simulator.Vector3d;
 
-class FlightData
-{
+class FlightData {
 	double latitude, longitude, altitude;
 	double heading, timestamp, phi, theta, psi;
 	double groundSpeed, verticalSpeed, mach, sinkRate, tas, cas, alpha, beta, loadFactor;
@@ -81,70 +80,4 @@ class FlightData
 	double getYaw() { return Math.toRadians(psi); } // left/right turn
 	double getPitch() { return Math.toRadians(theta); } // nose up/down
 	double getRoll() { return Math.toRadians(phi); }
-
-/*	void sendMavlinkPackets(UplinkInterface uplink)
-	{
-		//
-		// Global position
-		//
-
-		Vector3d v;
-
-		MavlinkGlobalPosition pos = new MavlinkGlobalPosition();
-		pos.lat = latitude;
-		pos.lon = longitude;
-		pos.rel_alt = altitude; // above ground
-		pos.alt = altitude; // above MSL
-		pos.hdg = heading; //MavlinkGlobalPosition.HDG_UNKNOWN;
-
-		v = getVelocity();
-		pos.vx = v.x;
-		pos.vy = v.y;
-		pos.vz = v.z;
-
-		uplink.sendMessage(pos);
-
-
-		//
-		// GPS
-		//
-
-		MavlinkGPSRaw gps = new MavlinkGPSRaw();
-		gps.lat = latitude;
-		gps.lon = longitude;
-		gps.alt = altitude;
-
-		v = getVelocity();
-		gps.vel = v.getLength();
-
-		uplink.sendMessage(gps);
-
-
-		//
-		// Attitude
-		//
-
-		MavlinkAttitude att = new MavlinkAttitude();
-		att.yaw = getYaw();
-		att.pitch = getPitch();
-		att.roll = getRoll();
-		uplink.sendMessage(att);
-
-
-		//
-		// VFR (Visual Flight Rules) HUD
-		//
-
-		MavlinkVFRHUD hud = new MavlinkVFRHUD();
-		hud.altitude = altitude; // above MSL
-		hud.heading = heading;
-		hud.throttle = 50 + (int)(Math.random()*50);
-
-		v = getVelocity();
-		hud.airspeed = v.getLength();
-		hud.groundspeed = hud.airspeed;
-
-		uplink.sendMessage(hud);
-
-	}*/
 }

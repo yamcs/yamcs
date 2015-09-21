@@ -129,22 +129,19 @@ secondary header (10 bytes):
     }
 
 
-	public void send(OutputStream os) throws IOException
-	{
+	public void writeTo(OutputStream os) throws IOException {
 		try {
-
 			if (buffer.hasArray()) {
 				os.write(buffer.array());
 			//	System.out.println(HexDump.dumpHexString(buffer.array()));
 			//	System.out.println("sent " + this + " " + payload);
 			}
-
 		} catch (BufferOverflowException e) {
 			System.out.println("overflow while sending "+this);
 		}
 	}
 	
-	static HashMap<Integer,Integer> seqMap = new HashMap<Integer,Integer>(2); // apid -> seq
+	static HashMap<Integer,Integer> seqMap = new HashMap<>(2); // apid -> seq
 
 	private static int getSeq(int apid) {
 		int seq = seqMap.containsKey(apid) ? seqMap.get(apid) : 0;
@@ -153,10 +150,20 @@ secondary header (10 bytes):
 	}
 	
 	 public void describePacketHeader(int byteToRead){
-		 
 		 String s1 = String.format("%8s", Integer.toBinaryString(byteToRead & 0xFF)).replace(' ', '0');
 		 System.out.println("::" + s1);
-		 
+	 }
+	 
+	 public int getPacketId() {
+	     return packetid;
+	 }
+	 
+	 public void setPacketId(int packetId) {
+	     this.packetid = packetId;
+	 }
+	 
+	 public int getPacketType() {
+	     return packetType;
 	 }
 	 
 	 @Override
