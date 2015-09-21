@@ -1,10 +1,11 @@
-Version 0.28.0 Released
+Version 0.28.0 Released 20-Sep-2015
 - switched commanding to XTCE
 - improved the rest interface
 - modularized more the creation of streams and channels
 - added rocksdb storage engine
 - added command pretransmission checks
-- added containter based command verification
+- added command verification
+- added parameter plots to (USS) web displays
 
 
 Version 0.27.3 Released 31-Oct-2014
