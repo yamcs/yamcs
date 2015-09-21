@@ -5,27 +5,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-class CSVHandlerFlightData extends CSVHandler
-{
+import org.yamcs.simulator.UplinkInterface;
+
+class CSVHandlerFlightData {
 	final static String csvName = "test_data/Flight parameters.csv";
 
 	Vector<FlightData> entries;
-	CSVHandlerWaypoints wpHandler;
 	UplinkInterface uplink;
 
-	public CSVHandlerFlightData(UplinkInterface uplink, CSVHandlerWaypoints wpHandler) {
-		this.wpHandler = wpHandler;
+	public CSVHandlerFlightData(UplinkInterface uplink) {
 		this.uplink = uplink;
 		loadCSV(csvName);
 	}
 
-	public CSVHandlerFlightData(CSVHandlerWaypoints wpHandler) {
-		this.wpHandler = wpHandler;
+	public CSVHandlerFlightData() {
 		loadCSV(csvName);
 	}
 
-	void loadCSV(String filename)
-	{
+	void loadCSV(String filename) {
 		entries = new Vector<>(1000, 500);
 		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
@@ -76,23 +73,7 @@ class CSVHandlerFlightData extends CSVHandler
 		System.out.println("have "+entries.size()+" flight data records");
 	}
 
-	@Override
     int getNumberOfEntries() {
 		return entries.size();
-	}
-
-	@Override
-    double getTimestampAtIndex(int index) {
-		FlightData entry = entries.elementAt(index);
-		return entry.timestamp;
-	}
-
-	@Override
-    void processElement(int index) {
-		FlightData entry = entries.elementAt(index);
-		//entry.sendMavlinkPackets(uplink);
-
-		if (wpHandler != null)
-			wpHandler.checkForNextWaypoint(entry.latitude, entry.longitude, entry.altitude);
 	}
 }

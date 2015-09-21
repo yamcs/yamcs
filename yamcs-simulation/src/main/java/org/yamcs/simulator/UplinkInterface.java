@@ -1,7 +1,7 @@
-package org.yamcs.simulator.launchland;
+package org.yamcs.simulator;
 
 
-interface UplinkInterface {
+public interface UplinkInterface {
 	boolean haveAOS();
 	void sendMessageAndIgnoreLOS(PayloadInterface payload);
 	void sendMessage(PayloadInterface payload);

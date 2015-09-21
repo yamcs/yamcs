@@ -11,7 +11,7 @@ public class CCSDSHandlerAck extends CVSHandlerEPS {
 
     public void fillExeCompPacket(CCSDSPacket packet, int battery, int commandReceived) {
         AckData entry = new AckData();
-        
+
         if (1 <= battery && battery <= 3) {
             entry.fillPacket(packet, battery - 1, commandReceived);
         }

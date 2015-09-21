@@ -15,11 +15,11 @@ public class TelemetryLink {
     
     private static final Logger log = LoggerFactory.getLogger(TelemetryLink.class);
 
-    Simulator simulation;
-    List<ServerConnection> serverConnections;
+    private Simulator simulator;
+    private List<ServerConnection> serverConnections;
 
-    public TelemetryLink(Simulator simulation, SimulationConfiguration simConfig) {
-        this.simulation = simulation;
+    public TelemetryLink(Simulator simulator, SimulationConfiguration simConfig) {
+        this.simulator = simulator;
         serverConnections = simConfig.getServerConnections();
     }
 
@@ -31,7 +31,7 @@ public class TelemetryLink {
 
     public void packetSend(ServerConnection conn) {
         while (true) {
-            if (!simulation.isLOS()) {
+            if (!simulator.isLOS()) {
                 //System.out.print("packet Send");
                 tmPacketSend(conn);
                 tmPacketDump(conn);
@@ -75,7 +75,7 @@ public class TelemetryLink {
             // Might rework the logic at a later date
             if (conn.getId() == 0) {
                 CCSDSPacket packet = conn.getTmPacket();
-                simulation.getLosStore().tmPacketStore(packet);
+                simulator.getLosStore().tmPacketStore(packet);
             }
         }
     }

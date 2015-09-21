@@ -1,7 +1,6 @@
 package org.yamcs.simulator;
 
-public class Vector3d
-{
+public class Vector3d {
 	public double x, y, z;
 
 	public Vector3d(double x, double y, double z) {

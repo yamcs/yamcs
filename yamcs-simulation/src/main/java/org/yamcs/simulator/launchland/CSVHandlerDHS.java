@@ -5,8 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-class CSVHandlerDHS extends CSVHandler {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.simulator.UplinkInterface;
+
+class CSVHandlerDHS {
     final static String csvName = "test_data/DHS.csv";
+    private static final Logger log = LoggerFactory.getLogger(CSVHandlerDHS.class);
 
     Vector<DHSData> entries;
     UplinkInterface uplink;
@@ -21,7 +26,7 @@ class CSVHandlerDHS extends CSVHandler {
     }
 
     protected void loadCSV(String filename) {
-        entries = new Vector<DHSData>(100, 100);
+        entries = new Vector<>(100, 100);
         try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
             String line;
             in.readLine(); // skip column titles
@@ -46,23 +51,10 @@ class CSVHandlerDHS extends CSVHandler {
         } catch (IOException e) {
             System.out.println(e);
         }
-        System.out.println("have " + entries.size() + " DHS data records");
+        log.info("have " + entries.size() + " DHS data records");
     }
 
-    @Override
     int getNumberOfEntries() {
         return entries.size();
-    }
-
-    @Override
-    double getTimestampAtIndex(int index) {
-        DHSData entry = entries.elementAt(index);
-        return entry.timestamp;
-    }
-
-    @Override
-    void processElement(int index) {
-        DHSData entry = entries.elementAt(index);
-        // entry.sendMavlinkPackets(uplink);
     }
 }

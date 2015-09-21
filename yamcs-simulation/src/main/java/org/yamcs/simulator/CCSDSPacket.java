@@ -46,14 +46,6 @@ secondary header (10 bytes):
 	final byte SH_PKT_TYPE_CCSDS_PAYLOAD_COMMAND_PACKET = 10;
 	final byte SH_PKT_TYPE_CCSDS_MEMORY_LOAD_PACKET = 11;
 	final byte SH_PKT_TYPE_CCSDS_RESPONSE_PACKET = 12;
-	
-	//packet packet id's 
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_1_OFF = 1;
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_1_ON  = 2;
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_2_OFF = 3;
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_2_ON  = 4;
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_3_OFF = 5;
-	final byte SH_PKT_SUBTYPE_PAYLOAD_COMMAND_PACKET_BAT_3_ON  = 6;
 
 	public CCSDSPacket(ByteBuffer buffer) {
 		this.buffer = buffer;
@@ -168,14 +160,14 @@ secondary header (10 bytes):
 	 
 	 @Override
 	 public String toString() {
-			StringBuffer sb=new StringBuffer();
-			sb.append("apid: "+apid+"\n");
-			sb.append("seq: "+seq+"\n");
-			sb.append("packetId: "+packetid+"\n");
-			sb.append("packetType: "+packetType+"\n");
-			sb.append("time: "+ timeMillis);
-			sb.append("\n");
-			
-			return sb.toString();
-		}
+		StringBuffer sb=new StringBuffer();
+		sb.append("apid: "+apid+"\n");
+		sb.append("seq: "+seq+"\n");
+		sb.append("packetId: "+packetid+"\n");
+		sb.append("packetType: "+packetType+"\n");
+		sb.append("time: "+ timeMillis);
+		sb.append("\n");
+		
+		return sb.toString();
+	}
 }

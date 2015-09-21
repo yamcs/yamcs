@@ -1,4 +1,4 @@
-package org.yamcs.simulator.launchland;
+package org.yamcs.simulator;
 
 import java.nio.ByteBuffer;
 

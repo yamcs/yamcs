@@ -5,8 +5,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.yamcs.simulator.UplinkInterface;
 
-public class CVSHandlerEPS extends CSVHandler {
+
+public class CVSHandlerEPS {
 	
 	final static String csvName = "test_data/ESPLVPDU.csv";
 
@@ -23,7 +25,7 @@ public class CVSHandlerEPS extends CSVHandler {
 	}
 	
 	void loadCSV(String filename) {
-		entries = new Vector<EpsLVPDUData>(100, 100);
+		entries = new Vector<>(100, 100);
 		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
@@ -46,29 +48,8 @@ public class CVSHandlerEPS extends CSVHandler {
 		}
 		System.out.println("have "+entries.size()+" EPS LVPDU data records");
 	}
-
 	
-	
-	@Override
     int getNumberOfEntries() {
 		return entries.size();
 	}
-
-	@Override
-    double getTimestampAtIndex(int index) {
-		EpsLVPDUData entry = entries.elementAt(index);
-		return entry.timestamp;
-	}
-
-	@Override
-    void processElement(int index) {
-		EpsLVPDUData entry = entries.elementAt(index);
-		//entry.sendMavlinkPackets(uplink);
-	}
-
-/*	boolean processParameterRead(MavlinkParameterRequestRead message)
-	{
-		return false;
-	}
-*/	
 }

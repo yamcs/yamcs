@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-class CSVHandlerRCS extends CSVHandler
-{
+import org.yamcs.simulator.UplinkInterface;
+
+class CSVHandlerRCS {
 	final static String csvName = "test_data/RCS.csv";
 
 	Vector<RCSData> entries;
@@ -21,9 +22,8 @@ class CSVHandlerRCS extends CSVHandler
 		loadCSV(csvName);
 	}
 
-	void loadCSV(String filename)
-	{
-		entries = new Vector<RCSData>(100, 100);
+	void loadCSV(String filename) {
+		entries = new Vector<>(100, 100);
 		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
@@ -59,20 +59,7 @@ class CSVHandlerRCS extends CSVHandler
 		System.out.println("have "+entries.size()+" RHS data records");
 	}
 
-	@Override
     int getNumberOfEntries() {
 		return entries.size();
-	}
-
-	@Override
-    double getTimestampAtIndex(int index) {
-		RCSData entry = entries.elementAt(index);
-		return entry.timestamp;
-	}
-
-	@Override
-    void processElement(int index) {
-		RCSData entry = entries.elementAt(index);
-	//	entry.sendMavlinkPackets(uplink);
 	}
 }

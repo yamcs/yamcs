@@ -8,7 +8,6 @@ import java.util.concurrent.Semaphore;
 /**
  * Used to scheduled an LOS of 1 minute every 2 minutes
  */
-
 public class SignalClock {
 
     String timeStamp = "";
@@ -16,8 +15,8 @@ public class SignalClock {
     int aosSeconds;
 
     Timer timer;
-    Semaphore  losSignal;
-    Semaphore  aosSignal;
+    Semaphore losSignal;
+    Semaphore aosSignal;
 
     public Semaphore getLosSignal() {
         return losSignal;
@@ -50,6 +49,7 @@ public class SignalClock {
     }
 
     class LosTask extends TimerTask {
+        @Override
         public void run() {
             timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
             try {
@@ -63,6 +63,7 @@ public class SignalClock {
     }
 
     class AosTask extends TimerTask {
+        @Override
         public void run() {
             try {
                 // case starting aos
@@ -77,6 +78,4 @@ public class SignalClock {
     public Semaphore getAosSignal() {
         return aosSignal;
     }
-
-
 }

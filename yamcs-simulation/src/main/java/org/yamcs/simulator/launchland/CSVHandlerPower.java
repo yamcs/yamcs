@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-class CSVHandlerPower extends CSVHandler
-{
+import org.yamcs.simulator.UplinkInterface;
+
+class CSVHandlerPower {
 	final static String csvName = "test_data/power.csv";
 
 	Vector<PowerData> entries;
@@ -21,9 +22,8 @@ class CSVHandlerPower extends CSVHandler
 		loadCSV(csvName);
 	}
 
-	void loadCSV(String filename)
-	{
-		entries = new Vector<PowerData>(100, 100);
+	void loadCSV(String filename) {
+		entries = new Vector<>(100, 100);
 		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
 			String line;
 			in.readLine(); // skip column titles
@@ -60,20 +60,7 @@ class CSVHandlerPower extends CSVHandler
 		System.out.println("have "+entries.size()+" power data records");
 	}
 
-	@Override
     int getNumberOfEntries() {
 		return entries.size();
-	}
-
-	@Override
-    double getTimestampAtIndex(int index) {
-		PowerData entry = entries.elementAt(index);
-		return entry.timestamp;
-	}
-
-	@Override
-    void processElement(int index) {
-		PowerData entry = entries.elementAt(index);
-		//entry.sendMavlinkPackets(uplink);
 	}
 }

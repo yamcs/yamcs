@@ -40,24 +40,6 @@ public class CCSDSHandlerPower extends CSVHandlerPower {
         buffer.putShort(13, (short) 0);
     }
 
-    void fillPacket(CCSDSPacket packet, int bufferOffset) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.position(bufferOffset);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.putShort((short) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.putShort((short) 0);
-        buffer.put((byte) 0);
-        buffer.put((byte) 0);
-        buffer.putShort((short) 0);
-    }
-
     public void displayUserData(CCSDSPacket packet) {
         ByteBuffer buffer = packet.getUserDataBuffer();
         buffer.position(16);

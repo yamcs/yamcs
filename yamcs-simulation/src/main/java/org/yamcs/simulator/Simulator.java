@@ -7,7 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.simulator.launchland.LaunchAndLandingSimulation;
+import org.yamcs.simulator.launchland.LaunchAndLandingSimulator;
 
 
 public class Simulator extends Thread {
@@ -139,17 +139,33 @@ public class Simulator extends Thread {
         }
 
         // add packet notifying that the file has been downloaded entirely
-        CCSDSPacket confirmationPacket = CommandData.buildLosTransmittedRecordingPacket(filename);
+        CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
         for(ServerConnection serverConnection : simConfig.getServerConnections())
             serverConnection.setTmDumpPacket(confirmationPacket);
+    }
+    
+    private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 10);
+        packet.appendUserDataBuffer(transmittedRecordName.getBytes());
+        packet.appendUserDataBuffer(new byte[1]);
+
+        return packet;
     }
 
     public void deleteLosDataFile(String filename) {
         losStore.deleteFile(filename);
         // add packet notifying that the file has been deleted
-        CCSDSPacket confirmationPacket = CommandData.buildLosDeletedRecordingPacket(filename);
+        CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
         for(ServerConnection serverConnection : simConfig.getServerConnections())
             serverConnection.setTmDumpPacket(confirmationPacket);
+    }
+    
+    private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 11);
+        packet.appendUserDataBuffer(deletedRecordName.getBytes());
+        packet.appendUserDataBuffer(new byte[1]);
+
+        return packet;
     }
 
     public void startTriggeringLos() {
@@ -171,7 +187,7 @@ public class Simulator extends Thread {
         YConfiguration.setup(System.getProperty("user.dir"));
         simConfig = SimulationConfiguration.loadFromFile();
         
-        simulator = new LaunchAndLandingSimulation();
+        simulator = new LaunchAndLandingSimulator();
         simulator.start();
 
         // start alternating los and aos

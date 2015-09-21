@@ -18,13 +18,13 @@ public class ServerConnection {
 	private boolean connected = false;
 	private boolean signalStatus = false;
 
-	private Socket tmSocket = null;
-	private Socket tcSocket = null;
-	private Socket losSocket = null;
+	private Socket tmSocket;
+	private Socket tcSocket;
+	private Socket losSocket;
 
-	private ServerSocket tmServerSocket = null;
-	private ServerSocket tcServerSocket = null;
-	private ServerSocket losServerSocket = null;
+	private ServerSocket tmServerSocket;
+	private ServerSocket tcServerSocket;
+	private ServerSocket losServerSocket;
 
 	private int tmPort;
 	private int tcPort;

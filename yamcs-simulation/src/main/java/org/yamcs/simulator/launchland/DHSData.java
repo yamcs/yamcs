@@ -31,8 +31,7 @@ class DHSData {
 		return String.format("[DHSData]");
 	}
 
-	void fillPacket(CCSDSPacket packet, int bufferOffset)
-	{
+	void fillPacket(CCSDSPacket packet, int bufferOffset) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		buffer.position(bufferOffset);
 
@@ -46,52 +45,4 @@ class DHSData {
 		buffer.put((byte)secBusCurrent3);
 		buffer.put((byte)0);
 	}
-
-/*	void sendMavlinkPackets(UplinkInterface uplink)
-	{
-		final int compid = 1; // DHS
-		MavlinkParameterValue value = new MavlinkParameterValue();
-		value.param_count = 8;
-
-		value.param_value = new Float(primBusVoltage1);
-		value.param_index = 0;
-		value.param_id = "PrimBusVoltage1";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(primBusCurrent1);
-		value.param_index = 1;
-		value.param_id = "PrimBusCurrent1";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(primBusVoltage2);
-		value.param_index = 2;
-		value.param_id = "PrimBusVoltage2";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(primBusCurrent2);
-		value.param_index = 3;
-		value.param_id = "PrimBusCurrent2";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(secBusVoltage2);
-		value.param_index = 4;
-		value.param_id = "SecBusVoltage2";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(secBusCurrent2);
-		value.param_index = 5;
-		value.param_id = "SecBusCurrent2";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(secBusVoltage3);
-		value.param_index = 6;
-		value.param_id = "SecBusVoltage3";
-		uplink.sendMessage(value, compid);
-
-		value.param_value = new Float(secBusCurrent3);
-		value.param_index = 7;
-		value.param_id = "SecBusCurrent3";
-		uplink.sendMessage(value, compid);
-	}*/
 }
-
