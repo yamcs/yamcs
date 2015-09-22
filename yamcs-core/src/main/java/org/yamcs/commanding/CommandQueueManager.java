@@ -12,22 +12,22 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.YProcessor;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
-import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MatchCriteria;
@@ -131,7 +131,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
                 if(q.stateExpirationRemainingS >= 0)
                 {
-                    log.debug("notifying update queue with new remaining seconds: " + q.stateExpirationRemainingS);
+                    log.trace("notifying update queue with new remaining seconds: {}", q.stateExpirationRemainingS);
                     q.stateExpirationRemainingS--;
                     notifyUpdateQueue(q);
                 }
@@ -142,6 +142,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * called at processor startup, subscribe all parameters required for checking command constraints
      */
+    @Override
     public void doStart() {
         XtceDb xtcedb = yproc.getXtceDb();
         Set<Parameter> paramsToSubscribe = new HashSet<Parameter>();
@@ -176,6 +177,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         notifyStarted();
     }
 
+    @Override
     public void doStop() {
         if(paramSubscriptionRequestId!=-1) {
             ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();

@@ -334,7 +334,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 	// simulation scenario
 	private void ProcessVoidStep(int nbSteps) {
 		try {
-			log.debug("Processing " + nbSteps + " void steps");
+			log.trace("Processing " + nbSteps + " void steps");
 			Thread.sleep(simulationStepLengthMs * nbSteps);
 		} catch (InterruptedException e) {
 			log.error(e.toString());
