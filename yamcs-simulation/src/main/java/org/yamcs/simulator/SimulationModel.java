@@ -8,5 +8,10 @@ public interface SimulationModel {
     /**
      * Update model by stepping to step <tt>t</tt>.
      */
-    void step(int t, SimulationData data);
+    void step(long t, SimulationData data);
+    
+    /**
+     * Dump the current state as a packet
+     */
+    CCSDSPacket toCCSDSPacket();
 }

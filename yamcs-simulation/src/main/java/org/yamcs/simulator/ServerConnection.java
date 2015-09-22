@@ -110,7 +110,7 @@ public class ServerConnection {
 		return tmQueue.remove();
 	}
 
-	public void setTmPacket(CCSDSPacket packet) {
+	public void queueTmPacket(CCSDSPacket packet) {
 		this.tmQueue.add(packet);
 	}
 	
@@ -127,7 +127,7 @@ public class ServerConnection {
 		this.tmDumpQueue.add(packet);
 	}
 	
-	public boolean checkTmDumpQueue() {
+	public boolean isTmDumpQueueEmpty() {
 		return tmDumpQueue.isEmpty();
 	}
 	
@@ -162,9 +162,4 @@ public class ServerConnection {
 	public void setLosPort(int losPort) {
 		this.losPort = losPort;
 	}
-
-
-
-
-
 }

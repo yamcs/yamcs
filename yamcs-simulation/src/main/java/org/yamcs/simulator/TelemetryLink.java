@@ -25,18 +25,18 @@ public class TelemetryLink {
 
     public void tmTransmit(CCSDSPacket packet) {
         for (ServerConnection s : serverConnections) {
-            s.setTmPacket(packet);
+            s.queueTmPacket(packet);
         }
     }
 
     public void packetSend(ServerConnection conn) {
         while (true) {
             if (!simulator.isLOS()) {
-                //System.out.print("packet Send");
+                System.out.print("packet Send");
                 tmPacketSend(conn);
                 tmPacketDump(conn);
             } else {
-                //System.out.print("packet store");
+                System.out.print("packet store");
                 tmPacketStore(conn);
             }
             try {
@@ -59,7 +59,7 @@ public class TelemetryLink {
     }
 
     private void tmPacketDump(ServerConnection conn) {
-        if (conn.isConnected() && !conn.checkTmDumpQueue()) {
+        if (conn.isConnected() && !conn.isTmDumpQueueEmpty()) {
             try {
                 conn.getTmDumpPacket().writeTo(conn.getLosSocket().getOutputStream());
             } catch (IOException e1) {

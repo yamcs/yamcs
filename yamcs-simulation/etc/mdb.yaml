@@ -1,4 +1,4 @@
-simulator:
+landing:
     # Configuration of the active loaders
     # Valid loaders are: sheet, xtce or fully qualified name of the class
     - type: "sheet"
@@ -6,5 +6,16 @@ simulator:
       subLoaders:
            - type: "sheet"
              spec: "mdb/landing.xls"
+    - type: "sheet"
+      spec: "mdb/GS-tmtc.xls"
+
+leo_spacecraft:
+    # Configuration of the active loaders
+    # Valid loaders are: sheet, xtce or fully qualified name of the class
+    - type: "sheet"
+      spec: "mdb/simulator-ccsds.xls"
+      subLoaders:
+           - type: "sheet"
+             spec: "mdb/leo-spacecraft.xls"
     - type: "sheet"
       spec: "mdb/GS-tmtc.xls"

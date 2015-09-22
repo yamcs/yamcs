@@ -8,27 +8,28 @@ import java.nio.ByteOrder;
 import java.util.HashMap;
 
 public class CCSDSPacket {
-/*
-primary header (6 bytes):
-	3 bit = version
-	1 bit = type (0 = system packet, 1 = payload packet)
-	1 bit = 2nd header present
-	11 bit = apid
-
-	2 bit = grouping, 01 = first, 00 = cont, 10 = last packet of group
-	14 bit = seq
-
-	16 bit = packet length (excluding primary header) minus 1
-
-secondary header (10 bytes):
-	32 bit = coarse time (seconds since 1970)
-	8 bit = fine time
-	2 bits = time id (see constants)
-	1 bit = checksum present (2 bytes after user data)
-	5 bits = packet type (see constants)
-	32 bit = packet id
-
-*/
+    
+    /*
+        primary header (6 bytes):
+        	3 bit = version
+        	1 bit = type (0 = system packet, 1 = payload packet)
+        	1 bit = 2nd header present
+        	11 bit = apid
+        
+        	2 bit = grouping, 01 = first, 00 = cont, 10 = last packet of group
+        	14 bit = seq
+        
+        	16 bit = packet length (excluding primary header) minus 1
+        
+        secondary header (10 bytes):
+        	32 bit = coarse time (seconds since 1970)
+        	8 bit = fine time
+        	2 bits = time id (see constants)
+        	1 bit = checksum present (2 bytes after user data)
+        	5 bits = packet type (see constants)
+        	32 bit = packet id
+    */
+    
 	// Header Attributes 
 	int apid, seq, packetid;
 	int packetType;
@@ -117,7 +118,6 @@ secondary header (10 bytes):
         // update the packet size information in the secondary header
         this.buffer.putShort(4, (short) (this.buffer.capacity() - 7));
     }
-
 
 	public void writeTo(OutputStream os) throws IOException {
 		try {

@@ -7,7 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.simulator.launchland.LaunchAndLandingSimulator;
+import org.yamcs.simulator.leospacecraft.LEOSpacecraftSimulator;
 
 
 public class Simulator extends Thread {
@@ -52,6 +52,7 @@ public class Simulator extends Thread {
             }).start();
 
             // start the TM transmission thread
+            System.out.println("Start TM thread");
             (new Thread(() -> tmLink.packetSend(serverConnection))).start();
         }
     }
@@ -75,9 +76,9 @@ public class Simulator extends Thread {
                 packetQueue.add(packet);
             }
             //System.out.println("Packets Stored & Sent = "+ losStored + " : "+  losSent);
-        }catch(IOException e) {
+        } catch(IOException e) {
             System.err.println("Connection lost : " + e);
-        }catch(Exception e) {
+        } catch(Exception e) {
             System.err.println("Error reading command " + e);
             e.printStackTrace();
         }
@@ -169,7 +170,7 @@ public class Simulator extends Thread {
         YConfiguration.setup(System.getProperty("user.dir"));
         simConfig = SimulationConfiguration.loadFromFile();
         
-        simulator = new LaunchAndLandingSimulator();
+        simulator = new LEOSpacecraftSimulator();
         simulator.start();
 
         // start alternating los and aos
