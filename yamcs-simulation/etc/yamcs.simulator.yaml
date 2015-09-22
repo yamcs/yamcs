@@ -58,7 +58,7 @@ tcUplinkers:
 mdb: simulator
 
 
-#Configuration for streams created at server startu
+#Configuration for streams created at server startup
 streamConfig:
   tm: 
     - name: "tm_realtime"
@@ -68,4 +68,3 @@ streamConfig:
   param: ["pp_realtime", "sys_param"]
   alarm: ["alarms_realtime"]
   tc: ["tc_realtime"]
-

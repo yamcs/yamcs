@@ -48,7 +48,7 @@ public class TelemetryLink {
     }
 
     private void tmPacketSend(ServerConnection conn) {
-        if (conn.isConnected() && !conn.checkTmQueue()) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
             try {
                 conn.getTmPacket().writeTo(conn.getTmSocket().getOutputStream());
             } catch (IOException e1) {
@@ -70,7 +70,7 @@ public class TelemetryLink {
     }
 
     private void tmPacketStore(ServerConnection conn) {
-        if (conn.isConnected() && !conn.checkTmQueue()) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
             // Not the best solution, the if condition stop the LOS file from having double instances
             // Might rework the logic at a later date
             if (conn.getId() == 0) {

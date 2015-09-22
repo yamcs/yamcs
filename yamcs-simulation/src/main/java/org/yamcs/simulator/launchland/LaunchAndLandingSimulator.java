@@ -7,12 +7,12 @@ import org.yamcs.simulator.Simulator;
 
 public class LaunchAndLandingSimulator extends Simulator {
 
-    private CCSDSHandlerFlightData flightDataHandler = new CCSDSHandlerFlightData();
-    private CCSDSHandlerDHS dhsHandler = new CCSDSHandlerDHS();
-    private CCSDSHandlerPower powerDataHandler = new CCSDSHandlerPower();
-    private CCSDSHandlerRCS rcsHandler = new CCSDSHandlerRCS();
-    private CCSDSHandlerEPSLVPDU epslvpduHandler = new CCSDSHandlerEPSLVPDU();
-    private CCSDSHandlerAck ackDataHandler = new CCSDSHandlerAck();
+    private FlightDataHandler flightDataHandler = new FlightDataHandler();
+    private DHSHandler dhsHandler = new DHSHandler();
+    private PowerHandler powerDataHandler = new PowerHandler();
+    private RCSHandler rcsHandler = new RCSHandler();
+    private EpsLvpduHandler epslvpduHandler = new EpsLvpduHandler();
+    private AckHandler ackDataHandler = new AckHandler();
     
     private boolean engageHoldOneCycle = false;
     private boolean unengageHoldOneCycle = false;
@@ -29,7 +29,6 @@ public class LaunchAndLandingSimulator extends Simulator {
     public void run() {
         super.run();
         CCSDSPacket packet = null;
-
         try {
             for (int i = 0;;) {
                 CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
@@ -39,10 +38,10 @@ public class LaunchAndLandingSimulator extends Simulator {
 
                 if (i < 30) ++i;
                 else {
-                    if(waitToEngage == 2 || engaged) {
+                    if (waitToEngage == 2 || engaged) {
                         engaged = true;
                         //unengaged = false;
-                        CCSDSPacket powerpacket = new CCSDSPacket(16 , 1);
+                        CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
 
                         powerDataHandler.fillPacket(powerpacket);
 
@@ -50,7 +49,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                             case 1: 
                                 powerDataHandler.setBattOneOff(powerpacket);
                                 ackDataHandler.fillExeCompPacket(exeCompPacket, 1, 0);
-                                if (!exeTransmitted ){
+                                if (!exeTransmitted) {
                                     transmitTM(exeCompPacket);
                                     exeTransmitted = true;
                                 }
@@ -68,7 +67,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                             case 1:
                                 powerDataHandler.setBattTwoOff(powerpacket);
                                 ackDataHandler.fillExeCompPacket(exeCompPacket, 2, 0);
-                                if (!exeTransmitted ){
+                                if (!exeTransmitted) {
                                     transmitTM(exeCompPacket);
                                     exeTransmitted = true;
                                 }
@@ -76,7 +75,7 @@ public class LaunchAndLandingSimulator extends Simulator {
 
                             case 2:
                                 ackDataHandler.fillExeCompPacket(exeCompPacket, 2, 1);
-                                if (!exeTransmitted){
+                                if (!exeTransmitted) {
                                     transmitTM(exeCompPacket);
                                     exeTransmitted = true;
                                 }
@@ -86,14 +85,15 @@ public class LaunchAndLandingSimulator extends Simulator {
                             case 1:
                                 powerDataHandler.setBattThreeOff(powerpacket);
                                 ackDataHandler.fillExeCompPacket(exeCompPacket, 3, 0);
-                                if (!exeTransmitted){
+                                if (!exeTransmitted) {
                                     transmitTM(exeCompPacket);
                                     exeTransmitted = true;
                                 }
                                 break;
+                                
                             case 2:
                                 ackDataHandler.fillExeCompPacket(exeCompPacket, 3, 1);
-                                if (!exeTransmitted){
+                                if (!exeTransmitted) {
                                     transmitTM(exeCompPacket);
                                     exeTransmitted = true;
                                 }

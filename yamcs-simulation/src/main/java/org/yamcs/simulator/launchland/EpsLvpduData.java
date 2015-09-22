@@ -4,19 +4,19 @@ import java.nio.ByteBuffer;
 
 import org.yamcs.simulator.CCSDSPacket;
 
-public class EpsLVPDUData {
+public class EpsLvpduData {
 	
 	float timestamp;
 	float LVPDUStatus;
 	float LVPDUVoltage;
 	
-	EpsLVPDUData(CCSDSPacket packet) {
+	EpsLvpduData(CCSDSPacket packet) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		LVPDUStatus = (float)buffer.get(0);
 		LVPDUVoltage = (float)buffer.get(1);
 	}
 
-	EpsLVPDUData() {
+	EpsLvpduData() {
 	}
 
 	@Override

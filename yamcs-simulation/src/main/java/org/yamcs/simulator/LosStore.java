@@ -27,10 +27,10 @@ public class LosStore {
     int losStored = 0;
     Path path = null;
 
-    public LosStore(Simulator simulation)
+    public LosStore(Simulator simulator, SimulationConfiguration simConfig)
     {
-        this.simulation = simulation;
-        losClock = new SignalClock(simulation.getLosPeriod(), simulation.getAosPeriod());
+        this.simulation = simulator;
+        losClock = new SignalClock(simConfig.getLOSPeriod(), simConfig.getAOSPeriod());
     }
 
     public void startTriggeringLos()

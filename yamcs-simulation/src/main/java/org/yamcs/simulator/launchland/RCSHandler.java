@@ -5,26 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.yamcs.simulator.UplinkInterface;
+import org.yamcs.simulator.CCSDSPacket;
 
-class CSVHandlerRCS {
-	final static String csvName = "test_data/RCS.csv";
+class RCSHandler {
+	private final static String csvName = "test_data/RCS.csv";
 
-	Vector<RCSData> entries;
-	UplinkInterface uplink;
+	private Vector<RCSData> entries;
+	private int currentEntry = 0;
 
-	CSVHandlerRCS(UplinkInterface uplink) {
-		this.uplink = uplink;
-		loadCSV(csvName);
-	}
-
-	CSVHandlerRCS() {
-		loadCSV(csvName);
-	}
-
-	void loadCSV(String filename) {
+	RCSHandler() {
 		entries = new Vector<>(100, 100);
-		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
+		try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
 			String line;
 			in.readLine(); // skip column titles
 
@@ -58,8 +49,16 @@ class CSVHandlerRCS {
 		}
 		System.out.println("have "+entries.size()+" RHS data records");
 	}
+	
+    public void fillPacket(CCSDSPacket packet) {
+        if (entries.isEmpty())
+            return;
 
-    int getNumberOfEntries() {
-		return entries.size();
-	}
+        if (currentEntry >= entries.size()) {
+            currentEntry = 0;
+        }
+
+        RCSData entry = entries.elementAt(currentEntry++);
+        entry.fillPacket(packet, 0);
+    }
 }

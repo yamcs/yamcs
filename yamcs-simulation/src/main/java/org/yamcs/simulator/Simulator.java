@@ -27,7 +27,7 @@ public class Simulator extends Thread {
     
     public Simulator() {
         tmLink = new TelemetryLink(this, simConfig);
-        losStore = new LosStore(this);
+        losStore = new LosStore(this, simConfig);
     }
     
     @Override
@@ -84,26 +84,8 @@ public class Simulator extends Thread {
         return packetQueue;
     }
     
-    public int getNbServerNodes() {
-        return simConfig.getServerConnections().size();
-    }
-    
     public LosStore getLosStore() {
         return losStore;
-    }
-    
-    /**
-     * returns los period in seconds
-     */
-    public int getLosPeriod() {
-        return simConfig.getLOSPeriod();
-    }
-    
-    /**
-     * returns los period in seconds
-     */
-    public int getAosPeriod() {
-        return simConfig.getAOSPeriod();
     }
     
     public boolean isLOS() {
@@ -118,8 +100,8 @@ public class Simulator extends Thread {
         return tmLink;
     }
     
-    protected void transmitTM(CCSDSPacket flightPacket) {
-        tmLink.tmTransmit(flightPacket);
+    protected void transmitTM(CCSDSPacket packet) {
+        tmLink.tmTransmit(packet);
     }
 
     public void dumpLosDataFile(String filename) {

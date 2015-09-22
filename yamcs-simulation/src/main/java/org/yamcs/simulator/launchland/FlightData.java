@@ -44,8 +44,7 @@ class FlightData {
 		return String.format("[CSVEntry lat=%.6f lon=%.6f alt=%.2fm time=%.3fs]", latitude, longitude, altitude, timestamp);
 	}
 
-	void fillPacket(CCSDSPacket packet, int bufferOffset)
-	{
+	void fillPacket(CCSDSPacket packet, int bufferOffset) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		buffer.position(bufferOffset);
 

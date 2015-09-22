@@ -2,7 +2,7 @@ package org.yamcs.simulator.launchland;
 
 import org.yamcs.simulator.CCSDSPacket;
 
-public class CCSDSHandlerAck extends CVSHandlerEPS {
+public class AckHandler {
 
     public void fillAckPacket(CCSDSPacket packet, int commandReceived) {
         AckData entry = new AckData();

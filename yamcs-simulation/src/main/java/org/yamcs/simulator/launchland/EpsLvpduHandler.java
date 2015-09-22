@@ -5,28 +5,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.yamcs.simulator.UplinkInterface;
+import org.yamcs.simulator.CCSDSPacket;
 
 
-public class CVSHandlerEPS {
+public class EpsLvpduHandler {
 	
-	final static String csvName = "test_data/ESPLVPDU.csv";
+	private final static String csvName = "test_data/ESPLVPDU.csv";
 
-	Vector<EpsLVPDUData> entries;
-	UplinkInterface uplink;
+	private Vector<EpsLvpduData> entries;
+    private int currentEntry = 0;
 
-	public CVSHandlerEPS(UplinkInterface uplink) {
-		this.uplink = uplink;
-		loadCSV(csvName);
-	}
-
-	public CVSHandlerEPS() {
-		loadCSV(csvName);
-	}
-	
-	void loadCSV(String filename) {
+	public EpsLvpduHandler() {
 		entries = new Vector<>(100, 100);
-		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
+		try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
 			String line;
 			in.readLine(); // skip column titles
 
@@ -35,7 +26,7 @@ public class CVSHandlerEPS {
 				line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
 				String[] parts = line.split(";");
 							
-				EpsLVPDUData entry = new EpsLVPDUData();
+				EpsLvpduData entry = new EpsLvpduData();
 
 				entry.LVPDUStatus = new Integer(parts[0]).intValue();
 				entry.LVPDUVoltage = new Float(parts[1]).floatValue();
@@ -49,7 +40,15 @@ public class CVSHandlerEPS {
 		System.out.println("have "+entries.size()+" EPS LVPDU data records");
 	}
 	
-    int getNumberOfEntries() {
-		return entries.size();
-	}
+    public void fillPacket(CCSDSPacket packet) {
+        if (entries.isEmpty())
+            return;
+
+        if (currentEntry >= entries.size()) {
+            currentEntry = 0;
+        }
+
+        EpsLvpduData entry = entries.elementAt(currentEntry++);
+        entry.fillPacket(packet, 0);
+    }
 }

@@ -5,6 +5,6 @@ simulator:
       spec: "mdb/simulator-ccsds.xls"
       subLoaders:
            - type: "sheet"
-             spec: "mdb/simulator-tmtc.xls"
+             spec: "mdb/landing.xls"
     - type: "sheet"
       spec: "mdb/GS-tmtc.xls"

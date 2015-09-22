@@ -53,11 +53,10 @@ secondary header (10 bytes):
 		seq = buffer.getShort(2) & 0x3fff;
 		packetType = (byte) (buffer.get(11) & 0x0F); // get the  packet type
 		packetid = buffer.getInt(12);
-		timeMillis = ((long)(buffer.getInt(6)) + 315964800L )*1000 + (long)(buffer.get(10))*1000/256;
+		timeMillis = ((long)(buffer.getInt(6)) + 315964800L)*1000 + (long)(buffer.get(10))*1000/256;
 	}
 
 	public CCSDSPacket(int userDataLength, int packetid) {
-		
 		apid = 1;
 		seq = 0;
 		timeMillis = System.currentTimeMillis();
@@ -69,7 +68,7 @@ secondary header (10 bytes):
 		putHeader();
 	}
 	
-	public CCSDSPacket(int userDataLength, int packetType, int packetid ) {		
+	public CCSDSPacket(int userDataLength, int packetType, int packetid) {		
 		apid = 1;
 		seq = 0;
 		timeMillis = System.currentTimeMillis();
@@ -92,7 +91,7 @@ secondary header (10 bytes):
 		buffer.putShort(4, (short) (buffer.capacity() - 7)); // secondary
 		buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch  starts a 06-Jan-1980 00:00:00
 		buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
-		//buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET)); // orignal version with no check sum;
+		//buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET)); // original version with no checksum;
 		buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | packetType)); // no checksum id		   // modified to allow for packet type assignment 
 		buffer.putInt(12, packetid);
 		//describePacketHeader();
@@ -109,7 +108,6 @@ secondary header (10 bytes):
     }
 
     public void setUserDataBuffer(ByteBuffer buffer) {
-
         this.buffer = ByteBuffer.allocate(this.buffer.capacity())
                 .put(this.buffer).put(buffer);
         updatePacketSize();

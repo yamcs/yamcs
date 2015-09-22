@@ -5,26 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.yamcs.simulator.UplinkInterface;
+import org.yamcs.simulator.CCSDSPacket;
 
-class CSVHandlerFlightData {
-	final static String csvName = "test_data/Flight parameters.csv";
+class FlightDataHandler {
+	private final static String csvName = "test_data/Flight parameters.csv";
 
-	Vector<FlightData> entries;
-	UplinkInterface uplink;
+	private Vector<FlightData> entries;
+    private int currentEntry = 0;
 
-	public CSVHandlerFlightData(UplinkInterface uplink) {
-		this.uplink = uplink;
-		loadCSV(csvName);
-	}
-
-	public CSVHandlerFlightData() {
-		loadCSV(csvName);
-	}
-
-	void loadCSV(String filename) {
+	public FlightDataHandler() {
 		entries = new Vector<>(1000, 500);
-		try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
+		try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
 			String line;
 			in.readLine(); // skip column titles
 
@@ -72,8 +63,18 @@ class CSVHandlerFlightData {
 		}
 		System.out.println("have "+entries.size()+" flight data records");
 	}
+	
+    public void fillPacket(CCSDSPacket packet) {
+        if (entries.isEmpty())
+            return;
 
-    int getNumberOfEntries() {
-		return entries.size();
-	}
+        for (int i = 0; i < 1; ++i) {
+            if (currentEntry >= entries.size()) {
+                currentEntry = 0;
+            }
+
+            FlightData entry = entries.elementAt(currentEntry++);
+            entry.fillPacket(packet, i * 60);
+        }
+    }
 }

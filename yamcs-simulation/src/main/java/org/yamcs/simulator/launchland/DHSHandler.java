@@ -7,27 +7,18 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.simulator.UplinkInterface;
+import org.yamcs.simulator.CCSDSPacket;
 
-class CSVHandlerDHS {
+class DHSHandler {
     final static String csvName = "test_data/DHS.csv";
-    private static final Logger log = LoggerFactory.getLogger(CSVHandlerDHS.class);
+    private static final Logger log = LoggerFactory.getLogger(DHSHandler.class);
 
-    Vector<DHSData> entries;
-    UplinkInterface uplink;
+    private Vector<DHSData> entries;
+    private int currentEntry = 0;
 
-    CSVHandlerDHS(UplinkInterface uplink) {
-        this.uplink = uplink;
-        loadCSV(csvName);
-    }
-
-    CSVHandlerDHS() {
-        loadCSV(csvName);
-    }
-
-    protected void loadCSV(String filename) {
+    DHSHandler() {
         entries = new Vector<>(100, 100);
-        try (BufferedReader in = new BufferedReader(new FileReader(filename))) {
+        try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
             String line;
             in.readLine(); // skip column titles
 
@@ -54,7 +45,15 @@ class CSVHandlerDHS {
         log.info("have " + entries.size() + " DHS data records");
     }
 
-    int getNumberOfEntries() {
-        return entries.size();
+    public void fillPacket(CCSDSPacket packet) {
+        if (entries.isEmpty())
+            return;
+
+        if (currentEntry >= entries.size()) {
+            currentEntry = 0;
+        }
+
+        DHSData entry = entries.elementAt(currentEntry++);
+        entry.fillPacket(packet, 0);
     }
 }

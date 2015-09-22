@@ -114,7 +114,7 @@ public class ServerConnection {
 		this.tmQueue.add(packet);
 	}
 	
-	public boolean checkTmQueue() {
+	public boolean isTmQueueEmpty() {
 		return tmQueue.isEmpty();
 	}
 	
