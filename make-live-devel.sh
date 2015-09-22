@@ -23,6 +23,7 @@ rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
 
 
+cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
 for f in $YAMCS_HOME/yamcs-core/etc/* ; do
     case "$f" in
         *.sample)
@@ -53,9 +54,6 @@ ln -fs $YAMCS_HOME/yamcs-web/src/main/resources/mime.types $TARGET/etc
 mkdir -p $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
-
-# copy simulation config files
-cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
 
 cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
