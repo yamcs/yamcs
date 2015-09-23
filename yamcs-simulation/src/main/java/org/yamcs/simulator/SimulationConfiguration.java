@@ -4,10 +4,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
 public class SimulationConfiguration {
     
+    private Class<? extends Simulator> modelClass;
     private boolean uiEnabled;
     private boolean losEnabled;
     private int losPeriodS;
@@ -18,10 +20,23 @@ public class SimulationConfiguration {
     private SimulationConfiguration() {
     }
     
+    @SuppressWarnings("unchecked")
     public static SimulationConfiguration loadFromFile() {
         SimulationConfiguration conf = new SimulationConfiguration();
         
         YConfiguration yconfig = YConfiguration.getConfiguration("simulator");
+        
+        try {
+            Class<?> modelClass = Class.forName(yconfig.getString("model"));
+            if (Simulator.class.isAssignableFrom(modelClass)) {
+                conf.modelClass = (Class<? extends Simulator>) modelClass;
+            } else {
+                throw new ConfigurationException("Class '" + modelClass.getName() + "' is not an instance of '" + Simulator.class.getName() + "'");
+            }
+        } catch (ClassNotFoundException e) {
+            throw new ConfigurationException("Could not locate model class", e);
+        }
+        
         conf.uiEnabled = yconfig.getBoolean("ui");
         conf.losEnabled = yconfig.getBoolean("losAos");
         conf.losPeriodS = yconfig.getInt("los_period_s");
@@ -38,6 +53,10 @@ public class SimulationConfiguration {
             conf.serverConnections.add(new ServerConnection(i++, tmPort, tcPort, dumpPort));
         }
         return conf;
+    }
+    
+    public Class<? extends Simulator> getModelClass() {
+        return modelClass;
     }
     
     public boolean isUIEnabled() {

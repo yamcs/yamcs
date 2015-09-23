@@ -2,10 +2,15 @@ package org.yamcs.simulator.launchland;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
+import org.yamcs.simulator.SimulationConfiguration;
 import org.yamcs.simulator.Simulator;
 
 public class LaunchAndLandingSimulator extends Simulator {
+    
+    private static final Logger log = LoggerFactory.getLogger(LaunchAndLandingSimulator.class);
 
     private FlightDataHandler flightDataHandler = new FlightDataHandler();
     private DHSHandler dhsHandler = new DHSHandler();
@@ -24,6 +29,10 @@ public class LaunchAndLandingSimulator extends Simulator {
     private int battOneCommand;
     private int battTwoCommand;
     private int battThreeCommand;
+    
+    public LaunchAndLandingSimulator(SimulationConfiguration simConfig) {
+        super(simConfig);
+    }
 
     @Override
     public void run() {
@@ -130,7 +139,7 @@ public class LaunchAndLandingSimulator extends Simulator {
 
                     if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
                         waitToEngage = waitToEngage + 1;
-                        System.out.println("Value : " + waitToEngage);
+                        log.debug("Value : " + waitToEngage);
                     }
 
                     if (unengageHoldOneCycle) {
@@ -157,7 +166,7 @@ public class LaunchAndLandingSimulator extends Simulator {
         while(pendingCommands.size()>0) {
             CCSDSPacket commandPacket = pendingCommands.poll();
             if (commandPacket.getPacketType() == 10) {
-                System.out.println("BATT COMMAND: " + commandPacket.getPacketId()+" batNum: "+commandPacket.getUserDataBuffer().get(0));
+                log.debug("BATT COMMAND: " + commandPacket.getPacketId()+" batNum: "+commandPacket.getUserDataBuffer().get(0));
 
                 switch(commandPacket.getPacketId()){
                     case 1:
@@ -256,14 +265,14 @@ public class LaunchAndLandingSimulator extends Simulator {
     private void dumpRecording(CCSDSPacket commandPacket) {
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName1 = new String(fileNameArray, 16, fileNameArray.length - 22);
-        System.out.println("Command DUMP_RECORDING for file " + fileName1);
+        log.info("Command DUMP_RECORDING for file " + fileName1);
         dumpLosDataFile(fileName1);
     }
     
     private void deleteRecording(CCSDSPacket commandPacket) {
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
-        System.out.println("Command DELETE_RECORDING for file " + fileName);
+        log.info("Command DELETE_RECORDING for file " + fileName);
         deleteLosDataFile(fileName);
     }
 }

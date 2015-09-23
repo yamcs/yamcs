@@ -6,15 +6,13 @@ import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.yamcs.YConfiguration;
-import org.yamcs.simulator.leospacecraft.LEOSpacecraftSimulator;
-
 
 public class Simulator extends Thread {
     
     private int DEFAULT_MAX_LENGTH=65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
 
+    private SimulationConfiguration simConfig;
     private TelemetryLink tmLink;
     
     protected Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
@@ -22,10 +20,8 @@ public class Simulator extends Thread {
     private boolean isLos = false;
     private LosStore losStore;
     
-    private static SimulationConfiguration simConfig;
-    private static Simulator simulator;
-    
-    public Simulator() {
+    public Simulator(SimulationConfiguration simConfig) {
+        this.simConfig = simConfig;
         tmLink = new TelemetryLink(this, simConfig);
         losStore = new LosStore(this, simConfig);
     }
@@ -157,25 +153,5 @@ public class Simulator extends Thread {
 
     public void stopTriggeringLos() {
         losStore.stopTriggeringLos();
-    }
-    
-    public static void main(String[] args) {
-        System.out.println("_______________________\n");
-        System.out.println(" ╦ ╦┌─┐┌─┐");
-        System.out.println(" ╚╦╝├─┤└─┐");
-        System.out.println("  ╩ ┴ ┴└─┘");
-        System.out.println(" Yet Another Simulator");
-        System.out.println("_______________________");
-
-        YConfiguration.setup(System.getProperty("user.dir"));
-        simConfig = SimulationConfiguration.loadFromFile();
-        
-        simulator = new LEOSpacecraftSimulator();
-        simulator.start();
-
-        // start alternating los and aos
-        if (simConfig.isLOSEnabled()) {
-            simulator.startTriggeringLos();
-        }
     }
 }

@@ -55,7 +55,7 @@ tcUplinkers:
       stream: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
-mdb: leo_spacecraft
+mdb: landing
 
 
 #Configuration for streams created at server startup

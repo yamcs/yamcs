@@ -22,4 +22,4 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
 # run the program
 exec "$_RUNJAVA" -classpath "$CLASSPATH" \
-	org.yamcs.simulator.Simulator "$@"
+	org.yamcs.simulator.Main "$@"

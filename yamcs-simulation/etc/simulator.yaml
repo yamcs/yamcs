@@ -1,3 +1,5 @@
+model: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
+
 # Should the User Interface be used
 ui: false
 
