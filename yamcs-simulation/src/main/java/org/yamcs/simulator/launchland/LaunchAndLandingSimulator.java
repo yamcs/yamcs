@@ -202,6 +202,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                 ackPacket = new CCSDSPacket(1, 2, 7);
                 ackDataHandler.fillAckPacket(ackPacket, 1);
                 transmitTM(ackPacket);
+                break;
             case 2:
                 unengageHoldOneCycle = true;
                 //engaged = false;
@@ -210,6 +211,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                 ackPacket = new CCSDSPacket(1, 2, 7);
                 ackDataHandler.fillAckPacket(ackPacket, 1);
                 transmitTM(ackPacket);
+                break;
             case 3:
                 unengageHoldOneCycle = true;
                 //engaged = false;

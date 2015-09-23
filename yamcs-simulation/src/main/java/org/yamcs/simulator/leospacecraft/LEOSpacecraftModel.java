@@ -59,9 +59,20 @@ public class LEOSpacecraftModel implements SimulationModel {
     
     private SimulationData latestData;
     
+    private boolean battery1ForceOff = false;
+    private boolean battery2ForceOff = false;
+    
     @Override
     public void step(long t, SimulationData simulationData) {
         latestData = simulationData;
+    }
+    
+    public void forceBatteryOneOff(boolean off) {
+        battery1ForceOff = off;
+    }
+    
+    public void forceBatteryTwoOff(boolean off) {
+        battery2ForceOff = off;
     }
 
     @Override
@@ -92,8 +103,17 @@ public class LEOSpacecraftModel implements SimulationModel {
         buffer.putInt(latestData.getInt(EPS_ERROR_FLAG));
         buffer.putInt(latestData.getInt(COMMS_STATUS));
         buffer.putInt(latestData.getInt(CDHS_STATUS));
-        buffer.putFloat(latestData.getFloat(BATTERY1_VOLTAGE));
-        buffer.putFloat(latestData.getFloat(BATTERY2_VOLTAGE));
+        
+        if (battery1ForceOff)
+            buffer.putFloat(0);
+        else 
+            buffer.putFloat(latestData.getFloat(BATTERY1_VOLTAGE));
+        
+        if (battery2ForceOff)
+            buffer.putFloat(0);
+        else
+            buffer.putFloat(latestData.getFloat(BATTERY2_VOLTAGE));
+        
         buffer.putFloat(latestData.getFloat(BATTERY1_TEMP));
         buffer.putFloat(latestData.getFloat(BATTERY2_TEMP));
         buffer.putFloat(latestData.getFloat(MAGNETOMETER_X));
