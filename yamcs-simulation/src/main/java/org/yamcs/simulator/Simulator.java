@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.yamcs.simulator.ui.SimWindow;
+
 
 public class Simulator extends Thread {
     
@@ -20,6 +22,8 @@ public class Simulator extends Thread {
     private boolean isLos = false;
     private LosStore losStore;
     
+    private SimWindow simWindow;
+    
     public Simulator(SimulationConfiguration simConfig) {
         this.simConfig = simConfig;
         tmLink = new TelemetryLink(this, simConfig);
@@ -29,7 +33,7 @@ public class Simulator extends Thread {
     @Override
     public void run() {
         for(ServerConnection serverConnection : simConfig.getServerConnections()) {
-            TelemetryLink.yamcsServerConnect(serverConnection);
+            tmLink.yamcsServerConnect(serverConnection);
 
             //start the TC reception thread;
             new Thread(() -> {
@@ -40,7 +44,7 @@ public class Simulator extends Thread {
                         Thread.sleep(4000);
                     } catch (IOException e) {
                         serverConnection.setConnected(false);
-                        TelemetryLink.yamcsServerConnect(serverConnection);
+                        tmLink.yamcsServerConnect(serverConnection);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -79,6 +83,10 @@ public class Simulator extends Thread {
             e.printStackTrace();
         }
         return packetQueue;
+    }
+    
+    public SimulationConfiguration getSimulationConfiguration() {
+        return simConfig;
     }
     
     public LosStore getLosStore() {
@@ -145,6 +153,14 @@ public class Simulator extends Thread {
         packet.appendUserDataBuffer(new byte[1]);
 
         return packet;
+    }
+    
+    public SimWindow getSimWindow() {
+        return simWindow;
+    }
+    
+    public void setSimWindow(SimWindow simWindow) {
+        this.simWindow = simWindow;
     }
 
     public void startTriggeringLos() {

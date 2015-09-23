@@ -80,7 +80,7 @@ public class TelemetryLink {
         }
     }
 
-    public static void yamcsServerConnect(ServerConnection conn) {
+    public void yamcsServerConnect(ServerConnection conn) {
 
         //Check for previous connection, used for loss of server.
         if (conn.getTmSocket() != null) {
@@ -113,13 +113,17 @@ public class TelemetryLink {
             }
         }
 
+        if(simulator.getSimWindow() != null)
+            simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTING);
         try {
             log.info("Waiting for connection from server " + conn.getId());
             conn.setTmServerSocket(new ServerSocket(conn.getTmPort()));
             conn.setTmSocket(conn.getTmServerSocket().accept());
             
             Socket tmSocket = conn.getTmSocket();
-            log.info("Connected TM {}:{}", tmSocket.getInetAddress(), tmSocket.getPort());
+            logMessage(conn.getId(), "Connected TM: "
+                    + tmSocket.getInetAddress() + ":"
+                    + tmSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,6 +134,9 @@ public class TelemetryLink {
 
             Socket tcSocket = conn.getTcSocket();
             log.info("Connected TC {}:{}", tcSocket.getInetAddress(), tcSocket.getPort());
+            logMessage(conn.getId(), "Connected TC: "
+                    + tcSocket.getInetAddress() + ":"
+                    + tcSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -139,13 +146,23 @@ public class TelemetryLink {
             conn.setLosSocket(conn.getLosServerSocket().accept());
             
             Socket losSocket = conn.getLosSocket();
-            log.info("Connected TM DUMP {}:{}", losSocket.getInetAddress(), losSocket.getPort());
+            logMessage(conn.getId(), "Connected TM DUMP: "
+                    + losSocket.getInetAddress() + ":"
+                    + losSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         if (conn.getTcSocket() != null && conn.getTmSocket() != null && conn.getLosSocket() != null) {
             conn.setConnected(true);
+            if(simulator.getSimWindow() != null)
+                simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTED);
         }
+    }
+    
+    private void logMessage(int serverId, String message) {
+        log.info(message);
+        if(simulator.getSimWindow() != null)
+            simulator.getSimWindow().addLog(serverId, message + "\n");
     }
 }
