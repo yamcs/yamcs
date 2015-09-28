@@ -1,58 +1,52 @@
 package org.yamcs.simulator.ui;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 
-import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JTextArea;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.CaretListener;
-import javax.swing.event.CaretEvent;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.JPanel;
-import javax.swing.JButton;
 
-import org.jgroups.stack.RouterStub;
 import org.yamcs.simulator.ServerConnection;
 import org.yamcs.simulator.Simulator;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.util.LinkedList;
-
 public class SimWindow {
 
-	private JFrame frame;
-	private Simulator simClient;
+    private JFrame frame;
+    private Simulator simClient;
 
 
-	public void setSimClient(Simulator simClient) {
-		this.simClient = simClient;
-	}
+    public void setSimClient(Simulator simClient) {
+        this.simClient = simClient;
+    }
 
-	/**
-	 * Create the application.
-	 */
-	public SimWindow(Simulator client) {
-		initialize(client.getNbServerNodes());
+    /**
+     * Create the application.
+     */
+    public SimWindow(Simulator client) {
+        initialize(client.getSimulationConfiguration().getServerConnections().size());
 
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    getFrame().setVisible(true);
-                    setSimClient(client);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(-1);
-                }
+        EventQueue.invokeLater(() -> {
+            try {
+                getFrame().setVisible(true);
+                setSimClient(client);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(-1);
             }
         });
-	}
+    }
 
 
     private class ServerNodeUi
@@ -63,14 +57,14 @@ public class SimWindow {
     }
     LinkedList<ServerNodeUi> serverNodeUis = new LinkedList<>();
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize(int nbServerNodes) {
+    /**
+     * Initialize the contents of the frame.
+     */
+    private void initialize(int nbServerNodes) {
         setFrame(new JFrame());
         frame.setTitle("YAS - Yet Another Simulator");
-		getFrame().setBounds(100, 100, 795, 474);
-		getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        getFrame().setBounds(100, 100, 795, 474);
+        getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         for(int i = 0; i < nbServerNodes; i++)
         {
@@ -87,8 +81,8 @@ public class SimWindow {
             serverNodeUis.add(serverNodeUi);
         }
 
-		JPanel panel = new JPanel();
-		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
+        JPanel panel = new JPanel();
+        GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
         GroupLayout.SequentialGroup sequentialGroup1 = groupLayout.createSequentialGroup();
         GroupLayout.SequentialGroup sequentialGroup2 = groupLayout.createSequentialGroup();
         GroupLayout.ParallelGroup parallelGroup1 = groupLayout.createParallelGroup(Alignment.LEADING);
@@ -101,34 +95,34 @@ public class SimWindow {
             parallelGroup2.addComponent(s.sScroll, GroupLayout.PREFERRED_SIZE, 377, GroupLayout.PREFERRED_SIZE);
         }
 
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 172, GroupLayout.PREFERRED_SIZE)
-					.addGap(129)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+        groupLayout.setHorizontalGroup(
+            groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(groupLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(panel, GroupLayout.PREFERRED_SIZE, 172, GroupLayout.PREFERRED_SIZE)
+                    .addGap(129)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                             .addGroup(sequentialGroup1)
                             .addGroup(sequentialGroup2)))
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(12)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(panel, GroupLayout.PREFERRED_SIZE, 403, GroupLayout.PREFERRED_SIZE)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGroup(parallelGroup1)
-							.addGap(12)
-							.addGroup(parallelGroup2)))
-					.addContainerGap(26, Short.MAX_VALUE))
-		);
-		
+        );
+        groupLayout.setVerticalGroup(
+            groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(groupLayout.createSequentialGroup()
+                    .addGap(12)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(panel, GroupLayout.PREFERRED_SIZE, 403, GroupLayout.PREFERRED_SIZE)
+                        .addGroup(groupLayout.createSequentialGroup()
+                            .addGroup(parallelGroup1)
+                            .addGap(12)
+                            .addGroup(parallelGroup2)))
+                    .addContainerGap(26, Short.MAX_VALUE))
+        );
+        
 
-		JButton losBtn = new JButton("Start LOS/AOS");
-		losBtn.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
+        JButton losBtn = new JButton("Start LOS/AOS");
+        losBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
                 if(losBtn.getText().contains("Start")) {
                     simClient.startTriggeringLos();
                     losBtn.setText("Set AOS");
@@ -138,37 +132,39 @@ public class SimWindow {
                     simClient.stopTriggeringLos();
                     losBtn.setText("Start LOS/AOS");
                 }
-			}
-		});
-		losBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-			}
-		});
-		
-		JButton tLosButton = new JButton("Dump LOS Data");
-		tLosButton.addMouseListener(new MouseAdapter() {
+            }
+        });
+        losBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+            }
+        });
+        
+        JButton tLosButton = new JButton("Dump LOS Data");
+        tLosButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
 
                 simClient.dumpLosDataFile(null);
             }
         });
-		tLosButton.addActionListener(new ActionListener() {
+        tLosButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
             }
         });
         panel.add(losBtn);
-		panel.add(tLosButton);
-		frame.getContentPane().setLayout(groupLayout);
-	}
+        panel.add(tLosButton);
+        frame.getContentPane().setLayout(groupLayout);
+    }
 
-	public JFrame getFrame() {
-		return frame;
-	}
+    public JFrame getFrame() {
+        return frame;
+    }
 
-	public void setFrame(JFrame frame) {
-		this.frame = frame;
-	}
+    public void setFrame(JFrame frame) {
+        this.frame = frame;
+    }
 
 
     public void setServerStatus(int id, ServerConnection.ConnectionStatus connectionStatus)

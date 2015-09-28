@@ -1,42 +1,43 @@
 package org.yamcs.simulator;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.Socket;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by msc on 29/05/15.
  */
 public class TelemetryLink {
+    
+    private static final Logger log = LoggerFactory.getLogger(TelemetryLink.class);
 
-    Simulator simulator;
-    List<ServerConnection> serversConnections;
+    private Simulator simulator;
+    private List<ServerConnection> serverConnections;
 
-    public TelemetryLink(Simulator simulator, List<ServerConnection> serversConnections) {
+    public TelemetryLink(Simulator simulator, SimulationConfiguration simConfig) {
         this.simulator = simulator;
-        this.serversConnections = serversConnections;
+        serverConnections = simConfig.getServerConnections();
     }
 
     public void tmTransmit(CCSDSPacket packet) {
-        for (ServerConnection s : serversConnections) {
-            s.setTmPacket(packet);
+        for (ServerConnection s : serverConnections) {
+            s.queueTmPacket(packet);
         }
     }
 
-    public void packetSend(ServerConnection sI) {
+    public void packetSend(ServerConnection conn) {
         while (true) {
-            if (!simulator.isLos) {
+            if (!simulator.isLOS()) {
                 //System.out.print("packet Send");
-                tmPacketSend(sI);
-                tmPacketDump(sI);
+                tmPacketSend(conn);
+                tmPacketDump(conn);
             } else {
                 //System.out.print("packet store");
-                tmPacketStore(sI);
+                tmPacketStore(conn);
             }
             try {
                 Thread.sleep(1000 / 20); // 20 Hz
@@ -46,145 +47,122 @@ public class TelemetryLink {
         }
     }
 
-    private void tmPacketSend(ServerConnection sI) {
-
-        if (sI.isConnected() && !sI.checkTmQueue()) {
-
+    private void tmPacketSend(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
             try {
-
-                sI.getTmPacket().send(sI.getTmSocket().getOutputStream());
-
+                conn.getTmPacket().writeTo(conn.getTmSocket().getOutputStream());
             } catch (IOException e1) {
-                System.out.println(e1);
-                yamcsServerConnect(sI);
-                // e1.printStackTrace();
+                log.error("Error while sending TM packet", e1);
+                yamcsServerConnect(conn);
             }
-
         }
     }
 
-    private void tmPacketDump(ServerConnection sI) {
-
-        if (sI.isConnected() && !sI.checkTmDumpQueue()) {
-
+    private void tmPacketDump(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmDumpQueueEmpty()) {
             try {
-
-                sI.getTmDumpPacket().send(sI.getLosSocket().getOutputStream());
-
+                conn.getTmDumpPacket().writeTo(conn.getLosSocket().getOutputStream());
             } catch (IOException e1) {
-                System.out.println(e1);
-                yamcsServerConnect(sI);
-                // e1.printStackTrace();
+                log.error("Error while sending TM dump packet", e1);
+                yamcsServerConnect(conn);
             }
-
         }
     }
 
-    private void tmPacketStore(ServerConnection sI) {
-        if (sI.isConnected() && !sI.checkTmQueue()) {
+    private void tmPacketStore(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
             // Not the best solution, the if condition stop the LOS file from having double instances
             // Might rework the logic at a later date
-            if (sI.getId() == 0) {
-                CCSDSPacket packet = sI.getTmPacket();
-                simulator.losStore.tmPacketStore(packet);
+            if (conn.getId() == 0) {
+                CCSDSPacket packet = conn.getTmPacket();
+                simulator.getLosStore().tmPacketStore(packet);
             }
         }
     }
 
-
-    public static void yamcsServerConnect(ServerConnection sI) {
+    public void yamcsServerConnect(ServerConnection conn) {
 
         //Check for previous connection, used for loss of server.
-        if (sI.getTmSocket() != null) {
-
+        if (conn.getTmSocket() != null) {
             try {
-                sI.setConnected(false);
-                sI.getTmSocket().close();
-                sI.getTmServerSocket().close();
+                conn.setConnected(false);
+                conn.getTmSocket().close();
+                conn.getTmServerSocket().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        if (sI.getTcSocket() != null) {
-
+        if (conn.getTcSocket() != null) {
             try {
-                sI.setConnected(false);
-                sI.getTcSocket().close();
-                sI.getTcServerSocket().close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        if (sI.getLosSocket() != null) {
-
-            try {
-                sI.setConnected(false);
-                sI.getLosSocket().close();
-                sI.getLosServerSocket().close();
+                conn.setConnected(false);
+                conn.getTcSocket().close();
+                conn.getTcServerSocket().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-
-        if(Simulator.simWindow != null)
-            Simulator.simWindow.setServerStatus(sI.getId(), ServerConnection.ConnectionStatus.CONNECTING);
-        try {
-            System.out.println("Waiting for connection from server " + sI.getId());
-            sI.setTmServerSocket(new ServerSocket(sI.getTmPort()));
-
-            sI.setTmSocket(sI.getTmServerSocket().accept());
-            logMessage(sI.getId(), "Connected TM: "
-                    + sI.getTmSocket().getInetAddress() + ":"
-                    + sI.getTmSocket().getPort());
-        } catch (Exception e) {
-
-            e.printStackTrace();
+        if (conn.getLosSocket() != null) {
+            try {
+                conn.setConnected(false);
+                conn.getLosSocket().close();
+                conn.getLosServerSocket().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
+        if(simulator.getSimWindow() != null)
+            simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTING);
         try {
-            sI.setTcServerSocket(new ServerSocket(sI.getTcPort()));
-            sI.setTcSocket(sI.getTcServerSocket().accept());
-
-            logMessage(sI.getId(), "Connected TC: "
-                    + sI.getTcSocket().getInetAddress() + ":"
-                    + sI.getTcSocket().getPort());
-
+            log.info("Waiting for connection from server " + conn.getId());
+            conn.setTmServerSocket(new ServerSocket(conn.getTmPort()));
+            conn.setTmSocket(conn.getTmServerSocket().accept());
+            
+            Socket tmSocket = conn.getTmSocket();
+            logMessage(conn.getId(), "Connected TM: "
+                    + tmSocket.getInetAddress() + ":"
+                    + tmSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            sI.setLosServerSocket(new ServerSocket(sI.getLosPort()));
-            sI.setLosSocket(sI.getLosServerSocket().accept());
+            conn.setTcServerSocket(new ServerSocket(conn.getTcPort()));
+            conn.setTcSocket(conn.getTcServerSocket().accept());
 
-            logMessage(sI.getId(), "Connected TM DUMP: "
-                    + sI.getLosSocket().getInetAddress() + ":"
-                    + sI.getLosSocket().getPort());
-
+            Socket tcSocket = conn.getTcSocket();
+            log.info("Connected TC {}:{}", tcSocket.getInetAddress(), tcSocket.getPort());
+            logMessage(conn.getId(), "Connected TC: "
+                    + tcSocket.getInetAddress() + ":"
+                    + tcSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        if (sI.getTcSocket() != null && sI.getTmSocket() != null && sI.getLosSocket() != null) {
+        try {
+            conn.setLosServerSocket(new ServerSocket(conn.getLosPort()));
+            conn.setLosSocket(conn.getLosServerSocket().accept());
+            
+            Socket losSocket = conn.getLosSocket();
+            logMessage(conn.getId(), "Connected TM DUMP: "
+                    + losSocket.getInetAddress() + ":"
+                    + losSocket.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            sI.setConnected(true);
-            if(Simulator.simWindow != null)
-                Simulator.simWindow.setServerStatus(sI.getId(), ServerConnection.ConnectionStatus.CONNECTED);
+        if (conn.getTcSocket() != null && conn.getTmSocket() != null && conn.getLosSocket() != null) {
+            conn.setConnected(true);
+            if(simulator.getSimWindow() != null)
+                simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTED);
         }
     }
-
-    private static void logMessage(int serverId, String message)
-    {
-        System.out.println(message);
-        if(Simulator.simWindow != null)
-            Simulator.simWindow.addLog(serverId, message + "\n");
+    
+    private void logMessage(int serverId, String message) {
+        log.info(message);
+        if(simulator.getSimWindow() != null)
+            simulator.getSimWindow().addLog(serverId, message + "\n");
     }
-
-
-
-
 }

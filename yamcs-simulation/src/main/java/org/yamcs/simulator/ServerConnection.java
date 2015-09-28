@@ -1,8 +1,5 @@
 package org.yamcs.simulator;
 
-import org.yamcs.simulator.ui.SimWindow;
-
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
@@ -21,13 +18,13 @@ public class ServerConnection {
 	private boolean connected = false;
 	private boolean signalStatus = false;
 
-	private Socket tmSocket = null;
-	private Socket tcSocket = null;
-	private Socket losSocket = null;
+	private Socket tmSocket;
+	private Socket tcSocket;
+	private Socket losSocket;
 
-	private ServerSocket tmServerSocket = null;
-	private ServerSocket tcServerSocket = null;
-	private ServerSocket losServerSocket = null;
+	private ServerSocket tmServerSocket;
+	private ServerSocket tcServerSocket;
+	private ServerSocket losServerSocket;
 
 	private int tmPort;
 	private int tcPort;
@@ -35,8 +32,8 @@ public class ServerConnection {
 		
 	private int id;
 	
-	Queue<CCSDSPacket> tmQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);//no more than 100 pending commands
-	Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<CCSDSPacket>(1000);
+	Queue<CCSDSPacket> tmQueue = new ArrayBlockingQueue<>(1000);//no more than 100 pending commands
+	Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
 
 	public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
         this.id = id;
@@ -113,11 +110,11 @@ public class ServerConnection {
 		return tmQueue.remove();
 	}
 
-	public void setTmPacket(CCSDSPacket packet) {
+	public void queueTmPacket(CCSDSPacket packet) {
 		this.tmQueue.add(packet);
 	}
 	
-	public boolean checkTmQueue() {
+	public boolean isTmQueueEmpty() {
 		return tmQueue.isEmpty();
 	}
 	
@@ -130,7 +127,7 @@ public class ServerConnection {
 		this.tmDumpQueue.add(packet);
 	}
 	
-	public boolean checkTmDumpQueue() {
+	public boolean isTmDumpQueueEmpty() {
 		return tmDumpQueue.isEmpty();
 	}
 	
@@ -165,9 +162,4 @@ public class ServerConnection {
 	public void setLosPort(int losPort) {
 		this.losPort = losPort;
 	}
-
-
-
-
-
 }

@@ -1,0 +1,20 @@
+model: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
+
+# Should the User Interface be used
+ui: false
+
+# Alternance of AOS and LOS periods
+losAos: false 
+los_period_s: 60
+aos_period_s: 120
+
+# Listening ports, several Yamcs server are supported, telemetry is sent to both of them
+servers:
+    server1:
+        tmPort: 10015
+        tcPort: 10025
+        dumpPort: 10115
+#    server2:
+#        tmPort: 10045
+#        tcPort: 10055
+#        dumpPort: 10125

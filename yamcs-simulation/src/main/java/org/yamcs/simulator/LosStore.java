@@ -1,19 +1,21 @@
 package org.yamcs.simulator;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by msc on 29/05/15.
  */
 public class LosStore {
 
-    Simulator simulator;
+    Simulator simulation;
 
     Thread tLosAos  = null;
     static SignalClock losClock;
@@ -25,10 +27,10 @@ public class LosStore {
     int losStored = 0;
     Path path = null;
 
-    public LosStore(Simulator simulator)
+    public LosStore(Simulator simulator, SimulationConfiguration simConfig)
     {
-        this.simulator = simulator;
-        losClock = new SignalClock(Simulator.losPeriodS, Simulator.aosPeriodS);
+        this.simulation = simulator;
+        losClock = new SignalClock(simConfig.getLOSPeriod(), simConfig.getAOSPeriod());
     }
 
     public void startTriggeringLos()
@@ -54,12 +56,12 @@ public class LosStore {
         System.out.println("LOS/AOS started");
 
         while (triggerLos) {
-            if(!simulator.isLos){
+            if(!simulation.isLOS()) {
                 try {
                     System.out.println("Waiting for los trigger");
                     losClock.getLosSignal().acquire();
                     createLosDataFile();
-                    simulator.isLos = true;
+                    simulation.setLOS(true);
                     System.out.println("Acquired LOS");
                 } catch (InterruptedException e) {
                     System.out.println("Interrupted AOS period");
@@ -71,7 +73,7 @@ public class LosStore {
                     System.out.println("Waiting for end of los");
                     losClock.getAosSignal().acquire();
                     System.out.println("Aquired AOS");
-                    simulator.isLos = false;
+                    simulation.setLOS(false);
                     closeLosDataFile();
                 } catch (InterruptedException e1) {
                     System.out.println("Interrupted LOS period");
@@ -82,7 +84,7 @@ public class LosStore {
         }
         // set simulator to non LOS
         System.out.println("Stopping the triggering of LOS/AOS period");
-        simulator.isLos = false;
+        simulation.setLOS(false);
         closeLosDataFile();
     }
 
@@ -173,7 +175,7 @@ public class LosStore {
 
     public void tmPacketStore(CCSDSPacket packet) {
         try {
-            packet.send(losOs);
+            packet.writeTo(losOs);
         } catch (IOException e) {
             System.err.println("tmPacketStore : " + e);
         }
