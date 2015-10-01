@@ -266,7 +266,16 @@ public class LaunchAndLandingSimulator extends Simulator {
     
     private void dumpRecording(CCSDSPacket commandPacket) {
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
-        String fileName1 = new String(fileNameArray, 16, fileNameArray.length - 22);
+        int indexStartOfString = 16;
+        int indexEndOfString = indexStartOfString;
+        for(int i = indexStartOfString; i< fileNameArray.length; i++)
+        {
+            if(fileNameArray[i] == 0) {
+                indexEndOfString = i;
+                break;
+            }
+        }
+        String fileName1 = new String(fileNameArray, indexStartOfString, indexEndOfString - indexStartOfString);
         log.info("Command DUMP_RECORDING for file " + fileName1);
         dumpLosDataFile(fileName1);
     }

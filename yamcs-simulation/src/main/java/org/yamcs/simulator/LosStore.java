@@ -116,26 +116,31 @@ public class LosStore {
     public CCSDSPacket getLosNames(){
 
         CCSDSPacket losNamePacket = new CCSDSPacket(0, 2, 9);
-        File folder = new File(System.getProperty("user.dir") + "/losData/");
-        File[] listOfFiles = folder.listFiles();
+        try {
+            File folder = new File(System.getProperty("user.dir") + "/losData/");
+            File[] listOfFiles = folder.listFiles();
 
-        System.out.println("transmitLosNames " + listOfFiles.length);
+            System.out.println("transmitLosNames " + listOfFiles.length);
 
-        for (int i = 0; i < listOfFiles.length; i++) {
+            for (int i = 0; i < listOfFiles.length; i++) {
 
-            losNamePacket.appendUserDataBuffer(listOfFiles[i].getName().toString().getBytes());
-            //System.out.println("transmitLosNames, adding file " + listOfFiles[i].toString());
-            if(i < listOfFiles.length-1)
-                losNamePacket.appendUserDataBuffer(new String(" ").getBytes());
+                losNamePacket.appendUserDataBuffer(listOfFiles[i].getName().toString().getBytes());
+                //System.out.println("transmitLosNames, adding file " + listOfFiles[i].toString());
+                if (i < listOfFiles.length - 1)
+                    losNamePacket.appendUserDataBuffer(new String(" ").getBytes());
+            }
+
+            byte[] array = losNamePacket.getUserDataBuffer().array();
+            int arrayLength = array.length;
+            System.out.println("Recording names sent: " + new String(array, 16, arrayLength - 16));
+
+            // terminate string with 0
+            losNamePacket.appendUserDataBuffer(new byte[1]);
         }
-
-        byte[] array = losNamePacket.getUserDataBuffer().array();
-        int arrayLength = array.length;
-        System.out.println("Recording names sent: " + new String(array, 16, arrayLength-16));
-
-        // terminate string with 0
-        losNamePacket.appendUserDataBuffer(new byte[1]);
-
+        catch (Exception e)
+        {
+            System.out.println("Unable to get los recordings: " + e.getMessage());
+        }
         return losNamePacket;
     }
 

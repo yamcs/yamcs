@@ -62,7 +62,7 @@ public class SimWindow {
      */
     private void initialize(int nbServerNodes) {
         setFrame(new JFrame());
-        frame.setTitle("YAS - Yet Another Simulator");
+        frame.setTitle("YSS - Yamcs Simulation System");
         getFrame().setBounds(100, 100, 795, 474);
         getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
