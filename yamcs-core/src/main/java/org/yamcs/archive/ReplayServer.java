@@ -48,7 +48,7 @@ public class ReplayServer extends AbstractService {
         if(replayCount.get()>=MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
-        log.debug("Creating a replay for time: [{}, {})", TimeEncoding.toString(replayRequest.getStart()), TimeEncoding.toString(replayRequest.getStop()));
+
         if( Privilege.usePrivileges ) {
             Privilege priv = Privilege.getInstance();
 

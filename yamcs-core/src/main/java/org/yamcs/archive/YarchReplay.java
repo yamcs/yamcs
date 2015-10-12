@@ -100,6 +100,10 @@ public class YarchReplay implements StreamSubscriber {
             b.setStop(TimeEncoding.parse(newRequest.getUtcStop()));
         }
         newRequest  = b.build();
+
+        log.debug("Replay request for time: [{}, {}]",
+                (newRequest.hasStart() ? TimeEncoding.toString(newRequest.getStart()) : null),
+                (newRequest.hasStop() ? TimeEncoding.toString(newRequest.getStop()) : null));
         
         if (newRequest.getStart()>newRequest.getStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
