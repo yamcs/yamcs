@@ -49,7 +49,6 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
     void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "display-app.html");
-            return;
         } else if (remainingUri.contains("/")){
             sendError(ctx, BAD_REQUEST);
         } else if("listDisplays".equals(remainingUri)) {
@@ -113,7 +112,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
     
     private static class Path {
         int index=0;
-        ArrayList<String> list=new ArrayList<String>();
+        ArrayList<String> list=new ArrayList<>();
         public void push(String name) {
             list.add(name);
         }

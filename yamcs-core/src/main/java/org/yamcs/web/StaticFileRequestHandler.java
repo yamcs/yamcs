@@ -1,20 +1,9 @@
 package org.yamcs.web;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelProgressiveFuture;
-import io.netty.channel.ChannelProgressiveFutureListener;
-import io.netty.channel.DefaultFileRegion;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedFile;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,16 +23,28 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelProgressiveFuture;
+import io.netty.channel.ChannelProgressiveFutureListener;
+import io.netty.channel.DefaultFileRegion;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedFile;
 
 
 public class StaticFileRequestHandler extends AbstractRequestHandler {
     public static String WEB_Root;
     static MimetypesFileTypeMap mimeTypesMap;
     public static final int HTTP_CACHE_SECONDS = 60;
+    private static boolean zeroCopyEnabled = true;
     
     final static Logger log=LoggerFactory.getLogger(StaticFileRequestHandler.class.getName());
     
@@ -55,7 +56,11 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
     		throw new ConfigurationException("Cannot find the mime.types file in the classpath");
     	}
     	mimeTypesMap=new MimetypesFileTypeMap(is);
-    	WEB_Root=YConfiguration.getConfiguration("yamcs").getString("webRoot");
+        YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
+    	WEB_Root=yconfig.getString("webRoot");
+    	if (yconfig.containsKey("zeroCopyEnabled")) {
+            zeroCopyEnabled = yconfig.getBoolean("zeroCopyEnabled");
+        }
     }
     
     void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String path) throws Exception {
@@ -115,7 +120,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         // Write the content.
         ChannelFuture sendFileFuture;
         ChannelFuture lastContentFuture;
-        if ((ctx.pipeline().get(SslHandler.class) == null)) {
+        if (zeroCopyEnabled && ctx.pipeline().get(SslHandler.class) == null) {
             sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
@@ -205,6 +210,11 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         
     private String sanitizePath(String path) {
         path = path.replace('/', File.separatorChar);
+
+        int qsIndex = path.indexOf('?');
+        if (qsIndex != -1) {
+            path = path.substring(0, qsIndex);
+        }
 
         if (path.contains(File.separator + ".") ||
             path.contains("." + File.separator) ||
