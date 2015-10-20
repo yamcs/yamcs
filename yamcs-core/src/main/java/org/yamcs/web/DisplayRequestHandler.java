@@ -48,8 +48,8 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 
     void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "display-app.html");
-        } else if (remainingUri.contains("/")){
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
+        } else if (remainingUri.contains("/")) {
             sendError(ctx, BAD_REQUEST);
         } else if("listDisplays".equals(remainingUri)) {
             handleListDisplays(ctx, req, yamcsInstance);
