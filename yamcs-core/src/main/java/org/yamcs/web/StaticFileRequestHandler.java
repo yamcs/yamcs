@@ -10,9 +10,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -41,7 +43,7 @@ import io.netty.handler.stream.ChunkedFile;
 
 
 public class StaticFileRequestHandler extends AbstractRequestHandler {
-    public static String WEB_Root;
+    public static List<String> WEB_Roots = new ArrayList<>();
     static MimetypesFileTypeMap mimeTypesMap;
     public static final int HTTP_CACHE_SECONDS = 60;
     private static boolean zeroCopyEnabled = true;
@@ -49,16 +51,26 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
     final static Logger log=LoggerFactory.getLogger(StaticFileRequestHandler.class.getName());
     
     public static void init() throws ConfigurationException {
-    	if(mimeTypesMap!=null) return;
-    	
-    	InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
-    	if(is==null) {
-    		throw new ConfigurationException("Cannot find the mime.types file in the classpath");
-    	}
-    	mimeTypesMap=new MimetypesFileTypeMap(is);
+        if(mimeTypesMap!=null) return;
+    
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
+        if(is==null) {
+            throw new ConfigurationException("Cannot find the mime.types file in the classpath");
+        }
+        mimeTypesMap=new MimetypesFileTypeMap(is);
+        
         YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
-    	WEB_Root=yconfig.getString("webRoot");
-    	if (yconfig.containsKey("zeroCopyEnabled")) {
+        if (yconfig.isList("webRoot")) {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            List<String> roots = (List) yconfig.getList("webRoot");
+            for (String root : roots) {
+                WEB_Roots.add(root);
+            }
+        } else {
+            WEB_Roots.add(yconfig.getString("webRoot"));
+        }
+        
+        if (yconfig.containsKey("zeroCopyEnabled")) {
             zeroCopyEnabled = yconfig.getBoolean("zeroCopyEnabled");
         }
     }
@@ -70,10 +82,19 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             sendError(ctx, FORBIDDEN);
             return;
         }
+        
+        File file = null;
+        boolean match = false;
+        for (String webRoot : WEB_Roots) { // Stop on first match
+            file = new File(webRoot + File.separator + path);
+            if (!file.isHidden() && file.exists()) {
+                match = true;
+                break;
+            }
+        }
 
-        final File file = new File(path);
-        if (file.isHidden() || !file.exists()) {
-            log.warn("{} does not exist or is hidden", file.toString());
+        if (!match) {
+            log.warn("{} does not exist or is hidden. Searched under {}", path, WEB_Roots);
             sendError(ctx, NOT_FOUND);
             return;
         }
@@ -133,6 +154,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
 
+        final File finalFile = file;
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
@@ -145,7 +167,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                log.debug(future.channel() + " Transfer complete: " +file);
+                log.debug(future.channel() + " Transfer complete: " +finalFile);
             }
         });
 
@@ -222,7 +244,6 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             return null;
         }
 
-        // Convert to absolute path.
-        return WEB_Root + File.separator + path;
+        return path;
     }
 }
