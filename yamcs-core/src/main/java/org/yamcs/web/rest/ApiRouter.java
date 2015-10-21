@@ -28,12 +28,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.protostuff.JsonIOUtil;
 
 /**
- * Handles everything under /api. In the future could also be used to handle multiple versions,
- * if ever needed. (e.g. /api/v2).
+ * Routes any REST API calls to their final request handler.
  */
-public class ApiRequestHandler extends AbstractRequestHandler {
+public class ApiRouter extends AbstractRequestHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ApiRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ApiRouter.class);
     public static final String ARCHIVE_PATH = "archive";
     public static final String MDB_PATH = "mdb";
     public static final String COMMANDING_PATH = "commanding";
@@ -67,7 +66,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
      * @param yamcsInstance
      *            already parsed from the path by the HttpSocketServerHandler
      * @param remainingUri
-     *            the remaining path without the <tt>/(instance)/api</tt> bit
+     *            the remaining path without the <tt>/(instance)</tt> bit
      */
     public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, String yamcsInstance, String remainingUri, AuthenticationToken authToken) {
         if (remainingUri == null) {
@@ -82,7 +81,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
         }
         
         RestRequest req = new RestRequest(ctx, httpRequest, yamcsInstance, authToken, jsonFactory);
-        int handlerOffset = 3; // Relative to 'full' original path. 0-> '', 1 -> instance, 2 -> 'api', 3 -> handler 
+        int handlerOffset = 2; // Relative to 'full' original path. 0 -> '', 1 -> instance, 2 -> handler 
         try {
             switch (req.getPathSegment(handlerOffset)) {
             case ARCHIVE_PATH:

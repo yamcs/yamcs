@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Hashtable;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -21,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.web.rest.ApiRequestHandler;
+import org.yamcs.web.rest.ApiRouter;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -40,6 +39,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
+
 /**
  * Handles handshakes and messages
  */
@@ -53,7 +53,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
-    static ApiRequestHandler apiRequestHandler=new ApiRequestHandler();
+    static ApiRouter apiRouter=new ApiRouter();
     static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
     WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
     
@@ -131,11 +131,8 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
-        } else if(API_PATH.equals(handler)) {
-            apiRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else {
-        	log.warn("Unknown handler {}", handler);
-        	sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+            apiRouter.handleRequest(ctx, req, yamcsInstance, path[2], authToken);
         }
     }
     
@@ -168,7 +165,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
 
     // This method checks the user information sent in the Authorization
     // header against the database of users maintained in the users Hashtable.
-    Hashtable validUsers = new Hashtable();
+    //Hashtable validUsers = new Hashtable();
     protected UsernamePasswordToken extractAuthenticationToken(String auth) throws IOException {
         if(auth == null)
         {
