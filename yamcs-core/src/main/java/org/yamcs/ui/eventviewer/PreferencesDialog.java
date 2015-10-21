@@ -1,49 +1,31 @@
-/**
- * 
- */
 package org.yamcs.ui.eventviewer;
 
-import javax.swing.JPanel;
-
-import java.awt.CheckboxMenuItem;
-import java.awt.Frame;
 import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.Window;
-
-import javax.swing.JDialog;
-import java.awt.Dimension;
-import javax.swing.JTabbedPane;
-import java.awt.GridBagConstraints;
-
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-
-import org.yamcs.protobuf.Yamcs.Event;
-
-import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Vector;
+
+import javax.swing.BoxLayout;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 /**
  * Preferences dialog under Edit->Preferences menu. Dialog is modal.
@@ -412,6 +394,7 @@ public class PreferencesDialog extends JDialog implements ActionListener
         if (filteredTable == null)
         {
             filteredTable = new JTable(eventViewer.getFilteringRulesTable()) {
+                @Override
                 public boolean isCellEditable(int row, int column)
                 {
                     return true;

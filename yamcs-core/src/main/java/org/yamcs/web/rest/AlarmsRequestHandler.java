@@ -8,11 +8,11 @@ import org.yamcs.YProcessor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
+import org.yamcs.protobuf.Alarms.AcknowledgeAlarmRequest;
+import org.yamcs.protobuf.Alarms.AcknowledgeAlarmResponse;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Rest.AcknowledgeAlarmRequest;
-import org.yamcs.protobuf.Rest.AcknowledgeAlarmResponse;
-import org.yamcs.protobuf.Rest.GetAlarmsResponse;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Alarms.GetAlarmsResponse;
+import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 
@@ -81,7 +81,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
             alarmb.setViolations(entry.getValue().violations);
             responseb.addAlarms(alarmb);
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.GetAlarmsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaAlarms.GetAlarmsResponse.WRITE);
     }
     
     /**
@@ -94,7 +94,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
             throw new BadRequestException("Alarms are not enabled for this instance");
         }
         
-        AcknowledgeAlarmRequest request = req.bodyAsMessage(SchemaRest.AcknowledgeAlarmRequest.MERGE).build();
+        AcknowledgeAlarmRequest request = req.bodyAsMessage(SchemaAlarms.AcknowledgeAlarmRequest.MERGE).build();
         
         AcknowledgeAlarmResponse.Builder responseb = AcknowledgeAlarmResponse.newBuilder();
         AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
@@ -105,6 +105,6 @@ public class AlarmsRequestHandler implements RestRequestHandler {
             log.debug("Did not acknowledge alarm " + alarmId + ". " + e.getMessage());
             responseb.setErrorMessage(e.getMessage());
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.AcknowledgeAlarmResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaAlarms.AcknowledgeAlarmResponse.WRITE);
     }
 }

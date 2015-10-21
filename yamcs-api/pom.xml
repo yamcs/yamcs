@@ -38,6 +38,17 @@
 								</property>
 							</options>
 						</protoModule>
+                        <protoModule>
+                            <source>src/main/archive.proto</source>
+                            <outputDir>src/main/java</outputDir>
+                            <output>java_v2protoc_schema</output>
+                            <encoding>UTF-8</encoding>
+                            <options>
+                                <property>
+                                    <name>generate_field_map</name>
+                                </property>
+                            </options>
+                        </protoModule>
 						<protoModule>
 							<source>src/main/pvalue.proto</source>
 							<outputDir>src/main/java</outputDir>
@@ -49,6 +60,17 @@
 								</property>
 							</options>
 						</protoModule>
+                        <protoModule>
+                            <source>src/main/parameters.proto</source>
+                            <outputDir>src/main/java</outputDir>
+                            <output>java_v2protoc_schema</output>
+                            <encoding>UTF-8</encoding>
+                            <options>
+                                <property>
+                                    <name>generate_field_map</name>
+                                </property>
+                            </options>
+                        </protoModule>
 						<protoModule>
 							<source>src/main/alarms.proto</source>
 							<outputDir>src/main/java</outputDir>
@@ -83,18 +105,7 @@
                             </options>
                         </protoModule>
 						<protoModule>
-							<source>src/main/rest.proto</source>
-							<outputDir>src/main/java</outputDir>
-							<output>java_v2protoc_schema</output>
-							<encoding>UTF-8</encoding>
-							<options>
-								<property>
-									<name>generate_field_map</name>
-								</property>
-							</options>
-						</protoModule>
-						<protoModule>
-							<source>src/main/websocket.proto</source>
+							<source>src/main/web.proto</source>
 							<outputDir>src/main/java</outputDir>
 							<output>java_v2protoc_schema</output>
 							<encoding>UTF-8</encoding>

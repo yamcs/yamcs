@@ -8,8 +8,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Rest.RestExceptionMessage;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaWeb;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.AbstractRequestHandler;
@@ -146,7 +146,7 @@ public class ApiRequestHandler extends AbstractRequestHandler {
                 ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
                 ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
                 JsonGenerator generator = req.createJsonGenerator(channelOut);
-                JsonIOUtil.writeTo(generator, toException(t).build(), SchemaRest.RestExceptionMessage.WRITE, false);
+                JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
                 generator.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627

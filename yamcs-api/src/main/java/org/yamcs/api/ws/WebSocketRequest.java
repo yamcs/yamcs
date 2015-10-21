@@ -1,16 +1,16 @@
 package org.yamcs.api.ws;
 
+import java.io.IOException;
+
+import org.yamcs.protobuf.Web.WebSocketClientMessage;
+
+import com.google.protobuf.Message;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-
-import java.io.IOException;
-
-import org.yamcs.protobuf.Websocket.WebSocketClientMessage;
-
-import com.google.protobuf.Message;
 
 
 /**

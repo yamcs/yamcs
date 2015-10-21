@@ -24,19 +24,19 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
+import org.yamcs.protobuf.Archive.DumpArchiveRequest;
+import org.yamcs.protobuf.Archive.DumpArchiveResponse;
+import org.yamcs.protobuf.Archive.GetTagsRequest;
+import org.yamcs.protobuf.Archive.GetTagsResponse;
+import org.yamcs.protobuf.Archive.InsertTagRequest;
+import org.yamcs.protobuf.Archive.InsertTagResponse;
+import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.GetTagsRequest;
-import org.yamcs.protobuf.Rest.GetTagsResponse;
-import org.yamcs.protobuf.Rest.InsertTagRequest;
-import org.yamcs.protobuf.Rest.InsertTagResponse;
-import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
-import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
-import org.yamcs.protobuf.Rest.UpdateTagRequest;
+import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
@@ -139,8 +139,8 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      * is true).
      */
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
-       // req.assertGET();
-        RestDumpArchiveRequest request = req.bodyAsMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
+        // req.assertGET();
+        DumpArchiveRequest request = req.bodyAsMessage(SchemaArchive.DumpArchiveRequest.MERGE).build();
 
         // Check if a profile has been specified in the request
         // Currently, profiles apply only for Parameter requests
@@ -256,7 +256,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
                 break;
             }
 
-            RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+            DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
             ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
             if (dataType == null) {
                 log.trace("Ignoring hornetq message of type null");
@@ -307,13 +307,13 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     private RestResponse writeAggregatedResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
     throws RestException, HornetQException, YamcsApiException {
         int sizeEstimate = 0;
-        RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+        DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
         while(true) {
             ClientMessage msg = msgClient.dataConsumer.receive();
 
             if (Protocol.endOfStream(msg)) {
                 log.trace("All done. Send to client");
-                return new RestResponse(req, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
+                return new RestResponse(req, builder.build(), SchemaArchive.DumpArchiveResponse.WRITE);
             }
 
             ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
@@ -346,7 +346,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         }
     }
 
-    private static void mergeMessage(ProtoDataType dataType, MessageLite message, RestDumpArchiveResponse.Builder builder) throws YamcsApiException {
+    private static void mergeMessage(ProtoDataType dataType, MessageLite message, DumpArchiveResponse.Builder builder) throws YamcsApiException {
         switch (dataType) {
             case PARAMETER:
                 builder.addParameterData((ParameterData) message);
@@ -425,7 +425,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         
         // Check any additional options
         if (req.hasBody()) {
-            GetTagsRequest request = req.bodyAsMessage(SchemaRest.GetTagsRequest.MERGE).build();
+            GetTagsRequest request = req.bodyAsMessage(SchemaArchive.GetTagsRequest.MERGE).build();
             if (request.hasStart()) interval.setStart(request.getStart());
             if (request.hasStop()) interval.setStop(request.getStop());
         }
@@ -445,7 +445,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.GetTagsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaArchive.GetTagsResponse.WRITE);
     }
     
     /**
@@ -456,7 +456,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);
-        InsertTagRequest request = req.bodyAsMessage(SchemaRest.InsertTagRequest.MERGE).build();
+        InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
         
@@ -478,7 +478,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         // Echo back the tag, with its new ID
         InsertTagResponse.Builder responseb = InsertTagResponse.newBuilder();
         responseb.setTag(newTag);
-        return new RestResponse(req, responseb.build(), SchemaRest.InsertTagResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaArchive.InsertTagResponse.WRITE);
     }
     
     /**
@@ -488,7 +488,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);
-        UpdateTagRequest request = req.bodyAsMessage(SchemaRest.UpdateTagRequest.MERGE).build();
+        UpdateTagRequest request = req.bodyAsMessage(SchemaArchive.UpdateTagRequest.MERGE).build();
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
         if (!request.hasName())

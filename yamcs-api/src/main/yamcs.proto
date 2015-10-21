@@ -25,7 +25,7 @@ message YamcsInstances {
 message YamcsInstance {
     required string name=1;
     //repeated MessagingAddress address=2; //removed 5-Mar-2012
-    optional MissionDatabase missionDatabase=3; 
+    optional MissionDatabase missionDatabase=3;
 }
 
 message MissionDatabase {
@@ -78,7 +78,7 @@ service YamcsControl {
 // if namespace is set, then the corresponding alias is looked up
 message NamedObjectId {
   required string name=1;
-  optional string namespace=2; 
+  optional string namespace=2;
 }
 
 message NamedObjectList {
@@ -112,11 +112,11 @@ message IndexRequest {
    //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
    optional string utcStart = 14;
    optional string utcStop = 15;
-   
+
    //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
    //if not specified, the fully qualified canonical names will be sent
    optional string defaultNamespace=4;
-  
+
    //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
    optional bool sendAllTm=5[default=false];
    repeated NamedObjectId tmPacket=6;
@@ -134,7 +134,7 @@ message IndexRequest {
    //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
    optional bool sendAllEvent = 12 [default=false];
    repeated NamedObjectId eventSource = 13;
-  
+
 }
 
 //contains histogram data
@@ -155,31 +155,32 @@ optional string tableName=4;
 }
 
 message TagRequest {
-required string instance=1;
-optional int64 start=2;
-optional int64 stop=3;
+  required string instance=1;
+  optional int64 start=2;
+  optional int64 stop=3;
 }
+
 message ArchiveTag {
-optional int32 id=1;
-required string name=2;
-optional int64 start=3;
-optional int64 stop=4;
-optional string description=5;
-optional string color=6;
+  optional int32 id=1;
+  required string name=2;
+  optional int64 start=3;
+  optional int64 stop=4;
+  optional string description=5;
+  optional string color=6;
 }
 
 message TagResult {
-required string instance=1;
-repeated ArchiveTag tag=2;
+  required string instance=1;
+  repeated ArchiveTag tag=2;
 }
 
 //insert (if no oldTag) or update tag
 message UpsertTagRequest {
-optional ArchiveTag oldTag=1;
-required ArchiveTag newTag=2;
+  optional ArchiveTag oldTag=1;
+  required ArchiveTag newTag=2;
 }
 message DeleteTagRequest {
-required ArchiveTag tag=3;
+  required ArchiveTag tag=3;
 }
 
 /************************ Replay Service ****************/
@@ -200,7 +201,7 @@ service Replay {
 }
 */
 enum EndAction {
-    LOOP=1; 
+    LOOP=1;
     QUIT=2;
     STOP=3;
 }
@@ -240,7 +241,7 @@ message ReplayRequest {
     //time specification
     optional int64 start=1;
     optional int64 stop=2;
-   
+
     //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
     optional string utcStart = 13;
     optional string utcStop = 14;
@@ -250,7 +251,7 @@ message ReplayRequest {
 
     //how fast the replay should go
     optional ReplaySpeed speed=4;
-    
+
     // At least one of the following request types should be added
     optional ParameterReplayRequest parameterRequest=8;
     optional PacketReplayRequest packetRequest=9;
@@ -303,34 +304,63 @@ message TmPacketData {
     optional NamedObjectId id = 5;
 }
 
-message Event {
-    required string source          = 1;
-    required int64  generationTime  = 2;
-    required int64  receptionTime   = 3;
-    required int32  seqNumber      = 4;
-    optional string type            = 5;
-    required string message         = 6;
-    enum EventSeverity {INFO=0; WARNING=1; ERROR=2;};
-    optional EventSeverity  severity      = 7[default=INFO];
-    extensions 100 to 10000;
-}
-
 message ColumnValue {
-    optional string columnName = 1;
-    optional Value value = 2;
+  optional string columnName = 1;
+  optional Value value = 2;
 }
 
 message StreamData {
-    optional string stream = 1;
-    repeated ColumnValue columnValue = 2;
+  optional string stream = 1;
+  repeated ColumnValue columnValue = 2;
 }
 
 message StreamSubscribeRequest {
-    optional string stream = 1;
-    //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
 }
 
 message TimeInfo {
-   optional int64 currentTime = 1;
-   optional string currentTimeUTC = 2;
+  optional int64 currentTime = 1;
+  optional string currentTimeUTC = 2;
+}
+
+message UserAuthorizationInfo{
+  repeated string roles = 1;
+  repeated string tmParaPrivileges = 2;
+  repeated string tmParaSetPrivileges = 3;
+  repeated string tmPacketPrivileges = 4;
+  repeated string tcPrivileges = 5;
+  repeated string systemPrivileges = 6;
+}
+
+message ListAuthorizationsResponse {
+  optional UserAuthorizationInfo userAuthorizationInfo = 1;
+}
+
+message SetSimulationTimeRequest {
+  //one of the two have to be specified
+  optional int64 time0 = 1;
+  optional string time0UTC = 2;
+  optional int64 simElapsedTime =3;
+  optional double simSpeed = 4;
+}
+
+message DumpRawMdbResponse {
+  optional bytes rawMdb=2;
+}
+
+message Event {
+  enum EventSeverity {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+  };
+  required string source = 1;
+  required int64 generationTime = 2;
+  required int64 receptionTime = 3;
+  required int32 seqNumber = 4;
+  optional string type = 5;
+  required string message = 6;
+  optional EventSeverity severity = 7[default=INFO];
+  extensions 100 to 10000;
 }

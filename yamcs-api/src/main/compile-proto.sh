@@ -7,8 +7,9 @@ protoc --java_out=java commanding.proto
 protoc --java_out=java events.proto
 protoc --java_out=java yamcsManagement.proto
 protoc --java_out=java comp.proto
-protoc --java_out=java rest.proto
-protoc --java_out=java websocket.proto
+protoc --java_out=java archive.proto
+protoc --java_out=java parameters.proto
+protoc --java_out=java web.proto
 
 
 #protostuff is handled from maven with

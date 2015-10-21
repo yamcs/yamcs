@@ -82,4 +82,26 @@ message CommandHistoryEntry {
     repeated CommandHistoryAttribute attr = 3 ;
 }
 
+message ArgumentType {
+  optional string name = 1;
+  optional string value = 2;
+}
 
+message CommandType {
+  optional string origin = 1;
+  optional int32 sequenceNumber = 2;
+  optional yamcs.NamedObjectId id = 3;
+  repeated ArgumentType arguments = 4;
+}
+
+message ValidateCommandRequest {
+  repeated CommandType commands = 1;
+}
+
+message ValidateCommandResponse {
+  repeated CommandSignificance commandsSignificance = 1;
+}
+
+message SendCommandRequest {
+  repeated CommandType commands = 1;
+}

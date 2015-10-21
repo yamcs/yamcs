@@ -1,22 +1,19 @@
 package org.yamcs.web.rest;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Rest;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
+import java.util.Arrays;
+
+import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Yamcs.ListAuthorizationsResponse;
+import org.yamcs.protobuf.Yamcs.UserAuthorizationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
-
-import java.util.Arrays;
 
 /**
  * Handles incoming requests related to the Authorisations
  */
 public class AuthorizationRequestHandler implements RestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationRequestHandler.class);
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException{
@@ -25,23 +22,22 @@ public class AuthorizationRequestHandler implements RestRequestHandler {
             throw new NotFoundException(req);
         }
         
-        Rest.RestListAuthorisationsResponse  rlar = listAuthorisations(req.authToken);
-        return new RestResponse(req, rlar, SchemaRest.RestListAuthorisationsResponse.WRITE);
+        ListAuthorizationsResponse  rlar = listAuthorizations(req.authToken);
+        return new RestResponse(req, rlar, SchemaYamcs.ListAuthorizationsResponse.WRITE);
     }
 
     /**
      * Sends list of authorizations
      */
-    private Rest.RestListAuthorisationsResponse listAuthorisations(AuthenticationToken authToken) throws RestException {
-        Rest.RestListAuthorisationsResponse.Builder responseb = Rest.RestListAuthorisationsResponse.newBuilder();
+    private ListAuthorizationsResponse listAuthorizations(AuthenticationToken authToken) throws RestException {
+        ListAuthorizationsResponse.Builder responseb = ListAuthorizationsResponse.newBuilder();
 
         User user = Privilege.getInstance().getUser(authToken);
         if(user == null) {
-
-            return buildFullAuthoriztion(responseb);
+            return buildFullAuthorization(responseb);
         }
 
-        Rest.UserAuthorizationsInfo.Builder userAuthorizationsInfob = Rest.UserAuthorizationsInfo.newBuilder();
+        UserAuthorizationInfo.Builder userAuthorizationsInfob = UserAuthorizationInfo.newBuilder();
         userAuthorizationsInfob.addAllRoles(Arrays.asList(user.getRoles()));
         userAuthorizationsInfob.addAllTmParaPrivileges(user.getTmParaPrivileges());
         userAuthorizationsInfob.addAllTmParaSetPrivileges(user.getTmParaSetPrivileges());
@@ -49,13 +45,13 @@ public class AuthorizationRequestHandler implements RestRequestHandler {
         userAuthorizationsInfob.addAllTcPrivileges(user.getTcPrivileges());
         userAuthorizationsInfob.addAllSystemPrivileges(user.getSystemPrivileges());
 
-        responseb.setUserAuthorizationsInfo(userAuthorizationsInfob.build());
+        responseb.setUserAuthorizationInfo(userAuthorizationsInfob.build());
         return responseb.build();
     }
 
 
-    private Rest.RestListAuthorisationsResponse buildFullAuthoriztion(Rest.RestListAuthorisationsResponse.Builder responseb) {
-        Rest.UserAuthorizationsInfo.Builder userAuthorizationsInfob = Rest.UserAuthorizationsInfo.newBuilder();
+    private ListAuthorizationsResponse buildFullAuthorization(ListAuthorizationsResponse.Builder responseb) {
+        UserAuthorizationInfo.Builder userAuthorizationsInfob = UserAuthorizationInfo.newBuilder();
         userAuthorizationsInfob.addRoles("admin");
         userAuthorizationsInfob.addTmParaPrivileges(".*");
         userAuthorizationsInfob.addTmParaSetPrivileges(".*");
@@ -64,9 +60,7 @@ public class AuthorizationRequestHandler implements RestRequestHandler {
         for(Privilege.SystemPrivilege sp : Privilege.SystemPrivilege.values()) {
             userAuthorizationsInfob.addSystemPrivileges(sp.name());
         }
-        responseb.setUserAuthorizationsInfo(userAuthorizationsInfob.build());
+        responseb.setUserAuthorizationInfo(userAuthorizationsInfob.build());
         return responseb.build();
     }
-
-
 }

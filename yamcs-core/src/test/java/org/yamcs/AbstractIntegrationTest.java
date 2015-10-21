@@ -24,13 +24,13 @@ import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.Alarm;
+import org.yamcs.protobuf.Commanding.ArgumentType;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Rest.RestArgumentType;
-import org.yamcs.protobuf.Rest.RestCommandType;
-import org.yamcs.protobuf.Rest.RestSendCommandRequest;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Commanding.CommandType;
+import org.yamcs.protobuf.Commanding.SendCommandRequest;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -111,20 +111,18 @@ public abstract class AbstractIntegrationTest {
         org.yamcs.yarch.management.ManagementService.setup(false);
         YamcsServer.setupHornet();
         YamcsServer.setupYamcsServer();
-
     }
 
 
-    RestSendCommandRequest getCommand(String cmdName, int seq, String... args) {
+    SendCommandRequest getCommand(String cmdName, int seq, String... args) {
         NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
 
-        RestCommandType.Builder cmdb = RestCommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
+        CommandType.Builder cmdb = CommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
         for(int i =0 ;i<args.length; i+=2) {
-            cmdb.addArguments(RestArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+            cmdb.addArguments(ArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
         }
 
-        return RestSendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
-
+        return SendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
     }
 
     @After

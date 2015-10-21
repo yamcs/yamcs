@@ -3,8 +3,8 @@ package org.yamcs.time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Yamcs.SetSimulationTimeRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.NotFoundException;
 import org.yamcs.web.rest.RestException;
@@ -88,7 +88,7 @@ public class SimulationTimeService implements TimeService {
 
         
         private void setSimTime(RestRequest req, SimulationTimeService sts) throws RestException {
-            RestSetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.RestSetSimulationTimeRequest.MERGE).build();
+            SetSimulationTimeRequest request = req.bodyAsMessage(SchemaYamcs.SetSimulationTimeRequest.MERGE).build();
             
             if(request.hasTime0()) {
                 sts.setTime0(request.getTime0());
@@ -103,12 +103,6 @@ public class SimulationTimeService implements TimeService {
             if(request.hasSimElapsedTime()) {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
-            
-            
         }
     }
-
-
-
-
 }

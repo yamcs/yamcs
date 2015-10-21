@@ -3,10 +3,10 @@ package org.yamcs.web.rest;
 import java.util.Set;
 
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
+import org.yamcs.protobuf.YamcsManagement.ListClientsResponse;
 
 /**
  * /(instance)/api/management
@@ -33,6 +33,6 @@ public class ManagementRequestHandler implements RestRequestHandler {
         for (ClientInfo client : clients) {
             responseb.addClientInfo(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaYamcsManagement.ListClientsResponse.WRITE);
     }
 }

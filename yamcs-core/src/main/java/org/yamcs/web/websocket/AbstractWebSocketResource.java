@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
 import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.security.AuthenticationToken;
 
 /**

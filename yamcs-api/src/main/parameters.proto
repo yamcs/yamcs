@@ -1,0 +1,89 @@
+package parameters;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+
+enum DataSource {
+  TELEMETERED = 0;
+  DERIVED = 1;
+  CONSTANT = 2;
+  LOCAL = 3;
+  SYSTEM = 4;
+  COMMAND = 5;
+  COMMAND_HISTORY = 6;
+}
+
+message ListAvailableParametersRequest {
+  repeated string namespaces = 1; // if not available, all the namespaces
+}
+
+message ListAvailableParametersResponse {
+  repeated ParameterSummary parameters = 1;
+}
+
+message ParameterSummary {
+  optional yamcs.NamedObjectId id = 1;
+  optional DataSource dataSource = 2;
+}
+
+message GetParameterRequest {
+  repeated yamcs.NamedObjectId list = 1;
+  optional bool fromCache = 2;
+  optional uint64 timeout = 3; //if not from cache, wait this time (in milliseconds) to receive the parameter
+}
+
+message GetParameterInfoRequest {
+  repeated yamcs.NamedObjectId list = 1;
+}
+
+message UnitInfo {
+  optional string unit = 1;
+}
+
+enum AlarmLevel {
+  normal = 0;
+  watch = 1;
+  warning =  2;
+  distress = 3;
+  critical = 4;
+  severe = 5;
+}
+
+message AlarmRange {
+  optional AlarmLevel level = 1;
+  optional double minInclusive = 2;
+  optional double maxInclusive = 3;
+
+  //TODO show here also the integer value of the enumeration
+  optional string enumerationValue = 4;
+}
+
+message AlarmInfo {
+  optional int32 minViolations = 1;
+  repeated AlarmRange staticAlarmRanges = 2;
+}
+
+message ParameterTypeInfo {
+  optional string engType = 1;
+  optional string dataEncoding = 2; //TODO
+  repeated UnitInfo unitSet = 3;
+  optional AlarmInfo defaultAlarm = 4;
+}
+
+message NameDescriptionType {
+  optional string qualifiedName = 1;
+  optional string shortDescription = 2;
+  optional string longDescription = 3;
+  repeated yamcs.NamedObjectId aliases = 4;
+}
+
+message ParameterInfo {
+  optional yamcs.NamedObjectId id = 1;
+  optional NameDescriptionType description = 2;
+  optional ParameterTypeInfo type = 3;
+  optional string dataSource = 4;
+}
+
+message GetParameterInfoResponse {
+  repeated ParameterInfo pinfo = 1;
+}

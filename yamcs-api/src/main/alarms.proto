@@ -28,3 +28,15 @@ message Alarm {
    optional uint32 violations = 6;
    optional AcknowledgeInfo acknowledgeInfo = 7;
 }
+
+message GetAlarmsResponse {
+   repeated Alarm alarms = 1;
+}
+
+message AcknowledgeAlarmRequest {
+   optional string message = 1;
+}
+
+message AcknowledgeAlarmResponse {
+   optional string errorMessage = 1;
+}

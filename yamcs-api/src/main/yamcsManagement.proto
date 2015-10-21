@@ -17,20 +17,20 @@ enum ServiceState {
 }
 
 /************** Yamcs Processor Control service *********************/
-/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
+/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address.
  * There is also a queue with the same name containing the last values
  * The name of the events are yProcessorUpdated (means added or updated),
  * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
 message ProcessorInfo {
-    required string instance=1;//yamcs instance 
+    required string instance=1;//yamcs instance
     required string name=2;
     optional string type=3;
     optional string spec=4;
     optional string creator=5;
     optional bool hasCommanding=6;
     optional ServiceState state=7;
-    optional yamcs.ReplayRequest replayRequest=8; //in case of replay 
-    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay 
+    optional yamcs.ReplayRequest replayRequest=8; //in case of replay
+    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay
 }
 
 message ClientInfo {
@@ -120,3 +120,10 @@ message LinkInfo {
     optional string detailedStatus=9;
 }
 
+message ListClientsResponse {
+  repeated ClientInfo clientInfo = 1;
+}
+
+message ListProcessorsResponse {
+  repeated ProcessorInfo processor = 1;
+}

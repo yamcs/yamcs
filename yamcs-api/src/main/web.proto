@@ -1,4 +1,4 @@
-package websocket;
+package web;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
@@ -7,34 +7,32 @@ import "pvalue.proto";
 import "alarms.proto";
 import "yamcsManagement.proto";
 
-// TODO we should probably include messages for all the sub-operations here.
-
 message WebSocketClientMessage {
-  optional uint32 protocolVersion=1;
-  optional uint32 sequenceNumber=2;
-  optional string resource=3;
-  optional string operation=4;
-  optional bytes data=5;
+  optional uint32 protocolVersion = 1;
+  optional uint32 sequenceNumber = 2;
+  optional string resource = 3;
+  optional string operation = 4;
+  optional bytes data = 5;
 }
 
 message WebSocketServerMessage {
   enum MessageType {
-    REPLY=2; // one-time rpc-style ACK reply
-    EXCEPTION=3; // one-time rpc-style exception reply
-    DATA=4; // various subscribed data
+    REPLY = 2; // one-time rpc-style ACK reply
+    EXCEPTION = 3; // one-time rpc-style exception reply
+    DATA = 4; // various subscribed data
   }
 
   message WebSocketReplyData {
-    optional uint32 protocolVersion=1;
-    optional int32 sequenceNumber=2; // we allow for -1 here
+    optional uint32 protocolVersion = 1;
+    optional int32 sequenceNumber = 2; // allow for -1
   }
 
   message WebSocketExceptionData {
-    optional uint32 protocolVersion=1;
-    optional int32 sequenceNumber=2; // we allow for -1 here
-    optional string type=3;
-    optional string message=4;
-    optional bytes data=5; // Structured exception data
+    optional uint32 protocolVersion = 1;
+    optional int32 sequenceNumber = 2; // allow for -1
+    optional string type = 3;
+    optional string message = 4;
+    optional bytes data = 5; // Structured exception data
   }
 
   // Currently hard-coding the set of available data types for easier client processing, but
@@ -54,12 +52,14 @@ message WebSocketServerMessage {
     optional yamcs.TimeInfo timeInfo = 11;
   }
 
-  optional MessageType type=1;
-  optional WebSocketReplyData reply=2;
-  optional WebSocketExceptionData exception=3;
-  optional WebSocketSubscriptionData data=4;
+  optional MessageType type = 1;
+  optional WebSocketReplyData reply = 2;
+  optional WebSocketExceptionData exception = 3;
+  optional WebSocketSubscriptionData data = 4;
 }
 
-service WebSocketService {
-  rpc sendMessage(WebSocketClientMessage) returns (WebSocketServerMessage);
+// Generic holder for an exception
+message RestExceptionMessage {
+  optional string type = 1;
+  optional string msg = 2;
 }

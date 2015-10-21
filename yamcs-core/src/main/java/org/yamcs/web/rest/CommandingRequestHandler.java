@@ -9,14 +9,14 @@ import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.ArgumentType;
 import org.yamcs.protobuf.Commanding.CommandSignificance;
 import org.yamcs.protobuf.Commanding.CommandSignificance.Level;
-import org.yamcs.protobuf.Rest.RestArgumentType;
-import org.yamcs.protobuf.Rest.RestCommandType;
-import org.yamcs.protobuf.Rest.RestSendCommandRequest;
-import org.yamcs.protobuf.Rest.RestValidateCommandRequest;
-import org.yamcs.protobuf.Rest.RestValidateCommandResponse;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Commanding.CommandType;
+import org.yamcs.protobuf.Commanding.SendCommandRequest;
+import org.yamcs.protobuf.Commanding.ValidateCommandRequest;
+import org.yamcs.protobuf.Commanding.ValidateCommandResponse;
+import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance;
@@ -62,16 +62,16 @@ public class CommandingRequestHandler implements RestRequestHandler {
     private RestResponse validateCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        RestValidateCommandRequest request = req.bodyAsMessage(SchemaRest.RestValidateCommandRequest.MERGE).build();
-        RestValidateCommandResponse.Builder responseb = RestValidateCommandResponse.newBuilder();
+        ValidateCommandRequest request = req.bodyAsMessage(SchemaCommanding.ValidateCommandRequest.MERGE).build();
+        ValidateCommandResponse.Builder responseb = ValidateCommandResponse.newBuilder();
         
-        for (RestCommandType restCommand : request.getCommandsList()) {
+        for (CommandType restCommand : request.getCommandsList()) {
             MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
             if(mc==null) {
                 throw new BadRequestException("Unknown command: "+restCommand.getId());
             }
             List<ArgumentAssignment> assignments = new ArrayList<>();
-            for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
+            for (ArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 
@@ -96,7 +96,7 @@ public class CommandingRequestHandler implements RestRequestHandler {
             }
         }
 
-        return new RestResponse(req, responseb.build(), SchemaRest.RestValidateCommandResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaCommanding.ValidateCommandResponse.WRITE);
     }
 
     /**
@@ -107,14 +107,14 @@ public class CommandingRequestHandler implements RestRequestHandler {
     private RestResponse sendCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        RestSendCommandRequest request = req.bodyAsMessage(SchemaRest.RestSendCommandRequest.MERGE).build();
+        SendCommandRequest request = req.bodyAsMessage(SchemaCommanding.SendCommandRequest.MERGE).build();
 
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<>();
-        for (RestCommandType restCommand : request.getCommandsList()) {
+        for (CommandType restCommand : request.getCommandsList()) {
             MetaCommand mc = required(xtcedb.getMetaCommand(restCommand.getId()), "Unknown command: " + restCommand.getId());
             List<ArgumentAssignment> assignments = new ArrayList<>();
-            for (RestArgumentType restArgument : restCommand.getArgumentsList()) {
+            for (ArgumentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 

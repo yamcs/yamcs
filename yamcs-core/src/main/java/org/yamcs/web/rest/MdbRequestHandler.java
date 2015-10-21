@@ -7,25 +7,25 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.protobuf.Rest.RestAlarmInfo;
-import org.yamcs.protobuf.Rest.RestAlarmLevel;
-import org.yamcs.protobuf.Rest.RestAlarmRange;
-import org.yamcs.protobuf.Rest.RestDataSource;
-import org.yamcs.protobuf.Rest.RestDumpRawMdbResponse;
-import org.yamcs.protobuf.Rest.RestGetParameterInfoRequest;
-import org.yamcs.protobuf.Rest.RestGetParameterInfoResponse;
-import org.yamcs.protobuf.Rest.RestListAvailableParametersRequest;
-import org.yamcs.protobuf.Rest.RestListAvailableParametersResponse;
-import org.yamcs.protobuf.Rest.RestNameDescription;
-import org.yamcs.protobuf.Rest.RestParameter;
-import org.yamcs.protobuf.Rest.RestParameterInfo;
-import org.yamcs.protobuf.Rest.RestParameterType;
-import org.yamcs.protobuf.Rest.RestUnitType;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Parameters.AlarmInfo;
+import org.yamcs.protobuf.Parameters.AlarmLevel;
+import org.yamcs.protobuf.Parameters.AlarmRange;
+import org.yamcs.protobuf.Parameters.DataSource;
+import org.yamcs.protobuf.Parameters.GetParameterInfoRequest;
+import org.yamcs.protobuf.Parameters.GetParameterInfoResponse;
+import org.yamcs.protobuf.Parameters.ListAvailableParametersRequest;
+import org.yamcs.protobuf.Parameters.ListAvailableParametersResponse;
+import org.yamcs.protobuf.Parameters.NameDescriptionType;
+import org.yamcs.protobuf.Parameters.ParameterInfo;
+import org.yamcs.protobuf.Parameters.ParameterSummary;
+import org.yamcs.protobuf.Parameters.ParameterTypeInfo;
+import org.yamcs.protobuf.Parameters.UnitInfo;
+import org.yamcs.protobuf.SchemaParameters;
+import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Yamcs.DumpRawMdbResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.AlarmRanges;
-import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerParameterType;
@@ -81,8 +81,8 @@ public class MdbRequestHandler implements RestRequestHandler {
                     log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
                     throw new BadRequestException("Invalid parameter name specified "+id);
                 }
-                RestParameterInfo pinfo = getParameterInfo(id, p);
-                return new RestResponse(req, pinfo, SchemaRest.RestParameterInfo.WRITE);
+                ParameterInfo pinfo = getParameterInfo(id, p);
+                return new RestResponse(req, pinfo, SchemaParameters.ParameterInfo.WRITE);
             } else { //possible multiple parameter requested, we return  RestGetParameterInfoResponse
                 return getParameterInfo(req);
             }
@@ -96,9 +96,9 @@ public class MdbRequestHandler implements RestRequestHandler {
      * Sends the parameters for the requested yamcs instance. If no namespaces are specified, send qualified names.
      */
     private RestResponse listAvailableParameters(RestRequest req) throws RestException {
-        RestListAvailableParametersRequest request = req.bodyAsMessage(SchemaRest.RestListAvailableParametersRequest.MERGE).build();
+        ListAvailableParametersRequest request = req.bodyAsMessage(SchemaParameters.ListAvailableParametersRequest.MERGE).build();
         XtceDb mdb = loadMdb(req.yamcsInstance);
-        RestListAvailableParametersResponse.Builder responseb = RestListAvailableParametersResponse.newBuilder();
+        ListAvailableParametersResponse.Builder responseb = ListAvailableParametersResponse.newBuilder();
         if (request.getNamespacesCount() == 0) {
             for(Parameter p : mdb.getParameters()) {
                 responseb.addParameters(toRestParameter(p.getQualifiedName(), p));
@@ -114,27 +114,27 @@ public class MdbRequestHandler implements RestRequestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.RestListAvailableParametersResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaParameters.ListAvailableParametersResponse.WRITE);
     }
 
-    private static RestParameter.Builder toRestParameter(String namespace, String name, Parameter parameter) {
-        RestParameter.Builder builder = toRestParameter(name, parameter);
+    private static ParameterSummary.Builder toRestParameter(String namespace, String name, Parameter parameter) {
+        ParameterSummary.Builder builder = toRestParameter(name, parameter);
         builder.getIdBuilder().setNamespace(namespace);
         return builder;
     }
 
-    private static RestParameter.Builder toRestParameter(String name, Parameter parameter) {
-        if(parameter.getDataSource() == null)
-        {
+    private static ParameterSummary.Builder toRestParameter(String name, Parameter parameter) {
+        org.yamcs.xtce.DataSource xtceDs = parameter.getDataSource();
+        if (xtceDs == null) {
             log.warn("Datasource for parameter " + name + " is null, setting TELEMETERED by default");
-            parameter.setDataSource(DataSource.TELEMETERED);
+            xtceDs = org.yamcs.xtce.DataSource.TELEMETERED;
         }
-        RestDataSource ds = RestDataSource.valueOf(parameter.getDataSource().name()); // I know, i know
-        return RestParameter.newBuilder().setDataSource(ds).setId(NamedObjectId.newBuilder().setName(name));
+        DataSource ds = DataSource.valueOf(xtceDs.name()); // I know, i know
+        return ParameterSummary.newBuilder().setDataSource(ds).setId(NamedObjectId.newBuilder().setName(name));
     }
 
     private RestResponse dumpRawMdb(RestRequest req) throws RestException {
-        RestDumpRawMdbResponse.Builder responseb = RestDumpRawMdbResponse.newBuilder();
+        DumpRawMdbResponse.Builder responseb = DumpRawMdbResponse.newBuilder();
 
         // TODO TEMP would prefer if we don't send java-serialized data.
         // TODO this limits our abilities to send, say, json
@@ -147,17 +147,15 @@ public class MdbRequestHandler implements RestRequestHandler {
             throw new InternalServerErrorException("Could not serialize MDB", e);
         }
         responseb.setRawMdb(bout.toByteString());
-        return new RestResponse(req, responseb.build(), SchemaRest.RestDumpRawMdbResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaYamcs.DumpRawMdbResponse.WRITE);
     }
-
-    
     
     private RestResponse getParameterInfo(RestRequest req) throws RestException {
         XtceDb xtceDb = loadMdb(req.yamcsInstance);
         
-        RestGetParameterInfoRequest request = req.bodyAsMessage(SchemaRest.RestGetParameterInfoRequest.MERGE).build();
-        RestGetParameterInfoResponse.Builder responseb = RestGetParameterInfoResponse.newBuilder();
-        for(NamedObjectId id:request.getListList() ){
+        GetParameterInfoRequest request = req.bodyAsMessage(SchemaParameters.GetParameterInfoRequest.MERGE).build();
+        GetParameterInfoResponse.Builder responseb = GetParameterInfoResponse.newBuilder();
+        for(NamedObjectId id:request.getListList()) {
             Parameter p = xtceDb.getParameter(id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
@@ -169,14 +167,13 @@ public class MdbRequestHandler implements RestRequestHandler {
             responseb.addPinfo(getParameterInfo(id, p));
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.RestGetParameterInfoResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaParameters.GetParameterInfoResponse.WRITE);
     }
     
-    
-    private RestParameterInfo getParameterInfo(NamedObjectId id, Parameter p) {
-        RestParameterInfo.Builder rpib = RestParameterInfo.newBuilder();
+    private ParameterInfo getParameterInfo(NamedObjectId id, Parameter p) {
+        ParameterInfo.Builder rpib = ParameterInfo.newBuilder();
         rpib.setId(id);
-        DataSource ds = p.getDataSource();
+        org.yamcs.xtce.DataSource ds = p.getDataSource();
         if(ds!=null) {
             rpib.setDataSource(ds.name());
         }
@@ -186,12 +183,12 @@ public class MdbRequestHandler implements RestRequestHandler {
         return rpib.build();
     }
 
-    private RestParameterType getParameterType(ParameterType parameterType) {
-        RestParameterType.Builder rptb = RestParameterType.newBuilder();
+    private ParameterTypeInfo getParameterType(ParameterType parameterType) {
+        ParameterTypeInfo.Builder rptb = ParameterTypeInfo.newBuilder();
         rptb.setDataEncoding(parameterType.getEncoding().toString());
         rptb.setEngType(parameterType.getTypeAsString());
         for(UnitType ut: parameterType.getUnitSet()) {
-            rptb.addUnitSet(getUnitType(ut));
+            rptb.addUnitSet(getUnitInfo(ut));
         }
         
         if (parameterType instanceof IntegerParameterType) {
@@ -208,12 +205,12 @@ public class MdbRequestHandler implements RestRequestHandler {
         return rptb.build();
     }
 
-    private RestUnitType getUnitType(UnitType ut) {
-        return RestUnitType.newBuilder().setUnit(ut.getUnit()).build();
+    private UnitInfo getUnitInfo(UnitType ut) {
+        return UnitInfo.newBuilder().setUnit(ut.getUnit()).build();
     }
 
-    private RestNameDescription getNameDescription(NameDescription nd) {
-        RestNameDescription.Builder rnb =  RestNameDescription.newBuilder();
+    private NameDescriptionType getNameDescription(NameDescription nd) {
+        NameDescriptionType.Builder rnb =  NameDescriptionType.newBuilder();
         rnb.setQualifiedName(nd.getQualifiedName());
         String s = nd.getShortDescription();
         if(s!=null) rnb.setShortDescription(s);
@@ -226,36 +223,36 @@ public class MdbRequestHandler implements RestRequestHandler {
         return rnb.build();
     }
     
-    private RestAlarmInfo getAlarmInfo(NumericAlarm numericAlarm) {
-        RestAlarmInfo.Builder alarmInfob = RestAlarmInfo.newBuilder();
+    private AlarmInfo getAlarmInfo(NumericAlarm numericAlarm) {
+        AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
         alarmInfob.setMinViolations(numericAlarm.getMinViolations());
         AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
         if (staticRanges.getWatchRange() != null) {
-            RestAlarmRange watchRange = getAlarmRange(RestAlarmLevel.watch, staticRanges.getWatchRange());
+            AlarmRange watchRange = getAlarmRange(AlarmLevel.watch, staticRanges.getWatchRange());
             alarmInfob.addStaticAlarmRanges(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
-            RestAlarmRange warningRange = getAlarmRange(RestAlarmLevel.warning, staticRanges.getWarningRange());
+            AlarmRange warningRange = getAlarmRange(AlarmLevel.warning, staticRanges.getWarningRange());
             alarmInfob.addStaticAlarmRanges(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
-            RestAlarmRange distressRange = getAlarmRange(RestAlarmLevel.distress, staticRanges.getDistressRange());
+            AlarmRange distressRange = getAlarmRange(AlarmLevel.distress, staticRanges.getDistressRange());
             alarmInfob.addStaticAlarmRanges(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
-            RestAlarmRange criticalRange = getAlarmRange(RestAlarmLevel.critical, staticRanges.getCriticalRange());
+            AlarmRange criticalRange = getAlarmRange(AlarmLevel.critical, staticRanges.getCriticalRange());
             alarmInfob.addStaticAlarmRanges(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
-            RestAlarmRange severeRange = getAlarmRange(RestAlarmLevel.severe, staticRanges.getSevereRange());
+            AlarmRange severeRange = getAlarmRange(AlarmLevel.severe, staticRanges.getSevereRange());
             alarmInfob.addStaticAlarmRanges(severeRange);
         }
             
         return alarmInfob.build();
     }
     
-    private RestAlarmRange getAlarmRange(RestAlarmLevel level, FloatRange alarmRange) {
-        RestAlarmRange.Builder resultb = RestAlarmRange.newBuilder();
+    private AlarmRange getAlarmRange(AlarmLevel level, FloatRange alarmRange) {
+        AlarmRange.Builder resultb = AlarmRange.newBuilder();
         resultb.setLevel(level);
         if (Double.isFinite(alarmRange.getMinInclusive()))
             resultb.setMinInclusive(alarmRange.getMinInclusive());

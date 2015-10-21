@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import org.yamcs.protobuf.Alarms.Alarm;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.MessageType;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;

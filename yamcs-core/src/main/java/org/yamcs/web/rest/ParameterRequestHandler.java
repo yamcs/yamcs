@@ -14,12 +14,12 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
+import org.yamcs.protobuf.Parameters.GetParameterRequest;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.RestGetParameterRequest;
+import org.yamcs.protobuf.SchemaParameters;
 import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -155,7 +155,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
      * Gets parameter values
      */
     private RestResponse getParameters(RestRequest req, YProcessor processor) throws RestException {
-        RestGetParameterRequest request = req.bodyAsMessage(SchemaRest.RestGetParameterRequest.MERGE).build();
+        GetParameterRequest request = req.bodyAsMessage(SchemaParameters.GetParameterRequest.MERGE).build();
         if(request.getListCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }
@@ -208,7 +208,7 @@ public class ParameterRequestHandler implements RestRequestHandler {
     }
 
 
-    private long getTimeout(RestGetParameterRequest request) throws BadRequestException {
+    private long getTimeout(GetParameterRequest request) throws BadRequestException {
         long timeout = 10000;
         if(request.hasTimeout()) {
             timeout = request.getTimeout();

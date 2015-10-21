@@ -5,9 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.RestListProcessorsResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
+import org.yamcs.protobuf.YamcsManagement.ListProcessorsResponse;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
@@ -40,11 +39,11 @@ public class ProcessorRequestHandler implements RestRequestHandler {
     
     private RestResponse handleProcessorListRequest(RestRequest req) throws RestException {
         req.assertGET();
-        RestListProcessorsResponse.Builder response = RestListProcessorsResponse.newBuilder();
+        ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
             response.addProcessor(ManagementService.getProcessorInfo(processor));
         }
-        return new RestResponse(req, response.build(), SchemaRest.RestListProcessorsResponse.WRITE);
+        return new RestResponse(req, response.build(), SchemaYamcsManagement.ListProcessorsResponse.WRITE);
     }
         
     private RestResponse handleProcessorRequest(RestRequest req, YProcessor yproc) throws RestException {

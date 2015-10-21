@@ -30,8 +30,8 @@ import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -166,6 +166,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
             pack();
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             if ( e.getActionCommand().equals("ok") ) {
                 try {
