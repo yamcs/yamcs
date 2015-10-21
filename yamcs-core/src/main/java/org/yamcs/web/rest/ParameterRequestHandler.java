@@ -29,10 +29,15 @@ import org.yamcs.xtce.Parameter;
 /**
  * Handles incoming requests related to realtime Parameters (get/set).
  * <p>
- * /(instance)/api/parameter
+ * /(instance)/parameter
  */
 public class ParameterRequestHandler implements RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(ParameterRequestHandler.class.getName());
+    
+    @Override
+    public String getPath() {
+        return "parameter";
+    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

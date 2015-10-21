@@ -9,9 +9,14 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ListClientsResponse;
 
 /**
- * /(instance)/api/management
+ * /(instance)/management
  */
 public class ManagementRequestHandler implements RestRequestHandler {
+    
+    @Override
+    public String getPath() {
+        return "management";
+    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

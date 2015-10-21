@@ -42,10 +42,15 @@ import com.google.protobuf.ByteString;
 /**
  * Handles incoming requests related to the Mission Database
  * <p>
- * /(instance)/api/mdb
+ * /(instance)/mdb
  */
 public class MdbRequestHandler implements RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
+    
+    @Override
+    public String getPath() {
+        return "mdb";
+    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

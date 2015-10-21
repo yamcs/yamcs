@@ -1,18 +1,18 @@
 package org.yamcs.web;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 /**
  * Runs a simple http server based on Netty
@@ -22,7 +22,7 @@ public class HttpSocketServer {
     private final int port;
     private static HttpSocketServer instance;
 
-    private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<String, YamcsWebService>();
+    private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<>();
     private EventLoopGroup bossGroup;
     
     
@@ -38,6 +38,7 @@ public class HttpSocketServer {
     public HttpSocketServer(int port) {
         this.port = port;
     }
+    
     public void registerYamcsInstance(String yinstance, YamcsWebService rps) {
         yamcsInstances.put(yinstance, rps);
     }
@@ -53,7 +54,7 @@ public class HttpSocketServer {
         bossGroup.shutdownGracefully();
     }
 
-    public boolean isInstanceRegistered( String yamcsInstance) {
+    public boolean isInstanceRegistered(String yamcsInstance) {
         return yamcsInstances.containsKey(yamcsInstance);
     }
     
@@ -75,8 +76,6 @@ public class HttpSocketServer {
         bootstrap.bind(new InetSocketAddress(port));
 
         System.out.println("Web socket server started at port " + port + '.');
-        // Commented out until this url actually returns something other than a 404
-        //System.out.println("Open your browser and navigate to http://localhost:" + port + '/');
     }
 
     public static void main(String[] args) throws ConfigurationException {

@@ -14,6 +14,11 @@ import org.yamcs.security.User;
  * Handles incoming requests related to the Authorisations
  */
 public class AuthorizationRequestHandler implements RestRequestHandler {
+    
+    @Override
+    public String getPath() {
+        return "authorization";
+    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException{

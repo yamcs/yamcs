@@ -30,6 +30,6 @@ public class YamcsWebService extends AbstractService {
 
     @Override
     protected void doStop() {
-	notifyStopped();
+        notifyStopped();
     }
 }

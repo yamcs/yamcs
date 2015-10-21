@@ -19,10 +19,15 @@ import org.yamcs.xtce.Parameter;
 /**
  * Handles incoming requests related to realtime Alarms.
  * <p>
- * /(instance)/api/alarms
+ * /(instance)/alarms
  */
 public class AlarmsRequestHandler implements RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(AlarmsRequestHandler.class.getName());
+    
+    @Override
+    public String getPath() {
+        return "alarms";
+    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -62,7 +67,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
     /**
      * Lists all active alarms
      * <p>
-     * GET /(instance)/api/alarms
+     * GET /(instance)/alarms
      */
     private RestResponse getAlarms(RestRequest req, YProcessor processor) throws RestException {
         if (!processor.hasAlarmServer()) {
@@ -87,7 +92,7 @@ public class AlarmsRequestHandler implements RestRequestHandler {
     /**
      * Acknowledges an alarm
      * <p>
-     * POST /(instance)/api/alarms/acknowledge/(alarmId)/my/sample/qualified/parameter
+     * POST /(instance)/alarms/acknowledge/(alarmId)/my/sample/qualified/parameter
      */
     private RestResponse acknowledgeAlarm(RestRequest req, int alarmId, Parameter p, YProcessor processor) throws RestException {
         if (!processor.hasAlarmServer()) {

@@ -4,6 +4,11 @@ package org.yamcs.web.rest;
  * Defines the basic contract of what a REST handler should abide to.
  */
 public interface RestRequestHandler {
+    
+    /**
+     * Returns the path handled by this handler.
+     */
+    String getPath();
 
     /**
      * Wraps all the logic that deals with a RestRequest. Requests should always

@@ -74,7 +74,7 @@ import io.protostuff.Schema;
  * us to send large dumps without needing to determine a content length on the server. At the
  * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
  * <p>
- * /(instance)/api/archive
+ * /(instance)/archive
  */
 public class ArchiveRequestHandler implements RestRequestHandler {
 
@@ -84,6 +84,11 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     private static final int MAX_BYTE_SIZE = 1048576;
     
     private CsvGenerator csvGenerator = null;
+    
+    @Override
+    public String getPath() {
+        return "archive";
+    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -452,7 +457,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      * <p>
-     * POST /(instance)/api/archive/tags
+     * POST /(instance)/archive/tags
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);
@@ -484,7 +489,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     /**
      * Updates an existing tag. Returns nothing
      * <p>
-     * PUT /(instance)/api/archive/tags/(tag-time)/(tag-id)
+     * PUT /(instance)/archive/tags/(tag-time)/(tag-id)
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
         TagDb tagDb = getTagDb(req.yamcsInstance);

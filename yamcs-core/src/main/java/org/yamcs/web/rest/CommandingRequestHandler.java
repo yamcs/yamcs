@@ -25,9 +25,14 @@ import org.yamcs.xtce.XtceDb;
 /**
  * Handles incoming requests related to Commanding
  * <p>
- * /(instance)/api/commanding
+ * /(instance)/commanding
  */
 public class CommandingRequestHandler implements RestRequestHandler {
+    
+    @Override
+    public String getPath() {
+        return "commanding";
+    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -57,7 +62,7 @@ public class CommandingRequestHandler implements RestRequestHandler {
     /**
      * Validates commands passed in request body
      * <p>
-     * POST /api/(instance)/commanding/validator
+     * POST /(instance)/commanding/validator
      */
     private RestResponse validateCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
@@ -102,7 +107,7 @@ public class CommandingRequestHandler implements RestRequestHandler {
     /**
      * Validates and adds commands to the queue
      * <p>
-     * POST /api/(instance)/commanding/queue
+     * POST /(instance)/commanding/queue
      */
     private RestResponse sendCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();

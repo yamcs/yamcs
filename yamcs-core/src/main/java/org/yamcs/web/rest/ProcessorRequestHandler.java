@@ -11,10 +11,15 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
 /**
- * /(instance)/api/processor
+ * /(instance)/processor
  */
 public class ProcessorRequestHandler implements RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
+    
+    @Override
+    public String getPath() {
+        return "processor";
+    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

@@ -22,12 +22,17 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 /**
  * Short-lived operations wrt Events 
  * <p>
- * /(instance)/api/events
+ * /(instance)/events
  */
 public class EventsRequestHandler  implements RestRequestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(EventsRequestHandler.class);
     private static AtomicInteger streamCounter = new AtomicInteger();
+    
+    @Override
+    public String getPath() {
+        return "events";
+    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
