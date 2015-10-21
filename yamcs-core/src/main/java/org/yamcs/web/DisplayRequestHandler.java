@@ -22,7 +22,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,7 +60,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 
     private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws IOException {
         log.info("request for list displays");
-        ByteBuf cb=Unpooled.buffer(1024);
+        ByteBuf cb=ctx.alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
         JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8);

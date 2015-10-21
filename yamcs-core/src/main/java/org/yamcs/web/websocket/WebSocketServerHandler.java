@@ -107,7 +107,7 @@ public class WebSocketServerHandler {
                     if (decoder == null)
                         decoder = new ProtobufDecoder();
                     if (encoder == null)
-                        encoder = new ProtobufEncoder();
+                        encoder = new ProtobufEncoder(ctx);
                 } else {
                     throw new WebSocketException(WSConstants.NO_REQUEST_ID, String.format("%s frame types not supported", frame.getClass().getName()));
                 }

@@ -371,12 +371,9 @@ public class YarchReplay implements StreamSubscriber {
             listener.stateChanged(rs);
             
         } catch (Exception e) {
-            log.warn("got exception while signaling the sate change: ", e);
+            log.warn("got exception while signaling the state change: ", e);
         }
     }
-
-
-
 
     public ReplayRequest getCurrentReplayRequest() {
         return currentRequest;
