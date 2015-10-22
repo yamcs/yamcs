@@ -251,7 +251,7 @@ public class YamcsServer {
         System.out.println("yamcsstartup success");
     }
 
-    private static YamcsInstances getYamcsInstances() {
+    public static YamcsInstances getYamcsInstances() {
         YamcsInstances.Builder aisb=YamcsInstances.newBuilder();
         for(String inst:instances.keySet()) {
             YamcsInstance.Builder aib=YamcsInstance.newBuilder();

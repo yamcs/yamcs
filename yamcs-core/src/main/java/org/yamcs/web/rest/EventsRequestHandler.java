@@ -24,7 +24,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * <p>
  * /(instance)/events
  */
-public class EventsRequestHandler  implements RestRequestHandler {
+public class EventsRequestHandler extends RestRequestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(EventsRequestHandler.class);
     private static AtomicInteger streamCounter = new AtomicInteger();

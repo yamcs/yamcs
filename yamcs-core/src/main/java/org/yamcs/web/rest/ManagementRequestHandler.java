@@ -11,7 +11,7 @@ import org.yamcs.protobuf.YamcsManagement.ListClientsResponse;
 /**
  * /(instance)/management
  */
-public class ManagementRequestHandler implements RestRequestHandler {
+public class ManagementRequestHandler extends RestRequestHandler {
     
     @Override
     public String getPath() {

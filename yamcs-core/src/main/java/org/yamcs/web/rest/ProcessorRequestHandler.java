@@ -13,7 +13,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 /**
  * /(instance)/processor
  */
-public class ProcessorRequestHandler implements RestRequestHandler {
+public class ProcessorRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
     
     @Override

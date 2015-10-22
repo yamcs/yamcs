@@ -10,8 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -20,7 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.web.rest.ApiRouter;
+import org.yamcs.web.rest.InstancesRequestHandler;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -36,6 +35,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
@@ -50,12 +50,12 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     public static final String STATIC_PATH = "_static";
     public static final String API_PATH = "api";
 
-    final static Logger log=LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
+    final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
-    static StaticFileRequestHandler fileRequestHandler=new StaticFileRequestHandler();
-    static ApiRouter apiRouter=new ApiRouter();
-    static DisplayRequestHandler displayRequestHandler=new DisplayRequestHandler(fileRequestHandler);
-    WebSocketServerHandler webSocketHandler= new WebSocketServerHandler();
+    static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
+    static InstancesRequestHandler instancesRequestHandler = new InstancesRequestHandler();
+    static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
+    WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -79,8 +79,11 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         log.debug("{} {}", req.getMethod(), req.getUri());
         
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+        String uri = qsDecoder.path(); // URI without Query String
+
         AuthenticationToken authToken = null;
-        if(Privilege.getInstance().isEnabled()) {
+        if (Privilege.getInstance().isEnabled()) {
             String authorizationHeader = req.headers().get("Authorization");
             authToken = extractAuthenticationToken(authorizationHeader);
             if (!authenticatesUser(authToken)) {
@@ -88,51 +91,74 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
                 return;
             }
         }
-        if (req.getUri().equals("favicon.ico")) { //TODO send the sugarcube
+        if (uri.equals("favicon.ico")) {
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
-        String uri;
-        try {
-            uri = URLDecoder.decode(req.getUri(), "UTF-8");
-        } catch (UnsupportedEncodingException e1) {
-            log.warn("Cannot decode uri", e1);
-            sendNegativeHttpResponse(ctx, req, FORBIDDEN);
-            return;
-        }
-        String[] path=uri.split("/",3); //uri starts with / so path[0] is always empty
-        if(path.length==1) {
+        
+        String[] path = uri.split("/", 3); //uri starts with / so path[0] is always empty
+        if (path.length == 1) {
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
-        if(STATIC_PATH.equals(path[1])) {
-            if(path.length==2) { //do not accept "/_static/" (i.e. directory listing) requests 
+        if (STATIC_PATH.equals(path[1])) {
+            if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
                 sendNegativeHttpResponse(ctx, req, FORBIDDEN);
                 return;
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         }
+        
+        if (API_PATH.equals(path[1])) {
+            if (path.length == 2) {
+                sendNegativeHttpResponse(ctx, req, FORBIDDEN);
+                return;
+            }
+            
+            RestRequest restReq = AbstractRequestHandler.toRestRequest(ctx, req, qsDecoder, authToken);
+            
+            if (instancesRequestHandler.getPath().equals(path[2])) { 
+                instancesRequestHandler.handleRequestOrError(restReq, 3);
+                return;
+            }
+            
+            String[] rpath = path[2].split("/", 2);
+            String yamcsInstance = rpath[0];
+            YamcsWebService instanceService = HttpSocketServer.getInstance().getYamcsWebService(yamcsInstance);
+            if (instanceService == null) {
+                log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
+                sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+                return;
+            }
 
-        String yamcsInstance=path[1];
+            restReq.setYamcsInstance(yamcsInstance);
+            if (rpath.length == 2) {
+                instanceService.handleRequest(restReq, rpath[1]);
+            } else {
+                instancesRequestHandler.handleRequestOrError(restReq, 3);
+            }
+        }
 
-        if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+        String yamcsInstance = path[1];
+        if(HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
         	log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
+        
         if((path.length==2) || path[2].isEmpty() || path[2].equals("index.html")) {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
             return;
         }
-        String[] rpath = path[2].split("/",2);
-        String handler=rpath[0];
+        String[] rpath = path[2].split("/", 2);
+        String handler = rpath[0];
         if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
             webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
         } else {
-            apiRouter.handleRequest(ctx, req, yamcsInstance, path[2], authToken);
+            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
         }
     }
     

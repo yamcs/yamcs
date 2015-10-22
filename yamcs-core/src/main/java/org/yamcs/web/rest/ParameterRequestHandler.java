@@ -31,7 +31,7 @@ import org.yamcs.xtce.Parameter;
  * <p>
  * /(instance)/parameter
  */
-public class ParameterRequestHandler implements RestRequestHandler {
+public class ParameterRequestHandler extends RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(ParameterRequestHandler.class.getName());
     
     @Override

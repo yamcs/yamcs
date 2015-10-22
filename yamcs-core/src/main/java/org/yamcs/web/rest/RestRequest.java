@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.ssl.SslHandler;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -43,16 +44,12 @@ public class RestRequest {
     
     private String[] pathSegments;
     
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, String yamcsInstance, AuthenticationToken authToken, JsonFactory jsonFactory) {
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken, JsonFactory jsonFactory) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
-        this.yamcsInstance = yamcsInstance;
         this.authToken = authToken;
         this.jsonFactory = jsonFactory;
-        
-        // This is used for some operations that require the Query-String, and also
-        // to scan for the 'pretty'-argument, which prettifies any outputted JSON.
-        qsDecoder = new QueryStringDecoder(httpRequest.getUri());
+        this.qsDecoder = qsDecoder;
         
         // Get splitted path, taking care that URL-encoded slashes are ignored for the split
         pathSegments = qsDecoder.path().split("/");
@@ -61,14 +58,18 @@ public class RestRequest {
         }
     }
     
+    public void setYamcsInstance(String yamcsInstance) {
+        this.yamcsInstance = yamcsInstance;
+    }
+    
     /**
      * Returns all decoded path segments. The structure varies from one operation to another
      * but in broad lines amounts to this:
      * <ul>
      *  <li>0. The empty string (because uri's start with a "/")
-     *  <li>1. The yamcs instance.
-     *  <li>2. The string 'api', to identify anything REST.
-     *  <li>3. The general resource, e.g. 'mdb', or 'archive'
+     *  <li>1. 'api', this distinguishes api calls from other web requests
+     *  <li>2. The yamcs instance
+     *  <li>3. The general resource, e.g. 'parameters', or 'commands'
      *  <li>4. Optionally, any number of other segments depending on the operation.
      * </ul>
      */
@@ -102,6 +103,14 @@ public class RestRequest {
      */
     public User getUser() {
         return Privilege.getInstance().getUser(authToken);
+    }
+    
+    public boolean hasHeader(String name) {
+        return httpRequest.headers().contains(name);
+    }
+    
+    public String getHeader(String name) {
+        return httpRequest.headers().get(name);
     }
     
     /**
@@ -188,7 +197,11 @@ public class RestRequest {
                 || "yes".equalsIgnoreCase(param));
     }
     
-    ChannelHandlerContext getChannelHandlerContext() {
+    public boolean isSSL() {
+        return channelHandlerContext.pipeline().get(SslHandler.class) != null;
+    }
+    
+    public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
     }
     

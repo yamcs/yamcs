@@ -60,7 +60,7 @@ public class SimulationTimeService implements TimeService {
     /**
      * Handles incoming requests related to SimTime
      */
-    public static class SimTimeRequestHandler implements RestRequestHandler {
+    public static class SimTimeRequestHandler extends RestRequestHandler {
         static final String SET_REQ = "set";
         
         @Override

@@ -1,8 +1,5 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
@@ -76,7 +73,7 @@ import io.protostuff.Schema;
  * <p>
  * /(instance)/archive
  */
-public class ArchiveRequestHandler implements RestRequestHandler {
+public class ArchiveRequestHandler extends RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
 

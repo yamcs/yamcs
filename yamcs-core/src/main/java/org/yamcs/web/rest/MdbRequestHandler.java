@@ -44,7 +44,7 @@ import com.google.protobuf.ByteString;
  * <p>
  * /(instance)/mdb
  */
-public class MdbRequestHandler implements RestRequestHandler {
+public class MdbRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
     
     @Override

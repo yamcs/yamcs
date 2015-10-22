@@ -21,7 +21,7 @@ import org.yamcs.xtce.Parameter;
  * <p>
  * /(instance)/alarms
  */
-public class AlarmsRequestHandler implements RestRequestHandler {
+public class AlarmsRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(AlarmsRequestHandler.class.getName());
     
     @Override

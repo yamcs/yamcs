@@ -27,7 +27,7 @@ import org.yamcs.xtce.XtceDb;
  * <p>
  * /(instance)/commanding
  */
-public class CommandingRequestHandler implements RestRequestHandler {
+public class CommandingRequestHandler extends RestRequestHandler {
     
     @Override
     public String getPath() {

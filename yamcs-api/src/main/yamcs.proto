@@ -20,18 +20,24 @@ message MessagingAddress {
 
 /*contains a list of instances*/
 message YamcsInstances {
-    repeated YamcsInstance instance=1;
+    repeated YamcsInstance instance = 1;
 }
+
 message YamcsInstance {
-    required string name=1;
+    required string name = 1;
     //repeated MessagingAddress address=2; //removed 5-Mar-2012
-    optional MissionDatabase missionDatabase=3;
+    optional MissionDatabase missionDatabase = 3;
+
+    // REST
+    optional string url = 4;
+    optional string alarms_url = 5;
+    optional string parameters_url = 6;
 }
 
 message MissionDatabase {
     required string configName = 1; //this is the config section in mdb.yaml
-    required string name=2; //XTCE root SpaceSystem name
-    optional string version=3; //XTCE root SpaceSystem header version
+    required string name = 2; //XTCE root SpaceSystem name
+    optional string version = 3; //XTCE root SpaceSystem header version
 }
 
 //union type for storing a value
@@ -63,8 +69,8 @@ message Value {
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
 message MissionDatabaseRequest {
-   optional string dbConfigName=1;
-   optional string instance=2;
+   optional string dbConfigName = 1;
+   optional string instance = 2;
 }
 
 //this is just for documentation purposes, the protobuf generated stuff is not used yet
@@ -347,6 +353,10 @@ message SetSimulationTimeRequest {
 
 message DumpRawMdbResponse {
   optional bytes rawMdb=2;
+}
+
+message ListInstancesResponse {
+    repeated YamcsInstance instance = 1;
 }
 
 message Event {

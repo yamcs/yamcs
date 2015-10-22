@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class RestRequestTest {
 
@@ -77,6 +78,6 @@ public class RestRequestTest {
         if (accept != null) {
             req.headers().set(Names.ACCEPT, accept);
         }
-        return new RestRequest(null, req, null, null, null);
+        return new RestRequest(null, req, new QueryStringDecoder("/"), null, null);
     }
 }
