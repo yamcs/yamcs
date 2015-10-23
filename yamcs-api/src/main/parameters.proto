@@ -59,6 +59,9 @@ message ParameterInfo {
   optional NameDescriptionInfo description = 2;
   optional ParameterTypeInfo type = 3;
   optional DataSourceType dataSource = 4;
+
+  // REST
+  optional string url = 5;
 }
 
 message GetParameterRequest {

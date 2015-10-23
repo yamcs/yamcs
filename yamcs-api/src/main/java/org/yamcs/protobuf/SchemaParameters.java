@@ -662,6 +662,8 @@ public final class SchemaParameters
 
                 if(message.hasDataSource())
                     output.writeString(4, message.getDataSource().name(), false);
+                if(message.hasUrl())
+                    output.writeString(5, message.getUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Parameters.ParameterInfo message)
             {
@@ -716,6 +718,9 @@ public final class SchemaParameters
                         case 4:
                             builder.setDataSource(org.yamcs.protobuf.Parameters.DataSourceType.valueOf(input.readString()));
                             break;
+                        case 5:
+                            builder.setUrl(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -760,6 +765,7 @@ public final class SchemaParameters
                 case 2: return "description";
                 case 3: return "type";
                 case 4: return "dataSource";
+                case 5: return "url";
                 default: return null;
             }
         }
@@ -775,6 +781,7 @@ public final class SchemaParameters
             fieldMap.put("description", 2);
             fieldMap.put("type", 3);
             fieldMap.put("dataSource", 4);
+            fieldMap.put("url", 5);
         }
     }
 

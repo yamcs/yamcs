@@ -85,7 +85,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
             throw new BadRequestException("Invalid parameter name specified "+id);
         }
-        ParameterInfo pinfo = toParameterInfo(id, p);
+        ParameterInfo pinfo = toParameterInfo(req, id, p);
         return new RestResponse(req, pinfo, SchemaParameters.ParameterInfo.WRITE);
     }
 
@@ -98,7 +98,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
                 NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
-                responseb.addParameter(toParameterInfo(id, p));
+                responseb.addParameter(toParameterInfo(req, id, p));
             }
         } else {
             String rootedNamespace = "/" + namespace;
@@ -110,14 +110,14 @@ public class ParametersRequestHandler extends RestRequestHandler {
                 String alias = p.getAlias(namespace);
                 if (alias != null) {
                     NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build();
-                    responseb.addParameter(toParameterInfo(id, p));
+                    responseb.addParameter(toParameterInfo(req, id, p));
                 } else {
                     // Slash is not added to the URL so it makes it a bit more difficult
                     // to test for both XTCE names and other names. So just test with slash too
                     alias = p.getAlias(rootedNamespace);
                     if (alias != null) {
                         NamedObjectId id = NamedObjectId.newBuilder().setNamespace(rootedNamespace).setName(alias).build();
-                        responseb.addParameter(toParameterInfo(id, p));
+                        responseb.addParameter(toParameterInfo(req, id, p));
                     }
                 }
             }
@@ -133,7 +133,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
         }
     }
     
-    static ParameterInfo toParameterInfo(NamedObjectId id, Parameter p) {
+    static ParameterInfo toParameterInfo(RestRequest req, NamedObjectId id, Parameter p) {
         ParameterInfo.Builder rpib = ParameterInfo.newBuilder();
         rpib.setId(id);
         DataSource xtceDs = p.getDataSource();
@@ -145,6 +145,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
             rpib.setDataSource(DataSourceType.TELEMETERED);
         }*/
         
+        rpib.setUrl(req.getInstanceURL() + "/parameters" + p.getQualifiedName());
         rpib.setDescription(toNameDescription(p));
         rpib.setType(toParameterType(p.getParameterType()));
         

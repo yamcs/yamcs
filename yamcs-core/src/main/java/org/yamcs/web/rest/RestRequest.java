@@ -312,4 +312,22 @@ public class RestRequest {
     public String getYamcsInstance() {
         return yamcsInstance;
     }
+
+    public String getBaseURL() {
+        String scheme = isSSL() ? "https://" : "http://";
+        String host = getHeader(HttpHeaders.Names.HOST);
+        return (host != null) ? scheme + host : "";
+    }
+    
+    public String getInstanceURL() {
+        return getBaseURL(3);
+    }
+    
+    public String getBaseURL(int endSegment) {
+        StringBuilder buf = new StringBuilder(getBaseURL());
+        for (int i = 1; i < endSegment; i++) {
+            buf.append('/').append(getPathSegment(i));
+        }
+        return buf.toString();
+    }
 }

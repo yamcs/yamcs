@@ -4693,6 +4693,33 @@ public final class Parameters {
      * <code>optional .parameters.DataSourceType dataSource = 4;</code>
      */
     org.yamcs.protobuf.Parameters.DataSourceType getDataSource();
+
+    // optional string url = 5;
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    boolean hasUrl();
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    java.lang.String getUrl();
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getUrlBytes();
   }
   /**
    * Protobuf type {@code parameters.ParameterInfo}
@@ -4793,6 +4820,11 @@ public final class Parameters {
                 bitField0_ |= 0x00000008;
                 dataSource_ = value;
               }
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
+              url_ = input.readBytes();
               break;
             }
           }
@@ -4917,11 +4949,67 @@ public final class Parameters {
       return dataSource_;
     }
 
+    // optional string url = 5;
+    public static final int URL_FIELD_NUMBER = 5;
+    private java.lang.Object url_;
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    public boolean hasUrl() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    public java.lang.String getUrl() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          url_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string url = 5;</code>
+     *
+     * <pre>
+     * REST
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        url_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
       description_ = org.yamcs.protobuf.Parameters.NameDescriptionInfo.getDefaultInstance();
       type_ = org.yamcs.protobuf.Parameters.ParameterTypeInfo.getDefaultInstance();
       dataSource_ = org.yamcs.protobuf.Parameters.DataSourceType.TELEMETERED;
+      url_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4959,6 +5047,9 @@ public final class Parameters {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeEnum(4, dataSource_.getNumber());
       }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getUrlBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4983,6 +5074,10 @@ public final class Parameters {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(4, dataSource_.getNumber());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getUrlBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5123,6 +5218,8 @@ public final class Parameters {
         bitField0_ = (bitField0_ & ~0x00000004);
         dataSource_ = org.yamcs.protobuf.Parameters.DataSourceType.TELEMETERED;
         bitField0_ = (bitField0_ & ~0x00000008);
+        url_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -5179,6 +5276,10 @@ public final class Parameters {
           to_bitField0_ |= 0x00000008;
         }
         result.dataSource_ = dataSource_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.url_ = url_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5206,6 +5307,11 @@ public final class Parameters {
         }
         if (other.hasDataSource()) {
           setDataSource(other.getDataSource());
+        }
+        if (other.hasUrl()) {
+          bitField0_ |= 0x00000010;
+          url_ = other.url_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5629,6 +5735,104 @@ public final class Parameters {
       public Builder clearDataSource() {
         bitField0_ = (bitField0_ & ~0x00000008);
         dataSource_ = org.yamcs.protobuf.Parameters.DataSourceType.TELEMETERED;
+        onChanged();
+        return this;
+      }
+
+      // optional string url = 5;
+      private java.lang.Object url_ = "";
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public boolean hasUrl() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public java.lang.String getUrl() {
+        java.lang.Object ref = url_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          url_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getUrlBytes() {
+        java.lang.Object ref = url_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          url_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public Builder setUrl(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public Builder clearUrl() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        url_ = getDefaultInstance().getUrl();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 5;</code>
+       *
+       * <pre>
+       * REST
+       * </pre>
+       */
+      public Builder setUrlBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        url_ = value;
         onChanged();
         return this;
       }
@@ -7967,23 +8171,23 @@ public final class Parameters {
       "tionInfo\022\025\n\rqualifiedName\030\001 \001(\t\022\030\n\020short" +
       "Description\030\002 \001(\t\022\027\n\017longDescription\030\003 \001" +
       "(\t\022%\n\007aliases\030\004 \003(\0132\024.yamcs.NamedObjectI" +
-      "d\"\304\001\n\rParameterInfo\022 \n\002id\030\001 \001(\0132\024.yamcs." +
+      "d\"\321\001\n\rParameterInfo\022 \n\002id\030\001 \001(\0132\024.yamcs." +
       "NamedObjectId\0224\n\013description\030\002 \001(\0132\037.par" +
       "ameters.NameDescriptionInfo\022+\n\004type\030\003 \001(" +
       "\0132\035.parameters.ParameterTypeInfo\022.\n\ndata" +
       "Source\030\004 \001(\0162\032.parameters.DataSourceType" +
-      "\"]\n\023GetParameterRequest\022\"\n\004list\030\001 \003(\0132\024.",
-      "yamcs.NamedObjectId\022\021\n\tfromCache\030\002 \001(\010\022\017" +
-      "\n\007timeout\030\003 \001(\004\";\n\025ListParametersRequest" +
-      "\022\"\n\004list\030\001 \003(\0132\024.yamcs.NamedObjectId\"F\n\026" +
-      "ListParametersResponse\022,\n\tparameter\030\001 \003(" +
-      "\0132\031.parameters.ParameterInfo*u\n\016DataSour" +
-      "ceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010" +
-      "CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COM" +
-      "MAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*X\n\nAlarmLeve" +
-      "l\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n" +
-      "\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n",
-      "\022org.yamcs.protobuf"
+      "\022\013\n\003url\030\005 \001(\t\"]\n\023GetParameterRequest\022\"\n\004",
+      "list\030\001 \003(\0132\024.yamcs.NamedObjectId\022\021\n\tfrom" +
+      "Cache\030\002 \001(\010\022\017\n\007timeout\030\003 \001(\004\";\n\025ListPara" +
+      "metersRequest\022\"\n\004list\030\001 \003(\0132\024.yamcs.Name" +
+      "dObjectId\"F\n\026ListParametersResponse\022,\n\tp" +
+      "arameter\030\001 \003(\0132\031.parameters.ParameterInf" +
+      "o*u\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007" +
+      "DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SY" +
+      "STEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006" +
+      "*X\n\nAlarmLevel\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n" +
+      "\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n",
+      "\n\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8025,7 +8229,7 @@ public final class Parameters {
           internal_static_parameters_ParameterInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ParameterInfo_descriptor,
-              new java.lang.String[] { "Id", "Description", "Type", "DataSource", });
+              new java.lang.String[] { "Id", "Description", "Type", "DataSource", "Url", });
           internal_static_parameters_GetParameterRequest_descriptor =
             getDescriptor().getMessageTypes().get(6);
           internal_static_parameters_GetParameterRequest_fieldAccessorTable = new

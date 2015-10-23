@@ -64,7 +64,7 @@ public class MdbRequestHandler extends RestRequestHandler {
                     log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
                     throw new BadRequestException("Invalid parameter name specified "+id);
                 }
-                ParameterInfo pinfo = ParametersRequestHandler.toParameterInfo(id, p);
+                ParameterInfo pinfo = ParametersRequestHandler.toParameterInfo(req, id, p);
                 return new RestResponse(req, pinfo, SchemaParameters.ParameterInfo.WRITE);
             } else { //possible multiple parameter requested, return GetParameterInfoResponse
                 return getParameterInfo(req);
@@ -106,7 +106,7 @@ public class MdbRequestHandler extends RestRequestHandler {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }
-            responseb.addParameter(ParametersRequestHandler.toParameterInfo(id, p));
+            responseb.addParameter(ParametersRequestHandler.toParameterInfo(req, id, p));
         }
         
         return new RestResponse(req, responseb.build(), SchemaParameters.ListParametersResponse.WRITE);

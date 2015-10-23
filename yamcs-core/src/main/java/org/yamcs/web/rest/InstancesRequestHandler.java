@@ -56,13 +56,10 @@ public class InstancesRequestHandler extends RestRequestHandler {
             YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
             
             if (HttpSocketServer.getInstance().isInstanceRegistered(instanceb.getName())) {
-                String scheme = (req.isSSL()) ? "https://" : "http://";
-                String host = req.getHeader(HttpHeaders.Names.HOST);
-                String baseUrl = (host != null) ? scheme + host + "/" : "/";
-    
-                instanceb.setUrl(baseUrl + instanceb.getName());
-                instanceb.setAlarmsUrl(baseUrl + instanceb.getName() + "/alarms");
-                instanceb.setParametersUrl(baseUrl + instanceb.getName() + "/parameters");
+                String baseURL = req.getBaseURL();
+                instanceb.setUrl(baseURL + "/" + instanceb.getName());
+                instanceb.setAlarmsUrl(baseURL + "/" + instanceb.getName() + "/alarms");
+                instanceb.setParametersUrl(baseURL + "/" + instanceb.getName() + "/parameters");
             }
             instancesb.addInstance(instanceb);
         }
