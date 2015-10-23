@@ -835,7 +835,7 @@ public final class SchemaYamcs
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.Value message) throws java.io.IOException
             {
                 if(message.hasType())
-                    output.writeEnum(1, message.getType().getNumber(), false);
+                    output.writeString(1, message.getType().name(), false);
                 if(message.hasFloatValue())
                     output.writeFloat(2, message.getFloatValue(), false);
                 if(message.hasDoubleValue())
@@ -897,7 +897,7 @@ public final class SchemaYamcs
                         case 0:
                             return;
                         case 1:
-                            builder.setType(org.yamcs.protobuf.Yamcs.Value.Type.valueOf(input.readEnum()));
+                            builder.setType(org.yamcs.protobuf.Yamcs.Value.Type.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setFloatValue(input.readFloat());
@@ -2484,7 +2484,7 @@ public final class SchemaYamcs
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplaySpeed message) throws java.io.IOException
             {
                 if(message.hasType())
-                    output.writeEnum(1, message.getType().getNumber(), false);
+                    output.writeString(1, message.getType().name(), false);
                 if(message.hasParam())
                     output.writeFloat(2, message.getParam(), false);
             }
@@ -2527,7 +2527,7 @@ public final class SchemaYamcs
                         case 0:
                             return;
                         case 1:
-                            builder.setType(org.yamcs.protobuf.Yamcs.ReplaySpeedType.valueOf(input.readEnum()));
+                            builder.setType(org.yamcs.protobuf.Yamcs.ReplaySpeedType.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setParam(input.readFloat());
@@ -2606,7 +2606,7 @@ public final class SchemaYamcs
                 if(message.hasStop())
                     output.writeInt64(2, message.getStop(), false);
                 if(message.hasEndAction())
-                    output.writeEnum(3, message.getEndAction().getNumber(), false);
+                    output.writeString(3, message.getEndAction().name(), false);
                 if(message.hasSpeed())
                     output.writeObject(4, message.getSpeed(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.WRITE, false);
 
@@ -2675,7 +2675,7 @@ public final class SchemaYamcs
                             builder.setStop(input.readInt64());
                             break;
                         case 3:
-                            builder.setEndAction(org.yamcs.protobuf.Yamcs.EndAction.valueOf(input.readEnum()));
+                            builder.setEndAction(org.yamcs.protobuf.Yamcs.EndAction.valueOf(input.readString()));
                             break;
                         case 4:
                             builder.setSpeed(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplaySpeed.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplaySpeed.MERGE));
@@ -3354,7 +3354,7 @@ public final class SchemaYamcs
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.ReplayStatus message) throws java.io.IOException
             {
                 if(message.hasState())
-                    output.writeEnum(1, message.getState().getNumber(), false);
+                    output.writeString(1, message.getState().name(), false);
                 if(message.hasRequest())
                     output.writeObject(2, message.getRequest(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.WRITE, false);
 
@@ -3400,7 +3400,7 @@ public final class SchemaYamcs
                         case 0:
                             return;
                         case 1:
-                            builder.setState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(input.readEnum()));
+                            builder.setState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE));
@@ -4720,7 +4720,7 @@ public final class SchemaYamcs
                 if(message.hasMessage())
                     output.writeString(6, message.getMessage(), false);
                 if(message.hasSeverity())
-                    output.writeEnum(7, message.getSeverity().getNumber(), false);
+                    output.writeString(7, message.getSeverity().name(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.Event message)
             {
@@ -4779,7 +4779,7 @@ public final class SchemaYamcs
                             builder.setMessage(input.readString());
                             break;
                         case 7:
-                            builder.setSeverity(org.yamcs.protobuf.Yamcs.Event.EventSeverity.valueOf(input.readEnum()));
+                            builder.setSeverity(org.yamcs.protobuf.Yamcs.Event.EventSeverity.valueOf(input.readString()));
                             break;
                         default:
                             input.handleUnknownField(number, this);

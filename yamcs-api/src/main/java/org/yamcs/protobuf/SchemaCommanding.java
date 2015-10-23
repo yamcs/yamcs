@@ -157,7 +157,7 @@ public final class SchemaCommanding
                 if(message.hasName())
                     output.writeString(3, message.getName(), false);
                 if(message.hasState())
-                    output.writeEnum(4, message.getState().getNumber(), false);
+                    output.writeString(4, message.getState().name(), false);
                 if(message.hasNbSentCommands())
                     output.writeInt32(5, message.getNbSentCommands(), false);
                 if(message.hasNbRejectedCommands())
@@ -213,7 +213,7 @@ public final class SchemaCommanding
                             builder.setName(input.readString());
                             break;
                         case 4:
-                            builder.setState(org.yamcs.protobuf.Commanding.QueueState.valueOf(input.readEnum()));
+                            builder.setState(org.yamcs.protobuf.Commanding.QueueState.valueOf(input.readString()));
                             break;
                         case 5:
                             builder.setNbSentCommands(input.readInt32());
@@ -598,7 +598,7 @@ public final class SchemaCommanding
                 if(message.hasSequenceNumber())
                     output.writeInt32(1, message.getSequenceNumber(), false);
                 if(message.hasConsequenceLevel())
-                    output.writeEnum(2, message.getConsequenceLevel().getNumber(), false);
+                    output.writeString(2, message.getConsequenceLevel().name(), false);
                 if(message.hasReasonForWarning())
                     output.writeString(3, message.getReasonForWarning(), false);
             }
@@ -644,7 +644,7 @@ public final class SchemaCommanding
                             builder.setSequenceNumber(input.readInt32());
                             break;
                         case 2:
-                            builder.setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(input.readEnum()));
+                            builder.setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(input.readString()));
                             break;
                         case 3:
                             builder.setReasonForWarning(input.readString());

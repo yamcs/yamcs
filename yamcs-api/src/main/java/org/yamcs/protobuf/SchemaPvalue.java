@@ -32,11 +32,11 @@ public final class SchemaPvalue
                 if(message.hasGenerationTime())
                     output.writeInt64(5, message.getGenerationTime(), false);
                 if(message.hasAcquisitionStatus())
-                    output.writeEnum(6, message.getAcquisitionStatus().getNumber(), false);
+                    output.writeString(6, message.getAcquisitionStatus().name(), false);
                 if(message.hasProcessingStatus())
                     output.writeBool(7, message.getProcessingStatus(), false);
                 if(message.hasMonitoringResult())
-                    output.writeEnum(8, message.getMonitoringResult().getNumber(), false);
+                    output.writeString(8, message.getMonitoringResult().name(), false);
                 if(message.hasAcquisitionTimeUTC())
                     output.writeString(11, message.getAcquisitionTimeUTC(), false);
                 if(message.hasGenerationTimeUTC())
@@ -123,13 +123,13 @@ public final class SchemaPvalue
                             builder.setGenerationTime(input.readInt64());
                             break;
                         case 6:
-                            builder.setAcquisitionStatus(org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(input.readEnum()));
+                            builder.setAcquisitionStatus(org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(input.readString()));
                             break;
                         case 7:
                             builder.setProcessingStatus(input.readBool());
                             break;
                         case 8:
-                            builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readEnum()));
+                            builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readString()));
                             break;
                         case 11:
                             builder.setAcquisitionTimeUTC(input.readString());

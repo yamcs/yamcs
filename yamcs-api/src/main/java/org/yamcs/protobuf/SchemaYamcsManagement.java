@@ -31,12 +31,12 @@ public final class SchemaYamcsManagement
                 if(message.hasHasCommanding())
                     output.writeBool(6, message.getHasCommanding(), false);
                 if(message.hasState())
-                    output.writeEnum(7, message.getState().getNumber(), false);
+                    output.writeString(7, message.getState().name(), false);
                 if(message.hasReplayRequest())
                     output.writeObject(8, message.getReplayRequest(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.WRITE, false);
 
                 if(message.hasReplayState())
-                    output.writeEnum(9, message.getReplayState().getNumber(), false);
+                    output.writeString(9, message.getReplayState().name(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorInfo message)
             {
@@ -95,14 +95,14 @@ public final class SchemaYamcsManagement
                             builder.setHasCommanding(input.readBool());
                             break;
                         case 7:
-                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readEnum()));
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
                             break;
                         case 8:
                             builder.setReplayRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE));
 
                             break;
                         case 9:
-                            builder.setReplayState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(input.readEnum()));
+                            builder.setReplayState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(input.readString()));
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -198,7 +198,7 @@ public final class SchemaYamcsManagement
                 if(message.hasProcessorName())
                     output.writeString(5, message.getProcessorName(), false);
                 if(message.hasState())
-                    output.writeEnum(6, message.getState().getNumber(), false);
+                    output.writeString(6, message.getState().name(), false);
                 if(message.hasCurrentClient())
                     output.writeBool(7, message.getCurrentClient(), false);
             }
@@ -256,7 +256,7 @@ public final class SchemaYamcsManagement
                             builder.setProcessorName(input.readString());
                             break;
                         case 6:
-                            builder.setState(org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.valueOf(input.readEnum()));
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.valueOf(input.readString()));
                             break;
                         case 7:
                             builder.setCurrentClient(input.readBool());
@@ -635,7 +635,7 @@ public final class SchemaYamcsManagement
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest message) throws java.io.IOException
             {
                 if(message.hasOperation())
-                    output.writeEnum(1, message.getOperation().getNumber(), false);
+                    output.writeString(1, message.getOperation().name(), false);
                 if(message.hasInstance())
                     output.writeString(2, message.getInstance(), false);
                 if(message.hasName())
@@ -691,7 +691,7 @@ public final class SchemaYamcsManagement
                         case 0:
                             return;
                         case 1:
-                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.valueOf(input.readEnum()));
+                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setInstance(input.readString());
@@ -797,7 +797,7 @@ public final class SchemaYamcsManagement
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ProcessorRequest message) throws java.io.IOException
             {
                 if(message.hasOperation())
-                    output.writeEnum(1, message.getOperation().getNumber(), false);
+                    output.writeString(1, message.getOperation().name(), false);
                 if(message.hasInstance())
                     output.writeString(2, message.getInstance(), false);
                 if(message.hasName())
@@ -847,7 +847,7 @@ public final class SchemaYamcsManagement
                         case 0:
                             return;
                         case 1:
-                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(input.readEnum()));
+                            builder.setOperation(org.yamcs.protobuf.YamcsManagement.ProcessorRequest.Operation.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setInstance(input.readString());

@@ -130,7 +130,7 @@ public final class SchemaParameters
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Parameters.AlarmRange message) throws java.io.IOException
             {
                 if(message.hasLevel())
-                    output.writeEnum(1, message.getLevel().getNumber(), false);
+                    output.writeString(1, message.getLevel().name(), false);
                 if(message.hasMinInclusive())
                     output.writeDouble(2, message.getMinInclusive(), false);
                 if(message.hasMaxInclusive())
@@ -177,7 +177,7 @@ public final class SchemaParameters
                         case 0:
                             return;
                         case 1:
-                            builder.setLevel(org.yamcs.protobuf.Parameters.AlarmLevel.valueOf(input.readEnum()));
+                            builder.setLevel(org.yamcs.protobuf.Parameters.AlarmLevel.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setMinInclusive(input.readDouble());
@@ -661,7 +661,7 @@ public final class SchemaParameters
                     output.writeObject(3, message.getType(), org.yamcs.protobuf.SchemaParameters.ParameterTypeInfo.WRITE, false);
 
                 if(message.hasDataSource())
-                    output.writeEnum(4, message.getDataSource().getNumber(), false);
+                    output.writeString(4, message.getDataSource().name(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Parameters.ParameterInfo message)
             {
@@ -714,7 +714,7 @@ public final class SchemaParameters
 
                             break;
                         case 4:
-                            builder.setDataSource(org.yamcs.protobuf.Parameters.DataSourceType.valueOf(input.readEnum()));
+                            builder.setDataSource(org.yamcs.protobuf.Parameters.DataSourceType.valueOf(input.readString()));
                             break;
                         default:
                             input.handleUnknownField(number, this);

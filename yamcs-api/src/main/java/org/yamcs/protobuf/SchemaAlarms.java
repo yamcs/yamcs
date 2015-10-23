@@ -153,7 +153,7 @@ public final class SchemaAlarms
                 if(message.hasId())
                     output.writeUInt32(1, message.getId(), false);
                 if(message.hasType())
-                    output.writeEnum(2, message.getType().getNumber(), false);
+                    output.writeString(2, message.getType().name(), false);
                 if(message.hasTriggerValue())
                     output.writeObject(3, message.getTriggerValue(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, false);
 
@@ -211,7 +211,7 @@ public final class SchemaAlarms
                             builder.setId(input.readUInt32());
                             break;
                         case 2:
-                            builder.setType(org.yamcs.protobuf.Alarms.Alarm.Type.valueOf(input.readEnum()));
+                            builder.setType(org.yamcs.protobuf.Alarms.Alarm.Type.valueOf(input.readString()));
                             break;
                         case 3:
                             builder.setTriggerValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));

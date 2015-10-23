@@ -422,7 +422,7 @@ public final class SchemaWeb
                     if(message.hasSequenceNumber())
                         output.writeUInt32(1, message.getSequenceNumber(), false);
                     if(message.hasType())
-                        output.writeEnum(2, message.getType().getNumber(), false);
+                        output.writeString(2, message.getType().name(), false);
                     if(message.hasParameterData())
                         output.writeObject(3, message.getParameterData(), org.yamcs.protobuf.SchemaPvalue.ParameterData.WRITE, false);
 
@@ -493,7 +493,7 @@ public final class SchemaWeb
                                 builder.setSequenceNumber(input.readUInt32());
                                 break;
                             case 2:
-                                builder.setType(org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(input.readEnum()));
+                                builder.setType(org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(input.readString()));
                                 break;
                             case 3:
                                 builder.setParameterData(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE));
@@ -617,7 +617,7 @@ public final class SchemaWeb
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.WebSocketServerMessage message) throws java.io.IOException
             {
                 if(message.hasType())
-                    output.writeEnum(1, message.getType().getNumber(), false);
+                    output.writeString(1, message.getType().name(), false);
                 if(message.hasReply())
                     output.writeObject(2, message.getReply(), org.yamcs.protobuf.SchemaWeb.WebSocketServerMessage.WebSocketReplyData.WRITE, false);
 
@@ -667,7 +667,7 @@ public final class SchemaWeb
                         case 0:
                             return;
                         case 1:
-                            builder.setType(org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.valueOf(input.readEnum()));
+                            builder.setType(org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setReply(input.mergeObject(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.newBuilder(), org.yamcs.protobuf.SchemaWeb.WebSocketServerMessage.WebSocketReplyData.MERGE));
