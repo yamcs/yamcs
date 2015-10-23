@@ -41,30 +41,13 @@ public final class SchemaPvalue
                     output.writeString(11, message.getAcquisitionTimeUTC(), false);
                 if(message.hasGenerationTimeUTC())
                     output.writeString(12, message.getGenerationTimeUTC(), false);
-                if(message.hasWatchLow())
-                    output.writeDouble(13, message.getWatchLow(), false);
-                if(message.hasWatchHigh())
-                    output.writeDouble(14, message.getWatchHigh(), false);
-                if(message.hasWarningLow())
-                    output.writeDouble(15, message.getWarningLow(), false);
-                if(message.hasWarningHigh())
-                    output.writeDouble(16, message.getWarningHigh(), false);
-                if(message.hasDistressLow())
-                    output.writeDouble(17, message.getDistressLow(), false);
-                if(message.hasDistressHigh())
-                    output.writeDouble(18, message.getDistressHigh(), false);
-                if(message.hasCriticalLow())
-                    output.writeDouble(19, message.getCriticalLow(), false);
-                if(message.hasCriticalHigh())
-                    output.writeDouble(20, message.getCriticalHigh(), false);
-                if(message.hasSevereLow())
-                    output.writeDouble(21, message.getSevereLow(), false);
-                if(message.hasSevereHigh())
-                    output.writeDouble(22, message.getSevereHigh(), false);
                 if(message.hasExpirationTime())
                     output.writeInt64(23, message.getExpirationTime(), false);
                 if(message.hasExpirationTimeUTC())
                     output.writeString(24, message.getExpirationTimeUTC(), false);
+                for(org.yamcs.protobuf.Parameters.AlarmRange alarmRange : message.getAlarmRangeList())
+                    output.writeObject(25, alarmRange, org.yamcs.protobuf.SchemaParameters.AlarmRange.WRITE, true);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
             {
@@ -137,41 +120,15 @@ public final class SchemaPvalue
                         case 12:
                             builder.setGenerationTimeUTC(input.readString());
                             break;
-                        case 13:
-                            builder.setWatchLow(input.readDouble());
-                            break;
-                        case 14:
-                            builder.setWatchHigh(input.readDouble());
-                            break;
-                        case 15:
-                            builder.setWarningLow(input.readDouble());
-                            break;
-                        case 16:
-                            builder.setWarningHigh(input.readDouble());
-                            break;
-                        case 17:
-                            builder.setDistressLow(input.readDouble());
-                            break;
-                        case 18:
-                            builder.setDistressHigh(input.readDouble());
-                            break;
-                        case 19:
-                            builder.setCriticalLow(input.readDouble());
-                            break;
-                        case 20:
-                            builder.setCriticalHigh(input.readDouble());
-                            break;
-                        case 21:
-                            builder.setSevereLow(input.readDouble());
-                            break;
-                        case 22:
-                            builder.setSevereHigh(input.readDouble());
-                            break;
                         case 23:
                             builder.setExpirationTime(input.readInt64());
                             break;
                         case 24:
                             builder.setExpirationTimeUTC(input.readString());
+                            break;
+                        case 25:
+                            builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Parameters.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaParameters.AlarmRange.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -223,18 +180,9 @@ public final class SchemaPvalue
                 case 8: return "monitoringResult";
                 case 11: return "acquisitionTimeUTC";
                 case 12: return "generationTimeUTC";
-                case 13: return "watchLow";
-                case 14: return "watchHigh";
-                case 15: return "warningLow";
-                case 16: return "warningHigh";
-                case 17: return "distressLow";
-                case 18: return "distressHigh";
-                case 19: return "criticalLow";
-                case 20: return "criticalHigh";
-                case 21: return "severeLow";
-                case 22: return "severeHigh";
                 case 23: return "expirationTime";
                 case 24: return "expirationTimeUTC";
+                case 25: return "alarmRange";
                 default: return null;
             }
         }
@@ -256,18 +204,9 @@ public final class SchemaPvalue
             fieldMap.put("monitoringResult", 8);
             fieldMap.put("acquisitionTimeUTC", 11);
             fieldMap.put("generationTimeUTC", 12);
-            fieldMap.put("watchLow", 13);
-            fieldMap.put("watchHigh", 14);
-            fieldMap.put("warningLow", 15);
-            fieldMap.put("warningHigh", 16);
-            fieldMap.put("distressLow", 17);
-            fieldMap.put("distressHigh", 18);
-            fieldMap.put("criticalLow", 19);
-            fieldMap.put("criticalHigh", 20);
-            fieldMap.put("severeLow", 21);
-            fieldMap.put("severeHigh", 22);
             fieldMap.put("expirationTime", 23);
             fieldMap.put("expirationTimeUTC", 24);
+            fieldMap.put("alarmRange", 25);
         }
     }
 

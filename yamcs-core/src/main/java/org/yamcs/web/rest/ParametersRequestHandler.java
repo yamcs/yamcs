@@ -139,7 +139,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
         // There's no such thing as a list of 'namespaces' within the MDB, therefore it
         // could happen that we arrive here but that the user intended to search for a single
         // parameter rather than a list. So... return a 404 if we didn't find any match.
-        if (matcher == null && responseb.getParameterList() == null || responseb.getParameterList().isEmpty()) {
+        if (matcher == null || responseb.getParameterList() == null || responseb.getParameterList().isEmpty()) {
             throw new NotFoundException(req);
         } else {
             return new RestResponse(req, responseb.build(), SchemaParameters.ListParametersResponse.WRITE);

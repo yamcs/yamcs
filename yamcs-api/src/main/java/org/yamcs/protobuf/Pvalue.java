@@ -161,11 +161,11 @@ public final class Pvalue {
      * <code>WATCH = 7;</code>
      *
      * <pre>
-     * NOMINAL_LIMIT_VIOLATION=2;
-     * NOMINAL_LOW_LIMIT_VIOLATION=3;
-     * NOMINAL_HIGH_LIMIT_VIOLATION=4;
-     * DANGER_LOW_LIMIT_VIOLATION=5;
-     * DANGER_HIGH_LIMIT_VIOLATION=6;
+     * NOMINAL_LIMIT_VIOLATION = 2;
+     * NOMINAL_LOW_LIMIT_VIOLATION = 3;
+     * NOMINAL_HIGH_LIMIT_VIOLATION = 4;
+     * DANGER_LOW_LIMIT_VIOLATION = 5;
+     * DANGER_HIGH_LIMIT_VIOLATION = 6;
      * </pre>
      */
     WATCH(2, 7),
@@ -239,11 +239,11 @@ public final class Pvalue {
      * <code>WATCH = 7;</code>
      *
      * <pre>
-     * NOMINAL_LIMIT_VIOLATION=2;
-     * NOMINAL_LOW_LIMIT_VIOLATION=3;
-     * NOMINAL_HIGH_LIMIT_VIOLATION=4;
-     * DANGER_LOW_LIMIT_VIOLATION=5;
-     * DANGER_HIGH_LIMIT_VIOLATION=6;
+     * NOMINAL_LIMIT_VIOLATION = 2;
+     * NOMINAL_LOW_LIMIT_VIOLATION = 3;
+     * NOMINAL_HIGH_LIMIT_VIOLATION = 4;
+     * DANGER_LOW_LIMIT_VIOLATION = 5;
+     * DANGER_HIGH_LIMIT_VIOLATION = 6;
      * </pre>
      */
     public static final int WATCH_VALUE = 7;
@@ -514,114 +514,6 @@ public final class Pvalue {
     com.google.protobuf.ByteString
         getGenerationTimeUTCBytes();
 
-    // optional double watchLow = 13;
-    /**
-     * <code>optional double watchLow = 13;</code>
-     *
-     * <pre>
-     * Not transferring xtce.FloatRange to proto since we actually have some logic there
-     * </pre>
-     */
-    boolean hasWatchLow();
-    /**
-     * <code>optional double watchLow = 13;</code>
-     *
-     * <pre>
-     * Not transferring xtce.FloatRange to proto since we actually have some logic there
-     * </pre>
-     */
-    double getWatchLow();
-
-    // optional double watchHigh = 14;
-    /**
-     * <code>optional double watchHigh = 14;</code>
-     */
-    boolean hasWatchHigh();
-    /**
-     * <code>optional double watchHigh = 14;</code>
-     */
-    double getWatchHigh();
-
-    // optional double warningLow = 15;
-    /**
-     * <code>optional double warningLow = 15;</code>
-     */
-    boolean hasWarningLow();
-    /**
-     * <code>optional double warningLow = 15;</code>
-     */
-    double getWarningLow();
-
-    // optional double warningHigh = 16;
-    /**
-     * <code>optional double warningHigh = 16;</code>
-     */
-    boolean hasWarningHigh();
-    /**
-     * <code>optional double warningHigh = 16;</code>
-     */
-    double getWarningHigh();
-
-    // optional double distressLow = 17;
-    /**
-     * <code>optional double distressLow = 17;</code>
-     */
-    boolean hasDistressLow();
-    /**
-     * <code>optional double distressLow = 17;</code>
-     */
-    double getDistressLow();
-
-    // optional double distressHigh = 18;
-    /**
-     * <code>optional double distressHigh = 18;</code>
-     */
-    boolean hasDistressHigh();
-    /**
-     * <code>optional double distressHigh = 18;</code>
-     */
-    double getDistressHigh();
-
-    // optional double criticalLow = 19;
-    /**
-     * <code>optional double criticalLow = 19;</code>
-     */
-    boolean hasCriticalLow();
-    /**
-     * <code>optional double criticalLow = 19;</code>
-     */
-    double getCriticalLow();
-
-    // optional double criticalHigh = 20;
-    /**
-     * <code>optional double criticalHigh = 20;</code>
-     */
-    boolean hasCriticalHigh();
-    /**
-     * <code>optional double criticalHigh = 20;</code>
-     */
-    double getCriticalHigh();
-
-    // optional double severeLow = 21;
-    /**
-     * <code>optional double severeLow = 21;</code>
-     */
-    boolean hasSevereLow();
-    /**
-     * <code>optional double severeLow = 21;</code>
-     */
-    double getSevereLow();
-
-    // optional double severeHigh = 22;
-    /**
-     * <code>optional double severeHigh = 22;</code>
-     */
-    boolean hasSevereHigh();
-    /**
-     * <code>optional double severeHigh = 22;</code>
-     */
-    double getSevereHigh();
-
     // optional int64 expirationTime = 23;
     /**
      * <code>optional int64 expirationTime = 23;</code>
@@ -646,13 +538,58 @@ public final class Pvalue {
      */
     com.google.protobuf.ByteString
         getExpirationTimeUTCBytes();
+
+    // repeated .parameters.AlarmRange alarmRange = 25;
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> 
+        getAlarmRangeList();
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index);
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    int getAlarmRangeCount();
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+        getAlarmRangeOrBuilderList();
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code pvalue.ParameterValue}
    *
    * <pre>
-   *the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
-   *this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
+   * the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
+   * this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
    * </pre>
    */
   public static final class ParameterValue extends
@@ -789,64 +726,22 @@ public final class Pvalue {
               generationTimeUTC_ = input.readBytes();
               break;
             }
-            case 105: {
-              bitField0_ |= 0x00000400;
-              watchLow_ = input.readDouble();
-              break;
-            }
-            case 113: {
-              bitField0_ |= 0x00000800;
-              watchHigh_ = input.readDouble();
-              break;
-            }
-            case 121: {
-              bitField0_ |= 0x00001000;
-              warningLow_ = input.readDouble();
-              break;
-            }
-            case 129: {
-              bitField0_ |= 0x00002000;
-              warningHigh_ = input.readDouble();
-              break;
-            }
-            case 137: {
-              bitField0_ |= 0x00004000;
-              distressLow_ = input.readDouble();
-              break;
-            }
-            case 145: {
-              bitField0_ |= 0x00008000;
-              distressHigh_ = input.readDouble();
-              break;
-            }
-            case 153: {
-              bitField0_ |= 0x00010000;
-              criticalLow_ = input.readDouble();
-              break;
-            }
-            case 161: {
-              bitField0_ |= 0x00020000;
-              criticalHigh_ = input.readDouble();
-              break;
-            }
-            case 169: {
-              bitField0_ |= 0x00040000;
-              severeLow_ = input.readDouble();
-              break;
-            }
-            case 177: {
-              bitField0_ |= 0x00080000;
-              severeHigh_ = input.readDouble();
-              break;
-            }
             case 184: {
-              bitField0_ |= 0x00100000;
+              bitField0_ |= 0x00000400;
               expirationTime_ = input.readInt64();
               break;
             }
             case 194: {
-              bitField0_ |= 0x00200000;
+              bitField0_ |= 0x00000800;
               expirationTimeUTC_ = input.readBytes();
+              break;
+            }
+            case 202: {
+              if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+                alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Parameters.AlarmRange>();
+                mutable_bitField0_ |= 0x00001000;
+              }
+              alarmRange_.add(input.readMessage(org.yamcs.protobuf.Parameters.AlarmRange.PARSER, extensionRegistry));
               break;
             }
           }
@@ -857,6 +752,9 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+          alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -1133,174 +1031,6 @@ public final class Pvalue {
       }
     }
 
-    // optional double watchLow = 13;
-    public static final int WATCHLOW_FIELD_NUMBER = 13;
-    private double watchLow_;
-    /**
-     * <code>optional double watchLow = 13;</code>
-     *
-     * <pre>
-     * Not transferring xtce.FloatRange to proto since we actually have some logic there
-     * </pre>
-     */
-    public boolean hasWatchLow() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
-    }
-    /**
-     * <code>optional double watchLow = 13;</code>
-     *
-     * <pre>
-     * Not transferring xtce.FloatRange to proto since we actually have some logic there
-     * </pre>
-     */
-    public double getWatchLow() {
-      return watchLow_;
-    }
-
-    // optional double watchHigh = 14;
-    public static final int WATCHHIGH_FIELD_NUMBER = 14;
-    private double watchHigh_;
-    /**
-     * <code>optional double watchHigh = 14;</code>
-     */
-    public boolean hasWatchHigh() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
-    }
-    /**
-     * <code>optional double watchHigh = 14;</code>
-     */
-    public double getWatchHigh() {
-      return watchHigh_;
-    }
-
-    // optional double warningLow = 15;
-    public static final int WARNINGLOW_FIELD_NUMBER = 15;
-    private double warningLow_;
-    /**
-     * <code>optional double warningLow = 15;</code>
-     */
-    public boolean hasWarningLow() {
-      return ((bitField0_ & 0x00001000) == 0x00001000);
-    }
-    /**
-     * <code>optional double warningLow = 15;</code>
-     */
-    public double getWarningLow() {
-      return warningLow_;
-    }
-
-    // optional double warningHigh = 16;
-    public static final int WARNINGHIGH_FIELD_NUMBER = 16;
-    private double warningHigh_;
-    /**
-     * <code>optional double warningHigh = 16;</code>
-     */
-    public boolean hasWarningHigh() {
-      return ((bitField0_ & 0x00002000) == 0x00002000);
-    }
-    /**
-     * <code>optional double warningHigh = 16;</code>
-     */
-    public double getWarningHigh() {
-      return warningHigh_;
-    }
-
-    // optional double distressLow = 17;
-    public static final int DISTRESSLOW_FIELD_NUMBER = 17;
-    private double distressLow_;
-    /**
-     * <code>optional double distressLow = 17;</code>
-     */
-    public boolean hasDistressLow() {
-      return ((bitField0_ & 0x00004000) == 0x00004000);
-    }
-    /**
-     * <code>optional double distressLow = 17;</code>
-     */
-    public double getDistressLow() {
-      return distressLow_;
-    }
-
-    // optional double distressHigh = 18;
-    public static final int DISTRESSHIGH_FIELD_NUMBER = 18;
-    private double distressHigh_;
-    /**
-     * <code>optional double distressHigh = 18;</code>
-     */
-    public boolean hasDistressHigh() {
-      return ((bitField0_ & 0x00008000) == 0x00008000);
-    }
-    /**
-     * <code>optional double distressHigh = 18;</code>
-     */
-    public double getDistressHigh() {
-      return distressHigh_;
-    }
-
-    // optional double criticalLow = 19;
-    public static final int CRITICALLOW_FIELD_NUMBER = 19;
-    private double criticalLow_;
-    /**
-     * <code>optional double criticalLow = 19;</code>
-     */
-    public boolean hasCriticalLow() {
-      return ((bitField0_ & 0x00010000) == 0x00010000);
-    }
-    /**
-     * <code>optional double criticalLow = 19;</code>
-     */
-    public double getCriticalLow() {
-      return criticalLow_;
-    }
-
-    // optional double criticalHigh = 20;
-    public static final int CRITICALHIGH_FIELD_NUMBER = 20;
-    private double criticalHigh_;
-    /**
-     * <code>optional double criticalHigh = 20;</code>
-     */
-    public boolean hasCriticalHigh() {
-      return ((bitField0_ & 0x00020000) == 0x00020000);
-    }
-    /**
-     * <code>optional double criticalHigh = 20;</code>
-     */
-    public double getCriticalHigh() {
-      return criticalHigh_;
-    }
-
-    // optional double severeLow = 21;
-    public static final int SEVERELOW_FIELD_NUMBER = 21;
-    private double severeLow_;
-    /**
-     * <code>optional double severeLow = 21;</code>
-     */
-    public boolean hasSevereLow() {
-      return ((bitField0_ & 0x00040000) == 0x00040000);
-    }
-    /**
-     * <code>optional double severeLow = 21;</code>
-     */
-    public double getSevereLow() {
-      return severeLow_;
-    }
-
-    // optional double severeHigh = 22;
-    public static final int SEVEREHIGH_FIELD_NUMBER = 22;
-    private double severeHigh_;
-    /**
-     * <code>optional double severeHigh = 22;</code>
-     */
-    public boolean hasSevereHigh() {
-      return ((bitField0_ & 0x00080000) == 0x00080000);
-    }
-    /**
-     * <code>optional double severeHigh = 22;</code>
-     */
-    public double getSevereHigh() {
-      return severeHigh_;
-    }
-
     // optional int64 expirationTime = 23;
     public static final int EXPIRATIONTIME_FIELD_NUMBER = 23;
     private long expirationTime_;
@@ -1308,7 +1038,7 @@ public final class Pvalue {
      * <code>optional int64 expirationTime = 23;</code>
      */
     public boolean hasExpirationTime() {
-      return ((bitField0_ & 0x00100000) == 0x00100000);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
      * <code>optional int64 expirationTime = 23;</code>
@@ -1324,7 +1054,7 @@ public final class Pvalue {
      * <code>optional string expirationTimeUTC = 24;</code>
      */
     public boolean hasExpirationTimeUTC() {
-      return ((bitField0_ & 0x00200000) == 0x00200000);
+      return ((bitField0_ & 0x00000800) == 0x00000800);
     }
     /**
      * <code>optional string expirationTimeUTC = 24;</code>
@@ -1360,6 +1090,62 @@ public final class Pvalue {
       }
     }
 
+    // repeated .parameters.AlarmRange alarmRange = 25;
+    public static final int ALARMRANGE_FIELD_NUMBER = 25;
+    private java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> alarmRange_;
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> getAlarmRangeList() {
+      return alarmRange_;
+    }
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+        getAlarmRangeOrBuilderList() {
+      return alarmRange_;
+    }
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    public int getAlarmRangeCount() {
+      return alarmRange_.size();
+    }
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    public org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index) {
+      return alarmRange_.get(index);
+    }
+    /**
+     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     *
+     * <pre>
+     * context-dependent ranges
+     * </pre>
+     */
+    public org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+        int index) {
+      return alarmRange_.get(index);
+    }
+
     private void initFields() {
       id_ = org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance();
       rawValue_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
@@ -1371,18 +1157,9 @@ public final class Pvalue {
       monitoringResult_ = org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED;
       acquisitionTimeUTC_ = "";
       generationTimeUTC_ = "";
-      watchLow_ = 0D;
-      watchHigh_ = 0D;
-      warningLow_ = 0D;
-      warningHigh_ = 0D;
-      distressLow_ = 0D;
-      distressHigh_ = 0D;
-      criticalLow_ = 0D;
-      criticalHigh_ = 0D;
-      severeLow_ = 0D;
-      severeHigh_ = 0D;
       expirationTime_ = 0L;
       expirationTimeUTC_ = "";
+      alarmRange_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1445,40 +1222,13 @@ public final class Pvalue {
         output.writeBytes(12, getGenerationTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
-        output.writeDouble(13, watchLow_);
-      }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
-        output.writeDouble(14, watchHigh_);
-      }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
-        output.writeDouble(15, warningLow_);
-      }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
-        output.writeDouble(16, warningHigh_);
-      }
-      if (((bitField0_ & 0x00004000) == 0x00004000)) {
-        output.writeDouble(17, distressLow_);
-      }
-      if (((bitField0_ & 0x00008000) == 0x00008000)) {
-        output.writeDouble(18, distressHigh_);
-      }
-      if (((bitField0_ & 0x00010000) == 0x00010000)) {
-        output.writeDouble(19, criticalLow_);
-      }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
-        output.writeDouble(20, criticalHigh_);
-      }
-      if (((bitField0_ & 0x00040000) == 0x00040000)) {
-        output.writeDouble(21, severeLow_);
-      }
-      if (((bitField0_ & 0x00080000) == 0x00080000)) {
-        output.writeDouble(22, severeHigh_);
-      }
-      if (((bitField0_ & 0x00100000) == 0x00100000)) {
         output.writeInt64(23, expirationTime_);
       }
-      if (((bitField0_ & 0x00200000) == 0x00200000)) {
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
         output.writeBytes(24, getExpirationTimeUTCBytes());
+      }
+      for (int i = 0; i < alarmRange_.size(); i++) {
+        output.writeMessage(25, alarmRange_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -1531,51 +1281,15 @@ public final class Pvalue {
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(13, watchLow_);
+          .computeInt64Size(23, expirationTime_);
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(14, watchHigh_);
-      }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(15, warningLow_);
-      }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(16, warningHigh_);
-      }
-      if (((bitField0_ & 0x00004000) == 0x00004000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(17, distressLow_);
-      }
-      if (((bitField0_ & 0x00008000) == 0x00008000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(18, distressHigh_);
-      }
-      if (((bitField0_ & 0x00010000) == 0x00010000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(19, criticalLow_);
-      }
-      if (((bitField0_ & 0x00020000) == 0x00020000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(20, criticalHigh_);
-      }
-      if (((bitField0_ & 0x00040000) == 0x00040000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(21, severeLow_);
-      }
-      if (((bitField0_ & 0x00080000) == 0x00080000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeDoubleSize(22, severeHigh_);
-      }
-      if (((bitField0_ & 0x00100000) == 0x00100000)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(23, expirationTime_);
-      }
-      if (((bitField0_ & 0x00200000) == 0x00200000)) {
-        size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(24, getExpirationTimeUTCBytes());
+      }
+      for (int i = 0; i < alarmRange_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(25, alarmRange_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1659,8 +1373,8 @@ public final class Pvalue {
      * Protobuf type {@code pvalue.ParameterValue}
      *
      * <pre>
-     *the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
-     *this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
+     * the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
+     * this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
      * </pre>
      */
     public static final class Builder extends
@@ -1693,6 +1407,7 @@ public final class Pvalue {
           getIdFieldBuilder();
           getRawValueFieldBuilder();
           getEngValueFieldBuilder();
+          getAlarmRangeFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1733,30 +1448,16 @@ public final class Pvalue {
         bitField0_ = (bitField0_ & ~0x00000100);
         generationTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000200);
-        watchLow_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00000400);
-        watchHigh_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00000800);
-        warningLow_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00001000);
-        warningHigh_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00002000);
-        distressLow_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00004000);
-        distressHigh_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00008000);
-        criticalLow_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00010000);
-        criticalHigh_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00020000);
-        severeLow_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00040000);
-        severeHigh_ = 0D;
-        bitField0_ = (bitField0_ & ~0x00080000);
         expirationTime_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00000400);
         expirationTimeUTC_ = "";
-        bitField0_ = (bitField0_ & ~0x00200000);
+        bitField0_ = (bitField0_ & ~0x00000800);
+        if (alarmRangeBuilder_ == null) {
+          alarmRange_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
+        } else {
+          alarmRangeBuilder_.clear();
+        }
         return this;
       }
 
@@ -1840,51 +1541,20 @@ public final class Pvalue {
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000400;
         }
-        result.watchLow_ = watchLow_;
+        result.expirationTime_ = expirationTime_;
         if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
           to_bitField0_ |= 0x00000800;
         }
-        result.watchHigh_ = watchHigh_;
-        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
-          to_bitField0_ |= 0x00001000;
-        }
-        result.warningLow_ = warningLow_;
-        if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
-          to_bitField0_ |= 0x00002000;
-        }
-        result.warningHigh_ = warningHigh_;
-        if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
-          to_bitField0_ |= 0x00004000;
-        }
-        result.distressLow_ = distressLow_;
-        if (((from_bitField0_ & 0x00008000) == 0x00008000)) {
-          to_bitField0_ |= 0x00008000;
-        }
-        result.distressHigh_ = distressHigh_;
-        if (((from_bitField0_ & 0x00010000) == 0x00010000)) {
-          to_bitField0_ |= 0x00010000;
-        }
-        result.criticalLow_ = criticalLow_;
-        if (((from_bitField0_ & 0x00020000) == 0x00020000)) {
-          to_bitField0_ |= 0x00020000;
-        }
-        result.criticalHigh_ = criticalHigh_;
-        if (((from_bitField0_ & 0x00040000) == 0x00040000)) {
-          to_bitField0_ |= 0x00040000;
-        }
-        result.severeLow_ = severeLow_;
-        if (((from_bitField0_ & 0x00080000) == 0x00080000)) {
-          to_bitField0_ |= 0x00080000;
-        }
-        result.severeHigh_ = severeHigh_;
-        if (((from_bitField0_ & 0x00100000) == 0x00100000)) {
-          to_bitField0_ |= 0x00100000;
-        }
-        result.expirationTime_ = expirationTime_;
-        if (((from_bitField0_ & 0x00200000) == 0x00200000)) {
-          to_bitField0_ |= 0x00200000;
-        }
         result.expirationTimeUTC_ = expirationTimeUTC_;
+        if (alarmRangeBuilder_ == null) {
+          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+            alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
+            bitField0_ = (bitField0_ & ~0x00001000);
+          }
+          result.alarmRange_ = alarmRange_;
+        } else {
+          result.alarmRange_ = alarmRangeBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1935,43 +1605,39 @@ public final class Pvalue {
           generationTimeUTC_ = other.generationTimeUTC_;
           onChanged();
         }
-        if (other.hasWatchLow()) {
-          setWatchLow(other.getWatchLow());
-        }
-        if (other.hasWatchHigh()) {
-          setWatchHigh(other.getWatchHigh());
-        }
-        if (other.hasWarningLow()) {
-          setWarningLow(other.getWarningLow());
-        }
-        if (other.hasWarningHigh()) {
-          setWarningHigh(other.getWarningHigh());
-        }
-        if (other.hasDistressLow()) {
-          setDistressLow(other.getDistressLow());
-        }
-        if (other.hasDistressHigh()) {
-          setDistressHigh(other.getDistressHigh());
-        }
-        if (other.hasCriticalLow()) {
-          setCriticalLow(other.getCriticalLow());
-        }
-        if (other.hasCriticalHigh()) {
-          setCriticalHigh(other.getCriticalHigh());
-        }
-        if (other.hasSevereLow()) {
-          setSevereLow(other.getSevereLow());
-        }
-        if (other.hasSevereHigh()) {
-          setSevereHigh(other.getSevereHigh());
-        }
         if (other.hasExpirationTime()) {
           setExpirationTime(other.getExpirationTime());
         }
         if (other.hasExpirationTimeUTC()) {
-          bitField0_ |= 0x00200000;
+          bitField0_ |= 0x00000800;
           expirationTimeUTC_ = other.expirationTimeUTC_;
           onChanged();
+        }
+        if (alarmRangeBuilder_ == null) {
+          if (!other.alarmRange_.isEmpty()) {
+            if (alarmRange_.isEmpty()) {
+              alarmRange_ = other.alarmRange_;
+              bitField0_ = (bitField0_ & ~0x00001000);
+            } else {
+              ensureAlarmRangeIsMutable();
+              alarmRange_.addAll(other.alarmRange_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.alarmRange_.isEmpty()) {
+            if (alarmRangeBuilder_.isEmpty()) {
+              alarmRangeBuilder_.dispose();
+              alarmRangeBuilder_ = null;
+              alarmRange_ = other.alarmRange_;
+              bitField0_ = (bitField0_ & ~0x00001000);
+              alarmRangeBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getAlarmRangeFieldBuilder() : null;
+            } else {
+              alarmRangeBuilder_.addAllMessages(other.alarmRange_);
+            }
+          }
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2712,359 +2378,13 @@ public final class Pvalue {
         return this;
       }
 
-      // optional double watchLow = 13;
-      private double watchLow_ ;
-      /**
-       * <code>optional double watchLow = 13;</code>
-       *
-       * <pre>
-       * Not transferring xtce.FloatRange to proto since we actually have some logic there
-       * </pre>
-       */
-      public boolean hasWatchLow() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
-      }
-      /**
-       * <code>optional double watchLow = 13;</code>
-       *
-       * <pre>
-       * Not transferring xtce.FloatRange to proto since we actually have some logic there
-       * </pre>
-       */
-      public double getWatchLow() {
-        return watchLow_;
-      }
-      /**
-       * <code>optional double watchLow = 13;</code>
-       *
-       * <pre>
-       * Not transferring xtce.FloatRange to proto since we actually have some logic there
-       * </pre>
-       */
-      public Builder setWatchLow(double value) {
-        bitField0_ |= 0x00000400;
-        watchLow_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double watchLow = 13;</code>
-       *
-       * <pre>
-       * Not transferring xtce.FloatRange to proto since we actually have some logic there
-       * </pre>
-       */
-      public Builder clearWatchLow() {
-        bitField0_ = (bitField0_ & ~0x00000400);
-        watchLow_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double watchHigh = 14;
-      private double watchHigh_ ;
-      /**
-       * <code>optional double watchHigh = 14;</code>
-       */
-      public boolean hasWatchHigh() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
-      }
-      /**
-       * <code>optional double watchHigh = 14;</code>
-       */
-      public double getWatchHigh() {
-        return watchHigh_;
-      }
-      /**
-       * <code>optional double watchHigh = 14;</code>
-       */
-      public Builder setWatchHigh(double value) {
-        bitField0_ |= 0x00000800;
-        watchHigh_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double watchHigh = 14;</code>
-       */
-      public Builder clearWatchHigh() {
-        bitField0_ = (bitField0_ & ~0x00000800);
-        watchHigh_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double warningLow = 15;
-      private double warningLow_ ;
-      /**
-       * <code>optional double warningLow = 15;</code>
-       */
-      public boolean hasWarningLow() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
-      }
-      /**
-       * <code>optional double warningLow = 15;</code>
-       */
-      public double getWarningLow() {
-        return warningLow_;
-      }
-      /**
-       * <code>optional double warningLow = 15;</code>
-       */
-      public Builder setWarningLow(double value) {
-        bitField0_ |= 0x00001000;
-        warningLow_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double warningLow = 15;</code>
-       */
-      public Builder clearWarningLow() {
-        bitField0_ = (bitField0_ & ~0x00001000);
-        warningLow_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double warningHigh = 16;
-      private double warningHigh_ ;
-      /**
-       * <code>optional double warningHigh = 16;</code>
-       */
-      public boolean hasWarningHigh() {
-        return ((bitField0_ & 0x00002000) == 0x00002000);
-      }
-      /**
-       * <code>optional double warningHigh = 16;</code>
-       */
-      public double getWarningHigh() {
-        return warningHigh_;
-      }
-      /**
-       * <code>optional double warningHigh = 16;</code>
-       */
-      public Builder setWarningHigh(double value) {
-        bitField0_ |= 0x00002000;
-        warningHigh_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double warningHigh = 16;</code>
-       */
-      public Builder clearWarningHigh() {
-        bitField0_ = (bitField0_ & ~0x00002000);
-        warningHigh_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double distressLow = 17;
-      private double distressLow_ ;
-      /**
-       * <code>optional double distressLow = 17;</code>
-       */
-      public boolean hasDistressLow() {
-        return ((bitField0_ & 0x00004000) == 0x00004000);
-      }
-      /**
-       * <code>optional double distressLow = 17;</code>
-       */
-      public double getDistressLow() {
-        return distressLow_;
-      }
-      /**
-       * <code>optional double distressLow = 17;</code>
-       */
-      public Builder setDistressLow(double value) {
-        bitField0_ |= 0x00004000;
-        distressLow_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double distressLow = 17;</code>
-       */
-      public Builder clearDistressLow() {
-        bitField0_ = (bitField0_ & ~0x00004000);
-        distressLow_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double distressHigh = 18;
-      private double distressHigh_ ;
-      /**
-       * <code>optional double distressHigh = 18;</code>
-       */
-      public boolean hasDistressHigh() {
-        return ((bitField0_ & 0x00008000) == 0x00008000);
-      }
-      /**
-       * <code>optional double distressHigh = 18;</code>
-       */
-      public double getDistressHigh() {
-        return distressHigh_;
-      }
-      /**
-       * <code>optional double distressHigh = 18;</code>
-       */
-      public Builder setDistressHigh(double value) {
-        bitField0_ |= 0x00008000;
-        distressHigh_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double distressHigh = 18;</code>
-       */
-      public Builder clearDistressHigh() {
-        bitField0_ = (bitField0_ & ~0x00008000);
-        distressHigh_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double criticalLow = 19;
-      private double criticalLow_ ;
-      /**
-       * <code>optional double criticalLow = 19;</code>
-       */
-      public boolean hasCriticalLow() {
-        return ((bitField0_ & 0x00010000) == 0x00010000);
-      }
-      /**
-       * <code>optional double criticalLow = 19;</code>
-       */
-      public double getCriticalLow() {
-        return criticalLow_;
-      }
-      /**
-       * <code>optional double criticalLow = 19;</code>
-       */
-      public Builder setCriticalLow(double value) {
-        bitField0_ |= 0x00010000;
-        criticalLow_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double criticalLow = 19;</code>
-       */
-      public Builder clearCriticalLow() {
-        bitField0_ = (bitField0_ & ~0x00010000);
-        criticalLow_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double criticalHigh = 20;
-      private double criticalHigh_ ;
-      /**
-       * <code>optional double criticalHigh = 20;</code>
-       */
-      public boolean hasCriticalHigh() {
-        return ((bitField0_ & 0x00020000) == 0x00020000);
-      }
-      /**
-       * <code>optional double criticalHigh = 20;</code>
-       */
-      public double getCriticalHigh() {
-        return criticalHigh_;
-      }
-      /**
-       * <code>optional double criticalHigh = 20;</code>
-       */
-      public Builder setCriticalHigh(double value) {
-        bitField0_ |= 0x00020000;
-        criticalHigh_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double criticalHigh = 20;</code>
-       */
-      public Builder clearCriticalHigh() {
-        bitField0_ = (bitField0_ & ~0x00020000);
-        criticalHigh_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double severeLow = 21;
-      private double severeLow_ ;
-      /**
-       * <code>optional double severeLow = 21;</code>
-       */
-      public boolean hasSevereLow() {
-        return ((bitField0_ & 0x00040000) == 0x00040000);
-      }
-      /**
-       * <code>optional double severeLow = 21;</code>
-       */
-      public double getSevereLow() {
-        return severeLow_;
-      }
-      /**
-       * <code>optional double severeLow = 21;</code>
-       */
-      public Builder setSevereLow(double value) {
-        bitField0_ |= 0x00040000;
-        severeLow_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double severeLow = 21;</code>
-       */
-      public Builder clearSevereLow() {
-        bitField0_ = (bitField0_ & ~0x00040000);
-        severeLow_ = 0D;
-        onChanged();
-        return this;
-      }
-
-      // optional double severeHigh = 22;
-      private double severeHigh_ ;
-      /**
-       * <code>optional double severeHigh = 22;</code>
-       */
-      public boolean hasSevereHigh() {
-        return ((bitField0_ & 0x00080000) == 0x00080000);
-      }
-      /**
-       * <code>optional double severeHigh = 22;</code>
-       */
-      public double getSevereHigh() {
-        return severeHigh_;
-      }
-      /**
-       * <code>optional double severeHigh = 22;</code>
-       */
-      public Builder setSevereHigh(double value) {
-        bitField0_ |= 0x00080000;
-        severeHigh_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional double severeHigh = 22;</code>
-       */
-      public Builder clearSevereHigh() {
-        bitField0_ = (bitField0_ & ~0x00080000);
-        severeHigh_ = 0D;
-        onChanged();
-        return this;
-      }
-
       // optional int64 expirationTime = 23;
       private long expirationTime_ ;
       /**
        * <code>optional int64 expirationTime = 23;</code>
        */
       public boolean hasExpirationTime() {
-        return ((bitField0_ & 0x00100000) == 0x00100000);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
        * <code>optional int64 expirationTime = 23;</code>
@@ -3076,7 +2396,7 @@ public final class Pvalue {
        * <code>optional int64 expirationTime = 23;</code>
        */
       public Builder setExpirationTime(long value) {
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00000400;
         expirationTime_ = value;
         onChanged();
         return this;
@@ -3085,7 +2405,7 @@ public final class Pvalue {
        * <code>optional int64 expirationTime = 23;</code>
        */
       public Builder clearExpirationTime() {
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00000400);
         expirationTime_ = 0L;
         onChanged();
         return this;
@@ -3097,7 +2417,7 @@ public final class Pvalue {
        * <code>optional string expirationTimeUTC = 24;</code>
        */
       public boolean hasExpirationTimeUTC() {
-        return ((bitField0_ & 0x00200000) == 0x00200000);
+        return ((bitField0_ & 0x00000800) == 0x00000800);
       }
       /**
        * <code>optional string expirationTimeUTC = 24;</code>
@@ -3137,7 +2457,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00200000;
+  bitField0_ |= 0x00000800;
         expirationTimeUTC_ = value;
         onChanged();
         return this;
@@ -3146,7 +2466,7 @@ public final class Pvalue {
        * <code>optional string expirationTimeUTC = 24;</code>
        */
       public Builder clearExpirationTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00200000);
+        bitField0_ = (bitField0_ & ~0x00000800);
         expirationTimeUTC_ = getDefaultInstance().getExpirationTimeUTC();
         onChanged();
         return this;
@@ -3159,10 +2479,322 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00200000;
+  bitField0_ |= 0x00000800;
         expirationTimeUTC_ = value;
         onChanged();
         return this;
+      }
+
+      // repeated .parameters.AlarmRange alarmRange = 25;
+      private java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> alarmRange_ =
+        java.util.Collections.emptyList();
+      private void ensureAlarmRangeIsMutable() {
+        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+          alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Parameters.AlarmRange>(alarmRange_);
+          bitField0_ |= 0x00001000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> alarmRangeBuilder_;
+
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> getAlarmRangeList() {
+        if (alarmRangeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(alarmRange_);
+        } else {
+          return alarmRangeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public int getAlarmRangeCount() {
+        if (alarmRangeBuilder_ == null) {
+          return alarmRange_.size();
+        } else {
+          return alarmRangeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index) {
+        if (alarmRangeBuilder_ == null) {
+          return alarmRange_.get(index);
+        } else {
+          return alarmRangeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder setAlarmRange(
+          int index, org.yamcs.protobuf.Parameters.AlarmRange value) {
+        if (alarmRangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlarmRangeIsMutable();
+          alarmRange_.set(index, value);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder setAlarmRange(
+          int index, org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+        if (alarmRangeBuilder_ == null) {
+          ensureAlarmRangeIsMutable();
+          alarmRange_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          alarmRangeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder addAlarmRange(org.yamcs.protobuf.Parameters.AlarmRange value) {
+        if (alarmRangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlarmRangeIsMutable();
+          alarmRange_.add(value);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder addAlarmRange(
+          int index, org.yamcs.protobuf.Parameters.AlarmRange value) {
+        if (alarmRangeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlarmRangeIsMutable();
+          alarmRange_.add(index, value);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder addAlarmRange(
+          org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+        if (alarmRangeBuilder_ == null) {
+          ensureAlarmRangeIsMutable();
+          alarmRange_.add(builderForValue.build());
+          onChanged();
+        } else {
+          alarmRangeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder addAlarmRange(
+          int index, org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+        if (alarmRangeBuilder_ == null) {
+          ensureAlarmRangeIsMutable();
+          alarmRange_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          alarmRangeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder addAllAlarmRange(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Parameters.AlarmRange> values) {
+        if (alarmRangeBuilder_ == null) {
+          ensureAlarmRangeIsMutable();
+          super.addAll(values, alarmRange_);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder clearAlarmRange() {
+        if (alarmRangeBuilder_ == null) {
+          alarmRange_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public Builder removeAlarmRange(int index) {
+        if (alarmRangeBuilder_ == null) {
+          ensureAlarmRangeIsMutable();
+          alarmRange_.remove(index);
+          onChanged();
+        } else {
+          alarmRangeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public org.yamcs.protobuf.Parameters.AlarmRange.Builder getAlarmRangeBuilder(
+          int index) {
+        return getAlarmRangeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+          int index) {
+        if (alarmRangeBuilder_ == null) {
+          return alarmRange_.get(index);  } else {
+          return alarmRangeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+           getAlarmRangeOrBuilderList() {
+        if (alarmRangeBuilder_ != null) {
+          return alarmRangeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(alarmRange_);
+        }
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public org.yamcs.protobuf.Parameters.AlarmRange.Builder addAlarmRangeBuilder() {
+        return getAlarmRangeFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Parameters.AlarmRange.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public org.yamcs.protobuf.Parameters.AlarmRange.Builder addAlarmRangeBuilder(
+          int index) {
+        return getAlarmRangeFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Parameters.AlarmRange.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       *
+       * <pre>
+       * context-dependent ranges
+       * </pre>
+       */
+      public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange.Builder> 
+           getAlarmRangeBuilderList() {
+        return getAlarmRangeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+          getAlarmRangeFieldBuilder() {
+        if (alarmRangeBuilder_ == null) {
+          alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder>(
+                  alarmRange_,
+                  ((bitField0_ & 0x00001000) == 0x00001000),
+                  getParentForChildren(),
+                  isClean());
+          alarmRange_ = null;
+        }
+        return alarmRangeBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:pvalue.ParameterValue)
@@ -3209,7 +2841,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -3219,7 +2851,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -3229,7 +2861,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -3417,7 +3049,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -3429,7 +3061,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -3452,7 +3084,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      *
      * <pre>
-     * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+     * the next three fields are used by the recorder as unique key to store parameters in "rows"
      * and also by the components that provide parameters from external sources
      * the time should roughly correspond to the parameter time but can be rounded for better efficiency
      * </pre>
@@ -4074,7 +3706,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4086,7 +3718,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4106,7 +3738,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4128,7 +3760,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4147,7 +3779,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4162,7 +3794,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        *
        * <pre>
-       * the next three fields are used by the recorder as unique key to store parameters in "rows" 
+       * the next three fields are used by the recorder as unique key to store parameters in "rows"
        * and also by the components that provide parameters from external sources
        * the time should roughly correspond to the parameter time but can be rounded for better efficiency
        * </pre>
@@ -4274,35 +3906,32 @@ public final class Pvalue {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\"\334\004\n\016" +
-      "ParameterValue\022 \n\002id\030\001 \001(\0132\024.yamcs.Named" +
-      "ObjectId\022\036\n\010rawValue\030\002 \001(\0132\014.yamcs.Value" +
-      "\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Value\022\027\n\017acqu" +
-      "isitionTime\030\004 \001(\003\022\026\n\016generationTime\030\005 \001(" +
-      "\003\0224\n\021acquisitionStatus\030\006 \001(\0162\031.pvalue.Ac" +
-      "quisitionStatus\022\030\n\020processingStatus\030\007 \001(" +
-      "\010\0222\n\020monitoringResult\030\010 \001(\0162\030.pvalue.Mon" +
-      "itoringResult\022\032\n\022acquisitionTimeUTC\030\013 \001(" +
-      "\t\022\031\n\021generationTimeUTC\030\014 \001(\t\022\020\n\010watchLow",
-      "\030\r \001(\001\022\021\n\twatchHigh\030\016 \001(\001\022\022\n\nwarningLow\030" +
-      "\017 \001(\001\022\023\n\013warningHigh\030\020 \001(\001\022\023\n\013distressLo" +
-      "w\030\021 \001(\001\022\024\n\014distressHigh\030\022 \001(\001\022\023\n\013critica" +
-      "lLow\030\023 \001(\001\022\024\n\014criticalHigh\030\024 \001(\001\022\021\n\tseve" +
-      "reLow\030\025 \001(\001\022\022\n\nsevereHigh\030\026 \001(\001\022\026\n\016expir" +
-      "ationTime\030\027 \001(\003\022\031\n\021expirationTimeUTC\030\030 \001" +
-      "(\t\"q\n\rParameterData\022)\n\tparameter\030\001 \003(\0132\026" +
-      ".pvalue.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n" +
-      "\016generationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005*M\n" +
-      "\021AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_",
-      "RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*\234\002\n" +
-      "\020MonitoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LI" +
-      "MITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n\nWATC" +
-      "H_HIGH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LOW\020\013\022\020" +
-      "\n\014WARNING_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014DISTRE" +
-      "SS_LOW\020\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRITICAL\020" +
-      "\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\rCRITICAL_HIGH\020\022\022\n" +
-      "\n\006SEVERE\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVERE_HIG" +
-      "H\020\025B\024\n\022org.yamcs.protobuf"
+      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\032\020par" +
+      "ameters.proto\"\275\003\n\016ParameterValue\022 \n\002id\030\001" +
+      " \001(\0132\024.yamcs.NamedObjectId\022\036\n\010rawValue\030\002" +
+      " \001(\0132\014.yamcs.Value\022\036\n\010engValue\030\003 \001(\0132\014.y" +
+      "amcs.Value\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016g" +
+      "enerationTime\030\005 \001(\003\0224\n\021acquisitionStatus" +
+      "\030\006 \001(\0162\031.pvalue.AcquisitionStatus\022\030\n\020pro" +
+      "cessingStatus\030\007 \001(\010\0222\n\020monitoringResult\030" +
+      "\010 \001(\0162\030.pvalue.MonitoringResult\022\032\n\022acqui" +
+      "sitionTimeUTC\030\013 \001(\t\022\031\n\021generationTimeUTC",
+      "\030\014 \001(\t\022\026\n\016expirationTime\030\027 \001(\003\022\031\n\021expira" +
+      "tionTimeUTC\030\030 \001(\t\022*\n\nalarmRange\030\031 \003(\0132\026." +
+      "parameters.AlarmRange\"q\n\rParameterData\022)" +
+      "\n\tparameter\030\001 \003(\0132\026.pvalue.ParameterValu" +
+      "e\022\r\n\005group\030\002 \001(\t\022\026\n\016generationTime\030\003 \001(\003" +
+      "\022\016\n\006seqNum\030\004 \001(\005*M\n\021AcquisitionStatus\022\014\n" +
+      "\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID" +
+      "\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010" +
+      "DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\t" +
+      "WATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n",
+      "\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010D" +
+      "ISTRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_" +
+      "HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021" +
+      "\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_" +
+      "LOW\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org.yamcs.prot" +
+      "obuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4314,7 +3943,7 @@ public final class Pvalue {
           internal_static_pvalue_ParameterValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pvalue_ParameterValue_descriptor,
-              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "WatchLow", "WatchHigh", "WarningLow", "WarningHigh", "DistressLow", "DistressHigh", "CriticalLow", "CriticalHigh", "SevereLow", "SevereHigh", "ExpirationTime", "ExpirationTimeUTC", });
+              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "ExpirationTime", "ExpirationTimeUTC", "AlarmRange", });
           internal_static_pvalue_ParameterData_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_pvalue_ParameterData_fieldAccessorTable = new
@@ -4328,6 +3957,7 @@ public final class Pvalue {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
+          org.yamcs.protobuf.Parameters.getDescriptor(),
         }, assigner);
   }
 
