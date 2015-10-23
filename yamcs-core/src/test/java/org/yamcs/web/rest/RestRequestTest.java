@@ -13,6 +13,35 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class RestRequestTest {
+    
+    @Test
+    public void testPathSegments() {
+        RestRequest req = makeRestRequest("/api/simulator/parameters");
+        assertEquals(4, req.getPathSegmentCount());
+        assertEquals("", req.getPathSegment(0));
+        assertEquals("api", req.getPathSegment(1));
+    }
+    
+    @Test
+    public void testSlicePath() {
+        RestRequest req = makeRestRequest("/api/simulator/parameters");        
+        assertEquals("api/simulator/parameters", req.slicePath(1));
+        assertEquals("simulator/parameters", req.slicePath(2));
+        assertEquals("parameters", req.slicePath(3));
+        assertEquals("simulator/parameters", req.slicePath(2, 4));
+        assertEquals("simulator", req.slicePath(2, 3));
+        
+        assertEquals("api/simulator", req.slicePath(1, -1));
+        assertEquals("api", req.slicePath(1, -2));
+        
+        req = makeRestRequest("/api/simulator/parameters/MDB:OPS+Name/SIMULATOR_BatteryVoltage2");
+        assertEquals("MDB:OPS Name", req.slicePath(4, -1));
+        assertEquals("SIMULATOR_BatteryVoltage2", req.slicePath(5));
+        
+        req = makeRestRequest("/api/simulator/parameters/YSS/SIMULATOR/BatteryVoltage2");
+        assertEquals("YSS/SIMULATOR", req.slicePath(4, -1));
+        assertEquals("BatteryVoltage2", req.slicePath(-1));
+    }
 
     @Test
     public void testMediaType_unspecified() {
@@ -79,5 +108,9 @@ public class RestRequestTest {
             req.headers().set(Names.ACCEPT, accept);
         }
         return new RestRequest(null, req, new QueryStringDecoder("/"), null, null);
+    }
+    
+    private static RestRequest makeRestRequest(String path) {
+        return new RestRequest(null, null, new QueryStringDecoder(path), null, null);
     }
 }

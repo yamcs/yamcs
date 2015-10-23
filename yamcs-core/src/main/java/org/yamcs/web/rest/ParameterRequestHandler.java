@@ -29,7 +29,7 @@ import org.yamcs.xtce.Parameter;
 /**
  * Handles incoming requests related to realtime Parameters (get/set).
  * <p>
- * /(instance)/parameter
+ * /api/:instance/parameter
  */
 public class ParameterRequestHandler extends RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(ParameterRequestHandler.class.getName());

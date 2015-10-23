@@ -88,14 +88,26 @@ public class RestRequest {
         return pathSegments.length > index;
     }
     
-    public String getRemainingUri() {
-        return qsDecoder.path();
+    public int getPathSegmentCount() {
+        return pathSegments.length;
+    }
+    
+    public String slicePath(int startSegment) {
+        return slicePath(startSegment, pathSegments.length);
+    }
+    
+    public String slicePath(int startSegment, int stopSegment) {
+        if (startSegment < 0) startSegment = pathSegments.length + startSegment;
+        if (stopSegment < 0) stopSegment = pathSegments.length + stopSegment;
+        StringBuilder buf = new StringBuilder(pathSegments[startSegment]);
+        for (int i = startSegment + 1; i < stopSegment; i++) {
+            buf.append('/').append(pathSegments[i]);
+        }
+        return buf.toString();
     }
     
     public String getFullPathWithoutQueryString() {
-        String uri = httpRequest.getUri();
-        int qIndex = uri.lastIndexOf('?');
-        return qIndex == -1 ? uri : uri.substring(0, uri.lastIndexOf('?'));
+        return qsDecoder.path();
     }
     
     /**
