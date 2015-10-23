@@ -796,8 +796,8 @@ public final class SchemaParameters
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Parameters.GetParameterRequest message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Yamcs.NamedObjectId list : message.getListList())
-                    output.writeObject(1, list, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
+                    output.writeObject(1, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
                 if(message.hasFromCache())
                     output.writeBool(2, message.getFromCache(), false);
@@ -843,7 +843,7 @@ public final class SchemaParameters
                         case 0:
                             return;
                         case 1:
-                            builder.addList(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+                            builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
                         case 2:
@@ -892,7 +892,7 @@ public final class SchemaParameters
         {
             switch(number)
             {
-                case 1: return "list";
+                case 1: return "id";
                 case 2: return "fromCache";
                 case 3: return "timeout";
                 default: return null;
@@ -906,7 +906,7 @@ public final class SchemaParameters
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("list", 1);
+            fieldMap.put("id", 1);
             fieldMap.put("fromCache", 2);
             fieldMap.put("timeout", 3);
         }
@@ -923,8 +923,8 @@ public final class SchemaParameters
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Parameters.ListParametersRequest message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Yamcs.NamedObjectId list : message.getListList())
-                    output.writeObject(1, list, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
+                    output.writeObject(1, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Parameters.ListParametersRequest message)
@@ -966,7 +966,7 @@ public final class SchemaParameters
                         case 0:
                             return;
                         case 1:
-                            builder.addList(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+                            builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
                         default:
@@ -1009,7 +1009,7 @@ public final class SchemaParameters
         {
             switch(number)
             {
-                case 1: return "list";
+                case 1: return "id";
                 default: return null;
             }
         }
@@ -1021,7 +1021,7 @@ public final class SchemaParameters
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("list", 1);
+            fieldMap.put("id", 1);
         }
     }
 

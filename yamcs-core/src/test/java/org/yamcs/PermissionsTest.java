@@ -134,13 +134,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         // Allowed to subscribe to Integer parameter from cache
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        GetParameterRequest req = GetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
+        GetParameterRequest req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
         String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
         assertTrue("{}", !response.contains("ForbiddenException"));
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = GetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
+        req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
         response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }

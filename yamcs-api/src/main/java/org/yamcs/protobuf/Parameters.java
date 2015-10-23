@@ -5851,29 +5851,29 @@ public final class Parameters {
   public interface GetParameterRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .yamcs.NamedObjectId list = 1;
+    // repeated .yamcs.NamedObjectId id = 1;
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getListList();
+        getIdList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
+    org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index);
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    int getListCount();
+    int getIdCount();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList();
+        getIdOrBuilderList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index);
 
     // optional bool fromCache = 2;
@@ -5957,10 +5957,10 @@ public final class Parameters {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              list_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              id_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
             case 16: {
@@ -5982,7 +5982,7 @@ public final class Parameters {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          list_ = java.util.Collections.unmodifiableList(list_);
+          id_ = java.util.Collections.unmodifiableList(id_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -6016,40 +6016,40 @@ public final class Parameters {
     }
 
     private int bitField0_;
-    // repeated .yamcs.NamedObjectId list = 1;
-    public static final int LIST_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
+    // repeated .yamcs.NamedObjectId id = 1;
+    public static final int ID_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_;
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-      return list_;
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+      return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList() {
-      return list_;
+        getIdOrBuilderList() {
+      return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public int getListCount() {
-      return list_.size();
+    public int getIdCount() {
+      return id_.size();
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-      return list_.get(index);
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+      return id_.get(index);
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index) {
-      return list_.get(index);
+      return id_.get(index);
     }
 
     // optional bool fromCache = 2;
@@ -6093,7 +6093,7 @@ public final class Parameters {
     }
 
     private void initFields() {
-      list_ = java.util.Collections.emptyList();
+      id_ = java.util.Collections.emptyList();
       fromCache_ = false;
       timeout_ = 0L;
     }
@@ -6102,8 +6102,8 @@ public final class Parameters {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getListCount(); i++) {
-        if (!getList(i).isInitialized()) {
+      for (int i = 0; i < getIdCount(); i++) {
+        if (!getId(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -6115,8 +6115,8 @@ public final class Parameters {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < list_.size(); i++) {
-        output.writeMessage(1, list_.get(i));
+      for (int i = 0; i < id_.size(); i++) {
+        output.writeMessage(1, id_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(2, fromCache_);
@@ -6133,9 +6133,9 @@ public final class Parameters {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < list_.size(); i++) {
+      for (int i = 0; i < id_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, list_.get(i));
+          .computeMessageSize(1, id_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -6253,7 +6253,7 @@ public final class Parameters {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getListFieldBuilder();
+          getIdFieldBuilder();
         }
       }
       private static Builder create() {
@@ -6262,11 +6262,11 @@ public final class Parameters {
 
       public Builder clear() {
         super.clear();
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          listBuilder_.clear();
+          idBuilder_.clear();
         }
         fromCache_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -6300,14 +6300,14 @@ public final class Parameters {
         org.yamcs.protobuf.Parameters.GetParameterRequest result = new org.yamcs.protobuf.Parameters.GetParameterRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            list_ = java.util.Collections.unmodifiableList(list_);
+            id_ = java.util.Collections.unmodifiableList(id_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.list_ = list_;
+          result.id_ = id_;
         } else {
-          result.list_ = listBuilder_.build();
+          result.id_ = idBuilder_.build();
         }
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000001;
@@ -6333,29 +6333,29 @@ public final class Parameters {
 
       public Builder mergeFrom(org.yamcs.protobuf.Parameters.GetParameterRequest other) {
         if (other == org.yamcs.protobuf.Parameters.GetParameterRequest.getDefaultInstance()) return this;
-        if (listBuilder_ == null) {
-          if (!other.list_.isEmpty()) {
-            if (list_.isEmpty()) {
-              list_ = other.list_;
+        if (idBuilder_ == null) {
+          if (!other.id_.isEmpty()) {
+            if (id_.isEmpty()) {
+              id_ = other.id_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureListIsMutable();
-              list_.addAll(other.list_);
+              ensureIdIsMutable();
+              id_.addAll(other.id_);
             }
             onChanged();
           }
         } else {
-          if (!other.list_.isEmpty()) {
-            if (listBuilder_.isEmpty()) {
-              listBuilder_.dispose();
-              listBuilder_ = null;
-              list_ = other.list_;
+          if (!other.id_.isEmpty()) {
+            if (idBuilder_.isEmpty()) {
+              idBuilder_.dispose();
+              idBuilder_ = null;
+              id_ = other.id_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              listBuilder_ = 
+              idBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getListFieldBuilder() : null;
+                   getIdFieldBuilder() : null;
             } else {
-              listBuilder_.addAllMessages(other.list_);
+              idBuilder_.addAllMessages(other.id_);
             }
           }
         }
@@ -6370,8 +6370,8 @@ public final class Parameters {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getListCount(); i++) {
-          if (!getList(i).isInitialized()) {
+        for (int i = 0; i < getIdCount(); i++) {
+          if (!getId(i).isInitialized()) {
             
             return false;
           }
@@ -6398,244 +6398,244 @@ public final class Parameters {
       }
       private int bitField0_;
 
-      // repeated .yamcs.NamedObjectId list = 1;
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
+      // repeated .yamcs.NamedObjectId id = 1;
+      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
-      private void ensureListIsMutable() {
+      private void ensureIdIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
+          id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
 
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-        if (listBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(list_);
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+        if (idBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(id_);
         } else {
-          return listBuilder_.getMessageList();
+          return idBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public int getListCount() {
-        if (listBuilder_ == null) {
-          return list_.size();
+      public int getIdCount() {
+        if (idBuilder_ == null) {
+          return id_.size();
         } else {
-          return listBuilder_.getCount();
+          return idBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+        if (idBuilder_ == null) {
+          return id_.get(index);
         } else {
-          return listBuilder_.getMessage(index);
+          return idBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder setList(
+      public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.set(index, value);
+          ensureIdIsMutable();
+          id_.set(index, value);
           onChanged();
         } else {
-          listBuilder_.setMessage(index, value);
+          idBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder setList(
+      public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.set(index, builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.set(index, builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.setMessage(index, builderForValue.build());
+          idBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+      public Builder addId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.add(value);
+          ensureIdIsMutable();
+          id_.add(value);
           onChanged();
         } else {
-          listBuilder_.addMessage(value);
+          idBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.add(index, value);
+          ensureIdIsMutable();
+          id_.add(index, value);
           onChanged();
         } else {
-          listBuilder_.addMessage(index, value);
+          idBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.addMessage(builderForValue.build());
+          idBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(index, builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(index, builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.addMessage(index, builderForValue.build());
+          idBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addAllList(
+      public Builder addAllId(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          super.addAll(values, list_);
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          super.addAll(values, id_);
           onChanged();
         } else {
-          listBuilder_.addAllMessages(values);
+          idBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder clearList() {
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
+      public Builder clearId() {
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          listBuilder_.clear();
+          idBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder removeList(int index) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.remove(index);
+      public Builder removeId(int index) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.remove(index);
           onChanged();
         } else {
-          listBuilder_.remove(index);
+          idBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder(
           int index) {
-        return getListFieldBuilder().getBuilder(index);
+        return getIdFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
           int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);  } else {
-          return listBuilder_.getMessageOrBuilder(index);
+        if (idBuilder_ == null) {
+          return id_.get(index);  } else {
+          return idBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getListOrBuilderList() {
-        if (listBuilder_ != null) {
-          return listBuilder_.getMessageOrBuilderList();
+           getIdOrBuilderList() {
+        if (idBuilder_ != null) {
+          return idBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(list_);
+          return java.util.Collections.unmodifiableList(id_);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
-        return getListFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder() {
+        return getIdFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder(
           int index) {
-        return getListFieldBuilder().addBuilder(
+        return getIdFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getListBuilderList() {
-        return getListFieldBuilder().getBuilderList();
+           getIdBuilderList() {
+        return getIdFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getListFieldBuilder() {
-        if (listBuilder_ == null) {
-          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          getIdFieldBuilder() {
+        if (idBuilder_ == null) {
+          idBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  list_,
+                  id_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          list_ = null;
+          id_ = null;
         }
-        return listBuilder_;
+        return idBuilder_;
       }
 
       // optional bool fromCache = 2;
@@ -6734,29 +6734,29 @@ public final class Parameters {
   public interface ListParametersRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .yamcs.NamedObjectId list = 1;
+    // repeated .yamcs.NamedObjectId id = 1;
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getListList();
+        getIdList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
+    org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index);
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    int getListCount();
+    int getIdCount();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList();
+        getIdOrBuilderList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index);
   }
   /**
@@ -6812,10 +6812,10 @@ public final class Parameters {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              list_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              id_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
           }
@@ -6827,7 +6827,7 @@ public final class Parameters {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          list_ = java.util.Collections.unmodifiableList(list_);
+          id_ = java.util.Collections.unmodifiableList(id_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -6860,52 +6860,52 @@ public final class Parameters {
       return PARSER;
     }
 
-    // repeated .yamcs.NamedObjectId list = 1;
-    public static final int LIST_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
+    // repeated .yamcs.NamedObjectId id = 1;
+    public static final int ID_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_;
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-      return list_;
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+      return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList() {
-      return list_;
+        getIdOrBuilderList() {
+      return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public int getListCount() {
-      return list_.size();
+    public int getIdCount() {
+      return id_.size();
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-      return list_.get(index);
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+      return id_.get(index);
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index) {
-      return list_.get(index);
+      return id_.get(index);
     }
 
     private void initFields() {
-      list_ = java.util.Collections.emptyList();
+      id_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getListCount(); i++) {
-        if (!getList(i).isInitialized()) {
+      for (int i = 0; i < getIdCount(); i++) {
+        if (!getId(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -6917,8 +6917,8 @@ public final class Parameters {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < list_.size(); i++) {
-        output.writeMessage(1, list_.get(i));
+      for (int i = 0; i < id_.size(); i++) {
+        output.writeMessage(1, id_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -6929,9 +6929,9 @@ public final class Parameters {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < list_.size(); i++) {
+      for (int i = 0; i < id_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, list_.get(i));
+          .computeMessageSize(1, id_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7041,7 +7041,7 @@ public final class Parameters {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getListFieldBuilder();
+          getIdFieldBuilder();
         }
       }
       private static Builder create() {
@@ -7050,11 +7050,11 @@ public final class Parameters {
 
       public Builder clear() {
         super.clear();
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          listBuilder_.clear();
+          idBuilder_.clear();
         }
         return this;
       }
@@ -7083,14 +7083,14 @@ public final class Parameters {
       public org.yamcs.protobuf.Parameters.ListParametersRequest buildPartial() {
         org.yamcs.protobuf.Parameters.ListParametersRequest result = new org.yamcs.protobuf.Parameters.ListParametersRequest(this);
         int from_bitField0_ = bitField0_;
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            list_ = java.util.Collections.unmodifiableList(list_);
+            id_ = java.util.Collections.unmodifiableList(id_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.list_ = list_;
+          result.id_ = id_;
         } else {
-          result.list_ = listBuilder_.build();
+          result.id_ = idBuilder_.build();
         }
         onBuilt();
         return result;
@@ -7107,29 +7107,29 @@ public final class Parameters {
 
       public Builder mergeFrom(org.yamcs.protobuf.Parameters.ListParametersRequest other) {
         if (other == org.yamcs.protobuf.Parameters.ListParametersRequest.getDefaultInstance()) return this;
-        if (listBuilder_ == null) {
-          if (!other.list_.isEmpty()) {
-            if (list_.isEmpty()) {
-              list_ = other.list_;
+        if (idBuilder_ == null) {
+          if (!other.id_.isEmpty()) {
+            if (id_.isEmpty()) {
+              id_ = other.id_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureListIsMutable();
-              list_.addAll(other.list_);
+              ensureIdIsMutable();
+              id_.addAll(other.id_);
             }
             onChanged();
           }
         } else {
-          if (!other.list_.isEmpty()) {
-            if (listBuilder_.isEmpty()) {
-              listBuilder_.dispose();
-              listBuilder_ = null;
-              list_ = other.list_;
+          if (!other.id_.isEmpty()) {
+            if (idBuilder_.isEmpty()) {
+              idBuilder_.dispose();
+              idBuilder_ = null;
+              id_ = other.id_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              listBuilder_ = 
+              idBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getListFieldBuilder() : null;
+                   getIdFieldBuilder() : null;
             } else {
-              listBuilder_.addAllMessages(other.list_);
+              idBuilder_.addAllMessages(other.id_);
             }
           }
         }
@@ -7138,8 +7138,8 @@ public final class Parameters {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getListCount(); i++) {
-          if (!getList(i).isInitialized()) {
+        for (int i = 0; i < getIdCount(); i++) {
+          if (!getId(i).isInitialized()) {
             
             return false;
           }
@@ -7166,244 +7166,244 @@ public final class Parameters {
       }
       private int bitField0_;
 
-      // repeated .yamcs.NamedObjectId list = 1;
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
+      // repeated .yamcs.NamedObjectId id = 1;
+      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
-      private void ensureListIsMutable() {
+      private void ensureIdIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
+          id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
 
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-        if (listBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(list_);
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+        if (idBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(id_);
         } else {
-          return listBuilder_.getMessageList();
+          return idBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public int getListCount() {
-        if (listBuilder_ == null) {
-          return list_.size();
+      public int getIdCount() {
+        if (idBuilder_ == null) {
+          return id_.size();
         } else {
-          return listBuilder_.getCount();
+          return idBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+        if (idBuilder_ == null) {
+          return id_.get(index);
         } else {
-          return listBuilder_.getMessage(index);
+          return idBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder setList(
+      public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.set(index, value);
+          ensureIdIsMutable();
+          id_.set(index, value);
           onChanged();
         } else {
-          listBuilder_.setMessage(index, value);
+          idBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder setList(
+      public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.set(index, builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.set(index, builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.setMessage(index, builderForValue.build());
+          idBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+      public Builder addId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.add(value);
+          ensureIdIsMutable();
+          id_.add(value);
           onChanged();
         } else {
-          listBuilder_.addMessage(value);
+          idBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
+        if (idBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureListIsMutable();
-          list_.add(index, value);
+          ensureIdIsMutable();
+          id_.add(index, value);
           onChanged();
         } else {
-          listBuilder_.addMessage(index, value);
+          idBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.addMessage(builderForValue.build());
+          idBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addList(
+      public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(index, builderForValue.build());
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(index, builderForValue.build());
           onChanged();
         } else {
-          listBuilder_.addMessage(index, builderForValue.build());
+          idBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder addAllList(
+      public Builder addAllId(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          super.addAll(values, list_);
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          super.addAll(values, id_);
           onChanged();
         } else {
-          listBuilder_.addAllMessages(values);
+          idBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder clearList() {
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
+      public Builder clearId() {
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          listBuilder_.clear();
+          idBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public Builder removeList(int index) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.remove(index);
+      public Builder removeId(int index) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.remove(index);
           onChanged();
         } else {
-          listBuilder_.remove(index);
+          idBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder(
           int index) {
-        return getListFieldBuilder().getBuilder(index);
+        return getIdFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
           int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);  } else {
-          return listBuilder_.getMessageOrBuilder(index);
+        if (idBuilder_ == null) {
+          return id_.get(index);  } else {
+          return idBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getListOrBuilderList() {
-        if (listBuilder_ != null) {
-          return listBuilder_.getMessageOrBuilderList();
+           getIdOrBuilderList() {
+        if (idBuilder_ != null) {
+          return idBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(list_);
+          return java.util.Collections.unmodifiableList(id_);
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
-        return getListFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder() {
+        return getIdFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder(
           int index) {
-        return getListFieldBuilder().addBuilder(
+        return getIdFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 1;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getListBuilderList() {
-        return getListFieldBuilder().getBuilderList();
+           getIdBuilderList() {
+        return getIdFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getListFieldBuilder() {
-        if (listBuilder_ == null) {
-          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          getIdFieldBuilder() {
+        if (idBuilder_ == null) {
+          idBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  list_,
+                  id_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          list_ = null;
+          id_ = null;
         }
-        return listBuilder_;
+        return idBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:parameters.ListParametersRequest)
@@ -8176,18 +8176,18 @@ public final class Parameters {
       "ameters.NameDescriptionInfo\022+\n\004type\030\003 \001(" +
       "\0132\035.parameters.ParameterTypeInfo\022.\n\ndata" +
       "Source\030\004 \001(\0162\032.parameters.DataSourceType" +
-      "\022\013\n\003url\030\005 \001(\t\"]\n\023GetParameterRequest\022\"\n\004",
-      "list\030\001 \003(\0132\024.yamcs.NamedObjectId\022\021\n\tfrom" +
-      "Cache\030\002 \001(\010\022\017\n\007timeout\030\003 \001(\004\";\n\025ListPara" +
-      "metersRequest\022\"\n\004list\030\001 \003(\0132\024.yamcs.Name" +
-      "dObjectId\"F\n\026ListParametersResponse\022,\n\tp" +
-      "arameter\030\001 \003(\0132\031.parameters.ParameterInf" +
-      "o*u\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007" +
-      "DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SY" +
-      "STEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006" +
-      "*X\n\nAlarmLevel\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n" +
-      "\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n",
-      "\n\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
+      "\022\013\n\003url\030\005 \001(\t\"[\n\023GetParameterRequest\022 \n\002",
+      "id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\021\n\tfromCa" +
+      "che\030\002 \001(\010\022\017\n\007timeout\030\003 \001(\004\"9\n\025ListParame" +
+      "tersRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObj" +
+      "ectId\"F\n\026ListParametersResponse\022,\n\tparam" +
+      "eter\030\001 \003(\0132\031.parameters.ParameterInfo*u\n" +
+      "\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERI" +
+      "VED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM" +
+      "\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*X\n\n" +
+      "AlarmLevel\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WAR" +
+      "NING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SE",
+      "VERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8235,13 +8235,13 @@ public final class Parameters {
           internal_static_parameters_GetParameterRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_GetParameterRequest_descriptor,
-              new java.lang.String[] { "List", "FromCache", "Timeout", });
+              new java.lang.String[] { "Id", "FromCache", "Timeout", });
           internal_static_parameters_ListParametersRequest_descriptor =
             getDescriptor().getMessageTypes().get(7);
           internal_static_parameters_ListParametersRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListParametersRequest_descriptor,
-              new java.lang.String[] { "List", });
+              new java.lang.String[] { "Id", });
           internal_static_parameters_ListParametersResponse_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_parameters_ListParametersResponse_fieldAccessorTable = new

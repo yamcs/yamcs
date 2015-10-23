@@ -97,7 +97,7 @@ public class MdbRequestHandler extends RestRequestHandler {
         
         ListParametersRequest request = req.bodyAsMessage(SchemaParameters.ListParametersRequest.MERGE).build();
         ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
-        for(NamedObjectId id:request.getListList()) {
+        for(NamedObjectId id:request.getIdList()) {
             Parameter p = xtceDb.getParameter(id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);

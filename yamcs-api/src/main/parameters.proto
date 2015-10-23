@@ -65,13 +65,13 @@ message ParameterInfo {
 }
 
 message GetParameterRequest {
-  repeated yamcs.NamedObjectId list = 1;
+  repeated yamcs.NamedObjectId id = 1;
   optional bool fromCache = 2;
   optional uint64 timeout = 3; //if not from cache, wait this time (in milliseconds) to receive the parameter
 }
 
 message ListParametersRequest {
-  repeated yamcs.NamedObjectId list = 1;
+  repeated yamcs.NamedObjectId id = 1;
 }
 
 message ListParametersResponse {

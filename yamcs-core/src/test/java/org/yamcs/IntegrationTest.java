@@ -112,7 +112,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testRestParameterGet() throws Exception {
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
-        GetParameterRequest req = GetParameterRequest.newBuilder().setFromCache(true).addAllList(invalidSubscrList.getListList()).build();
+        GetParameterRequest req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(invalidSubscrList.getListList()).build();
 
         String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
         assertTrue(response.contains("Invalid parameters"));
@@ -122,7 +122,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
         /////// gets parameters from cache via REST - second attempt with valid parameters
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        req = GetParameterRequest.newBuilder().setFromCache(true).addAllList(validSubscrList.getListList()).build();
+        req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
 
         response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
         ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
@@ -131,7 +131,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         /////// gets parameters from via REST - waiting for update - first test the timeout in case no update is coming
         long t0 = System.currentTimeMillis();
         req = GetParameterRequest.newBuilder()
-                .setTimeout(2000).addAllList(validSubscrList.getListList()).build();
+                .setTimeout(2000).addAllId(validSubscrList.getListList()).build();
 
         Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
 

@@ -161,13 +161,13 @@ public class ParameterRequestHandler extends RestRequestHandler {
      */
     private RestResponse getParameters(RestRequest req, YProcessor processor) throws RestException {
         GetParameterRequest request = req.bodyAsMessage(SchemaParameters.GetParameterRequest.MERGE).build();
-        if(request.getListCount()==0) {
+        if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }
         ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
-        List<NamedObjectId> idList = request.getListList();
+        List<NamedObjectId> idList = request.getIdList();
         ParameterData.Builder pdatab = ParameterData.newBuilder();
         try {
             if(request.hasFromCache()) {
