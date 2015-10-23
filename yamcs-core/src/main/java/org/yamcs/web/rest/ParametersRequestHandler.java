@@ -99,9 +99,15 @@ public class ParametersRequestHandler extends RestRequestHandler {
      * is specified, assumes root namespace.
      */
     private RestResponse listAvailableParameters(RestRequest req, String namespace, XtceDb mdb) throws RestException {
+        NameDescriptionSearchMatcher matcher = null;
+        if (req.hasQueryParameter("q")) {
+            matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
+        }
+        
         ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
+                if (matcher != null && !matcher.matches(p)) continue;
                 NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
                 responseb.addParameter(toParameterInfo(req, id, p));
             }
@@ -110,6 +116,8 @@ public class ParametersRequestHandler extends RestRequestHandler {
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
                 if (!privilege.hasPrivilege(req.authToken, Type.TM_PARAMETER, p.getQualifiedName()))
+                    continue;
+                if (matcher != null && !matcher.matches(p))
                     continue;
                 
                 String alias = p.getAlias(namespace);
@@ -131,7 +139,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
         // There's no such thing as a list of 'namespaces' within the MDB, therefore it
         // could happen that we arrive here but that the user intended to search for a single
         // parameter rather than a list. So... return a 404 if we didn't find any match.
-        if (responseb.getParameterList() == null || responseb.getParameterList().isEmpty()) {
+        if (matcher == null && responseb.getParameterList() == null || responseb.getParameterList().isEmpty()) {
             throw new NotFoundException(req);
         } else {
             return new RestResponse(req, responseb.build(), SchemaParameters.ListParametersResponse.WRITE);
