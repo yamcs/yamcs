@@ -9,6 +9,7 @@ import org.yamcs.protobuf.Parameters.AlarmInfo;
 import org.yamcs.protobuf.Parameters.AlarmLevel;
 import org.yamcs.protobuf.Parameters.AlarmRange;
 import org.yamcs.protobuf.Parameters.DataSourceType;
+import org.yamcs.protobuf.Parameters.ListParametersRequest;
 import org.yamcs.protobuf.Parameters.ListParametersResponse;
 import org.yamcs.protobuf.Parameters.NameDescriptionInfo;
 import org.yamcs.protobuf.Parameters.ParameterInfo;
@@ -53,12 +54,16 @@ public class ParametersRequestHandler extends RestRequestHandler {
             // Find out if it's a parameter or not. Support any namespace here. Not just XTCE
             if (req.getPathSegmentCount() - pathOffset < 2) {
                 String lastSegment = req.slicePath(-1);
-                NamedObjectId id = NamedObjectId.newBuilder().setName(lastSegment).build();
-                Parameter p = mdb.getParameter(id);
-                if (p != null) { // Possibly a URL-encoded qualified name
-                    return getSingleParameter(req, id, p);
-                } else { // Assume it's a namespace
-                    return listAvailableParameters(req, lastSegment, mdb);
+                if ("bulk".equals(lastSegment)) {
+                    return getParameterInfo(req);
+                } else {
+                    NamedObjectId id = NamedObjectId.newBuilder().setName(lastSegment).build();
+                    Parameter p = mdb.getParameter(id);
+                    if (p != null) { // Possibly a URL-encoded qualified name
+                        return getSingleParameter(req, id, p);
+                    } else { // Assume it's a namespace
+                        return listAvailableParameters(req, lastSegment, mdb);
+                    }
                 }
             } else {
                 String namespace = req.slicePath(pathOffset, -1);
@@ -230,6 +235,29 @@ public class ParametersRequestHandler extends RestRequestHandler {
         if (Double.isFinite(alarmRange.getMaxInclusive()))
             resultb.setMaxInclusive(alarmRange.getMaxInclusive());
         return resultb.build();
+    }
+    
+    private RestResponse getParameterInfo(RestRequest req) throws RestException {
+        if (!req.isGET() && !req.isPOST())
+            throw new MethodNotAllowedException(req);
+        
+        XtceDb xtceDb = loadMdb(req.getYamcsInstance());
+        
+        ListParametersRequest request = req.bodyAsMessage(SchemaParameters.ListParametersRequest.MERGE).build();
+        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
+        for(NamedObjectId id:request.getIdList()) {
+            Parameter p = xtceDb.getParameter(id);
+            if(p==null) {
+                throw new BadRequestException("Invalid parameter name specified "+id);
+            }
+            if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+                log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
+                continue;
+            }
+            responseb.addParameter(ParametersRequestHandler.toParameterInfo(req, id, p));
+        }
+        
+        return new RestResponse(req, responseb.build(), SchemaParameters.ListParametersResponse.WRITE);
     }
     
     private XtceDb loadMdb(String yamcsInstance) throws RestException {

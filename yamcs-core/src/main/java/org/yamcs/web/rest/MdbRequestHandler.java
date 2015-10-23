@@ -6,15 +6,8 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.protobuf.Parameters.ListParametersRequest;
-import org.yamcs.protobuf.Parameters.ListParametersResponse;
-import org.yamcs.protobuf.Parameters.ParameterInfo;
-import org.yamcs.protobuf.SchemaParameters;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.DumpRawMdbResponse;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -45,31 +38,6 @@ public class MdbRequestHandler extends RestRequestHandler {
         case "dump":
             return dumpRawMdb(req);
             
-        case "parameterInfo":
-            if (req.getQueryParameters().containsKey("name")) { //one parameter specified in the URL, we return one RestParameterInfo
-                String name = req.getQueryParameters().get("name").get(0);                
-                NamedObjectId.Builder noib = NamedObjectId.newBuilder();
-                noib.setName(name);
-                if (req.getQueryParameters().containsKey("namespace")) {
-                    noib.setNamespace(req.getQueryParameters().get("namespace").get(0));
-                }
-                NamedObjectId id = noib.build();
-                XtceDb xtceDb = loadMdb(req.yamcsInstance);
-                Parameter p = xtceDb.getParameter(id);
-                if(p==null) {
-                    log.warn("Invalid parameter name specified: {}", id);
-                    throw new BadRequestException("Invalid parameter name specified "+id);
-                }
-                if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-                    log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
-                    throw new BadRequestException("Invalid parameter name specified "+id);
-                }
-                ParameterInfo pinfo = ParametersRequestHandler.toParameterInfo(req, id, p);
-                return new RestResponse(req, pinfo, SchemaParameters.ParameterInfo.WRITE);
-            } else { //possible multiple parameter requested, return GetParameterInfoResponse
-                return getParameterInfo(req);
-            }
-            
         default:
             throw new NotFoundException(req);
         }
@@ -90,26 +58,6 @@ public class MdbRequestHandler extends RestRequestHandler {
         }
         responseb.setRawMdb(bout.toByteString());
         return new RestResponse(req, responseb.build(), SchemaYamcs.DumpRawMdbResponse.WRITE);
-    }
-    
-    private RestResponse getParameterInfo(RestRequest req) throws RestException {
-        XtceDb xtceDb = loadMdb(req.yamcsInstance);
-        
-        ListParametersRequest request = req.bodyAsMessage(SchemaParameters.ListParametersRequest.MERGE).build();
-        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
-        for(NamedObjectId id:request.getIdList()) {
-            Parameter p = xtceDb.getParameter(id);
-            if(p==null) {
-                throw new BadRequestException("Invalid parameter name specified "+id);
-            }
-            if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-                log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
-                continue;
-            }
-            responseb.addParameter(ParametersRequestHandler.toParameterInfo(req, id, p));
-        }
-        
-        return new RestResponse(req, responseb.build(), SchemaParameters.ListParametersResponse.WRITE);
     }
 
     private XtceDb loadMdb(String yamcsInstance) throws RestException {
