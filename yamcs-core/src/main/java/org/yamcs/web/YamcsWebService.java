@@ -15,7 +15,6 @@ import org.yamcs.web.rest.CommandingRequestHandler;
 import org.yamcs.web.rest.CommandsRequestHandler;
 import org.yamcs.web.rest.EventsRequestHandler;
 import org.yamcs.web.rest.ManagementRequestHandler;
-import org.yamcs.web.rest.MdbRequestHandler;
 import org.yamcs.web.rest.ParameterRequestHandler;
 import org.yamcs.web.rest.ParametersRequestHandler;
 import org.yamcs.web.rest.ProcessorRequestHandler;
@@ -48,7 +47,6 @@ public class YamcsWebService extends AbstractService {
         
         router = new RestRouter();
         router.registerRestHandler(new ArchiveRequestHandler());
-        router.registerRestHandler(new MdbRequestHandler());
         router.registerRestHandler(new CommandingRequestHandler());
         router.registerRestHandler(new CommandsRequestHandler());
         router.registerRestHandler(new ParametersRequestHandler());

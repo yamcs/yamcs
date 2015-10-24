@@ -30613,405 +30613,6 @@ public final class Yamcs {
     // @@protoc_insertion_point(class_scope:yamcs.SetSimulationTimeRequest)
   }
 
-  public interface DumpRawMdbResponseOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
-
-    // optional bytes rawMdb = 2;
-    /**
-     * <code>optional bytes rawMdb = 2;</code>
-     */
-    boolean hasRawMdb();
-    /**
-     * <code>optional bytes rawMdb = 2;</code>
-     */
-    com.google.protobuf.ByteString getRawMdb();
-  }
-  /**
-   * Protobuf type {@code yamcs.DumpRawMdbResponse}
-   */
-  public static final class DumpRawMdbResponse extends
-      com.google.protobuf.GeneratedMessage
-      implements DumpRawMdbResponseOrBuilder {
-    // Use DumpRawMdbResponse.newBuilder() to construct.
-    private DumpRawMdbResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private DumpRawMdbResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final DumpRawMdbResponse defaultInstance;
-    public static DumpRawMdbResponse getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public DumpRawMdbResponse getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private DumpRawMdbResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 18: {
-              bitField0_ |= 0x00000001;
-              rawMdb_ = input.readBytes();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DumpRawMdbResponse_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DumpRawMdbResponse_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.class, org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<DumpRawMdbResponse> PARSER =
-        new com.google.protobuf.AbstractParser<DumpRawMdbResponse>() {
-      public DumpRawMdbResponse parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new DumpRawMdbResponse(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<DumpRawMdbResponse> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    // optional bytes rawMdb = 2;
-    public static final int RAWMDB_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString rawMdb_;
-    /**
-     * <code>optional bytes rawMdb = 2;</code>
-     */
-    public boolean hasRawMdb() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional bytes rawMdb = 2;</code>
-     */
-    public com.google.protobuf.ByteString getRawMdb() {
-      return rawMdb_;
-    }
-
-    private void initFields() {
-      rawMdb_ = com.google.protobuf.ByteString.EMPTY;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(2, rawMdb_);
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, rawMdb_);
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.DumpRawMdbResponse prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code yamcs.DumpRawMdbResponse}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Yamcs.DumpRawMdbResponseOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DumpRawMdbResponse_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DumpRawMdbResponse_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.class, org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.Builder.class);
-      }
-
-      // Construct using org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        rawMdb_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_DumpRawMdbResponse_descriptor;
-      }
-
-      public org.yamcs.protobuf.Yamcs.DumpRawMdbResponse getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.getDefaultInstance();
-      }
-
-      public org.yamcs.protobuf.Yamcs.DumpRawMdbResponse build() {
-        org.yamcs.protobuf.Yamcs.DumpRawMdbResponse result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.yamcs.protobuf.Yamcs.DumpRawMdbResponse buildPartial() {
-        org.yamcs.protobuf.Yamcs.DumpRawMdbResponse result = new org.yamcs.protobuf.Yamcs.DumpRawMdbResponse(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.rawMdb_ = rawMdb_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Yamcs.DumpRawMdbResponse) {
-          return mergeFrom((org.yamcs.protobuf.Yamcs.DumpRawMdbResponse)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.DumpRawMdbResponse other) {
-        if (other == org.yamcs.protobuf.Yamcs.DumpRawMdbResponse.getDefaultInstance()) return this;
-        if (other.hasRawMdb()) {
-          setRawMdb(other.getRawMdb());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.yamcs.protobuf.Yamcs.DumpRawMdbResponse parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Yamcs.DumpRawMdbResponse) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      // optional bytes rawMdb = 2;
-      private com.google.protobuf.ByteString rawMdb_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>optional bytes rawMdb = 2;</code>
-       */
-      public boolean hasRawMdb() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional bytes rawMdb = 2;</code>
-       */
-      public com.google.protobuf.ByteString getRawMdb() {
-        return rawMdb_;
-      }
-      /**
-       * <code>optional bytes rawMdb = 2;</code>
-       */
-      public Builder setRawMdb(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        rawMdb_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bytes rawMdb = 2;</code>
-       */
-      public Builder clearRawMdb() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        rawMdb_ = getDefaultInstance().getRawMdb();
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:yamcs.DumpRawMdbResponse)
-    }
-
-    static {
-      defaultInstance = new DumpRawMdbResponse(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:yamcs.DumpRawMdbResponse)
-  }
-
   public interface ListInstancesResponseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -33136,11 +32737,6 @@ public final class Yamcs {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yamcs_SetSimulationTimeRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_yamcs_DumpRawMdbResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_yamcs_DumpRawMdbResponse_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_ListInstancesResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -33251,40 +32847,39 @@ public final class Yamcs {
       "izationInfo\030\001 \001(\0132\034.yamcs.UserAuthorizat",
       "ionInfo\"e\n\030SetSimulationTimeRequest\022\r\n\005t" +
       "ime0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElaps" +
-      "edTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"$\n\022DumpRa" +
-      "wMdbResponse\022\016\n\006rawMdb\030\002 \001(\014\"?\n\025ListInst" +
-      "ancesResponse\022&\n\010instance\030\001 \003(\0132\024.yamcs." +
-      "YamcsInstance\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t\022" +
-      "\026\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTime" +
-      "\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022" +
-      "\017\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yam" +
-      "cs.Event.EventSeverity:\004INFO\"1\n\rEventSev",
-      "erity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*" +
-      "\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022" +
-      "\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017" +
-      "\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\200\002\n\rProtoD" +
-      "ataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022" +
-      "\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARC" +
-      "HIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMET" +
-      "ER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020" +
-      "\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATIST" +
-      "ICS\020\014\022\017\n\013STREAM_DATA\020\r\022\t\n\005ALARM\020\016\022\r\n\tTIM",
-      "E_INFO\020\0172\211\001\n\014YamcsControl\0227\n\021GetYamcsIns" +
-      "tances\022\013.yamcs.Void\032\025.yamcs.YamcsInstanc" +
-      "es\022@\n\022GetMissionDatabase\022\035.yamcs.Mission" +
-      "DatabaseRequest\032\013.yamcs.Void2\337\001\n\030Realtim" +
-      "eParameterService\0220\n\tSubscribe\022\026.yamcs.N" +
-      "amedObjectList\032\013.yamcs.Void\0221\n\014Subscribe" +
-      "All\022\024.yamcs.StringMessage\032\013.yamcs.Void\0222" +
-      "\n\013Unsubscribe\022\026.yamcs.NamedObjectList\032\013." +
-      "yamcs.Void\022*\n\016UnsubscribeAll\022\013.yamcs.Voi" +
-      "d\032\013.yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010GetIn",
-      "dex\022\023.yamcs.IndexRequest\032\022.yamcs.IndexRe" +
-      "sult\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020.ya" +
-      "mcs.TagResult\0227\n\tUpsertTag\022\027.yamcs.Upser" +
-      "tTagRequest\032\021.yamcs.ArchiveTag\0221\n\tDelete" +
-      "Tag\022\027.yamcs.DeleteTagRequest\032\013.yamcs.Voi" +
-      "dB\024\n\022org.yamcs.protobuf"
+      "edTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"?\n\025ListIn" +
+      "stancesResponse\022&\n\010instance\030\001 \003(\0132\024.yamc" +
+      "s.YamcsInstance\"\346\001\n\005Event\022\016\n\006source\030\001 \002(" +
+      "\t\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTi" +
+      "me\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(" +
+      "\t\022\017\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.y" +
+      "amcs.Event.EventSeverity:\004INFO\"1\n\rEventS" +
+      "everity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020",
+      "\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020" +
+      "\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001" +
+      "\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\200\002\n\rProt" +
+      "oDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020" +
+      "\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rA" +
+      "RCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAM" +
+      "ETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INF" +
+      "O\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATI" +
+      "STICS\020\014\022\017\n\013STREAM_DATA\020\r\022\t\n\005ALARM\020\016\022\r\n\tT" +
+      "IME_INFO\020\0172\211\001\n\014YamcsControl\0227\n\021GetYamcsI",
+      "nstances\022\013.yamcs.Void\032\025.yamcs.YamcsInsta" +
+      "nces\022@\n\022GetMissionDatabase\022\035.yamcs.Missi" +
+      "onDatabaseRequest\032\013.yamcs.Void2\337\001\n\030Realt" +
+      "imeParameterService\0220\n\tSubscribe\022\026.yamcs" +
+      ".NamedObjectList\032\013.yamcs.Void\0221\n\014Subscri" +
+      "beAll\022\024.yamcs.StringMessage\032\013.yamcs.Void" +
+      "\0222\n\013Unsubscribe\022\026.yamcs.NamedObjectList\032" +
+      "\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013.yamcs.V" +
+      "oid\032\013.yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010Get" +
+      "Index\022\023.yamcs.IndexRequest\032\022.yamcs.Index",
+      "Result\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020." +
+      "yamcs.TagResult\0227\n\tUpsertTag\022\027.yamcs.Ups" +
+      "ertTagRequest\032\021.yamcs.ArchiveTag\0221\n\tDele" +
+      "teTag\022\027.yamcs.DeleteTagRequest\032\013.yamcs.V" +
+      "oidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -33501,20 +33096,14 @@ public final class Yamcs {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_SetSimulationTimeRequest_descriptor,
               new java.lang.String[] { "Time0", "Time0UTC", "SimElapsedTime", "SimSpeed", });
-          internal_static_yamcs_DumpRawMdbResponse_descriptor =
-            getDescriptor().getMessageTypes().get(35);
-          internal_static_yamcs_DumpRawMdbResponse_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_yamcs_DumpRawMdbResponse_descriptor,
-              new java.lang.String[] { "RawMdb", });
           internal_static_yamcs_ListInstancesResponse_descriptor =
-            getDescriptor().getMessageTypes().get(36);
+            getDescriptor().getMessageTypes().get(35);
           internal_static_yamcs_ListInstancesResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_ListInstancesResponse_descriptor,
               new java.lang.String[] { "Instance", });
           internal_static_yamcs_Event_descriptor =
-            getDescriptor().getMessageTypes().get(37);
+            getDescriptor().getMessageTypes().get(36);
           internal_static_yamcs_Event_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_Event_descriptor,

@@ -351,10 +351,6 @@ message SetSimulationTimeRequest {
   optional double simSpeed = 4;
 }
 
-message DumpRawMdbResponse {
-  optional bytes rawMdb=2;
-}
-
 message ListInstancesResponse {
     repeated YamcsInstance instance = 1;
 }
