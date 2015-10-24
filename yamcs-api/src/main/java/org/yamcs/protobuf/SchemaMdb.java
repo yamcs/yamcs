@@ -917,6 +917,124 @@ public final class SchemaMdb
         }
     }
 
+    public static final class ArgumentAssignmentInfo
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasValue())
+                    output.writeString(2, message.getValue(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setValue(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "value";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("value", 2);
+        }
+    }
+
     public static final class SignificanceInfo
     {
         public static final org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MessageSchema WRITE =
@@ -1301,14 +1419,17 @@ public final class SchemaMdb
                 for(org.yamcs.protobuf.Mdb.ArgumentInfo argument : message.getArgumentList())
                     output.writeObject(4, argument, org.yamcs.protobuf.SchemaMdb.ArgumentInfo.WRITE, true);
 
+                for(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo argumentAssignment : message.getArgumentAssignmentList())
+                    output.writeObject(5, argumentAssignment, org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.WRITE, true);
+
                 if(message.hasSignificance())
-                    output.writeObject(5, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
+                    output.writeObject(6, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
 
                 for(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo constraint : message.getConstraintList())
-                    output.writeObject(6, constraint, org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.WRITE, true);
+                    output.writeObject(7, constraint, org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.WRITE, true);
 
                 if(message.hasUrl())
-                    output.writeString(7, message.getUrl(), false);
+                    output.writeString(8, message.getUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.CommandInfo message)
             {
@@ -1363,14 +1484,18 @@ public final class SchemaMdb
 
                             break;
                         case 5:
-                            builder.setSignificance(input.mergeObject(org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MERGE));
+                            builder.addArgumentAssignment(input.mergeObject(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.MERGE));
 
                             break;
                         case 6:
-                            builder.addConstraint(input.mergeObject(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.MERGE));
+                            builder.setSignificance(input.mergeObject(org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MERGE));
 
                             break;
                         case 7:
+                            builder.addConstraint(input.mergeObject(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.MERGE));
+
+                            break;
+                        case 8:
                             builder.setUrl(input.readString());
                             break;
                         default:
@@ -1417,9 +1542,10 @@ public final class SchemaMdb
                 case 2: return "baseCommand";
                 case 3: return "abstract";
                 case 4: return "argument";
-                case 5: return "significance";
-                case 6: return "constraint";
-                case 7: return "url";
+                case 5: return "argumentAssignment";
+                case 6: return "significance";
+                case 7: return "constraint";
+                case 8: return "url";
                 default: return null;
             }
         }
@@ -1435,9 +1561,10 @@ public final class SchemaMdb
             fieldMap.put("baseCommand", 2);
             fieldMap.put("abstract", 3);
             fieldMap.put("argument", 4);
-            fieldMap.put("significance", 5);
-            fieldMap.put("constraint", 6);
-            fieldMap.put("url", 7);
+            fieldMap.put("argumentAssignment", 5);
+            fieldMap.put("significance", 6);
+            fieldMap.put("constraint", 7);
+            fieldMap.put("url", 8);
         }
     }
 

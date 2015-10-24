@@ -69,6 +69,11 @@ message ArgumentInfo {
   repeated UnitInfo unitSet = 5;
 }
 
+message ArgumentAssignmentInfo {
+  optional string name = 1;
+  optional string value = 2;
+}
+
 message SignificanceInfo {
   enum SignificanceLevelType {
     NONE = 1;
@@ -108,7 +113,8 @@ message CommandInfo {
   optional string baseCommand = 2;
   optional bool abstract = 3;
   repeated ArgumentInfo argument = 4;
-  optional SignificanceInfo significance = 5;
-  repeated TransmissionConstraintInfo constraint = 6;
-  optional string url = 7;
+  repeated ArgumentAssignmentInfo argumentAssignment = 5;
+  optional SignificanceInfo significance = 6;
+  repeated TransmissionConstraintInfo constraint = 7;
+  optional string url = 8;
 }

@@ -6897,6 +6897,633 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ArgumentInfo)
   }
 
+  public interface ArgumentAssignmentInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional string value = 2;
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    boolean hasValue();
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    java.lang.String getValue();
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getValueBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ArgumentAssignmentInfo}
+   */
+  public static final class ArgumentAssignmentInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements ArgumentAssignmentInfoOrBuilder {
+    // Use ArgumentAssignmentInfo.newBuilder() to construct.
+    private ArgumentAssignmentInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ArgumentAssignmentInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ArgumentAssignmentInfo defaultInstance;
+    public static ArgumentAssignmentInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ArgumentAssignmentInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ArgumentAssignmentInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              value_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ArgumentAssignmentInfo> PARSER =
+        new com.google.protobuf.AbstractParser<ArgumentAssignmentInfo>() {
+      public ArgumentAssignmentInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ArgumentAssignmentInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ArgumentAssignmentInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string value = 2;
+    public static final int VALUE_FIELD_NUMBER = 2;
+    private java.lang.Object value_;
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    public boolean hasValue() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    public java.lang.String getValue() {
+      java.lang.Object ref = value_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          value_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string value = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getValueBytes() {
+      java.lang.Object ref = value_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        value_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      name_ = "";
+      value_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getValueBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getValueBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ArgumentAssignmentInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.class, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        value_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo build() {
+        org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo buildPartial() {
+        org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo result = new org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.value_ = value_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo other) {
+        if (other == org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasValue()) {
+          bitField0_ |= 0x00000002;
+          value_ = other.value_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string value = 2;
+      private java.lang.Object value_ = "";
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public java.lang.String getValue() {
+        java.lang.Object ref = value_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          value_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValueBytes() {
+        java.lang.Object ref = value_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          value_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public Builder setValue(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public Builder clearValue() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        value_ = getDefaultInstance().getValue();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       */
+      public Builder setValueBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:mdb.ArgumentAssignmentInfo)
+    }
+
+    static {
+      defaultInstance = new ArgumentAssignmentInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ArgumentAssignmentInfo)
+  }
+
   public interface SignificanceInfoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -9236,56 +9863,81 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ArgumentInfoOrBuilder getArgumentOrBuilder(
         int index);
 
-    // optional .mdb.SignificanceInfo significance = 5;
+    // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> 
+        getArgumentAssignmentList();
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo getArgumentAssignment(int index);
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    int getArgumentAssignmentCount();
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder> 
+        getArgumentAssignmentOrBuilderList();
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder getArgumentAssignmentOrBuilder(
+        int index);
+
+    // optional .mdb.SignificanceInfo significance = 6;
+    /**
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     boolean hasSignificance();
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     org.yamcs.protobuf.Mdb.SignificanceInfo getSignificance();
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder getSignificanceOrBuilder();
 
-    // repeated .mdb.TransmissionConstraintInfo constraint = 6;
+    // repeated .mdb.TransmissionConstraintInfo constraint = 7;
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> 
         getConstraintList();
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     org.yamcs.protobuf.Mdb.TransmissionConstraintInfo getConstraint(int index);
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     int getConstraintCount();
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder> 
         getConstraintOrBuilderList();
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder getConstraintOrBuilder(
         int index);
 
-    // optional string url = 7;
+    // optional string url = 8;
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     boolean hasUrl();
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     java.lang.String getUrl();
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     com.google.protobuf.ByteString
         getUrlBytes();
@@ -9373,6 +10025,14 @@ public final class Mdb {
               break;
             }
             case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                argumentAssignment_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              argumentAssignment_.add(input.readMessage(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 50: {
               org.yamcs.protobuf.Mdb.SignificanceInfo.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 subBuilder = significance_.toBuilder();
@@ -9385,15 +10045,15 @@ public final class Mdb {
               bitField0_ |= 0x00000008;
               break;
             }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
                 constraint_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo>();
-                mutable_bitField0_ |= 0x00000020;
+                mutable_bitField0_ |= 0x00000040;
               }
               constraint_.add(input.readMessage(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.PARSER, extensionRegistry));
               break;
             }
-            case 58: {
+            case 66: {
               bitField0_ |= 0x00000010;
               url_ = input.readBytes();
               break;
@@ -9409,7 +10069,10 @@ public final class Mdb {
         if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           argument_ = java.util.Collections.unmodifiableList(argument_);
         }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          argumentAssignment_ = java.util.Collections.unmodifiableList(argumentAssignment_);
+        }
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
           constraint_ = java.util.Collections.unmodifiableList(constraint_);
         }
         this.unknownFields = unknownFields.build();
@@ -9561,75 +10224,111 @@ public final class Mdb {
       return argument_.get(index);
     }
 
-    // optional .mdb.SignificanceInfo significance = 5;
-    public static final int SIGNIFICANCE_FIELD_NUMBER = 5;
+    // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;
+    public static final int ARGUMENTASSIGNMENT_FIELD_NUMBER = 5;
+    private java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> argumentAssignment_;
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> getArgumentAssignmentList() {
+      return argumentAssignment_;
+    }
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder> 
+        getArgumentAssignmentOrBuilderList() {
+      return argumentAssignment_;
+    }
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    public int getArgumentAssignmentCount() {
+      return argumentAssignment_.size();
+    }
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo getArgumentAssignment(int index) {
+      return argumentAssignment_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder getArgumentAssignmentOrBuilder(
+        int index) {
+      return argumentAssignment_.get(index);
+    }
+
+    // optional .mdb.SignificanceInfo significance = 6;
+    public static final int SIGNIFICANCE_FIELD_NUMBER = 6;
     private org.yamcs.protobuf.Mdb.SignificanceInfo significance_;
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     public boolean hasSignificance() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     public org.yamcs.protobuf.Mdb.SignificanceInfo getSignificance() {
       return significance_;
     }
     /**
-     * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+     * <code>optional .mdb.SignificanceInfo significance = 6;</code>
      */
     public org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder getSignificanceOrBuilder() {
       return significance_;
     }
 
-    // repeated .mdb.TransmissionConstraintInfo constraint = 6;
-    public static final int CONSTRAINT_FIELD_NUMBER = 6;
+    // repeated .mdb.TransmissionConstraintInfo constraint = 7;
+    public static final int CONSTRAINT_FIELD_NUMBER = 7;
     private java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> constraint_;
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     public java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> getConstraintList() {
       return constraint_;
     }
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder> 
         getConstraintOrBuilderList() {
       return constraint_;
     }
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     public int getConstraintCount() {
       return constraint_.size();
     }
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     public org.yamcs.protobuf.Mdb.TransmissionConstraintInfo getConstraint(int index) {
       return constraint_.get(index);
     }
     /**
-     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+     * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
      */
     public org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder getConstraintOrBuilder(
         int index) {
       return constraint_.get(index);
     }
 
-    // optional string url = 7;
-    public static final int URL_FIELD_NUMBER = 7;
+    // optional string url = 8;
+    public static final int URL_FIELD_NUMBER = 8;
     private java.lang.Object url_;
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     public boolean hasUrl() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     public java.lang.String getUrl() {
       java.lang.Object ref = url_;
@@ -9646,7 +10345,7 @@ public final class Mdb {
       }
     }
     /**
-     * <code>optional string url = 7;</code>
+     * <code>optional string url = 8;</code>
      */
     public com.google.protobuf.ByteString
         getUrlBytes() {
@@ -9667,6 +10366,7 @@ public final class Mdb {
       baseCommand_ = "";
       abstract_ = false;
       argument_ = java.util.Collections.emptyList();
+      argumentAssignment_ = java.util.Collections.emptyList();
       significance_ = org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance();
       constraint_ = java.util.Collections.emptyList();
       url_ = "";
@@ -9701,14 +10401,17 @@ public final class Mdb {
       for (int i = 0; i < argument_.size(); i++) {
         output.writeMessage(4, argument_.get(i));
       }
+      for (int i = 0; i < argumentAssignment_.size(); i++) {
+        output.writeMessage(5, argumentAssignment_.get(i));
+      }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(5, significance_);
+        output.writeMessage(6, significance_);
       }
       for (int i = 0; i < constraint_.size(); i++) {
-        output.writeMessage(6, constraint_.get(i));
+        output.writeMessage(7, constraint_.get(i));
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(7, getUrlBytes());
+        output.writeBytes(8, getUrlBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -9735,17 +10438,21 @@ public final class Mdb {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, argument_.get(i));
       }
+      for (int i = 0; i < argumentAssignment_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, argumentAssignment_.get(i));
+      }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, significance_);
+          .computeMessageSize(6, significance_);
       }
       for (int i = 0; i < constraint_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, constraint_.get(i));
+          .computeMessageSize(7, constraint_.get(i));
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(7, getUrlBytes());
+          .computeBytesSize(8, getUrlBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9857,6 +10564,7 @@ public final class Mdb {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getDescriptionFieldBuilder();
           getArgumentFieldBuilder();
+          getArgumentAssignmentFieldBuilder();
           getSignificanceFieldBuilder();
           getConstraintFieldBuilder();
         }
@@ -9883,20 +10591,26 @@ public final class Mdb {
         } else {
           argumentBuilder_.clear();
         }
+        if (argumentAssignmentBuilder_ == null) {
+          argumentAssignment_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+        } else {
+          argumentAssignmentBuilder_.clear();
+        }
         if (significanceBuilder_ == null) {
           significance_ = org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance();
         } else {
           significanceBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         if (constraintBuilder_ == null) {
           constraint_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000040);
         } else {
           constraintBuilder_.clear();
         }
         url_ = "";
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -9950,7 +10664,16 @@ public final class Mdb {
         } else {
           result.argument_ = argumentBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (argumentAssignmentBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+            argumentAssignment_ = java.util.Collections.unmodifiableList(argumentAssignment_);
+            bitField0_ = (bitField0_ & ~0x00000010);
+          }
+          result.argumentAssignment_ = argumentAssignment_;
+        } else {
+          result.argumentAssignment_ = argumentAssignmentBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000008;
         }
         if (significanceBuilder_ == null) {
@@ -9959,15 +10682,15 @@ public final class Mdb {
           result.significance_ = significanceBuilder_.build();
         }
         if (constraintBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          if (((bitField0_ & 0x00000040) == 0x00000040)) {
             constraint_ = java.util.Collections.unmodifiableList(constraint_);
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
           }
           result.constraint_ = constraint_;
         } else {
           result.constraint_ = constraintBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000010;
         }
         result.url_ = url_;
@@ -10024,6 +10747,32 @@ public final class Mdb {
             }
           }
         }
+        if (argumentAssignmentBuilder_ == null) {
+          if (!other.argumentAssignment_.isEmpty()) {
+            if (argumentAssignment_.isEmpty()) {
+              argumentAssignment_ = other.argumentAssignment_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureArgumentAssignmentIsMutable();
+              argumentAssignment_.addAll(other.argumentAssignment_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.argumentAssignment_.isEmpty()) {
+            if (argumentAssignmentBuilder_.isEmpty()) {
+              argumentAssignmentBuilder_.dispose();
+              argumentAssignmentBuilder_ = null;
+              argumentAssignment_ = other.argumentAssignment_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+              argumentAssignmentBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getArgumentAssignmentFieldBuilder() : null;
+            } else {
+              argumentAssignmentBuilder_.addAllMessages(other.argumentAssignment_);
+            }
+          }
+        }
         if (other.hasSignificance()) {
           mergeSignificance(other.getSignificance());
         }
@@ -10031,7 +10780,7 @@ public final class Mdb {
           if (!other.constraint_.isEmpty()) {
             if (constraint_.isEmpty()) {
               constraint_ = other.constraint_;
-              bitField0_ = (bitField0_ & ~0x00000020);
+              bitField0_ = (bitField0_ & ~0x00000040);
             } else {
               ensureConstraintIsMutable();
               constraint_.addAll(other.constraint_);
@@ -10044,7 +10793,7 @@ public final class Mdb {
               constraintBuilder_.dispose();
               constraintBuilder_ = null;
               constraint_ = other.constraint_;
-              bitField0_ = (bitField0_ & ~0x00000020);
+              bitField0_ = (bitField0_ & ~0x00000040);
               constraintBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getConstraintFieldBuilder() : null;
@@ -10054,7 +10803,7 @@ public final class Mdb {
           }
         }
         if (other.hasUrl()) {
-          bitField0_ |= 0x00000040;
+          bitField0_ |= 0x00000080;
           url_ = other.url_;
           onChanged();
         }
@@ -10555,18 +11304,258 @@ public final class Mdb {
         return argumentBuilder_;
       }
 
-      // optional .mdb.SignificanceInfo significance = 5;
+      // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;
+      private java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> argumentAssignment_ =
+        java.util.Collections.emptyList();
+      private void ensureArgumentAssignmentIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          argumentAssignment_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo>(argumentAssignment_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder> argumentAssignmentBuilder_;
+
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> getArgumentAssignmentList() {
+        if (argumentAssignmentBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(argumentAssignment_);
+        } else {
+          return argumentAssignmentBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public int getArgumentAssignmentCount() {
+        if (argumentAssignmentBuilder_ == null) {
+          return argumentAssignment_.size();
+        } else {
+          return argumentAssignmentBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo getArgumentAssignment(int index) {
+        if (argumentAssignmentBuilder_ == null) {
+          return argumentAssignment_.get(index);
+        } else {
+          return argumentAssignmentBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder setArgumentAssignment(
+          int index, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo value) {
+        if (argumentAssignmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.set(index, value);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder setArgumentAssignment(
+          int index, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builderForValue) {
+        if (argumentAssignmentBuilder_ == null) {
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder addArgumentAssignment(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo value) {
+        if (argumentAssignmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.add(value);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder addArgumentAssignment(
+          int index, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo value) {
+        if (argumentAssignmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.add(index, value);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder addArgumentAssignment(
+          org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builderForValue) {
+        if (argumentAssignmentBuilder_ == null) {
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.add(builderForValue.build());
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder addArgumentAssignment(
+          int index, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder builderForValue) {
+        if (argumentAssignmentBuilder_ == null) {
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder addAllArgumentAssignment(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> values) {
+        if (argumentAssignmentBuilder_ == null) {
+          ensureArgumentAssignmentIsMutable();
+          super.addAll(values, argumentAssignment_);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder clearArgumentAssignment() {
+        if (argumentAssignmentBuilder_ == null) {
+          argumentAssignment_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public Builder removeArgumentAssignment(int index) {
+        if (argumentAssignmentBuilder_ == null) {
+          ensureArgumentAssignmentIsMutable();
+          argumentAssignment_.remove(index);
+          onChanged();
+        } else {
+          argumentAssignmentBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder getArgumentAssignmentBuilder(
+          int index) {
+        return getArgumentAssignmentFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder getArgumentAssignmentOrBuilder(
+          int index) {
+        if (argumentAssignmentBuilder_ == null) {
+          return argumentAssignment_.get(index);  } else {
+          return argumentAssignmentBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder> 
+           getArgumentAssignmentOrBuilderList() {
+        if (argumentAssignmentBuilder_ != null) {
+          return argumentAssignmentBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(argumentAssignment_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder addArgumentAssignmentBuilder() {
+        return getArgumentAssignmentFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder addArgumentAssignmentBuilder(
+          int index) {
+        return getArgumentAssignmentFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 5;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder> 
+           getArgumentAssignmentBuilderList() {
+        return getArgumentAssignmentFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder> 
+          getArgumentAssignmentFieldBuilder() {
+        if (argumentAssignmentBuilder_ == null) {
+          argumentAssignmentBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder>(
+                  argumentAssignment_,
+                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  getParentForChildren(),
+                  isClean());
+          argumentAssignment_ = null;
+        }
+        return argumentAssignmentBuilder_;
+      }
+
+      // optional .mdb.SignificanceInfo significance = 6;
       private org.yamcs.protobuf.Mdb.SignificanceInfo significance_ = org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder> significanceBuilder_;
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public boolean hasSignificance() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public org.yamcs.protobuf.Mdb.SignificanceInfo getSignificance() {
         if (significanceBuilder_ == null) {
@@ -10576,7 +11565,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public Builder setSignificance(org.yamcs.protobuf.Mdb.SignificanceInfo value) {
         if (significanceBuilder_ == null) {
@@ -10588,11 +11577,11 @@ public final class Mdb {
         } else {
           significanceBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public Builder setSignificance(
           org.yamcs.protobuf.Mdb.SignificanceInfo.Builder builderForValue) {
@@ -10602,15 +11591,15 @@ public final class Mdb {
         } else {
           significanceBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public Builder mergeSignificance(org.yamcs.protobuf.Mdb.SignificanceInfo value) {
         if (significanceBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
               significance_ != org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance()) {
             significance_ =
               org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(significance_).mergeFrom(value).buildPartial();
@@ -10621,11 +11610,11 @@ public final class Mdb {
         } else {
           significanceBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public Builder clearSignificance() {
         if (significanceBuilder_ == null) {
@@ -10634,19 +11623,19 @@ public final class Mdb {
         } else {
           significanceBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public org.yamcs.protobuf.Mdb.SignificanceInfo.Builder getSignificanceBuilder() {
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         onChanged();
         return getSignificanceFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       public org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder getSignificanceOrBuilder() {
         if (significanceBuilder_ != null) {
@@ -10656,7 +11645,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional .mdb.SignificanceInfo significance = 5;</code>
+       * <code>optional .mdb.SignificanceInfo significance = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder> 
@@ -10672,13 +11661,13 @@ public final class Mdb {
         return significanceBuilder_;
       }
 
-      // repeated .mdb.TransmissionConstraintInfo constraint = 6;
+      // repeated .mdb.TransmissionConstraintInfo constraint = 7;
       private java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> constraint_ =
         java.util.Collections.emptyList();
       private void ensureConstraintIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
           constraint_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo>(constraint_);
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000040;
          }
       }
 
@@ -10686,7 +11675,7 @@ public final class Mdb {
           org.yamcs.protobuf.Mdb.TransmissionConstraintInfo, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder, org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder> constraintBuilder_;
 
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> getConstraintList() {
         if (constraintBuilder_ == null) {
@@ -10696,7 +11685,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public int getConstraintCount() {
         if (constraintBuilder_ == null) {
@@ -10706,7 +11695,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public org.yamcs.protobuf.Mdb.TransmissionConstraintInfo getConstraint(int index) {
         if (constraintBuilder_ == null) {
@@ -10716,7 +11705,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder setConstraint(
           int index, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo value) {
@@ -10733,7 +11722,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder setConstraint(
           int index, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder builderForValue) {
@@ -10747,7 +11736,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder addConstraint(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo value) {
         if (constraintBuilder_ == null) {
@@ -10763,7 +11752,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder addConstraint(
           int index, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo value) {
@@ -10780,7 +11769,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder addConstraint(
           org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder builderForValue) {
@@ -10794,7 +11783,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder addConstraint(
           int index, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder builderForValue) {
@@ -10808,7 +11797,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder addAllConstraint(
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> values) {
@@ -10822,12 +11811,12 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder clearConstraint() {
         if (constraintBuilder_ == null) {
           constraint_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000040);
           onChanged();
         } else {
           constraintBuilder_.clear();
@@ -10835,7 +11824,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public Builder removeConstraint(int index) {
         if (constraintBuilder_ == null) {
@@ -10848,14 +11837,14 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder getConstraintBuilder(
           int index) {
         return getConstraintFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder getConstraintOrBuilder(
           int index) {
@@ -10865,7 +11854,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder> 
            getConstraintOrBuilderList() {
@@ -10876,14 +11865,14 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder addConstraintBuilder() {
         return getConstraintFieldBuilder().addBuilder(
             org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder addConstraintBuilder(
           int index) {
@@ -10891,7 +11880,7 @@ public final class Mdb {
             index, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 6;</code>
+       * <code>repeated .mdb.TransmissionConstraintInfo constraint = 7;</code>
        */
       public java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder> 
            getConstraintBuilderList() {
@@ -10904,7 +11893,7 @@ public final class Mdb {
           constraintBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Mdb.TransmissionConstraintInfo, org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.Builder, org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder>(
                   constraint_,
-                  ((bitField0_ & 0x00000020) == 0x00000020),
+                  ((bitField0_ & 0x00000040) == 0x00000040),
                   getParentForChildren(),
                   isClean());
           constraint_ = null;
@@ -10912,16 +11901,16 @@ public final class Mdb {
         return constraintBuilder_;
       }
 
-      // optional string url = 7;
+      // optional string url = 8;
       private java.lang.Object url_ = "";
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public boolean hasUrl() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
@@ -10935,7 +11924,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public com.google.protobuf.ByteString
           getUrlBytes() {
@@ -10951,36 +11940,36 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public Builder setUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000040;
+  bitField0_ |= 0x00000080;
         url_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public Builder clearUrl() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000080);
         url_ = getDefaultInstance().getUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string url = 7;</code>
+       * <code>optional string url = 8;</code>
        */
       public Builder setUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000040;
+  bitField0_ |= 0x00000080;
         url_ = value;
         onChanged();
         return this;
@@ -11033,6 +12022,11 @@ public final class Mdb {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ArgumentInfo_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ArgumentAssignmentInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_SignificanceInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -11081,32 +12075,35 @@ public final class Mdb {
       "\"u\n\014ArgumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013descri" +
       "ption\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\024\n\014initialValu" +
       "e\030\004 \001(\t\022\036\n\007unitSet\030\005 \003(\0132\r.mdb.UnitInfo\"",
-      "\326\001\n\020SignificanceInfo\022E\n\020consequenceLevel" +
-      "\030\001 \001(\0162+.mdb.SignificanceInfo.Significan" +
-      "ceLevelType\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n" +
-      "\025SignificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATC" +
-      "H\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITIC" +
-      "AL\020\005\022\n\n\006SEVERE\020\006\"\367\001\n\016ComparisonInfo\022\021\n\tp" +
-      "arameter\030\001 \001(\t\0222\n\010operator\030\002 \001(\0162 .mdb.C" +
-      "omparisonInfo.OperatorType\022\r\n\005value\030\003 \001(" +
-      "\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_" +
-      "EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GREATER_",
-      "THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN\020\005\022\034\n\030" +
-      "SMALLER_THAN_OR_EQUAL_TO\020\006\"V\n\032Transmissi" +
-      "onConstraintInfo\022\'\n\ncomparison\030\001 \003(\0132\023.m" +
-      "db.ComparisonInfo\022\017\n\007timeout\030\002 \001(\003\"\367\001\n\013C" +
-      "ommandInfo\022-\n\013description\030\001 \001(\0132\030.mdb.Na" +
-      "meDescriptionInfo\022\023\n\013baseCommand\030\002 \001(\t\022\020" +
-      "\n\010abstract\030\003 \001(\010\022#\n\010argument\030\004 \003(\0132\021.mdb" +
-      ".ArgumentInfo\022+\n\014significance\030\005 \001(\0132\025.md" +
-      "b.SignificanceInfo\0223\n\nconstraint\030\006 \003(\0132\037" +
-      ".mdb.TransmissionConstraintInfo\022\013\n\003url\030\007",
-      " \001(\t*u\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022" +
-      "\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n" +
-      "\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTOR" +
-      "Y\020\006*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WAT" +
-      "CH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITI" +
-      "CAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
+      "5\n\026ArgumentAssignmentInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "\r\n\005value\030\002 \001(\t\"\326\001\n\020SignificanceInfo\022E\n\020c" +
+      "onsequenceLevel\030\001 \001(\0162+.mdb.Significance" +
+      "Info.SignificanceLevelType\022\030\n\020reasonForW" +
+      "arning\030\002 \001(\t\"a\n\025SignificanceLevelType\022\010\n" +
+      "\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTR" +
+      "ESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\367\001\n\016Comp" +
+      "arisonInfo\022\021\n\tparameter\030\001 \001(\t\0222\n\010operato" +
+      "r\030\002 \001(\0162 .mdb.ComparisonInfo.OperatorTyp" +
+      "e\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType\022\014\n\010EQU",
+      "AL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREATER_THA" +
+      "N\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004\022\020\n\014SMA" +
+      "LLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQUAL_TO\020" +
+      "\006\"V\n\032TransmissionConstraintInfo\022\'\n\ncompa" +
+      "rison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\017\n\007time" +
+      "out\030\002 \001(\003\"\260\002\n\013CommandInfo\022-\n\013description" +
+      "\030\001 \001(\0132\030.mdb.NameDescriptionInfo\022\023\n\013base" +
+      "Command\030\002 \001(\t\022\020\n\010abstract\030\003 \001(\010\022#\n\010argum" +
+      "ent\030\004 \003(\0132\021.mdb.ArgumentInfo\0227\n\022argument" +
+      "Assignment\030\005 \003(\0132\033.mdb.ArgumentAssignmen",
+      "tInfo\022+\n\014significance\030\006 \001(\0132\025.mdb.Signif" +
+      "icanceInfo\0223\n\nconstraint\030\007 \003(\0132\037.mdb.Tra" +
+      "nsmissionConstraintInfo\022\013\n\003url\030\010 \001(\t*u\n\016" +
+      "DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIV" +
+      "ED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020" +
+      "\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016A" +
+      "larmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007" +
+      "WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n" +
+      "\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -11155,30 +12152,36 @@ public final class Mdb {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_ArgumentInfo_descriptor,
               new java.lang.String[] { "Name", "Description", "Type", "InitialValue", "UnitSet", });
-          internal_static_mdb_SignificanceInfo_descriptor =
+          internal_static_mdb_ArgumentAssignmentInfo_descriptor =
             getDescriptor().getMessageTypes().get(7);
+          internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_mdb_ArgumentAssignmentInfo_descriptor,
+              new java.lang.String[] { "Name", "Value", });
+          internal_static_mdb_SignificanceInfo_descriptor =
+            getDescriptor().getMessageTypes().get(8);
           internal_static_mdb_SignificanceInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_SignificanceInfo_descriptor,
               new java.lang.String[] { "ConsequenceLevel", "ReasonForWarning", });
           internal_static_mdb_ComparisonInfo_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_mdb_ComparisonInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_ComparisonInfo_descriptor,
               new java.lang.String[] { "Parameter", "Operator", "Value", });
           internal_static_mdb_TransmissionConstraintInfo_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_mdb_TransmissionConstraintInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_TransmissionConstraintInfo_descriptor,
               new java.lang.String[] { "Comparison", "Timeout", });
           internal_static_mdb_CommandInfo_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_mdb_CommandInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_CommandInfo_descriptor,
-              new java.lang.String[] { "Description", "BaseCommand", "Abstract", "Argument", "Significance", "Constraint", "Url", });
+              new java.lang.String[] { "Description", "BaseCommand", "Abstract", "Argument", "ArgumentAssignment", "Significance", "Constraint", "Url", });
           return null;
         }
       };

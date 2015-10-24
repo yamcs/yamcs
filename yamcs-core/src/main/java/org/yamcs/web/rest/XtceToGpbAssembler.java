@@ -5,6 +5,7 @@ import java.util.Map;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
+import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
@@ -19,6 +20,7 @@ import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.Comparison.OperatorType;
@@ -47,6 +49,11 @@ public class XtceToGpbAssembler {
         if (cmd.getArgumentList() != null) {
             for (Argument xtceArgument : cmd.getArgumentList()) {
                 cb.addArgument(toArgumentInfo(xtceArgument));
+            }
+        }
+        if (cmd.getArgumentAssignmentList() != null) {
+            for (ArgumentAssignment xtceAssignment : cmd.getArgumentAssignmentList()) {
+                cb.addArgumentAssignment(toArgumentAssignmentInfo(xtceAssignment));
             }
         }
         if (cmd.getBaseMetaCommand() != null) {
@@ -80,6 +87,13 @@ public class XtceToGpbAssembler {
                 }
             }
         }
+        return b.build();
+    }
+    
+    public static ArgumentAssignmentInfo toArgumentAssignmentInfo(ArgumentAssignment xtceArgument) {
+        ArgumentAssignmentInfo.Builder b = ArgumentAssignmentInfo.newBuilder();
+        b.setName(xtceArgument.getArgumentName());
+        b.setValue(xtceArgument.getArgumentValue());
         return b.build();
     }
     
