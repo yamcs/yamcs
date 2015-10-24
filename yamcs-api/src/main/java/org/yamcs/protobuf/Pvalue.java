@@ -539,26 +539,26 @@ public final class Pvalue {
     com.google.protobuf.ByteString
         getExpirationTimeUTCBytes();
 
-    // repeated .parameters.AlarmRange alarmRange = 25;
+    // repeated .mdb.AlarmRange alarmRange = 25;
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> 
+    java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> 
         getAlarmRangeList();
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index);
+    org.yamcs.protobuf.Mdb.AlarmRange getAlarmRange(int index);
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
@@ -566,22 +566,22 @@ public final class Pvalue {
      */
     int getAlarmRangeCount();
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+    java.util.List<? extends org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder> 
         getAlarmRangeOrBuilderList();
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+    org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
         int index);
   }
   /**
@@ -738,10 +738,10 @@ public final class Pvalue {
             }
             case 202: {
               if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
-                alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Parameters.AlarmRange>();
+                alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>();
                 mutable_bitField0_ |= 0x00001000;
               }
-              alarmRange_.add(input.readMessage(org.yamcs.protobuf.Parameters.AlarmRange.PARSER, extensionRegistry));
+              alarmRange_.add(input.readMessage(org.yamcs.protobuf.Mdb.AlarmRange.PARSER, extensionRegistry));
               break;
             }
           }
@@ -1090,32 +1090,32 @@ public final class Pvalue {
       }
     }
 
-    // repeated .parameters.AlarmRange alarmRange = 25;
+    // repeated .mdb.AlarmRange alarmRange = 25;
     public static final int ALARMRANGE_FIELD_NUMBER = 25;
-    private java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> alarmRange_;
+    private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_;
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> getAlarmRangeList() {
+    public java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> getAlarmRangeList() {
       return alarmRange_;
     }
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    public java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder> 
         getAlarmRangeOrBuilderList() {
       return alarmRange_;
     }
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
@@ -1125,23 +1125,23 @@ public final class Pvalue {
       return alarmRange_.size();
     }
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    public org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index) {
+    public org.yamcs.protobuf.Mdb.AlarmRange getAlarmRange(int index) {
       return alarmRange_.get(index);
     }
     /**
-     * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+     * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
      *
      * <pre>
      * context-dependent ranges
      * </pre>
      */
-    public org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+    public org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
         int index) {
       return alarmRange_.get(index);
     }
@@ -2485,27 +2485,27 @@ public final class Pvalue {
         return this;
       }
 
-      // repeated .parameters.AlarmRange alarmRange = 25;
-      private java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> alarmRange_ =
+      // repeated .mdb.AlarmRange alarmRange = 25;
+      private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_ =
         java.util.Collections.emptyList();
       private void ensureAlarmRangeIsMutable() {
         if (!((bitField0_ & 0x00001000) == 0x00001000)) {
-          alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Parameters.AlarmRange>(alarmRange_);
+          alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>(alarmRange_);
           bitField0_ |= 0x00001000;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> alarmRangeBuilder_;
+          org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder> alarmRangeBuilder_;
 
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange> getAlarmRangeList() {
+      public java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> getAlarmRangeList() {
         if (alarmRangeBuilder_ == null) {
           return java.util.Collections.unmodifiableList(alarmRange_);
         } else {
@@ -2513,7 +2513,7 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
@@ -2527,13 +2527,13 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public org.yamcs.protobuf.Parameters.AlarmRange getAlarmRange(int index) {
+      public org.yamcs.protobuf.Mdb.AlarmRange getAlarmRange(int index) {
         if (alarmRangeBuilder_ == null) {
           return alarmRange_.get(index);
         } else {
@@ -2541,14 +2541,14 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder setAlarmRange(
-          int index, org.yamcs.protobuf.Parameters.AlarmRange value) {
+          int index, org.yamcs.protobuf.Mdb.AlarmRange value) {
         if (alarmRangeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2562,14 +2562,14 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder setAlarmRange(
-          int index, org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Mdb.AlarmRange.Builder builderForValue) {
         if (alarmRangeBuilder_ == null) {
           ensureAlarmRangeIsMutable();
           alarmRange_.set(index, builderForValue.build());
@@ -2580,13 +2580,13 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public Builder addAlarmRange(org.yamcs.protobuf.Parameters.AlarmRange value) {
+      public Builder addAlarmRange(org.yamcs.protobuf.Mdb.AlarmRange value) {
         if (alarmRangeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2600,14 +2600,14 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder addAlarmRange(
-          int index, org.yamcs.protobuf.Parameters.AlarmRange value) {
+          int index, org.yamcs.protobuf.Mdb.AlarmRange value) {
         if (alarmRangeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2621,14 +2621,14 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder addAlarmRange(
-          org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+          org.yamcs.protobuf.Mdb.AlarmRange.Builder builderForValue) {
         if (alarmRangeBuilder_ == null) {
           ensureAlarmRangeIsMutable();
           alarmRange_.add(builderForValue.build());
@@ -2639,14 +2639,14 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder addAlarmRange(
-          int index, org.yamcs.protobuf.Parameters.AlarmRange.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Mdb.AlarmRange.Builder builderForValue) {
         if (alarmRangeBuilder_ == null) {
           ensureAlarmRangeIsMutable();
           alarmRange_.add(index, builderForValue.build());
@@ -2657,14 +2657,14 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
       public Builder addAllAlarmRange(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Parameters.AlarmRange> values) {
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.AlarmRange> values) {
         if (alarmRangeBuilder_ == null) {
           ensureAlarmRangeIsMutable();
           super.addAll(values, alarmRange_);
@@ -2675,7 +2675,7 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
@@ -2692,7 +2692,7 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
@@ -2709,24 +2709,24 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public org.yamcs.protobuf.Parameters.AlarmRange.Builder getAlarmRangeBuilder(
+      public org.yamcs.protobuf.Mdb.AlarmRange.Builder getAlarmRangeBuilder(
           int index) {
         return getAlarmRangeFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
+      public org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder getAlarmRangeOrBuilder(
           int index) {
         if (alarmRangeBuilder_ == null) {
           return alarmRange_.get(index);  } else {
@@ -2734,13 +2734,13 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public java.util.List<? extends org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder> 
            getAlarmRangeOrBuilderList() {
         if (alarmRangeBuilder_ != null) {
           return alarmRangeBuilder_.getMessageOrBuilderList();
@@ -2749,45 +2749,45 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public org.yamcs.protobuf.Parameters.AlarmRange.Builder addAlarmRangeBuilder() {
+      public org.yamcs.protobuf.Mdb.AlarmRange.Builder addAlarmRangeBuilder() {
         return getAlarmRangeFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Parameters.AlarmRange.getDefaultInstance());
+            org.yamcs.protobuf.Mdb.AlarmRange.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public org.yamcs.protobuf.Parameters.AlarmRange.Builder addAlarmRangeBuilder(
+      public org.yamcs.protobuf.Mdb.AlarmRange.Builder addAlarmRangeBuilder(
           int index) {
         return getAlarmRangeFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Parameters.AlarmRange.getDefaultInstance());
+            index, org.yamcs.protobuf.Mdb.AlarmRange.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.AlarmRange alarmRange = 25;</code>
+       * <code>repeated .mdb.AlarmRange alarmRange = 25;</code>
        *
        * <pre>
        * context-dependent ranges
        * </pre>
        */
-      public java.util.List<org.yamcs.protobuf.Parameters.AlarmRange.Builder> 
+      public java.util.List<org.yamcs.protobuf.Mdb.AlarmRange.Builder> 
            getAlarmRangeBuilderList() {
         return getAlarmRangeFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder> 
+          org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder> 
           getAlarmRangeFieldBuilder() {
         if (alarmRangeBuilder_ == null) {
           alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.yamcs.protobuf.Parameters.AlarmRange, org.yamcs.protobuf.Parameters.AlarmRange.Builder, org.yamcs.protobuf.Parameters.AlarmRangeOrBuilder>(
+              org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder>(
                   alarmRange_,
                   ((bitField0_ & 0x00001000) == 0x00001000),
                   getParentForChildren(),
@@ -3906,32 +3906,31 @@ public final class Pvalue {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\032\020par" +
-      "ameters.proto\"\275\003\n\016ParameterValue\022 \n\002id\030\001" +
-      " \001(\0132\024.yamcs.NamedObjectId\022\036\n\010rawValue\030\002" +
-      " \001(\0132\014.yamcs.Value\022\036\n\010engValue\030\003 \001(\0132\014.y" +
-      "amcs.Value\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016g" +
-      "enerationTime\030\005 \001(\003\0224\n\021acquisitionStatus" +
-      "\030\006 \001(\0162\031.pvalue.AcquisitionStatus\022\030\n\020pro" +
-      "cessingStatus\030\007 \001(\010\0222\n\020monitoringResult\030" +
-      "\010 \001(\0162\030.pvalue.MonitoringResult\022\032\n\022acqui" +
-      "sitionTimeUTC\030\013 \001(\t\022\031\n\021generationTimeUTC",
-      "\030\014 \001(\t\022\026\n\016expirationTime\030\027 \001(\003\022\031\n\021expira" +
-      "tionTimeUTC\030\030 \001(\t\022*\n\nalarmRange\030\031 \003(\0132\026." +
-      "parameters.AlarmRange\"q\n\rParameterData\022)" +
-      "\n\tparameter\030\001 \003(\0132\026.pvalue.ParameterValu" +
-      "e\022\r\n\005group\030\002 \001(\t\022\026\n\016generationTime\030\003 \001(\003" +
-      "\022\016\n\006seqNum\030\004 \001(\005*M\n\021AcquisitionStatus\022\014\n" +
-      "\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID" +
-      "\020\002\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010" +
-      "DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\t" +
-      "WATCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n",
-      "\022\017\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010D" +
-      "ISTRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_" +
-      "HIGH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021" +
-      "\n\rCRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_" +
-      "LOW\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org.yamcs.prot" +
-      "obuf"
+      "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\032\tmdb" +
+      ".proto\"\266\003\n\016ParameterValue\022 \n\002id\030\001 \001(\0132\024." +
+      "yamcs.NamedObjectId\022\036\n\010rawValue\030\002 \001(\0132\014." +
+      "yamcs.Value\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Va" +
+      "lue\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016generati" +
+      "onTime\030\005 \001(\003\0224\n\021acquisitionStatus\030\006 \001(\0162" +
+      "\031.pvalue.AcquisitionStatus\022\030\n\020processing" +
+      "Status\030\007 \001(\010\0222\n\020monitoringResult\030\010 \001(\0162\030" +
+      ".pvalue.MonitoringResult\022\032\n\022acquisitionT" +
+      "imeUTC\030\013 \001(\t\022\031\n\021generationTimeUTC\030\014 \001(\t\022",
+      "\026\n\016expirationTime\030\027 \001(\003\022\031\n\021expirationTim" +
+      "eUTC\030\030 \001(\t\022#\n\nalarmRange\030\031 \003(\0132\017.mdb.Ala" +
+      "rmRange\"q\n\rParameterData\022)\n\tparameter\030\001 " +
+      "\003(\0132\026.pvalue.ParameterValue\022\r\n\005group\030\002 \001" +
+      "(\t\022\026\n\016generationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001" +
+      "(\005*M\n\021AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n" +
+      "\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020" +
+      "\003*\234\002\n\020MonitoringResult\022\014\n\010DISABLED\020\000\022\r\n\t" +
+      "IN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_LOW\020\010\022\016\n" +
+      "\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WARNING_LO",
+      "W\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DISTRESS\020\r\022\020\n\014D" +
+      "ISTRESS_LOW\020\016\022\021\n\rDISTRESS_HIGH\020\017\022\014\n\010CRIT" +
+      "ICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\rCRITICAL_HIG" +
+      "H\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_LOW\020\024\022\017\n\013SEVER" +
+      "E_HIGH\020\025B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3957,7 +3956,7 @@ public final class Pvalue {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
-          org.yamcs.protobuf.Parameters.getDescriptor(),
+          org.yamcs.protobuf.Mdb.getDescriptor(),
         }, assigner);
   }
 

@@ -14,12 +14,12 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
-import org.yamcs.protobuf.Parameters.GetParameterRequest;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.SchemaParameters;
+import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -45,7 +45,7 @@ public class ParameterRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req);
         }
         
-        YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
+        YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), "realtime");
         
         switch (req.getPathSegment(pathOffset)) {
         case "_get":
@@ -160,7 +160,7 @@ public class ParameterRequestHandler extends RestRequestHandler {
      * Gets parameter values
      */
     private RestResponse getParameters(RestRequest req, YProcessor processor) throws RestException {
-        GetParameterRequest request = req.bodyAsMessage(SchemaParameters.GetParameterRequest.MERGE).build();
+        BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");
         }
@@ -213,7 +213,7 @@ public class ParameterRequestHandler extends RestRequestHandler {
     }
 
 
-    private long getTimeout(GetParameterRequest request) throws BadRequestException {
+    private long getTimeout(BulkGetParameterValueRequest request) throws BadRequestException {
         long timeout = 10000;
         if(request.hasTimeout()) {
             timeout = request.getTimeout();

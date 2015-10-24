@@ -1,0 +1,32 @@
+package parameters;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+import "mdb.proto";
+
+message ListParametersResponse {
+  repeated mdb.ParameterInfo parameter = 1;
+}
+
+message BulkGetParameterRequest {
+  repeated yamcs.NamedObjectId id = 1;
+}
+
+message BulkGetParameterResponse {
+  message GetParameterResponse {
+    optional yamcs.NamedObjectId id = 1;
+    optional mdb.ParameterInfo parameter = 2;
+  }
+
+  repeated GetParameterResponse response = 1;
+}
+
+message BulkGetParameterValueRequest {
+  repeated yamcs.NamedObjectId id = 1;
+  optional bool fromCache = 2;
+  optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
+}
+
+message ListCommandsResponse {
+  repeated mdb.CommandInfo command = 1;
+}

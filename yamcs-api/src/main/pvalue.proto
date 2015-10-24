@@ -2,7 +2,7 @@ package pvalue;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
-import "parameters.proto";
+import "mdb.proto";
 
 //this can also be called validity status
 enum AcquisitionStatus {
@@ -57,7 +57,7 @@ message ParameterValue {
   optional string expirationTimeUTC = 24;
 
   // context-dependent ranges
-  repeated parameters.AlarmRange alarmRange = 25;
+  repeated mdb.AlarmRange alarmRange = 25;
 }
 
 message ParameterData {

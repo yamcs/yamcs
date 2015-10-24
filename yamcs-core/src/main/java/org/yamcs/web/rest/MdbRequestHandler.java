@@ -3,13 +3,9 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.DumpRawMdbResponse;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
 
@@ -19,7 +15,6 @@ import com.google.protobuf.ByteString;
  * /api/:instance/mdb
  */
 public class MdbRequestHandler extends RestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(MdbRequestHandler.class);
     
     @Override
     public String getPath() {
@@ -49,7 +44,7 @@ public class MdbRequestHandler extends RestRequestHandler {
         // TODO TEMP would prefer if we don't send java-serialized data.
         // TODO this limits our abilities to send, say, json
         // TODO and makes clients too dependent
-        XtceDb xtceDb = loadMdb(req.yamcsInstance);
+        XtceDb xtceDb = loadMdb(req.getYamcsInstance());
         ByteString.Output bout = ByteString.newOutput();
         try (ObjectOutputStream oos = new ObjectOutputStream(bout)) {
             oos.writeObject(xtceDb);
@@ -58,14 +53,5 @@ public class MdbRequestHandler extends RestRequestHandler {
         }
         responseb.setRawMdb(bout.toByteString());
         return new RestResponse(req, responseb.build(), SchemaYamcs.DumpRawMdbResponse.WRITE);
-    }
-
-    private XtceDb loadMdb(String yamcsInstance) throws RestException {
-        try {
-            return XtceDbFactory.getInstance(yamcsInstance);
-        } catch(ConfigurationException e) {
-            log.error("Could not get MDB for instance '" + yamcsInstance + "'", e);
-            throw new InternalServerErrorException("Could not get MDB for instance '" + yamcsInstance + "'", e);
-        }
     }
 }

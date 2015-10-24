@@ -24,13 +24,13 @@ import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Commanding.ArgumentType;
+import org.yamcs.protobuf.Commanding.ArgumentAssignmentType;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandType;
 import org.yamcs.protobuf.Commanding.SendCommandRequest;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -119,10 +119,10 @@ public abstract class AbstractIntegrationTest {
 
         CommandType.Builder cmdb = CommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
         for(int i =0 ;i<args.length; i+=2) {
-            cmdb.addArguments(ArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+            cmdb.addArguments(ArgumentAssignmentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
         }
 
-        return SendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
+        return SendCommandRequest.newBuilder().addCommand(cmdb.build()).build();
     }
 
     @After

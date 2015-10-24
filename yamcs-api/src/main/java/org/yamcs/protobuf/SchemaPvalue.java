@@ -45,8 +45,8 @@ public final class SchemaPvalue
                     output.writeInt64(23, message.getExpirationTime(), false);
                 if(message.hasExpirationTimeUTC())
                     output.writeString(24, message.getExpirationTimeUTC(), false);
-                for(org.yamcs.protobuf.Parameters.AlarmRange alarmRange : message.getAlarmRangeList())
-                    output.writeObject(25, alarmRange, org.yamcs.protobuf.SchemaParameters.AlarmRange.WRITE, true);
+                for(org.yamcs.protobuf.Mdb.AlarmRange alarmRange : message.getAlarmRangeList())
+                    output.writeObject(25, alarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
@@ -127,7 +127,7 @@ public final class SchemaPvalue
                             builder.setExpirationTimeUTC(input.readString());
                             break;
                         case 25:
-                            builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Parameters.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaParameters.AlarmRange.MERGE));
+                            builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
 
                             break;
                         default:

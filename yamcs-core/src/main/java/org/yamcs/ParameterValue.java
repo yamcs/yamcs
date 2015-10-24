@@ -1,7 +1,7 @@
 package org.yamcs;
 
-import org.yamcs.protobuf.Parameters.AlarmLevel;
-import org.yamcs.protobuf.Parameters.AlarmRange;
+import org.yamcs.protobuf.Mdb.AlarmLevelType;
+import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -351,22 +351,22 @@ public class ParameterValue {
 
         // TODO make this optional
         if (watchRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevel.WATCH, watchRange));
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WATCH, watchRange));
         if (warningRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevel.WARNING, warningRange));
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WARNING, warningRange));
         if (distressRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevel.DISTRESS, distressRange));
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.DISTRESS, distressRange));
         if (criticalRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevel.CRITICAL, criticalRange));
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.CRITICAL, criticalRange));
         if (severeRange!=null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevel.SEVERE, severeRange));
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, severeRange));
 
         if(id!=null) gpvb.setId(id);
         if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
         return gpvb.build();
     }
     
-    private static AlarmRange toGpbAlarmRange(AlarmLevel gpbLevel, FloatRange floatRange) {
+    private static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
         if (Double.isFinite(floatRange.getMinInclusive()))

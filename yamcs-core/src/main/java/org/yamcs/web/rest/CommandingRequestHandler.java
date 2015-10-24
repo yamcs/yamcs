@@ -9,13 +9,14 @@ import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.protobuf.Commanding.ArgumentType;
+import org.yamcs.protobuf.Commanding.ArgumentAssignmentType;
 import org.yamcs.protobuf.Commanding.CommandSignificance;
-import org.yamcs.protobuf.Commanding.CommandSignificance.Level;
 import org.yamcs.protobuf.Commanding.CommandType;
 import org.yamcs.protobuf.Commanding.SendCommandRequest;
 import org.yamcs.protobuf.Commanding.ValidateCommandRequest;
 import org.yamcs.protobuf.Commanding.ValidateCommandResponse;
+import org.yamcs.protobuf.Mdb.SignificanceInfo;
+import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -40,7 +41,7 @@ public class CommandingRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req);
         }
         
-        YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
+        YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), "realtime");
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
@@ -70,13 +71,13 @@ public class CommandingRequestHandler extends RestRequestHandler {
         ValidateCommandRequest request = req.bodyAsMessage(SchemaCommanding.ValidateCommandRequest.MERGE).build();
         ValidateCommandResponse.Builder responseb = ValidateCommandResponse.newBuilder();
         
-        for (CommandType restCommand : request.getCommandsList()) {
+        for (CommandType restCommand : request.getCommandList()) {
             MetaCommand mc = xtcedb.getMetaCommand(restCommand.getId());
             if(mc==null) {
                 throw new BadRequestException("Unknown command: "+restCommand.getId());
             }
             List<ArgumentAssignment> assignments = new ArrayList<>();
-            for (ArgumentType restArgument : restCommand.getArgumentsList()) {
+            for (ArgumentAssignmentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 
@@ -93,11 +94,14 @@ public class CommandingRequestHandler extends RestRequestHandler {
             }
             Significance s = mc.getDefaultSignificance();
             if(s!=null) {
+                SignificanceInfo.Builder sib = SignificanceInfo.newBuilder();
+                sib.setConsequenceLevel(SignificanceLevelType.valueOf(s.getConsequenceLevel().toString().toUpperCase()));
+                sib.setReasonForWarning(s.getReasonForWarning());
+                
                 CommandSignificance.Builder csb = CommandSignificance.newBuilder()
                         .setSequenceNumber(restCommand.getSequenceNumber())
-                        .setConsequenceLevel(Level.valueOf(s.getConsequenceLevel().toString()))
-                        .setReasonForWarning(s.getReasonForWarning());
-                responseb.addCommandsSignificance(csb.build());
+                        .setSignificance(sib);
+                responseb.addCommandSignificance(csb.build());
             }
         }
 
@@ -116,10 +120,10 @@ public class CommandingRequestHandler extends RestRequestHandler {
 
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<>();
-        for (CommandType restCommand : request.getCommandsList()) {
+        for (CommandType restCommand : request.getCommandList()) {
             MetaCommand mc = required(xtcedb.getMetaCommand(restCommand.getId()), "Unknown command: " + restCommand.getId());
             List<ArgumentAssignment> assignments = new ArrayList<>();
-            for (ArgumentType restArgument : restCommand.getArgumentsList()) {
+            for (ArgumentAssignmentType restArgument : restCommand.getArgumentsList()) {
                 assignments.add(new ArgumentAssignment(restArgument.getName(), restArgument.getValue()));
             }
 

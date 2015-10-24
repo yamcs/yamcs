@@ -33,7 +33,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             
         default:
             String processorName = req.getPathSegment(pathOffset);
-            YProcessor processor = YProcessor.getInstance(req.yamcsInstance, processorName);
+            YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), processorName);
             if (processor==null) {
                 log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", processorName);
                 throw new NotFoundException(req);

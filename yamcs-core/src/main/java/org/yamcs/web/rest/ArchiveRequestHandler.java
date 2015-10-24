@@ -122,7 +122,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         {
             try {
                 String profile = req.getQueryParameters().get("profile").get(0);
-                String filename = YarchDatabase.getHome() + "/" + req.yamcsInstance + "/profiles/" + profile + ".profile";
+                String filename = YarchDatabase.getHome() + "/" + req.getYamcsInstance() + "/profiles/" + profile + ".profile";
                 requestedProfile = Yamcs.NamedObjectList.newBuilder().addAllList(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(filename)))).build();
             }
             catch (Exception e)
@@ -208,11 +208,11 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
                         + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
             }
-            yamcsConnectionData += "localhost/"+req.yamcsInstance;
+            yamcsConnectionData += "localhost/"+req.getYamcsInstance();
 
             ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(req.yamcsInstance);
+            SimpleString replayServer = Protocol.getYarchReplayControlAddress(req.getYamcsInstance());
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
 
             // Server is good to go, start the replay
@@ -420,7 +420,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * GET /(instance)/api/archive/tags
      */
     private RestResponse getTags(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        TagDb tagDb = getTagDb(req.getYamcsInstance());
         
         // Start with default open-ended
         TimeInterval interval = new TimeInterval();
@@ -457,7 +457,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * POST /(instance)/archive/tags
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        TagDb tagDb = getTagDb(req.getYamcsInstance());
         InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
@@ -489,7 +489,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * PUT /(instance)/archive/tags/(tag-time)/(tag-id)
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        TagDb tagDb = getTagDb(req.getYamcsInstance());
         UpdateTagRequest request = req.bodyAsMessage(SchemaArchive.UpdateTagRequest.MERGE).build();
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
@@ -523,7 +523,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
         
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        TagDb tagDb = getTagDb(req.getYamcsInstance());
         try {
             tagDb.deleteTag(tagTime, tagId);
         } catch (YamcsException e) { // Delete-tag returns an exception when it's not found

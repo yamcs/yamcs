@@ -4317,7 +4317,7 @@ public final class Archive {
    * Protobuf type {@code archive.GetTagsRequest}
    *
    * <pre>
-   * GET /(instance)/api/archive/tags
+   * GET /api/:instance/archive/tags
    * </pre>
    */
   public static final class GetTagsRequest extends
@@ -4703,7 +4703,7 @@ public final class Archive {
      * Protobuf type {@code archive.GetTagsRequest}
      *
      * <pre>
-     * GET /(instance)/api/archive/tags
+     * GET /api/:instance/archive/tags
      * </pre>
      */
     public static final class Builder extends
@@ -5875,7 +5875,7 @@ public final class Archive {
    * Protobuf type {@code archive.InsertTagRequest}
    *
    * <pre>
-   * POST /(instance)/api/archive/tags
+   * POST /api/:instance/archive/tags
    * </pre>
    */
   public static final class InsertTagRequest extends
@@ -6297,7 +6297,7 @@ public final class Archive {
      * Protobuf type {@code archive.InsertTagRequest}
      *
      * <pre>
-     * POST /(instance)/api/archive/tags
+     * POST /api/:instance/archive/tags
      * </pre>
      */
     public static final class Builder extends
@@ -7347,7 +7347,7 @@ public final class Archive {
    * Protobuf type {@code archive.UpdateTagRequest}
    *
    * <pre>
-   * PUT /(instance)/api/archive/tags/(old_start)/(id)
+   * PUT /api/:instance/archive/tags/:old_start/:id
    * </pre>
    */
   public static final class UpdateTagRequest extends
@@ -7769,7 +7769,7 @@ public final class Archive {
      * Protobuf type {@code archive.UpdateTagRequest}
      *
      * <pre>
-     * PUT /(instance)/api/archive/tags/(old_start)/(id)
+     * PUT /api/:instance/archive/tags/:old_start/:id
      * </pre>
      */
     public static final class Builder extends

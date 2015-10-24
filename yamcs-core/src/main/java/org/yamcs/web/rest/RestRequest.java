@@ -37,7 +37,7 @@ public class RestRequest {
     
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
-    String yamcsInstance;
+    private String yamcsInstance;
     private QueryStringDecoder qsDecoder;
     AuthenticationToken authToken;
     private JsonFactory jsonFactory;

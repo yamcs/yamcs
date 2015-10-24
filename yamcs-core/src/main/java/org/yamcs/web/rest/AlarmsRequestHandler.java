@@ -31,7 +31,7 @@ public class AlarmsRequestHandler extends RestRequestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        YProcessor processor = YProcessor.getInstance(req.yamcsInstance, "realtime");
+        YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), "realtime");
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getAlarms(req, processor);

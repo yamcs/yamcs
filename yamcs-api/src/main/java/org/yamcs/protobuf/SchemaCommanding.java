@@ -597,10 +597,9 @@ public final class SchemaCommanding
             {
                 if(message.hasSequenceNumber())
                     output.writeInt32(1, message.getSequenceNumber(), false);
-                if(message.hasConsequenceLevel())
-                    output.writeString(2, message.getConsequenceLevel().name(), false);
-                if(message.hasReasonForWarning())
-                    output.writeString(3, message.getReasonForWarning(), false);
+                if(message.hasSignificance())
+                    output.writeObject(2, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandSignificance message)
             {
@@ -644,10 +643,8 @@ public final class SchemaCommanding
                             builder.setSequenceNumber(input.readInt32());
                             break;
                         case 2:
-                            builder.setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(input.readString()));
-                            break;
-                        case 3:
-                            builder.setReasonForWarning(input.readString());
+                            builder.setSignificance(input.mergeObject(org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -690,8 +687,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "sequenceNumber";
-                case 2: return "consequenceLevel";
-                case 3: return "reasonForWarning";
+                case 2: return "significance";
                 default: return null;
             }
         }
@@ -704,8 +700,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("sequenceNumber", 1);
-            fieldMap.put("consequenceLevel", 2);
-            fieldMap.put("reasonForWarning", 3);
+            fieldMap.put("significance", 2);
         }
     }
 
@@ -958,124 +953,6 @@ public final class SchemaCommanding
         }
     }
 
-    public static final class ArgumentType
-    {
-        public static final org.yamcs.protobuf.SchemaCommanding.ArgumentType.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaCommanding.ArgumentType.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaCommanding.ArgumentType.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaCommanding.ArgumentType.BuilderSchema();
-        
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.ArgumentType>
-        {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ArgumentType message) throws java.io.IOException
-            {
-                if(message.hasName())
-                    output.writeString(1, message.getName(), false);
-                if(message.hasValue())
-                    output.writeString(2, message.getValue(), false);
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Commanding.ArgumentType message)
-            {
-                return message.isInitialized();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaCommanding.ArgumentType.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaCommanding.ArgumentType.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Commanding.ArgumentType> typeClass()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.class.getName();
-            }
-            //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.ArgumentType message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Commanding.ArgumentType newMessage() { return null; }
-        }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.ArgumentType.Builder>
-        {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.ArgumentType.Builder builder) throws java.io.IOException
-            {
-                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
-                {
-                    switch(number)
-                    {
-                        case 0:
-                            return;
-                        case 1:
-                            builder.setName(input.readString());
-                            break;
-                        case 2:
-                            builder.setValue(input.readString());
-                            break;
-                        default:
-                            input.handleUnknownField(number, this);
-                    }
-                }
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Commanding.ArgumentType.Builder builder)
-            {
-                return builder.isInitialized();
-            }
-            public org.yamcs.protobuf.Commanding.ArgumentType.Builder newMessage()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.newBuilder();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaCommanding.ArgumentType.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaCommanding.ArgumentType.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Commanding.ArgumentType.Builder> typeClass()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.Builder.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Commanding.ArgumentType.class.getName();
-            }
-            //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ArgumentType.Builder builder) throws java.io.IOException {}
-        }
-        public static java.lang.String getFieldName(int number)
-        {
-            switch(number)
-            {
-                case 1: return "name";
-                case 2: return "value";
-                default: return null;
-            }
-        }
-        public static int getFieldNumber(java.lang.String name)
-        {
-            java.lang.Integer number = fieldMap.get(name);
-            return number == null ? 0 : number.intValue();
-        }
-        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
-        static
-        {
-            fieldMap.put("name", 1);
-            fieldMap.put("value", 2);
-        }
-    }
-
     public static final class CommandType
     {
         public static final org.yamcs.protobuf.SchemaCommanding.CommandType.MessageSchema WRITE =
@@ -1094,8 +971,8 @@ public final class SchemaCommanding
                 if(message.hasId())
                     output.writeObject(3, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
 
-                for(org.yamcs.protobuf.Commanding.ArgumentType arguments : message.getArgumentsList())
-                    output.writeObject(4, arguments, org.yamcs.protobuf.SchemaCommanding.ArgumentType.WRITE, true);
+                for(org.yamcs.protobuf.Commanding.ArgumentAssignmentType arguments : message.getArgumentsList())
+                    output.writeObject(4, arguments, org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandType message)
@@ -1147,7 +1024,7 @@ public final class SchemaCommanding
 
                             break;
                         case 4:
-                            builder.addArguments(input.mergeObject(org.yamcs.protobuf.Commanding.ArgumentType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.ArgumentType.MERGE));
+                            builder.addArguments(input.mergeObject(org.yamcs.protobuf.Commanding.ArgumentAssignmentType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.MERGE));
 
                             break;
                         default:
@@ -1212,6 +1089,124 @@ public final class SchemaCommanding
         }
     }
 
+    public static final class ArgumentAssignmentType
+    {
+        public static final org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.ArgumentAssignmentType>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ArgumentAssignmentType message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasValue())
+                    output.writeString(2, message.getValue(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.ArgumentAssignmentType message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.ArgumentAssignmentType> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.ArgumentAssignmentType message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Commanding.ArgumentAssignmentType newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setValue(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.ArgumentAssignmentType.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.ArgumentAssignmentType.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ArgumentAssignmentType.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "value";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("value", 2);
+        }
+    }
+
     public static final class ValidateCommandRequest
     {
         public static final org.yamcs.protobuf.SchemaCommanding.ValidateCommandRequest.MessageSchema WRITE =
@@ -1223,8 +1218,8 @@ public final class SchemaCommanding
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ValidateCommandRequest message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Commanding.CommandType commands : message.getCommandsList())
-                    output.writeObject(1, commands, org.yamcs.protobuf.SchemaCommanding.CommandType.WRITE, true);
+                for(org.yamcs.protobuf.Commanding.CommandType command : message.getCommandList())
+                    output.writeObject(1, command, org.yamcs.protobuf.SchemaCommanding.CommandType.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.ValidateCommandRequest message)
@@ -1266,7 +1261,7 @@ public final class SchemaCommanding
                         case 0:
                             return;
                         case 1:
-                            builder.addCommands(input.mergeObject(org.yamcs.protobuf.Commanding.CommandType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandType.MERGE));
+                            builder.addCommand(input.mergeObject(org.yamcs.protobuf.Commanding.CommandType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandType.MERGE));
 
                             break;
                         default:
@@ -1309,7 +1304,7 @@ public final class SchemaCommanding
         {
             switch(number)
             {
-                case 1: return "commands";
+                case 1: return "command";
                 default: return null;
             }
         }
@@ -1321,7 +1316,7 @@ public final class SchemaCommanding
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("commands", 1);
+            fieldMap.put("command", 1);
         }
     }
 
@@ -1336,8 +1331,8 @@ public final class SchemaCommanding
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.ValidateCommandResponse message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Commanding.CommandSignificance commandsSignificance : message.getCommandsSignificanceList())
-                    output.writeObject(1, commandsSignificance, org.yamcs.protobuf.SchemaCommanding.CommandSignificance.WRITE, true);
+                for(org.yamcs.protobuf.Commanding.CommandSignificance commandSignificance : message.getCommandSignificanceList())
+                    output.writeObject(1, commandSignificance, org.yamcs.protobuf.SchemaCommanding.CommandSignificance.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.ValidateCommandResponse message)
@@ -1379,7 +1374,7 @@ public final class SchemaCommanding
                         case 0:
                             return;
                         case 1:
-                            builder.addCommandsSignificance(input.mergeObject(org.yamcs.protobuf.Commanding.CommandSignificance.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandSignificance.MERGE));
+                            builder.addCommandSignificance(input.mergeObject(org.yamcs.protobuf.Commanding.CommandSignificance.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandSignificance.MERGE));
 
                             break;
                         default:
@@ -1422,7 +1417,7 @@ public final class SchemaCommanding
         {
             switch(number)
             {
-                case 1: return "commandsSignificance";
+                case 1: return "commandSignificance";
                 default: return null;
             }
         }
@@ -1434,7 +1429,7 @@ public final class SchemaCommanding
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("commandsSignificance", 1);
+            fieldMap.put("commandSignificance", 1);
         }
     }
 
@@ -1449,8 +1444,8 @@ public final class SchemaCommanding
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.SendCommandRequest message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Commanding.CommandType commands : message.getCommandsList())
-                    output.writeObject(1, commands, org.yamcs.protobuf.SchemaCommanding.CommandType.WRITE, true);
+                for(org.yamcs.protobuf.Commanding.CommandType command : message.getCommandList())
+                    output.writeObject(1, command, org.yamcs.protobuf.SchemaCommanding.CommandType.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.SendCommandRequest message)
@@ -1492,7 +1487,7 @@ public final class SchemaCommanding
                         case 0:
                             return;
                         case 1:
-                            builder.addCommands(input.mergeObject(org.yamcs.protobuf.Commanding.CommandType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandType.MERGE));
+                            builder.addCommand(input.mergeObject(org.yamcs.protobuf.Commanding.CommandType.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandType.MERGE));
 
                             break;
                         default:
@@ -1535,7 +1530,7 @@ public final class SchemaCommanding
         {
             switch(number)
             {
-                case 1: return "commands";
+                case 1: return "command";
                 default: return null;
             }
         }
@@ -1547,7 +1542,243 @@ public final class SchemaCommanding
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("commands", 1);
+            fieldMap.put("command", 1);
+        }
+    }
+
+    public static final class BulkGetCommandResponse
+    {
+
+        public static final class CommandInfoResponse
+        {
+            public static final org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.MessageSchema WRITE =
+                new org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.MessageSchema();
+            public static final org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.BuilderSchema MERGE =
+                new org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.BuilderSchema();
+            
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse>
+            {
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse message) throws java.io.IOException
+                {
+                    if(message.hasId())
+                        output.writeObject(1, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+
+                    if(message.hasCommand())
+                        output.writeObject(2, message.getCommand(), org.yamcs.protobuf.SchemaMdb.CommandInfo.WRITE, false);
+
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse message)
+                {
+                    return message.isInitialized();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse> typeClass()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.class.getName();
+                }
+                //unused
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse message) throws java.io.IOException {}
+                public org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse newMessage() { return null; }
+            }
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder>
+            {
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder builder) throws java.io.IOException
+                {
+                    for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                    {
+                        switch(number)
+                        {
+                            case 0:
+                                return;
+                            case 1:
+                                builder.setId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                                break;
+                            case 2:
+                                builder.setCommand(input.mergeObject(org.yamcs.protobuf.Mdb.CommandInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.CommandInfo.MERGE));
+
+                                break;
+                            default:
+                                input.handleUnknownField(number, this);
+                        }
+                    }
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder builder)
+                {
+                    return builder.isInitialized();
+                }
+                public org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder newMessage()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.newBuilder();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder> typeClass()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.class.getName();
+                }
+                //unused
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.Builder builder) throws java.io.IOException {}
+            }
+            public static java.lang.String getFieldName(int number)
+            {
+                switch(number)
+                {
+                    case 1: return "id";
+                    case 2: return "command";
+                    default: return null;
+                }
+            }
+            public static int getFieldNumber(java.lang.String name)
+            {
+                java.lang.Integer number = fieldMap.get(name);
+                return number == null ? 0 : number.intValue();
+            }
+            private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+            static
+            {
+                fieldMap.put("id", 1);
+                fieldMap.put("command", 2);
+            }
+        }
+
+        public static final org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.BulkGetCommandResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.BulkGetCommandResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse response : message.getResponseList())
+                    output.writeObject(1, response, org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.BulkGetCommandResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.BulkGetCommandResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.BulkGetCommandResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Commanding.BulkGetCommandResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addResponse(input.mergeObject(org.yamcs.protobuf.Commanding.BulkGetCommandResponse.CommandInfoResponse.newBuilder(), org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.CommandInfoResponse.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaCommanding.BulkGetCommandResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Commanding.BulkGetCommandResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Commanding.BulkGetCommandResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "response";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("response", 1);
         }
     }
 

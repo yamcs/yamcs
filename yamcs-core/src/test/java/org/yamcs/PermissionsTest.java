@@ -11,13 +11,13 @@ import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Commanding.SendCommandRequest;
-import org.yamcs.protobuf.Parameters.GetParameterRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
-import org.yamcs.protobuf.SchemaParameters;
 import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -134,14 +134,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         // Allowed to subscribe to Integer parameter from cache
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        GetParameterRequest req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
+        String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         assertTrue("{}", !response.contains("ForbiddenException"));
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = GetParameterRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaParameters.GetParameterRequest.WRITE), currentUser);
+        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
+        response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }
 

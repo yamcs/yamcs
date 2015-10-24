@@ -1,0 +1,113 @@
+package mdb;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+
+enum DataSourceType {
+  TELEMETERED = 0;
+  DERIVED = 1;
+  CONSTANT = 2;
+  LOCAL = 3;
+  SYSTEM = 4;
+  COMMAND = 5;
+  COMMAND_HISTORY = 6;
+}
+
+enum AlarmLevelType {
+  NORMAL = 0;
+  WATCH = 1;
+  WARNING =  2;
+  DISTRESS = 3;
+  CRITICAL = 4;
+  SEVERE = 5;
+}
+
+message UnitInfo {
+  optional string unit = 1;
+}
+
+message NameDescriptionInfo {
+  optional string qualifiedName = 1;
+  optional string shortDescription = 2;
+  optional string longDescription = 3;
+  repeated yamcs.NamedObjectId aliases = 4;
+}
+
+message AlarmRange {
+  optional AlarmLevelType level = 1;
+  optional double minInclusive = 2;
+  optional double maxInclusive = 3;
+
+  //TODO show here also the integer value of the enumeration
+  optional string enumerationValue = 4;
+}
+
+message AlarmInfo {
+  optional int32 minViolations = 1;
+  repeated AlarmRange staticAlarmRanges = 2;
+}
+
+message ParameterTypeInfo {
+  optional string engType = 1;
+  optional string dataEncoding = 2; //TODO
+  repeated UnitInfo unitSet = 3;
+  optional AlarmInfo defaultAlarm = 4;
+}
+
+message ParameterInfo {
+  optional NameDescriptionInfo description = 2;
+  optional ParameterTypeInfo type = 3;
+  optional DataSourceType dataSource = 4;
+  optional string url = 5;
+}
+
+message ArgumentInfo {
+  optional string name = 1;
+  optional string type = 2;
+  optional string initialValue = 3;
+  repeated UnitInfo unitSet = 4;
+}
+
+message SignificanceInfo {
+  enum SignificanceLevelType {
+    NONE = 1;
+    WATCH = 2;
+    WARNING = 3;
+    DISTRESS = 4;
+    CRITICAL = 5;
+    SEVERE = 6;
+  }
+
+  optional SignificanceLevelType consequenceLevel = 1;
+  optional string reasonForWarning = 2;
+}
+
+message ComparisonInfo {
+  enum OperatorType {
+    EQUAL_TO = 1;
+    NOT_EQUAL_TO = 2;
+    GREATER_THAN = 3;
+    GREATER_THAN_OR_EQUAL_TO = 4;
+    SMALLER_THAN = 5;
+    SMALLER_THAN_OR_EQUAL_TO = 6;
+  }
+
+  optional string parameter = 1;
+  optional OperatorType operator = 2;
+  optional string value = 3;
+}
+
+message TransmissionConstraintInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional int64 timeout = 2;
+}
+
+message CommandInfo {
+  optional NameDescriptionInfo description = 1;
+  optional string baseCommand = 2;
+  optional bool abstract = 3;
+  repeated ArgumentInfo argument = 4;
+  optional SignificanceInfo significance = 5;
+  repeated TransmissionConstraintInfo constraint = 6;
+  optional string url = 7;
+}
