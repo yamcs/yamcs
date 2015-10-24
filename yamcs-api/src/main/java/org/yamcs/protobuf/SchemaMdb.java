@@ -1413,23 +1413,26 @@ public final class SchemaMdb
                     output.writeObject(1, message.getDescription(), org.yamcs.protobuf.SchemaMdb.NameDescriptionInfo.WRITE, false);
 
                 if(message.hasBaseCommand())
-                    output.writeString(2, message.getBaseCommand(), false);
+                    output.writeObject(2, message.getBaseCommand(), org.yamcs.protobuf.SchemaMdb.CommandInfo.WRITE, false);
+
+                if(message.hasBaseCommandUrl())
+                    output.writeString(3, message.getBaseCommandUrl(), false);
                 if(message.hasAbstract())
-                    output.writeBool(3, message.getAbstract(), false);
+                    output.writeBool(4, message.getAbstract(), false);
                 for(org.yamcs.protobuf.Mdb.ArgumentInfo argument : message.getArgumentList())
-                    output.writeObject(4, argument, org.yamcs.protobuf.SchemaMdb.ArgumentInfo.WRITE, true);
+                    output.writeObject(5, argument, org.yamcs.protobuf.SchemaMdb.ArgumentInfo.WRITE, true);
 
                 for(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo argumentAssignment : message.getArgumentAssignmentList())
-                    output.writeObject(5, argumentAssignment, org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.WRITE, true);
+                    output.writeObject(6, argumentAssignment, org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.WRITE, true);
 
                 if(message.hasSignificance())
-                    output.writeObject(6, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
+                    output.writeObject(7, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
 
                 for(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo constraint : message.getConstraintList())
-                    output.writeObject(7, constraint, org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.WRITE, true);
+                    output.writeObject(8, constraint, org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.WRITE, true);
 
                 if(message.hasUrl())
-                    output.writeString(8, message.getUrl(), false);
+                    output.writeString(9, message.getUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.CommandInfo message)
             {
@@ -1474,28 +1477,32 @@ public final class SchemaMdb
 
                             break;
                         case 2:
-                            builder.setBaseCommand(input.readString());
+                            builder.setBaseCommand(input.mergeObject(org.yamcs.protobuf.Mdb.CommandInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.CommandInfo.MERGE));
+
                             break;
                         case 3:
-                            builder.setAbstract(input.readBool());
+                            builder.setBaseCommandUrl(input.readString());
                             break;
                         case 4:
+                            builder.setAbstract(input.readBool());
+                            break;
+                        case 5:
                             builder.addArgument(input.mergeObject(org.yamcs.protobuf.Mdb.ArgumentInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ArgumentInfo.MERGE));
 
                             break;
-                        case 5:
+                        case 6:
                             builder.addArgumentAssignment(input.mergeObject(org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ArgumentAssignmentInfo.MERGE));
 
                             break;
-                        case 6:
+                        case 7:
                             builder.setSignificance(input.mergeObject(org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MERGE));
 
                             break;
-                        case 7:
+                        case 8:
                             builder.addConstraint(input.mergeObject(org.yamcs.protobuf.Mdb.TransmissionConstraintInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.TransmissionConstraintInfo.MERGE));
 
                             break;
-                        case 8:
+                        case 9:
                             builder.setUrl(input.readString());
                             break;
                         default:
@@ -1540,12 +1547,13 @@ public final class SchemaMdb
             {
                 case 1: return "description";
                 case 2: return "baseCommand";
-                case 3: return "abstract";
-                case 4: return "argument";
-                case 5: return "argumentAssignment";
-                case 6: return "significance";
-                case 7: return "constraint";
-                case 8: return "url";
+                case 3: return "baseCommandUrl";
+                case 4: return "abstract";
+                case 5: return "argument";
+                case 6: return "argumentAssignment";
+                case 7: return "significance";
+                case 8: return "constraint";
+                case 9: return "url";
                 default: return null;
             }
         }
@@ -1559,12 +1567,13 @@ public final class SchemaMdb
         {
             fieldMap.put("description", 1);
             fieldMap.put("baseCommand", 2);
-            fieldMap.put("abstract", 3);
-            fieldMap.put("argument", 4);
-            fieldMap.put("argumentAssignment", 5);
-            fieldMap.put("significance", 6);
-            fieldMap.put("constraint", 7);
-            fieldMap.put("url", 8);
+            fieldMap.put("baseCommandUrl", 3);
+            fieldMap.put("abstract", 4);
+            fieldMap.put("argument", 5);
+            fieldMap.put("argumentAssignment", 6);
+            fieldMap.put("significance", 7);
+            fieldMap.put("constraint", 8);
+            fieldMap.put("url", 9);
         }
     }
 

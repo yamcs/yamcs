@@ -110,11 +110,12 @@ message TransmissionConstraintInfo {
 
 message CommandInfo {
   optional NameDescriptionInfo description = 1;
-  optional string baseCommand = 2;
-  optional bool abstract = 3;
-  repeated ArgumentInfo argument = 4;
-  repeated ArgumentAssignmentInfo argumentAssignment = 5;
-  optional SignificanceInfo significance = 6;
-  repeated TransmissionConstraintInfo constraint = 7;
-  optional string url = 8;
+  optional CommandInfo baseCommand = 2;
+  optional string baseCommandUrl = 3;
+  optional bool abstract = 4;
+  repeated ArgumentInfo argument = 5;
+  repeated ArgumentAssignmentInfo argumentAssignment = 6;
+  optional SignificanceInfo significance = 7;
+  repeated TransmissionConstraintInfo constraint = 8;
+  optional string url = 9;
 }

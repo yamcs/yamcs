@@ -40,7 +40,10 @@ import org.yamcs.xtce.UnitType;
 
 public class XtceToGpbAssembler {
     
-    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL) {
+    /**
+     * @param detail whether base commands will be expanded. Else include just a URL to the base command
+     */
+    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, boolean detail) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
         cb.setDescription(toNameDescriptionInfo(cmd));
         if (cmd.getDefaultSignificance() != null) {
@@ -56,9 +59,6 @@ public class XtceToGpbAssembler {
                 cb.addArgumentAssignment(toArgumentAssignmentInfo(xtceAssignment));
             }
         }
-        if (cmd.getBaseMetaCommand() != null) {
-            cb.setBaseCommand(cmd.getBaseMetaCommand().getQualifiedName());
-        }
         cb.setAbstract(cmd.isAbstract());
         if (cmd.getTransmissionConstraintList() != null) {
             for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
@@ -66,6 +66,15 @@ public class XtceToGpbAssembler {
             }
         }
         cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
+        
+        if (cmd.getBaseMetaCommand() != null) {
+            if (detail) {
+                cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, detail));
+            } else {
+                cb.setBaseCommandUrl(instanceURL + "/commands" + cmd.getBaseMetaCommand().getQualifiedName());       
+            }
+        }
+    
         return cb.build();
     }
     
