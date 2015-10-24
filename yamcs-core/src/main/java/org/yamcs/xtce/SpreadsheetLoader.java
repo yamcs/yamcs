@@ -1428,8 +1428,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             absoluteOffset = -1;
         }
         String units=null;
-        if(hasColumn(cells, IDX_PARAM_ENGUNIT)) {
-            units = cells[IDX_PARAM_ENGUNIT].getContents();
+        if(hasColumn(cells, IDX_CMD_ENGUNIT)) {
+            units = cells[IDX_CMD_ENGUNIT].getContents();
             if(!"".equals(units) && units != null && atype instanceof BaseDataType) {
                 UnitType unitType = new UnitType(units);
                 ((BaseDataType) atype).addUnit(unitType);
