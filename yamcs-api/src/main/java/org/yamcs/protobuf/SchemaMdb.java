@@ -789,12 +789,14 @@ public final class SchemaMdb
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
+                if(message.hasDescription())
+                    output.writeString(2, message.getDescription(), false);
                 if(message.hasType())
-                    output.writeString(2, message.getType(), false);
+                    output.writeString(3, message.getType(), false);
                 if(message.hasInitialValue())
-                    output.writeString(3, message.getInitialValue(), false);
+                    output.writeString(4, message.getInitialValue(), false);
                 for(org.yamcs.protobuf.Mdb.UnitInfo unitSet : message.getUnitSetList())
-                    output.writeObject(4, unitSet, org.yamcs.protobuf.SchemaMdb.UnitInfo.WRITE, true);
+                    output.writeObject(5, unitSet, org.yamcs.protobuf.SchemaMdb.UnitInfo.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.ArgumentInfo message)
@@ -839,12 +841,15 @@ public final class SchemaMdb
                             builder.setName(input.readString());
                             break;
                         case 2:
-                            builder.setType(input.readString());
+                            builder.setDescription(input.readString());
                             break;
                         case 3:
-                            builder.setInitialValue(input.readString());
+                            builder.setType(input.readString());
                             break;
                         case 4:
+                            builder.setInitialValue(input.readString());
+                            break;
+                        case 5:
                             builder.addUnitSet(input.mergeObject(org.yamcs.protobuf.Mdb.UnitInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.UnitInfo.MERGE));
 
                             break;
@@ -889,9 +894,10 @@ public final class SchemaMdb
             switch(number)
             {
                 case 1: return "name";
-                case 2: return "type";
-                case 3: return "initialValue";
-                case 4: return "unitSet";
+                case 2: return "description";
+                case 3: return "type";
+                case 4: return "initialValue";
+                case 5: return "unitSet";
                 default: return null;
             }
         }
@@ -904,9 +910,10 @@ public final class SchemaMdb
         static
         {
             fieldMap.put("name", 1);
-            fieldMap.put("type", 2);
-            fieldMap.put("initialValue", 3);
-            fieldMap.put("unitSet", 4);
+            fieldMap.put("description", 2);
+            fieldMap.put("type", 3);
+            fieldMap.put("initialValue", 4);
+            fieldMap.put("unitSet", 5);
         }
     }
 

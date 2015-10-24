@@ -12,8 +12,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.SendCommandRequest;
-import org.yamcs.protobuf.SchemaCommanding;
+import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.tctm.TcUplinker;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -27,7 +27,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         
         SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC", 7);
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.SendCommandRequest.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -82,7 +82,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ALG_VERIF_TC", 4, "p1", "10", "p2", "20");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.SendCommandRequest.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);

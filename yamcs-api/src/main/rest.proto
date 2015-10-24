@@ -3,6 +3,7 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
 import "mdb.proto";
+import "commanding.proto";
 
 message ListParametersResponse {
   repeated mdb.ParameterInfo parameter = 1;
@@ -29,4 +30,16 @@ message BulkGetParameterValueRequest {
 
 message ListCommandsResponse {
   repeated mdb.CommandInfo command = 1;
+}
+
+message ValidateCommandRequest {
+  repeated commanding.CommandType command = 1;
+}
+
+message ValidateCommandResponse {
+  repeated commanding.CommandSignificance commandSignificance = 1;
+}
+
+message SendCommandRequest {
+  repeated commanding.CommandType command = 1;
 }

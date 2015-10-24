@@ -63,9 +63,10 @@ message ParameterInfo {
 
 message ArgumentInfo {
   optional string name = 1;
-  optional string type = 2;
-  optional string initialValue = 3;
-  repeated UnitInfo unitSet = 4;
+  optional string description = 2;
+  optional string type = 3;
+  optional string initialValue = 4;
+  repeated UnitInfo unitSet = 5;
 }
 
 message SignificanceInfo {

@@ -21,15 +21,14 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandSignificance;
 import org.yamcs.protobuf.Commanding.CommandType;
-import org.yamcs.protobuf.Commanding.SendCommandRequest;
-import org.yamcs.protobuf.Commanding.ValidateCommandRequest;
-import org.yamcs.protobuf.Commanding.ValidateCommandResponse;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
+import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.Rest.ValidateCommandRequest;
+import org.yamcs.protobuf.Rest.ValidateCommandResponse;
 import org.yamcs.protobuf.SchemaArchive;
-import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -51,7 +50,10 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.web.websocket.ParameterResource;
 
+import com.google.protobuf.MessageLite;
+
 import io.netty.handler.codec.http.HttpMethod;
+import io.protostuff.Schema;
 
 
 public class IntegrationTest extends AbstractIntegrationTest {
@@ -113,7 +115,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
         BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(invalidSubscrList.getListList()).build();
 
-        String response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        String response = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         assertTrue(response.contains("Invalid parameters"));
         assertTrue(response.contains("/REFMDB/SUBSYS1/InvalidParaName"));
 
@@ -123,7 +125,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
 
-        response = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        response = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
         checkPdata(pdata, packetGenerator);
 
@@ -132,7 +134,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         req = BulkGetParameterValueRequest.newBuilder()
                 .setTimeout(2000).addAllId(validSubscrList.getListList()).build();
 
-        Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        Future<String> responseFuture = httpClient.doAsyncRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
 
         pdata = (fromJson(responseFuture.get(), SchemaPvalue.ParameterData.MERGE)).build();
         long t1 = System.currentTimeMillis();
@@ -141,7 +143,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         //////// gets parameters from via REST - waiting for update - now with some parameters updated
         packetGenerator.pIntegerPara1_1_6 = 10;
         packetGenerator.pIntegerPara1_1_7 = 5;
-        responseFuture = httpClient.doAsyncRequest("http://localhost:9190/IntegrationTest/api/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        responseFuture = httpClient.doAsyncRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         Thread.sleep(1000); //wait to make sure that the data has reached the server
 
         packetGenerator.generate_PKT1_1();
@@ -157,7 +159,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"))
                 .setEngValue(ValueHelper.newValue(3.14)).build();
         ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
         assertTrue(resp.contains("Cannot find a local(software)"));
     }
 
@@ -167,7 +169,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setEngValue(ValueHelper.newValue("blablab")).build();
         ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
         assertTrue(resp.contains("Cannot assign"));
     }
 
@@ -178,12 +180,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setEngValue(ValueHelper.newValue(5)).build();
         ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
         HttpClient httpClient = new HttpClient();
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
         assertNotNull(resp);
 
         Thread.sleep(1000); //the software parameter manager sets the parameter in another thread so it might not be immediately avaialble
         httpClient = new HttpClient();
-        resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara1", HttpMethod.GET, null, currentUser);
+        resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/REFMDB/SUBSYS1/LocalPara1", HttpMethod.GET, null, currentUser);
         ParameterValue pv = (fromJson(resp, SchemaPvalue.ParameterValue.MERGE)).build();
         assertEquals(pv1.getEngValue(), pv.getEngValue());
     }
@@ -192,11 +194,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testRestParameterSet2() throws Exception {
         //test simple set just for the value	
         Value v = ValueHelper.newValue(3.14);
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE), currentUser);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE), currentUser);
         assertNotNull(resp);
 
         Thread.sleep(1000); //the software parameter manager sets the parameter in another thread so it might not be immediately avaialble
-        resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.GET, null, currentUser);
+        resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/REFMDB/SUBSYS1/LocalPara2", HttpMethod.GET, null, currentUser);
         ParameterValue pv = (fromJson(resp, SchemaPvalue.ParameterValue.MERGE)).build();
         assertEquals(v, pv.getEngValue());
     }
@@ -209,7 +211,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", 5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.SendCommandRequest.WRITE), currentUser);
+        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -219,7 +221,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(5, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
-
     
     @Test
     public void testValidateCommand() throws Exception {
@@ -227,8 +228,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         ValidateCommandRequest cmdreq = getValidateCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 10, "p1", "2");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/validator", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.ValidateCommandRequest.WRITE), currentUser);
-        ValidateCommandResponse vcr = (fromJson(resp, SchemaCommanding.ValidateCommandResponse.MERGE)).build();
+        String resp = doRequest("/commanding/validator", HttpMethod.POST, cmdreq, SchemaRest.ValidateCommandRequest.WRITE);
+        ValidateCommandResponse vcr = (fromJson(resp, SchemaRest.ValidateCommandResponse.MERGE)).build();
         assertEquals(1, vcr.getCommandSignificanceCount());
         CommandSignificance significance = vcr.getCommandSignificance(0);
         assertEquals(10, significance.getSequenceNumber());
@@ -243,7 +244,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 6, "p1", "2");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.SendCommandRequest.WRITE), currentUser);
+        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -278,7 +279,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC2", 6, "p1", "2");
-        String resp = httpClient.doRequest("http://localhost:9190/IntegrationTest/api/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaCommanding.SendCommandRequest.WRITE), currentUser);
+        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -301,7 +302,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNull(cmdhist);
 
         Value v = ValueHelper.newValue(true);
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/parameter/REFMDB/SUBSYS1/AllowCriticalTC2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE), currentUser);
+        httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/REFMDB/SUBSYS1/AllowCriticalTC2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE), currentUser);
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
 
@@ -339,7 +340,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
                 .setReplaySpec(rr).build();
 
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        doRequest("/processor", HttpMethod.POST, prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE);
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -365,7 +366,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         //go back to realtime
         prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
                 .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doPostRequest("http://localhost:9190/api/IntegrationTest/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -380,7 +381,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
         DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2015-01-02T10:10:00").setUtcStop("2015-01-02T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
+        String response = httpClient.doGetRequest("http://localhost:9190/api/IntegrationTest/archive", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
         DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
@@ -433,7 +434,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
             packetGenerator.generate_PKT1_3();
         }
     }
-
+    
+    // Keeping it D-R-Y. Could be refactored into httpClient to make writing short tests easier
+    private <T extends MessageLite> String doRequest(String path, HttpMethod method, T msg, Schema<T> schema) throws Exception {
+        String json = toJson(msg, schema);
+        return httpClient.doRequest("http://localhost:9190/api/IntegrationTest" + path, method, json, currentUser);
+    }
 
     private void checkPdata(ParameterData pdata, RefMdbPacketGenerator packetProvider) {
         assertNotNull(pdata);

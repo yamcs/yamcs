@@ -5614,57 +5614,72 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string type = 2;
+    // optional string description = 2;
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string description = 2;</code>
+     */
+    boolean hasDescription();
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    java.lang.String getDescription();
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getDescriptionBytes();
+
+    // optional string type = 3;
+    /**
+     * <code>optional string type = 3;</code>
      */
     boolean hasType();
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string type = 3;</code>
      */
     java.lang.String getType();
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string type = 3;</code>
      */
     com.google.protobuf.ByteString
         getTypeBytes();
 
-    // optional string initialValue = 3;
+    // optional string initialValue = 4;
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     boolean hasInitialValue();
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     java.lang.String getInitialValue();
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     com.google.protobuf.ByteString
         getInitialValueBytes();
 
-    // repeated .mdb.UnitInfo unitSet = 4;
+    // repeated .mdb.UnitInfo unitSet = 5;
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> 
         getUnitSetList();
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     org.yamcs.protobuf.Mdb.UnitInfo getUnitSet(int index);
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     int getUnitSetCount();
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Mdb.UnitInfoOrBuilder> 
         getUnitSetOrBuilderList();
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     org.yamcs.protobuf.Mdb.UnitInfoOrBuilder getUnitSetOrBuilder(
         int index);
@@ -5727,18 +5742,23 @@ public final class Mdb {
             }
             case 18: {
               bitField0_ |= 0x00000002;
-              type_ = input.readBytes();
+              description_ = input.readBytes();
               break;
             }
             case 26: {
               bitField0_ |= 0x00000004;
-              initialValue_ = input.readBytes();
+              type_ = input.readBytes();
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              bitField0_ |= 0x00000008;
+              initialValue_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
                 unitSet_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.UnitInfo>();
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               unitSet_.add(input.readMessage(org.yamcs.protobuf.Mdb.UnitInfo.PARSER, extensionRegistry));
               break;
@@ -5751,7 +5771,7 @@ public final class Mdb {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
           unitSet_ = java.util.Collections.unmodifiableList(unitSet_);
         }
         this.unknownFields = unknownFields.build();
@@ -5829,17 +5849,60 @@ public final class Mdb {
       }
     }
 
-    // optional string type = 2;
-    public static final int TYPE_FIELD_NUMBER = 2;
-    private java.lang.Object type_;
+    // optional string description = 2;
+    public static final int DESCRIPTION_FIELD_NUMBER = 2;
+    private java.lang.Object description_;
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string description = 2;</code>
      */
-    public boolean hasType() {
+    public boolean hasDescription() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string description = 2;</code>
+     */
+    public java.lang.String getDescription() {
+      java.lang.Object ref = description_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          description_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string description = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDescriptionBytes() {
+      java.lang.Object ref = description_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        description_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string type = 3;
+    public static final int TYPE_FIELD_NUMBER = 3;
+    private java.lang.Object type_;
+    /**
+     * <code>optional string type = 3;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string type = 3;</code>
      */
     public java.lang.String getType() {
       java.lang.Object ref = type_;
@@ -5856,7 +5919,7 @@ public final class Mdb {
       }
     }
     /**
-     * <code>optional string type = 2;</code>
+     * <code>optional string type = 3;</code>
      */
     public com.google.protobuf.ByteString
         getTypeBytes() {
@@ -5872,17 +5935,17 @@ public final class Mdb {
       }
     }
 
-    // optional string initialValue = 3;
-    public static final int INITIALVALUE_FIELD_NUMBER = 3;
+    // optional string initialValue = 4;
+    public static final int INITIALVALUE_FIELD_NUMBER = 4;
     private java.lang.Object initialValue_;
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     public boolean hasInitialValue() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     public java.lang.String getInitialValue() {
       java.lang.Object ref = initialValue_;
@@ -5899,7 +5962,7 @@ public final class Mdb {
       }
     }
     /**
-     * <code>optional string initialValue = 3;</code>
+     * <code>optional string initialValue = 4;</code>
      */
     public com.google.protobuf.ByteString
         getInitialValueBytes() {
@@ -5915,36 +5978,36 @@ public final class Mdb {
       }
     }
 
-    // repeated .mdb.UnitInfo unitSet = 4;
-    public static final int UNITSET_FIELD_NUMBER = 4;
+    // repeated .mdb.UnitInfo unitSet = 5;
+    public static final int UNITSET_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_;
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     public java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> getUnitSetList() {
       return unitSet_;
     }
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Mdb.UnitInfoOrBuilder> 
         getUnitSetOrBuilderList() {
       return unitSet_;
     }
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     public int getUnitSetCount() {
       return unitSet_.size();
     }
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     public org.yamcs.protobuf.Mdb.UnitInfo getUnitSet(int index) {
       return unitSet_.get(index);
     }
     /**
-     * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+     * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
      */
     public org.yamcs.protobuf.Mdb.UnitInfoOrBuilder getUnitSetOrBuilder(
         int index) {
@@ -5953,6 +6016,7 @@ public final class Mdb {
 
     private void initFields() {
       name_ = "";
+      description_ = "";
       type_ = "";
       initialValue_ = "";
       unitSet_ = java.util.Collections.emptyList();
@@ -5973,13 +6037,16 @@ public final class Mdb {
         output.writeBytes(1, getNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getTypeBytes());
+        output.writeBytes(2, getDescriptionBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getInitialValueBytes());
+        output.writeBytes(3, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getInitialValueBytes());
       }
       for (int i = 0; i < unitSet_.size(); i++) {
-        output.writeMessage(4, unitSet_.get(i));
+        output.writeMessage(5, unitSet_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -5996,15 +6063,19 @@ public final class Mdb {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getTypeBytes());
+          .computeBytesSize(2, getDescriptionBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getInitialValueBytes());
+          .computeBytesSize(3, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getInitialValueBytes());
       }
       for (int i = 0; i < unitSet_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, unitSet_.get(i));
+          .computeMessageSize(5, unitSet_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6125,13 +6196,15 @@ public final class Mdb {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = "";
+        description_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        initialValue_ = "";
+        type_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        initialValue_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         if (unitSetBuilder_ == null) {
           unitSet_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
         } else {
           unitSetBuilder_.clear();
         }
@@ -6170,15 +6243,19 @@ public final class Mdb {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.type_ = type_;
+        result.description_ = description_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
         result.initialValue_ = initialValue_;
         if (unitSetBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          if (((bitField0_ & 0x00000010) == 0x00000010)) {
             unitSet_ = java.util.Collections.unmodifiableList(unitSet_);
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.unitSet_ = unitSet_;
         } else {
@@ -6205,13 +6282,18 @@ public final class Mdb {
           name_ = other.name_;
           onChanged();
         }
-        if (other.hasType()) {
+        if (other.hasDescription()) {
           bitField0_ |= 0x00000002;
+          description_ = other.description_;
+          onChanged();
+        }
+        if (other.hasType()) {
+          bitField0_ |= 0x00000004;
           type_ = other.type_;
           onChanged();
         }
         if (other.hasInitialValue()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
           initialValue_ = other.initialValue_;
           onChanged();
         }
@@ -6219,7 +6301,7 @@ public final class Mdb {
           if (!other.unitSet_.isEmpty()) {
             if (unitSet_.isEmpty()) {
               unitSet_ = other.unitSet_;
-              bitField0_ = (bitField0_ & ~0x00000008);
+              bitField0_ = (bitField0_ & ~0x00000010);
             } else {
               ensureUnitSetIsMutable();
               unitSet_.addAll(other.unitSet_);
@@ -6232,7 +6314,7 @@ public final class Mdb {
               unitSetBuilder_.dispose();
               unitSetBuilder_ = null;
               unitSet_ = other.unitSet_;
-              bitField0_ = (bitField0_ & ~0x00000008);
+              bitField0_ = (bitField0_ & ~0x00000010);
               unitSetBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getUnitSetFieldBuilder() : null;
@@ -6342,16 +6424,90 @@ public final class Mdb {
         return this;
       }
 
-      // optional string type = 2;
-      private java.lang.Object type_ = "";
+      // optional string description = 2;
+      private java.lang.Object description_ = "";
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string description = 2;</code>
        */
-      public boolean hasType() {
+      public boolean hasDescription() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string description = 2;</code>
+       */
+      public java.lang.String getDescription() {
+        java.lang.Object ref = description_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          description_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDescriptionBytes() {
+        java.lang.Object ref = description_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          description_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder setDescription(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        description_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder clearDescription() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        description_ = getDefaultInstance().getDescription();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string description = 2;</code>
+       */
+      public Builder setDescriptionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        description_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string type = 3;
+      private java.lang.Object type_ = "";
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string type = 3;</code>
        */
       public java.lang.String getType() {
         java.lang.Object ref = type_;
@@ -6365,7 +6521,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string type = 3;</code>
        */
       public com.google.protobuf.ByteString
           getTypeBytes() {
@@ -6381,51 +6537,51 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string type = 3;</code>
        */
       public Builder setType(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         type_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string type = 3;</code>
        */
       public Builder clearType() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         type_ = getDefaultInstance().getType();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string type = 2;</code>
+       * <code>optional string type = 3;</code>
        */
       public Builder setTypeBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         type_ = value;
         onChanged();
         return this;
       }
 
-      // optional string initialValue = 3;
+      // optional string initialValue = 4;
       private java.lang.Object initialValue_ = "";
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public boolean hasInitialValue() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public java.lang.String getInitialValue() {
         java.lang.Object ref = initialValue_;
@@ -6439,7 +6595,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public com.google.protobuf.ByteString
           getInitialValueBytes() {
@@ -6455,48 +6611,48 @@ public final class Mdb {
         }
       }
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public Builder setInitialValue(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         initialValue_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public Builder clearInitialValue() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         initialValue_ = getDefaultInstance().getInitialValue();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string initialValue = 3;</code>
+       * <code>optional string initialValue = 4;</code>
        */
       public Builder setInitialValueBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         initialValue_ = value;
         onChanged();
         return this;
       }
 
-      // repeated .mdb.UnitInfo unitSet = 4;
+      // repeated .mdb.UnitInfo unitSet = 5;
       private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_ =
         java.util.Collections.emptyList();
       private void ensureUnitSetIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
           unitSet_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.UnitInfo>(unitSet_);
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
          }
       }
 
@@ -6504,7 +6660,7 @@ public final class Mdb {
           org.yamcs.protobuf.Mdb.UnitInfo, org.yamcs.protobuf.Mdb.UnitInfo.Builder, org.yamcs.protobuf.Mdb.UnitInfoOrBuilder> unitSetBuilder_;
 
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> getUnitSetList() {
         if (unitSetBuilder_ == null) {
@@ -6514,7 +6670,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public int getUnitSetCount() {
         if (unitSetBuilder_ == null) {
@@ -6524,7 +6680,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public org.yamcs.protobuf.Mdb.UnitInfo getUnitSet(int index) {
         if (unitSetBuilder_ == null) {
@@ -6534,7 +6690,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder setUnitSet(
           int index, org.yamcs.protobuf.Mdb.UnitInfo value) {
@@ -6551,7 +6707,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder setUnitSet(
           int index, org.yamcs.protobuf.Mdb.UnitInfo.Builder builderForValue) {
@@ -6565,7 +6721,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder addUnitSet(org.yamcs.protobuf.Mdb.UnitInfo value) {
         if (unitSetBuilder_ == null) {
@@ -6581,7 +6737,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder addUnitSet(
           int index, org.yamcs.protobuf.Mdb.UnitInfo value) {
@@ -6598,7 +6754,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder addUnitSet(
           org.yamcs.protobuf.Mdb.UnitInfo.Builder builderForValue) {
@@ -6612,7 +6768,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder addUnitSet(
           int index, org.yamcs.protobuf.Mdb.UnitInfo.Builder builderForValue) {
@@ -6626,7 +6782,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder addAllUnitSet(
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.UnitInfo> values) {
@@ -6640,12 +6796,12 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder clearUnitSet() {
         if (unitSetBuilder_ == null) {
           unitSet_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
           unitSetBuilder_.clear();
@@ -6653,7 +6809,7 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public Builder removeUnitSet(int index) {
         if (unitSetBuilder_ == null) {
@@ -6666,14 +6822,14 @@ public final class Mdb {
         return this;
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public org.yamcs.protobuf.Mdb.UnitInfo.Builder getUnitSetBuilder(
           int index) {
         return getUnitSetFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public org.yamcs.protobuf.Mdb.UnitInfoOrBuilder getUnitSetOrBuilder(
           int index) {
@@ -6683,7 +6839,7 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Mdb.UnitInfoOrBuilder> 
            getUnitSetOrBuilderList() {
@@ -6694,14 +6850,14 @@ public final class Mdb {
         }
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public org.yamcs.protobuf.Mdb.UnitInfo.Builder addUnitSetBuilder() {
         return getUnitSetFieldBuilder().addBuilder(
             org.yamcs.protobuf.Mdb.UnitInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public org.yamcs.protobuf.Mdb.UnitInfo.Builder addUnitSetBuilder(
           int index) {
@@ -6709,7 +6865,7 @@ public final class Mdb {
             index, org.yamcs.protobuf.Mdb.UnitInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .mdb.UnitInfo unitSet = 4;</code>
+       * <code>repeated .mdb.UnitInfo unitSet = 5;</code>
        */
       public java.util.List<org.yamcs.protobuf.Mdb.UnitInfo.Builder> 
            getUnitSetBuilderList() {
@@ -6722,7 +6878,7 @@ public final class Mdb {
           unitSetBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Mdb.UnitInfo, org.yamcs.protobuf.Mdb.UnitInfo.Builder, org.yamcs.protobuf.Mdb.UnitInfoOrBuilder>(
                   unitSet_,
-                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  ((bitField0_ & 0x00000010) == 0x00000010),
                   getParentForChildren(),
                   isClean());
           unitSet_ = null;
@@ -10922,35 +11078,35 @@ public final class Mdb {
       "(\0132\030.mdb.NameDescriptionInfo\022$\n\004type\030\003 \001" +
       "(\0132\026.mdb.ParameterTypeInfo\022\'\n\ndataSource" +
       "\030\004 \001(\0162\023.mdb.DataSourceType\022\013\n\003url\030\005 \001(\t" +
-      "\"`\n\014ArgumentInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002" +
-      " \001(\t\022\024\n\014initialValue\030\003 \001(\t\022\036\n\007unitSet\030\004 " +
-      "\003(\0132\r.mdb.UnitInfo\"\326\001\n\020SignificanceInfo\022",
-      "E\n\020consequenceLevel\030\001 \001(\0162+.mdb.Signific" +
-      "anceInfo.SignificanceLevelType\022\030\n\020reason" +
-      "ForWarning\030\002 \001(\t\"a\n\025SignificanceLevelTyp" +
-      "e\022\010\n\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING\020\003\022\014\n\010D" +
-      "ISTRESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\367\001\n\016" +
-      "ComparisonInfo\022\021\n\tparameter\030\001 \001(\t\0222\n\010ope" +
-      "rator\030\002 \001(\0162 .mdb.ComparisonInfo.Operato" +
-      "rType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType\022\014\n" +
-      "\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREATER" +
-      "_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004\022\020\n",
-      "\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQUAL" +
-      "_TO\020\006\"V\n\032TransmissionConstraintInfo\022\'\n\nc" +
-      "omparison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\017\n\007" +
-      "timeout\030\002 \001(\003\"\367\001\n\013CommandInfo\022-\n\013descrip" +
-      "tion\030\001 \001(\0132\030.mdb.NameDescriptionInfo\022\023\n\013" +
-      "baseCommand\030\002 \001(\t\022\020\n\010abstract\030\003 \001(\010\022#\n\010a" +
-      "rgument\030\004 \003(\0132\021.mdb.ArgumentInfo\022+\n\014sign" +
-      "ificance\030\005 \001(\0132\025.mdb.SignificanceInfo\0223\n" +
-      "\nconstraint\030\006 \003(\0132\037.mdb.TransmissionCons" +
-      "traintInfo\022\013\n\003url\030\007 \001(\t*u\n\016DataSourceTyp",
-      "e\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONST" +
-      "ANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020" +
-      "\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016AlarmLevelType" +
-      "\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010" +
-      "DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022" +
-      "org.yamcs.protobuf"
+      "\"u\n\014ArgumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013descri" +
+      "ption\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\024\n\014initialValu" +
+      "e\030\004 \001(\t\022\036\n\007unitSet\030\005 \003(\0132\r.mdb.UnitInfo\"",
+      "\326\001\n\020SignificanceInfo\022E\n\020consequenceLevel" +
+      "\030\001 \001(\0162+.mdb.SignificanceInfo.Significan" +
+      "ceLevelType\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n" +
+      "\025SignificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATC" +
+      "H\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITIC" +
+      "AL\020\005\022\n\n\006SEVERE\020\006\"\367\001\n\016ComparisonInfo\022\021\n\tp" +
+      "arameter\030\001 \001(\t\0222\n\010operator\030\002 \001(\0162 .mdb.C" +
+      "omparisonInfo.OperatorType\022\r\n\005value\030\003 \001(" +
+      "\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_" +
+      "EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GREATER_",
+      "THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN\020\005\022\034\n\030" +
+      "SMALLER_THAN_OR_EQUAL_TO\020\006\"V\n\032Transmissi" +
+      "onConstraintInfo\022\'\n\ncomparison\030\001 \003(\0132\023.m" +
+      "db.ComparisonInfo\022\017\n\007timeout\030\002 \001(\003\"\367\001\n\013C" +
+      "ommandInfo\022-\n\013description\030\001 \001(\0132\030.mdb.Na" +
+      "meDescriptionInfo\022\023\n\013baseCommand\030\002 \001(\t\022\020" +
+      "\n\010abstract\030\003 \001(\010\022#\n\010argument\030\004 \003(\0132\021.mdb" +
+      ".ArgumentInfo\022+\n\014significance\030\005 \001(\0132\025.md" +
+      "b.SignificanceInfo\0223\n\nconstraint\030\006 \003(\0132\037" +
+      ".mdb.TransmissionConstraintInfo\022\013\n\003url\030\007",
+      " \001(\t*u\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022" +
+      "\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n" +
+      "\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTOR" +
+      "Y\020\006*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WAT" +
+      "CH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITI" +
+      "CAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10998,7 +11154,7 @@ public final class Mdb {
           internal_static_mdb_ArgumentInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_ArgumentInfo_descriptor,
-              new java.lang.String[] { "Name", "Type", "InitialValue", "UnitSet", });
+              new java.lang.String[] { "Name", "Description", "Type", "InitialValue", "UnitSet", });
           internal_static_mdb_SignificanceInfo_descriptor =
             getDescriptor().getMessageTypes().get(7);
           internal_static_mdb_SignificanceInfo_fieldAccessorTable = new

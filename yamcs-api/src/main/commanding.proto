@@ -85,24 +85,3 @@ message ArgumentAssignmentType {
   optional string name = 1;
   optional string value = 2;
 }
-
-message ValidateCommandRequest {
-  repeated CommandType command = 1;
-}
-
-message ValidateCommandResponse {
-  repeated CommandSignificance commandSignificance = 1;
-}
-
-message SendCommandRequest {
-  repeated CommandType command = 1;
-}
-
-message BulkGetCommandResponse {
-  message CommandInfoResponse {
-    optional yamcs.NamedObjectId id = 1;
-    optional mdb.CommandInfo command = 2;
-  }
-
-  repeated CommandInfoResponse response = 1;
-}

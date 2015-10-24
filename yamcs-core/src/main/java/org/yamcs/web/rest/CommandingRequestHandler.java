@@ -12,12 +12,12 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.ArgumentAssignmentType;
 import org.yamcs.protobuf.Commanding.CommandSignificance;
 import org.yamcs.protobuf.Commanding.CommandType;
-import org.yamcs.protobuf.Commanding.SendCommandRequest;
-import org.yamcs.protobuf.Commanding.ValidateCommandRequest;
-import org.yamcs.protobuf.Commanding.ValidateCommandResponse;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
-import org.yamcs.protobuf.SchemaCommanding;
+import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.Rest.ValidateCommandRequest;
+import org.yamcs.protobuf.Rest.ValidateCommandResponse;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance;
@@ -63,12 +63,12 @@ public class CommandingRequestHandler extends RestRequestHandler {
     /**
      * Validates commands passed in request body
      * <p>
-     * POST /(instance)/commanding/validator
+     * POST /api/:instance/commanding/validator
      */
     private RestResponse validateCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        ValidateCommandRequest request = req.bodyAsMessage(SchemaCommanding.ValidateCommandRequest.MERGE).build();
+        ValidateCommandRequest request = req.bodyAsMessage(SchemaRest.ValidateCommandRequest.MERGE).build();
         ValidateCommandResponse.Builder responseb = ValidateCommandResponse.newBuilder();
         
         for (CommandType restCommand : request.getCommandList()) {
@@ -105,18 +105,18 @@ public class CommandingRequestHandler extends RestRequestHandler {
             }
         }
 
-        return new RestResponse(req, responseb.build(), SchemaCommanding.ValidateCommandResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ValidateCommandResponse.WRITE);
     }
 
     /**
      * Validates and adds commands to the queue
      * <p>
-     * POST /(instance)/commanding/queue
+     * POST /api/:instance/commanding/queue
      */
     private RestResponse sendCommand(RestRequest req, YProcessor yamcsChannel) throws RestException {
         XtceDb xtcedb = yamcsChannel.getXtceDb();
 
-        SendCommandRequest request = req.bodyAsMessage(SchemaCommanding.SendCommandRequest.MERGE).build();
+        SendCommandRequest request = req.bodyAsMessage(SchemaRest.SendCommandRequest.MERGE).build();
 
         // Validate all first
         List<PreparedCommand> validated = new ArrayList<>();

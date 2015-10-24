@@ -65,6 +65,9 @@ public class XtceToGpbAssembler {
     public static ArgumentInfo toArgumentInfo(Argument xtceArgument) {
         ArgumentInfo.Builder b = ArgumentInfo.newBuilder();
         b.setName(xtceArgument.getName());
+        if (xtceArgument.getShortDescription() != null) {
+            b.setDescription(xtceArgument.getShortDescription());
+        }
         if (xtceArgument.getInitialValue() != null) {
             b.setInitialValue(xtceArgument.getInitialValue());
         }
