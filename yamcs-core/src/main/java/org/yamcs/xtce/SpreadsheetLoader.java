@@ -967,6 +967,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     cmd.setAbstract(true);
                 }
             }
+            
+            if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
+                String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
+                cmd.setShortDescription(shortDescription);
+            }
 
             // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
             int start = i++;
@@ -1402,7 +1407,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((FloatArgumentType)atype).setValidRange(range);
             }
         }
-
+        
+        if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
+            String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
+            arg.setShortDescription(shortDescription);
+        }
 
         ArgumentEntry ae;
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
