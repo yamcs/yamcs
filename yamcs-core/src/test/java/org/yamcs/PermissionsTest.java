@@ -13,7 +13,7 @@ import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
@@ -116,13 +116,15 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Command INT_ARG_TC is allowed
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/INT_ARG_TC", 5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
+        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands//REFMDB/SUBSYS1/INT_ARG_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
         assertEquals("", resp);
 
         // Command FLOAT_ARG_TC is denied
-        cmdreq = getCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC", 5, "float_arg", "-15", "double_arg", "0");
-        resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
+        cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
+        resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands//REFMDB/SUBSYS1/FLOAT_ARG_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
         assertTrue("Should get permission exception message", resp.contains("ForbiddenException"));
     }
 

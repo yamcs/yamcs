@@ -11,7 +11,6 @@ import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.rest.AlarmsRequestHandler;
 import org.yamcs.web.rest.ArchiveRequestHandler;
 import org.yamcs.web.rest.AuthorizationRequestHandler;
-import org.yamcs.web.rest.CommandingRequestHandler;
 import org.yamcs.web.rest.CommandsRequestHandler;
 import org.yamcs.web.rest.ContainersRequestHandler;
 import org.yamcs.web.rest.EventsRequestHandler;
@@ -46,7 +45,6 @@ public class YamcsWebService extends AbstractService {
         
         router = new RestRouter();
         router.registerRestHandler(new ArchiveRequestHandler());
-        router.registerRestHandler(new CommandingRequestHandler());
         router.registerRestHandler(new CommandsRequestHandler());
         router.registerRestHandler(new ContainersRequestHandler());
         router.registerRestHandler(new ParametersRequestHandler());

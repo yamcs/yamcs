@@ -22,7 +22,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 /**
  * Short-lived operations wrt Events 
  * <p>
- * /(instance)/events
+ * /api/:instance/events
  */
 public class EventsRequestHandler extends RestRequestHandler {
     

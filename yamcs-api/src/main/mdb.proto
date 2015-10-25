@@ -79,7 +79,6 @@ message SignificanceInfo {
     CRITICAL = 5;
     SEVERE = 6;
   }
-
   optional SignificanceLevelType consequenceLevel = 1;
   optional string reasonForWarning = 2;
 }
@@ -93,8 +92,7 @@ message ComparisonInfo {
     SMALLER_THAN = 5;
     SMALLER_THAN_OR_EQUAL_TO = 6;
   }
-
-  optional string parameter = 1;
+  optional ParameterInfo parameter = 1;
   optional OperatorType operator = 2;
   optional string value = 3;
 }

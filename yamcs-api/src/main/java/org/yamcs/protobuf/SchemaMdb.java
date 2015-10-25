@@ -1052,7 +1052,8 @@ public final class SchemaMdb
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ComparisonInfo message) throws java.io.IOException
             {
                 if(message.hasParameter())
-                    output.writeString(1, message.getParameter(), false);
+                    output.writeObject(1, message.getParameter(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.WRITE, false);
+
                 if(message.hasOperator())
                     output.writeString(2, message.getOperator().name(), false);
                 if(message.hasValue())
@@ -1097,7 +1098,8 @@ public final class SchemaMdb
                         case 0:
                             return;
                         case 1:
-                            builder.setParameter(input.readString());
+                            builder.setParameter(input.mergeObject(org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.MERGE));
+
                             break;
                         case 2:
                             builder.setOperator(org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType.valueOf(input.readString()));

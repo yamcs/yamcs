@@ -12,7 +12,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.tctm.TcUplinker;
 
@@ -26,8 +26,9 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC", 7);
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
+        IssueCommandRequest cmdreq = getCommand(7);
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -81,8 +82,9 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ALG_VERIF_TC", 4, "p1", "10", "p2", "20");
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commanding/queue", HttpMethod.POST, toJson(cmdreq, SchemaRest.SendCommandRequest.WRITE), currentUser);
+        IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
+        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);

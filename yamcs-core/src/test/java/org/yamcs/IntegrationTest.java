@@ -15,19 +15,13 @@ import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
-import org.yamcs.protobuf.Commanding.ArgumentAssignmentType;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandSignificance;
-import org.yamcs.protobuf.Commanding.CommandType;
-import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.SendCommandRequest;
-import org.yamcs.protobuf.Rest.ValidateCommandRequest;
-import org.yamcs.protobuf.Rest.ValidateCommandResponse;
+import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
@@ -210,8 +204,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", 5, "uint32_arg", "1000");
-        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
+        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
+        String resp = doRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -222,7 +216,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
     
-    @Test
+    /*@Test
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
@@ -236,15 +230,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(SignificanceLevelType.CRITICAL, significance.getSignificance().getConsequenceLevel());
         assertEquals("this is a critical command, pay attention", significance.getSignificance().getReasonForWarning());
        
-    }
+    }*/
 
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 6, "p1", "2");
-        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
+        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
+        String resp = doRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -278,8 +272,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
-        SendCommandRequest cmdreq = getCommand("/REFMDB/SUBSYS1/CRITICAL_TC2", 6, "p1", "2");
-        String resp = doRequest("/commanding/queue", HttpMethod.POST, cmdreq, SchemaRest.SendCommandRequest.WRITE);
+        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
+        String resp = doRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -399,6 +393,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     }
 
+    /*
     private ValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) {
         NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
 
@@ -409,6 +404,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build();
     }
+    */
 
     private ClientInfo getClientInfo() throws InterruptedException {
         WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);

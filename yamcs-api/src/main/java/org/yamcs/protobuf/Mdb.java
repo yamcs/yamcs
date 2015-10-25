@@ -7687,20 +7687,19 @@ public final class Mdb {
   public interface ComparisonInfoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string parameter = 1;
+    // optional .mdb.ParameterInfo parameter = 1;
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
     boolean hasParameter();
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
-    java.lang.String getParameter();
+    org.yamcs.protobuf.Mdb.ParameterInfo getParameter();
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
-    com.google.protobuf.ByteString
-        getParameterBytes();
+    org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
 
     // optional .mdb.ComparisonInfo.OperatorType operator = 2;
     /**
@@ -7779,8 +7778,16 @@ public final class Mdb {
               break;
             }
             case 10: {
+              org.yamcs.protobuf.Mdb.ParameterInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = parameter_.toBuilder();
+              }
+              parameter_ = input.readMessage(org.yamcs.protobuf.Mdb.ParameterInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(parameter_);
+                parameter_ = subBuilder.buildPartial();
+              }
               bitField0_ |= 0x00000001;
-              parameter_ = input.readBytes();
               break;
             }
             case 16: {
@@ -7957,47 +7964,26 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string parameter = 1;
+    // optional .mdb.ParameterInfo parameter = 1;
     public static final int PARAMETER_FIELD_NUMBER = 1;
-    private java.lang.Object parameter_;
+    private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
     public boolean hasParameter() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
-    public java.lang.String getParameter() {
-      java.lang.Object ref = parameter_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          parameter_ = s;
-        }
-        return s;
-      }
+    public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+      return parameter_;
     }
     /**
-     * <code>optional string parameter = 1;</code>
+     * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
-    public com.google.protobuf.ByteString
-        getParameterBytes() {
-      java.lang.Object ref = parameter_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        parameter_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+      return parameter_;
     }
 
     // optional .mdb.ComparisonInfo.OperatorType operator = 2;
@@ -8060,7 +8046,7 @@ public final class Mdb {
     }
 
     private void initFields() {
-      parameter_ = "";
+      parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       operator_ = org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType.EQUAL_TO;
       value_ = "";
     }
@@ -8069,6 +8055,12 @@ public final class Mdb {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      if (hasParameter()) {
+        if (!getParameter().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8077,7 +8069,7 @@ public final class Mdb {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getParameterBytes());
+        output.writeMessage(1, parameter_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeEnum(2, operator_.getNumber());
@@ -8096,7 +8088,7 @@ public final class Mdb {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getParameterBytes());
+          .computeMessageSize(1, parameter_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -8214,6 +8206,7 @@ public final class Mdb {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getParameterFieldBuilder();
         }
       }
       private static Builder create() {
@@ -8222,7 +8215,11 @@ public final class Mdb {
 
       public Builder clear() {
         super.clear();
-        parameter_ = "";
+        if (parameterBuilder_ == null) {
+          parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+        } else {
+          parameterBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000001);
         operator_ = org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType.EQUAL_TO;
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -8259,7 +8256,11 @@ public final class Mdb {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.parameter_ = parameter_;
+        if (parameterBuilder_ == null) {
+          result.parameter_ = parameter_;
+        } else {
+          result.parameter_ = parameterBuilder_.build();
+        }
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
@@ -8285,9 +8286,7 @@ public final class Mdb {
       public Builder mergeFrom(org.yamcs.protobuf.Mdb.ComparisonInfo other) {
         if (other == org.yamcs.protobuf.Mdb.ComparisonInfo.getDefaultInstance()) return this;
         if (other.hasParameter()) {
-          bitField0_ |= 0x00000001;
-          parameter_ = other.parameter_;
-          onChanged();
+          mergeParameter(other.getParameter());
         }
         if (other.hasOperator()) {
           setOperator(other.getOperator());
@@ -8302,6 +8301,12 @@ public final class Mdb {
       }
 
       public final boolean isInitialized() {
+        if (hasParameter()) {
+          if (!getParameter().isInitialized()) {
+            
+            return false;
+          }
+        }
         return true;
       }
 
@@ -8324,78 +8329,121 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string parameter = 1;
-      private java.lang.Object parameter_ = "";
+      // optional .mdb.ParameterInfo parameter = 1;
+      private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
       public boolean hasParameter() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
-      public java.lang.String getParameter() {
-        java.lang.Object ref = parameter_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          parameter_ = s;
-          return s;
+      public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+        if (parameterBuilder_ == null) {
+          return parameter_;
         } else {
-          return (java.lang.String) ref;
+          return parameterBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
-      public com.google.protobuf.ByteString
-          getParameterBytes() {
-        java.lang.Object ref = parameter_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          parameter_ = b;
-          return b;
+      public Builder setParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          parameter_ = value;
+          onChanged();
         } else {
-          return (com.google.protobuf.ByteString) ref;
+          parameterBuilder_.setMessage(value);
         }
+        bitField0_ |= 0x00000001;
+        return this;
       }
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
       public Builder setParameter(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        parameter_ = value;
-        onChanged();
+          org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+        if (parameterBuilder_ == null) {
+          parameter_ = builderForValue.build();
+          onChanged();
+        } else {
+          parameterBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder mergeParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              parameter_ != org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance()) {
+            parameter_ =
+              org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(parameter_).mergeFrom(value).buildPartial();
+          } else {
+            parameter_ = value;
+          }
+          onChanged();
+        } else {
+          parameterBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
       public Builder clearParameter() {
+        if (parameterBuilder_ == null) {
+          parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          parameterBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000001);
-        parameter_ = getDefaultInstance().getParameter();
-        onChanged();
         return this;
       }
       /**
-       * <code>optional string parameter = 1;</code>
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
        */
-      public Builder setParameterBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        parameter_ = value;
+      public org.yamcs.protobuf.Mdb.ParameterInfo.Builder getParameterBuilder() {
+        bitField0_ |= 0x00000001;
         onChanged();
-        return this;
+        return getParameterFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+        if (parameterBuilder_ != null) {
+          return parameterBuilder_.getMessageOrBuilder();
+        } else {
+          return parameter_;
+        }
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+          getParameterFieldBuilder() {
+        if (parameterBuilder_ == null) {
+          parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
+                  parameter_,
+                  getParentForChildren(),
+                  isClean());
+          parameter_ = null;
+        }
+        return parameterBuilder_;
       }
 
       // optional .mdb.ComparisonInfo.OperatorType operator = 2;
@@ -8725,6 +8773,12 @@ public final class Mdb {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      for (int i = 0; i < getComparisonCount(); i++) {
+        if (!getComparison(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8971,6 +9025,12 @@ public final class Mdb {
       }
 
       public final boolean isInitialized() {
+        for (int i = 0; i < getComparisonCount(); i++) {
+          if (!getComparison(i).isInitialized()) {
+            
+            return false;
+          }
+        }
         return true;
       }
 
@@ -10070,6 +10130,12 @@ public final class Mdb {
           return false;
         }
       }
+      for (int i = 0; i < getConstraintCount(); i++) {
+        if (!getConstraint(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -10593,6 +10659,12 @@ public final class Mdb {
         }
         if (hasBaseCommand()) {
           if (!getBaseCommand().isInitialized()) {
+            
+            return false;
+          }
+        }
+        for (int i = 0; i < getConstraintCount(); i++) {
+          if (!getConstraint(i).isInitialized()) {
             
             return false;
           }
@@ -14716,6 +14788,12 @@ public final class Mdb {
           return false;
         }
       }
+      for (int i = 0; i < getRestrictionCriteriaCount(); i++) {
+        if (!getRestrictionCriteria(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       for (int i = 0; i < getEntryCount(); i++) {
         if (!getEntry(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -15187,6 +15265,12 @@ public final class Mdb {
         }
         if (hasBaseContainer()) {
           if (!getBaseContainer().isInitialized()) {
+            
+            return false;
+          }
+        }
+        for (int i = 0; i < getRestrictionCriteriaCount(); i++) {
+          if (!getRestrictionCriteria(i).isInitialized()) {
             
             return false;
           }
@@ -16532,49 +16616,50 @@ public final class Mdb {
       "ficanceInfo.SignificanceLevelType\022\030\n\020rea" +
       "sonForWarning\030\002 \001(\t\"a\n\025SignificanceLevel" +
       "Type\022\010\n\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING\020\003\022\014" +
-      "\n\010DISTRESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\367" +
-      "\001\n\016ComparisonInfo\022\021\n\tparameter\030\001 \001(\t\0222\n\010" +
-      "operator\030\002 \001(\0162 .mdb.ComparisonInfo.Oper" +
-      "atorType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType" +
-      "\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREA" +
-      "TER_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004",
-      "\022\020\n\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQ" +
-      "UAL_TO\020\006\"V\n\032TransmissionConstraintInfo\022\'" +
-      "\n\ncomparison\030\001 \003(\0132\023.mdb.ComparisonInfo\022" +
-      "\017\n\007timeout\030\002 \001(\003\"\202\003\n\013CommandInfo\022\025\n\rqual" +
-      "ifiedName\030\001 \001(\t\022\030\n\020shortDescription\030\002 \001(" +
-      "\t\022\027\n\017longDescription\030\003 \001(\t\022#\n\005alias\030\004 \003(" +
-      "\0132\024.yamcs.NamedObjectId\022%\n\013baseCommand\030\005" +
-      " \001(\0132\020.mdb.CommandInfo\022\020\n\010abstract\030\006 \001(\010" +
-      "\022#\n\010argument\030\007 \003(\0132\021.mdb.ArgumentInfo\0227\n" +
-      "\022argumentAssignment\030\010 \003(\0132\033.mdb.Argument",
-      "AssignmentInfo\022+\n\014significance\030\t \001(\0132\025.m" +
-      "db.SignificanceInfo\0223\n\nconstraint\030\n \003(\0132" +
-      "\037.mdb.TransmissionConstraintInfo\022\013\n\003url\030" +
-      "\013 \001(\t\"_\n\nRepeatInfo\022\022\n\nfixedCount\030\001 \001(\003\022" +
-      "(\n\014dynamicCount\030\002 \001(\0132\022.mdb.ParameterInf" +
-      "o\022\023\n\013bitsBetween\030\003 \001(\005\"\245\002\n\021SequenceEntry" +
-      "Info\022\026\n\016locationInBits\030\001 \001(\005\022G\n\021referenc" +
-      "eLocation\030\002 \001(\0162,.mdb.SequenceEntryInfo." +
-      "ReferenceLocationType\022%\n\tcontainer\030\003 \001(\013" +
-      "2\022.mdb.ContainerInfo\022%\n\tparameter\030\004 \001(\0132",
-      "\022.mdb.ParameterInfo\022\037\n\006repeat\030\005 \001(\0132\017.md" +
-      "b.RepeatInfo\"@\n\025ReferenceLocationType\022\023\n" +
-      "\017CONTAINER_START\020\001\022\022\n\016PREVIOUS_ENTRY\020\002\"\270" +
-      "\002\n\rContainerInfo\022\025\n\rqualifiedName\030\001 \001(\t\022" +
-      "\030\n\020shortDescription\030\002 \001(\t\022\027\n\017longDescrip" +
-      "tion\030\003 \001(\t\022#\n\005alias\030\004 \003(\0132\024.yamcs.NamedO" +
-      "bjectId\022\023\n\013maxInterval\030\005 \001(\003\022\022\n\nsizeInBi" +
-      "ts\030\006 \001(\005\022)\n\rbaseContainer\030\007 \001(\0132\022.mdb.Co" +
-      "ntainerInfo\0220\n\023restrictionCriteria\030\010 \003(\013" +
-      "2\023.mdb.ComparisonInfo\022%\n\005entry\030\t \003(\0132\026.m",
-      "db.SequenceEntryInfo\022\013\n\003url\030\n \001(\t*u\n\016Dat" +
-      "aSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020" +
-      "\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013" +
-      "\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016Alar" +
-      "mLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WAR" +
-      "NING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SE" +
-      "VERE\020\005B\024\n\022org.yamcs.protobuf"
+      "\n\010DISTRESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\213" +
+      "\002\n\016ComparisonInfo\022%\n\tparameter\030\001 \001(\0132\022.m" +
+      "db.ParameterInfo\0222\n\010operator\030\002 \001(\0162 .mdb" +
+      ".ComparisonInfo.OperatorType\022\r\n\005value\030\003 " +
+      "\001(\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020\n\014NO" +
+      "T_EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GREATE",
+      "R_THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN\020\005\022\034" +
+      "\n\030SMALLER_THAN_OR_EQUAL_TO\020\006\"V\n\032Transmis" +
+      "sionConstraintInfo\022\'\n\ncomparison\030\001 \003(\0132\023" +
+      ".mdb.ComparisonInfo\022\017\n\007timeout\030\002 \001(\003\"\202\003\n" +
+      "\013CommandInfo\022\025\n\rqualifiedName\030\001 \001(\t\022\030\n\020s" +
+      "hortDescription\030\002 \001(\t\022\027\n\017longDescription" +
+      "\030\003 \001(\t\022#\n\005alias\030\004 \003(\0132\024.yamcs.NamedObjec" +
+      "tId\022%\n\013baseCommand\030\005 \001(\0132\020.mdb.CommandIn" +
+      "fo\022\020\n\010abstract\030\006 \001(\010\022#\n\010argument\030\007 \003(\0132\021" +
+      ".mdb.ArgumentInfo\0227\n\022argumentAssignment\030",
+      "\010 \003(\0132\033.mdb.ArgumentAssignmentInfo\022+\n\014si" +
+      "gnificance\030\t \001(\0132\025.mdb.SignificanceInfo\022" +
+      "3\n\nconstraint\030\n \003(\0132\037.mdb.TransmissionCo" +
+      "nstraintInfo\022\013\n\003url\030\013 \001(\t\"_\n\nRepeatInfo\022" +
+      "\022\n\nfixedCount\030\001 \001(\003\022(\n\014dynamicCount\030\002 \001(" +
+      "\0132\022.mdb.ParameterInfo\022\023\n\013bitsBetween\030\003 \001" +
+      "(\005\"\245\002\n\021SequenceEntryInfo\022\026\n\016locationInBi" +
+      "ts\030\001 \001(\005\022G\n\021referenceLocation\030\002 \001(\0162,.md" +
+      "b.SequenceEntryInfo.ReferenceLocationTyp" +
+      "e\022%\n\tcontainer\030\003 \001(\0132\022.mdb.ContainerInfo",
+      "\022%\n\tparameter\030\004 \001(\0132\022.mdb.ParameterInfo\022" +
+      "\037\n\006repeat\030\005 \001(\0132\017.mdb.RepeatInfo\"@\n\025Refe" +
+      "renceLocationType\022\023\n\017CONTAINER_START\020\001\022\022" +
+      "\n\016PREVIOUS_ENTRY\020\002\"\270\002\n\rContainerInfo\022\025\n\r" +
+      "qualifiedName\030\001 \001(\t\022\030\n\020shortDescription\030" +
+      "\002 \001(\t\022\027\n\017longDescription\030\003 \001(\t\022#\n\005alias\030" +
+      "\004 \003(\0132\024.yamcs.NamedObjectId\022\023\n\013maxInterv" +
+      "al\030\005 \001(\003\022\022\n\nsizeInBits\030\006 \001(\005\022)\n\rbaseCont" +
+      "ainer\030\007 \001(\0132\022.mdb.ContainerInfo\0220\n\023restr" +
+      "ictionCriteria\030\010 \003(\0132\023.mdb.ComparisonInf",
+      "o\022%\n\005entry\030\t \003(\0132\026.mdb.SequenceEntryInfo" +
+      "\022\013\n\003url\030\n \001(\t*u\n\016DataSourceType\022\017\n\013TELEM" +
+      "ETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005L" +
+      "OCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMA" +
+      "ND_HISTORY\020\006*\\\n\016AlarmLevelType\022\n\n\006NORMAL" +
+      "\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003" +
+      "\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs." +
+      "protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

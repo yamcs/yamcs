@@ -89,10 +89,10 @@ public class XtceToGpbAssembler {
                 if (c.getRestrictionCriteria() instanceof ComparisonList) {
                     ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
                     for (Comparison comparison : xtceList.getComparisonList()) {
-                        cb.addRestrictionCriteria(toComparisonInfo(comparison));
+                        cb.addRestrictionCriteria(toComparisonInfo(comparison, instanceURL));
                     }
                 } else if (c.getRestrictionCriteria() instanceof Comparison) {
-                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria()));
+                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL));
                 }
             }
             for (SequenceEntry entry : c.getEntryList()) {
@@ -124,14 +124,14 @@ public class XtceToGpbAssembler {
         
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
-            if (detail == DetailLevel.SUMMARY) {
+            if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
                 b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.FULL));
             }
         } else if (e instanceof ParameterEntry) {
             ParameterEntry pe = (ParameterEntry) e;
-            if (detail == DetailLevel.SUMMARY) {
+            if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
                 b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL));
@@ -200,7 +200,7 @@ public class XtceToGpbAssembler {
             cb.setAbstract(cmd.isAbstract());
             if (cmd.getTransmissionConstraintList() != null) {
                 for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
-                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
+                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL));
                 }
             }
             
@@ -246,14 +246,14 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint) {
+    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint, String instanceURL) {
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
         if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
-            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria()));
+            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria(), instanceURL));
         } else if (xtceConstraint.getMatchCriteria() instanceof ComparisonList) {
             ComparisonList xtceList = (ComparisonList) xtceConstraint.getMatchCriteria();
             for (Comparison xtceComparison : xtceList.getComparisonList()) {
-                b.addComparison(toComparisonInfo(xtceComparison));
+                b.addComparison(toComparisonInfo(xtceComparison, instanceURL));
             }
         } else {
             throw new IllegalStateException("Unexpected match criteria " + xtceConstraint.getMatchCriteria());
@@ -262,9 +262,9 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison) {
+    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison, String instanceURL) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
-        b.setParameter(xtceComparison.getParameter().getQualifiedName());
+        b.setParameter(toParameterInfo(xtceComparison.getParameter(), instanceURL, DetailLevel.LINK));
         b.setOperator(toOperatorType(xtceComparison.getComparisonOperator()));
         b.setValue(xtceComparison.getStringValue());
         return b.build();

@@ -71,17 +71,5 @@ message CommandHistoryAttribute {
 message CommandHistoryEntry {
   required CommandId commandId = 1;
   //required string cmdName = 2; //removed because it's part of the CommandId
-  repeated CommandHistoryAttribute attr = 3 ;
-}
-
-message CommandType {
-  optional string origin = 1;
-  optional int32 sequenceNumber = 2;
-  optional yamcs.NamedObjectId id = 3;
-  repeated ArgumentAssignmentType arguments = 4;
-}
-
-message ArgumentAssignmentType {
-  optional string name = 1;
-  optional string value = 2;
+  repeated CommandHistoryAttribute attr = 3;
 }

@@ -24,11 +24,9 @@ import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.Alarm;
-import org.yamcs.protobuf.Commanding.ArgumentAssignmentType;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Rest.SendCommandRequest;
+import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -114,15 +112,15 @@ public abstract class AbstractIntegrationTest {
     }
 
 
-    SendCommandRequest getCommand(String cmdName, int seq, String... args) {
-        NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
-
-        CommandType.Builder cmdb = CommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
-        for(int i =0 ;i<args.length; i+=2) {
-            cmdb.addArguments(ArgumentAssignmentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+    IssueCommandRequest getCommand(int seq, String... args) {
+        IssueCommandRequest.Builder b = IssueCommandRequest.newBuilder();
+        b.setOrigin("IntegrationTest");
+        b.setSequenceNumber(seq);
+        for(int i = 0; i<args.length; i+=2) {
+            b.addAssignment(IssueCommandRequest.Assignment.newBuilder().setName(args[i]).setValue(args[i+1]).build());
         }
 
-        return SendCommandRequest.newBuilder().addCommand(cmdb.build()).build();
+        return b.build();
     }
 
     @After

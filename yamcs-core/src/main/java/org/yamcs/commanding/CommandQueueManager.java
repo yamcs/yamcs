@@ -197,7 +197,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if("blocked".equalsIgnoreCase(state)) {
             return QueueState.BLOCKED;
         }
-        throw new ConfigurationException("'"+state+"' is not a valid queue state. Use one of enabled,disabled or blocked");
+        throw new ConfigurationException("'"+state+"' is not a valid queue state. Use one of enabled, disabled or blocked");
     }
 
     public Collection<CommandQueue> getQueues() {
@@ -211,8 +211,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *  added to the queue or directly sent using the uplinker
      *
      * @param pc
+     * @return the queue the command was added to
      */
-    public synchronized void addCommand(AuthenticationToken authToken, PreparedCommand pc) {
+    public synchronized CommandQueue addCommand(AuthenticationToken authToken, PreparedCommand pc) {
         commandHistoryListener.addCommand(pc);
 
         CommandQueue q=getQueue(authToken, pc);
@@ -234,13 +235,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 releaseCommand(q, pc, true, false);
             }
         }
+        
+        return q;
     }
 
 
 
     private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
-
-
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
         
@@ -372,7 +373,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param pc
      * @return the queue where the command should be placed.
      */
-    private CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) {
+    public CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) {
         Privilege priv=Privilege.getInstance();
         if(authToken == null || !priv.isEnabled()) return queues.get("default");
 
