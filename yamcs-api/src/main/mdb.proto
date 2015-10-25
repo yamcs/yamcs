@@ -117,3 +117,34 @@ message CommandInfo {
   repeated TransmissionConstraintInfo constraint = 10;
   optional string url = 11;
 }
+
+message RepeatInfo {
+  optional int64 fixedCount = 1;
+  optional ParameterInfo dynamicCount = 2;
+  optional int32 bitsBetween = 3;
+}
+
+message SequenceEntryInfo {
+  enum ReferenceLocationType {
+    CONTAINER_START = 1;
+    PREVIOUS_ENTRY = 2;
+  }
+  optional int32 locationInBits = 1;
+  optional ReferenceLocationType referenceLocation = 2;
+  optional ContainerInfo container = 3;
+  optional ParameterInfo parameter = 4;
+  optional RepeatInfo repeat = 5;
+}
+
+message ContainerInfo {
+  optional string qualifiedName = 1;
+  optional string shortDescription = 2;
+  optional string longDescription = 3;
+  repeated yamcs.NamedObjectId alias = 4;
+  optional int64 maxInterval = 5;
+  optional int32 sizeInBits = 6;
+  optional ContainerInfo baseContainer = 7;
+  repeated ComparisonInfo restrictionCriteria = 8;
+  repeated SequenceEntryInfo entry = 9;
+  optional string url = 10;
+}

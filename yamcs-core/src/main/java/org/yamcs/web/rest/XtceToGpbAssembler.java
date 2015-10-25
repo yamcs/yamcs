@@ -10,9 +10,12 @@ import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
+import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
+import org.yamcs.protobuf.Mdb.RepeatInfo;
+import org.yamcs.protobuf.Mdb.SequenceEntryInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
@@ -25,30 +28,151 @@ import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.Comparison.OperatorType;
 import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.Repeat;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.UnitType;
 
 public class XtceToGpbAssembler {
     
+    public enum DetailLevel {
+        LINK,
+        SUMMARY,
+        FULL
+    }
+    
+    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail) {
+        ContainerInfo.Builder cb = ContainerInfo.newBuilder();
+        
+        cb.setQualifiedName(c.getQualifiedName());
+        cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
+        
+        if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
+            if (c.getShortDescription() != null) {
+                cb.setShortDescription(c.getShortDescription());
+            }
+            if (c.getLongDescription() != null) {
+                cb.setLongDescription(c.getLongDescription());
+            }
+            Map<String, String> aliases = c.getAliasSet().getAliases();
+            for(Entry<String, String> me : aliases.entrySet()) {
+                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+            if (c.getRateInStream() != null) {
+                cb.setMaxInterval(c.getRateInStream().getMaxInterval());
+            }
+            if (c.getSizeInBits() != -1) {
+                cb.setSizeInBits(c.getSizeInBits());
+            }
+            if (c.getBaseContainer() != null) {
+                if (detail == DetailLevel.SUMMARY) {
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.LINK));
+                } else if (detail == DetailLevel.FULL) {
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.FULL));
+                }
+            }
+            if (c.getRestrictionCriteria() != null) {
+                if (c.getRestrictionCriteria() instanceof ComparisonList) {
+                    ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
+                    for (Comparison comparison : xtceList.getComparisonList()) {
+                        cb.addRestrictionCriteria(toComparisonInfo(comparison));
+                    }
+                } else if (c.getRestrictionCriteria() instanceof Comparison) {
+                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria()));
+                }
+            }
+            for (SequenceEntry entry : c.getEntryList()) {
+                if (detail == DetailLevel.SUMMARY) {
+                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.LINK));
+                } else if (detail == DetailLevel.FULL) {
+                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.FULL));
+                }
+            }
+        }
+        
+        return cb.build();
+    }
+    
+    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail) {
+        SequenceEntryInfo.Builder b = SequenceEntryInfo.newBuilder();
+        b.setLocationInBits(e.getLocationInContainerInBits());
+        
+        switch (e.getReferenceLocation()) {
+        case containerStart:
+            b.setReferenceLocation(SequenceEntryInfo.ReferenceLocationType.CONTAINER_START);
+            break;
+        case previousEntry:
+            b.setReferenceLocation(SequenceEntryInfo.ReferenceLocationType.PREVIOUS_ENTRY);
+            break;
+        default:
+            throw new IllegalStateException("Unexpected reference location " + e);
+        }
+        
+        if (e instanceof ContainerEntry) {
+            ContainerEntry ce = (ContainerEntry) e;
+            if (detail == DetailLevel.SUMMARY) {
+                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.LINK));
+            } else if (detail == DetailLevel.FULL) {
+                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.FULL));
+            }
+        } else if (e instanceof ParameterEntry) {
+            ParameterEntry pe = (ParameterEntry) e;
+            if (detail == DetailLevel.SUMMARY) {
+                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.LINK));
+            } else if (detail == DetailLevel.FULL) {
+                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL));
+            }
+        } else {
+            throw new IllegalStateException("Unexpected entry " + e);
+        }
+        
+        return b.build();
+    }
+    
+    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail) {
+        RepeatInfo.Builder b = RepeatInfo.newBuilder();
+        b.setBitsBetween(xtceRepeat.getOffsetSizeInBits());
+        if (xtceRepeat.getCount() instanceof FixedIntegerValue) {
+            FixedIntegerValue val = (FixedIntegerValue) xtceRepeat.getCount();
+            b.setFixedCount(val.getValue());
+        } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
+            DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
+            if (detail == DetailLevel.SUMMARY) {
+                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.LINK));
+            } else if (detail == DetailLevel.FULL) {
+                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.FULL));
+            }
+        } else {
+            throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
+        }
+        
+        return b.build();
+    }
+    
     /**
      * @param detail whether base commands should be expanded
      */
-    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, boolean detail) {
+    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
         
         cb.setQualifiedName(cmd.getQualifiedName());
         cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
         
-        if (detail) {
+        if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (cmd.getShortDescription() != null) {
                 cb.setShortDescription(cmd.getShortDescription());
             }
@@ -80,9 +204,15 @@ public class XtceToGpbAssembler {
                 }
             }
             
-            if (cmd.getBaseMetaCommand() != null) {
-                cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, detail));
-            }   
+            if (detail == DetailLevel.SUMMARY) {
+                if (cmd.getBaseMetaCommand() != null) {
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.LINK));
+                }
+            } else if (detail == DetailLevel.FULL) {
+                if (cmd.getBaseMetaCommand() != null) {
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.FULL));
+                }
+            }
         }
     
         return cb.build();
@@ -190,32 +320,34 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static ParameterInfo toParameterInfo(Parameter p, String instanceURL) {
+    public static ParameterInfo toParameterInfo(Parameter p, String instanceURL, DetailLevel detail) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
         
         b.setQualifiedName(p.getQualifiedName());
         b.setUrl(instanceURL + "/parameters" + p.getQualifiedName());
         
-        if (p.getShortDescription() != null) {
-            b.setShortDescription(p.getShortDescription());
+        if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
+            if (p.getShortDescription() != null) {
+                b.setShortDescription(p.getShortDescription());
+            }
+            if (p.getLongDescription() != null) {
+                b.setLongDescription(p.getLongDescription());
+            }
+            Map<String, String> aliases = p.getAliasSet().getAliases();
+            for(Entry<String, String> me : aliases.entrySet()) {
+                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+            DataSource xtceDs = p.getDataSource();
+            if (xtceDs != null) {
+                DataSourceType ds = DataSourceType.valueOf(xtceDs.name()); // I know, i know
+                b.setDataSource(ds);
+            }/* else { // TODO why do we need this here. For what reason was this introduced?
+                log.warn("Datasource for parameter " + id.getName() + " is null, setting TELEMETERED by default");
+                rpib.setDataSource(DataSourceType.TELEMETERED);
+            }*/
+            
+            b.setType(toParameterTypeInfo(p.getParameterType()));
         }
-        if (p.getLongDescription() != null) {
-            b.setLongDescription(p.getLongDescription());
-        }
-        Map<String, String> aliases = p.getAliasSet().getAliases();
-        for(Entry<String, String> me : aliases.entrySet()) {
-            b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
-        }
-        DataSource xtceDs = p.getDataSource();
-        if (xtceDs != null) {
-            DataSourceType ds = DataSourceType.valueOf(xtceDs.name()); // I know, i know
-            b.setDataSource(ds);
-        }/* else { // TODO why do we need this here. For what reason was this introduced?
-            log.warn("Datasource for parameter " + id.getName() + " is null, setting TELEMETERED by default");
-            rpib.setDataSource(DataSourceType.TELEMETERED);
-        }*/
-        
-        b.setType(toParameterTypeInfo(p.getParameterType()));
         
         return b.build();
     }

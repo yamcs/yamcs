@@ -29,6 +29,10 @@ message BulkGetParameterValueRequest {
   optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
 }
 
+message ListContainersResponse {
+  repeated mdb.ContainerInfo container = 1;
+}
+
 message ListCommandsResponse {
   repeated mdb.CommandInfo command = 1;
 }

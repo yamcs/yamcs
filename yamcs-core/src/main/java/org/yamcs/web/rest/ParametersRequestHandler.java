@@ -11,6 +11,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
+import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
@@ -72,7 +73,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
             throw new BadRequestException("Invalid parameter name specified "+id);
         }
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL());
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL(), DetailLevel.FULL);
         return new RestResponse(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
     }
 
@@ -90,7 +91,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
-                responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL()));
+                responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL(), DetailLevel.SUMMARY));
             }
         } else {
             String rootedNamespace = "/" + namespace;
@@ -103,13 +104,13 @@ public class ParametersRequestHandler extends RestRequestHandler {
                 
                 String alias = p.getAlias(namespace);
                 if (alias != null) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL()));
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL(), DetailLevel.SUMMARY));
                 } else {
                     // Slash is not added to the URL so it makes it a bit more difficult
                     // to test for both XTCE names and other names. So just test with slash too
                     alias = p.getAlias(rootedNamespace);
                     if (alias != null) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL()));
+                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL(), DetailLevel.SUMMARY));
                     }
                 }
             }
@@ -143,7 +144,7 @@ public class ParametersRequestHandler extends RestRequestHandler {
             
             BulkGetParameterResponse.GetParameterResponse.Builder response = BulkGetParameterResponse.GetParameterResponse.newBuilder();
             response.setId(id);
-            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL()));
+            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, req.getInstanceURL(), DetailLevel.SUMMARY));
             responseb.addResponse(response);
         }
         

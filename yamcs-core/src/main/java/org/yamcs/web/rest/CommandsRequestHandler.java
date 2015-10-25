@@ -9,6 +9,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
+import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
@@ -31,7 +32,7 @@ public class CommandsRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             return listCommands(req, null, mdb);
         } else {
-            // Find out if it's a parameter or not. Support any namespace here. Not just XTCE
+            // Find out if it's a command or not. Support any namespace here. Not just XTCE
             if (req.getPathSegmentCount() - pathOffset < 2) {
                 String lastSegment = req.slicePath(-1);
                 NamedObjectId id = NamedObjectId.newBuilder().setName(lastSegment).build();
@@ -66,7 +67,7 @@ public class CommandsRequestHandler extends RestRequestHandler {
             log.warn("Command Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
             throw new BadRequestException("Invalid command name specified "+id);
         }
-        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), true);
+        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), DetailLevel.FULL);
         return new RestResponse(req, cinfo, SchemaMdb.CommandInfo.WRITE);
     }
 
@@ -84,7 +85,7 @@ public class CommandsRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (matcher != null && !matcher.matches(cmd)) continue;
-                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), false));
+                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), DetailLevel.SUMMARY));
             }
         } else {
             String rootedNamespace = "/" + namespace;
@@ -97,13 +98,13 @@ public class CommandsRequestHandler extends RestRequestHandler {
                 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null) {
-                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), false));
+                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), DetailLevel.SUMMARY));
                 } else {
                     // Slash is not added to the URL so it makes it a bit more difficult
                     // to test for both XTCE names and other names. So just test with slash too
                     alias = cmd.getAlias(rootedNamespace);
                     if (alias != null) {
-                        responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), false));
+                        responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, req.getInstanceURL(), DetailLevel.SUMMARY));
                     }
                 }
             }

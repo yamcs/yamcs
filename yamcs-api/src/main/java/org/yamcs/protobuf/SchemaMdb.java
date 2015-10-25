@@ -1478,4 +1478,458 @@ public final class SchemaMdb
         }
     }
 
+    public static final class RepeatInfo
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.RepeatInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.RepeatInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.RepeatInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.RepeatInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.RepeatInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.RepeatInfo message) throws java.io.IOException
+            {
+                if(message.hasFixedCount())
+                    output.writeInt64(1, message.getFixedCount(), false);
+                if(message.hasDynamicCount())
+                    output.writeObject(2, message.getDynamicCount(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.WRITE, false);
+
+                if(message.hasBitsBetween())
+                    output.writeInt32(3, message.getBitsBetween(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.RepeatInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.RepeatInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.RepeatInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.RepeatInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.RepeatInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.RepeatInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.RepeatInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.RepeatInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setFixedCount(input.readInt64());
+                            break;
+                        case 2:
+                            builder.setDynamicCount(input.mergeObject(org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.MERGE));
+
+                            break;
+                        case 3:
+                            builder.setBitsBetween(input.readInt32());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.RepeatInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.RepeatInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.RepeatInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.RepeatInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.RepeatInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.RepeatInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.RepeatInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "fixedCount";
+                case 2: return "dynamicCount";
+                case 3: return "bitsBetween";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("fixedCount", 1);
+            fieldMap.put("dynamicCount", 2);
+            fieldMap.put("bitsBetween", 3);
+        }
+    }
+
+    public static final class SequenceEntryInfo
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.SequenceEntryInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.SequenceEntryInfo message) throws java.io.IOException
+            {
+                if(message.hasLocationInBits())
+                    output.writeInt32(1, message.getLocationInBits(), false);
+                if(message.hasReferenceLocation())
+                    output.writeString(2, message.getReferenceLocation().name(), false);
+                if(message.hasContainer())
+                    output.writeObject(3, message.getContainer(), org.yamcs.protobuf.SchemaMdb.ContainerInfo.WRITE, false);
+
+                if(message.hasParameter())
+                    output.writeObject(4, message.getParameter(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.WRITE, false);
+
+                if(message.hasRepeat())
+                    output.writeObject(5, message.getRepeat(), org.yamcs.protobuf.SchemaMdb.RepeatInfo.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.SequenceEntryInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.SequenceEntryInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.SequenceEntryInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.SequenceEntryInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setLocationInBits(input.readInt32());
+                            break;
+                        case 2:
+                            builder.setReferenceLocation(org.yamcs.protobuf.Mdb.SequenceEntryInfo.ReferenceLocationType.valueOf(input.readString()));
+                            break;
+                        case 3:
+                            builder.setContainer(input.mergeObject(org.yamcs.protobuf.Mdb.ContainerInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ContainerInfo.MERGE));
+
+                            break;
+                        case 4:
+                            builder.setParameter(input.mergeObject(org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ParameterInfo.MERGE));
+
+                            break;
+                        case 5:
+                            builder.setRepeat(input.mergeObject(org.yamcs.protobuf.Mdb.RepeatInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.RepeatInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.SequenceEntryInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.SequenceEntryInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "locationInBits";
+                case 2: return "referenceLocation";
+                case 3: return "container";
+                case 4: return "parameter";
+                case 5: return "repeat";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("locationInBits", 1);
+            fieldMap.put("referenceLocation", 2);
+            fieldMap.put("container", 3);
+            fieldMap.put("parameter", 4);
+            fieldMap.put("repeat", 5);
+        }
+    }
+
+    public static final class ContainerInfo
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.ContainerInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.ContainerInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.ContainerInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.ContainerInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ContainerInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ContainerInfo message) throws java.io.IOException
+            {
+                if(message.hasQualifiedName())
+                    output.writeString(1, message.getQualifiedName(), false);
+                if(message.hasShortDescription())
+                    output.writeString(2, message.getShortDescription(), false);
+                if(message.hasLongDescription())
+                    output.writeString(3, message.getLongDescription(), false);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId alias : message.getAliasList())
+                    output.writeObject(4, alias, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+                if(message.hasMaxInterval())
+                    output.writeInt64(5, message.getMaxInterval(), false);
+                if(message.hasSizeInBits())
+                    output.writeInt32(6, message.getSizeInBits(), false);
+                if(message.hasBaseContainer())
+                    output.writeObject(7, message.getBaseContainer(), org.yamcs.protobuf.SchemaMdb.ContainerInfo.WRITE, false);
+
+                for(org.yamcs.protobuf.Mdb.ComparisonInfo restrictionCriteria : message.getRestrictionCriteriaList())
+                    output.writeObject(8, restrictionCriteria, org.yamcs.protobuf.SchemaMdb.ComparisonInfo.WRITE, true);
+
+                for(org.yamcs.protobuf.Mdb.SequenceEntryInfo entry : message.getEntryList())
+                    output.writeObject(9, entry, org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.WRITE, true);
+
+                if(message.hasUrl())
+                    output.writeString(10, message.getUrl(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.ContainerInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ContainerInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ContainerInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.ContainerInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ContainerInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.ContainerInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ContainerInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ContainerInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setQualifiedName(input.readString());
+                            break;
+                        case 2:
+                            builder.setShortDescription(input.readString());
+                            break;
+                        case 3:
+                            builder.setLongDescription(input.readString());
+                            break;
+                        case 4:
+                            builder.addAlias(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        case 5:
+                            builder.setMaxInterval(input.readInt64());
+                            break;
+                        case 6:
+                            builder.setSizeInBits(input.readInt32());
+                            break;
+                        case 7:
+                            builder.setBaseContainer(input.mergeObject(org.yamcs.protobuf.Mdb.ContainerInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ContainerInfo.MERGE));
+
+                            break;
+                        case 8:
+                            builder.addRestrictionCriteria(input.mergeObject(org.yamcs.protobuf.Mdb.ComparisonInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ComparisonInfo.MERGE));
+
+                            break;
+                        case 9:
+                            builder.addEntry(input.mergeObject(org.yamcs.protobuf.Mdb.SequenceEntryInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SequenceEntryInfo.MERGE));
+
+                            break;
+                        case 10:
+                            builder.setUrl(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.ContainerInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.ContainerInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ContainerInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.ContainerInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.ContainerInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.ContainerInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ContainerInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "qualifiedName";
+                case 2: return "shortDescription";
+                case 3: return "longDescription";
+                case 4: return "alias";
+                case 5: return "maxInterval";
+                case 6: return "sizeInBits";
+                case 7: return "baseContainer";
+                case 8: return "restrictionCriteria";
+                case 9: return "entry";
+                case 10: return "url";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("qualifiedName", 1);
+            fieldMap.put("shortDescription", 2);
+            fieldMap.put("longDescription", 3);
+            fieldMap.put("alias", 4);
+            fieldMap.put("maxInterval", 5);
+            fieldMap.put("sizeInBits", 6);
+            fieldMap.put("baseContainer", 7);
+            fieldMap.put("restrictionCriteria", 8);
+            fieldMap.put("entry", 9);
+            fieldMap.put("url", 10);
+        }
+    }
+
 }
