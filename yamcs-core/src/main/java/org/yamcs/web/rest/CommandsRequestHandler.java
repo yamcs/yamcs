@@ -10,6 +10,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
@@ -230,7 +231,8 @@ public class CommandsRequestHandler extends RestRequestHandler {
         // Good, now send
         CommandQueue queue;
         if (dryRun) {
-            queue = processor.getCommandingManager().getCommandQueueManager().getQueue(req.authToken, preparedCommand);
+            CommandQueueManager mgr = processor.getCommandingManager().getCommandQueueManager();
+            queue = mgr.getQueue(req.authToken, preparedCommand);
         } else {
             queue = processor.getCommandingManager().sendCommand(req.authToken, preparedCommand);
         }

@@ -45,6 +45,10 @@ message ListProcessorsResponse {
   repeated yamcsManagement.ProcessorInfo processor = 1;
 }
 
+message ListCommandQueuesResponse {
+  repeated commanding.CommandQueueInfo queue = 1;
+}
+
 message IssueCommandRequest {
   message Assignment {
     optional string name = 1;

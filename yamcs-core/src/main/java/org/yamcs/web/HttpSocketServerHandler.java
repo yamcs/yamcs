@@ -18,10 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.web.rest.ClientsRequestHandler;
+import org.yamcs.web.rest.CommandQueuesRequestHandler;
 import org.yamcs.web.rest.InstancesRequestHandler;
 import org.yamcs.web.rest.ProcessorsRequestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.ClientsRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -58,6 +59,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     static InstancesRequestHandler instancesRequestHandler = new InstancesRequestHandler();
     static ClientsRequestHandler clientsRequestHandler = new ClientsRequestHandler();
     static ProcessorsRequestHandler processorsRequestHandler = new ProcessorsRequestHandler();
+    static CommandQueuesRequestHandler commandQueuesRequestHandler = new CommandQueuesRequestHandler();
     static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
@@ -128,6 +130,9 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
                 return;
             } else if (processorsRequestHandler.getPath().equals(path[2])) {
                 processorsRequestHandler.handleRequestOrError(restReq, 3);
+                return;
+            } else if (commandQueuesRequestHandler.getPath().equals(path[2])) {
+                commandQueuesRequestHandler.handleRequestOrError(restReq, 3);
                 return;
             } else if (clientsRequestHandler.getPath().equals(path[2])) {
                 clientsRequestHandler.handleRequestOrError(restReq, 3);

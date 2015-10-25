@@ -1048,6 +1048,119 @@ public final class SchemaRest
         }
     }
 
+    public static final class ListCommandQueuesResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListCommandQueuesResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListCommandQueuesResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Commanding.CommandQueueInfo queue : message.getQueueList())
+                    output.writeObject(1, queue, org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListCommandQueuesResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListCommandQueuesResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListCommandQueuesResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ListCommandQueuesResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addQueue(input.mergeObject(org.yamcs.protobuf.Commanding.CommandQueueInfo.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListCommandQueuesResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListCommandQueuesResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListCommandQueuesResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "queue";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("queue", 1);
+        }
+    }
+
     public static final class IssueCommandRequest
     {
 

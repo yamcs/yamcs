@@ -4,6 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -345,6 +346,10 @@ public class ManagementService implements YProcessorListener {
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
         }
+    }
+    
+    public List<CommandQueueManager> getCommandQueueManagers() {
+        return hornetCmdQueueMgr.getQueueManagers();
     }
     
     /**

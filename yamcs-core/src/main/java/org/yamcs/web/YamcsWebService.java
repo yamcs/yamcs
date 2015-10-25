@@ -53,6 +53,7 @@ public class YamcsWebService extends AbstractService {
         router.registerRestHandler(new EventsRequestHandler());
         router.registerRestHandler(HttpSocketServerHandler.clientsRequestHandler);
         router.registerRestHandler(HttpSocketServerHandler.processorsRequestHandler);
+        router.registerRestHandler(HttpSocketServerHandler.commandQueuesRequestHandler);
         router.registerRestHandler(new AuthorizationRequestHandler());
         router.registerRestHandler(new SimulationTimeService.SimTimeRequestHandler());
     }
