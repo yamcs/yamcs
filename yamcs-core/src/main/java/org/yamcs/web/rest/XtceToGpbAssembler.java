@@ -1,6 +1,7 @@
 package org.yamcs.web.rest;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -10,7 +11,6 @@ import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.DataSourceType;
-import org.yamcs.protobuf.Mdb.NameDescriptionInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
@@ -30,7 +30,6 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -41,38 +40,49 @@ import org.yamcs.xtce.UnitType;
 public class XtceToGpbAssembler {
     
     /**
-     * @param detail whether base commands will be expanded. Else include just a URL to the base command
+     * @param detail whether base commands should be expanded
      */
     public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, boolean detail) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
-        cb.setDescription(toNameDescriptionInfo(cmd));
-        if (cmd.getDefaultSignificance() != null) {
-            cb.setSignificance(toSignificanceInfo(cmd.getDefaultSignificance()));
-        }
-        if (cmd.getArgumentList() != null) {
-            for (Argument xtceArgument : cmd.getArgumentList()) {
-                cb.addArgument(toArgumentInfo(xtceArgument));
-            }
-        }
-        if (cmd.getArgumentAssignmentList() != null) {
-            for (ArgumentAssignment xtceAssignment : cmd.getArgumentAssignmentList()) {
-                cb.addArgumentAssignment(toArgumentAssignmentInfo(xtceAssignment));
-            }
-        }
-        cb.setAbstract(cmd.isAbstract());
-        if (cmd.getTransmissionConstraintList() != null) {
-            for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
-                cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
-            }
-        }
+        
+        cb.setQualifiedName(cmd.getQualifiedName());
         cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
         
-        if (cmd.getBaseMetaCommand() != null) {
-            if (detail) {
-                cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, detail));
-            } else {
-                cb.setBaseCommandUrl(instanceURL + "/commands" + cmd.getBaseMetaCommand().getQualifiedName());       
+        if (detail) {
+            if (cmd.getShortDescription() != null) {
+                cb.setShortDescription(cmd.getShortDescription());
             }
+            if (cmd.getLongDescription() != null) {
+                cb.setLongDescription(cmd.getLongDescription());
+            }
+            Map<String, String> aliases = cmd.getAliasSet().getAliases();
+            for(Entry<String, String> me : aliases.entrySet()) {
+                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+            
+            if (cmd.getDefaultSignificance() != null) {
+                cb.setSignificance(toSignificanceInfo(cmd.getDefaultSignificance()));
+            }
+            if (cmd.getArgumentList() != null) {
+                for (Argument xtceArgument : cmd.getArgumentList()) {
+                    cb.addArgument(toArgumentInfo(xtceArgument));
+                }
+            }
+            if (cmd.getArgumentAssignmentList() != null) {
+                for (ArgumentAssignment xtceAssignment : cmd.getArgumentAssignmentList()) {
+                    cb.addArgumentAssignment(toArgumentAssignmentInfo(xtceAssignment));
+                }
+            }
+            cb.setAbstract(cmd.isAbstract());
+            if (cmd.getTransmissionConstraintList() != null) {
+                for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
+                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
+                }
+            }
+            
+            if (cmd.getBaseMetaCommand() != null) {
+                cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, detail));
+            }   
         }
     
         return cb.build();
@@ -181,21 +191,33 @@ public class XtceToGpbAssembler {
     }
     
     public static ParameterInfo toParameterInfo(Parameter p, String instanceURL) {
-        ParameterInfo.Builder rpib = ParameterInfo.newBuilder();
+        ParameterInfo.Builder b = ParameterInfo.newBuilder();
+        
+        b.setQualifiedName(p.getQualifiedName());
+        b.setUrl(instanceURL + "/parameters" + p.getQualifiedName());
+        
+        if (p.getShortDescription() != null) {
+            b.setShortDescription(p.getShortDescription());
+        }
+        if (p.getLongDescription() != null) {
+            b.setLongDescription(p.getLongDescription());
+        }
+        Map<String, String> aliases = p.getAliasSet().getAliases();
+        for(Entry<String, String> me : aliases.entrySet()) {
+            b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+        }
         DataSource xtceDs = p.getDataSource();
         if (xtceDs != null) {
             DataSourceType ds = DataSourceType.valueOf(xtceDs.name()); // I know, i know
-            rpib.setDataSource(ds);
+            b.setDataSource(ds);
         }/* else { // TODO why do we need this here. For what reason was this introduced?
             log.warn("Datasource for parameter " + id.getName() + " is null, setting TELEMETERED by default");
             rpib.setDataSource(DataSourceType.TELEMETERED);
         }*/
         
-        rpib.setUrl(instanceURL + "/parameters" + p.getQualifiedName());
-        rpib.setDescription(toNameDescriptionInfo(p));
-        rpib.setType(toParameterTypeInfo(p.getParameterType()));
+        b.setType(toParameterTypeInfo(p.getParameterType()));
         
-        return rpib.build();
+        return b.build();
     }
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType) {
@@ -226,20 +248,6 @@ public class XtceToGpbAssembler {
         return UnitInfo.newBuilder().setUnit(ut.getUnit()).build();
     }
 
-    public static NameDescriptionInfo toNameDescriptionInfo(NameDescription nd) {
-        NameDescriptionInfo.Builder rnb =  NameDescriptionInfo.newBuilder();
-        rnb.setQualifiedName(nd.getQualifiedName());
-        String s = nd.getShortDescription();
-        if(s!=null) rnb.setShortDescription(s);
-        s = nd.getLongDescription();
-        if(s!=null)rnb.setLongDescription(s);
-        Map<String, String> aliases = nd.getAliasSet().getAliases();
-        for(Map.Entry<String, String> me:aliases.entrySet()) {
-            rnb.addAliases(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
-        }
-        return rnb.build();
-    }
-    
     public static AlarmInfo toAlarmInfo(NumericAlarm numericAlarm) {
         AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
         alarmInfob.setMinViolations(numericAlarm.getMinViolations());

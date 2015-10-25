@@ -26,13 +26,6 @@ message UnitInfo {
   optional string unit = 1;
 }
 
-message NameDescriptionInfo {
-  optional string qualifiedName = 1;
-  optional string shortDescription = 2;
-  optional string longDescription = 3;
-  repeated yamcs.NamedObjectId aliases = 4;
-}
-
 message AlarmRange {
   optional AlarmLevelType level = 1;
   optional double minInclusive = 2;
@@ -55,10 +48,13 @@ message ParameterTypeInfo {
 }
 
 message ParameterInfo {
-  optional NameDescriptionInfo description = 2;
-  optional ParameterTypeInfo type = 3;
-  optional DataSourceType dataSource = 4;
-  optional string url = 5;
+  optional string qualifiedName = 1;
+  optional string shortDescription = 2;
+  optional string longDescription = 3;
+  repeated yamcs.NamedObjectId alias = 4;
+  optional ParameterTypeInfo type = 5;
+  optional DataSourceType dataSource = 6;
+  optional string url = 7;
 }
 
 message ArgumentInfo {
@@ -109,13 +105,15 @@ message TransmissionConstraintInfo {
 }
 
 message CommandInfo {
-  optional NameDescriptionInfo description = 1;
-  optional CommandInfo baseCommand = 2;
-  optional string baseCommandUrl = 3;
-  optional bool abstract = 4;
-  repeated ArgumentInfo argument = 5;
-  repeated ArgumentAssignmentInfo argumentAssignment = 6;
-  optional SignificanceInfo significance = 7;
-  repeated TransmissionConstraintInfo constraint = 8;
-  optional string url = 9;
+  optional string qualifiedName = 1;
+  optional string shortDescription = 2;
+  optional string longDescription = 3;
+  repeated yamcs.NamedObjectId alias = 4;
+  optional CommandInfo baseCommand = 5;
+  optional bool abstract = 6;
+  repeated ArgumentInfo argument = 7;
+  repeated ArgumentAssignmentInfo argumentAssignment = 8;
+  optional SignificanceInfo significance = 9;
+  repeated TransmissionConstraintInfo constraint = 10;
+  optional string url = 11;
 }

@@ -116,97 +116,6 @@ public final class Yamcs {
   }
 
   /**
-   * Protobuf enum {@code yamcs.ReplaySpeedType}
-   */
-  public enum ReplaySpeedType
-      implements com.google.protobuf.ProtocolMessageEnum {
-    /**
-     * <code>AFAP = 1;</code>
-     */
-    AFAP(0, 1),
-    /**
-     * <code>FIXED_DELAY = 2;</code>
-     */
-    FIXED_DELAY(1, 2),
-    /**
-     * <code>REALTIME = 3;</code>
-     */
-    REALTIME(2, 3),
-    ;
-
-    /**
-     * <code>AFAP = 1;</code>
-     */
-    public static final int AFAP_VALUE = 1;
-    /**
-     * <code>FIXED_DELAY = 2;</code>
-     */
-    public static final int FIXED_DELAY_VALUE = 2;
-    /**
-     * <code>REALTIME = 3;</code>
-     */
-    public static final int REALTIME_VALUE = 3;
-
-
-    public final int getNumber() { return value; }
-
-    public static ReplaySpeedType valueOf(int value) {
-      switch (value) {
-        case 1: return AFAP;
-        case 2: return FIXED_DELAY;
-        case 3: return REALTIME;
-        default: return null;
-      }
-    }
-
-    public static com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>
-        internalGetValueMap() {
-      return internalValueMap;
-    }
-    private static com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>
-        internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>() {
-            public ReplaySpeedType findValueByNumber(int number) {
-              return ReplaySpeedType.valueOf(number);
-            }
-          };
-
-    public final com.google.protobuf.Descriptors.EnumValueDescriptor
-        getValueDescriptor() {
-      return getDescriptor().getValues().get(index);
-    }
-    public final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptorForType() {
-      return getDescriptor();
-    }
-    public static final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.getDescriptor().getEnumTypes().get(1);
-    }
-
-    private static final ReplaySpeedType[] VALUES = values();
-
-    public static ReplaySpeedType valueOf(
-        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-      if (desc.getType() != getDescriptor()) {
-        throw new java.lang.IllegalArgumentException(
-          "EnumValueDescriptor is not for this type.");
-      }
-      return VALUES[desc.getIndex()];
-    }
-
-    private final int index;
-    private final int value;
-
-    private ReplaySpeedType(int index, int value) {
-      this.index = index;
-      this.value = value;
-    }
-
-    // @@protoc_insertion_point(enum_scope:yamcs.ReplaySpeedType)
-  }
-
-  /**
    * Protobuf enum {@code yamcs.ProtoDataType}
    *
    * <pre>
@@ -401,7 +310,7 @@ public final class Yamcs {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Yamcs.getDescriptor().getEnumTypes().get(2);
+      return org.yamcs.protobuf.Yamcs.getDescriptor().getEnumTypes().get(1);
     }
 
     private static final ProtoDataType[] VALUES = values();
@@ -17680,15 +17589,15 @@ public final class Yamcs {
   public interface ReplaySpeedOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .yamcs.ReplaySpeedType type = 1;
+    // required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;
     /**
-     * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+     * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
      */
     boolean hasType();
     /**
-     * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+     * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.ReplaySpeedType getType();
+    org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType getType();
 
     // optional float param = 2;
     /**
@@ -17753,7 +17662,7 @@ public final class Yamcs {
             }
             case 8: {
               int rawValue = input.readEnum();
-              org.yamcs.protobuf.Yamcs.ReplaySpeedType value = org.yamcs.protobuf.Yamcs.ReplaySpeedType.valueOf(rawValue);
+              org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType value = org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
               } else {
@@ -17806,20 +17715,111 @@ public final class Yamcs {
       return PARSER;
     }
 
-    private int bitField0_;
-    // required .yamcs.ReplaySpeedType type = 1;
-    public static final int TYPE_FIELD_NUMBER = 1;
-    private org.yamcs.protobuf.Yamcs.ReplaySpeedType type_;
     /**
-     * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+     * Protobuf enum {@code yamcs.ReplaySpeed.ReplaySpeedType}
+     */
+    public enum ReplaySpeedType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>AFAP = 1;</code>
+       */
+      AFAP(0, 1),
+      /**
+       * <code>FIXED_DELAY = 2;</code>
+       */
+      FIXED_DELAY(1, 2),
+      /**
+       * <code>REALTIME = 3;</code>
+       */
+      REALTIME(2, 3),
+      ;
+
+      /**
+       * <code>AFAP = 1;</code>
+       */
+      public static final int AFAP_VALUE = 1;
+      /**
+       * <code>FIXED_DELAY = 2;</code>
+       */
+      public static final int FIXED_DELAY_VALUE = 2;
+      /**
+       * <code>REALTIME = 3;</code>
+       */
+      public static final int REALTIME_VALUE = 3;
+
+
+      public final int getNumber() { return value; }
+
+      public static ReplaySpeedType valueOf(int value) {
+        switch (value) {
+          case 1: return AFAP;
+          case 2: return FIXED_DELAY;
+          case 3: return REALTIME;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ReplaySpeedType>() {
+              public ReplaySpeedType findValueByNumber(int number) {
+                return ReplaySpeedType.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Yamcs.ReplaySpeed.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final ReplaySpeedType[] VALUES = values();
+
+      public static ReplaySpeedType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private ReplaySpeedType(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcs.ReplaySpeed.ReplaySpeedType)
+    }
+
+    private int bitField0_;
+    // required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType type_;
+    /**
+     * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
      */
     public boolean hasType() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+     * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.ReplaySpeedType getType() {
+    public org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType getType() {
       return type_;
     }
 
@@ -17840,7 +17840,7 @@ public final class Yamcs {
     }
 
     private void initFields() {
-      type_ = org.yamcs.protobuf.Yamcs.ReplaySpeedType.AFAP;
+      type_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.AFAP;
       param_ = 0F;
     }
     private byte memoizedIsInitialized = -1;
@@ -17998,7 +17998,7 @@ public final class Yamcs {
 
       public Builder clear() {
         super.clear();
-        type_ = org.yamcs.protobuf.Yamcs.ReplaySpeedType.AFAP;
+        type_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.AFAP;
         bitField0_ = (bitField0_ & ~0x00000001);
         param_ = 0F;
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -18091,24 +18091,24 @@ public final class Yamcs {
       }
       private int bitField0_;
 
-      // required .yamcs.ReplaySpeedType type = 1;
-      private org.yamcs.protobuf.Yamcs.ReplaySpeedType type_ = org.yamcs.protobuf.Yamcs.ReplaySpeedType.AFAP;
+      // required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;
+      private org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType type_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.AFAP;
       /**
-       * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+       * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
        */
       public boolean hasType() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+       * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ReplaySpeedType getType() {
+      public org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType getType() {
         return type_;
       }
       /**
-       * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+       * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
        */
-      public Builder setType(org.yamcs.protobuf.Yamcs.ReplaySpeedType value) {
+      public Builder setType(org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -18118,11 +18118,11 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required .yamcs.ReplaySpeedType type = 1;</code>
+       * <code>required .yamcs.ReplaySpeed.ReplaySpeedType type = 1;</code>
        */
       public Builder clearType() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = org.yamcs.protobuf.Yamcs.ReplaySpeedType.AFAP;
+        type_ = org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.AFAP;
         onChanged();
         return this;
       }
@@ -32804,82 +32804,82 @@ public final class Yamcs {
       "quest\022!\n\006oldTag\030\001 \001(\0132\021.yamcs.ArchiveTag" +
       "\022!\n\006newTag\030\002 \002(\0132\021.yamcs.ArchiveTag\"2\n\020D" +
       "eleteTagRequest\022\036\n\003tag\030\003 \002(\0132\021.yamcs.Arc" +
-      "hiveTag\"B\n\013ReplaySpeed\022$\n\004type\030\001 \002(\0162\026.y",
-      "amcs.ReplaySpeedType\022\r\n\005param\030\002 \001(\002\"\250\003\n\r" +
-      "ReplayRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001" +
-      "(\003\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n" +
-      "\tendAction\030\003 \001(\0162\020.yamcs.EndAction:\004QUIT" +
-      "\022!\n\005speed\030\004 \001(\0132\022.yamcs.ReplaySpeed\0227\n\020p" +
-      "arameterRequest\030\010 \001(\0132\035.yamcs.ParameterR" +
-      "eplayRequest\0221\n\rpacketRequest\030\t \001(\0132\032.ya" +
-      "mcs.PacketReplayRequest\022/\n\014eventRequest\030" +
-      "\n \001(\0132\031.yamcs.EventReplayRequest\022A\n\025comm" +
-      "andHistoryRequest\030\013 \001(\0132\".yamcs.CommandH",
-      "istoryReplayRequest\022)\n\tppRequest\030\014 \001(\0132\026" +
-      ".yamcs.PpReplayRequest\"|\n\026ParameterRepla" +
-      "yRequest\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.Nam" +
-      "edObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021pe" +
-      "rformMonitoring\030\003 \001(\010:\005false\"?\n\023PacketRe" +
-      "playRequest\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs." +
-      "NamedObjectId\"\024\n\022EventReplayRequest\"\035\n\033C" +
-      "ommandHistoryReplayRequest\"*\n\017PpReplayRe" +
-      "quest\022\027\n\017groupNameFilter\030\001 \003(\t\"\333\001\n\014Repla" +
-      "yStatus\022.\n\005state\030\001 \002(\0162\037.yamcs.ReplaySta",
-      "tus.ReplayState\022%\n\007request\030\002 \001(\0132\024.yamcs" +
-      ".ReplayRequest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013" +
-      "ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNI" +
-      "NG\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004" +
-      "\022\n\n\006CLOSED\020\005\"\207\001\n\014TmPacketData\022\025\n\rrecepti" +
-      "onTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generati" +
-      "onTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002" +
-      "id\030\005 \001(\0132\024.yamcs.NamedObjectId\">\n\013Column" +
-      "Value\022\022\n\ncolumnName\030\001 \001(\t\022\033\n\005value\030\002 \001(\013" +
-      "2\014.yamcs.Value\"E\n\nStreamData\022\016\n\006stream\030\001",
-      " \001(\t\022\'\n\013columnValue\030\002 \003(\0132\022.yamcs.Column" +
-      "Value\"(\n\026StreamSubscribeRequest\022\016\n\006strea" +
-      "m\030\001 \001(\t\"7\n\010TimeInfo\022\023\n\013currentTime\030\001 \001(\003" +
-      "\022\026\n\016currentTimeUTC\030\002 \001(\t\"\251\001\n\025UserAuthori" +
-      "zationInfo\022\r\n\005roles\030\001 \003(\t\022\030\n\020tmParaPrivi" +
-      "leges\030\002 \003(\t\022\033\n\023tmParaSetPrivileges\030\003 \003(\t" +
-      "\022\032\n\022tmPacketPrivileges\030\004 \003(\t\022\024\n\014tcPrivil" +
-      "eges\030\005 \003(\t\022\030\n\020systemPrivileges\030\006 \003(\t\"Y\n\032" +
-      "ListAuthorizationsResponse\022;\n\025userAuthor" +
-      "izationInfo\030\001 \001(\0132\034.yamcs.UserAuthorizat",
-      "ionInfo\"e\n\030SetSimulationTimeRequest\022\r\n\005t" +
-      "ime0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElaps" +
-      "edTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"?\n\025ListIn" +
-      "stancesResponse\022&\n\010instance\030\001 \003(\0132\024.yamc" +
-      "s.YamcsInstance\"\346\001\n\005Event\022\016\n\006source\030\001 \002(" +
-      "\t\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTi" +
-      "me\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(" +
-      "\t\022\017\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.y" +
-      "amcs.Event.EventSeverity:\004INFO\"1\n\rEventS" +
-      "everity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020",
-      "\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020" +
-      "\002\022\010\n\004STOP\020\003*:\n\017ReplaySpeedType\022\010\n\004AFAP\020\001" +
-      "\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003*\200\002\n\rProt" +
-      "oDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020" +
-      "\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rA" +
-      "RCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAM" +
-      "ETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INF" +
-      "O\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATI" +
-      "STICS\020\014\022\017\n\013STREAM_DATA\020\r\022\t\n\005ALARM\020\016\022\r\n\tT" +
-      "IME_INFO\020\0172\211\001\n\014YamcsControl\0227\n\021GetYamcsI",
-      "nstances\022\013.yamcs.Void\032\025.yamcs.YamcsInsta" +
-      "nces\022@\n\022GetMissionDatabase\022\035.yamcs.Missi" +
-      "onDatabaseRequest\032\013.yamcs.Void2\337\001\n\030Realt" +
-      "imeParameterService\0220\n\tSubscribe\022\026.yamcs" +
-      ".NamedObjectList\032\013.yamcs.Void\0221\n\014Subscri" +
-      "beAll\022\024.yamcs.StringMessage\032\013.yamcs.Void" +
-      "\0222\n\013Unsubscribe\022\026.yamcs.NamedObjectList\032" +
-      "\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013.yamcs.V" +
-      "oid\032\013.yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010Get" +
-      "Index\022\023.yamcs.IndexRequest\032\022.yamcs.Index",
-      "Result\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020." +
-      "yamcs.TagResult\0227\n\tUpsertTag\022\027.yamcs.Ups" +
-      "ertTagRequest\032\021.yamcs.ArchiveTag\0221\n\tDele" +
-      "teTag\022\027.yamcs.DeleteTagRequest\032\013.yamcs.V" +
-      "oidB\024\n\022org.yamcs.protobuf"
+      "hiveTag\"\212\001\n\013ReplaySpeed\0220\n\004type\030\001 \002(\0162\".",
+      "yamcs.ReplaySpeed.ReplaySpeedType\022\r\n\005par" +
+      "am\030\002 \001(\002\":\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n" +
+      "\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003\"\250\003\n\rReplayR" +
+      "equest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010u" +
+      "tcStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n\tendAct" +
+      "ion\030\003 \001(\0162\020.yamcs.EndAction:\004QUIT\022!\n\005spe" +
+      "ed\030\004 \001(\0132\022.yamcs.ReplaySpeed\0227\n\020paramete" +
+      "rRequest\030\010 \001(\0132\035.yamcs.ParameterReplayRe" +
+      "quest\0221\n\rpacketRequest\030\t \001(\0132\032.yamcs.Pac" +
+      "ketReplayRequest\022/\n\014eventRequest\030\n \001(\0132\031",
+      ".yamcs.EventReplayRequest\022A\n\025commandHist" +
+      "oryRequest\030\013 \001(\0132\".yamcs.CommandHistoryR" +
+      "eplayRequest\022)\n\tppRequest\030\014 \001(\0132\026.yamcs." +
+      "PpReplayRequest\"|\n\026ParameterReplayReques" +
+      "t\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObjec" +
+      "tId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021performMo" +
+      "nitoring\030\003 \001(\010:\005false\"?\n\023PacketReplayReq" +
+      "uest\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedOb" +
+      "jectId\"\024\n\022EventReplayRequest\"\035\n\033CommandH" +
+      "istoryReplayRequest\"*\n\017PpReplayRequest\022\027",
+      "\n\017groupNameFilter\030\001 \003(\t\"\333\001\n\014ReplayStatus" +
+      "\022.\n\005state\030\001 \002(\0162\037.yamcs.ReplayStatus.Rep" +
+      "layState\022%\n\007request\030\002 \001(\0132\024.yamcs.Replay" +
+      "Request\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013ReplayS" +
+      "tate\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n" +
+      "\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLO" +
+      "SED\020\005\"\207\001\n\014TmPacketData\022\025\n\rreceptionTime\030" +
+      "\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTime\030" +
+      "\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(" +
+      "\0132\024.yamcs.NamedObjectId\">\n\013ColumnValue\022\022",
+      "\n\ncolumnName\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.yamc" +
+      "s.Value\"E\n\nStreamData\022\016\n\006stream\030\001 \001(\t\022\'\n" +
+      "\013columnValue\030\002 \003(\0132\022.yamcs.ColumnValue\"(" +
+      "\n\026StreamSubscribeRequest\022\016\n\006stream\030\001 \001(\t" +
+      "\"7\n\010TimeInfo\022\023\n\013currentTime\030\001 \001(\003\022\026\n\016cur" +
+      "rentTimeUTC\030\002 \001(\t\"\251\001\n\025UserAuthorizationI" +
+      "nfo\022\r\n\005roles\030\001 \003(\t\022\030\n\020tmParaPrivileges\030\002" +
+      " \003(\t\022\033\n\023tmParaSetPrivileges\030\003 \003(\t\022\032\n\022tmP" +
+      "acketPrivileges\030\004 \003(\t\022\024\n\014tcPrivileges\030\005 " +
+      "\003(\t\022\030\n\020systemPrivileges\030\006 \003(\t\"Y\n\032ListAut",
+      "horizationsResponse\022;\n\025userAuthorization" +
+      "Info\030\001 \001(\0132\034.yamcs.UserAuthorizationInfo" +
+      "\"e\n\030SetSimulationTimeRequest\022\r\n\005time0\030\001 " +
+      "\001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030" +
+      "\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"?\n\025ListInstances" +
+      "Response\022&\n\010instance\030\001 \003(\0132\024.yamcs.Yamcs" +
+      "Instance\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016ge" +
+      "nerationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(" +
+      "\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007me" +
+      "ssage\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Ev",
+      "ent.EventSeverity:\004INFO\"1\n\rEventSeverity" +
+      "\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005\010d\020\221" +
+      "N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004ST" +
+      "OP\020\003*\200\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014" +
+      "STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n" +
+      "\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_T" +
+      "AG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016" +
+      "PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PRO" +
+      "CESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\t\n" +
+      "\005ALARM\020\016\022\r\n\tTIME_INFO\020\0172\211\001\n\014YamcsControl",
+      "\0227\n\021GetYamcsInstances\022\013.yamcs.Void\032\025.yam" +
+      "cs.YamcsInstances\022@\n\022GetMissionDatabase\022" +
+      "\035.yamcs.MissionDatabaseRequest\032\013.yamcs.V" +
+      "oid2\337\001\n\030RealtimeParameterService\0220\n\tSubs" +
+      "cribe\022\026.yamcs.NamedObjectList\032\013.yamcs.Vo" +
+      "id\0221\n\014SubscribeAll\022\024.yamcs.StringMessage" +
+      "\032\013.yamcs.Void\0222\n\013Unsubscribe\022\026.yamcs.Nam" +
+      "edObjectList\032\013.yamcs.Void\022*\n\016Unsubscribe" +
+      "All\022\013.yamcs.Void\032\013.yamcs.Void2\340\001\n\014Archiv" +
+      "eIndex\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032",
+      "\022.yamcs.IndexResult\022/\n\006GetTag\022\023.yamcs.In" +
+      "dexRequest\032\020.yamcs.TagResult\0227\n\tUpsertTa" +
+      "g\022\027.yamcs.UpsertTagRequest\032\021.yamcs.Archi" +
+      "veTag\0221\n\tDeleteTag\022\027.yamcs.DeleteTagRequ" +
+      "est\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

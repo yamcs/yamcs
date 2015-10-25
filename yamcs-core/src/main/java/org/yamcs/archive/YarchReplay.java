@@ -16,7 +16,7 @@ import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.security.AuthenticationToken;

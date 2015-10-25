@@ -19,7 +19,9 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.web.rest.InstancesRequestHandler;
+import org.yamcs.web.rest.ProcessorsRequestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.ClientsRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -54,6 +56,8 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
     static InstancesRequestHandler instancesRequestHandler = new InstancesRequestHandler();
+    static ClientsRequestHandler clientsRequestHandler = new ClientsRequestHandler();
+    static ProcessorsRequestHandler processorsRequestHandler = new ProcessorsRequestHandler();
     static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
@@ -118,11 +122,19 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             
             RestRequest restReq = AbstractRequestHandler.toRestRequest(ctx, req, qsDecoder, authToken);
             
+            // Most API calls assume an 'instance' as its first path segment, but first check some exceptions
             if (instancesRequestHandler.getPath().equals(path[2])) { 
                 instancesRequestHandler.handleRequestOrError(restReq, 3);
                 return;
+            } else if (processorsRequestHandler.getPath().equals(path[2])) {
+                processorsRequestHandler.handleRequestOrError(restReq, 3);
+                return;
+            } else if (clientsRequestHandler.getPath().equals(path[2])) {
+                clientsRequestHandler.handleRequestOrError(restReq, 3);
+                return;
             }
             
+            // From this point, assume the next segment is a yamcs instance.
             String[] rpath = path[2].split("/", 2);
             String yamcsInstance = rpath[0];
             YamcsWebService instanceService = HttpSocketServer.getInstance().getYamcsWebService(yamcsInstance);

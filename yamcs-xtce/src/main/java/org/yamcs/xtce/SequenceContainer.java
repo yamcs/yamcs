@@ -12,11 +12,12 @@ import java.util.ArrayList;
  */
 public class SequenceContainer extends Container {
     private static final long serialVersionUID = 2L;
+    
     public SequenceContainer(String name) {
-	super(name);
+        super(name);
     }
 
-    ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
+    ArrayList<SequenceEntry> entryList = new ArrayList<>();
     transient NameReference baseContainerRef;
 
     SequenceContainer baseContainer;
@@ -24,21 +25,21 @@ public class SequenceContainer extends Container {
 
 
     public void setBaseContainerReference(NameReference ref) {
-	this.baseContainerRef = ref;
+        this.baseContainerRef = ref;
     }
 
 
     public SequenceContainer getBaseContainer() {
-	return baseContainer;
+        return baseContainer;
     }
 
 
     public void setBaseContainer(SequenceContainer baseContainer) {
-	this.baseContainer = baseContainer;
+        this.baseContainer = baseContainer;
     }
 
     public MatchCriteria getRestrictionCriteria() {
-	return restrictionCriteria;
+        return restrictionCriteria;
     }
 
     /**
@@ -46,37 +47,37 @@ public class SequenceContainer extends Container {
      * @param entry Entry to be added
      */
     public void addEntry(SequenceEntry entry) {
-	getEntryList().add(entry);
-	// set the entries position in the list
-	entry.setIndex( getEntryList().size() - 1 );
+        getEntryList().add(entry);
+        // set the entries position in the list
+        entry.setIndex( getEntryList().size() - 1 );
     }
 
     public void setRestrictionCriteria(MatchCriteria restrictionCriteria) {
-	this.restrictionCriteria = restrictionCriteria;
+        this.restrictionCriteria = restrictionCriteria;
     }
 
     public void print(PrintStream out) {
-	out.print("SequenceContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
-	if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-	out.println();
-	if(baseContainer!=null) {
-	    out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());
-	    out.println("', restrictionCriteria: "+restrictionCriteria);
-	}
-	for(SequenceEntry se:getEntryList()) {
-	    out.println("\t\t"+se);
-	}
+        out.print("SequenceContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
+        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+        out.println();
+        if(baseContainer!=null) {
+            out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());
+            out.println("', restrictionCriteria: "+restrictionCriteria);
+        }
+        for(SequenceEntry se:getEntryList()) {
+            out.println("\t\t"+se);
+        }
     }
     public void setEntryList(ArrayList<SequenceEntry> entryList) {
-	this.entryList = entryList;
+        this.entryList = entryList;
     }
 
     public ArrayList<SequenceEntry> getEntryList() {
-	return entryList;
+        return entryList;
     }
 
     @Override
     public String toString() {
-	return "SequenceContainer(name="+name+")";
+        return "SequenceContainer(name="+name+")";
     }
 }

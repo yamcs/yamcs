@@ -42,7 +42,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.UsernamePasswordToken;

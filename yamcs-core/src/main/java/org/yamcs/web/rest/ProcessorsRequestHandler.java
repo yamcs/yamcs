@@ -5,33 +5,35 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
-import org.yamcs.protobuf.YamcsManagement.ListProcessorsResponse;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
 /**
- * /(instance)/processor
+ * Handles requests related to processors
  */
-public class ProcessorRequestHandler extends RestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(ProcessorRequestHandler.class.getName());
+public class ProcessorsRequestHandler extends RestRequestHandler {
+    private static final Logger log = LoggerFactory.getLogger(ProcessorsRequestHandler.class.getName());
     
     @Override
     public String getPath() {
-        return "processor";
+        return "processors";
     }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
-            return handleProcessorManagementRequest(req);
-        }
-        
-        switch (req.getPathSegment(pathOffset)) {
-        case "list": // TODO move this as a GET of 'processors' without the 'list' stuff
-            return handleProcessorListRequest(req);
-            
-        default:
+            if (req.isGET()) {
+                return handleListProcessorsRequest(req);
+            } else if (req.isPOST()) {
+                return handleProcessorManagementRequest(req);    
+            } else {
+                throw new MethodNotAllowedException(req);
+            }
+        } else if (req.getYamcsInstance() != null && !req.hasPathSegment(pathOffset + 1)) {
             String processorName = req.getPathSegment(pathOffset);
             YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), processorName);
             if (processor==null) {
@@ -39,16 +41,19 @@ public class ProcessorRequestHandler extends RestRequestHandler {
                 throw new NotFoundException(req);
             }
             return handleProcessorRequest(req, processor);
+        } else {
+            throw new NotFoundException(req);
         }
     }
     
-    private RestResponse handleProcessorListRequest(RestRequest req) throws RestException {
-        req.assertGET();
+    private RestResponse handleListProcessorsRequest(RestRequest req) throws RestException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
-            response.addProcessor(ManagementService.getProcessorInfo(processor));
+            if (req.getYamcsInstance() == null || req.getYamcsInstance().equals(processor.getInstance())) {
+                response.addProcessor(toProcessorInfo(processor, req));
+            }
         }
-        return new RestResponse(req, response.build(), SchemaYamcsManagement.ListProcessorsResponse.WRITE);
+        return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
         
     private RestResponse handleProcessorRequest(RestRequest req, YProcessor yproc) throws RestException {
@@ -121,5 +126,12 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         default:
             throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
+    }
+    
+    private ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req) {
+        ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+        ProcessorInfo.Builder b = ProcessorInfo.newBuilder(pinfo);
+        b.setUrl(req.getBaseURL() + "/" + pinfo.getInstance() + "/processors/" + pinfo.getName());
+        return b.build();
     }
 }

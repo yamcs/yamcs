@@ -2527,7 +2527,7 @@ public final class SchemaYamcs
                         case 0:
                             return;
                         case 1:
-                            builder.setType(org.yamcs.protobuf.Yamcs.ReplaySpeedType.valueOf(input.readString()));
+                            builder.setType(org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType.valueOf(input.readString()));
                             break;
                         case 2:
                             builder.setParam(input.readFloat());

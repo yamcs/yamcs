@@ -30,12 +30,12 @@ import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnector;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.TimeEncoding;
 
