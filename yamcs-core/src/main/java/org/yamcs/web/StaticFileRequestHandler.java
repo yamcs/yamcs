@@ -66,7 +66,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             return;
         }
 
-        File file = new File(path);
+        final File file = new File(path);
         if (file.isHidden() || !file.exists()) {
             log.warn("{} does not exist or is hidden", file.toString());
             sendError(ctx, NOT_FOUND);
@@ -76,7 +76,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             sendError(ctx, FORBIDDEN);
             return;
         }
-
+/*
         // Cache Validation
         String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
@@ -91,7 +91,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
                 return;
             }
         }
-        
+  */      
         RandomAccessFile raf;
         try {
             raf = new RandomAccessFile(file, "r");
@@ -108,36 +108,39 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         if (HttpHeaders.isKeepAlive(req)) {
             response.headers().set(Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
-
+        System.out.println("sending response: "+response);
         // Write the initial line and the header.
         ctx.write(response);
 
         // Write the content.
         ChannelFuture sendFileFuture;
         ChannelFuture lastContentFuture;
-        if (ctx.pipeline().get(SslHandler.class) == null) {
+        if ((ctx.pipeline().get(SslHandler.class) == null)) {
             sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        } else {
+        } else {           
+            //to be replaced with HttpChunkedInput when netty is upgraded.
             sendFileFuture = ctx.writeAndFlush(new ChunkedFile(raf, 0, fileLength, 8192),  ctx.newProgressivePromise());
+            // the HttpChunkedInput will take care of the end marker so the next line can be replaced with this one:
             // HttpChunkedInput will write the end marker (LastHttpContent) for us.
-            lastContentFuture = sendFileFuture;
+            //lastContentFuture = sendFileFuture;
+            lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
 
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
                 if (total < 0) { // total unknown
-                    System.err.println(future.channel() + " Transfer progress: " + progress);
+                    log.trace(future.channel() + " Transfer progress: " + progress);
                 } else {
-                    System.err.println(future.channel() + " Transfer progress: " + progress + " / " + total);
+                    log.trace(future.channel() + " Transfer progress: " + progress + " / " + total);
                 }
             }
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                System.err.println(future.channel() + " Transfer complete.");
+                log.debug(future.channel() + " Transfer complete: " +file);
             }
         });
 
