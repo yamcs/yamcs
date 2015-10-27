@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.Comparison.OperatorType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
@@ -896,6 +895,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 // 2) extract the condition and create the restrictioncriteria
                 if(!"".equals(condition)) {
                     container.restrictionCriteria=toMatchCriteria(condition);
+                    MatchCriteria.printParsedMatchCriteria(log, container.restrictionCriteria, "");
                 }
             } else {
                 if(spaceSystem.getRootSequenceContainer()==null) {
@@ -2026,8 +2026,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
 
+    /**
+     * FIXME: replace the following toMatchCriteria by parseBooleanExpression when the latter is stable 
+     * 
+     * @param criteriaString
+     * @return
+     */
     private MatchCriteria toMatchCriteria(String criteriaString) {
-        if(criteriaString.contains(";")) {
+    	criteriaString = criteriaString.trim();
+    	
+    	if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
+    		return parseBooleanExpression(criteriaString);
+    	} if(criteriaString.contains(";")) {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part: splitted) {
@@ -2036,8 +2046,178 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             return cl;
         } else {
             return toComparison(criteriaString);
+        }    	
+    }    
+    
+    
+    /**
+     * Boolean expression has the following pattern: op(epx1;exp2;...;expn) 
+     * 
+     * op is & (AND) or | (OR)
+     * expi are boolean expression or condition
+     * 
+     * A condition is defined as: parametername op value
+     * 
+     * value can be
+     * 		- plain value 
+     * 		- quoted with " or ”. The two quote characters can be used interchangeably . Backslash can be use to escape those double quote.
+     * 		- $other_parametername
+     * 
+     * parametername can be suffixed with .raw
+     * 
+     * Top level expression can be in the form epx1;exp2;...;expn which will be transformed into &(epx1;exp2;...;expn) for
+     * compatibility with the previously implemented Comparison  
+     *  
+     * @param rawExpression
+     * @return
+     */
+    private BooleanExpression parseBooleanExpression(String rawExpression) {    	
+    	String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
+    	
+    	rawExpression = rawExpression.trim();
+    	
+    	// Correct top-level expression 
+    	if (!rawExpression.startsWith("&") && !rawExpression.startsWith("|")) {
+    		rawExpression = "&(" + rawExpression + ")";
+    	}
+    	
+    	Pattern p = Pattern.compile(regex);
+    	Matcher m = p.matcher(rawExpression);
+    	ArrayList<String> quotes = new ArrayList<>();
+    	while (m.find()) {
+    		quotes.add(rawExpression.substring(m.start(2), m.end(2)));    		
+    	}
+    	
+    	String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
+    	
+    	return toBooleanExpression(spec, quotes);
+    }
+    
+    private void parseConditionList(ExpressionList conditions, String spec, ArrayList<String> quotes) {
+    	// Split top-level expressions
+    	ArrayList<String> expressions = new ArrayList<>();
+    	int balance = 0;
+    	String exp = "";
+    	for (int i = 0; i < spec.length(); i++) {
+    		if (spec.charAt(i) == '(') {
+    			balance++;
+    		} else if (spec.charAt(i) == ')') {
+    			balance--;
+    		} else if ((spec.charAt(i) == ';') && (balance == 0)) {    			    			
+    			if (!exp.isEmpty()) {
+    				expressions.add(exp);
+    			}
+    			
+    			exp = "";    			
+    			continue;    			
+    		} 
+    		
+    		exp += spec.charAt(i);    		
+    	}
+    	
+    	if (!exp.isEmpty()) {
+    		expressions.add(exp);
+    	}
+    	   
+    	// Parse each expression
+        for (String expression: expressions) {
+            conditions.addConditionExpression(toBooleanExpression(expression, quotes));
         }
     }
+    
+    private BooleanExpression toBooleanExpression(String spec, ArrayList<String> quotes) {
+    	spec = spec.trim();
+    	BooleanExpression condition = null;    	
+    	
+    	if (spec.startsWith("&(") && (spec.endsWith(")"))) {
+    		condition = new ANDedConditions();
+    		parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+    	} else if (spec.startsWith("|(") && (spec.endsWith(")"))) {
+    		condition = new ORedConditions();
+    		parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+    	} else {
+    		condition = toCondition(spec, quotes);
+    	}
+				
+		return condition;
+    }
+    
+    private Condition toCondition(String comparisonString, ArrayList<String> quotes) {
+        Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
+        if (!m.matches()) { 
+        	throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
+        }
+    	
+        String lParamName = m.group(1).trim();
+        boolean lParamCalibrated = true;
+        
+        if (lParamName.endsWith(".raw")) {
+        	lParamName = lParamName.substring(0, lParamName.length() - 4);
+        	lParamCalibrated = false;
+        }
+        Parameter lParam = spaceSystem.getParameter(lParamName);
+        final ParameterInstanceRef lParamRef = new ParameterInstanceRef(lParam, lParamCalibrated);
+        
+        String op = m.group(2);
+        if ("=".equals(op)) {
+            op = "==";
+        }
+
+        String rValue = m.group(3).trim();
+        String rParamName = null;        
+        Parameter rParam = null;
+        final ParameterInstanceRef rParamRef;        
+        final Condition cond;
+        
+        if (rValue.startsWith("$$")) { // Quoted values
+        	rValue = quotes.remove(0);
+        }
+        
+        if (rValue.startsWith("$")) {
+        	boolean rParamCalibrated = true;
+        	rParamName = rValue.substring(1);
+            if (rParamName.endsWith(".raw")) {
+            	rParamName = rParamName.substring(0, rParamName.length() - 4);
+            	rParamCalibrated = false;
+            }        	
+        	
+            rParam = spaceSystem.getParameter(rParamName);
+        	rParamRef = new ParameterInstanceRef(rParam, rParamCalibrated);
+        	cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rParamRef);
+        } else {
+        	rParamRef = null;
+            if((rValue.startsWith("\"")||rValue.startsWith("”")) &&
+                    (rValue.endsWith("\"")||rValue.endsWith("”")))  {
+                rValue = rValue.substring(1, rValue.length()-1);
+            }
+            cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rValue);
+        }
+        
+        if ((rParamRef != null) && (rParam == null)) {
+            spaceSystem.addUnresolvedReference(new NameReference(rParamName, Type.PARAMETER, new ResolvedAction() {
+                @Override
+                public boolean resolved(NameDescription nd) {
+                    rParamRef.setParameter((Parameter) nd);
+                    return true;
+                }
+            }));        	
+        }
+        
+        if (lParam == null) {
+            spaceSystem.addUnresolvedReference(new NameReference(lParamName, Type.PARAMETER, new ResolvedAction() {
+                @Override
+                public boolean resolved(NameDescription nd) {
+                    lParamRef.setParameter((Parameter) nd);
+                    cond.resolveValueType();
+                    return true;
+                }
+            }));        	        	
+        } else {
+        	cond.resolveValueType();
+        }
+
+        return cond;
+    }    
 
     private Comparison toComparison(String comparisonString) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
