@@ -76,7 +76,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             sendError(ctx, FORBIDDEN);
             return;
         }
-/*
+
         // Cache Validation
         String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
@@ -91,7 +91,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
                 return;
             }
         }
-  */      
+        
         RandomAccessFile raf;
         try {
             raf = new RandomAccessFile(file, "r");
