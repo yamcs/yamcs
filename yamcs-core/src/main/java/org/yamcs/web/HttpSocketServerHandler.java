@@ -158,8 +158,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         }
 
         String yamcsInstance = path[1];
-        if(HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-        	log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
+        if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }

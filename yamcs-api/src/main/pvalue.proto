@@ -10,7 +10,7 @@ enum AcquisitionStatus {
   NOT_RECEIVED = 1; //no value received so far
   INVALID = 2; //some value has been received but is invalid
   EXPIRED = 3; //the parameter is coming from a packet which has not since updated although it should have been
-};
+}
 
 enum MonitoringResult {
   DISABLED = 0;
@@ -42,12 +42,12 @@ enum MonitoringResult {
 message ParameterValue {
   optional yamcs.NamedObjectId id = 1;
   optional yamcs.Value rawValue = 2;
-	optional yamcs.Value engValue = 3;
-	optional int64 acquisitionTime = 4;
-	optional int64 generationTime = 5;
-	optional AcquisitionStatus acquisitionStatus = 6;
-	optional bool processingStatus = 7;
-	optional MonitoringResult monitoringResult = 8;
+  optional yamcs.Value engValue = 3;
+  optional int64 acquisitionTime = 4;
+  optional int64 generationTime = 5;
+  optional AcquisitionStatus acquisitionStatus = 6;
+  optional bool processingStatus = 7;
+  optional MonitoringResult monitoringResult = 8;
 
   //to be used as alternative to the ones above for clients that do not understand internal yamcs time encoding
   optional string acquisitionTimeUTC = 11;

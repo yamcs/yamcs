@@ -2,6 +2,7 @@ package parameters;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
+import "pvalue.proto";
 import "mdb.proto";
 import "commanding.proto";
 import "yamcsManagement.proto";
@@ -19,7 +20,6 @@ message BulkGetParameterResponse {
     optional yamcs.NamedObjectId id = 1;
     optional mdb.ParameterInfo parameter = 2;
   }
-
   repeated GetParameterResponse response = 1;
 }
 
@@ -27,6 +27,18 @@ message BulkGetParameterValueRequest {
   repeated yamcs.NamedObjectId id = 1;
   optional bool fromCache = 2;
   optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
+}
+
+message BulkGetParameterValueResponse {
+  repeated pvalue.ParameterValue value = 1;
+}
+
+message BulkSetParameterValueRequest {
+  message SetParameterValueRequest {
+    optional yamcs.NamedObjectId id = 1;
+    optional yamcs.Value value = 2;
+  }
+  repeated SetParameterValueRequest request = 1;
 }
 
 message ListContainersResponse {

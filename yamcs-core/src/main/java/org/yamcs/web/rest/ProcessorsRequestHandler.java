@@ -131,7 +131,7 @@ public class ProcessorsRequestHandler extends RestRequestHandler {
     private ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req) {
         ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
         ProcessorInfo.Builder b = ProcessorInfo.newBuilder(pinfo);
-        b.setUrl(req.getBaseURL() + "/" + pinfo.getInstance() + "/processors/" + pinfo.getName());
+        b.setUrl(req.getBaseURL() + "/api/" + pinfo.getInstance() + "/processors/" + pinfo.getName());
         return b.build();
     }
 }

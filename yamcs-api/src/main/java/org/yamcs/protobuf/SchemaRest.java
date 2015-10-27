@@ -596,6 +596,355 @@ public final class SchemaRest
         }
     }
 
+    public static final class BulkGetParameterValueResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetParameterValueResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetParameterValueResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Pvalue.ParameterValue value : message.getValueList())
+                    output.writeObject(1, value, org.yamcs.protobuf.SchemaPvalue.ParameterValue.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetParameterValueResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetParameterValueResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetParameterValueResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.BulkGetParameterValueResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetParameterValueResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetParameterValueResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "value";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("value", 1);
+        }
+    }
+
+    public static final class BulkSetParameterValueRequest
+    {
+
+        public static final class SetParameterValueRequest
+        {
+            public static final org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.MessageSchema WRITE =
+                new org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.MessageSchema();
+            public static final org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.BuilderSchema MERGE =
+                new org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.BuilderSchema();
+            
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest>
+            {
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest message) throws java.io.IOException
+                {
+                    if(message.hasId())
+                        output.writeObject(1, message.getId(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, false);
+
+                    if(message.hasValue())
+                        output.writeObject(2, message.getValue(), org.yamcs.protobuf.SchemaYamcs.Value.WRITE, false);
+
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest message)
+                {
+                    return message.isInitialized();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest> typeClass()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.class.getName();
+                }
+                //unused
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest message) throws java.io.IOException {}
+                public org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest newMessage() { return null; }
+            }
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder>
+            {
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder builder) throws java.io.IOException
+                {
+                    for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                    {
+                        switch(number)
+                        {
+                            case 0:
+                                return;
+                            case 1:
+                                builder.setId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                                break;
+                            case 2:
+                                builder.setValue(input.mergeObject(org.yamcs.protobuf.Yamcs.Value.newBuilder(), org.yamcs.protobuf.SchemaYamcs.Value.MERGE));
+
+                                break;
+                            default:
+                                input.handleUnknownField(number, this);
+                        }
+                    }
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder builder)
+                {
+                    return builder.isInitialized();
+                }
+                public org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder newMessage()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.newBuilder();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder> typeClass()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.class.getName();
+                }
+                //unused
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder builder) throws java.io.IOException {}
+            }
+            public static java.lang.String getFieldName(int number)
+            {
+                switch(number)
+                {
+                    case 1: return "id";
+                    case 2: return "value";
+                    default: return null;
+                }
+            }
+            public static int getFieldNumber(java.lang.String name)
+            {
+                java.lang.Integer number = fieldMap.get(name);
+                return number == null ? 0 : number.intValue();
+            }
+            private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+            static
+            {
+                fieldMap.put("id", 1);
+                fieldMap.put("value", 2);
+            }
+        }
+
+        public static final org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest request : message.getRequestList())
+                    output.writeObject(1, request, org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.BulkSetParameterValueRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addRequest(input.mergeObject(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.newBuilder(), org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.SetParameterValueRequest.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkSetParameterValueRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "request";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("request", 1);
+        }
+    }
+
     public static final class ListContainersResponse
     {
         public static final org.yamcs.protobuf.SchemaRest.ListContainersResponse.MessageSchema WRITE =

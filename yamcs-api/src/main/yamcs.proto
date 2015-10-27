@@ -4,73 +4,73 @@ option java_package = "org.yamcs.protobuf";
 /*********Services are used just for reference, the code generated is not used in any manner(yet) */
 
 message StringMessage {
-    required string message = 1;
+  required string message = 1;
 }
 message Void{
 }
 
 message Instant{
-    required int64 instant = 1;
+  required int64 instant = 1;
 }
 
 message MessagingAddress {
-    required string address = 1;
+  required string address = 1;
 }
 
 
 /*contains a list of instances*/
 message YamcsInstances {
-    repeated YamcsInstance instance = 1;
+  repeated YamcsInstance instance = 1;
 }
 
 message YamcsInstance {
-    required string name = 1;
-    //repeated MessagingAddress address=2; //removed 5-Mar-2012
-    optional MissionDatabase missionDatabase = 3;
+  required string name = 1;
+  //repeated MessagingAddress address=2; //removed 5-Mar-2012
+  optional MissionDatabase missionDatabase = 3;
 
-    // REST
-    optional string url = 4;
-    optional string alarms_url = 5;
-    optional string parameters_url = 6;
+  // REST
+  optional string url = 4;
+  optional string alarms_url = 5;
+  optional string parameters_url = 6;
 }
 
 message MissionDatabase {
-    required string configName = 1; //this is the config section in mdb.yaml
-    required string name = 2; //XTCE root SpaceSystem name
-    optional string version = 3; //XTCE root SpaceSystem header version
+  required string configName = 1; //this is the config section in mdb.yaml
+  required string name = 2; //XTCE root SpaceSystem name
+  optional string version = 3; //XTCE root SpaceSystem header version
 }
 
 //union type for storing a value
 message Value {
-    enum Type {
-        FLOAT = 0;
-        DOUBLE = 1;
-        UINT32 = 2;
-        SINT32 = 3;
-        BINARY = 4;
-        STRING = 5;
-        TIMESTAMP = 6;
-        UINT64 = 7;
-        SINT64 = 8;
-        BOOLEAN = 9;
-    };
-    required Type type = 1;
-    optional float         floatValue = 2;
-    optional double        doubleValue = 3;
-    optional sint32        sint32Value = 4;
-    optional uint32        uint32Value = 5;
-    optional bytes         binaryValue = 6;
-    optional string        stringValue = 7;
-    optional int64         timestampValue = 8;
-    optional uint64        uint64Value = 9;
-    optional sint64        sint64Value = 10;
-    optional bool          booleanValue = 11;
+  enum Type {
+    FLOAT = 0;
+    DOUBLE = 1;
+    UINT32 = 2;
+    SINT32 = 3;
+    BINARY = 4;
+    STRING = 5;
+    TIMESTAMP = 6;
+    UINT64 = 7;
+    SINT64 = 8;
+    BOOLEAN = 9;
+  }
+  required Type type = 1;
+  optional float floatValue = 2;
+  optional double doubleValue = 3;
+  optional sint32 sint32Value = 4;
+  optional uint32 uint32Value = 5;
+  optional bytes binaryValue = 6;
+  optional string stringValue = 7;
+  optional int64 timestampValue = 8;
+  optional uint64 uint64Value = 9;
+  optional sint64 sint64Value = 10;
+  optional bool booleanValue = 11;
 }
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
 message MissionDatabaseRequest {
-   optional string dbConfigName = 1;
-   optional string instance = 2;
+  optional string dbConfigName = 1;
+  optional string instance = 2;
 }
 
 //this is just for documentation purposes, the protobuf generated stuff is not used yet
@@ -88,17 +88,17 @@ message NamedObjectId {
 }
 
 message NamedObjectList {
-    repeated NamedObjectId list = 1;
+  repeated NamedObjectId list = 1;
 }
 
 service RealtimeParameterService {
-    rpc Subscribe(NamedObjectList) returns (Void);
+  rpc Subscribe(NamedObjectList) returns (Void);
 
-    //sends all the parameters with the names from namespace. Those that don't have a name in that namespace, are sent with their real name
-    rpc SubscribeAll(StringMessage) returns (Void);
+  //sends all the parameters with the names from namespace. Those that don't have a name in that namespace, are sent with their real name
+  rpc SubscribeAll(StringMessage) returns (Void);
 
-    rpc Unsubscribe(NamedObjectList) returns (Void);
-    rpc UnsubscribeAll(Void) returns (Void);
+  rpc Unsubscribe(NamedObjectList) returns (Void);
+  rpc UnsubscribeAll(Void) returns (Void);
 }
 
 /****************Index Service*************/
@@ -111,82 +111,82 @@ service ArchiveIndex {
 
 //requesting index (histogram) information about tm packets, pp groups and commands
 message IndexRequest {
-   required string instance=1;
-   optional int64 start=2;
-   optional int64 stop=3;
+  required string instance = 1;
+  optional int64 start = 2;
+  optional int64 stop = 3;
 
-   //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
-   optional string utcStart = 14;
-   optional string utcStop = 15;
+  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+  optional string utcStart = 14;
+  optional string utcStop = 15;
 
-   //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
-   //if not specified, the fully qualified canonical names will be sent
-   optional string defaultNamespace=4;
+  //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
+  //if not specified, the fully qualified canonical names will be sent
+  optional string defaultNamespace = 4;
 
-   //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
-   optional bool sendAllTm=5[default=false];
-   repeated NamedObjectId tmPacket=6;
+  //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
+  optional bool sendAllTm = 5[default=false];
+  repeated NamedObjectId tmPacket = 6;
 
-   //if sendAllPp is true, then all PP groups are sent, otherwise those in the ppGroup list (which can be empty)
-   optional bool sendAllPp=7[default=false];
-   repeated NamedObjectId ppGroup=8;
+  //if sendAllPp is true, then all PP groups are sent, otherwise those in the ppGroup list (which can be empty)
+  optional bool sendAllPp = 7[default=false];
+  repeated NamedObjectId ppGroup = 8;
 
-   optional bool sendCompletenessIndex=9[default=false];
+  optional bool sendCompletenessIndex = 9[default=false];
 
-   //if sendAllCmd is true, then all command names  are sent, otherwise those in the cmdName list (which can be empty)
-   optional bool sendAllCmd = 10 [default=false];
-   repeated NamedObjectId cmdName = 11;
+  //if sendAllCmd is true, then all command names  are sent, otherwise those in the cmdName list (which can be empty)
+  optional bool sendAllCmd = 10 [default=false];
+  repeated NamedObjectId cmdName = 11;
 
-   //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
-   optional bool sendAllEvent = 12 [default=false];
-   repeated NamedObjectId eventSource = 13;
-
+  //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
+  optional bool sendAllEvent = 12 [default=false];
+  repeated NamedObjectId eventSource = 13;
 }
 
 //contains histogram data
 message ArchiveRecord {
-required NamedObjectId id=1;
-required int64 first=2;
-required int64 last=3;
-required int32 num=4;
-optional string info=5;
+  required NamedObjectId id = 1;
+  required int64 first = 2;
+  required int64 last = 3;
+  required int32 num = 4;
+  optional string info = 5;
 }
+
 message IndexResult {
-required string instance=1;
-repeated ArchiveRecord records=2;
-//type can be histogram or completenss
-optional string type=3;
-//if type=histogram, the tableName is the table for which the histogram is sent
-optional string tableName=4;
+  required string instance = 1;
+  repeated ArchiveRecord records = 2;
+  //type can be histogram or completenss
+  optional string type = 3;
+  //if type=histogram, the tableName is the table for which the histogram is sent
+  optional string tableName = 4;
 }
 
 message TagRequest {
-  required string instance=1;
-  optional int64 start=2;
-  optional int64 stop=3;
+  required string instance = 1;
+  optional int64 start = 2;
+  optional int64 stop = 3;
 }
 
 message ArchiveTag {
-  optional int32 id=1;
-  required string name=2;
-  optional int64 start=3;
-  optional int64 stop=4;
-  optional string description=5;
-  optional string color=6;
+  optional int32 id = 1;
+  required string name = 2;
+  optional int64 start = 3;
+  optional int64 stop = 4;
+  optional string description = 5;
+  optional string color = 6;
 }
 
 message TagResult {
-  required string instance=1;
-  repeated ArchiveTag tag=2;
+  required string instance = 1;
+  repeated ArchiveTag tag = 2;
 }
 
 //insert (if no oldTag) or update tag
 message UpsertTagRequest {
-  optional ArchiveTag oldTag=1;
-  required ArchiveTag newTag=2;
+  optional ArchiveTag oldTag = 1;
+  required ArchiveTag newTag = 2;
 }
 message DeleteTagRequest {
-  required ArchiveTag tag=3;
+  required ArchiveTag tag = 3;
 }
 
 /************************ Replay Service ****************/
@@ -194,7 +194,7 @@ message DeleteTagRequest {
 // all the subsequent control messages are send to the returned address
 /* all the replay data is sent on the data address
 service YarchReplay {
-rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
+  rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
 }
 
 service Replay {
@@ -292,14 +292,14 @@ message PpReplayRequest {
 }
 
 message ReplayStatus {
-   enum ReplayState {
-     INITIALIZATION = 0; // just at the beginning or when the replay request (start, stop or packet selection) changes
-     RUNNING = 1;
-     STOPPED = 2; //the replay has reached the end with the endaction stop
-     ERROR = 3;   //the replay stopped due to an error.
-     PAUSED = 4;
-     CLOSED = 5; //the replay is finished and closed
-  };
+  enum ReplayState {
+    INITIALIZATION = 0; // just at the beginning or when the replay request (start, stop or packet selection) changes
+    RUNNING = 1;
+    STOPPED = 2; //the replay has reached the end with the endaction stop
+    ERROR = 3;   //the replay stopped due to an error.
+    PAUSED = 4;
+    CLOSED = 5; //the replay is finished and closed
+  }
   required ReplayState state = 1;
   optional ReplayRequest request = 2; //this is send only when answering getReplayStatus
   optional string errorMessage = 3; //in case state is ERROR
@@ -307,11 +307,11 @@ message ReplayStatus {
 
 
 message TmPacketData {
-    required int64 receptionTime = 1;
-    required bytes packet = 2;
-    optional int64 generationTime = 3;
-    optional int32 sequenceNumber = 4;
-    optional NamedObjectId id = 5;
+  required int64 receptionTime = 1;
+  required bytes packet = 2;
+  optional int64 generationTime = 3;
+  optional int32 sequenceNumber = 4;
+  optional NamedObjectId id = 5;
 }
 
 message ColumnValue {
@@ -351,12 +351,12 @@ message SetSimulationTimeRequest {
   //one of the two have to be specified
   optional int64 time0 = 1;
   optional string time0UTC = 2;
-  optional int64 simElapsedTime =3;
+  optional int64 simElapsedTime = 3;
   optional double simSpeed = 4;
 }
 
 message ListInstancesResponse {
-    repeated YamcsInstance instance = 1;
+  repeated YamcsInstance instance = 1;
 }
 
 message Event {
@@ -364,7 +364,7 @@ message Event {
     INFO = 0;
     WARNING = 1;
     ERROR = 2;
-  };
+  }
   required string source = 1;
   required int64 generationTime = 2;
   required int64 receptionTime = 3;
