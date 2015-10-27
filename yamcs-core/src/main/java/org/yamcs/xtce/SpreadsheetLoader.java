@@ -87,6 +87,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     final static int IDX_CONT_RELPOS=5;
     final static int IDX_CONT_SIZEINBITS=6;
     final static int IDX_CONT_EXPECTED_INTERVAL=7;
+    final static int IDX_CONT_DESCRIPTION=8;
 
     //columns in calibrations sheet
     final static int IDX_CALIB_NAME=0;
@@ -753,11 +754,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 rate=new RateInStream(expint);
             }
 
+            String description="";
+            if(hasColumn(cells, IDX_CONT_DESCRIPTION)) {
+               description = cells[IDX_CONT_DESCRIPTION].getContents();
+            }
+
             // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
             SequenceContainer container = new SequenceContainer(name);
             container.sizeInBits=containerSizeInBits;
             containers.put(name, container);
             container.setRateInStream(rate);
+            if( !description.isEmpty()) {
+                container.setShortDescription(description);
+                container.setLongDescription(description);
+            }
 
             //System.out.println("for "+name+" got absoluteOffset="+)
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
