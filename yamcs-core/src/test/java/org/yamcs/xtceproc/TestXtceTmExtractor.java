@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -441,7 +442,150 @@ public class TestXtceTmExtractor {
         pv = received.getLast(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara2_2"));
         assertEquals(pIntegerPara2_2, pv.getEngValue().getUint32Value());
     }
-    
+
+    @Test
+    public void testPKT1_List() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        ByteBuffer bb=tmGenerator.generate_PKT1_List();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_List", container.getName());
+
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+    }
+
+    @Test
+    public void testPKT1_AND() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        ByteBuffer bb=tmGenerator.generate_PKT1_AND();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_AND", container.getName());
+
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+    }
+
+    @Test
+    public void testPKT1_PKT1_OR() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        // first condition
+        ByteBuffer bb=tmGenerator.generate_PKT1_OR_1();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_OR", container.getName());
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+
+    }
+
+    @Test
+    public void testPKT1_PKT1_AND_OR() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        // first condition
+        ByteBuffer bb=tmGenerator.generate_PKT1_AND_OR_1();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_AND_OR", container.getName());
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+
+        // second condition
+        bb=tmGenerator.generate_PKT1_AND_OR_2();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        containers = tmExtractor.getContainerResult();
+        container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_AND_OR", container.getName());
+        received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+    }
+
+
+    @Test
+    public void testPKT1_PKT1_OR_AND() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        // or condition 1
+        ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 1);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_OR_AND", container.getName());
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+
+        // or condition 3
+        bb=tmGenerator.generate_PKT1(0, 0, (short) 3);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        containers = tmExtractor.getContainerResult();
+        container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_OR_AND", container.getName());
+        received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+
+        // does not match
+        bb=tmGenerator.generate_PKT1(0, 0, (short) 4);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        containers = tmExtractor.getContainerResult();
+        container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1", container.getName());
+        received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+    }
+
+    @Test
+    public void testPKT1_PKT1_RANGE() {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+
+        // in range ]0xA, 0xC[
+        ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 11);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1_RANGE", container.getName());
+        ParameterValueList received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+
+        // out of range
+        bb=tmGenerator.generate_PKT1(0, 0, (short) 12);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        containers = tmExtractor.getContainerResult();
+        container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
+        assertEquals("PKT1", container.getName());
+        received=tmExtractor.getParameterResult();
+        assertEquals(received.size(), 6);
+    }
+
+
     private String byteBufferToHexString(ByteBuffer bb) {
         bb.mark();
         StringBuilder sb =new StringBuilder();

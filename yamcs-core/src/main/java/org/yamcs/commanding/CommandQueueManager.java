@@ -30,12 +30,13 @@ import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ComparisonProcessor;
+import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -617,8 +618,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
 
             if(aggregateStatus!=TCStatus.PENDING) return;
-
-            ComparisonProcessor cproc = new ComparisonProcessor(pvList);
+            
+            CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList);
+            
             aggregateStatus = TCStatus.OK;
             long scheduleNextCheck = Long.MAX_VALUE;
 
@@ -634,7 +636,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     } else {
                         MatchCriteria mc = tcs.constraint.getMatchCriteria();
                         try {
-                            if(!cproc.matches(mc)) {
+                            if(!mc.isMet(condEvaluator)) {
                                 if(timeRemaining > 0) {
                                     aggregateStatus = TCStatus.PENDING;
                                     if(timeRemaining <scheduleNextCheck) {
