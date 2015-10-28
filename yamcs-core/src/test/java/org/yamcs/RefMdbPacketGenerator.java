@@ -294,6 +294,34 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb;
     }
 
+    /*
+    Dynamic sized packet.
+    Test packet contains:
+    ccsds_header        (headerLength bits)
+    IntegerPara1_1 = 2  (4 bits)
+    IntegerPara1_2 = 3  (16 bits)
+    IntegerPara1_2 = 4  (16 bits)
+    block_para1 = 5     (8 bits)
+    block_para2 = 6     (8 bits)
+    block_para1 = 7     (8 bits)
+    block_para2 = 8     (8 bits)
+    block_para1 = 9     (8 bits)
+    block_para2 = 10    (8 bits)
+    block_para3 = 11    (8 bits)
+    block_para4 = 12    (8 bits)
+    block_para3 = 13    (8 bits)
+    block_para4 = 14    (8 bits)
+     */
+    public ByteBuffer generate_PKT3() {
+        int pktLength = headerLength + 1 + 2*2 + 10;
+        ByteBuffer bb=ByteBuffer.allocate(pktLength);
+        fill_PKT3(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+
+
     /**
      * set the generation time used to send the packets. 
      * If TimeEncoding.INVALID_INSTANT is used, the current time will be sent
@@ -491,6 +519,27 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(offset);
 
         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte)';');
+    }
+
+
+    private void fill_PKT3(ByteBuffer bb) {
+        fill_CcsdsHeader(bb, 995, 318813009);
+        bb.position(headerLength);
+        bb.put((byte) (2 << 4));  // IntegerPara1_1 = 2  (4 bits)
+        bb.put((byte)0);  // IntegerPara1_2 = 3
+        bb.put((byte)3);  //
+        bb.put((byte)0);  // IntegerPara1_2 = 4
+        bb.put((byte)4);  //
+        bb.put((byte)5);  // block_para1 = 5
+        bb.put((byte)6);  // block_para2 = 6
+        bb.put((byte)7);  // block_para1 = 7
+        bb.put((byte)8);  // block_para2 = 8
+        bb.put((byte)9);  // block_para1 = 9
+        bb.put((byte)10); // block_para2 = 10
+        bb.put((byte)11); // block_para3 = 11
+        bb.put((byte)12); // block_para4 = 12
+        bb.put((byte)13); // block_para3 = 13
+        bb.put((byte)14); // block_para4 = 14
     }
 
 
