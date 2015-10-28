@@ -21,7 +21,7 @@ public class AlarmStreamer implements AlarmListener {
     }
     
     private ArrayList<Object> getTupleKey(ActiveAlarm activeAlarm, AlarmEvent e) {
-        ArrayList<Object> al=new ArrayList<Object>(7);
+        ArrayList<Object> al=new ArrayList<>(7);
     
         //triggerTime
         al.add(activeAlarm.triggerValue.getGenerationTime());

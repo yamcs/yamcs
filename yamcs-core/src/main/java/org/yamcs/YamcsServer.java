@@ -32,10 +32,10 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Yamcs.MissionDatabase;
-import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
-import org.yamcs.protobuf.Yamcs.YamcsInstance;
-import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
+import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.HornetQAuthManager;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
@@ -253,28 +253,32 @@ public class YamcsServer {
 
     public static YamcsInstances getYamcsInstances() {
         YamcsInstances.Builder aisb=YamcsInstances.newBuilder();
-        for(String inst:instances.keySet()) {
-            YamcsInstance.Builder aib=YamcsInstance.newBuilder();
-            aib.setName(inst);
-            YConfiguration c;
-            try {
-                MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-                c = YConfiguration.getConfiguration("yamcs."+inst);
-                String configName = c.getString("mdb");
-                XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(configName);
-                mdb.setConfigName(configName);
-                mdb.setName(xtcedb.getRootSpaceSystem().getName());
-                Header h =xtcedb.getRootSpaceSystem().getHeader();
-                if((h!=null) && (h.getVersion()!=null)) {
-                    mdb.setVersion(h.getVersion());
-                }
-                aib.setMissionDatabase(mdb.build());
-            } catch (ConfigurationException e) {
-                staticlog.warn("Got error when finding the mission database for instance "+inst, e);
-            }
-            aisb.addInstance(aib.build());
+        for(String name : instances.keySet()) {
+            aisb.addInstance(getYamcsInstance(name));
         }
         return aisb.build();
+    }
+    
+    public static YamcsInstance getYamcsInstance(String name) {
+        if (!hasInstance(name)) return null;
+        YamcsInstance.Builder aib=YamcsInstance.newBuilder();
+        aib.setName(name);
+        try {
+            MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
+            YConfiguration c = YConfiguration.getConfiguration("yamcs."+name);
+            String configName = c.getString("mdb");
+            XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(configName);
+            mdb.setConfigName(configName);
+            mdb.setName(xtcedb.getRootSpaceSystem().getName());
+            Header h =xtcedb.getRootSpaceSystem().getHeader();
+            if((h!=null) && (h.getVersion()!=null)) {
+                mdb.setVersion(h.getVersion());
+            }
+            aib.setMissionDatabase(mdb.build());
+        } catch (ConfigurationException e) {
+            staticlog.warn("Got error when finding the mission database for instance "+name, e);
+        }
+        return aib.build();
     }
 
     private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws HornetQException {

@@ -1035,6 +1035,21 @@ public final class Commanding {
      * <code>optional int32 stateExpirationTimeS = 7;</code>
      */
     int getStateExpirationTimeS();
+
+    // optional string url = 8;
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    boolean hasUrl();
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    java.lang.String getUrl();
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getUrlBytes();
   }
   /**
    * Protobuf type {@code commanding.CommandQueueInfo}
@@ -1126,6 +1141,11 @@ public final class Commanding {
             case 56: {
               bitField0_ |= 0x00000040;
               stateExpirationTimeS_ = input.readInt32();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              url_ = input.readBytes();
               break;
             }
           }
@@ -1361,6 +1381,49 @@ public final class Commanding {
       return stateExpirationTimeS_;
     }
 
+    // optional string url = 8;
+    public static final int URL_FIELD_NUMBER = 8;
+    private java.lang.Object url_;
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    public boolean hasUrl() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    public java.lang.String getUrl() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          url_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string url = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        url_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       instance_ = "";
       processorName_ = "";
@@ -1369,6 +1432,7 @@ public final class Commanding {
       nbSentCommands_ = 0;
       nbRejectedCommands_ = 0;
       stateExpirationTimeS_ = 0;
+      url_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1423,6 +1487,9 @@ public final class Commanding {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeInt32(7, stateExpirationTimeS_);
       }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, getUrlBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1459,6 +1526,10 @@ public final class Commanding {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(7, stateExpirationTimeS_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getUrlBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1590,6 +1661,8 @@ public final class Commanding {
         bitField0_ = (bitField0_ & ~0x00000020);
         stateExpirationTimeS_ = 0;
         bitField0_ = (bitField0_ & ~0x00000040);
+        url_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -1646,6 +1719,10 @@ public final class Commanding {
           to_bitField0_ |= 0x00000040;
         }
         result.stateExpirationTimeS_ = stateExpirationTimeS_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.url_ = url_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1688,6 +1765,11 @@ public final class Commanding {
         }
         if (other.hasStateExpirationTimeS()) {
           setStateExpirationTimeS(other.getStateExpirationTimeS());
+        }
+        if (other.hasUrl()) {
+          bitField0_ |= 0x00000080;
+          url_ = other.url_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2089,6 +2171,80 @@ public final class Commanding {
       public Builder clearStateExpirationTimeS() {
         bitField0_ = (bitField0_ & ~0x00000040);
         stateExpirationTimeS_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional string url = 8;
+      private java.lang.Object url_ = "";
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public boolean hasUrl() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public java.lang.String getUrl() {
+        java.lang.Object ref = url_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          url_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUrlBytes() {
+        java.lang.Object ref = url_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          url_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public Builder setUrl(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public Builder clearUrl() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        url_ = getDefaultInstance().getUrl();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 8;</code>
+       */
+      public Builder setUrlBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        url_ = value;
         onChanged();
         return this;
       }
@@ -7000,35 +7156,35 @@ public final class Commanding {
       "\n\020commanding.proto\022\ncommanding\032\013yamcs.pr" +
       "oto\032\tmdb.proto\"`\n\tCommandId\022\026\n\016generatio" +
       "nTime\030\001 \002(\003\022\016\n\006origin\030\002 \002(\t\022\026\n\016sequenceN" +
-      "umber\030\003 \002(\005\022\023\n\013commandName\030\004 \001(\t\"\302\001\n\020Com" +
+      "umber\030\003 \002(\005\022\023\n\013commandName\030\004 \001(\t\"\317\001\n\020Com" +
       "mandQueueInfo\022\020\n\010instance\030\001 \002(\t\022\025\n\rproce" +
       "ssorName\030\002 \002(\t\022\014\n\004name\030\003 \002(\t\022%\n\005state\030\004 " +
       "\001(\0162\026.commanding.QueueState\022\026\n\016nbSentCom" +
       "mands\030\005 \002(\005\022\032\n\022nbRejectedCommands\030\006 \002(\005\022" +
-      "\034\n\024stateExpirationTimeS\030\007 \001(\005\"\277\001\n\021Comman" +
-      "dQueueEntry\022\020\n\010instance\030\001 \002(\t\022\025\n\rprocess",
-      "orName\030\002 \002(\t\022\021\n\tqueueName\030\003 \002(\t\022$\n\005cmdId" +
-      "\030\004 \002(\0132\025.commanding.CommandId\022\016\n\006source\030" +
-      "\005 \001(\t\022\016\n\006binary\030\006 \001(\014\022\020\n\010username\030\007 \001(\t\022" +
-      "\026\n\016generationTime\030\010 \001(\003\"\221\001\n\023CommandQueue" +
-      "Request\022/\n\tqueueInfo\030\001 \001(\0132\034.commanding." +
-      "CommandQueueInfo\0221\n\nqueueEntry\030\002 \001(\0132\035.c" +
-      "ommanding.CommandQueueEntry\022\026\n\007rebuild\030\003" +
-      " \001(\010:\005false\"Z\n\023CommandSignificance\022\026\n\016se" +
-      "quenceNumber\030\001 \001(\005\022+\n\014significance\030\002 \001(\013" +
-      "2\025.mdb.SignificanceInfo\"R\n\027CommandHistor",
-      "yAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132" +
-      "\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"r\n\023CommandHi" +
-      "storyEntry\022(\n\tcommandId\030\001 \002(\0132\025.commandi" +
-      "ng.CommandId\0221\n\004attr\030\003 \003(\0132#.commanding." +
-      "CommandHistoryAttribute*4\n\nQueueState\022\013\n" +
-      "\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\0032\313\001" +
-      "\n\023CommandQueueControl\022:\n\rSetQueueState\022\034" +
-      ".commanding.CommandQueueInfo\032\013.yamcs.Voi" +
-      "d\022;\n\013SendCommand\022\037.commanding.CommandQue" +
-      "ueRequest\032\013.yamcs.Void\022;\n\rRejectCommand\022",
-      "\035.commanding.CommandQueueEntry\032\013.yamcs.V" +
-      "oidB\024\n\022org.yamcs.protobuf"
+      "\034\n\024stateExpirationTimeS\030\007 \001(\005\022\013\n\003url\030\010 \001" +
+      "(\t\"\277\001\n\021CommandQueueEntry\022\020\n\010instance\030\001 \002",
+      "(\t\022\025\n\rprocessorName\030\002 \002(\t\022\021\n\tqueueName\030\003" +
+      " \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.commanding.Command" +
+      "Id\022\016\n\006source\030\005 \001(\t\022\016\n\006binary\030\006 \001(\014\022\020\n\010us" +
+      "ername\030\007 \001(\t\022\026\n\016generationTime\030\010 \001(\003\"\221\001\n" +
+      "\023CommandQueueRequest\022/\n\tqueueInfo\030\001 \001(\0132" +
+      "\034.commanding.CommandQueueInfo\0221\n\nqueueEn" +
+      "try\030\002 \001(\0132\035.commanding.CommandQueueEntry" +
+      "\022\026\n\007rebuild\030\003 \001(\010:\005false\"Z\n\023CommandSigni" +
+      "ficance\022\026\n\016sequenceNumber\030\001 \001(\005\022+\n\014signi" +
+      "ficance\030\002 \001(\0132\025.mdb.SignificanceInfo\"R\n\027",
+      "CommandHistoryAttribute\022\014\n\004name\030\001 \001(\t\022\033\n" +
+      "\005value\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003" +
+      "\"r\n\023CommandHistoryEntry\022(\n\tcommandId\030\001 \002" +
+      "(\0132\025.commanding.CommandId\0221\n\004attr\030\003 \003(\0132" +
+      "#.commanding.CommandHistoryAttribute*4\n\n" +
+      "QueueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020\002\022\013\n" +
+      "\007ENABLED\020\0032\313\001\n\023CommandQueueControl\022:\n\rSe" +
+      "tQueueState\022\034.commanding.CommandQueueInf" +
+      "o\032\013.yamcs.Void\022;\n\013SendCommand\022\037.commandi" +
+      "ng.CommandQueueRequest\032\013.yamcs.Void\022;\n\rR",
+      "ejectCommand\022\035.commanding.CommandQueueEn" +
+      "try\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -7046,7 +7202,7 @@ public final class Commanding {
           internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", "StateExpirationTimeS", });
+              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", "StateExpirationTimeS", "Url", });
           internal_static_commanding_CommandQueueEntry_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new

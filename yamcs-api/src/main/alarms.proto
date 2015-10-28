@@ -10,7 +10,7 @@ message AcknowledgeInfo {
   optional string acknowledgeTimeUTC = 4;
 }
 
-message Alarm {
+message AlarmInfo {
   enum Type {
     ACTIVE = 1;  // Initial active alarms at the moment of request
     TRIGGERED = 2;  // Whenever a new alarm triggers
@@ -26,16 +26,4 @@ message Alarm {
   optional pvalue.ParameterValue currentValue = 5;
   optional uint32 violations = 6;
   optional AcknowledgeInfo acknowledgeInfo = 7;
-}
-
-message GetAlarmsResponse {
-  repeated Alarm alarms = 1;
-}
-
-message AcknowledgeAlarmRequest {
-  optional string message = 1;
-}
-
-message AcknowledgeAlarmResponse {
-  optional string errorMessage = 1;
 }

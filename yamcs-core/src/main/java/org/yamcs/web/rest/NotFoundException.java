@@ -11,6 +11,10 @@ public class NotFoundException extends RestException {
     public NotFoundException(RestRequest request) {
         super("No resource named '"+ request.getFullPathWithoutQueryString() +"'");
     }
+    
+    public NotFoundException(RestRequest request, String message) {
+        super("No resource named '" + request.getFullPathWithoutQueryString() + "' (" + message + ")");
+    }
 
     public NotFoundException(Throwable t) {
         super(t.getMessage(), t);

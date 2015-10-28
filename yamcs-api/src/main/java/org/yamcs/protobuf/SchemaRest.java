@@ -2021,4 +2021,591 @@ public final class SchemaRest
         }
     }
 
+    public static final class StreamSubscribeRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.StreamSubscribeRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.StreamSubscribeRequest message) throws java.io.IOException
+            {
+                if(message.hasStream())
+                    output.writeString(1, message.getStream(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.StreamSubscribeRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.StreamSubscribeRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.StreamSubscribeRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.StreamSubscribeRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setStream(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.StreamSubscribeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.StreamSubscribeRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.StreamSubscribeRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "stream";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("stream", 1);
+        }
+    }
+
+    public static final class SetSimulationTimeRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.SetSimulationTimeRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.SetSimulationTimeRequest message) throws java.io.IOException
+            {
+                if(message.hasTime0())
+                    output.writeInt64(1, message.getTime0(), false);
+                if(message.hasTime0UTC())
+                    output.writeString(2, message.getTime0UTC(), false);
+                if(message.hasSimElapsedTime())
+                    output.writeInt64(3, message.getSimElapsedTime(), false);
+                if(message.hasSimSpeed())
+                    output.writeDouble(4, message.getSimSpeed(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.SetSimulationTimeRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.SetSimulationTimeRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.SetSimulationTimeRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.SetSimulationTimeRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setTime0(input.readInt64());
+                            break;
+                        case 2:
+                            builder.setTime0UTC(input.readString());
+                            break;
+                        case 3:
+                            builder.setSimElapsedTime(input.readInt64());
+                            break;
+                        case 4:
+                            builder.setSimSpeed(input.readDouble());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.SetSimulationTimeRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.SetSimulationTimeRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.SetSimulationTimeRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "time0";
+                case 2: return "time0UTC";
+                case 3: return "simElapsedTime";
+                case 4: return "simSpeed";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("time0", 1);
+            fieldMap.put("time0UTC", 2);
+            fieldMap.put("simElapsedTime", 3);
+            fieldMap.put("simSpeed", 4);
+        }
+    }
+
+    public static final class ListInstancesResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ListInstancesResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ListInstancesResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ListInstancesResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ListInstancesResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListInstancesResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListInstancesResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.YamcsManagement.YamcsInstance instance : message.getInstanceList())
+                    output.writeObject(1, instance, org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListInstancesResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListInstancesResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListInstancesResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListInstancesResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListInstancesResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ListInstancesResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListInstancesResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListInstancesResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addInstance(input.mergeObject(org.yamcs.protobuf.YamcsManagement.YamcsInstance.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListInstancesResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ListInstancesResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListInstancesResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListInstancesResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListInstancesResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListInstancesResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListInstancesResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "instance";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("instance", 1);
+        }
+    }
+
+    public static final class ListAlarmsResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListAlarmsResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListAlarmsResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Alarms.AlarmInfo alarm : message.getAlarmList())
+                    output.writeObject(1, alarm, org.yamcs.protobuf.SchemaAlarms.AlarmInfo.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListAlarmsResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListAlarmsResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListAlarmsResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ListAlarmsResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addAlarm(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmInfo.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListAlarmsResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListAlarmsResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListAlarmsResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "alarm";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("alarm", 1);
+        }
+    }
+
+    public static final class PatchAlarmRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.PatchAlarmRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.PatchAlarmRequest message) throws java.io.IOException
+            {
+                if(message.hasState())
+                    output.writeString(1, message.getState(), false);
+                if(message.hasComment())
+                    output.writeString(2, message.getComment(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.PatchAlarmRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.PatchAlarmRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.PatchAlarmRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.PatchAlarmRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setState(input.readString());
+                            break;
+                        case 2:
+                            builder.setComment(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchAlarmRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.PatchAlarmRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.PatchAlarmRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "state";
+                case 2: return "comment";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("state", 1);
+            fieldMap.put("comment", 2);
+        }
+    }
+
 }

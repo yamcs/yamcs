@@ -174,7 +174,7 @@ public class AlarmServer extends AbstractService {
         }
     }
 
-    public void acknowledge(Parameter p, int id, String username, long ackTime, String message) throws CouldNotAcknowledgeAlarmException {
+    public ActiveAlarm acknowledge(Parameter p, int id, String username, long ackTime, String message) throws CouldNotAcknowledgeAlarmException {
         ActiveAlarm aa = activeAlarms.get(p);
         if(aa==null) {
             throw new CouldNotAcknowledgeAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
@@ -197,6 +197,8 @@ public class AlarmServer extends AbstractService {
             activeAlarms.remove(p);
             alarmListeners.forEach(l -> l.notifyCleared(aa));
         }
+        
+        return aa;
     }
 
     private boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {

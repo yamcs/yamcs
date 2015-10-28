@@ -8,12 +8,9 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.AbstractRequestHandler;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -90,15 +87,6 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
             }
         } else {
             sendError(req, status); // text/plain
-        }
-    }
-    
-    protected XtceDb loadMdb(String yamcsInstance) throws RestException {
-        try {
-            return XtceDbFactory.getInstance(yamcsInstance);
-        } catch(ConfigurationException e) {
-            log.error("Could not get MDB for instance '" + yamcsInstance + "'", e);
-            throw new InternalServerErrorException("Could not get MDB for instance '" + yamcsInstance + "'", e);
         }
     }
     

@@ -23,7 +23,7 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Alarms.Alarm;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
@@ -159,7 +159,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<AlarmInfo> alarmInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
@@ -205,8 +205,8 @@ public abstract class AbstractIntegrationTest {
             case PROCESSING_STATISTICS:
                 statisticsList.add(data.getStatistics());
                 break;
-            case ALARM:
-                alarmList.add(data.getAlarm());
+            case ALARM_INFO:
+                alarmInfoList.add(data.getAlarmInfo());
                 break;
             case EVENT:
                 eventList.add(data.getEvent());

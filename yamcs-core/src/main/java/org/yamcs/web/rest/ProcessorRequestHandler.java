@@ -1,9 +1,8 @@
 package org.yamcs.web.rest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -11,12 +10,18 @@ import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Handles requests related to processors
  */
-public class ProcessorsRequestHandler extends RestRequestHandler {
-    private static final Logger log = LoggerFactory.getLogger(ProcessorsRequestHandler.class.getName());
+public class ProcessorRequestHandler extends RestRequestHandler {
+    
+    private static ProcessorParameterRequestHandler parameterHandler = new ProcessorParameterRequestHandler();
+    private static ProcessorCommandRequestHandler commandHandler = new ProcessorCommandRequestHandler();
+    private static ProcessorAlarmRequestHandler alarmHandler = new ProcessorAlarmRequestHandler();
+    private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
     
     @Override
     public String getPath() {
@@ -27,36 +32,73 @@ public class ProcessorsRequestHandler extends RestRequestHandler {
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
-                return handleListProcessorsRequest(req);
+                return listProcessors(req);
             } else if (req.isPOST()) {
                 return handleProcessorManagementRequest(req);    
             } else {
                 throw new MethodNotAllowedException(req);
             }
-        } else if (req.getYamcsInstance() != null && !req.hasPathSegment(pathOffset + 1)) {
-            String processorName = req.getPathSegment(pathOffset);
-            YProcessor processor = YProcessor.getInstance(req.getYamcsInstance(), processorName);
-            if (processor==null) {
-                log.warn("Sending NOT_FOUND because invalid processor name '{}' has been requested", processorName);
-                throw new NotFoundException(req);
-            }
-            return handleProcessorRequest(req, processor);
         } else {
-            throw new NotFoundException(req);
+            // Check instance
+            String instance = req.getPathSegment(pathOffset);
+            if (!YamcsServer.hasInstance(instance)) {
+                throw new NotFoundException(req, "No instance '" + instance + "'");
+            }
+            req.addToContext(RestRequest.CTX_INSTANCE, instance);
+            XtceDb mdb = XtceDbFactory.getInstance(instance);
+            req.addToContext(MissionDatabaseRequestHandler.CTX_MDB, mdb);
+            
+            if (!req.hasPathSegment(pathOffset + 1)) {
+                req.assertGET();
+                return listProcessorsForInstance(req, instance);
+            } else {
+                String processorName = req.getPathSegment(pathOffset + 1);
+                YProcessor processor = YProcessor.getInstance(instance, processorName);
+                if (processor == null) {
+                    throw new NotFoundException(req, "No processor '" + processorName + "'");
+                }
+                req.addToContext(RestRequest.CTX_PROCESSOR, processor);
+                return handleProcessorRequest(req, pathOffset + 2, processor);
+            }
         }
     }
     
-    private RestResponse handleListProcessorsRequest(RestRequest req) throws RestException {
+    private RestResponse handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            return patchProcessor(req, processor);
+        } else {
+            switch (req.getPathSegment(pathOffset)) {
+            case "parameters":
+                return parameterHandler.handleRequest(req, pathOffset + 1);
+            case "commands":
+                return commandHandler.handleRequest(req, pathOffset + 1);
+            case "alarms":
+                return alarmHandler.handleRequest(req, pathOffset + 1);
+            case "cqueues":
+                return cqueueHandler.handleRequest(req, pathOffset + 1);
+            default:
+                throw new NotFoundException(req);
+            }
+        }
+    }
+    
+    private RestResponse listProcessors(RestRequest req) throws RestException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
-            if (req.getYamcsInstance() == null || req.getYamcsInstance().equals(processor.getInstance())) {
-                response.addProcessor(toProcessorInfo(processor, req));
-            }
+            response.addProcessor(toProcessorInfo(processor, req, true));
+        }
+        return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+    }
+    
+    private RestResponse listProcessorsForInstance(RestRequest req, String yamcsInstance) throws RestException {
+        ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
+        for (YProcessor processor : YProcessor.getChannels(yamcsInstance)) {
+            response.addProcessor(toProcessorInfo(processor, req, true));
         }
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
         
-    private RestResponse handleProcessorRequest(RestRequest req, YProcessor yproc) throws RestException {
+    private RestResponse patchProcessor(RestRequest req, YProcessor yproc) throws RestException {
         req.assertPOST();
         ProcessorRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
         switch(yprocReq.getOperation()) {
@@ -128,10 +170,23 @@ public class ProcessorsRequestHandler extends RestRequestHandler {
         }
     }
     
-    private ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req) {
-        ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
-        ProcessorInfo.Builder b = ProcessorInfo.newBuilder(pinfo);
-        b.setUrl(req.getBaseURL() + "/api/" + pinfo.getInstance() + "/processors/" + pinfo.getName());
+    public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {
+        ProcessorInfo.Builder b;
+        if (detail) {
+            ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+            b = ProcessorInfo.newBuilder(pinfo);
+        } else {
+            b = ProcessorInfo.newBuilder().setName(processor.getName());
+        }
+
+        String instance = processor.getInstance();
+        String name = processor.getName();
+        String apiURL = req.getApiURL();
+        b.setUrl(apiURL + "/processors/" + instance + "/" + name);
+        b.setParametersUrl(apiURL + "/processors/" + instance + "/" + name + "/parameters{/namespace}{/name}");
+        b.setCommandsUrl(apiURL + "/processors/" + instance + "/" + name + "/commands{/namespace}{/name}");
+        b.setCommandQueuesUrl(apiURL + "/processors/" + instance + "/" + name + "/cqueues{/name}");
+        b.setAlarmsUrl(apiURL + "/processors/" + instance + "/" + name + "/alarms{/id}");
         return b.build();
     }
 }

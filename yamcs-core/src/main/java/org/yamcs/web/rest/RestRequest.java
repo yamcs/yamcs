@@ -6,6 +6,7 @@ import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +36,17 @@ import io.protostuff.Schema;
  */
 public class RestRequest {
     
+    public static final String CTX_INSTANCE = "instance";
+    public static final String CTX_PROCESSOR = "processor";
+    
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
-    private String yamcsInstance;
     private QueryStringDecoder qsDecoder;
     AuthenticationToken authToken;
     private JsonFactory jsonFactory;
+    
+    // For storing resolved URI resource segments
+    private Map<String, Object> ctx = new HashMap<String, Object>();
     
     private String[] pathSegments;
     
@@ -56,10 +62,6 @@ public class RestRequest {
         for (int i=0; i<pathSegments.length; i++) {
             pathSegments[i] = QueryStringDecoder.decodeComponent(pathSegments[i]);
         }
-    }
-    
-    public void setYamcsInstance(String yamcsInstance) {
-        this.yamcsInstance = yamcsInstance;
     }
     
     /**
@@ -309,8 +311,17 @@ public class RestRequest {
         return deriveSourceContentType();
     }
     
-    public String getYamcsInstance() {
-        return yamcsInstance;
+    public void addToContext(String key, Object obj) {
+        ctx.put(key, obj);
+    }
+    
+    public boolean contextContains(String key) {
+        return ctx.containsKey(key);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T> T getFromContext(String key) {
+        return (T) ctx.get(key);
     }
 
     public String getBaseURL() {
@@ -319,8 +330,8 @@ public class RestRequest {
         return (host != null) ? scheme + host : "";
     }
     
-    public String getInstanceURL() {
-        return getBaseURL(3);
+    public String getApiURL() {
+        return getBaseURL() + "/api";
     }
     
     public String getBaseURL(int endSegment) {

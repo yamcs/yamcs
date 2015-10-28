@@ -7,12 +7,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
+import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ColumnValue;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StreamData;
-import org.yamcs.protobuf.Yamcs.StreamSubscribeRequest;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.AuthenticationToken;
@@ -61,7 +62,7 @@ public class StreamResource extends AbstractWebSocketResource {
         // the stream of the current processor (TODO currently doesn't work with JSON).
         Stream stream;
         if (ctx.getData() != null) { // Check doesn't work with JSON, always returns JsonParser
-            StreamSubscribeRequest req = decoder.decodeMessageData(ctx, SchemaYamcs.StreamSubscribeRequest.MERGE).build();
+            StreamSubscribeRequest req = decoder.decodeMessageData(ctx, SchemaRest.StreamSubscribeRequest.MERGE).build();
             if (req.hasStream()) {
                 stream = ydb.getStream(req.getStream());
             } else {

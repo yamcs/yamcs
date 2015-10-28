@@ -18,11 +18,15 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.web.rest.ClientsRequestHandler;
-import org.yamcs.web.rest.CommandQueuesRequestHandler;
-import org.yamcs.web.rest.InstancesRequestHandler;
-import org.yamcs.web.rest.ProcessorsRequestHandler;
+import org.yamcs.time.SimulationTimeService;
+import org.yamcs.web.rest.ArchiveRequestHandler;
+import org.yamcs.web.rest.ClientRequestHandler;
+import org.yamcs.web.rest.EventRequestHandler;
+import org.yamcs.web.rest.InstanceRequestHandler;
+import org.yamcs.web.rest.MissionDatabaseRequestHandler;
+import org.yamcs.web.rest.ProcessorRequestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.UserRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -56,11 +60,18 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
-    static InstancesRequestHandler instancesRequestHandler = new InstancesRequestHandler();
-    static ClientsRequestHandler clientsRequestHandler = new ClientsRequestHandler();
-    static ProcessorsRequestHandler processorsRequestHandler = new ProcessorsRequestHandler();
-    static CommandQueuesRequestHandler commandQueuesRequestHandler = new CommandQueuesRequestHandler();
     static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
+    
+    static InstanceRequestHandler instanceRequestHandler = new InstanceRequestHandler();
+    static UserRequestHandler userRequestHandler = new UserRequestHandler();
+    static MissionDatabaseRequestHandler mdbRequestHandler = new MissionDatabaseRequestHandler();
+    static ClientRequestHandler clientRequestHandler = new ClientRequestHandler();
+    static ProcessorRequestHandler processorRequestHandler = new ProcessorRequestHandler();
+    static ArchiveRequestHandler archiveRequestHandler = new ArchiveRequestHandler();
+    static EventRequestHandler eventRequestHandler = new EventRequestHandler();
+    static SimulationTimeService.SimTimeRequestHandler simTimeRequestHandler = new SimulationTimeService.SimTimeRequestHandler();
+
+    
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
     @Override
@@ -117,59 +128,48 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         }
         
         if (API_PATH.equals(path[1])) {
-            if (path.length == 2) {
+            if (path.length == 2 || "".equals(path[2])) {
                 sendNegativeHttpResponse(ctx, req, FORBIDDEN);
                 return;
             }
             
             RestRequest restReq = AbstractRequestHandler.toRestRequest(ctx, req, qsDecoder, authToken);
             
-            // Most API calls assume an 'instance' as its first path segment, but first check some exceptions
-            if (instancesRequestHandler.getPath().equals(path[2])) { 
-                instancesRequestHandler.handleRequestOrError(restReq, 3);
+            String resource = restReq.getPathSegment(2);
+            if (instanceRequestHandler.getPath().equals(resource)) { 
+                instanceRequestHandler.handleRequestOrError(restReq, 3);
                 return;
-            } else if (processorsRequestHandler.getPath().equals(path[2])) {
-                processorsRequestHandler.handleRequestOrError(restReq, 3);
+            } else if (processorRequestHandler.getPath().equals(resource)) {
+                processorRequestHandler.handleRequestOrError(restReq, 3);
                 return;
-            } else if (commandQueuesRequestHandler.getPath().equals(path[2])) {
-                commandQueuesRequestHandler.handleRequestOrError(restReq, 3);
+            } else if (clientRequestHandler.getPath().equals(resource)) {
+                clientRequestHandler.handleRequestOrError(restReq, 3);
                 return;
-            } else if (clientsRequestHandler.getPath().equals(path[2])) {
-                clientsRequestHandler.handleRequestOrError(restReq, 3);
+            } else if (mdbRequestHandler.getPath().equals(resource)) {
+                mdbRequestHandler.handleRequestOrError(restReq, 3);
                 return;
-            }
-            
-            // From this point, assume the next segment is a yamcs instance.
-            String[] rpath = path[2].split("/", 2);
-            String yamcsInstance = rpath[0];
-            YamcsWebService instanceService = HttpSocketServer.getInstance().getYamcsWebService(yamcsInstance);
-            if (instanceService == null) {
-                log.warn("Received request for unregistered (or unexisting) instance '{}'", yamcsInstance);
+            } else if (userRequestHandler.getPath().equals(resource)) {
+                userRequestHandler.handleRequestOrError(restReq, 3);
+                return;
+            } else {
                 sendNegativeHttpResponse(ctx, req, NOT_FOUND);
                 return;
-            }
-
-            restReq.setYamcsInstance(yamcsInstance);
-            if (rpath.length == 2) {
-                instanceService.handleRequest(restReq, rpath[1]);
-            } else {
-                instancesRequestHandler.handleRequestOrError(restReq, 3);
             }
         }
 
         String yamcsInstance = path[1];
-        if(!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+        if (!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
             sendNegativeHttpResponse(ctx, req, NOT_FOUND);
             return;
         }
         
-        if((path.length==2) || path[2].isEmpty() || path[2].equals("index.html")) {
+        if ((path.length==2) || path[2].isEmpty() || path[2].equals("index.html")) {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
             return;
         }
         String[] rpath = path[2].split("/", 2);
         String handler = rpath[0];
-        if(WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
+        if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
             webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
         } else if(DISPLAYS_PATH.equals(handler)) {
             displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
@@ -231,13 +231,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         return new UsernamePasswordToken(username, password);
     }
 
-    protected boolean authenticatesUser(AuthenticationToken authToken) throws IOException {      ;
-        if(Privilege.getInstance().authenticates(authToken))
-        {
-            return true;
-        }
-        else {
-            return false;
-        }
+    protected boolean authenticatesUser(AuthenticationToken authToken) throws IOException {
+        return Privilege.getInstance().authenticates(authToken);
     }
 }

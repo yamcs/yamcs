@@ -2,7 +2,7 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.protobuf.Alarms.Alarm;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
@@ -67,8 +67,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setStatistics((Statistics) message);
         } else if (dataType == ProtoDataType.EVENT) {
             responseb.setEvent((Event) message);
-        } else if (dataType == ProtoDataType.ALARM) {
-            responseb.setAlarm((Alarm) message);
+        } else if (dataType == ProtoDataType.ALARM_INFO) {
+            responseb.setAlarmInfo((AlarmInfo) message);
         } else if (dataType == ProtoDataType.STREAM_DATA) {
             responseb.setStreamData((StreamData) message);
         } else if (dataType == ProtoDataType.TIME_INFO) {

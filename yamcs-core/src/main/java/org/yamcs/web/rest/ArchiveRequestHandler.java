@@ -122,7 +122,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         {
             try {
                 String profile = req.getQueryParameters().get("profile").get(0);
-                String filename = YarchDatabase.getHome() + "/" + req.getYamcsInstance() + "/profiles/" + profile + ".profile";
+                String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+                String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
                 requestedProfile = Yamcs.NamedObjectList.newBuilder().addAllList(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(filename)))).build();
             }
             catch (Exception e)
@@ -197,22 +198,23 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         {
             initCsvGenerator(replayRequest);
         }
+        
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
 
         // Start a short-lived replay
         YamcsSession ys = null;
         YamcsClient msgClient = null;
         try {
             String yamcsConnectionData = "yamcs://";
-            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class)
-            {
+            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class) {
                 yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
                         + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
             }
-            yamcsConnectionData += "localhost/"+req.getYamcsInstance();
+            yamcsConnectionData += "localhost/"+instance;
 
             ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(req.getYamcsInstance());
+            SimpleString replayServer = Protocol.getYarchReplayControlAddress(instance);
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
 
             // Server is good to go, start the replay
@@ -420,7 +422,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * GET /(instance)/api/archive/tags
      */
     private RestResponse getTags(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.getYamcsInstance());
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         
         // Start with default open-ended
         TimeInterval interval = new TimeInterval();
@@ -457,7 +460,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * POST /(instance)/archive/tags
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.getYamcsInstance());
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
@@ -489,7 +493,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * PUT /(instance)/archive/tags/(tag-time)/(tag-id)
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
-        TagDb tagDb = getTagDb(req.getYamcsInstance());
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         UpdateTagRequest request = req.bodyAsMessage(SchemaArchive.UpdateTagRequest.MERGE).build();
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
@@ -523,7 +528,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
         
-        TagDb tagDb = getTagDb(req.getYamcsInstance());
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         try {
             tagDb.deleteTag(tagTime, tagId);
         } catch (YamcsException e) { // Delete-tag returns an exception when it's not found

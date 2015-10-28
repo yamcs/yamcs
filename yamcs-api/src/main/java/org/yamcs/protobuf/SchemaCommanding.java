@@ -164,6 +164,8 @@ public final class SchemaCommanding
                     output.writeInt32(6, message.getNbRejectedCommands(), false);
                 if(message.hasStateExpirationTimeS())
                     output.writeInt32(7, message.getStateExpirationTimeS(), false);
+                if(message.hasUrl())
+                    output.writeString(8, message.getUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandQueueInfo message)
             {
@@ -224,6 +226,9 @@ public final class SchemaCommanding
                         case 7:
                             builder.setStateExpirationTimeS(input.readInt32());
                             break;
+                        case 8:
+                            builder.setUrl(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -271,6 +276,7 @@ public final class SchemaCommanding
                 case 5: return "nbSentCommands";
                 case 6: return "nbRejectedCommands";
                 case 7: return "stateExpirationTimeS";
+                case 8: return "url";
                 default: return null;
             }
         }
@@ -289,6 +295,7 @@ public final class SchemaCommanding
             fieldMap.put("nbSentCommands", 5);
             fieldMap.put("nbRejectedCommands", 6);
             fieldMap.put("stateExpirationTimeS", 7);
+            fieldMap.put("url", 8);
         }
     }
 

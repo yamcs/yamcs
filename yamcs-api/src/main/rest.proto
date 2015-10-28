@@ -4,6 +4,7 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "pvalue.proto";
 import "mdb.proto";
+import "alarms.proto";
 import "commanding.proto";
 import "yamcsManagement.proto";
 
@@ -83,4 +84,30 @@ message PatchProcessorRequest {
   optional string state = 1;
   optional int64 seekTime = 2;
   optional string speed = 3;
+}
+
+message StreamSubscribeRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
+message SetSimulationTimeRequest {
+  //one of the two have to be specified
+  optional int64 time0 = 1;
+  optional string time0UTC = 2;
+  optional int64 simElapsedTime = 3;
+  optional double simSpeed = 4;
+}
+
+message ListInstancesResponse {
+  repeated yamcsManagement.YamcsInstance instance = 1;
+}
+
+message ListAlarmsResponse {
+  repeated alarms.AlarmInfo alarm = 1;
+}
+
+message PatchAlarmRequest {
+  optional string state = 1;
+  optional string comment = 2;
 }

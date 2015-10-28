@@ -27,8 +27,8 @@ import javax.swing.SwingConstants;
 
 import org.hornetq.api.core.HornetQException;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.YamcsInstance;
-import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 
 
 /**

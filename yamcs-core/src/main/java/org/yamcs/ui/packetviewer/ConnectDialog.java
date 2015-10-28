@@ -37,8 +37,8 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Yamcs.YamcsInstance;
-import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 
 
 /**

@@ -6,38 +6,16 @@ option java_package = "org.yamcs.protobuf";
 message StringMessage {
   required string message = 1;
 }
-message Void{
+
+message Void {
 }
 
-message Instant{
+message Instant {
   required int64 instant = 1;
 }
 
 message MessagingAddress {
   required string address = 1;
-}
-
-
-/*contains a list of instances*/
-message YamcsInstances {
-  repeated YamcsInstance instance = 1;
-}
-
-message YamcsInstance {
-  required string name = 1;
-  //repeated MessagingAddress address=2; //removed 5-Mar-2012
-  optional MissionDatabase missionDatabase = 3;
-
-  // REST
-  optional string url = 4;
-  optional string alarms_url = 5;
-  optional string parameters_url = 6;
-}
-
-message MissionDatabase {
-  required string configName = 1; //this is the config section in mdb.yaml
-  required string name = 2; //XTCE root SpaceSystem name
-  optional string version = 3; //XTCE root SpaceSystem header version
 }
 
 //union type for storing a value
@@ -65,19 +43,6 @@ message Value {
   optional uint64 uint64Value = 9;
   optional sint64 sint64Value = 10;
   optional bool booleanValue = 11;
-}
-
-//used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
-message MissionDatabaseRequest {
-  optional string dbConfigName = 1;
-  optional string instance = 2;
-}
-
-//this is just for documentation purposes, the protobuf generated stuff is not used yet
-service YamcsControl {
-  rpc GetYamcsInstances(Void) returns (YamcsInstances);
-  //this one sends a binary stream containing the serialized MDB
-  rpc GetMissionDatabase(MissionDatabaseRequest) returns (Void);
 }
 
 //this is used by external clients to identify a parameter or a container (e.g. when subscribing to it)
@@ -242,7 +207,7 @@ enum ProtoDataType {
   CLIENT_INFO = 11;
   PROCESSING_STATISTICS = 12;
   STREAM_DATA = 13;
-  ALARM = 14;
+  ALARM_INFO = 14;
   TIME_INFO = 15;
 }
 
@@ -324,39 +289,19 @@ message StreamData {
   repeated ColumnValue columnValue = 2;
 }
 
-message StreamSubscribeRequest {
-  optional string stream = 1;
-  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
-}
-
 message TimeInfo {
   optional int64 currentTime = 1;
   optional string currentTimeUTC = 2;
 }
 
-message UserAuthorizationInfo{
-  repeated string roles = 1;
-  repeated string tmParaPrivileges = 2;
-  repeated string tmParaSetPrivileges = 3;
-  repeated string tmPacketPrivileges = 4;
-  repeated string tcPrivileges = 5;
-  repeated string systemPrivileges = 6;
-}
-
-message ListAuthorizationsResponse {
-  optional UserAuthorizationInfo userAuthorizationInfo = 1;
-}
-
-message SetSimulationTimeRequest {
-  //one of the two have to be specified
-  optional int64 time0 = 1;
-  optional string time0UTC = 2;
-  optional int64 simElapsedTime = 3;
-  optional double simSpeed = 4;
-}
-
-message ListInstancesResponse {
-  repeated YamcsInstance instance = 1;
+message UserInfo {
+  optional string login = 1;
+  repeated string roles = 2;
+  repeated string tmParaPrivileges = 3;
+  repeated string tmParaSetPrivileges = 4;
+  repeated string tmPacketPrivileges = 5;
+  repeated string tcPrivileges = 6;
+  repeated string systemPrivileges = 7;
 }
 
 message Event {

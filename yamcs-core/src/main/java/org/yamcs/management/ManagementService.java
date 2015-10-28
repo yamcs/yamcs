@@ -352,6 +352,16 @@ public class ManagementService implements YProcessorListener {
         return hornetCmdQueueMgr.getQueueManagers();
     }
     
+    public CommandQueueManager getCommandQueueManager(YProcessor processor) {
+        for (CommandQueueManager mgr : hornetCmdQueueMgr.getQueueManagers()) {
+            if (mgr.getInstance().equals(processor.getInstance())
+                    && mgr.getChannelName().equals(processor.getName())) {
+                return mgr;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Adds a listener that is to be notified when any processor, or any client
      * is updated. Calling this multiple times has no extra effects. Either you

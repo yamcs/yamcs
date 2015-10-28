@@ -203,6 +203,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public Collection<CommandQueue> getQueues() {
         return queues.values();
     }
+    
+    public CommandQueue getQueue(String name) {
+        return queues.get(name);
+    }
 
     /**
      * Called from the CommandingImpl to add a command to the queue

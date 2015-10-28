@@ -12,12 +12,10 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 /**
- * Handles incoming requests related to containers
- * <p>
- * /api/:instance/containers
+ * Handles incoming requests related to container info from the MDB
  */
-public class ContainersRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(ContainersRequestHandler.class.getName());
+public class MDBContainerRequestHandler extends RestRequestHandler {
+    final static Logger log = LoggerFactory.getLogger(MDBContainerRequestHandler.class.getName());
     
     @Override
     public String getPath() {
@@ -26,7 +24,7 @@ public class ContainersRequestHandler extends RestRequestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        XtceDb mdb = loadMdb(req.getYamcsInstance());
+        XtceDb mdb = req.getFromContext(MissionDatabaseRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listContainers(req, null, mdb);
         } else {
@@ -62,7 +60,8 @@ public class ContainersRequestHandler extends RestRequestHandler {
     
     private RestResponse getSingleContainer(RestRequest req, NamedObjectId id, SequenceContainer c) throws RestException {
         // TODO privileges
-        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, req.getInstanceURL(), DetailLevel.FULL);
+        String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL);
         return new RestResponse(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
 
@@ -71,6 +70,8 @@ public class ContainersRequestHandler extends RestRequestHandler {
      * is specified, assumes root namespace.
      */
     private RestResponse listContainers(RestRequest req, String namespace, XtceDb mdb) throws RestException {
+        String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
@@ -80,7 +81,7 @@ public class ContainersRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (SequenceContainer c : mdb.getSequenceContainers()) {
                 if (matcher != null && !matcher.matches(c)) continue;
-                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, req.getInstanceURL(), DetailLevel.SUMMARY));
+                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
             }
         } else {
             // TODO privileges
@@ -91,13 +92,13 @@ public class ContainersRequestHandler extends RestRequestHandler {
                 
                 String alias = c.getAlias(namespace);
                 if (alias != null) {
-                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, req.getInstanceURL(), DetailLevel.SUMMARY));
+                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
                 } else {
                     // Slash is not added to the URL so it makes it a bit more difficult
                     // to test for both XTCE names and other names. So just test with slash too
                     alias = c.getAlias(rootedNamespace);
                     if (alias != null) {
-                        responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, req.getInstanceURL(), DetailLevel.SUMMARY));
+                        responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
                     }
                 }
             }

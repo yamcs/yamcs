@@ -7,6 +7,540 @@ package org.yamcs.protobuf;
 public final class SchemaYamcsManagement
 {
 
+    public static final class YamcsInstances
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.YamcsInstances>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.YamcsInstances message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.YamcsManagement.YamcsInstance instance : message.getInstanceList())
+                    output.writeObject(1, instance, org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.YamcsInstances message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.YamcsInstances> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.YamcsInstances message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.YamcsInstances newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addInstance(input.mergeObject(org.yamcs.protobuf.YamcsManagement.YamcsInstance.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstances.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstances.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.YamcsInstances.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "instance";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("instance", 1);
+        }
+    }
+
+    public static final class YamcsInstance
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.YamcsInstance>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.YamcsInstance message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasMissionDatabase())
+                    output.writeObject(3, message.getMissionDatabase(), org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.WRITE, false);
+
+                for(org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor : message.getProcessorList())
+                    output.writeObject(4, processor, org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.WRITE, true);
+
+                if(message.hasUrl())
+                    output.writeString(5, message.getUrl(), false);
+                if(message.hasClientsUrl())
+                    output.writeString(6, message.getClientsUrl(), false);
+                if(message.hasEventsUrl())
+                    output.writeString(7, message.getEventsUrl(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.YamcsInstance message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.YamcsInstance> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.YamcsInstance message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.YamcsInstance newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 3:
+                            builder.setMissionDatabase(input.mergeObject(org.yamcs.protobuf.YamcsManagement.MissionDatabase.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.MERGE));
+
+                            break;
+                        case 4:
+                            builder.addProcessor(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.MERGE));
+
+                            break;
+                        case 5:
+                            builder.setUrl(input.readString());
+                            break;
+                        case 6:
+                            builder.setClientsUrl(input.readString());
+                            break;
+                        case 7:
+                            builder.setEventsUrl(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.YamcsInstance.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 3: return "missionDatabase";
+                case 4: return "processor";
+                case 5: return "url";
+                case 6: return "clientsUrl";
+                case 7: return "eventsUrl";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("missionDatabase", 3);
+            fieldMap.put("processor", 4);
+            fieldMap.put("url", 5);
+            fieldMap.put("clientsUrl", 6);
+            fieldMap.put("eventsUrl", 7);
+        }
+    }
+
+    public static final class MissionDatabase
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.MissionDatabase>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.MissionDatabase message) throws java.io.IOException
+            {
+                if(message.hasConfigName())
+                    output.writeString(1, message.getConfigName(), false);
+                if(message.hasName())
+                    output.writeString(2, message.getName(), false);
+                if(message.hasVersion())
+                    output.writeString(3, message.getVersion(), false);
+                if(message.hasUrl())
+                    output.writeString(4, message.getUrl(), false);
+                if(message.hasParametersUrl())
+                    output.writeString(5, message.getParametersUrl(), false);
+                if(message.hasContainersUrl())
+                    output.writeString(6, message.getContainersUrl(), false);
+                if(message.hasCommandsUrl())
+                    output.writeString(7, message.getCommandsUrl(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabase message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.MissionDatabase> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.MissionDatabase message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.MissionDatabase newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setConfigName(input.readString());
+                            break;
+                        case 2:
+                            builder.setName(input.readString());
+                            break;
+                        case 3:
+                            builder.setVersion(input.readString());
+                            break;
+                        case 4:
+                            builder.setUrl(input.readString());
+                            break;
+                        case 5:
+                            builder.setParametersUrl(input.readString());
+                            break;
+                        case 6:
+                            builder.setContainersUrl(input.readString());
+                            break;
+                        case 7:
+                            builder.setCommandsUrl(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabase.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "configName";
+                case 2: return "name";
+                case 3: return "version";
+                case 4: return "url";
+                case 5: return "parametersUrl";
+                case 6: return "containersUrl";
+                case 7: return "commandsUrl";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("configName", 1);
+            fieldMap.put("name", 2);
+            fieldMap.put("version", 3);
+            fieldMap.put("url", 4);
+            fieldMap.put("parametersUrl", 5);
+            fieldMap.put("containersUrl", 6);
+            fieldMap.put("commandsUrl", 7);
+        }
+    }
+
+    public static final class MissionDatabaseRequest
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest message) throws java.io.IOException
+            {
+                if(message.hasDbConfigName())
+                    output.writeString(1, message.getDbConfigName(), false);
+                if(message.hasInstance())
+                    output.writeString(2, message.getInstance(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setDbConfigName(input.readString());
+                            break;
+                        case 2:
+                            builder.setInstance(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabaseRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "dbConfigName";
+                case 2: return "instance";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("dbConfigName", 1);
+            fieldMap.put("instance", 2);
+        }
+    }
+
     public static final class ProcessorInfo
     {
         public static final org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.MessageSchema WRITE =
@@ -39,6 +573,14 @@ public final class SchemaYamcsManagement
                     output.writeString(9, message.getReplayState().name(), false);
                 if(message.hasUrl())
                     output.writeString(10, message.getUrl(), false);
+                if(message.hasParametersUrl())
+                    output.writeString(11, message.getParametersUrl(), false);
+                if(message.hasCommandsUrl())
+                    output.writeString(12, message.getCommandsUrl(), false);
+                if(message.hasCommandQueuesUrl())
+                    output.writeString(13, message.getCommandQueuesUrl(), false);
+                if(message.hasAlarmsUrl())
+                    output.writeString(14, message.getAlarmsUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorInfo message)
             {
@@ -109,6 +651,18 @@ public final class SchemaYamcsManagement
                         case 10:
                             builder.setUrl(input.readString());
                             break;
+                        case 11:
+                            builder.setParametersUrl(input.readString());
+                            break;
+                        case 12:
+                            builder.setCommandsUrl(input.readString());
+                            break;
+                        case 13:
+                            builder.setCommandQueuesUrl(input.readString());
+                            break;
+                        case 14:
+                            builder.setAlarmsUrl(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -159,6 +713,10 @@ public final class SchemaYamcsManagement
                 case 8: return "replayRequest";
                 case 9: return "replayState";
                 case 10: return "url";
+                case 11: return "parametersUrl";
+                case 12: return "commandsUrl";
+                case 13: return "commandQueuesUrl";
+                case 14: return "alarmsUrl";
                 default: return null;
             }
         }
@@ -180,6 +738,10 @@ public final class SchemaYamcsManagement
             fieldMap.put("replayRequest", 8);
             fieldMap.put("replayState", 9);
             fieldMap.put("url", 10);
+            fieldMap.put("parametersUrl", 11);
+            fieldMap.put("commandsUrl", 12);
+            fieldMap.put("commandQueuesUrl", 13);
+            fieldMap.put("alarmsUrl", 14);
         }
     }
 

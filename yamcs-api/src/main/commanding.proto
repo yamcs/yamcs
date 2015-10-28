@@ -27,6 +27,7 @@ message CommandQueueInfo {
   required int32 nbSentCommands = 5;
   required int32 nbRejectedCommands = 6;
   optional int32 stateExpirationTimeS = 7;
+  optional string url = 8;
 }
 
 /*One entry (command) in the command queue*/

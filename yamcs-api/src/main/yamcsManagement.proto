@@ -8,12 +8,50 @@ import "yamcs.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
-   NEW = 0;
-   STARTING = 1;
-   RUNNING = 2;
-   STOPPING = 3;
-   TERMINATED = 4;
-   FAILED = 5;
+  NEW = 0;
+  STARTING = 1;
+  RUNNING = 2;
+  STOPPING = 3;
+  TERMINATED = 4;
+  FAILED = 5;
+}
+
+/*contains a list of instances*/
+message YamcsInstances {
+  repeated YamcsInstance instance = 1;
+}
+
+message YamcsInstance {
+  required string name = 1;
+  //repeated MessagingAddress address=2; //removed 5-Mar-2012
+  optional MissionDatabase missionDatabase = 3;
+  repeated ProcessorInfo processor = 4;
+  optional string url = 5;
+  optional string clientsUrl = 6;
+  optional string eventsUrl = 7;
+}
+
+message MissionDatabase {
+  required string configName = 1; //this is the config section in mdb.yaml
+  required string name = 2; //XTCE root SpaceSystem name
+  optional string version = 3; //XTCE root SpaceSystem header version
+  optional string url = 4;
+  optional string parametersUrl = 5;
+  optional string containersUrl = 6;
+  optional string commandsUrl = 7;
+}
+
+//used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
+message MissionDatabaseRequest {
+  optional string dbConfigName = 1;
+  optional string instance = 2;
+}
+
+//this is just for documentation purposes, the protobuf generated stuff is not used yet
+service YamcsControl {
+  rpc GetYamcsInstances(yamcs.Void) returns (YamcsInstances);
+  //this one sends a binary stream containing the serialized MDB
+  rpc GetMissionDatabase(MissionDatabaseRequest) returns (yamcs.Void);
 }
 
 /************** Yamcs Processor Control service *********************/
@@ -22,8 +60,8 @@ enum ServiceState {
  * The name of the events are yProcessorUpdated (means added or updated),
  * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
 message ProcessorInfo {
-  required string instance = 1; //yamcs instance
-  required string name = 2;
+  optional string instance = 1; //yamcs instance
+  optional string name = 2;
   optional string type = 3;
   optional string spec = 4;
   optional string creator = 5;
@@ -32,6 +70,10 @@ message ProcessorInfo {
   optional yamcs.ReplayRequest replayRequest = 8; //in case of replay
   optional yamcs.ReplayStatus.ReplayState replayState = 9; //in case of replay
   optional string url = 10;
+  optional string parametersUrl = 11;
+  optional string commandsUrl = 12;
+  optional string commandQueuesUrl = 13;
+  optional string alarmsUrl = 14;
 }
 
 message ClientInfo {
@@ -49,13 +91,13 @@ message ClientInfo {
 }
 
 message TmStatistics {
-    required string packetName=1;
-    optional int64 receivedPackets=2;
-    optional int64 lastReceived=3;
-    optional string lastReceivedUTC=8;
-    optional int64 lastPacketTime=4;
-    optional string lastPacketTimeUTC=7;
-    optional int32 subscribedParameterCount=6;
+  required string packetName = 1;
+  optional int64 receivedPackets = 2;
+  optional int64 lastReceived = 3;
+  optional string lastReceivedUTC = 8;
+  optional int64 lastPacketTime = 4;
+  optional string lastPacketTimeUTC = 7;
+  optional int32 subscribedParameterCount = 6;
 }
 
 message Statistics {
