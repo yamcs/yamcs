@@ -47,91 +47,93 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     final TimeService timeService;
     
     protected TcpTmProvider(String instance, String name) {// dummy constructor needed by subclass constructors
-	this.yamcsInstance = instance;
-	this.name = name;
-	this.timeService = YamcsServer.getTimeService(instance);
+        this.yamcsInstance = instance;
+        this.name = name;
+        this.timeService = YamcsServer.getTimeService(instance);
     }
 
     public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
-	this.yamcsInstance = instance;
-	this.name = name;
+        this.yamcsInstance = instance;
+        this.name = name;
 
-	YConfiguration c=YConfiguration.getConfiguration("tcp");
-	host=c.getString(spec, "tmHost");
-	port=c.getInt(spec, "tmPort");
-	this.timeService = YamcsServer.getTimeService(instance);
+        YConfiguration c=YConfiguration.getConfiguration("tcp");
+        host=c.getString(spec, "tmHost");
+        port=c.getInt(spec, "tmPort");
+        this.timeService = YamcsServer.getTimeService(instance);
     }
 
     protected void openSocket() throws IOException {
-	InetAddress address=InetAddress.getByName(host);
-	tmSocket=new Socket();
-	tmSocket.setKeepAlive(true);
-	tmSocket.connect(new InetSocketAddress(address,port),1000);
+        InetAddress address=InetAddress.getByName(host);
+        tmSocket=new Socket();
+        tmSocket.setKeepAlive(true);
+        tmSocket.connect(new InetSocketAddress(address,port),1000);
     }
 
     @Override
     public void setTmSink(TmSink tmSink) {
-	this.tmSink=tmSink;
+        this.tmSink=tmSink;
     }
 
     @Override
     public void run() {
         setupSysVariables();
-	while(isRunning()) {
-	    PacketWithTime pwrt=getNextPacket();
-	    if(pwrt==null) break;
-	    tmSink.processPacket(pwrt);
-	}
+        while(isRunning()) {
+            PacketWithTime pwrt=getNextPacket();
+            if(pwrt==null) break;
+            tmSink.processPacket(pwrt);
+        }
     }
 
     public PacketWithTime getNextPacket() {
-	ByteBuffer bb=null;
-	while (isRunning()) {
-	    while(disabled) {
-		if(!isRunning()) return null;
-		try {
-		    Thread.sleep(1000);
-		} catch (InterruptedException e) {
-		    Thread.currentThread().interrupt();
-		    return null;
-		}
-	    }
-	    try {
-		if (tmSocket==null) {
-		    openSocket();
-		    log.info("TM connection established to "+host+" port "+port);
-		} 
-		byte hdr[] = new byte[6];
-		if(!readWithBlocking(hdr,0,6))
-		    continue;
-		int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
-		bb=ByteBuffer.allocate(6+remaining).put(hdr);
-		if(!readWithBlocking(bb.array(), 6, remaining)) 
-		    continue;
-		bb.rewind();
-		packetcount++;
-		break;
-	    } catch (IOException e) {
-		log.info("Cannot open or read from TM socket at "+host+":"+port+": "+e+"; retrying in 10 seconds.");
-		try {tmSocket.close();} catch (Exception e2) {}
-		tmSocket=null;
-		try {
-		    Thread.sleep(10000);
-		} catch (InterruptedException e1) {
-		    log.warn("exception "+ e1.toString()+" thrown when sleeping 10 sec");
-		    return null;
-		}
-	    }
-	}
-	if(bb!=null) {
-	    return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
-	} 
-	return null;
+        ByteBuffer bb=null;
+        while (isRunning()) {
+            while(disabled) {
+                if(!isRunning()) return null;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }
+            try {
+                if (tmSocket==null) {
+                    openSocket();
+                    log.info("TM connection established to "+host+" port "+port);
+                } 
+                byte hdr[] = new byte[6];
+                if(!readWithBlocking(hdr,0,6))
+                    continue;
+                int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
+                bb=ByteBuffer.allocate(6+remaining).put(hdr);
+                if(!readWithBlocking(bb.array(), 6, remaining)) 
+                    continue;
+                bb.rewind();
+                packetcount++;
+                break;
+            } catch (IOException e) {
+                log.info("Cannot open or read from TM socket at "+host+":"+port+": "+e+"; retrying in 10 seconds.");
+                try {tmSocket.close();} catch (Exception e2) {}
+                tmSocket=null;
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e1) {
+                    log.warn("exception "+ e1.toString()+" thrown when sleeping 10 sec");
+                    return null;
+                }
+            }
+        }
+        if(bb!=null) {
+            return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
+        } 
+        return null;
     }
+    
     @Override
     public boolean isArchiveReplay() {
-	return false;
+        return false;
     }
+    
     /**
      * Read n bytes from the tmSocket, blocking if necessary till all bytes are available.
      * Returns true if all the bytes have been read and false if the stream has closed before all the bytes have been read.
@@ -141,107 +143,104 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
      * @throws IOException 
      */
     protected boolean readWithBlocking(byte[] b, int pos, int n) throws IOException {
-	InputStream in=tmSocket.getInputStream();
-	int remaining=n;
-	while(remaining>0) {
-	    int read=in.read(b,pos,remaining);
-	    if(read==-1) {
-		log.warn("Tm Connection closed");
-		if(remaining!=n) {
-		    log.warn("Discarding incomplete TM packet read: expected "+n+", read"+(n-remaining)+". Packet discarded.");
-		}
-		tmSocket=null;
-		return false;
-	    }
-	    remaining-=read;
-	    pos+=read;
-	}
-	return true;
+        InputStream in=tmSocket.getInputStream();
+        int remaining=n;
+        while(remaining>0) {
+            int read=in.read(b,pos,remaining);
+            if(read==-1) {
+                log.warn("Tm Connection closed");
+                if(remaining!=n) {
+                    log.warn("Discarding incomplete TM packet read: expected "+n+", read"+(n-remaining)+". Packet discarded.");
+                }
+                tmSocket=null;
+                return false;
+            }
+            remaining-=read;
+            pos+=read;
+        }
+        return true;
     }
 
     @Override
     public String getLinkStatus() {
-	if (disabled) return "DISABLED";
-	if (tmSocket==null) {
-	    return "UNAVAIL";
-	} else {
-	    return "OK";
-	}
+        if (disabled) return "DISABLED";
+        if (tmSocket==null) {
+            return "UNAVAIL";
+        } else {
+            return "OK";
+        }
     }
 
     @Override
     public void triggerShutdown() {
-	if(tmSocket!=null) {
-	    try {
-		tmSocket.close();
-	    } catch (IOException e) {
-		log.warn("Exception got when closing the tm socket:", e);
-	    }
-	    tmSocket=null;
-	}
+        if(tmSocket!=null) {
+            try {
+                tmSocket.close();
+            } catch (IOException e) {
+                log.warn("Exception got when closing the tm socket:", e);
+            }
+            tmSocket=null;
+        }
     }
 
     @Override
     public void disable() {
-	disabled=true;
-	if(tmSocket!=null) {
-	    try {
-		tmSocket.close();
-	    } catch (IOException e) {
-		log.warn("Exception got when closing the tm socket:", e);
-	    }
-	    tmSocket=null;
-	}
+        disabled=true;
+        if(tmSocket!=null) {
+            try {
+                tmSocket.close();
+            } catch (IOException e) {
+                log.warn("Exception got when closing the tm socket:", e);
+            }
+            tmSocket=null;
+        }
     }
 
     @Override
     public void enable() {
-	disabled=false;
+        disabled=false;
     }
 
     @Override
     public boolean isDisabled() {
-	return disabled;
+        return disabled;
     }
 
     @Override
     public String getDetailedStatus() {
-	if(disabled) {
-	    return String.format("DISABLED (should connect to %s:%d)", host, port);
-	}
-	if (tmSocket==null) {
-	    return String.format("Not connected to %s:%d", host, port);
-	} else {
-	    return String.format("OK, connected to %s:%d, received %d packets", host, port, packetcount);
-	}
+        if(disabled) {
+            return String.format("DISABLED (should connect to %s:%d)", host, port);
+        }
+        if (tmSocket==null) {
+            return String.format("Not connected to %s:%d", host, port);
+        } else {
+            return String.format("OK, connected to %s:%d, received %d packets", host, port, packetcount);
+        }
     }
 
     @Override
     public long getDataCount() {
-	return packetcount;
+        return packetcount;
     }
 
     protected void setupSysVariables() {
-	this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-	if(sysParamCollector!=null) {
-	    sysParamCollector.registerProvider(this, null);
-	    sv_linkStatus_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/linkStatus").build();
-	    sp_dataCount_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/dataCount").build();
-
-
-	} else {
-	    log.info("System variables collector not defined for instance {} ", yamcsInstance);
-	}
-
+        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
+        if(sysParamCollector!=null) {
+            sysParamCollector.registerProvider(this, null);
+            sv_linkStatus_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/linkStatus").build();
+            sp_dataCount_id = NamedObjectId.newBuilder().setName(sysParamCollector.getNamespace()+"/"+name+"/dataCount").build();
+        
+        } else {
+            log.info("System variables collector not defined for instance {} ", yamcsInstance);
+        }
     }
 
 
     @Override
     public Collection<ParameterValue> getSystemParameters() {
-	long time = timeService.getMissionTime();
-	ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
-	ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
-	return Arrays.asList(linkStatus, dataCount);
+        long time = timeService.getMissionTime();
+        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
+        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
+        return Arrays.asList(linkStatus, dataCount);
     }
 }
-
