@@ -270,6 +270,131 @@ public final class SchemaYamcsManagement
         }
     }
 
+    public static final class HistoryInfo
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.HistoryInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.HistoryInfo message) throws java.io.IOException
+            {
+                if(message.hasVersion())
+                    output.writeString(1, message.getVersion(), false);
+                if(message.hasDate())
+                    output.writeString(2, message.getDate(), false);
+                if(message.hasMessage())
+                    output.writeString(3, message.getMessage(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.HistoryInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.HistoryInfo> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.HistoryInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.HistoryInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setVersion(input.readString());
+                            break;
+                        case 2:
+                            builder.setDate(input.readString());
+                            break;
+                        case 3:
+                            builder.setMessage(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.HistoryInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.HistoryInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "version";
+                case 2: return "date";
+                case 3: return "message";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("version", 1);
+            fieldMap.put("date", 2);
+            fieldMap.put("message", 3);
+        }
+    }
+
     public static final class SpaceSystemInfo
     {
         public static final org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MessageSchema WRITE =
@@ -289,8 +414,13 @@ public final class SchemaYamcsManagement
                     output.writeString(3, message.getShortDescription(), false);
                 if(message.hasLongDescription())
                     output.writeString(4, message.getLongDescription(), false);
+                if(message.hasVersion())
+                    output.writeString(5, message.getVersion(), false);
+                for(org.yamcs.protobuf.YamcsManagement.HistoryInfo history : message.getHistoryList())
+                    output.writeObject(6, history, org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.WRITE, true);
+
                 for(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo sub : message.getSubList())
-                    output.writeObject(5, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
+                    output.writeObject(7, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message)
@@ -344,6 +474,13 @@ public final class SchemaYamcsManagement
                             builder.setLongDescription(input.readString());
                             break;
                         case 5:
+                            builder.setVersion(input.readString());
+                            break;
+                        case 6:
+                            builder.addHistory(input.mergeObject(org.yamcs.protobuf.YamcsManagement.HistoryInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.MERGE));
+
+                            break;
+                        case 7:
                             builder.addSub(input.mergeObject(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MERGE));
 
                             break;
@@ -391,7 +528,9 @@ public final class SchemaYamcsManagement
                 case 2: return "qualifiedName";
                 case 3: return "shortDescription";
                 case 4: return "longDescription";
-                case 5: return "sub";
+                case 5: return "version";
+                case 6: return "history";
+                case 7: return "sub";
                 default: return null;
             }
         }
@@ -407,7 +546,9 @@ public final class SchemaYamcsManagement
             fieldMap.put("qualifiedName", 2);
             fieldMap.put("shortDescription", 3);
             fieldMap.put("longDescription", 4);
-            fieldMap.put("sub", 5);
+            fieldMap.put("version", 5);
+            fieldMap.put("history", 6);
+            fieldMap.put("sub", 7);
         }
     }
 

@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.SchemaYamcsManagement;
+import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.History;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -39,7 +42,7 @@ public class MDBRequestHandler extends RestRequestHandler {
             if (yamcsInstance == null) {
                 throw new NotFoundException(req);
             }
-            req.addToContext(RestRequest.CTX_INSTANCE, yamcsInstance);
+            req.addToContext(RestRequest.CTX_INSTANCE, instance);
             
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             req.addToContext(CTX_MDB, mdb);
@@ -92,6 +95,19 @@ public class MDBRequestHandler extends RestRequestHandler {
         }
         if (ss.getLongDescription() != null) {
             b.setLongDescription(ss.getLongDescription());
+        }
+        Header h = ss.getHeader();
+        if (h != null) {
+            if (h.getVersion() != null) {
+                b.setVersion(h.getVersion());
+            }
+            for (History history : h.getHistoryList()) {
+                HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
+                if (history.getVersion() != null) historyb.setVersion(history.getVersion());
+                if (history.getDate() != null) historyb.setDate(history.getDate());
+                if (history.getMessage() != null) historyb.setMessage(history.getMessage());
+                b.addHistory(historyb.build());
+            }
         }
         for (SpaceSystem sub : ss.getSubSystems()) {
             b.addSub(toSpaceSystemInfo(sub));

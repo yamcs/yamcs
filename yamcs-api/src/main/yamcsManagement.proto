@@ -31,12 +31,20 @@ message YamcsInstance {
   optional string eventsUrl = 7;
 }
 
+message HistoryInfo {
+  optional string version = 1;
+  optional string date = 2;
+  optional string message = 3;
+}
+
 message SpaceSystemInfo {
   optional string name = 1;
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated SpaceSystemInfo sub = 5;
+  optional string version = 5;
+  repeated HistoryInfo history = 6;
+  repeated SpaceSystemInfo sub = 7;
 }
 
 message MissionDatabase {
