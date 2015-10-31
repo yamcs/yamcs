@@ -23,7 +23,7 @@ import org.yamcs.web.rest.ArchiveRequestHandler;
 import org.yamcs.web.rest.ClientRequestHandler;
 import org.yamcs.web.rest.EventRequestHandler;
 import org.yamcs.web.rest.InstanceRequestHandler;
-import org.yamcs.web.rest.MissionDatabaseRequestHandler;
+import org.yamcs.web.rest.MDBRequestHandler;
 import org.yamcs.web.rest.ProcessorRequestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.UserRequestHandler;
@@ -64,7 +64,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     
     static InstanceRequestHandler instanceRequestHandler = new InstanceRequestHandler();
     static UserRequestHandler userRequestHandler = new UserRequestHandler();
-    static MissionDatabaseRequestHandler mdbRequestHandler = new MissionDatabaseRequestHandler();
+    static MDBRequestHandler mdbRequestHandler = new MDBRequestHandler();
     static ClientRequestHandler clientRequestHandler = new ClientRequestHandler();
     static ProcessorRequestHandler processorRequestHandler = new ProcessorRequestHandler();
     static ArchiveRequestHandler archiveRequestHandler = new ArchiveRequestHandler();

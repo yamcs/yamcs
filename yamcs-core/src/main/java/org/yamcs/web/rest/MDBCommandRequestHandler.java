@@ -26,7 +26,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        XtceDb mdb = req.getFromContext(MissionDatabaseRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listCommands(req, null, mdb);
         } else {

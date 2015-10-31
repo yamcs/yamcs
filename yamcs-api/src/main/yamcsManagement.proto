@@ -31,14 +31,23 @@ message YamcsInstance {
   optional string eventsUrl = 7;
 }
 
+message SpaceSystemInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated SpaceSystemInfo sub = 5;
+}
+
 message MissionDatabase {
   required string configName = 1; //this is the config section in mdb.yaml
   required string name = 2; //XTCE root SpaceSystem name
   optional string version = 3; //XTCE root SpaceSystem header version
-  optional string url = 4;
-  optional string parametersUrl = 5;
-  optional string containersUrl = 6;
-  optional string commandsUrl = 7;
+  repeated SpaceSystemInfo spaceSystem = 4;
+  optional string url = 5;
+  optional string parametersUrl = 6;
+  optional string containersUrl = 7;
+  optional string commandsUrl = 8;
 }
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both

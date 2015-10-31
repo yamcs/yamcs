@@ -46,7 +46,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             }
             req.addToContext(RestRequest.CTX_INSTANCE, instance);
             XtceDb mdb = XtceDbFactory.getInstance(instance);
-            req.addToContext(MissionDatabaseRequestHandler.CTX_MDB, mdb);
+            req.addToContext(MDBRequestHandler.CTX_MDB, mdb);
             
             if (!req.hasPathSegment(pathOffset + 1)) {
                 req.assertGET();

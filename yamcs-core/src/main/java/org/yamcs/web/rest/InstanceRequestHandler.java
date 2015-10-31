@@ -9,6 +9,8 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Handles incoming requests related to yamcs instances.
@@ -63,7 +65,8 @@ public class InstanceRequestHandler extends RestRequestHandler {
         
         // Override MDB with a version that has URLs too
         if (yamcsInstance.hasMissionDatabase()) {
-            instanceb.setMissionDatabase(MissionDatabaseRequestHandler.toMissionDatabase(req, yamcsInstance.getName())); 
+            XtceDb mdb = XtceDbFactory.getInstance(yamcsInstance.getName());
+            instanceb.setMissionDatabase(MDBRequestHandler.toMissionDatabase(req, yamcsInstance.getName(), mdb)); 
         }
         
         String apiUrl = req.getApiURL();            

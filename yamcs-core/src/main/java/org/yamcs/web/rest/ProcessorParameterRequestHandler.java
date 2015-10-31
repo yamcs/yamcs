@@ -43,7 +43,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        XtceDb mdb = req.getFromContext(MissionDatabaseRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {

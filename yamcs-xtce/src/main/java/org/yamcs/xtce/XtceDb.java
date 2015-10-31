@@ -141,6 +141,14 @@ public class XtceDb implements Serializable {
     public Collection<Parameter> getParameters() {
         return parameters.values();
     }
+    
+    public boolean containsNamespace(String namespace) {
+        return namespaces.contains(namespace);
+    }
+    
+    public Set<String> getNamespaces() {
+        return namespaces;
+    }
 
     public NamedDescriptionIndex<Parameter> getParameterAliases() {
         return parameterAliases;

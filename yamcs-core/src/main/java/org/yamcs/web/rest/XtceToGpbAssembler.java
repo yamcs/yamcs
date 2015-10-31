@@ -58,6 +58,7 @@ public class XtceToGpbAssembler {
     public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail) {
         ContainerInfo.Builder cb = ContainerInfo.newBuilder();
         
+        cb.setName(c.getName());
         cb.setQualifiedName(c.getQualifiedName());
         cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
         
@@ -169,6 +170,7 @@ public class XtceToGpbAssembler {
     public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
         
+        cb.setName(cmd.getName());
         cb.setQualifiedName(cmd.getQualifiedName());
         cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
         
@@ -323,6 +325,7 @@ public class XtceToGpbAssembler {
     public static ParameterInfo toParameterInfo(Parameter p, String instanceURL, DetailLevel detail) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
         
+        b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
         b.setUrl(instanceURL + "/parameters" + p.getQualifiedName());
         

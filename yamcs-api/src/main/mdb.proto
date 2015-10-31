@@ -48,13 +48,14 @@ message ParameterTypeInfo {
 }
 
 message ParameterInfo {
-  optional string qualifiedName = 1;
-  optional string shortDescription = 2;
-  optional string longDescription = 3;
-  repeated yamcs.NamedObjectId alias = 4;
-  optional ParameterTypeInfo type = 5;
-  optional DataSourceType dataSource = 6;
-  optional string url = 7;
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+  optional DataSourceType dataSource = 7;
+  optional string url = 8;
 }
 
 message ArgumentInfo {
@@ -103,17 +104,18 @@ message TransmissionConstraintInfo {
 }
 
 message CommandInfo {
-  optional string qualifiedName = 1;
-  optional string shortDescription = 2;
-  optional string longDescription = 3;
-  repeated yamcs.NamedObjectId alias = 4;
-  optional CommandInfo baseCommand = 5;
-  optional bool abstract = 6;
-  repeated ArgumentInfo argument = 7;
-  repeated ArgumentAssignmentInfo argumentAssignment = 8;
-  optional SignificanceInfo significance = 9;
-  repeated TransmissionConstraintInfo constraint = 10;
-  optional string url = 11;
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional CommandInfo baseCommand = 6;
+  optional bool abstract = 7;
+  repeated ArgumentInfo argument = 8;
+  repeated ArgumentAssignmentInfo argumentAssignment = 9;
+  optional SignificanceInfo significance = 10;
+  repeated TransmissionConstraintInfo constraint = 11;
+  optional string url = 12;
 }
 
 message RepeatInfo {
@@ -135,14 +137,15 @@ message SequenceEntryInfo {
 }
 
 message ContainerInfo {
-  optional string qualifiedName = 1;
-  optional string shortDescription = 2;
-  optional string longDescription = 3;
-  repeated yamcs.NamedObjectId alias = 4;
-  optional int64 maxInterval = 5;
-  optional int32 sizeInBits = 6;
-  optional ContainerInfo baseContainer = 7;
-  repeated ComparisonInfo restrictionCriteria = 8;
-  repeated SequenceEntryInfo entry = 9;
-  optional string url = 10;
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional int64 maxInterval = 6;
+  optional int32 sizeInBits = 7;
+  optional ContainerInfo baseContainer = 8;
+  repeated ComparisonInfo restrictionCriteria = 9;
+  repeated SequenceEntryInfo entry = 10;
+  optional string url = 11;
 }

@@ -270,6 +270,147 @@ public final class SchemaYamcsManagement
         }
     }
 
+    public static final class SpaceSystemInfo
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasQualifiedName())
+                    output.writeString(2, message.getQualifiedName(), false);
+                if(message.hasShortDescription())
+                    output.writeString(3, message.getShortDescription(), false);
+                if(message.hasLongDescription())
+                    output.writeString(4, message.getLongDescription(), false);
+                for(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo sub : message.getSubList())
+                    output.writeObject(5, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setQualifiedName(input.readString());
+                            break;
+                        case 3:
+                            builder.setShortDescription(input.readString());
+                            break;
+                        case 4:
+                            builder.setLongDescription(input.readString());
+                            break;
+                        case 5:
+                            builder.addSub(input.mergeObject(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "qualifiedName";
+                case 3: return "shortDescription";
+                case 4: return "longDescription";
+                case 5: return "sub";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("qualifiedName", 2);
+            fieldMap.put("shortDescription", 3);
+            fieldMap.put("longDescription", 4);
+            fieldMap.put("sub", 5);
+        }
+    }
+
     public static final class MissionDatabase
     {
         public static final org.yamcs.protobuf.SchemaYamcsManagement.MissionDatabase.MessageSchema WRITE =
@@ -287,14 +428,17 @@ public final class SchemaYamcsManagement
                     output.writeString(2, message.getName(), false);
                 if(message.hasVersion())
                     output.writeString(3, message.getVersion(), false);
+                for(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo spaceSystem : message.getSpaceSystemList())
+                    output.writeObject(4, spaceSystem, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
+
                 if(message.hasUrl())
-                    output.writeString(4, message.getUrl(), false);
+                    output.writeString(5, message.getUrl(), false);
                 if(message.hasParametersUrl())
-                    output.writeString(5, message.getParametersUrl(), false);
+                    output.writeString(6, message.getParametersUrl(), false);
                 if(message.hasContainersUrl())
-                    output.writeString(6, message.getContainersUrl(), false);
+                    output.writeString(7, message.getContainersUrl(), false);
                 if(message.hasCommandsUrl())
-                    output.writeString(7, message.getCommandsUrl(), false);
+                    output.writeString(8, message.getCommandsUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabase message)
             {
@@ -344,15 +488,19 @@ public final class SchemaYamcsManagement
                             builder.setVersion(input.readString());
                             break;
                         case 4:
-                            builder.setUrl(input.readString());
+                            builder.addSpaceSystem(input.mergeObject(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MERGE));
+
                             break;
                         case 5:
-                            builder.setParametersUrl(input.readString());
+                            builder.setUrl(input.readString());
                             break;
                         case 6:
-                            builder.setContainersUrl(input.readString());
+                            builder.setParametersUrl(input.readString());
                             break;
                         case 7:
+                            builder.setContainersUrl(input.readString());
+                            break;
+                        case 8:
                             builder.setCommandsUrl(input.readString());
                             break;
                         default:
@@ -398,10 +546,11 @@ public final class SchemaYamcsManagement
                 case 1: return "configName";
                 case 2: return "name";
                 case 3: return "version";
-                case 4: return "url";
-                case 5: return "parametersUrl";
-                case 6: return "containersUrl";
-                case 7: return "commandsUrl";
+                case 4: return "spaceSystem";
+                case 5: return "url";
+                case 6: return "parametersUrl";
+                case 7: return "containersUrl";
+                case 8: return "commandsUrl";
                 default: return null;
             }
         }
@@ -416,10 +565,11 @@ public final class SchemaYamcsManagement
             fieldMap.put("configName", 1);
             fieldMap.put("name", 2);
             fieldMap.put("version", 3);
-            fieldMap.put("url", 4);
-            fieldMap.put("parametersUrl", 5);
-            fieldMap.put("containersUrl", 6);
-            fieldMap.put("commandsUrl", 7);
+            fieldMap.put("spaceSystem", 4);
+            fieldMap.put("url", 5);
+            fieldMap.put("parametersUrl", 6);
+            fieldMap.put("containersUrl", 7);
+            fieldMap.put("commandsUrl", 8);
         }
     }
 
