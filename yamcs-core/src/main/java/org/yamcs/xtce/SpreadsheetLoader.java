@@ -33,6 +33,7 @@ import jxl.CellType;
 import jxl.NumberCell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 /**
@@ -193,9 +194,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         try {
             // Given path may be relative, so use absolute path to report issues
-            File ssFile = new File( path );
-            if( !ssFile.exists() ) throw new FileNotFoundException( ssFile.getAbsolutePath() );
-            workbook = Workbook.getWorkbook( ssFile );
+            File ssFile = new File(path);
+            if(!ssFile.exists()) throw new FileNotFoundException(ssFile.getAbsolutePath());
+            WorkbookSettings ws = new WorkbookSettings();
+            ws.setEncoding("Cp1252");
+            workbook = Workbook.getWorkbook(ssFile, ws);
         } catch (BiffException e) {
             throw new SpreadsheetLoadException(ctx, e);
         } catch (IOException e) {
