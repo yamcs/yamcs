@@ -43,8 +43,11 @@ message SpaceSystemInfo {
   optional string shortDescription = 3;
   optional string longDescription = 4;
   optional string version = 5;
-  repeated HistoryInfo history = 6;
-  repeated SpaceSystemInfo sub = 7;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  repeated HistoryInfo history = 9;
+  repeated SpaceSystemInfo sub = 10;
 }
 
 message MissionDatabase {

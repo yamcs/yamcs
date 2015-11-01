@@ -36,6 +36,7 @@ public class SystemParameterDb implements Serializable {
     
     public SystemParameterDb() {
         yamcsSs = new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1));
+        yamcsSs.setShortDescription("Collects Yamcs system parameters");
     }
     
     

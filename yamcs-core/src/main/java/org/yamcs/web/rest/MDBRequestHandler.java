@@ -1,5 +1,7 @@
 package org.yamcs.web.rest;
 
+import java.util.ListIterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
@@ -101,14 +103,19 @@ public class MDBRequestHandler extends RestRequestHandler {
             if (h.getVersion() != null) {
                 b.setVersion(h.getVersion());
             }
-            for (History history : h.getHistoryList()) {
+            ListIterator<History> li = h.getHistoryList().listIterator(h.getHistoryList().size());
+            while (li.hasPrevious()) {
+                History history = li.previous();
                 HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
                 if (history.getVersion() != null) historyb.setVersion(history.getVersion());
                 if (history.getDate() != null) historyb.setDate(history.getDate());
                 if (history.getMessage() != null) historyb.setMessage(history.getMessage());
-                b.addHistory(historyb.build());
+                b.addHistory(historyb);
             }
         }
+        b.setParameterCount(ss.getParameters().size());
+        b.setContainerCount(ss.getSequenceContainers().size());
+        b.setCommandCount(ss.getMetaCommands().size());
         for (SpaceSystem sub : ss.getSubSystems()) {
             b.addSub(toSpaceSystemInfo(sub));
         }

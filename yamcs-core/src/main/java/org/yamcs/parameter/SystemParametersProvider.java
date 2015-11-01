@@ -9,13 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
-
-import com.google.common.util.concurrent.AbstractService;
-
+import org.yamcs.YProcessor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
@@ -27,6 +24,8 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Provides system variables from the sys_var stream to ParameterRequestManager
@@ -53,6 +52,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
     }
     
+    @Override
     public void init(YProcessor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
@@ -116,19 +116,19 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         }
         return sv;
     }
+    
     /**
      * return true if parameter starts with "/YAMCS" or the namespace is null and the name starts with "/YAMCS" 
      * 
      */
     @Override
     public boolean canProvide(NamedObjectId paraId) {
-      return SystemParameterDb.isSystemParameter(paraId);
-        
+        return SystemParameterDb.isSystemParameter(paraId);
     }
 
     @Override
     public boolean canProvide(Parameter para) {        
-	return para.getQualifiedName().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME);
+        return para.getQualifiedName().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME);
     }
 
     
@@ -160,7 +160,6 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     public void setParameterListener(ParameterRequestManager parameterRequestManager) {
         this.parameterListener = parameterRequestManager; 
-
     }
 
 

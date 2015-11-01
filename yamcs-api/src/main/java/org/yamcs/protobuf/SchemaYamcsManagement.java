@@ -416,11 +416,17 @@ public final class SchemaYamcsManagement
                     output.writeString(4, message.getLongDescription(), false);
                 if(message.hasVersion())
                     output.writeString(5, message.getVersion(), false);
+                if(message.hasParameterCount())
+                    output.writeInt32(6, message.getParameterCount(), false);
+                if(message.hasContainerCount())
+                    output.writeInt32(7, message.getContainerCount(), false);
+                if(message.hasCommandCount())
+                    output.writeInt32(8, message.getCommandCount(), false);
                 for(org.yamcs.protobuf.YamcsManagement.HistoryInfo history : message.getHistoryList())
-                    output.writeObject(6, history, org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.WRITE, true);
+                    output.writeObject(9, history, org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.WRITE, true);
 
                 for(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo sub : message.getSubList())
-                    output.writeObject(7, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
+                    output.writeObject(10, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message)
@@ -477,10 +483,19 @@ public final class SchemaYamcsManagement
                             builder.setVersion(input.readString());
                             break;
                         case 6:
+                            builder.setParameterCount(input.readInt32());
+                            break;
+                        case 7:
+                            builder.setContainerCount(input.readInt32());
+                            break;
+                        case 8:
+                            builder.setCommandCount(input.readInt32());
+                            break;
+                        case 9:
                             builder.addHistory(input.mergeObject(org.yamcs.protobuf.YamcsManagement.HistoryInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.MERGE));
 
                             break;
-                        case 7:
+                        case 10:
                             builder.addSub(input.mergeObject(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MERGE));
 
                             break;
@@ -529,8 +544,11 @@ public final class SchemaYamcsManagement
                 case 3: return "shortDescription";
                 case 4: return "longDescription";
                 case 5: return "version";
-                case 6: return "history";
-                case 7: return "sub";
+                case 6: return "parameterCount";
+                case 7: return "containerCount";
+                case 8: return "commandCount";
+                case 9: return "history";
+                case 10: return "sub";
                 default: return null;
             }
         }
@@ -547,8 +565,11 @@ public final class SchemaYamcsManagement
             fieldMap.put("shortDescription", 3);
             fieldMap.put("longDescription", 4);
             fieldMap.put("version", 5);
-            fieldMap.put("history", 6);
-            fieldMap.put("sub", 7);
+            fieldMap.put("parameterCount", 6);
+            fieldMap.put("containerCount", 7);
+            fieldMap.put("commandCount", 8);
+            fieldMap.put("history", 9);
+            fieldMap.put("sub", 10);
         }
     }
 
