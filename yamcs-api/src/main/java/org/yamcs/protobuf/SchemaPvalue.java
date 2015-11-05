@@ -344,4 +344,264 @@ public final class SchemaPvalue
         }
     }
 
+    public static final class SampleSeries
+    {
+
+        public static final class Sample
+        {
+            public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MessageSchema WRITE =
+                new org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MessageSchema();
+            public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.BuilderSchema MERGE =
+                new org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.BuilderSchema();
+            
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Sample>
+            {
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Sample message) throws java.io.IOException
+                {
+                    if(message.hasAverageGenerationTime())
+                        output.writeInt64(1, message.getAverageGenerationTime(), false);
+                    if(message.hasAverageGenerationTimeUTC())
+                        output.writeString(2, message.getAverageGenerationTimeUTC(), false);
+                    if(message.hasAverageValue())
+                        output.writeDouble(3, message.getAverageValue(), false);
+                    if(message.hasLowValue())
+                        output.writeDouble(4, message.getLowValue(), false);
+                    if(message.hasHighValue())
+                        output.writeDouble(5, message.getHighValue(), false);
+                    if(message.hasN())
+                        output.writeInt32(6, message.getN(), false);
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Sample message)
+                {
+                    return message.isInitialized();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> typeClass()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getName();
+                }
+                //unused
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Sample message) throws java.io.IOException {}
+                public org.yamcs.protobuf.Pvalue.SampleSeries.Sample newMessage() { return null; }
+            }
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder>
+            {
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder) throws java.io.IOException
+                {
+                    for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                    {
+                        switch(number)
+                        {
+                            case 0:
+                                return;
+                            case 1:
+                                builder.setAverageGenerationTime(input.readInt64());
+                                break;
+                            case 2:
+                                builder.setAverageGenerationTimeUTC(input.readString());
+                                break;
+                            case 3:
+                                builder.setAverageValue(input.readDouble());
+                                break;
+                            case 4:
+                                builder.setLowValue(input.readDouble());
+                                break;
+                            case 5:
+                                builder.setHighValue(input.readDouble());
+                                break;
+                            case 6:
+                                builder.setN(input.readInt32());
+                                break;
+                            default:
+                                input.handleUnknownField(number, this);
+                        }
+                    }
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder)
+                {
+                    return builder.isInitialized();
+                }
+                public org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder newMessage()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.newBuilder();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder> typeClass()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getName();
+                }
+                //unused
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder) throws java.io.IOException {}
+            }
+            public static java.lang.String getFieldName(int number)
+            {
+                switch(number)
+                {
+                    case 1: return "averageGenerationTime";
+                    case 2: return "averageGenerationTimeUTC";
+                    case 3: return "averageValue";
+                    case 4: return "lowValue";
+                    case 5: return "highValue";
+                    case 6: return "n";
+                    default: return null;
+                }
+            }
+            public static int getFieldNumber(java.lang.String name)
+            {
+                java.lang.Integer number = fieldMap.get(name);
+                return number == null ? 0 : number.intValue();
+            }
+            private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+            static
+            {
+                fieldMap.put("averageGenerationTime", 1);
+                fieldMap.put("averageGenerationTimeUTC", 2);
+                fieldMap.put("averageValue", 3);
+                fieldMap.put("lowValue", 4);
+                fieldMap.put("highValue", 5);
+                fieldMap.put("n", 6);
+            }
+        }
+
+        public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaPvalue.SampleSeries.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaPvalue.SampleSeries.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Pvalue.SampleSeries.Sample sample : message.getSampleList())
+                    output.writeObject(1, sample, org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Pvalue.SampleSeries newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addSample(input.mergeObject(org.yamcs.protobuf.Pvalue.SampleSeries.Sample.newBuilder(), org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Pvalue.SampleSeries.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "sample";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("sample", 1);
+        }
+    }
+
 }

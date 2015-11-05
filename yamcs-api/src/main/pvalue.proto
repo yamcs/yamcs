@@ -70,3 +70,16 @@ message ParameterData {
   optional int64  generationTime = 3;
   optional int32 seqNum = 4;
 }
+
+message SampleSeries {
+  message Sample {
+    optional int64 averageGenerationTime = 1;
+    optional string averageGenerationTimeUTC = 2;
+    optional double averageValue = 3;
+    optional double lowValue = 4;
+    optional double highValue = 5;
+    optional int32 n = 6;
+  }
+
+  repeated Sample sample = 1;
+}
