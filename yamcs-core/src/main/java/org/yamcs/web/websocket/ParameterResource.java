@@ -62,7 +62,6 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         log = LoggerFactory.getLogger(ParameterResource.class.getName() + "[" + yproc.getInstance() + "]");
         pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
         wsHandler.addResource("parameter", this);
-        wsHandler.addResource("request", this);
     }
 
     @Override
