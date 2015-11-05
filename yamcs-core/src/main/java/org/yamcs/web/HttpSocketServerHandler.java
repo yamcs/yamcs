@@ -145,6 +145,9 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             } else if (clientRequestHandler.getPath().equals(resource)) {
                 clientRequestHandler.handleRequestOrError(restReq, 3);
                 return;
+            } else if (archiveRequestHandler.getPath().equals(resource)) {
+                archiveRequestHandler.handleRequestOrError(restReq, 3);
+                return;
             } else if (mdbRequestHandler.getPath().equals(resource)) {
                 mdbRequestHandler.handleRequestOrError(restReq, 3);
                 return;

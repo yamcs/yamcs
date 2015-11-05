@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
@@ -70,8 +71,6 @@ import io.protostuff.Schema;
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server. At the
  * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
- * <p>
- * /(instance)/archive
  */
 public class ArchiveRequestHandler extends RestRequestHandler {
 
@@ -90,15 +89,26 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
-            return handleDumpRequest(req); // GET /(instance)/api/archive
+            throw new NotFoundException(req);
         }
         
-        switch (req.getPathSegment(pathOffset)) {
-        case "tags":
-            return handleTagsRequest(req, pathOffset + 1);
-            
-        default:
-            throw new NotFoundException(req);
+        String instance = req.getPathSegment(pathOffset);
+        if (!YamcsServer.hasInstance(instance)) {
+            throw new NotFoundException(req, "No instance '" + instance + "'");
+        }
+        req.addToContext(RestRequest.CTX_INSTANCE, instance);
+        
+        pathOffset++;
+        if (!req.hasPathSegment(pathOffset)) {
+            return handleDumpRequest(req);
+        } else {
+            switch (req.getPathSegment(pathOffset)) {
+            case "tags":
+                return handleTagsRequest(req, pathOffset + 1);
+                
+            default:
+                throw new NotFoundException(req);
+            }
         }
     }
     
