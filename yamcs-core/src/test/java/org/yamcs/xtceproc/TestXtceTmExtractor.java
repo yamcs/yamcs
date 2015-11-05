@@ -433,12 +433,13 @@ public class TestXtceTmExtractor {
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
 
         ParameterValueList received=tmExtractor.getParameterResult();
-        assertEquals(16, received.size());
+        assertEquals(17, received.size());
         assertEquals(2,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1")).getRawValue().getUint32Value());
         assertEquals(3,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_2")).getRawValue().getUint32Value());
         assertEquals(4,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_2")).getRawValue().getUint32Value());
         assertEquals(5,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para1")).getRawValue().getUint32Value());
         assertEquals(6,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para2")).getRawValue().getUint32Value());
+        assertEquals(61,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para2_1")).getRawValue().getUint32Value());
         assertEquals(7,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para1")).getRawValue().getUint32Value());
         assertEquals(8,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para2")).getRawValue().getUint32Value());
         assertEquals(9,  received.removeFirst(xtcedb.getParameter("/REFMDB/SUBSYS1/block_para1")).getRawValue().getUint32Value());

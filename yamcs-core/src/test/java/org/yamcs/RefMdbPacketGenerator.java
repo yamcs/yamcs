@@ -313,7 +313,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     block_para4 = 14    (8 bits)
      */
     public ByteBuffer generate_PKT3() {
-        int pktLength = headerLength + 1 + 2*2 + 10;
+        int pktLength = headerLength + 1 + 2*2 + 11;
         ByteBuffer bb=ByteBuffer.allocate(pktLength);
         fill_PKT3(bb);
         sendToTmProcessor(bb);
@@ -532,6 +532,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put((byte)4);  //
         bb.put((byte)5);  // block_para1 = 5
         bb.put((byte)6);  // block_para2 = 6
+        bb.put((byte)61); // block_para2_1 = 61
         bb.put((byte)7);  // block_para1 = 7
         bb.put((byte)8);  // block_para2 = 8
         bb.put((byte)9);  // block_para1 = 9
