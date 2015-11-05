@@ -144,6 +144,14 @@ public class RestRequest {
         if (!isPOST()) throw new MethodNotAllowedException(this); 
     }
     
+    public boolean isPATCH() {
+        return httpRequest.getMethod() == HttpMethod.PATCH;
+    }
+    
+    public void assertPATCH() throws MethodNotAllowedException {
+        if (!isPATCH()) throw new MethodNotAllowedException(this); 
+    }
+    
     public boolean isGET() {
         return httpRequest.getMethod() == HttpMethod.GET;
     }

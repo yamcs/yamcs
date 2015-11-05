@@ -11,16 +11,22 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
+import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
+import org.yamcs.protobuf.Rest.PatchAlarmRequest;
+import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -72,19 +78,27 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
                 Parameter p = mdb.getParameter(id);
                 if (p == null) throw new NotFoundException(req, "No parameter for id " + id);
                 
-                String remainder = null;
-                if (++i < req.getPathSegmentCount()) {
-                    remainder = req.slicePath(i);
-                }
-                
-                if (remainder == null) {
+                pathOffset = i + 1;
+                if (!req.hasPathSegment(pathOffset)) {
                     return handleSingleParameter(req, id, p);
-                } else if ("history".equals(remainder)) {
-                    return handleSingleParameterHistory(req, id, p);
-                } else if ("alarms".equals(remainder)) {
-                    return handleSingleParameterAlarms(req, id, p);
                 } else {
-                    throw new NotFoundException(req, "No resource '" + remainder + "' for parameter " + id);
+                    switch (req.getPathSegment(pathOffset)) {
+                    case "history":
+                        return handleSingleParameterHistory(req, id, p);
+                    case "alarms":
+                        if (req.hasPathSegment(pathOffset + 1)) {
+                            if (req.isPOST() || req.isPATCH() || req.isPUT()) {
+                                int alarmId = Integer.valueOf(req.getPathSegment(pathOffset + 1));
+                                return patchParameterAlarm(req, id, p, alarmId);
+                            } else {
+                                throw new MethodNotAllowedException(req);
+                            }
+                        } else {
+                            throw new NotFoundException(req);
+                        }
+                    default:
+                        throw new NotFoundException(req, "No resource '" + req.getPathSegment(pathOffset) + "' for parameter " + id);
+                    }
                 }
             }
         }
@@ -104,8 +118,37 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         return null; // TODO
     }
     
-    private RestResponse handleSingleParameterAlarms(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        return null; // TODO
+    private RestResponse patchParameterAlarm(RestRequest req, NamedObjectId id, Parameter p, int alarmId) throws RestException {
+        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
+        if (!processor.hasAlarmServer()) {
+            throw new BadRequestException("Alarms are not enabled for this instance");
+        }
+        
+        String state = null;
+        String comment = null;
+        PatchAlarmRequest request = req.bodyAsMessage(SchemaRest.PatchAlarmRequest.MERGE).build();
+        if (request.hasState()) state = request.getState();
+        if (request.hasComment()) comment = request.getComment();
+        
+        // URI can override body
+        if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
+        if (req.hasQueryParameter("comment")) state = req.getQueryParameter("comment");
+        
+        switch (state.toLowerCase()) {
+        case "acknowledged":
+            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            try {
+                // TODO permissions on AlarmServer
+                ActiveAlarm aa = alarmServer.acknowledge(p, alarmId, req.getUsername(), processor.getCurrentTime(), comment);
+                AlarmInfo updatedInfo = ProcessorAlarmRequestHandler.toAlarmInfo(p, aa);
+                return new RestResponse(req, updatedInfo, SchemaAlarms.AlarmInfo.WRITE);   
+            } catch (CouldNotAcknowledgeAlarmException e) {
+                log.debug("Did not acknowledge alarm " + alarmId + ". " + e.getMessage());
+                throw new BadRequestException(e.getMessage());
+            }
+        default:
+            throw new BadRequestException("Unsupported state '" + state + "'");
+        }
     }
     
     private RestResponse setSingleParameterValue(RestRequest req, Parameter p) throws RestException {
@@ -165,6 +208,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getParameterValue(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+        log.info("uhuh " + id);
         if (!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
             throw new BadRequestException("Invalid parameter name specified");
