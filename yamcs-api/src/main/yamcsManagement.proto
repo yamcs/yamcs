@@ -90,10 +90,11 @@ message ProcessorInfo {
   optional yamcs.ReplayRequest replayRequest = 8; //in case of replay
   optional yamcs.ReplayStatus.ReplayState replayState = 9; //in case of replay
   optional string url = 10;
-  optional string parametersUrl = 11;
-  optional string commandsUrl = 12;
-  optional string commandQueuesUrl = 13;
-  optional string alarmsUrl = 14;
+  optional string clientsUrl = 11;
+  optional string parametersUrl = 12;
+  optional string commandsUrl = 13;
+  optional string commandQueuesUrl = 14;
+  optional string alarmsUrl = 15;
 }
 
 message ClientInfo {
@@ -108,6 +109,17 @@ message ClientInfo {
   optional string processorName = 5;
   optional ClientState state = 6;
   optional bool currentClient = 7; //Only used for clients that register themselves (websocket)
+}
+
+message UserInfo {
+  optional string login = 1;
+  repeated ClientInfo clientInfo = 2;
+  repeated string roles = 3;
+  repeated string tmParaPrivileges = 4;
+  repeated string tmParaSetPrivileges = 5;
+  repeated string tmPacketPrivileges = 6;
+  repeated string tcPrivileges = 7;
+  repeated string systemPrivileges = 8;
 }
 
 message TmStatistics {

@@ -885,14 +885,16 @@ public final class SchemaYamcsManagement
                     output.writeString(9, message.getReplayState().name(), false);
                 if(message.hasUrl())
                     output.writeString(10, message.getUrl(), false);
+                if(message.hasClientsUrl())
+                    output.writeString(11, message.getClientsUrl(), false);
                 if(message.hasParametersUrl())
-                    output.writeString(11, message.getParametersUrl(), false);
+                    output.writeString(12, message.getParametersUrl(), false);
                 if(message.hasCommandsUrl())
-                    output.writeString(12, message.getCommandsUrl(), false);
+                    output.writeString(13, message.getCommandsUrl(), false);
                 if(message.hasCommandQueuesUrl())
-                    output.writeString(13, message.getCommandQueuesUrl(), false);
+                    output.writeString(14, message.getCommandQueuesUrl(), false);
                 if(message.hasAlarmsUrl())
-                    output.writeString(14, message.getAlarmsUrl(), false);
+                    output.writeString(15, message.getAlarmsUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorInfo message)
             {
@@ -964,15 +966,18 @@ public final class SchemaYamcsManagement
                             builder.setUrl(input.readString());
                             break;
                         case 11:
-                            builder.setParametersUrl(input.readString());
+                            builder.setClientsUrl(input.readString());
                             break;
                         case 12:
-                            builder.setCommandsUrl(input.readString());
+                            builder.setParametersUrl(input.readString());
                             break;
                         case 13:
-                            builder.setCommandQueuesUrl(input.readString());
+                            builder.setCommandsUrl(input.readString());
                             break;
                         case 14:
+                            builder.setCommandQueuesUrl(input.readString());
+                            break;
+                        case 15:
                             builder.setAlarmsUrl(input.readString());
                             break;
                         default:
@@ -1025,10 +1030,11 @@ public final class SchemaYamcsManagement
                 case 8: return "replayRequest";
                 case 9: return "replayState";
                 case 10: return "url";
-                case 11: return "parametersUrl";
-                case 12: return "commandsUrl";
-                case 13: return "commandQueuesUrl";
-                case 14: return "alarmsUrl";
+                case 11: return "clientsUrl";
+                case 12: return "parametersUrl";
+                case 13: return "commandsUrl";
+                case 14: return "commandQueuesUrl";
+                case 15: return "alarmsUrl";
                 default: return null;
             }
         }
@@ -1050,10 +1056,11 @@ public final class SchemaYamcsManagement
             fieldMap.put("replayRequest", 8);
             fieldMap.put("replayState", 9);
             fieldMap.put("url", 10);
-            fieldMap.put("parametersUrl", 11);
-            fieldMap.put("commandsUrl", 12);
-            fieldMap.put("commandQueuesUrl", 13);
-            fieldMap.put("alarmsUrl", 14);
+            fieldMap.put("clientsUrl", 11);
+            fieldMap.put("parametersUrl", 12);
+            fieldMap.put("commandsUrl", 13);
+            fieldMap.put("commandQueuesUrl", 14);
+            fieldMap.put("alarmsUrl", 15);
         }
     }
 
@@ -1207,6 +1214,168 @@ public final class SchemaYamcsManagement
             fieldMap.put("processorName", 5);
             fieldMap.put("state", 6);
             fieldMap.put("currentClient", 7);
+        }
+    }
+
+    public static final class UserInfo
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.UserInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.UserInfo message) throws java.io.IOException
+            {
+                if(message.hasLogin())
+                    output.writeString(1, message.getLogin(), false);
+                for(org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo : message.getClientInfoList())
+                    output.writeObject(2, clientInfo, org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.WRITE, true);
+
+                for(String roles : message.getRolesList())
+                    output.writeString(3, roles, true);
+                for(String tmParaPrivileges : message.getTmParaPrivilegesList())
+                    output.writeString(4, tmParaPrivileges, true);
+                for(String tmParaSetPrivileges : message.getTmParaSetPrivilegesList())
+                    output.writeString(5, tmParaSetPrivileges, true);
+                for(String tmPacketPrivileges : message.getTmPacketPrivilegesList())
+                    output.writeString(6, tmPacketPrivileges, true);
+                for(String tcPrivileges : message.getTcPrivilegesList())
+                    output.writeString(7, tcPrivileges, true);
+                for(String systemPrivileges : message.getSystemPrivilegesList())
+                    output.writeString(8, systemPrivileges, true);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.UserInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.UserInfo> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.UserInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.UserInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.UserInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setLogin(input.readString());
+                            break;
+                        case 2:
+                            builder.addClientInfo(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ClientInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ClientInfo.MERGE));
+
+                            break;
+                        case 3:
+                            builder.addRoles(input.readString());
+                            break;
+                        case 4:
+                            builder.addTmParaPrivileges(input.readString());
+                            break;
+                        case 5:
+                            builder.addTmParaSetPrivileges(input.readString());
+                            break;
+                        case 6:
+                            builder.addTmPacketPrivileges(input.readString());
+                            break;
+                        case 7:
+                            builder.addTcPrivileges(input.readString());
+                            break;
+                        case 8:
+                            builder.addSystemPrivileges(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.UserInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.UserInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.UserInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.UserInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.UserInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "login";
+                case 2: return "clientInfo";
+                case 3: return "roles";
+                case 4: return "tmParaPrivileges";
+                case 5: return "tmParaSetPrivileges";
+                case 6: return "tmPacketPrivileges";
+                case 7: return "tcPrivileges";
+                case 8: return "systemPrivileges";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("login", 1);
+            fieldMap.put("clientInfo", 2);
+            fieldMap.put("roles", 3);
+            fieldMap.put("tmParaPrivileges", 4);
+            fieldMap.put("tmParaSetPrivileges", 5);
+            fieldMap.put("tmPacketPrivileges", 6);
+            fieldMap.put("tcPrivileges", 7);
+            fieldMap.put("systemPrivileges", 8);
         }
     }
 

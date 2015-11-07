@@ -1,12 +1,18 @@
 package org.yamcs.web.rest;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
+import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.xtce.XtceDb;
@@ -31,16 +37,24 @@ public class InstanceRequestHandler extends RestRequestHandler {
             String instance = req.getPathSegment(pathOffset);
             if (!YamcsServer.hasInstance(instance)) {
                 throw new NotFoundException(req);
-            } else {
-                YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
+            }
+            YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
+            if (!req.hasPathSegment(pathOffset + 1)) {
+                req.assertGET();
                 return getInstance(req, yamcsInstance);
+            } else {
+                String resource = req.getPathSegment(pathOffset + 1);
+                switch (resource) {
+                case "clients":
+                    req.assertGET();
+                    return listClientsForInstance(req, instance);
+                default:
+                    throw new NotFoundException(req, "No resource '" + resource + "' for instance '" + instance +"'");
+                }
             }
         }
     }
 
-    /**
-     * Lists all instances
-     */
     private RestResponse listInstances(RestRequest req) throws RestException {
         YamcsInstances instances = YamcsServer.getYamcsInstances();
         
@@ -52,9 +66,6 @@ public class InstanceRequestHandler extends RestRequestHandler {
         return new RestResponse(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
     }
     
-    /**
-     * Get a single instance
-     */
     private RestResponse getInstance(RestRequest req, YamcsInstance yamcsInstance) throws RestException {
         YamcsInstance enriched = enrichYamcsInstance(req, yamcsInstance);
         return new RestResponse(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
@@ -72,11 +83,22 @@ public class InstanceRequestHandler extends RestRequestHandler {
         String apiUrl = req.getApiURL();            
         instanceb.setUrl(apiUrl + "/instances/" + instanceb.getName());
         instanceb.setEventsUrl(apiUrl + "/events/" + instanceb.getName());
-        instanceb.setClientsUrl(apiUrl + "/clients/" + instanceb.getName() + "{/processor}");
+        instanceb.setClientsUrl(apiUrl + "/" + instanceb.getName() + "{/processor}/clients");
         
         for (YProcessor processor : YProcessor.getChannels(instanceb.getName())) {
             instanceb.addProcessor(ProcessorRequestHandler.toProcessorInfo(processor, req, false));
         }
         return instanceb.build();
+    }
+    
+    private RestResponse listClientsForInstance(RestRequest req, String instance) throws RestException {
+        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
+        ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
+        for (ClientInfo client : clients) {
+            if (instance.equals(client.getInstance())) {
+                responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
+            }
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 }

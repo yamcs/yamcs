@@ -294,16 +294,6 @@ message TimeInfo {
   optional string currentTimeUTC = 2;
 }
 
-message UserInfo {
-  optional string login = 1;
-  repeated string roles = 2;
-  repeated string tmParaPrivileges = 3;
-  repeated string tmParaSetPrivileges = 4;
-  repeated string tmPacketPrivileges = 5;
-  repeated string tcPrivileges = 6;
-  repeated string systemPrivileges = 7;
-}
-
 message Event {
   enum EventSeverity {
     INFO = 0;

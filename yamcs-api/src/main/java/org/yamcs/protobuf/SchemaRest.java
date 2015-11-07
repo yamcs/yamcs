@@ -1284,6 +1284,117 @@ public final class SchemaRest
         }
     }
 
+    public static final class PatchClientRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.PatchClientRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.PatchClientRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.PatchClientRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.PatchClientRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.PatchClientRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.PatchClientRequest message) throws java.io.IOException
+            {
+                if(message.hasProcessor())
+                    output.writeString(1, message.getProcessor(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.PatchClientRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchClientRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchClientRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.PatchClientRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.PatchClientRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.PatchClientRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.PatchClientRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.PatchClientRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setProcessor(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.PatchClientRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.PatchClientRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchClientRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.PatchClientRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.PatchClientRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.PatchClientRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.PatchClientRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "processor";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("processor", 1);
+        }
+    }
+
     public static final class ListProcessorsResponse
     {
         public static final org.yamcs.protobuf.SchemaRest.ListProcessorsResponse.MessageSchema WRITE =
@@ -1893,6 +2004,187 @@ public final class SchemaRest
             fieldMap.put("source", 2);
             fieldMap.put("hex", 3);
             fieldMap.put("binary", 4);
+        }
+    }
+
+    public static final class CreateProcessorRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.CreateProcessorRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.CreateProcessorRequest message) throws java.io.IOException
+            {
+                if(message.hasName())
+                    output.writeString(1, message.getName(), false);
+                if(message.hasStart())
+                    output.writeString(2, message.getStart(), false);
+                if(message.hasStop())
+                    output.writeString(3, message.getStop(), false);
+                if(message.hasLoop())
+                    output.writeBool(4, message.getLoop(), false);
+                if(message.hasSpeed())
+                    output.writeString(5, message.getSpeed(), false);
+                for(int clientId : message.getClientIdList())
+                    output.writeInt32(6, clientId, true);
+                for(String paraname : message.getParanameList())
+                    output.writeString(7, paraname, true);
+                for(String ppgroup : message.getPpgroupList())
+                    output.writeString(8, ppgroup, true);
+                for(String packetname : message.getPacketnameList())
+                    output.writeString(9, packetname, true);
+                if(message.hasCmdhist())
+                    output.writeBool(10, message.getCmdhist(), false);
+                if(message.hasPersistent())
+                    output.writeBool(11, message.getPersistent(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.CreateProcessorRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.CreateProcessorRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.CreateProcessorRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.CreateProcessorRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setName(input.readString());
+                            break;
+                        case 2:
+                            builder.setStart(input.readString());
+                            break;
+                        case 3:
+                            builder.setStop(input.readString());
+                            break;
+                        case 4:
+                            builder.setLoop(input.readBool());
+                            break;
+                        case 5:
+                            builder.setSpeed(input.readString());
+                            break;
+                        case 6:
+                            builder.addClientId(input.readInt32());
+                            break;
+                        case 7:
+                            builder.addParaname(input.readString());
+                            break;
+                        case 8:
+                            builder.addPpgroup(input.readString());
+                            break;
+                        case 9:
+                            builder.addPacketname(input.readString());
+                            break;
+                        case 10:
+                            builder.setCmdhist(input.readBool());
+                            break;
+                        case 11:
+                            builder.setPersistent(input.readBool());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.CreateProcessorRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.CreateProcessorRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "name";
+                case 2: return "start";
+                case 3: return "stop";
+                case 4: return "loop";
+                case 5: return "speed";
+                case 6: return "clientId";
+                case 7: return "paraname";
+                case 8: return "ppgroup";
+                case 9: return "packetname";
+                case 10: return "cmdhist";
+                case 11: return "persistent";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("name", 1);
+            fieldMap.put("start", 2);
+            fieldMap.put("stop", 3);
+            fieldMap.put("loop", 4);
+            fieldMap.put("speed", 5);
+            fieldMap.put("clientId", 6);
+            fieldMap.put("paraname", 7);
+            fieldMap.put("ppgroup", 8);
+            fieldMap.put("packetname", 9);
+            fieldMap.put("cmdhist", 10);
+            fieldMap.put("persistent", 11);
         }
     }
 

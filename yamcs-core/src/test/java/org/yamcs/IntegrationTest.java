@@ -25,24 +25,22 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
+import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Rest.PatchClientRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
@@ -217,7 +215,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        String resp = doRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
+        String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertTrue(resp.contains("binary"));
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -250,7 +248,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        String resp = doRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
+        String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertTrue(resp.contains("binary"));
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -285,7 +283,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        String resp = doRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
+        String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
         assertTrue(resp.contains("binary"));
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -340,13 +338,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         generateData("2015-01-01T10:00:00", 3600);
         ClientInfo cinfo = getClientInfo();
         //create a parameter replay via REST
-        ReplayRequest rr = ReplayRequest.newBuilder().setUtcStart("2015-01-01T10:01:00").setUtcStop("2015-01-01T10:05:00")
-                .setPacketRequest(PacketReplayRequest.newBuilder().build()).build();
-        ProcessorManagementRequest prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
-                .setReplaySpec(rr).build();
+        CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .addClientId(cinfo.getId())
+                .setName("testReplay")
+                .setStart("2015-01-01T10:01:00")
+                .setStop("2015-01-01T10:05:00")
+                .addPacketname("*")
+                .build();
 
-        doRequest("", HttpMethod.POST, prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE);
+        httpClient.doPostRequest("http://localhost:9190/api/processors/IntegrationTest", toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -370,9 +370,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
-        prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/api/processors/IntegrationTest", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        PatchClientRequest pcrequest = PatchClientRequest.newBuilder().setProcessor("realtime").build();
+        httpClient.doPostRequest("http://localhost:9190/api/clients/" + cinfo.getId(), toJson(pcrequest, SchemaRest.PatchClientRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -444,7 +443,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
     
     // Keeping it D-R-Y. Could be refactored into httpClient to make writing short tests easier
-    private <T extends MessageLite> String doRequest(String path, HttpMethod method, T msg, Schema<T> schema) throws Exception {
+    private <T extends MessageLite> String doRealtimeRequest(String path, HttpMethod method, T msg, Schema<T> schema) throws Exception {
         String json = toJson(msg, schema);
         return httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime" + path, method, json, currentUser);
     }

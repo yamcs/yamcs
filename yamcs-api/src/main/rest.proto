@@ -54,6 +54,10 @@ message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }
 
+message PatchClientRequest {
+  optional string processor = 1;
+}
+
 message ListProcessorsResponse {
   repeated yamcsManagement.ProcessorInfo processor = 1;
 }
@@ -78,6 +82,20 @@ message IssueCommandResponse {
   optional string source = 2;
   optional string hex = 3;
   optional bytes binary = 4;
+}
+
+message CreateProcessorRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional bool loop = 4;
+  optional string speed = 5;
+  repeated int32 clientId = 6;
+  repeated string paraname = 7;
+  repeated string ppgroup = 8;
+  repeated string packetname = 9;
+  optional bool cmdhist = 10;
+  optional bool persistent = 11;
 }
 
 message PatchProcessorRequest {

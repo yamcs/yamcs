@@ -7825,6 +7825,477 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:parameters.ListClientsResponse)
   }
 
+  public interface PatchClientRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string processor = 1;
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    boolean hasProcessor();
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    java.lang.String getProcessor();
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getProcessorBytes();
+  }
+  /**
+   * Protobuf type {@code parameters.PatchClientRequest}
+   */
+  public static final class PatchClientRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements PatchClientRequestOrBuilder {
+    // Use PatchClientRequest.newBuilder() to construct.
+    private PatchClientRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private PatchClientRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final PatchClientRequest defaultInstance;
+    public static PatchClientRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public PatchClientRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private PatchClientRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              processor_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_PatchClientRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_PatchClientRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.PatchClientRequest.class, org.yamcs.protobuf.Rest.PatchClientRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<PatchClientRequest> PARSER =
+        new com.google.protobuf.AbstractParser<PatchClientRequest>() {
+      public PatchClientRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new PatchClientRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<PatchClientRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string processor = 1;
+    public static final int PROCESSOR_FIELD_NUMBER = 1;
+    private java.lang.Object processor_;
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    public boolean hasProcessor() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    public java.lang.String getProcessor() {
+      java.lang.Object ref = processor_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          processor_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string processor = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getProcessorBytes() {
+      java.lang.Object ref = processor_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        processor_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      processor_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getProcessorBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getProcessorBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.PatchClientRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.PatchClientRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.PatchClientRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.PatchClientRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_PatchClientRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_PatchClientRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.PatchClientRequest.class, org.yamcs.protobuf.Rest.PatchClientRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.PatchClientRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        processor_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_PatchClientRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.PatchClientRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.PatchClientRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.PatchClientRequest build() {
+        org.yamcs.protobuf.Rest.PatchClientRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.PatchClientRequest buildPartial() {
+        org.yamcs.protobuf.Rest.PatchClientRequest result = new org.yamcs.protobuf.Rest.PatchClientRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.processor_ = processor_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.PatchClientRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.PatchClientRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.PatchClientRequest other) {
+        if (other == org.yamcs.protobuf.Rest.PatchClientRequest.getDefaultInstance()) return this;
+        if (other.hasProcessor()) {
+          bitField0_ |= 0x00000001;
+          processor_ = other.processor_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.PatchClientRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.PatchClientRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string processor = 1;
+      private java.lang.Object processor_ = "";
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public boolean hasProcessor() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public java.lang.String getProcessor() {
+        java.lang.Object ref = processor_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          processor_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getProcessorBytes() {
+        java.lang.Object ref = processor_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          processor_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public Builder setProcessor(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        processor_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public Builder clearProcessor() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        processor_ = getDefaultInstance().getProcessor();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string processor = 1;</code>
+       */
+      public Builder setProcessorBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        processor_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.PatchClientRequest)
+    }
+
+    static {
+      defaultInstance = new PatchClientRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.PatchClientRequest)
+  }
+
   public interface ListProcessorsResponseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -11684,6 +12155,1900 @@ public final class Rest {
     }
 
     // @@protoc_insertion_point(class_scope:parameters.IssueCommandResponse)
+  }
+
+  public interface CreateProcessorRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional string start = 2;
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    boolean hasStart();
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    java.lang.String getStart();
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getStartBytes();
+
+    // optional string stop = 3;
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    boolean hasStop();
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    java.lang.String getStop();
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getStopBytes();
+
+    // optional bool loop = 4;
+    /**
+     * <code>optional bool loop = 4;</code>
+     */
+    boolean hasLoop();
+    /**
+     * <code>optional bool loop = 4;</code>
+     */
+    boolean getLoop();
+
+    // optional string speed = 5;
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    boolean hasSpeed();
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    java.lang.String getSpeed();
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getSpeedBytes();
+
+    // repeated int32 clientId = 6;
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    java.util.List<java.lang.Integer> getClientIdList();
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    int getClientIdCount();
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    int getClientId(int index);
+
+    // repeated string paraname = 7;
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    java.util.List<java.lang.String>
+    getParanameList();
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    int getParanameCount();
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    java.lang.String getParaname(int index);
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getParanameBytes(int index);
+
+    // repeated string ppgroup = 8;
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    java.util.List<java.lang.String>
+    getPpgroupList();
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    int getPpgroupCount();
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    java.lang.String getPpgroup(int index);
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getPpgroupBytes(int index);
+
+    // repeated string packetname = 9;
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    java.util.List<java.lang.String>
+    getPacketnameList();
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    int getPacketnameCount();
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    java.lang.String getPacketname(int index);
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    com.google.protobuf.ByteString
+        getPacketnameBytes(int index);
+
+    // optional bool cmdhist = 10;
+    /**
+     * <code>optional bool cmdhist = 10;</code>
+     */
+    boolean hasCmdhist();
+    /**
+     * <code>optional bool cmdhist = 10;</code>
+     */
+    boolean getCmdhist();
+
+    // optional bool persistent = 11;
+    /**
+     * <code>optional bool persistent = 11;</code>
+     */
+    boolean hasPersistent();
+    /**
+     * <code>optional bool persistent = 11;</code>
+     */
+    boolean getPersistent();
+  }
+  /**
+   * Protobuf type {@code parameters.CreateProcessorRequest}
+   */
+  public static final class CreateProcessorRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements CreateProcessorRequestOrBuilder {
+    // Use CreateProcessorRequest.newBuilder() to construct.
+    private CreateProcessorRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CreateProcessorRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CreateProcessorRequest defaultInstance;
+    public static CreateProcessorRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CreateProcessorRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CreateProcessorRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              start_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              stop_ = input.readBytes();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              loop_ = input.readBool();
+              break;
+            }
+            case 42: {
+              bitField0_ |= 0x00000010;
+              speed_ = input.readBytes();
+              break;
+            }
+            case 48: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              clientId_.add(input.readInt32());
+              break;
+            }
+            case 50: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
+                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                clientId_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                paraname_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              paraname_.add(input.readBytes());
+              break;
+            }
+            case 66: {
+              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+                ppgroup_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000080;
+              }
+              ppgroup_.add(input.readBytes());
+              break;
+            }
+            case 74: {
+              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+                packetname_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000100;
+              }
+              packetname_.add(input.readBytes());
+              break;
+            }
+            case 80: {
+              bitField0_ |= 0x00000020;
+              cmdhist_ = input.readBool();
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000040;
+              persistent_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+        }
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+          paraname_ = new com.google.protobuf.UnmodifiableLazyStringList(paraname_);
+        }
+        if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+          ppgroup_ = new com.google.protobuf.UnmodifiableLazyStringList(ppgroup_);
+        }
+        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+          packetname_ = new com.google.protobuf.UnmodifiableLazyStringList(packetname_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_CreateProcessorRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_CreateProcessorRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.CreateProcessorRequest.class, org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CreateProcessorRequest> PARSER =
+        new com.google.protobuf.AbstractParser<CreateProcessorRequest>() {
+      public CreateProcessorRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CreateProcessorRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateProcessorRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string start = 2;
+    public static final int START_FIELD_NUMBER = 2;
+    private java.lang.Object start_;
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    public boolean hasStart() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    public java.lang.String getStart() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          start_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStartBytes() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        start_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string stop = 3;
+    public static final int STOP_FIELD_NUMBER = 3;
+    private java.lang.Object stop_;
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    public boolean hasStop() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    public java.lang.String getStop() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          stop_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStopBytes() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stop_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional bool loop = 4;
+    public static final int LOOP_FIELD_NUMBER = 4;
+    private boolean loop_;
+    /**
+     * <code>optional bool loop = 4;</code>
+     */
+    public boolean hasLoop() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional bool loop = 4;</code>
+     */
+    public boolean getLoop() {
+      return loop_;
+    }
+
+    // optional string speed = 5;
+    public static final int SPEED_FIELD_NUMBER = 5;
+    private java.lang.Object speed_;
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    public boolean hasSpeed() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    public java.lang.String getSpeed() {
+      java.lang.Object ref = speed_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          speed_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string speed = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSpeedBytes() {
+      java.lang.Object ref = speed_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        speed_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated int32 clientId = 6;
+    public static final int CLIENTID_FIELD_NUMBER = 6;
+    private java.util.List<java.lang.Integer> clientId_;
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getClientIdList() {
+      return clientId_;
+    }
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    public int getClientIdCount() {
+      return clientId_.size();
+    }
+    /**
+     * <code>repeated int32 clientId = 6;</code>
+     */
+    public int getClientId(int index) {
+      return clientId_.get(index);
+    }
+
+    // repeated string paraname = 7;
+    public static final int PARANAME_FIELD_NUMBER = 7;
+    private com.google.protobuf.LazyStringList paraname_;
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    public java.util.List<java.lang.String>
+        getParanameList() {
+      return paraname_;
+    }
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    public int getParanameCount() {
+      return paraname_.size();
+    }
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    public java.lang.String getParaname(int index) {
+      return paraname_.get(index);
+    }
+    /**
+     * <code>repeated string paraname = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getParanameBytes(int index) {
+      return paraname_.getByteString(index);
+    }
+
+    // repeated string ppgroup = 8;
+    public static final int PPGROUP_FIELD_NUMBER = 8;
+    private com.google.protobuf.LazyStringList ppgroup_;
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    public java.util.List<java.lang.String>
+        getPpgroupList() {
+      return ppgroup_;
+    }
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    public int getPpgroupCount() {
+      return ppgroup_.size();
+    }
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    public java.lang.String getPpgroup(int index) {
+      return ppgroup_.get(index);
+    }
+    /**
+     * <code>repeated string ppgroup = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPpgroupBytes(int index) {
+      return ppgroup_.getByteString(index);
+    }
+
+    // repeated string packetname = 9;
+    public static final int PACKETNAME_FIELD_NUMBER = 9;
+    private com.google.protobuf.LazyStringList packetname_;
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    public java.util.List<java.lang.String>
+        getPacketnameList() {
+      return packetname_;
+    }
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    public int getPacketnameCount() {
+      return packetname_.size();
+    }
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    public java.lang.String getPacketname(int index) {
+      return packetname_.get(index);
+    }
+    /**
+     * <code>repeated string packetname = 9;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPacketnameBytes(int index) {
+      return packetname_.getByteString(index);
+    }
+
+    // optional bool cmdhist = 10;
+    public static final int CMDHIST_FIELD_NUMBER = 10;
+    private boolean cmdhist_;
+    /**
+     * <code>optional bool cmdhist = 10;</code>
+     */
+    public boolean hasCmdhist() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool cmdhist = 10;</code>
+     */
+    public boolean getCmdhist() {
+      return cmdhist_;
+    }
+
+    // optional bool persistent = 11;
+    public static final int PERSISTENT_FIELD_NUMBER = 11;
+    private boolean persistent_;
+    /**
+     * <code>optional bool persistent = 11;</code>
+     */
+    public boolean hasPersistent() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional bool persistent = 11;</code>
+     */
+    public boolean getPersistent() {
+      return persistent_;
+    }
+
+    private void initFields() {
+      name_ = "";
+      start_ = "";
+      stop_ = "";
+      loop_ = false;
+      speed_ = "";
+      clientId_ = java.util.Collections.emptyList();
+      paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      cmdhist_ = false;
+      persistent_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getStartBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getStopBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBool(4, loop_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getSpeedBytes());
+      }
+      for (int i = 0; i < clientId_.size(); i++) {
+        output.writeInt32(6, clientId_.get(i));
+      }
+      for (int i = 0; i < paraname_.size(); i++) {
+        output.writeBytes(7, paraname_.getByteString(i));
+      }
+      for (int i = 0; i < ppgroup_.size(); i++) {
+        output.writeBytes(8, ppgroup_.getByteString(i));
+      }
+      for (int i = 0; i < packetname_.size(); i++) {
+        output.writeBytes(9, packetname_.getByteString(i));
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(10, cmdhist_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeBool(11, persistent_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getStartBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getStopBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, loop_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getSpeedBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < clientId_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(clientId_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getClientIdList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < paraname_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(paraname_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getParanameList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < ppgroup_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(ppgroup_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getPpgroupList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < packetname_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(packetname_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getPacketnameList().size();
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(10, cmdhist_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, persistent_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateProcessorRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.CreateProcessorRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.CreateProcessorRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.CreateProcessorRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateProcessorRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateProcessorRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.CreateProcessorRequest.class, org.yamcs.protobuf.Rest.CreateProcessorRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.CreateProcessorRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        start_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        stop_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        loop_ = false;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        speed_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        clientId_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000020);
+        paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000080);
+        packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        cmdhist_ = false;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        persistent_ = false;
+        bitField0_ = (bitField0_ & ~0x00000400);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateProcessorRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateProcessorRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.CreateProcessorRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.CreateProcessorRequest build() {
+        org.yamcs.protobuf.Rest.CreateProcessorRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateProcessorRequest buildPartial() {
+        org.yamcs.protobuf.Rest.CreateProcessorRequest result = new org.yamcs.protobuf.Rest.CreateProcessorRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.start_ = start_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.stop_ = stop_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.loop_ = loop_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.speed_ = speed_;
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+          bitField0_ = (bitField0_ & ~0x00000020);
+        }
+        result.clientId_ = clientId_;
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          paraname_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              paraname_);
+          bitField0_ = (bitField0_ & ~0x00000040);
+        }
+        result.paraname_ = paraname_;
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          ppgroup_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              ppgroup_);
+          bitField0_ = (bitField0_ & ~0x00000080);
+        }
+        result.ppgroup_ = ppgroup_;
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          packetname_ = new com.google.protobuf.UnmodifiableLazyStringList(
+              packetname_);
+          bitField0_ = (bitField0_ & ~0x00000100);
+        }
+        result.packetname_ = packetname_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.cmdhist_ = cmdhist_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.persistent_ = persistent_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.CreateProcessorRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.CreateProcessorRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.CreateProcessorRequest other) {
+        if (other == org.yamcs.protobuf.Rest.CreateProcessorRequest.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasStart()) {
+          bitField0_ |= 0x00000002;
+          start_ = other.start_;
+          onChanged();
+        }
+        if (other.hasStop()) {
+          bitField0_ |= 0x00000004;
+          stop_ = other.stop_;
+          onChanged();
+        }
+        if (other.hasLoop()) {
+          setLoop(other.getLoop());
+        }
+        if (other.hasSpeed()) {
+          bitField0_ |= 0x00000010;
+          speed_ = other.speed_;
+          onChanged();
+        }
+        if (!other.clientId_.isEmpty()) {
+          if (clientId_.isEmpty()) {
+            clientId_ = other.clientId_;
+            bitField0_ = (bitField0_ & ~0x00000020);
+          } else {
+            ensureClientIdIsMutable();
+            clientId_.addAll(other.clientId_);
+          }
+          onChanged();
+        }
+        if (!other.paraname_.isEmpty()) {
+          if (paraname_.isEmpty()) {
+            paraname_ = other.paraname_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            ensureParanameIsMutable();
+            paraname_.addAll(other.paraname_);
+          }
+          onChanged();
+        }
+        if (!other.ppgroup_.isEmpty()) {
+          if (ppgroup_.isEmpty()) {
+            ppgroup_ = other.ppgroup_;
+            bitField0_ = (bitField0_ & ~0x00000080);
+          } else {
+            ensurePpgroupIsMutable();
+            ppgroup_.addAll(other.ppgroup_);
+          }
+          onChanged();
+        }
+        if (!other.packetname_.isEmpty()) {
+          if (packetname_.isEmpty()) {
+            packetname_ = other.packetname_;
+            bitField0_ = (bitField0_ & ~0x00000100);
+          } else {
+            ensurePacketnameIsMutable();
+            packetname_.addAll(other.packetname_);
+          }
+          onChanged();
+        }
+        if (other.hasCmdhist()) {
+          setCmdhist(other.getCmdhist());
+        }
+        if (other.hasPersistent()) {
+          setPersistent(other.getPersistent());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.CreateProcessorRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.CreateProcessorRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string start = 2;
+      private java.lang.Object start_ = "";
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public boolean hasStart() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public java.lang.String getStart() {
+        java.lang.Object ref = start_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          start_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStartBytes() {
+        java.lang.Object ref = start_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          start_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStart(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        start_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder clearStart() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        start_ = getDefaultInstance().getStart();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStartBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        start_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string stop = 3;
+      private java.lang.Object stop_ = "";
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public boolean hasStop() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public java.lang.String getStop() {
+        java.lang.Object ref = stop_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          stop_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStopBytes() {
+        java.lang.Object ref = stop_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stop_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStop(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        stop_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder clearStop() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        stop_ = getDefaultInstance().getStop();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStopBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        stop_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional bool loop = 4;
+      private boolean loop_ ;
+      /**
+       * <code>optional bool loop = 4;</code>
+       */
+      public boolean hasLoop() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool loop = 4;</code>
+       */
+      public boolean getLoop() {
+        return loop_;
+      }
+      /**
+       * <code>optional bool loop = 4;</code>
+       */
+      public Builder setLoop(boolean value) {
+        bitField0_ |= 0x00000008;
+        loop_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool loop = 4;</code>
+       */
+      public Builder clearLoop() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        loop_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional string speed = 5;
+      private java.lang.Object speed_ = "";
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public boolean hasSpeed() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public java.lang.String getSpeed() {
+        java.lang.Object ref = speed_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          speed_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSpeedBytes() {
+        java.lang.Object ref = speed_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          speed_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public Builder setSpeed(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        speed_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public Builder clearSpeed() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        speed_ = getDefaultInstance().getSpeed();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string speed = 5;</code>
+       */
+      public Builder setSpeedBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        speed_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated int32 clientId = 6;
+      private java.util.List<java.lang.Integer> clientId_ = java.util.Collections.emptyList();
+      private void ensureClientIdIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          clientId_ = new java.util.ArrayList<java.lang.Integer>(clientId_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getClientIdList() {
+        return java.util.Collections.unmodifiableList(clientId_);
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public int getClientIdCount() {
+        return clientId_.size();
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public int getClientId(int index) {
+        return clientId_.get(index);
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public Builder setClientId(
+          int index, int value) {
+        ensureClientIdIsMutable();
+        clientId_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public Builder addClientId(int value) {
+        ensureClientIdIsMutable();
+        clientId_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public Builder addAllClientId(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureClientIdIsMutable();
+        super.addAll(values, clientId_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 clientId = 6;</code>
+       */
+      public Builder clearClientId() {
+        clientId_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000020);
+        onChanged();
+        return this;
+      }
+
+      // repeated string paraname = 7;
+      private com.google.protobuf.LazyStringList paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureParanameIsMutable() {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          paraname_ = new com.google.protobuf.LazyStringArrayList(paraname_);
+          bitField0_ |= 0x00000040;
+         }
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public java.util.List<java.lang.String>
+          getParanameList() {
+        return java.util.Collections.unmodifiableList(paraname_);
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public int getParanameCount() {
+        return paraname_.size();
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public java.lang.String getParaname(int index) {
+        return paraname_.get(index);
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getParanameBytes(int index) {
+        return paraname_.getByteString(index);
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public Builder setParaname(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureParanameIsMutable();
+        paraname_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public Builder addParaname(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureParanameIsMutable();
+        paraname_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public Builder addAllParaname(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureParanameIsMutable();
+        super.addAll(values, paraname_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public Builder clearParaname() {
+        paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string paraname = 7;</code>
+       */
+      public Builder addParanameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureParanameIsMutable();
+        paraname_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string ppgroup = 8;
+      private com.google.protobuf.LazyStringList ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensurePpgroupIsMutable() {
+        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
+          ppgroup_ = new com.google.protobuf.LazyStringArrayList(ppgroup_);
+          bitField0_ |= 0x00000080;
+         }
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public java.util.List<java.lang.String>
+          getPpgroupList() {
+        return java.util.Collections.unmodifiableList(ppgroup_);
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public int getPpgroupCount() {
+        return ppgroup_.size();
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public java.lang.String getPpgroup(int index) {
+        return ppgroup_.get(index);
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPpgroupBytes(int index) {
+        return ppgroup_.getByteString(index);
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public Builder setPpgroup(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePpgroupIsMutable();
+        ppgroup_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public Builder addPpgroup(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePpgroupIsMutable();
+        ppgroup_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public Builder addAllPpgroup(
+          java.lang.Iterable<java.lang.String> values) {
+        ensurePpgroupIsMutable();
+        super.addAll(values, ppgroup_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public Builder clearPpgroup() {
+        ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000080);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string ppgroup = 8;</code>
+       */
+      public Builder addPpgroupBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePpgroupIsMutable();
+        ppgroup_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // repeated string packetname = 9;
+      private com.google.protobuf.LazyStringList packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensurePacketnameIsMutable() {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+          packetname_ = new com.google.protobuf.LazyStringArrayList(packetname_);
+          bitField0_ |= 0x00000100;
+         }
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public java.util.List<java.lang.String>
+          getPacketnameList() {
+        return java.util.Collections.unmodifiableList(packetname_);
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public int getPacketnameCount() {
+        return packetname_.size();
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public java.lang.String getPacketname(int index) {
+        return packetname_.get(index);
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPacketnameBytes(int index) {
+        return packetname_.getByteString(index);
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public Builder setPacketname(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePacketnameIsMutable();
+        packetname_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public Builder addPacketname(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePacketnameIsMutable();
+        packetname_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public Builder addAllPacketname(
+          java.lang.Iterable<java.lang.String> values) {
+        ensurePacketnameIsMutable();
+        super.addAll(values, packetname_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public Builder clearPacketname() {
+        packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string packetname = 9;</code>
+       */
+      public Builder addPacketnameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePacketnameIsMutable();
+        packetname_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // optional bool cmdhist = 10;
+      private boolean cmdhist_ ;
+      /**
+       * <code>optional bool cmdhist = 10;</code>
+       */
+      public boolean hasCmdhist() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional bool cmdhist = 10;</code>
+       */
+      public boolean getCmdhist() {
+        return cmdhist_;
+      }
+      /**
+       * <code>optional bool cmdhist = 10;</code>
+       */
+      public Builder setCmdhist(boolean value) {
+        bitField0_ |= 0x00000200;
+        cmdhist_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool cmdhist = 10;</code>
+       */
+      public Builder clearCmdhist() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        cmdhist_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool persistent = 11;
+      private boolean persistent_ ;
+      /**
+       * <code>optional bool persistent = 11;</code>
+       */
+      public boolean hasPersistent() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional bool persistent = 11;</code>
+       */
+      public boolean getPersistent() {
+        return persistent_;
+      }
+      /**
+       * <code>optional bool persistent = 11;</code>
+       */
+      public Builder setPersistent(boolean value) {
+        bitField0_ |= 0x00000400;
+        persistent_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool persistent = 11;</code>
+       */
+      public Builder clearPersistent() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        persistent_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.CreateProcessorRequest)
+    }
+
+    static {
+      defaultInstance = new CreateProcessorRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.CreateProcessorRequest)
   }
 
   public interface PatchProcessorRequestOrBuilder
@@ -15714,6 +18079,11 @@ public final class Rest {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_parameters_ListClientsResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_PatchClientRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_PatchClientRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_parameters_ListProcessorsResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -15738,6 +18108,11 @@ public final class Rest {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_parameters_IssueCommandResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_CreateProcessorRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_CreateProcessorRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_parameters_PatchProcessorRequest_descriptor;
   private static
@@ -15802,28 +18177,34 @@ public final class Rest {
       "ContainerInfo\"9\n\024ListCommandsResponse\022!\n" +
       "\007command\030\001 \003(\0132\020.mdb.CommandInfo\"B\n\023List" +
       "ClientsResponse\022+\n\006client\030\001 \003(\0132\033.yamcsM" +
-      "anagement.ClientInfo\"K\n\026ListProcessorsRe" +
-      "sponse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsManagem" +
-      "ent.ProcessorInfo\"H\n\031ListCommandQueuesRe" +
-      "sponse\022+\n\005queue\030\001 \003(\0132\034.commanding.Comma" +
-      "ndQueueInfo\"\270\001\n\023IssueCommandRequest\022>\n\na",
-      "ssignment\030\001 \003(\0132*.parameters.IssueComman" +
-      "dRequest.Assignment\022\016\n\006origin\030\002 \001(\t\022\026\n\016s" +
-      "equenceNumber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\032)\n\nA" +
-      "ssignment\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"R" +
-      "\n\024IssueCommandResponse\022\r\n\005queue\030\001 \001(\t\022\016\n" +
-      "\006source\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t\022\016\n\006binary\030\004 \001" +
-      "(\014\"G\n\025PatchProcessorRequest\022\r\n\005state\030\001 \001" +
-      "(\t\022\020\n\010seekTime\030\002 \001(\003\022\r\n\005speed\030\003 \001(\t\"(\n\026S" +
-      "treamSubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n" +
-      "\030SetSimulationTimeRequest\022\r\n\005time0\030\001 \001(\003",
-      "\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001" +
-      "(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListInstancesRes" +
-      "ponse\0220\n\010instance\030\001 \003(\0132\036.yamcsManagemen" +
-      "t.YamcsInstance\"6\n\022ListAlarmsResponse\022 \n" +
-      "\005alarm\030\001 \003(\0132\021.alarms.AlarmInfo\"3\n\021Patch" +
-      "AlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002" +
-      " \001(\tB\024\n\022org.yamcs.protobuf"
+      "anagement.ClientInfo\"\'\n\022PatchClientReque" +
+      "st\022\021\n\tprocessor\030\001 \001(\t\"K\n\026ListProcessorsR" +
+      "esponse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsManage" +
+      "ment.ProcessorInfo\"H\n\031ListCommandQueuesR" +
+      "esponse\022+\n\005queue\030\001 \003(\0132\034.commanding.Comm",
+      "andQueueInfo\"\270\001\n\023IssueCommandRequest\022>\n\n" +
+      "assignment\030\001 \003(\0132*.parameters.IssueComma" +
+      "ndRequest.Assignment\022\016\n\006origin\030\002 \001(\t\022\026\n\016" +
+      "sequenceNumber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\032)\n\n" +
+      "Assignment\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"" +
+      "R\n\024IssueCommandResponse\022\r\n\005queue\030\001 \001(\t\022\016" +
+      "\n\006source\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t\022\016\n\006binary\030\004 " +
+      "\001(\014\"\316\001\n\026CreateProcessorRequest\022\014\n\004name\030\001" +
+      " \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\014\n\004loo" +
+      "p\030\004 \001(\010\022\r\n\005speed\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005",
+      "\022\020\n\010paraname\030\007 \003(\t\022\017\n\007ppgroup\030\010 \003(\t\022\022\n\np" +
+      "acketname\030\t \003(\t\022\017\n\007cmdhist\030\n \001(\010\022\022\n\npers" +
+      "istent\030\013 \001(\010\"G\n\025PatchProcessorRequest\022\r\n" +
+      "\005state\030\001 \001(\t\022\020\n\010seekTime\030\002 \001(\003\022\r\n\005speed\030" +
+      "\003 \001(\t\"(\n\026StreamSubscribeRequest\022\016\n\006strea" +
+      "m\030\001 \001(\t\"e\n\030SetSimulationTimeRequest\022\r\n\005t" +
+      "ime0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElaps" +
+      "edTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListIn" +
+      "stancesResponse\0220\n\010instance\030\001 \003(\0132\036.yamc" +
+      "sManagement.YamcsInstance\"6\n\022ListAlarmsR",
+      "esponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmInf" +
+      "o\"3\n\021PatchAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n" +
+      "\007comment\030\002 \001(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -15896,20 +18277,26 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListClientsResponse_descriptor,
               new java.lang.String[] { "Client", });
-          internal_static_parameters_ListProcessorsResponse_descriptor =
+          internal_static_parameters_PatchClientRequest_descriptor =
             getDescriptor().getMessageTypes().get(9);
+          internal_static_parameters_PatchClientRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_parameters_PatchClientRequest_descriptor,
+              new java.lang.String[] { "Processor", });
+          internal_static_parameters_ListProcessorsResponse_descriptor =
+            getDescriptor().getMessageTypes().get(10);
           internal_static_parameters_ListProcessorsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListProcessorsResponse_descriptor,
               new java.lang.String[] { "Processor", });
           internal_static_parameters_ListCommandQueuesResponse_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_parameters_ListCommandQueuesResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListCommandQueuesResponse_descriptor,
               new java.lang.String[] { "Queue", });
           internal_static_parameters_IssueCommandRequest_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_parameters_IssueCommandRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_IssueCommandRequest_descriptor,
@@ -15921,43 +18308,49 @@ public final class Rest {
               internal_static_parameters_IssueCommandRequest_Assignment_descriptor,
               new java.lang.String[] { "Name", "Value", });
           internal_static_parameters_IssueCommandResponse_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_parameters_IssueCommandResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_IssueCommandResponse_descriptor,
               new java.lang.String[] { "Queue", "Source", "Hex", "Binary", });
+          internal_static_parameters_CreateProcessorRequest_descriptor =
+            getDescriptor().getMessageTypes().get(14);
+          internal_static_parameters_CreateProcessorRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_parameters_CreateProcessorRequest_descriptor,
+              new java.lang.String[] { "Name", "Start", "Stop", "Loop", "Speed", "ClientId", "Paraname", "Ppgroup", "Packetname", "Cmdhist", "Persistent", });
           internal_static_parameters_PatchProcessorRequest_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_parameters_PatchProcessorRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_PatchProcessorRequest_descriptor,
               new java.lang.String[] { "State", "SeekTime", "Speed", });
           internal_static_parameters_StreamSubscribeRequest_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_parameters_StreamSubscribeRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_StreamSubscribeRequest_descriptor,
               new java.lang.String[] { "Stream", });
           internal_static_parameters_SetSimulationTimeRequest_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_parameters_SetSimulationTimeRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_SetSimulationTimeRequest_descriptor,
               new java.lang.String[] { "Time0", "Time0UTC", "SimElapsedTime", "SimSpeed", });
           internal_static_parameters_ListInstancesResponse_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_parameters_ListInstancesResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListInstancesResponse_descriptor,
               new java.lang.String[] { "Instance", });
           internal_static_parameters_ListAlarmsResponse_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_parameters_ListAlarmsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_ListAlarmsResponse_descriptor,
               new java.lang.String[] { "Alarm", });
           internal_static_parameters_PatchAlarmRequest_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_parameters_PatchAlarmRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_PatchAlarmRequest_descriptor,
