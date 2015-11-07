@@ -17,7 +17,6 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -77,11 +76,6 @@ public class ProcessorCommandRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws RestException {
-        if (!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TC, cmd.getQualifiedName())) {
-            log.warn("Command Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
-            throw new BadRequestException("Invalid command name specified "+id);
-        }
-        
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");

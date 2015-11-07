@@ -56,7 +56,7 @@ public abstract class AbstractIntegrationTest {
     MyWsListener wsListener;
     WebSocketClient wsClient;
     HttpClient httpClient;
-    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");;
+    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     UsernamePasswordToken currentUser = null;
     RefMdbPacketGenerator packetGenerator;
 

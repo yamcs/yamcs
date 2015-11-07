@@ -69,7 +69,7 @@ public class CommandingManager extends AbstractService {
         pc.setArgAssignment(cbr.getArgs());
         
         
-        String username = (authToken !=null && authToken.getPrincipal() != null)?authToken.getPrincipal().toString():"anonymous";
+        String username = (authToken !=null && authToken.getPrincipal() != null)?authToken.getPrincipal().toString():ManagementService.ANONYMOUS;
         pc.setUsername(username);
 
         return pc;

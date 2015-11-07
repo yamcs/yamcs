@@ -13,9 +13,10 @@ import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaArchive;
-import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -38,7 +39,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
         DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2016-02-03T10:10:00").setUtcStop("2016-02-03T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/api/IntegrationTest/archive", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
+        String response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
         DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
@@ -78,7 +79,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).build();
         DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/api/IntegrationTest/archive", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
+        String response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
         DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
@@ -94,7 +95,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_3_1id).build();
             dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
                     .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
-            response = httpClient.doGetRequest("http://localhost:9190/api/IntegrationTest/archive", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
+            response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
             rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
             plist = rdar.getParameterDataList();
             if(plist.size() == 0) {
@@ -117,13 +118,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands//REFMDB/SUBSYS1/INT_ARG_TC",
+        String resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
-        assertEquals("", resp);
+        assertTrue(resp.contains("binary"));
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
-        resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands//REFMDB/SUBSYS1/FLOAT_ARG_TC",
+        resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
         assertTrue("Should get permission exception message", resp.contains("ForbiddenException"));
     }
@@ -136,13 +137,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Allowed to subscribe to Integer parameter from cache
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        String response = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         assertTrue("{}", !response.contains("ForbiddenException"));
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
         req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        response = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_get", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }
 
@@ -151,12 +152,12 @@ public class PermissionsTest extends AbstractIntegrationTest {
         UsernamePasswordToken testuser = new UsernamePasswordToken("operator", "password");
         currentUser = testuser;
 
-        org.yamcs.protobuf.Pvalue.ParameterValue pv1 = ParameterValue.newBuilder()
+        BulkSetParameterValueRequest.Builder bulkPvals = BulkSetParameterValueRequest.newBuilder();
+        bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
-                .setEngValue(ValueHelper.newValue(5)).build();
-        ParameterData pdata = ParameterData.newBuilder().addParameter(pv1).build();
+                .setValue(ValueHelper.newValue(5)));
         HttpClient httpClient = new HttpClient();
-        String response = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/parameter/_set", HttpMethod.POST, toJson(pdata, SchemaPvalue.ParameterData.WRITE), currentUser);
+        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }
 
