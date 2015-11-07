@@ -54,6 +54,9 @@ import com.google.common.util.concurrent.Service;
  * and subscribed websocket clients.
  */
 public class ManagementService implements YProcessorListener {
+    
+    public static final String ANONYMOUS = "anonymous";
+    
     final MBeanServer mbeanServer;
     HornetManagement hornetMgr;
     HornetProcessorManagement hornetProcessorMgr;
@@ -241,7 +244,8 @@ public class ManagementService implements YProcessorListener {
 
     public void createProcessor(ProcessorManagementRequest cr, AuthenticationToken authToken) throws YamcsException{
         log.info("Creating a new yproc instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
-        String userName = (authToken != null && authToken.getPrincipal() != null) ? authToken.getPrincipal().toString() : "unknownUser";
+        
+        String userName = (authToken != null && authToken.getPrincipal() != null) ? authToken.getPrincipal().toString() : ANONYMOUS;
         if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
             if(cr.getPersistent()) {
                 log.warn("User "+userName+" is not allowed to create persistent yprocessors");
@@ -302,7 +306,7 @@ public class ManagementService implements YProcessorListener {
         if(chan==null) throw new YamcsException("Unexisting yproc ("+cr.getInstance()+", "+cr.getName()+") specified");
 
 
-        String userName = (usertoken != null && usertoken.getPrincipal() != null) ? usertoken.getPrincipal().toString() : "unknown";
+        String userName = (usertoken != null && usertoken.getPrincipal() != null) ? usertoken.getPrincipal().toString() : ANONYMOUS;
         log.debug("User "+ userName+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
 
 
@@ -375,16 +379,25 @@ public class ManagementService implements YProcessorListener {
         return managementListeners.remove(l);
     }
 
-    public ClientInfo getClientInfo(int clientId) {
-        return clients.get(clientId).getClientInfo();
-    }
-    
-    public Set<ClientInfo> getAllClientInfo() {
+    public Set<ClientInfo> getClientInfo() {
         synchronized(clients) {
             return clients.values().stream()
                     .map(v -> v.getClientInfo())
                     .collect(Collectors.toSet());
         }
+    }
+    
+    public Set<ClientInfo> getClientInfo(String username) {
+        synchronized(clients) {
+            return clients.values().stream()
+                    .map(v -> v.getClientInfo())
+                    .filter(c -> c.getUsername().equals(username))
+                    .collect(Collectors.toSet());
+        }
+    }
+    
+    public ClientInfo getClientInfo(int clientId) {
+        return clients.get(clientId).getClientInfo();
     }
     
     private void updateStatistics() {

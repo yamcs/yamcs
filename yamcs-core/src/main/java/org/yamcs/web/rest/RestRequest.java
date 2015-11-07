@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
@@ -128,12 +129,12 @@ public class RestRequest {
     }
     
     /**
-     * Returns the username of the authenticated user. Or <tt>"unknown"</tt> if the user
+     * Returns the username of the authenticated user. Or {@link ManagementService.ANONYMOUS} if the user
      * is not authenticated.
      */
     public String getUsername() {
         User user = getUser();
-        return (user != null) ? user.getPrincipalName() : "unknown";
+        return (user != null) ? user.getPrincipalName() : ManagementService.ANONYMOUS;
     }
     
     public boolean isPOST() {

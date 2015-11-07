@@ -2,6 +2,7 @@ package org.yamcs.alarms;
 
 import java.util.ArrayList;
 
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.yarch.DataType;
@@ -93,7 +94,7 @@ public class AlarmStreamer implements AlarmListener {
             if(activeAlarm.autoAcknowledge) {
                 username = "autoAcknowledged";
             } else {
-                username = "unknown";
+                username = ManagementService.ANONYMOUS;
             }
         }
         tdef.addColumn("username", DataType.STRING);

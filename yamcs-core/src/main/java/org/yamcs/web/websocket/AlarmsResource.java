@@ -9,6 +9,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.SchemaAlarms;
@@ -135,7 +136,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
             AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
             String username = activeAlarm.usernameThatAcknowledged;
             if (username == null) {
-                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : "unknown";
+                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : ManagementService.ANONYMOUS;
             }
             acknowledgeb.setAcknowledgedBy(username);
             acknowledgeb.setAcknowledgeMessage(activeAlarm.message);

@@ -94,7 +94,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             }
             
             // Send current set of clients
-            Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+            Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
             for (ClientInfo client : clients) {
                 ClientInfo cinfo = ClientInfo.newBuilder(client)
                         .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();

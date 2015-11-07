@@ -23,7 +23,6 @@ public class ClientRequestHandler extends RestRequestHandler {
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         req.assertGET();
-        
         if (req.hasPathSegment(pathOffset)) {
             String instance = req.getPathSegment(pathOffset);
             if (!YamcsServer.hasInstance(instance)) {
@@ -37,18 +36,18 @@ public class ClientRequestHandler extends RestRequestHandler {
                 if (req.hasPathSegment(pathOffset + 2)) {
                     throw new NotFoundException(req);
                 } else {
-                    listClientsForProcessor(req, processor);
+                    return listClientsForProcessor(req, processor);
                 }
             } else {
-                listClientsForInstance(req, instance);
+                return listClientsForInstance(req, instance);
             }
+        } else {
+            return listClients(req);
         }
-        
-        return listClients(req);
     }
     
     private RestResponse listClients(RestRequest req) throws RestException {
-        Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
             responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
@@ -57,7 +56,7 @@ public class ClientRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse listClientsForInstance(RestRequest req, String instance) throws RestException {
-        Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
             if (instance.equals(client.getInstance())) {
@@ -68,7 +67,7 @@ public class ClientRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse listClientsForProcessor(RestRequest req, YProcessor processor) throws RestException {
-        Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
             if (processor.getInstance().equals(client.getInstance())
