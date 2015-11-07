@@ -82,9 +82,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {
-            if (!req.hasPathSegment(pathOffset + 1)) {
-                throw new NotFoundException(req);
-            } else if ("mget".equals(req.slicePath(pathOffset))) {
+            if ("mget".equals(req.slicePath(pathOffset))) {
                 if (req.isGET() || req.isPOST()) {
                     return getParameterValues(req);
                 } else {
@@ -380,6 +378,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getParameterValues(RestRequest req) throws RestException {
+        System.out.println("GETTING PARS");
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");
