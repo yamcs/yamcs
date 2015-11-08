@@ -30,21 +30,45 @@ message AlarmRange {
   optional AlarmLevelType level = 1;
   optional double minInclusive = 2;
   optional double maxInclusive = 3;
+}
 
-  //TODO show here also the integer value of the enumeration
-  optional string enumerationValue = 4;
+message EnumerationAlarm {
+  optional AlarmLevelType level = 1;
+  optional int64 value = 2;
+  optional string label = 3;
 }
 
 message AlarmInfo {
   optional int32 minViolations = 1;
-  repeated AlarmRange staticAlarmRanges = 2;
+  repeated AlarmRange staticAlarmRange = 2;
+  repeated EnumerationAlarm enumerationAlarm = 3;
+}
+
+message DataEncodingInfo {
+  enum Type {
+    BINARY = 0;
+    BOOLEAN = 1;
+    FLOAT = 2;
+    INTEGER = 3;
+    STRING = 4;
+  }
+  optional Type type = 1;
+  optional bool littleEndian = 2;
+  optional int32 sizeInBits = 3;
+  optional string encoding = 4;
+  optional string defaultCalibrator = 5;
 }
 
 message ParameterTypeInfo {
+  message EnumValue {
+    optional int64 value = 1;
+    optional string label = 2;
+  }
   optional string engType = 1;
-  optional string dataEncoding = 2; //TODO
+  optional DataEncodingInfo dataEncoding = 2;
   repeated UnitInfo unitSet = 3;
   optional AlarmInfo defaultAlarm = 4;
+  repeated EnumValue enumValue = 5;
 }
 
 message ParameterInfo {

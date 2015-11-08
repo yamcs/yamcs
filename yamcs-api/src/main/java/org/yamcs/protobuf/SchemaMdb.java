@@ -135,8 +135,6 @@ public final class SchemaMdb
                     output.writeDouble(2, message.getMinInclusive(), false);
                 if(message.hasMaxInclusive())
                     output.writeDouble(3, message.getMaxInclusive(), false);
-                if(message.hasEnumerationValue())
-                    output.writeString(4, message.getEnumerationValue(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.AlarmRange message)
             {
@@ -185,9 +183,6 @@ public final class SchemaMdb
                         case 3:
                             builder.setMaxInclusive(input.readDouble());
                             break;
-                        case 4:
-                            builder.setEnumerationValue(input.readString());
-                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -231,7 +226,6 @@ public final class SchemaMdb
                 case 1: return "level";
                 case 2: return "minInclusive";
                 case 3: return "maxInclusive";
-                case 4: return "enumerationValue";
                 default: return null;
             }
         }
@@ -246,7 +240,131 @@ public final class SchemaMdb
             fieldMap.put("level", 1);
             fieldMap.put("minInclusive", 2);
             fieldMap.put("maxInclusive", 3);
-            fieldMap.put("enumerationValue", 4);
+        }
+    }
+
+    public static final class EnumerationAlarm
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.EnumerationAlarm>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.EnumerationAlarm message) throws java.io.IOException
+            {
+                if(message.hasLevel())
+                    output.writeString(1, message.getLevel().name(), false);
+                if(message.hasValue())
+                    output.writeInt64(2, message.getValue(), false);
+                if(message.hasLabel())
+                    output.writeString(3, message.getLabel(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.EnumerationAlarm message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.EnumerationAlarm> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.EnumerationAlarm message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.EnumerationAlarm newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setLevel(org.yamcs.protobuf.Mdb.AlarmLevelType.valueOf(input.readString()));
+                            break;
+                        case 2:
+                            builder.setValue(input.readInt64());
+                            break;
+                        case 3:
+                            builder.setLabel(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.EnumerationAlarm.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.EnumerationAlarm.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "level";
+                case 2: return "value";
+                case 3: return "label";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("level", 1);
+            fieldMap.put("value", 2);
+            fieldMap.put("label", 3);
         }
     }
 
@@ -263,8 +381,11 @@ public final class SchemaMdb
             {
                 if(message.hasMinViolations())
                     output.writeInt32(1, message.getMinViolations(), false);
-                for(org.yamcs.protobuf.Mdb.AlarmRange staticAlarmRanges : message.getStaticAlarmRangesList())
-                    output.writeObject(2, staticAlarmRanges, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
+                for(org.yamcs.protobuf.Mdb.AlarmRange staticAlarmRange : message.getStaticAlarmRangeList())
+                    output.writeObject(2, staticAlarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
+
+                for(org.yamcs.protobuf.Mdb.EnumerationAlarm enumerationAlarm : message.getEnumerationAlarmList())
+                    output.writeObject(3, enumerationAlarm, org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.AlarmInfo message)
@@ -309,7 +430,11 @@ public final class SchemaMdb
                             builder.setMinViolations(input.readInt32());
                             break;
                         case 2:
-                            builder.addStaticAlarmRanges(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
+                            builder.addStaticAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
+
+                            break;
+                        case 3:
+                            builder.addEnumerationAlarm(input.mergeObject(org.yamcs.protobuf.Mdb.EnumerationAlarm.newBuilder(), org.yamcs.protobuf.SchemaMdb.EnumerationAlarm.MERGE));
 
                             break;
                         default:
@@ -353,7 +478,8 @@ public final class SchemaMdb
             switch(number)
             {
                 case 1: return "minViolations";
-                case 2: return "staticAlarmRanges";
+                case 2: return "staticAlarmRange";
+                case 3: return "enumerationAlarm";
                 default: return null;
             }
         }
@@ -366,12 +492,271 @@ public final class SchemaMdb
         static
         {
             fieldMap.put("minViolations", 1);
-            fieldMap.put("staticAlarmRanges", 2);
+            fieldMap.put("staticAlarmRange", 2);
+            fieldMap.put("enumerationAlarm", 3);
+        }
+    }
+
+    public static final class DataEncodingInfo
+    {
+        public static final org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.DataEncodingInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.DataEncodingInfo message) throws java.io.IOException
+            {
+                if(message.hasType())
+                    output.writeString(1, message.getType().name(), false);
+                if(message.hasLittleEndian())
+                    output.writeBool(2, message.getLittleEndian(), false);
+                if(message.hasSizeInBits())
+                    output.writeInt32(3, message.getSizeInBits(), false);
+                if(message.hasEncoding())
+                    output.writeString(4, message.getEncoding(), false);
+                if(message.hasDefaultCalibrator())
+                    output.writeString(5, message.getDefaultCalibrator(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.DataEncodingInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.DataEncodingInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.DataEncodingInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Mdb.DataEncodingInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setType(org.yamcs.protobuf.Mdb.DataEncodingInfo.Type.valueOf(input.readString()));
+                            break;
+                        case 2:
+                            builder.setLittleEndian(input.readBool());
+                            break;
+                        case 3:
+                            builder.setSizeInBits(input.readInt32());
+                            break;
+                        case 4:
+                            builder.setEncoding(input.readString());
+                            break;
+                        case 5:
+                            builder.setDefaultCalibrator(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Mdb.DataEncodingInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "type";
+                case 2: return "littleEndian";
+                case 3: return "sizeInBits";
+                case 4: return "encoding";
+                case 5: return "defaultCalibrator";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("type", 1);
+            fieldMap.put("littleEndian", 2);
+            fieldMap.put("sizeInBits", 3);
+            fieldMap.put("encoding", 4);
+            fieldMap.put("defaultCalibrator", 5);
         }
     }
 
     public static final class ParameterTypeInfo
     {
+
+        public static final class EnumValue
+        {
+            public static final org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.MessageSchema WRITE =
+                new org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.MessageSchema();
+            public static final org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.BuilderSchema MERGE =
+                new org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.BuilderSchema();
+            
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue>
+            {
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue message) throws java.io.IOException
+                {
+                    if(message.hasValue())
+                        output.writeInt64(1, message.getValue(), false);
+                    if(message.hasLabel())
+                        output.writeString(2, message.getLabel(), false);
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue message)
+                {
+                    return message.isInitialized();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue> typeClass()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.class.getName();
+                }
+                //unused
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue message) throws java.io.IOException {}
+                public org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue newMessage() { return null; }
+            }
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder>
+            {
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder builder) throws java.io.IOException
+                {
+                    for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                    {
+                        switch(number)
+                        {
+                            case 0:
+                                return;
+                            case 1:
+                                builder.setValue(input.readInt64());
+                                break;
+                            case 2:
+                                builder.setLabel(input.readString());
+                                break;
+                            default:
+                                input.handleUnknownField(number, this);
+                        }
+                    }
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder builder)
+                {
+                    return builder.isInitialized();
+                }
+                public org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder newMessage()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.newBuilder();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder> typeClass()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.class.getName();
+                }
+                //unused
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.Builder builder) throws java.io.IOException {}
+            }
+            public static java.lang.String getFieldName(int number)
+            {
+                switch(number)
+                {
+                    case 1: return "value";
+                    case 2: return "label";
+                    default: return null;
+                }
+            }
+            public static int getFieldNumber(java.lang.String name)
+            {
+                java.lang.Integer number = fieldMap.get(name);
+                return number == null ? 0 : number.intValue();
+            }
+            private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+            static
+            {
+                fieldMap.put("value", 1);
+                fieldMap.put("label", 2);
+            }
+        }
+
         public static final org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.MessageSchema WRITE =
             new org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.MessageSchema();
         public static final org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.BuilderSchema MERGE =
@@ -384,12 +769,16 @@ public final class SchemaMdb
                 if(message.hasEngType())
                     output.writeString(1, message.getEngType(), false);
                 if(message.hasDataEncoding())
-                    output.writeString(2, message.getDataEncoding(), false);
+                    output.writeObject(2, message.getDataEncoding(), org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.WRITE, false);
+
                 for(org.yamcs.protobuf.Mdb.UnitInfo unitSet : message.getUnitSetList())
                     output.writeObject(3, unitSet, org.yamcs.protobuf.SchemaMdb.UnitInfo.WRITE, true);
 
                 if(message.hasDefaultAlarm())
                     output.writeObject(4, message.getDefaultAlarm(), org.yamcs.protobuf.SchemaMdb.AlarmInfo.WRITE, false);
+
+                for(org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue enumValue : message.getEnumValueList())
+                    output.writeObject(5, enumValue, org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.ParameterTypeInfo message)
@@ -434,7 +823,8 @@ public final class SchemaMdb
                             builder.setEngType(input.readString());
                             break;
                         case 2:
-                            builder.setDataEncoding(input.readString());
+                            builder.setDataEncoding(input.mergeObject(org.yamcs.protobuf.Mdb.DataEncodingInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.DataEncodingInfo.MERGE));
+
                             break;
                         case 3:
                             builder.addUnitSet(input.mergeObject(org.yamcs.protobuf.Mdb.UnitInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.UnitInfo.MERGE));
@@ -442,6 +832,10 @@ public final class SchemaMdb
                             break;
                         case 4:
                             builder.setDefaultAlarm(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmInfo.MERGE));
+
+                            break;
+                        case 5:
+                            builder.addEnumValue(input.mergeObject(org.yamcs.protobuf.Mdb.ParameterTypeInfo.EnumValue.newBuilder(), org.yamcs.protobuf.SchemaMdb.ParameterTypeInfo.EnumValue.MERGE));
 
                             break;
                         default:
@@ -488,6 +882,7 @@ public final class SchemaMdb
                 case 2: return "dataEncoding";
                 case 3: return "unitSet";
                 case 4: return "defaultAlarm";
+                case 5: return "enumValue";
                 default: return null;
             }
         }
@@ -503,6 +898,7 @@ public final class SchemaMdb
             fieldMap.put("dataEncoding", 2);
             fieldMap.put("unitSet", 3);
             fieldMap.put("defaultAlarm", 4);
+            fieldMap.put("enumValue", 5);
         }
     }
 

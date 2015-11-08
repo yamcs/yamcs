@@ -1,8 +1,10 @@
 package org.yamcs.web.rest;
 
+import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -11,6 +13,8 @@ import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.DataEncodingInfo;
+import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
@@ -25,14 +29,22 @@ import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.EnumerationAlarm;
+import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
+import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
@@ -44,8 +56,10 @@ import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
 
 public class XtceToGpbAssembler {
     
@@ -322,12 +336,12 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static ParameterInfo toParameterInfo(Parameter p, String instanceURL, DetailLevel detail) {
+    public static ParameterInfo toParameterInfo(Parameter p, String mdbURL, DetailLevel detail) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
         
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
-        b.setUrl(instanceURL + "/parameters" + p.getQualifiedName());
+        b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
         
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (p.getShortDescription() != null) {
@@ -342,8 +356,31 @@ public class XtceToGpbAssembler {
             }
             DataSource xtceDs = p.getDataSource();
             if (xtceDs != null) {
-                DataSourceType ds = DataSourceType.valueOf(xtceDs.name()); // I know, i know
-                b.setDataSource(ds);
+                switch (xtceDs) {
+                case TELEMETERED:
+                    b.setDataSource(DataSourceType.TELEMETERED);
+                    break;
+                case LOCAL:
+                    b.setDataSource(DataSourceType.LOCAL);
+                    break;
+                case COMMAND:
+                    b.setDataSource(DataSourceType.COMMAND);
+                    break;
+                case COMMAND_HISTORY:
+                    b.setDataSource(DataSourceType.COMMAND_HISTORY);
+                    break;
+                case CONSTANT:
+                    b.setDataSource(DataSourceType.CONSTANT);
+                    break;
+                case DERIVED:
+                    b.setDataSource(DataSourceType.DERIVED);
+                    break;
+                case SYSTEM:
+                    b.setDataSource(DataSourceType.SYSTEM);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected data source " + xtceDs);
+                }
             }/* else { // TODO why do we need this here. For what reason was this introduced?
                 log.warn("Datasource for parameter " + id.getName() + " is null, setting TELEMETERED by default");
                 rpib.setDataSource(DataSourceType.TELEMETERED);
@@ -356,27 +393,109 @@ public class XtceToGpbAssembler {
     }
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType) {
-        ParameterTypeInfo.Builder rptb = ParameterTypeInfo.newBuilder();
+        ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
         if (parameterType.getEncoding() != null) {
-            rptb.setDataEncoding(parameterType.getEncoding().toString());
+            infob.setDataEncoding(toDataEncodingInfo(parameterType.getEncoding()));
         }
-        rptb.setEngType(parameterType.getTypeAsString());
+        infob.setEngType(parameterType.getTypeAsString());
         for (UnitType ut: parameterType.getUnitSet()) {
-            rptb.addUnitSet(toUnitInfo(ut));
+            infob.addUnitSet(toUnitInfo(ut));
         }
         
         if (parameterType instanceof IntegerParameterType) {
             IntegerParameterType ipt = (IntegerParameterType) parameterType;
             if (ipt.getDefaultAlarm() != null) {
-                rptb.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
+                infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
             }
         } else if (parameterType instanceof FloatParameterType) {
             FloatParameterType fpt = (FloatParameterType) parameterType;
             if (fpt.getDefaultAlarm() != null) {
-                rptb.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
+                infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
+            }
+        } else if (parameterType instanceof EnumeratedParameterType) {
+            EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
+            if (ept.getDefaultAlarm() != null) {
+                infob.setDefaultAlarm(toAlarmInfo(ept.getDefaultAlarm()));
+            }
+            for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
+                infob.addEnumValue(toEnumValue(xtceValue));
             }
         }
-        return rptb.build();
+        return infob.build();
+    }
+    
+    // Simplifies the XTCE structure a bit for outside use.
+    // String-encoded numeric types see some sort of two-step conversion from raw to eng
+    // with the first to interpret the string (stored in a nested StringDataEncoding)
+    // and the second to apply any regular integer calibrations (stored in the actual DataEncoding)
+    // Below code will represent all of those things as type 'STRING' as the user should expect it.
+    public static DataEncodingInfo toDataEncodingInfo(DataEncoding xtceDataEncoding) {
+        DataEncodingInfo.Builder infob = DataEncodingInfo.newBuilder();
+        infob.setLittleEndian(xtceDataEncoding.getByteOrder() == ByteOrder.LITTLE_ENDIAN);
+        if (xtceDataEncoding.getSizeInBits() >= 0) {
+            infob.setSizeInBits(xtceDataEncoding.getSizeInBits());
+        }
+        if (xtceDataEncoding instanceof BinaryDataEncoding) {
+            infob.setType(Type.BINARY);
+        } else if (xtceDataEncoding instanceof BooleanDataEncoding) {
+            infob.setType(Type.BOOLEAN);
+        } else if (xtceDataEncoding instanceof FloatDataEncoding) {
+            FloatDataEncoding fde = (FloatDataEncoding) xtceDataEncoding;
+            if (fde.getEncoding() == FloatDataEncoding.Encoding.STRING) {
+                infob.setType(Type.STRING);
+                infob.setEncoding(toTextualEncoding(fde.getStringDataEncoding()));
+            } else {
+                infob.setType(Type.FLOAT);
+                infob.setEncoding(fde.getEncoding().toString());
+            }
+            if (fde.getDefaultCalibrator() != null) {
+                infob.setDefaultCalibrator(fde.toString());
+            }
+        } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
+            IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
+            if (ide.getEncoding() == IntegerDataEncoding.Encoding.string) {
+                infob.setType(Type.STRING);
+                infob.setEncoding(toTextualEncoding(ide.getStringEncoding()));
+            } else {
+                infob.setType(Type.INTEGER);
+                infob.setEncoding(ide.getEncoding().toString());
+            }
+            if (ide.getDefaultCalibrator() != null) {
+                infob.setDefaultCalibrator(ide.toString());
+            }
+        } else if (xtceDataEncoding instanceof StringDataEncoding) {
+            infob.setType(Type.STRING);
+            StringDataEncoding sde = (StringDataEncoding) xtceDataEncoding;
+            infob.setEncoding(toTextualEncoding(sde));
+        }
+        return infob.build();
+    }
+    
+    public static String toTextualEncoding(StringDataEncoding sde) {
+        String result = sde.getSizeType() + "(";
+        switch (sde.getSizeType()) {
+        case Fixed:
+            result += sde.getSizeInBits();
+            break;
+        case LeadingSize:
+            result += sde.getSizeInBitsOfSizeTag();
+            break;
+        case TerminationChar:
+            String hexChar = Integer.toHexString(sde.getTerminationChar()).toUpperCase();
+            if (hexChar.length() == 1) hexChar = "0" + hexChar;
+            result += "0x" + hexChar;
+            break;
+        default:
+            throw new IllegalStateException("Unexpected size type " + sde.getSizeType());
+        }
+        return result + ")";
+    }
+    
+    public static ParameterTypeInfo.EnumValue toEnumValue(ValueEnumeration xtceValue) {
+        ParameterTypeInfo.EnumValue.Builder b = ParameterTypeInfo.EnumValue.newBuilder();
+        b.setValue(xtceValue.getValue());
+        b.setLabel(xtceValue.getLabel());
+        return b.build();
     }
 
     public static UnitInfo toUnitInfo(UnitType ut) {
@@ -389,25 +508,34 @@ public class XtceToGpbAssembler {
         AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
         if (staticRanges.getWatchRange() != null) {
             AlarmRange watchRange = toAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
-            alarmInfob.addStaticAlarmRanges(watchRange);
+            alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
             AlarmRange warningRange = toAlarmRange(AlarmLevelType.WARNING, staticRanges.getWarningRange());
-            alarmInfob.addStaticAlarmRanges(warningRange);
+            alarmInfob.addStaticAlarmRange(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
             AlarmRange distressRange = toAlarmRange(AlarmLevelType.DISTRESS, staticRanges.getDistressRange());
-            alarmInfob.addStaticAlarmRanges(distressRange);
+            alarmInfob.addStaticAlarmRange(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
             AlarmRange criticalRange = toAlarmRange(AlarmLevelType.CRITICAL, staticRanges.getCriticalRange());
-            alarmInfob.addStaticAlarmRanges(criticalRange);
+            alarmInfob.addStaticAlarmRange(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
             AlarmRange severeRange = toAlarmRange(AlarmLevelType.SEVERE, staticRanges.getSevereRange());
-            alarmInfob.addStaticAlarmRanges(severeRange);
+            alarmInfob.addStaticAlarmRange(severeRange);
         }
             
+        return alarmInfob.build();
+    }
+    
+    public static AlarmInfo toAlarmInfo(EnumerationAlarm enumerationAlarm) {
+        AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
+        alarmInfob.setMinViolations(enumerationAlarm.getMinViolations());
+        for (EnumerationAlarmItem item : enumerationAlarm.getAlarmList()) {
+            alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
+        }
         return alarmInfob.build();
     }
     
@@ -418,6 +546,32 @@ public class XtceToGpbAssembler {
             resultb.setMinInclusive(alarmRange.getMinInclusive());
         if (Double.isFinite(alarmRange.getMaxInclusive()))
             resultb.setMaxInclusive(alarmRange.getMaxInclusive());
+        return resultb.build();
+    }
+    
+    public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {
+        Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
+        resultb.setValue(xtceAlarmItem.getEnumerationValue().getValue());
+        resultb.setLabel(xtceAlarmItem.getEnumerationValue().getLabel());
+        switch (xtceAlarmItem.getAlarmLevel()) {
+        case watch:
+            resultb.setLevel(AlarmLevelType.WATCH);
+            break;
+        case warning:
+            resultb.setLevel(AlarmLevelType.WARNING);
+            break;
+        case distress:
+            resultb.setLevel(AlarmLevelType.DISTRESS);
+            break;
+        case critical:
+            resultb.setLevel(AlarmLevelType.CRITICAL);
+            break;
+        case severe:
+            resultb.setLevel(AlarmLevelType.SEVERE);
+            break;
+        default:
+            throw new IllegalStateException("Unexpected alarm level " + xtceAlarmItem.getAlarmLevel());
+        }
         return resultb.build();
     }
 }

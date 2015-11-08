@@ -81,9 +81,10 @@ public class InstanceRequestHandler extends RestRequestHandler {
         }
         
         String apiUrl = req.getApiURL();            
-        instanceb.setUrl(apiUrl + "/instances/" + instanceb.getName());
-        instanceb.setEventsUrl(apiUrl + "/events/" + instanceb.getName());
-        instanceb.setClientsUrl(apiUrl + "/" + instanceb.getName() + "{/processor}/clients");
+        String instanceUrl = apiUrl + "/instances/" + instanceb.getName();
+        instanceb.setUrl(instanceUrl);
+        instanceb.setEventsUrl(instanceUrl + "{/processor}/events");
+        instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
         
         for (YProcessor processor : YProcessor.getChannels(instanceb.getName())) {
             instanceb.addProcessor(ProcessorRequestHandler.toProcessorInfo(processor, req, false));
