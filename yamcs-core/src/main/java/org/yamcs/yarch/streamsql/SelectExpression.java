@@ -7,23 +7,12 @@ import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
-import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.WindowProcessor;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-
-import org.yamcs.yarch.streamsql.AggregateExpression;
-import org.yamcs.yarch.streamsql.ColumnExpression;
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.SelectItem;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.TupleSourceExpression;
-import org.yamcs.yarch.streamsql.WindowSpecification;
 
 /**
  * Corresponds to a queries like 
@@ -61,6 +50,7 @@ class SelectExpression implements StreamExpression {
 	TupleDefinition inputDef, outputDef, minOutputDef, aggInputDef=null, aggOutputDef=null;
 	List<AggregateExpression> aggList=null;
 	List<Expression> aggInputList=null;
+	boolean ascending=true; //only for table-selects
 	private boolean selectStar; //in case of select *
 	
 	public void setSelectList(List<SelectItem> selectList) {
@@ -78,6 +68,11 @@ class SelectExpression implements StreamExpression {
 
 	public void setWindow(WindowSpecification windowSpec) {
 		this.windowSpec=windowSpec;
+	}
+	
+	public void setAscending(boolean ascending) {
+	    this.ascending = ascending;
+	    tupleSourceExpression.setAscending(ascending);
 	}
 
 	@Override

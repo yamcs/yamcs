@@ -1,6 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
@@ -40,7 +40,7 @@ public class RdbEngineTest extends YarchTestCase {
         tblDef.setPartitioningSpec(pspec);
         IllegalArgumentException iae=null;
         try {
-            rse.newTableReaderStream(tblDef);
+            rse.newTableReaderStream(tblDef, true);
         } catch (IllegalArgumentException e) {
             iae=e;
         }
@@ -54,7 +54,7 @@ public class RdbEngineTest extends YarchTestCase {
 
         iae=null;
         try {
-            rse.newTableReaderStream(tblDef);
+            rse.newTableReaderStream(tblDef, true);
         } catch (IllegalArgumentException e) {
             iae=e;
         }

@@ -1,7 +1,6 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,15 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.yarch.AbstractStream;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DbReaderStream;
-import org.yamcs.yarch.IndexFilter;
-import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ColumnExpression;
 import org.yamcs.yarch.streamsql.RelOp;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -44,11 +34,13 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     private Tuple lastEmitted;
 
     final protected PartitionManager partitionManager;
+    final protected boolean ascending;
 
-    protected AbstractTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, PartitionManager partitionManager) {
+    protected AbstractTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, PartitionManager partitionManager, boolean ascending) {
         super(ydb, tblDef.getName()+"_"+count.getAndIncrement(), tblDef.getTupleDefinition());
         this.tableDefinition = tblDef;
         this.partitionManager = partitionManager;
+        this.ascending = ascending;
     }
 
 
@@ -67,14 +59,25 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
 
             PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
             if(pspec.valueColumn!=null) {
-                if((rangeIndexFilter!=null) && (rangeIndexFilter.keyStart!=null)) {
+                if((ascending) && (rangeIndexFilter!=null) && (rangeIndexFilter.keyStart!=null)) {
                     long start=(Long)rangeIndexFilter.keyStart;
                     partitionIterator = partitionManager.iterator(start, partitionValueFilter);
+                } else if((!ascending) && (rangeIndexFilter!=null) && (rangeIndexFilter.keyEnd!=null)) {
+                    long start=(Long)rangeIndexFilter.keyEnd;
+                    partitionIterator = partitionManager.reverseIterator(start, partitionValueFilter);
                 } else {
-                    partitionIterator = partitionManager.iterator(partitionValueFilter);
+                    if (ascending) {
+                        partitionIterator = partitionManager.iterator(partitionValueFilter);
+                    } else {
+                        partitionIterator = partitionManager.reverseIterator(partitionValueFilter);
+                    }
                 }
             } else {
-                partitionIterator = partitionManager.iterator(partitionValueFilter);
+                if (ascending) {
+                    partitionIterator = partitionManager.iterator(partitionValueFilter);
+                } else {
+                    partitionIterator = partitionManager.reverseIterator(partitionValueFilter);
+                }
             }
 
             while((!quit) && partitionIterator.hasNext()) {
@@ -96,7 +99,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      * 
      * All the partitions are from the same time interval
      */
-    protected abstract boolean runPartitions(Collection<Partition> partitions, IndexFilter range) throws IOException;
+    protected abstract boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException;
 
 
     protected boolean emitIfNotPastStop (RawTuple rt,  byte[] rangeEnd, boolean strictEnd) {
@@ -105,6 +108,19 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
             int c=compare(rt.key, rangeEnd);
             if(c<0) emit=true;
             else if((c==0) && (!strictEnd)) emit=true;
+            else emit=false;
+        }
+        lastEmitted=dataToTuple(rt.key, rt.value);
+        if(emit) emitTuple(lastEmitted);
+        return emit;
+    }
+    
+    protected boolean emitIfNotPastStart (RawTuple rt,  byte[] rangeStart, boolean strictStart) {
+        boolean emit=true;
+        if(rangeStart!=null) { //check if we have reached the start
+            int c=compare(rt.key, rangeStart);
+            if(c>0) emit=true;
+            else if((c==0) && (!strictStart)) emit=true;
             else emit=false;
         }
         lastEmitted=dataToTuple(rt.key, rt.value);

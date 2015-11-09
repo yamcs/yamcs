@@ -2,7 +2,6 @@ package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,8 +25,8 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
 
-    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager) {
-        super(ydb, tblDef, partitionManager);
+    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending) {
+        super(ydb, tblDef, partitionManager, ascending);
         this.tableDefinition=tblDef;
         partitioningSpec=tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
@@ -47,7 +46,8 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
      * All the partitions are from the same time interval and thus from one single RocksDB database
      * 
      */
-    protected boolean runPartitions(Collection<Partition> partitions, IndexFilter range) throws IOException {
+    @Override
+    protected boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException {
         byte[] rangeStart=null;
         boolean strictStart=false;
         byte[] rangeEnd=null;
@@ -65,9 +65,15 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 rangeEnd=cs.getByteArray(range.keyEnd);
             }
         }
-
-
-        log.debug("running partitions "+partitions);
+        
+        if (ascending) {
+            return readAscending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+        } else {
+            return readDescending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+        }
+    }
+    
+    private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
         PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>();
         try {
             RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
@@ -82,15 +88,16 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     cfhList.add(cfh);
                 }
             }
-            int i=0;
+
             //create a cursor for all partitions
             List<RocksIterator> iteratorList = rdb.newIterators(cfhList);
 
+            int i=0;
             for(RocksIterator it:iteratorList) {
                 boolean found=true;
                 if(rangeStart!=null) {
                     it.seek(rangeStart);
-                    if(it.isValid()) {                	
+                    if(it.isValid()) {                  
                         if((strictStart)&&(compare(rangeStart, it.key())==0)) {
                             //if filter condition is ">" we skip the first record if it is equal to the key
                             it.next();
@@ -122,6 +129,105 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     return true;
                 }
                 rt.iterator.next();
+                if(rt.iterator.isValid()) {
+                    rt.key=rt.iterator.key();
+                    rt.value=rt.iterator.value();
+                    orderedQueue.add(rt);
+                } else {
+                    log.debug(rt.iterator+" finished");
+                    rt.iterator.dispose();                    
+                }
+            }
+
+            rdbf.dispose(rdb);
+            return false;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            for(RdbRawTuple rt:orderedQueue) {
+                rt.iterator.dispose();                
+            }
+        }
+    }
+    
+    private boolean readDescending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+        PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>(RawTuple.reverseComparator);
+        try {
+            RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
+            RdbPartition p1 = (RdbPartition) partitions.iterator().next();
+            String dbDir = p1.dir;
+            log.debug("opening database "+ dbDir);
+            YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
+            List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
+
+            for(Partition p: partitions) {
+                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());
+                if(cfh!=null) {
+                    cfhList.add(cfh);
+                }
+            }
+
+            //create a cursor for all partitions
+            List<RocksIterator> iteratorList = rdb.newIterators(cfhList);
+            
+            int i=0;
+            for(RocksIterator it:iteratorList) {
+                boolean found=true;
+                if(rangeEnd!=null) {
+                    //seek moves cursor beyond the match
+                    it.seek(rangeEnd);
+                    boolean verify=false;
+                    if(it.isValid()) {
+                        if((strictEnd)||(compare(rangeEnd, it.key())!=0)) {
+                            it.prev();
+                            verify=true;
+                        }
+                    } else if (!it.isValid()) { //at end of iterator, check last entry
+                        it.seekToLast();
+                        verify=true;
+                    }
+                    
+                    if(verify && it.isValid()) {
+                        int c=compare(it.key(), rangeEnd);
+                        if (c>0) {//don't care about non-strict, covered before
+                            it.seek(rangeEnd);
+                        }
+                    }
+                    
+                    if(it.isValid()) {
+                        if((strictEnd)&&(compare(rangeEnd, it.key())==0)) {
+                            //if filter condition is "<" we skip the first record if it is equal to the key
+                            it.prev();
+                            found=it.isValid();
+                        }
+                    } else {
+                        found=false;
+                    }
+                    if(!found) log.debug("no record corresponding to the StartFilter");
+                } else {
+                    it.seekToLast();
+                    if(!it.isValid()) {
+                        log.debug("rdb contains no record");
+                        found=false;
+                    }
+                }
+                if(!found) {
+                    it.dispose();                                        
+                } else {
+                    orderedQueue.add(new RdbRawTuple(it.key(), it.value(), it, i++));
+                }
+            }
+            
+            log.debug("got one tuple from each partition, starting the business");
+    
+            //now continue publishing the first element from the priority queue till it becomes empty
+            while((!quit) && orderedQueue.size()>0){
+                RdbRawTuple rt=orderedQueue.poll();
+                if(!emitIfNotPastStart(rt, rangeStart, strictStart)) {
+                    return true;
+                }
+                rt.iterator.prev();
                 if(rt.iterator.isValid()) {
                     rt.key=rt.iterator.key();
                     rt.value=rt.iterator.value();

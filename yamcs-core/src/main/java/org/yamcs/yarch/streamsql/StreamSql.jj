@@ -725,9 +725,10 @@ void Argument(): {
 
 SelectExpression SelectStatement(): {
     SelectExpression expression;
+    boolean ascending;
 } {
     expression=Select()
-    [ OrderByClause() ]
+    [ ascending=OrderClause() {expression.setAscending(ascending);} ]
     {
 	return expression;
     }
@@ -826,16 +827,14 @@ TupleDefinition TupleDefinition(): {
 }
 
 
-void OrderByClause(): {
+boolean OrderClause(): {
+   boolean ascending=true;
 } {
-    "ORDER" "BY" OrderByExpression() ("," OrderByExpression())*
-}
-
-void OrderByExpression(): {
-} {
-    SimpleExpression()
-    ["ASC" | "DESC"]
-    ["NULLS" ID("LAST")]
+    "ORDER"
+    ["ASC" | "DESC" {ascending=false;} ]
+    {
+    return ascending;
+    }
 }
 
 

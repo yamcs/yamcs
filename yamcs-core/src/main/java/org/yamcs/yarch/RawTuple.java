@@ -11,6 +11,13 @@ public class RawTuple implements Comparable<RawTuple>{
 	public byte[] value;
     static Comparator<byte[]> bytesComparator=UnsignedBytes.lexicographicalComparator();
     
+    public static Comparator<RawTuple> reverseComparator = new Comparator<RawTuple>() {
+        @Override
+        public int compare(RawTuple o1, RawTuple o2) {
+            return -o1.compareTo(o2);
+        }
+    };
+    
     public RawTuple(byte[] key, byte[] value, int index) {
 		this.key = key;
         this.value = value;

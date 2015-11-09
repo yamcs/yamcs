@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.NotSupportedException;
@@ -21,7 +21,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import org.yamcs.utils.StringConvertors;
 
 /**
  * A table definition consists of a (key,value) pair of tuple definitions.
@@ -61,7 +60,7 @@ public class TableDefinition {
     private boolean compressed;
     private PartitioningSpec partitioningSpec;
     
-    private String storageEngineName="tokyocabinet";
+    private String storageEngineName=YarchDatabase.TC_ENGINE_NAME;
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
