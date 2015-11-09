@@ -124,25 +124,19 @@ public class XtceTmRecorder extends AbstractService {
     }
 
 
-    private void createRecorder(StreamConfigEntry streamConf) {
-       
+    private void createRecorder(StreamConfigEntry streamConf) {       
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
-        SequenceContainer rootsc=streamConf.getRootContainer() ;
-        if(rootsc==null) {
+        SequenceContainer rootsc = streamConf.getRootContainer() ;
+        if(rootsc == null) {
             rootsc=xtceDb.getRootSequenceContainer();
         }
         if(rootsc==null) {
             throw new ConfigurationException("XtceDb does not have a root sequence container and no container was specified for decoding packets from "+streamConf.getName()+" stream");
         }
 
-        if(xtceDb.getInheritingContainers(rootsc) == null ) {
-            log.info( "Root container has no inheriting containers, so providing TM from root container: "+rootsc.getName() );
-            tmExtractor.startProviding(rootsc);
-        } else {
-            for(SequenceContainer sc:xtceDb.getInheritingContainers(rootsc)) {
-                tmExtractor.startProviding(sc);
-            }
-        }
+
+        subscribeContainers(rootsc);
+       
         Stream inputStream=ydb.getStream(streamConf.getName());
 
         if(inputStream==null) {
@@ -153,6 +147,21 @@ public class XtceTmRecorder extends AbstractService {
         recorders.add(recorder);
     }
 
+    //subscribe all containers that have useAsArchivePartition set
+    private void subscribeContainers(SequenceContainer sc) {
+        if(sc==null) return;
+        
+        if(sc.useAsArchivePartition()) {
+            tmExtractor.startProviding(sc);
+        }
+        
+        if(xtceDb.getInheritingContainers(sc) != null) {
+            for(SequenceContainer sc1:xtceDb.getInheritingContainers(sc)) {
+                subscribeContainers(sc1);
+            }
+        }
+    }
+    
     @Override
     protected void doStart() {
         for(StreamRecorder sr: recorders) {

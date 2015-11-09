@@ -102,28 +102,23 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
         if(xtcedb!=null) {
             tmProcessor=yproc.getTmProcessor();
-            Subscription subscription=tmProcessor.getSubscription();
-            Collection<SequenceContainer> containers =subscription.getInheritingContainers(xtcedb.getRootSequenceContainer());
+            Subscription subscription = tmProcessor.getSubscription();
+            Collection<SequenceContainer> containers = subscription.getContainers();
 
             if((containers==null)|| (containers.isEmpty())) {
                 log.debug("No container required for the parameter extract");
             } else {
-                log.debug("creating a packet replay for the following containers: "+containers);
-                SequenceContainer rootSc=xtcedb.getRootSequenceContainer();
+                
 
                 for(SequenceContainer sc:containers) {
-                    while(sc!=null) {
-                        if(sc.getBaseContainer()==rootSc) {
-                            tmPartitions.add(sc.getQualifiedName());
-                            break;
-                        } else {
-                            sc=sc.getBaseContainer();
-                        }
+                    if(sc.useAsArchivePartition()) {  
+                        tmPartitions.add(sc.getQualifiedName());
                     }
                 }
+                log.debug("creating a packet replay with the following partitions: "+tmPartitions);
             }
         }
-        
+
         MyPpProvider mpp= (MyPpProvider) tctms.pp;
         ppGroups=mpp.ppgroups;
         ppSet=mpp.subscribedParams;
@@ -133,10 +128,11 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         yproc.start();
     }
 
+
     @Override
     public String getSelectCmd() {
         if(!hasTm && !hasPp)return null;
-        
+
         StringBuilder sb=new StringBuilder();
 
         if(hasTm && hasPp) sb.append("MERGE (");
@@ -186,11 +182,11 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             long recTime=(Long)t.getColumn("rectime");
             long genTime=(Long)t.getColumn("gentime");
             byte[]pbody=(byte[]) t.getColumn("packet");
-            
+
             ///this will cause derived values to be computed and updateItems to be called
             tmProcessor.processPacket(new PacketWithTime(recTime, genTime, pbody));
         }
-        
+
         if(isPp) { //definition is in {@link org.yamcs.archive.PpProviderAdapter}
             ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(t.size());
             for(int i=3; i<t.size(); i++) {
@@ -198,7 +194,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
                 if (!ppSet.contains(ppDef)) continue;
                 org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue) t.getColumn(i);
                 ParameterValue pv=ParameterValue.fromGpb(ppDef, gpv);
-                
+
                 if(pv!=null) params.add(pv);
             }
 
@@ -236,8 +232,8 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
     class MyTcTmService extends AbstractService implements TcTmService {
         MyPpProvider pp;
-        
-        
+
+
         public MyTcTmService() {
             if(xtcedb!=null) pp=new MyPpProvider();
         }
@@ -276,16 +272,16 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         }
     }
 
-    
+
     public class MyPpProvider extends AbstractService implements ParameterProvider {
         private volatile boolean disabled=false;
         Set<String> ppgroups=new HashSet<String>();
         Set<Parameter> subscribedParams = new HashSet<Parameter>();
-        
+
         @Override
-		public void init(YProcessor channel) throws ConfigurationException {
-			
-		}
+        public void init(YProcessor channel) throws ConfigurationException {
+
+        }
         @Override
         public void setParameterListener(ParameterRequestManager parameterRequestManager) {
         }
@@ -295,14 +291,14 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             ppgroups.add(paramDef.getRecordingGroup());
             subscribedParams.add(paramDef);
         }
-        
+
         @Override
         public void startProvidingAll() {
         }
         @Override
         public void stopProviding(Parameter paramDef) {
         }
-        
+
         @Override
         public boolean canProvide(NamedObjectId id) {
             if(xtcedb.getParameter(id)!=null) return true;
@@ -317,7 +313,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         public String getDownlinkStatus() {
             return disabled ? "DISABLED" : "OK";
         }
-        
+
         @Override
         public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
             Parameter p=xtcedb.getParameter(id);

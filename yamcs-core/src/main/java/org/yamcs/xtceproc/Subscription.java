@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.yamcs.xtce.XtceDb;
 public class Subscription {
     //Maps the packet definitions to the entries we actually need from these packets
     private final Map<SequenceContainer, TreeSet<SequenceEntry>> container2EntryMap = new HashMap<SequenceContainer, TreeSet<SequenceEntry>>();
+    
     //For each container list the derived containers which have to be processed also
     private final Map<SequenceContainer, HashSet<SequenceContainer>> container2InheritingContainerMap = new HashMap<SequenceContainer, HashSet<SequenceContainer>>();
     Logger log = LoggerFactory.getLogger(Subscription.class);
@@ -151,6 +153,17 @@ public class Subscription {
         return container2InheritingContainerMap.get(container);
     }
    
+    /**
+     * Get the set of all containers subscribed
+     * @return
+     */
+    public Collection<SequenceContainer> getContainers() {
+        Set<SequenceContainer> r = new HashSet<SequenceContainer>();
+        for(HashSet<SequenceContainer> hs:container2InheritingContainerMap.values()) {
+            r.addAll(hs);
+        }
+        return r;
+    }
 
     @Override
     public String toString() {
@@ -175,5 +188,6 @@ public class Subscription {
         return sb.toString();
     }
 
+   
    
 }

@@ -21,6 +21,15 @@ public class SequenceContainer extends Container {
     SequenceContainer baseContainer;
     MatchCriteria restrictionCriteria;
 
+    /**
+     * Use this container as a partition when archiving (name of the container is used as partitioning key in the tm table).
+     * Notes:
+     *   - if this property is set, this container name will be used for storing a certain packet if the packet doesn't match any inherited container with the property set
+     *   - this property is automatically enabled for the root container and the level 1 children 
+     */
+    private boolean useAsArchivePartition;
+    
+    
     public SequenceContainer getBaseContainer() {
 	return baseContainer;
     }
@@ -71,5 +80,15 @@ public class SequenceContainer extends Container {
     @Override
     public String toString() {
 	return "SequenceContainer(name="+name+")";
+    }
+
+
+    public boolean useAsArchivePartition() {
+        return useAsArchivePartition;
+    }
+
+
+    public void setUseAsArchivePartition(boolean useAsArchivePartition) {
+        this.useAsArchivePartition = useAsArchivePartition;
     }
 }
