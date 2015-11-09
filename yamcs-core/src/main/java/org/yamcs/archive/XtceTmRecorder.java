@@ -279,16 +279,24 @@ public class XtceTmRecorder extends AbstractService {
             //the result contains a list with all the matching containers, the first one is the root container
             //we should normally have just two elements in the list
             List<ContainerExtractionResult> result=tmExtractor.getContainerResult();
-
+            SequenceContainer partitionBySc=null;
+            for(int i=result.size()-1; i>=0; i--) {
+                SequenceContainer sc = result.get(i).getContainer();
+                if(sc.useAsArchivePartition()) {
+                    partitionBySc = sc;
+                    break;
+                }
+            }
+            if(partitionBySc==null) {
+                partitionBySc = result.get(0).getContainer();
+            }
 
             try {
-                int leafContainer=result.size() - 1;
-
                 List<Object> c=t.getColumns();
                 List<Object> columns=new ArrayList<Object>(c.size()+1);
                 columns.addAll(c);
 
-                columns.add(c.size(), result.get(leafContainer).getContainer().getQualifiedName());
+                columns.add(c.size(), partitionBySc.getQualifiedName());
                 Tuple tp=new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
                 outputStream.emitTuple(tp);
             } catch (Exception e) {
