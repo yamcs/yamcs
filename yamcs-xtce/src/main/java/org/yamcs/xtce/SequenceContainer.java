@@ -17,16 +17,9 @@ public class SequenceContainer extends Container {
     }
 
     ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
-    transient NameReference baseContainerRef;
 
     SequenceContainer baseContainer;
     MatchCriteria restrictionCriteria;
-
-
-    public void setBaseContainerReference(NameReference ref) {
-	this.baseContainerRef = ref;
-    }
-
 
     public SequenceContainer getBaseContainer() {
 	return baseContainer;
