@@ -3,8 +3,8 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 import org.junit.After;
@@ -15,8 +15,8 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
-import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;

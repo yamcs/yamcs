@@ -1,20 +1,19 @@
 package org.yamcs.web.websocket;
 
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
+import java.io.IOException;
+import java.io.StringWriter;
+
+import org.yamcs.api.ws.WSConstants;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-
-import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-
-import java.io.IOException;
-import java.io.StringWriter;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 public class JsonEncoder implements WebSocketEncoder {
 

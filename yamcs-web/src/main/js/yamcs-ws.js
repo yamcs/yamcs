@@ -52,7 +52,7 @@ var yamcsWebSocket = function(instance) {
         requestSeqCount++;
         if(replyHandler) replyHandlers[requestSeqCount]=replyHandler;
         if(exceptionHandler) exceptionHandlers[requestSeqCount]=exceptionHandler;
-        var payload = JSON.stringify([PROTOCOL_VERSION, MESSAGE_TYPE_REQUEST, requestSeqCount, {request:requestName, data: requestData}]);
+        var payload = JSON.stringify([PROTOCOL_VERSION, MESSAGE_TYPE_REQUEST, requestSeqCount, {parameter:requestName, data: requestData}]);
         conn.send(payload); // <= send JSON data to socket server
         return this;
     }

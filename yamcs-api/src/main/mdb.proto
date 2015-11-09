@@ -1,0 +1,175 @@
+package mdb;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+
+enum DataSourceType {
+  TELEMETERED = 0;
+  DERIVED = 1;
+  CONSTANT = 2;
+  LOCAL = 3;
+  SYSTEM = 4;
+  COMMAND = 5;
+  COMMAND_HISTORY = 6;
+}
+
+enum AlarmLevelType {
+  NORMAL = 0;
+  WATCH = 1;
+  WARNING =  2;
+  DISTRESS = 3;
+  CRITICAL = 4;
+  SEVERE = 5;
+}
+
+message UnitInfo {
+  optional string unit = 1;
+}
+
+message AlarmRange {
+  optional AlarmLevelType level = 1;
+  optional double minInclusive = 2;
+  optional double maxInclusive = 3;
+}
+
+message EnumerationAlarm {
+  optional AlarmLevelType level = 1;
+  optional int64 value = 2;
+  optional string label = 3;
+}
+
+message AlarmInfo {
+  optional int32 minViolations = 1;
+  repeated AlarmRange staticAlarmRange = 2;
+  repeated EnumerationAlarm enumerationAlarm = 3;
+}
+
+message DataEncodingInfo {
+  enum Type {
+    BINARY = 0;
+    BOOLEAN = 1;
+    FLOAT = 2;
+    INTEGER = 3;
+    STRING = 4;
+  }
+  optional Type type = 1;
+  optional bool littleEndian = 2;
+  optional int32 sizeInBits = 3;
+  optional string encoding = 4;
+  optional string defaultCalibrator = 5;
+}
+
+message ParameterTypeInfo {
+  message EnumValue {
+    optional int64 value = 1;
+    optional string label = 2;
+  }
+  optional string engType = 1;
+  optional DataEncodingInfo dataEncoding = 2;
+  repeated UnitInfo unitSet = 3;
+  optional AlarmInfo defaultAlarm = 4;
+  repeated EnumValue enumValue = 5;
+}
+
+message ParameterInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+  optional DataSourceType dataSource = 7;
+  optional string url = 8;
+}
+
+message ArgumentInfo {
+  optional string name = 1;
+  optional string description = 2;
+  optional string type = 3;
+  optional string initialValue = 4;
+  repeated UnitInfo unitSet = 5;
+}
+
+message ArgumentAssignmentInfo {
+  optional string name = 1;
+  optional string value = 2;
+}
+
+message SignificanceInfo {
+  enum SignificanceLevelType {
+    NONE = 1;
+    WATCH = 2;
+    WARNING = 3;
+    DISTRESS = 4;
+    CRITICAL = 5;
+    SEVERE = 6;
+  }
+  optional SignificanceLevelType consequenceLevel = 1;
+  optional string reasonForWarning = 2;
+}
+
+message ComparisonInfo {
+  enum OperatorType {
+    EQUAL_TO = 1;
+    NOT_EQUAL_TO = 2;
+    GREATER_THAN = 3;
+    GREATER_THAN_OR_EQUAL_TO = 4;
+    SMALLER_THAN = 5;
+    SMALLER_THAN_OR_EQUAL_TO = 6;
+  }
+  optional ParameterInfo parameter = 1;
+  optional OperatorType operator = 2;
+  optional string value = 3;
+}
+
+message TransmissionConstraintInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional int64 timeout = 2;
+}
+
+message CommandInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional CommandInfo baseCommand = 6;
+  optional bool abstract = 7;
+  repeated ArgumentInfo argument = 8;
+  repeated ArgumentAssignmentInfo argumentAssignment = 9;
+  optional SignificanceInfo significance = 10;
+  repeated TransmissionConstraintInfo constraint = 11;
+  optional string url = 12;
+}
+
+message RepeatInfo {
+  optional int64 fixedCount = 1;
+  optional ParameterInfo dynamicCount = 2;
+  optional int32 bitsBetween = 3;
+}
+
+message SequenceEntryInfo {
+  enum ReferenceLocationType {
+    CONTAINER_START = 1;
+    PREVIOUS_ENTRY = 2;
+  }
+  optional int32 locationInBits = 1;
+  optional ReferenceLocationType referenceLocation = 2;
+  optional ContainerInfo container = 3;
+  optional ParameterInfo parameter = 4;
+  optional RepeatInfo repeat = 5;
+}
+
+message ContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional int64 maxInterval = 6;
+  optional int32 sizeInBits = 7;
+  optional ContainerInfo baseContainer = 8;
+  repeated ComparisonInfo restrictionCriteria = 9;
+  repeated SequenceEntryInfo entry = 10;
+  optional string url = 11;
+}

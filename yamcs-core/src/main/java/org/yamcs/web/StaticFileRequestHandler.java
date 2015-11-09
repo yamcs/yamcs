@@ -1,5 +1,30 @@
 package org.yamcs.web;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import javax.activation.MimetypesFileTypeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,46 +41,38 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.activation.MimetypesFileTypeMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 
 public class StaticFileRequestHandler extends AbstractRequestHandler {
-    public static String WEB_Root;
+    public static List<String> WEB_Roots = new ArrayList<>();
     static MimetypesFileTypeMap mimeTypesMap;
     public static final int HTTP_CACHE_SECONDS = 60;
+    private static boolean zeroCopyEnabled = true;
     
     final static Logger log=LoggerFactory.getLogger(StaticFileRequestHandler.class.getName());
     
     public static void init() throws ConfigurationException {
-    	if(mimeTypesMap!=null) return;
-    	
-    	InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
-    	if(is==null) {
-    		throw new ConfigurationException("Cannot find the mime.types file in the classpath");
-    	}
-    	mimeTypesMap=new MimetypesFileTypeMap(is);
-    	WEB_Root=YConfiguration.getConfiguration("yamcs").getString("webRoot");
+        if(mimeTypesMap!=null) return;
+    
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
+        if(is==null) {
+            throw new ConfigurationException("Cannot find the mime.types file in the classpath");
+        }
+        mimeTypesMap=new MimetypesFileTypeMap(is);
+        
+        YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
+        if (yconfig.isList("webRoot")) {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            List<String> roots = (List) yconfig.getList("webRoot");
+            for (String root : roots) {
+                WEB_Roots.add(root);
+            }
+        } else {
+            WEB_Roots.add(yconfig.getString("webRoot"));
+        }
+        
+        if (yconfig.containsKey("zeroCopyEnabled")) {
+            zeroCopyEnabled = yconfig.getBoolean("zeroCopyEnabled");
+        }
     }
     
     void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String path) throws Exception {
@@ -65,10 +82,19 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             sendError(ctx, FORBIDDEN);
             return;
         }
+        
+        File file = null;
+        boolean match = false;
+        for (String webRoot : WEB_Roots) { // Stop on first match
+            file = new File(webRoot + File.separator + path);
+            if (!file.isHidden() && file.exists()) {
+                match = true;
+                break;
+            }
+        }
 
-        final File file = new File(path);
-        if (file.isHidden() || !file.exists()) {
-            log.warn("{} does not exist or is hidden", file.toString());
+        if (!match) {
+            log.warn("{} does not exist or is hidden. Searched under {}", path, WEB_Roots);
             sendError(ctx, NOT_FOUND);
             return;
         }
@@ -115,7 +141,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         // Write the content.
         ChannelFuture sendFileFuture;
         ChannelFuture lastContentFuture;
-        if ((ctx.pipeline().get(SslHandler.class) == null)) {
+        if (zeroCopyEnabled && ctx.pipeline().get(SslHandler.class) == null) {
             sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
@@ -128,6 +154,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         }
 
+        final File finalFile = file;
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
@@ -140,7 +167,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                log.debug(future.channel() + " Transfer complete: " +file);
+                log.debug(future.channel() + " Transfer complete: " +finalFile);
             }
         });
 
@@ -206,13 +233,17 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
     private String sanitizePath(String path) {
         path = path.replace('/', File.separatorChar);
 
+        int qsIndex = path.indexOf('?');
+        if (qsIndex != -1) {
+            path = path.substring(0, qsIndex);
+        }
+
         if (path.contains(File.separator + ".") ||
             path.contains("." + File.separator) ||
             path.startsWith(".") || path.endsWith(".")) {
             return null;
         }
 
-        // Convert to absolute path.
-        return WEB_Root + File.separator + path;
+        return path;
     }
 }

@@ -36,11 +36,11 @@ public class EnumerationAlarm extends AlarmType implements Serializable{
     public void setAlarmList(List<EnumerationAlarmItem> alarmList) {
         this.alarmList=alarmList;
     }
+    
     @Override
     public String toString() {
         return "EnumerationAlarm(defaultLevel:"+defaultAlarmLevel+", alarmList: "+alarmList;
     }
-
 
     static public class EnumerationAlarmItem implements Serializable {
         private static final long serialVersionUID = 200707121420L;

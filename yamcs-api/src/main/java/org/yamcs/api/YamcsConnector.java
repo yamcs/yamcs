@@ -13,8 +13,8 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.YamcsInstance;
-import org.yamcs.protobuf.Yamcs.YamcsInstances;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 
 
 /**

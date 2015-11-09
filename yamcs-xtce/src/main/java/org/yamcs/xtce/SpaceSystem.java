@@ -193,6 +193,7 @@ public class SpaceSystem extends NameDescription {
         return nonStandardDatas.values();
     }
     
+    @Override
     public String toString() {
     	return "SpaceSystem["+getName()+"]";
     }

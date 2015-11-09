@@ -30,9 +30,11 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 
 import jxl.Cell;
 import jxl.CellType;
+import jxl.DateCell;
 import jxl.NumberCell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 /**
@@ -66,6 +68,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static String SHEET_COMMANDS="Commands";
     protected final static String SHEET_COMMANDOPTIONS="CommandOptions";
     protected final static String SHEET_COMMANDVERIFICATION="CommandVerification";
+    protected final static String SHEET_CHANGELOG="ChangeLog";
 
     //columns in the parameters sheet (including local parameters)
     final static int IDX_PARAM_NAME=0;
@@ -161,6 +164,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_CMDVERIF_ONSUCCESS = 6;
     protected final static int IDX_CMDVERIF_ONFAIL = 7;
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
+    
+    //columns in the changelog sheet
+    protected final static int IDX_LOG_VERSION = 0;
+    protected final static int IDX_LOG_DATE = 1;
+    protected final static int IDX_LOG_MESSAGE = 2;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION="5.1";
@@ -193,9 +201,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         try {
             // Given path may be relative, so use absolute path to report issues
-            File ssFile = new File( path );
-            if( !ssFile.exists() ) throw new FileNotFoundException( ssFile.getAbsolutePath() );
-            workbook = Workbook.getWorkbook( ssFile );
+            File ssFile = new File(path);
+            if(!ssFile.exists()) throw new FileNotFoundException(ssFile.getAbsolutePath());
+            WorkbookSettings ws = new WorkbookSettings();
+            ws.setEncoding("Cp1252");
+            workbook = Workbook.getWorkbook(ssFile, ws);
         } catch (BiffException e) {
             throw new SpreadsheetLoadException(ctx, e);
         } catch (IOException e) {
@@ -232,6 +242,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         loadCommandSheet(false);
         loadCommandOptionsSheet(false);
         loadCommandVerificationSheet(false);
+        loadChangelogSheet(false);
     }
 
     @Override
@@ -974,6 +985,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     cmd.setAbstract(true);
                 }
             }
+            
+            if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
+                String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
+                cmd.setShortDescription(shortDescription);
+            }
 
             // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
             int start = i++;
@@ -1409,7 +1425,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((FloatArgumentType)atype).setValidRange(range);
             }
         }
-
+        
+        if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
+            String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
+            arg.setShortDescription(shortDescription);
+        }
 
         ArgumentEntry ae;
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
@@ -1435,8 +1455,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             absoluteOffset = -1;
         }
         String units=null;
-        if(hasColumn(cells, IDX_PARAM_ENGUNIT)) {
-            units = cells[IDX_PARAM_ENGUNIT].getContents();
+        if(hasColumn(cells, IDX_CMD_ENGUNIT)) {
+            units = cells[IDX_CMD_ENGUNIT].getContents();
             if(!"".equals(units) && units != null && atype instanceof BaseDataType) {
                 UnitType unitType = new UnitType(units);
                 ((BaseDataType) atype).addUnit(unitType);
@@ -1618,10 +1638,45 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return absoluteOffset;
     }
 
+    protected void loadChangelogSheet(boolean required) {
+        Sheet sheet = switchToSheet(SHEET_CHANGELOG, required);
+        if(sheet==null) return;
+        int i = 1;
+        while(i<sheet.getRows()) {
+            Cell[] cells = jumpToRow(sheet, i);
+            if (cells == null || cells.length<1) {
+                log.trace("Ignoring line {} because it's empty", ctx.row);
+                i++;
+                continue;
+            }
+            if(cells[0].getContents().equals("")|| cells[0].getContents().startsWith("#")) {
+                log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
+                i++;
+                continue;
+            }
 
+            if (cells.length >= 2) {
+                String version = cells[IDX_LOG_VERSION].getContents();
+                
+                String date;
+                Cell dateCell = cells[IDX_LOG_DATE];
+                if (dateCell.getType() == CellType.DATE) {
+                    Date dt = ((DateCell) dateCell).getDate();
+                    date = new SimpleDateFormat("dd-MMM-YYYY").format(dt);
+                } else {
+                    date = cells[IDX_LOG_DATE].getContents();
+                }
 
-
-
+                String msg = null;
+                if (cells.length >= 3) {
+                    msg = cells[IDX_LOG_MESSAGE].getContents();
+                }
+                History history = new History(version, date, msg);
+                spaceSystem.getHeader().addHistory(history);
+            }
+            i++;
+        }
+    }
 
     protected void loadProcessedParametersSheet(boolean required) {
         loadProcessedParametersSheet(required, IDX_PP_ALIAS);

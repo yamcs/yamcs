@@ -2,26 +2,24 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.netty.handler.codec.http.HttpMethod;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcsManagement;
+import org.yamcs.protobuf.Archive.DumpArchiveRequest;
+import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
-import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
+import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.PatchClientRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;
 
@@ -46,10 +44,10 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
         NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
 
         ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
-        RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
+        DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
                 .setUtcStart("2015-01-02T10:10:00").setUtcStop("2015-01-02T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
-        RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
+        String response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
+        DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
         List<ParameterData> plist = rdar.getParameterDataList();
         assertNotNull(plist);
         assertEquals(4, plist.size());
@@ -62,18 +60,21 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     }
     
     
+
     @Test
     public void testReplay() throws Exception {
         generateData("2015-01-01T10:00:00", 3600);
         ClientInfo cinfo = getClientInfo();
-        //create a parameter reply via REST
-        ReplayRequest rr = ReplayRequest.newBuilder().setUtcStart("2015-01-01T10:01:00").setUtcStop("2015-01-01T10:05:00")
-                .setPacketRequest(PacketReplayRequest.newBuilder().build()).build();
-        ProcessorManagementRequest prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
-                .setReplaySpec(rr).build();
+        //create a parameter replay via REST
+        CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .addClientId(cinfo.getId())
+                .setName("testReplay")
+                .setStart("2015-01-01T10:01:00")
+                .setStop("2015-01-01T10:05:00")
+                .addPacketname("*")
+                .build();
 
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        httpClient.doPostRequest("http://localhost:9190/api/processors/IntegrationTest", toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -97,11 +98,11 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
         assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
-        prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
+        PatchClientRequest pcrequest = PatchClientRequest.newBuilder().setProcessor("realtime").build();
+        httpClient.doPostRequest("http://localhost:9190/api/clients/" + cinfo.getId(), toJson(pcrequest, SchemaRest.PatchClientRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
     }
+
 }

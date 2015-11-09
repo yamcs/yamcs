@@ -9,7 +9,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
@@ -94,7 +94,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             }
             
             // Send current set of clients
-            Set<ClientInfo> clients = ManagementService.getInstance().getAllClientInfo();
+            Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
             for (ClientInfo client : clients) {
                 ClientInfo cinfo = ClientInfo.newBuilder(client)
                         .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();

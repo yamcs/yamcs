@@ -63,7 +63,7 @@ import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.PetParameterFormatter;
@@ -259,7 +259,8 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
 		startButton.setEnabled(false);
 		actionbuttonPanel.add(startButton);
 		startButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+			@Override
+            public void actionPerformed(ActionEvent arg0) {
 				startRetrieval();
 			}
 		});
@@ -333,7 +334,8 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
 		for (int i = 0; i < recentFiles.size(); ++i) {
 			final String s = recentFiles.get(i);
 			recentPopup.add(new AbstractAction(s) {
-				public void actionPerformed(ActionEvent arg0) {
+				@Override
+                public void actionPerformed(ActionEvent arg0) {
 					loadParameters(new File(s));
 				}
 			});
@@ -687,6 +689,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     public static void main(String[] args) {
         SwingUtilities.invokeLater(
                 new Runnable() {
+                    @Override
                     public void run() {
                         new ParameterRetrievalGui(null,null);
                     }
@@ -694,8 +697,11 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     }
     
     abstract class TextAreaListener implements DocumentListener {
+        @Override
         public void changedUpdate(DocumentEvent e) { updated(); }
+        @Override
         public void insertUpdate(DocumentEvent e) { updated(); }
+        @Override
         public void removeUpdate(DocumentEvent e) { updated(); }
         abstract public void updated();
     }

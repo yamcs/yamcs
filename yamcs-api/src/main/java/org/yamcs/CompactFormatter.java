@@ -24,7 +24,7 @@ public class CompactFormatter extends Formatter {
 		}
 		Throwable t=r.getThrown();
 		if(t!=null) {
-		    sb.append(t.toString()).append("\n");
+		    sb.append(": ").append(t.toString()).append("\n");
 		    for(StackTraceElement ste:t.getStackTrace()) {
 		        sb.append("\t").append(ste.toString()).append("\n");
 		    }

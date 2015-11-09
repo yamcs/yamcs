@@ -32,39 +32,22 @@ public final class SchemaPvalue
                 if(message.hasGenerationTime())
                     output.writeInt64(5, message.getGenerationTime(), false);
                 if(message.hasAcquisitionStatus())
-                    output.writeEnum(6, message.getAcquisitionStatus().getNumber(), false);
+                    output.writeString(6, message.getAcquisitionStatus().name(), false);
                 if(message.hasProcessingStatus())
                     output.writeBool(7, message.getProcessingStatus(), false);
                 if(message.hasMonitoringResult())
-                    output.writeEnum(8, message.getMonitoringResult().getNumber(), false);
+                    output.writeString(8, message.getMonitoringResult().name(), false);
                 if(message.hasAcquisitionTimeUTC())
                     output.writeString(11, message.getAcquisitionTimeUTC(), false);
                 if(message.hasGenerationTimeUTC())
                     output.writeString(12, message.getGenerationTimeUTC(), false);
-                if(message.hasWatchLow())
-                    output.writeDouble(13, message.getWatchLow(), false);
-                if(message.hasWatchHigh())
-                    output.writeDouble(14, message.getWatchHigh(), false);
-                if(message.hasWarningLow())
-                    output.writeDouble(15, message.getWarningLow(), false);
-                if(message.hasWarningHigh())
-                    output.writeDouble(16, message.getWarningHigh(), false);
-                if(message.hasDistressLow())
-                    output.writeDouble(17, message.getDistressLow(), false);
-                if(message.hasDistressHigh())
-                    output.writeDouble(18, message.getDistressHigh(), false);
-                if(message.hasCriticalLow())
-                    output.writeDouble(19, message.getCriticalLow(), false);
-                if(message.hasCriticalHigh())
-                    output.writeDouble(20, message.getCriticalHigh(), false);
-                if(message.hasSevereLow())
-                    output.writeDouble(21, message.getSevereLow(), false);
-                if(message.hasSevereHigh())
-                    output.writeDouble(22, message.getSevereHigh(), false);
                 if(message.hasExpirationTime())
                     output.writeInt64(23, message.getExpirationTime(), false);
                 if(message.hasExpirationTimeUTC())
                     output.writeString(24, message.getExpirationTimeUTC(), false);
+                for(org.yamcs.protobuf.Mdb.AlarmRange alarmRange : message.getAlarmRangeList())
+                    output.writeObject(25, alarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
             {
@@ -123,13 +106,13 @@ public final class SchemaPvalue
                             builder.setGenerationTime(input.readInt64());
                             break;
                         case 6:
-                            builder.setAcquisitionStatus(org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(input.readEnum()));
+                            builder.setAcquisitionStatus(org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(input.readString()));
                             break;
                         case 7:
                             builder.setProcessingStatus(input.readBool());
                             break;
                         case 8:
-                            builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readEnum()));
+                            builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readString()));
                             break;
                         case 11:
                             builder.setAcquisitionTimeUTC(input.readString());
@@ -137,41 +120,15 @@ public final class SchemaPvalue
                         case 12:
                             builder.setGenerationTimeUTC(input.readString());
                             break;
-                        case 13:
-                            builder.setWatchLow(input.readDouble());
-                            break;
-                        case 14:
-                            builder.setWatchHigh(input.readDouble());
-                            break;
-                        case 15:
-                            builder.setWarningLow(input.readDouble());
-                            break;
-                        case 16:
-                            builder.setWarningHigh(input.readDouble());
-                            break;
-                        case 17:
-                            builder.setDistressLow(input.readDouble());
-                            break;
-                        case 18:
-                            builder.setDistressHigh(input.readDouble());
-                            break;
-                        case 19:
-                            builder.setCriticalLow(input.readDouble());
-                            break;
-                        case 20:
-                            builder.setCriticalHigh(input.readDouble());
-                            break;
-                        case 21:
-                            builder.setSevereLow(input.readDouble());
-                            break;
-                        case 22:
-                            builder.setSevereHigh(input.readDouble());
-                            break;
                         case 23:
                             builder.setExpirationTime(input.readInt64());
                             break;
                         case 24:
                             builder.setExpirationTimeUTC(input.readString());
+                            break;
+                        case 25:
+                            builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -223,18 +180,9 @@ public final class SchemaPvalue
                 case 8: return "monitoringResult";
                 case 11: return "acquisitionTimeUTC";
                 case 12: return "generationTimeUTC";
-                case 13: return "watchLow";
-                case 14: return "watchHigh";
-                case 15: return "warningLow";
-                case 16: return "warningHigh";
-                case 17: return "distressLow";
-                case 18: return "distressHigh";
-                case 19: return "criticalLow";
-                case 20: return "criticalHigh";
-                case 21: return "severeLow";
-                case 22: return "severeHigh";
                 case 23: return "expirationTime";
                 case 24: return "expirationTimeUTC";
+                case 25: return "alarmRange";
                 default: return null;
             }
         }
@@ -256,18 +204,9 @@ public final class SchemaPvalue
             fieldMap.put("monitoringResult", 8);
             fieldMap.put("acquisitionTimeUTC", 11);
             fieldMap.put("generationTimeUTC", 12);
-            fieldMap.put("watchLow", 13);
-            fieldMap.put("watchHigh", 14);
-            fieldMap.put("warningLow", 15);
-            fieldMap.put("warningHigh", 16);
-            fieldMap.put("distressLow", 17);
-            fieldMap.put("distressHigh", 18);
-            fieldMap.put("criticalLow", 19);
-            fieldMap.put("criticalHigh", 20);
-            fieldMap.put("severeLow", 21);
-            fieldMap.put("severeHigh", 22);
             fieldMap.put("expirationTime", 23);
             fieldMap.put("expirationTimeUTC", 24);
+            fieldMap.put("alarmRange", 25);
         }
     }
 
@@ -402,6 +341,266 @@ public final class SchemaPvalue
             fieldMap.put("group", 2);
             fieldMap.put("generationTime", 3);
             fieldMap.put("seqNum", 4);
+        }
+    }
+
+    public static final class SampleSeries
+    {
+
+        public static final class Sample
+        {
+            public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MessageSchema WRITE =
+                new org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MessageSchema();
+            public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.BuilderSchema MERGE =
+                new org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.BuilderSchema();
+            
+            public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Sample>
+            {
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Sample message) throws java.io.IOException
+                {
+                    if(message.hasAverageGenerationTime())
+                        output.writeInt64(1, message.getAverageGenerationTime(), false);
+                    if(message.hasAverageGenerationTimeUTC())
+                        output.writeString(2, message.getAverageGenerationTimeUTC(), false);
+                    if(message.hasAverageValue())
+                        output.writeDouble(3, message.getAverageValue(), false);
+                    if(message.hasLowValue())
+                        output.writeDouble(4, message.getLowValue(), false);
+                    if(message.hasHighValue())
+                        output.writeDouble(5, message.getHighValue(), false);
+                    if(message.hasN())
+                        output.writeInt32(6, message.getN(), false);
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Sample message)
+                {
+                    return message.isInitialized();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> typeClass()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getName();
+                }
+                //unused
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Sample message) throws java.io.IOException {}
+                public org.yamcs.protobuf.Pvalue.SampleSeries.Sample newMessage() { return null; }
+            }
+            public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder>
+            {
+                public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder) throws java.io.IOException
+                {
+                    for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                    {
+                        switch(number)
+                        {
+                            case 0:
+                                return;
+                            case 1:
+                                builder.setAverageGenerationTime(input.readInt64());
+                                break;
+                            case 2:
+                                builder.setAverageGenerationTimeUTC(input.readString());
+                                break;
+                            case 3:
+                                builder.setAverageValue(input.readDouble());
+                                break;
+                            case 4:
+                                builder.setLowValue(input.readDouble());
+                                break;
+                            case 5:
+                                builder.setHighValue(input.readDouble());
+                                break;
+                            case 6:
+                                builder.setN(input.readInt32());
+                                break;
+                            default:
+                                input.handleUnknownField(number, this);
+                        }
+                    }
+                }
+                public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder)
+                {
+                    return builder.isInitialized();
+                }
+                public org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder newMessage()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.newBuilder();
+                }
+                public java.lang.String getFieldName(int number)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldName(number);
+                }
+                public int getFieldNumber(java.lang.String name)
+                {
+                    return org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.getFieldNumber(name);
+                }
+                public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder> typeClass()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder.class;
+                }
+                public java.lang.String messageName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getSimpleName();
+                }
+                public java.lang.String messageFullName()
+                {
+                    return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class.getName();
+                }
+                //unused
+                public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builder) throws java.io.IOException {}
+            }
+            public static java.lang.String getFieldName(int number)
+            {
+                switch(number)
+                {
+                    case 1: return "averageGenerationTime";
+                    case 2: return "averageGenerationTimeUTC";
+                    case 3: return "averageValue";
+                    case 4: return "lowValue";
+                    case 5: return "highValue";
+                    case 6: return "n";
+                    default: return null;
+                }
+            }
+            public static int getFieldNumber(java.lang.String name)
+            {
+                java.lang.Integer number = fieldMap.get(name);
+                return number == null ? 0 : number.intValue();
+            }
+            private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+            static
+            {
+                fieldMap.put("averageGenerationTime", 1);
+                fieldMap.put("averageGenerationTimeUTC", 2);
+                fieldMap.put("averageValue", 3);
+                fieldMap.put("lowValue", 4);
+                fieldMap.put("highValue", 5);
+                fieldMap.put("n", 6);
+            }
+        }
+
+        public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaPvalue.SampleSeries.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaPvalue.SampleSeries.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaPvalue.SampleSeries.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Pvalue.SampleSeries.Sample sample : message.getSampleList())
+                    output.writeObject(1, sample, org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Pvalue.SampleSeries newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.SampleSeries.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addSample(input.mergeObject(org.yamcs.protobuf.Pvalue.SampleSeries.Sample.newBuilder(), org.yamcs.protobuf.SchemaPvalue.SampleSeries.Sample.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Pvalue.SampleSeries.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.SampleSeries.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.SampleSeries.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.SampleSeries.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.SampleSeries.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "sample";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("sample", 1);
         }
     }
 

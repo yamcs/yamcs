@@ -1,7 +1,3 @@
-/*
- * Created by JFormDesigner on Wed Jan 26 11:23:58 CET 2011
- */
-
 package org.yamcs.ui.eventviewer;
 
 import java.awt.BorderLayout;
@@ -29,7 +25,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -47,13 +43,14 @@ public class EventDialog extends JDialog {
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KEY_ESC, "close");
         getRootPane().getActionMap().put("close", new AbstractAction() { 
             private static final long serialVersionUID = 1L;
+            @Override
             public void actionPerformed(ActionEvent event) { 
                 dispatchEvent(new WindowEvent(EventDialog.this, WindowEvent.WINDOW_CLOSING)); 
             }
         });
     }
 
-    public void setEvent(Yamcs.Event event)
+    public void setEvent(Event event)
     {   
         textFieldSource.setText(event.getSource());
         textFieldGenerationTime.setText(TimeEncoding.toCombinedFormat(event.getGenerationTime()));
@@ -66,8 +63,6 @@ public class EventDialog extends JDialog {
     }
     
     private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner Evaluation license - Martin Ursik
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         labelSource = new JLabel();
@@ -97,13 +92,6 @@ public class EventDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-
-            // JFormDesigner evaluation mark
-//            dialogPane.setBorder(new javax.swing.border.CompoundBorder(
-//                new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-//                    "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-//                    javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-//                    java.awt.Color.red), dialogPane.getBorder())); dialogPane.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
 
             dialogPane.setLayout(new BorderLayout());
 
@@ -229,6 +217,7 @@ public class EventDialog extends JDialog {
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
                 okButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         EventDialog.this.dispose();
                     }
@@ -240,11 +229,8 @@ public class EventDialog extends JDialog {
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - Martin Ursik
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JLabel labelSource;
@@ -264,5 +250,4 @@ public class EventDialog extends JDialog {
     private JTextArea textAreaMessage;
     private JPanel buttonBar;
     private JButton okButton;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

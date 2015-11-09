@@ -2,16 +2,16 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.protobuf.Alarms.Alarm;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
+import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.MessageType;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -19,12 +19,18 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.protostuff.Schema;
 
 public class ProtobufEncoder implements WebSocketEncoder {
+    
+    private ChannelHandlerContext ctx;
+    
+    public ProtobufEncoder(ChannelHandlerContext ctx) {
+        this.ctx = ctx;
+    }
 
     @Override
     public WebSocketFrame encodeException(WebSocketException e) throws IOException {
@@ -61,8 +67,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setStatistics((Statistics) message);
         } else if (dataType == ProtoDataType.EVENT) {
             responseb.setEvent((Event) message);
-        } else if (dataType == ProtoDataType.ALARM) {
-            responseb.setAlarm((Alarm) message);
+        } else if (dataType == ProtoDataType.ALARM_INFO) {
+            responseb.setAlarmInfo((AlarmInfo) message);
         } else if (dataType == ProtoDataType.STREAM_DATA) {
             responseb.setStreamData((StreamData) message);
         } else if (dataType == ProtoDataType.TIME_INFO) {
@@ -80,9 +86,9 @@ public class ProtobufEncoder implements WebSocketEncoder {
         return toFrame(serverMessage);
     }
 
-    private static BinaryWebSocketFrame toFrame(WebSocketServerMessage message) throws IOException {
+    private BinaryWebSocketFrame toFrame(WebSocketServerMessage message) throws IOException {
         // TODO This assumes that the frame is quite small (which it should be, but)
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = ctx.alloc().buffer();
         try (ByteBufOutputStream cout = new ByteBufOutputStream(buf)) {
             message.writeTo(cout);
         }

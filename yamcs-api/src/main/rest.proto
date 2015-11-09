@@ -1,237 +1,140 @@
-package rest;
+package parameters;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
-import "commanding.proto";
+import "archive.proto";
 import "pvalue.proto";
+import "mdb.proto";
 import "alarms.proto";
+import "commanding.proto";
 import "yamcsManagement.proto";
 
-// Generic holder for an exception
-message RestExceptionMessage {
-  optional string type=1;
-  optional string msg=2;
+message ListParametersResponse {
+  repeated mdb.ParameterInfo parameter = 1;
 }
 
-message RestArgumentType {
-  optional string name=1;
-  optional string value=2;
+message BulkGetParameterRequest {
+  repeated yamcs.NamedObjectId id = 1;
 }
 
-message RestCommandType {
-  optional string origin=1;
-  optional int32 sequenceNumber=2;
-  optional yamcs.NamedObjectId id=3;
-  repeated RestArgumentType arguments=4;
-}
-
-enum RestDataSource {
-  TELEMETERED=0;
-  DERIVED=1;
-  CONSTANT=2;
-  LOCAL=3;
-  SYSTEM=4;
-  COMMAND=5;
-  COMMAND_HISTORY=6;
-}
-
-message RestListAvailableParametersRequest {
-  repeated string namespaces=1; // if not available, all the namespaces
-}
-
-
-message RestParameter {
-  optional yamcs.NamedObjectId id=1;
-  optional RestDataSource dataSource=2;
-}
-
-message RestListAvailableParametersResponse {
-  repeated RestParameter parameters=1;
-}
-
-message RestValidateCommandRequest {
-  repeated RestCommandType commands=1;
-}
-
-message RestValidateCommandResponse {
-  repeated commanding.CommandSignificance commandsSignificance = 1;
-}
-
-message RestDumpRawMdbResponse {
-  optional bytes rawMdb=2;
-}
-
-message RestListProcessorsResponse {
-    repeated yamcsManagement.ProcessorInfo processor=1;
-}
-
-message RestGetParameterRequest {
-    repeated yamcs.NamedObjectId list=1;
-    optional bool fromCache=2;
-    optional uint64 timeout=3; //if not from cache, wait this time (in milliseconds) to receive the parameter
-}
-
-message RestDumpArchiveRequest {
-  // Time specification (assumed Yamcs internal time)
-  optional int64 start = 1;
-  optional int64 stop = 2;
-  
-  //Alternative time specification as UTC strings in ISO8601 format
-  optional string utcStart = 9;
-  optional string utcStop = 10;
-
-  // At least one of the following request types should be added
-  optional yamcs.ParameterReplayRequest parameterRequest=3;
-  optional yamcs.PacketReplayRequest packetRequest=4;
-  optional yamcs.EventReplayRequest eventRequest=5;
-  optional yamcs.CommandHistoryReplayRequest commandHistoryRequest=6;
-  optional yamcs.PpReplayRequest ppRequest=7;
-
-  // By default the response will be aggregated on the server and only when fully
-  // built be sent to the client. This has a limitation of 1MB though.
-  // You can circumvent this limitation by enabling the stream-option, see the
-  // wiki for more details on this.
-  optional bool stream=8;
-}
-
-message RestDumpArchiveResponse {
-  repeated pvalue.ParameterData parameterData=2;
-  repeated yamcs.TmPacketData packetData=3;
-  repeated commanding.CommandHistoryEntry command=4;
-  repeated yamcs.Event event=5;
-  repeated pvalue.ParameterData ppData=6;
-}
-
-
-// GET /(instance)/api/archive/tags
-message GetTagsRequest {
-  // Time specification (assumed Yamcs internal time)
-  optional int64 start = 1;
-  optional int64 stop = 2;
-  
-  //Alternative time specification as UTC strings in ISO8601 format
-  optional string utcStart = 3;
-  optional string utcStop = 4;
-}
-
-message GetTagsResponse {
-  repeated yamcs.ArchiveTag tags = 1;
-}
-
-// POST /(instance)/api/archive/tags
-message InsertTagRequest {
-  optional string name = 1;
-  optional int64 start = 2;
-  optional int64 stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
-message InsertTagResponse {
-  optional yamcs.ArchiveTag tag = 1;
-}
-
-// PUT /(instance)/api/archive/tags/(old_start)/(id)
-message UpdateTagRequest {
-  optional string name = 1;
-  optional int64 start = 2;
-  optional int64 stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
-message GetAlarmsResponse {
-   repeated alarms.Alarm alarms = 1;
-}
-
-message AcknowledgeAlarmRequest {
-   optional string message = 1;
-}
-
-message AcknowledgeAlarmResponse {
-   optional string errorMessage = 1;
-}
-
-message RestSendCommandRequest {
-  repeated RestCommandType commands=1;
-}
-
-message RestUnitType {
-   optional string unit = 1;
-}
-
-enum RestAlarmLevel {
-   normal = 0;
-   watch = 1;
-   warning =  2;
-   distress = 3;
-   critical = 4;
-   severe = 5;
-}
-message RestAlarmRange {
-   optional RestAlarmLevel level = 1; 
-   optional double minInclusive = 2;
-   optional double maxInclusive = 3; 
-
-   //TODO show here also the integer value of the enumeration
-   optional string enumerationValue = 4;
-}
-message RestAlarmInfo {
-    optional int32 minViolations = 1;
-    repeated RestAlarmRange staticAlarmRanges = 2;
-}
-
-message RestParameterType {
-    optional string engType = 1;
-    optional string dataEncoding =2; //TODO
-    repeated RestUnitType unitSet = 3; 
-    optional RestAlarmInfo defaultAlarm = 4;
-}
-
-message RestNameDescription {
-    optional string qualifiedName = 1;
-    optional string shortDescription = 2;
-    optional string longDescription = 3;
-    repeated yamcs.NamedObjectId aliases = 4;
-}
-
-message RestParameterInfo {
+message BulkGetParameterResponse {
+  message GetParameterResponse {
     optional yamcs.NamedObjectId id = 1;
-    optional RestNameDescription description = 2;
-    optional RestParameterType type = 3;
-    optional string dataSource = 4;
+    optional mdb.ParameterInfo parameter = 2;
+  }
+  repeated GetParameterResponse response = 1;
 }
 
-message RestGetParameterInfoRequest {
-    repeated yamcs.NamedObjectId list = 1;
+message BulkGetParameterValueRequest {
+  repeated yamcs.NamedObjectId id = 1;
+  optional bool fromCache = 2;
+  optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
 }
 
-message RestGetParameterInfoResponse {
-    repeated RestParameterInfo pinfo = 1;
+message BulkGetParameterValueResponse {
+  repeated pvalue.ParameterValue value = 1;
+}
+
+message BulkSetParameterValueRequest {
+  message SetParameterValueRequest {
+    optional yamcs.NamedObjectId id = 1;
+    optional yamcs.Value value = 2;
+  }
+  repeated SetParameterValueRequest request = 1;
+}
+
+message ListContainersResponse {
+  repeated mdb.ContainerInfo container = 1;
+}
+
+message ListCommandsResponse {
+  repeated mdb.CommandInfo command = 1;
 }
 
 message ListClientsResponse {
-    repeated yamcsManagement.ClientInfo clientInfo = 1;
+  repeated yamcsManagement.ClientInfo client = 1;
 }
 
-message UserAuthorizationsInfo{
-    repeated string roles=1;
-	repeated string tmParaPrivileges=2;
-    repeated string tmParaSetPrivileges=3;
-	repeated string tmPacketPrivileges=4;
-	repeated string tcPrivileges=5;
-	repeated string systemPrivileges=6;
-
+message PatchClientRequest {
+  optional string processor = 1;
 }
 
-message RestListAuthorisationsResponse {
-     optional UserAuthorizationsInfo userAuthorizationsInfo=1;
+message ListProcessorsResponse {
+  repeated yamcsManagement.ProcessorInfo processor = 1;
 }
 
-message RestSetSimulationTimeRequest {
-   //one of the two have to be specified
-   optional int64 time0 = 1;   
-   optional string time0UTC = 2;
-   optional int64 simElapsedTime =3;
-   optional double simSpeed = 4;
+message ListCommandQueuesResponse {
+  repeated commanding.CommandQueueInfo queue = 1;
+}
+
+message IssueCommandRequest {
+  message Assignment {
+    optional string name = 1;
+    optional string value = 2;
+  }
+  repeated Assignment assignment = 1;
+  optional string origin = 2;
+  optional int32 sequenceNumber = 3;
+  optional bool dryRun = 4;
+}
+
+message IssueCommandResponse {
+  optional string queue = 1;
+  optional string source = 2;
+  optional string hex = 3;
+  optional bytes binary = 4;
+}
+
+message CreateProcessorRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional bool loop = 4;
+  optional string speed = 5;
+  repeated int32 clientId = 6;
+  repeated string paraname = 7;
+  repeated string ppgroup = 8;
+  repeated string packetname = 9;
+  optional bool cmdhist = 10;
+  optional bool persistent = 11;
+}
+
+message PatchProcessorRequest {
+  optional string state = 1;
+  optional int64 seekTime = 2;
+  optional string speed = 3;
+}
+
+message StreamSubscribeRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
+message SetSimulationTimeRequest {
+  //one of the two have to be specified
+  optional int64 time0 = 1;
+  optional string time0UTC = 2;
+  optional int64 simElapsedTime = 3;
+  optional double simSpeed = 4;
+}
+
+message ListInstancesResponse {
+  repeated yamcsManagement.YamcsInstance instance = 1;
+}
+
+message ListAlarmsResponse {
+  repeated alarms.AlarmInfo alarm = 1;
+}
+
+message PatchAlarmRequest {
+  optional string state = 1;
+  optional string comment = 2;
+}
+
+message ListTablesResponse {
+  repeated archive.TableInfo table = 1;
+}
+
+message ListStreamsResponse {
+  repeated archive.StreamInfo stream = 1;
 }

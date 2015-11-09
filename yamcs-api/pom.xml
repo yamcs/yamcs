@@ -36,6 +36,37 @@
 								<property>
 									<name>generate_field_map</name>
 								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
+							</options>
+						</protoModule>
+						<protoModule>
+							<source>src/main/archive.proto</source>
+							<outputDir>src/main/java</outputDir>
+							<output>java_v2protoc_schema</output>
+							<encoding>UTF-8</encoding>
+							<options>
+								<property>
+									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
+							</options>
+						</protoModule>
+						<protoModule>
+							<source>src/main/mdb.proto</source>
+							<outputDir>src/main/java</outputDir>
+							<output>java_v2protoc_schema</output>
+							<encoding>UTF-8</encoding>
+							<options>
+								<property>
+									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
 							</options>
 						</protoModule>
 						<protoModule>
@@ -46,6 +77,23 @@
 							<options>
 								<property>
 									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
+							</options>
+						</protoModule>
+						<protoModule>
+							<source>src/main/rest.proto</source>
+							<outputDir>src/main/java</outputDir>
+							<output>java_v2protoc_schema</output>
+							<encoding>UTF-8</encoding>
+							<options>
+								<property>
+									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
 								</property>
 							</options>
 						</protoModule>
@@ -58,6 +106,9 @@
 								<property>
 									<name>generate_field_map</name>
 								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
 							</options>
 						</protoModule>
 						<protoModule>
@@ -69,21 +120,13 @@
 								<property>
 									<name>generate_field_map</name>
 								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
 							</options>
 						</protoModule>
-                        <protoModule>
-                            <source>src/main/events.proto</source>
-                            <outputDir>src/main/java</outputDir>
-                            <output>java_v2protoc_schema</output>
-                            <encoding>UTF-8</encoding>
-                            <options>
-                                <property>
-                                    <name>generate_field_map</name>
-                                </property>
-                            </options>
-                        </protoModule>
 						<protoModule>
-							<source>src/main/rest.proto</source>
+							<source>src/main/events.proto</source>
 							<outputDir>src/main/java</outputDir>
 							<output>java_v2protoc_schema</output>
 							<encoding>UTF-8</encoding>
@@ -91,16 +134,22 @@
 								<property>
 									<name>generate_field_map</name>
 								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
 							</options>
 						</protoModule>
 						<protoModule>
-							<source>src/main/websocket.proto</source>
+							<source>src/main/web.proto</source>
 							<outputDir>src/main/java</outputDir>
 							<output>java_v2protoc_schema</output>
 							<encoding>UTF-8</encoding>
 							<options>
 								<property>
 									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
 								</property>
 							</options>
 						</protoModule>
@@ -113,6 +162,9 @@
 								<property>
 									<name>generate_field_map</name>
 								</property>
+								<property>
+									<name>enums_by_name</name>
+								</property>
 							</options>
 						</protoModule>
 						<protoModule>
@@ -123,6 +175,9 @@
 							<options>
 								<property>
 									<name>generate_field_map</name>
+								</property>
+								<property>
+									<name>enums_by_name</name>
 								</property>
 							</options>
 						</protoModule>

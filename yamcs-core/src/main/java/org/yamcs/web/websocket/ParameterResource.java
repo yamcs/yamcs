@@ -25,7 +25,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -62,7 +62,6 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         log = LoggerFactory.getLogger(ParameterResource.class.getName() + "[" + yproc.getInstance() + "]");
         pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
         wsHandler.addResource("parameter", this);
-        wsHandler.addResource("request", this);
     }
 
     @Override

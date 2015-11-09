@@ -20,7 +20,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private final Logger log;
     private final int clientId;
     private final String applicationName;
-    private String username = "unknown";
+    private String username = ManagementService.ANONYMOUS;
 
     private AuthenticationToken authToken = null;
 
@@ -29,7 +29,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
         this.authToken = authToken;
-        this.username = authToken != null ? authToken.getPrincipal().toString() : "unknown";
+        this.username = authToken != null ? authToken.getPrincipal().toString() : ManagementService.ANONYMOUS;
         log = LoggerFactory.getLogger(WebSocketProcessorClient.class.getName() + "[" + yamcsInstance + "]");
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         

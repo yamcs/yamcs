@@ -1,18 +1,17 @@
 package org.yamcs.web.rest;
 
 
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.util.CharsetUtil;
-import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Rest;
-import org.yamcs.protobuf.Yamcs;
-import org.yamcs.utils.ParameterFormatter;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
+
+import org.yamcs.protobuf.Archive;
+import org.yamcs.protobuf.Pvalue;
+import org.yamcs.protobuf.Yamcs;
+import org.yamcs.utils.ParameterFormatter;
+
+import io.netty.util.CharsetUtil;
 
 /**
  * Created by msc on 13/04/15.
@@ -27,7 +26,7 @@ public class CsvGenerator {
 
     List<String> insertedHeader;
 
-    public void insertRows(Rest.RestDumpArchiveResponse response, OutputStream channelOut) throws IOException {
+    public void insertRows(Archive.DumpArchiveResponse response, OutputStream channelOut) throws IOException {
 
         // Parameter
         insertParameterRow(response, channelOut);
@@ -72,7 +71,7 @@ public class CsvGenerator {
         pf.setTimeWindow(timewindow);
     }
 
-    private void insertParameterRow(Rest.RestDumpArchiveResponse response, OutputStream channelOut) throws IOException {
+    private void insertParameterRow(Archive.DumpArchiveResponse response, OutputStream channelOut) throws IOException {
         // convert ChannelBufferOutputStream -> OutputStreamWriter -> Writer -> BufferedWriter
 
         pf.updateWriter(channelOut, CharsetUtil.UTF_8);

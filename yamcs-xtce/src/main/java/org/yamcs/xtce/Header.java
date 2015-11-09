@@ -1,6 +1,8 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A header contains general information about the system or subsystem.
@@ -13,6 +15,7 @@ public class Header implements Serializable {
     private static final long serialVersionUID = 2L;
     private String            version          = null;
     private String            date             = null;
+    private List<History> historyList = new ArrayList<>();
 
 
     public void setVersion(String version) {
@@ -29,6 +32,14 @@ public class Header implements Serializable {
 
     public String getDate() {
         return date;
+    }
+    
+    public List<History> getHistoryList() {
+        return historyList;
+    }
+    
+    public void addHistory(History history) {
+        this.historyList.add(history);
     }
     
     @Override
