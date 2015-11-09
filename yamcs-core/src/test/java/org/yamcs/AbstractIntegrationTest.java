@@ -20,6 +20,7 @@ import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
+import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
@@ -32,6 +33,7 @@ import org.yamcs.protobuf.Rest.RestSendCommandRequest;
 import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -44,6 +46,7 @@ import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -99,6 +102,15 @@ public abstract class AbstractIntegrationTest {
         //        assertNotNull(cinfo);
     }
 
+    protected ClientInfo getClientInfo() throws InterruptedException {
+        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);
+        wsClient.sendRequest(wsr);
+        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(cinfo);
+        return cinfo;
+    }
+
+
 
     private static void setupYamcs() throws Exception {
         File dataDir=new File("/tmp/yamcs-IntegrationTest-data");
@@ -125,6 +137,14 @@ public abstract class AbstractIntegrationTest {
 
         return RestSendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
 
+    }
+    
+    protected NamedObjectList getSubscription(String... pfqname) {
+        NamedObjectList.Builder b = NamedObjectList.newBuilder();
+        for(String p: pfqname) {
+            b.addList(NamedObjectId.newBuilder().setName(p).build());
+        }
+        return b.build();
     }
 
     @After

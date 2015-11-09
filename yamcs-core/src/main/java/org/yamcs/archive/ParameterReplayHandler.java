@@ -108,10 +108,12 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             if((containers==null)|| (containers.isEmpty())) {
                 log.debug("No container required for the parameter extract");
             } else {
-                
+                System.out.println("here: containers: "+containers);
 
                 for(SequenceContainer sc:containers) {
                     if(sc.useAsArchivePartition()) {  
+                        tmPartitions.add(sc.getQualifiedName());
+                    } else if(sc.getBaseContainer()==null) { //add the root containers anyway - TODO - should be smarter than this
                         tmPartitions.add(sc.getQualifiedName());
                     }
                 }

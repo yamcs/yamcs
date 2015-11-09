@@ -327,70 +327,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
 
-    @Test
-    public void testReplay() throws Exception {
-        generateData("2015-01-01T10:00:00", 3600);
-        ClientInfo cinfo = getClientInfo();
-        //create a parameter reply via REST
-        ReplayRequest rr = ReplayRequest.newBuilder().setUtcStart("2015-01-01T10:01:00").setUtcStop("2015-01-01T10:05:00")
-                .setPacketRequest(PacketReplayRequest.newBuilder().build()).build();
-        ProcessorManagementRequest prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CREATE_PROCESSOR).setInstance("IntegrationTest").setName("testReplay").setType("Archive")
-                .setReplaySpec(rr).build();
+  
 
-        httpClient.doRequest("http://localhost:9190/IntegrationTest/api/processor", HttpMethod.POST, toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
-
-        cinfo = getClientInfo();
-        assertEquals("testReplay", cinfo.getProcessorName());
-
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
-        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterResource.WSR_subscribe, subscrList);
-        wsClient.sendRequest(wsr);
-
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-
-        assertEquals(2, pdata.getParameterCount());
-        ParameterValue p1_1_6 = pdata.getParameter(0);
-        assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
-
-        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(pdata);
-
-        assertEquals(2, pdata.getParameterCount());
-        p1_1_6 = pdata.getParameter(0);
-        assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
-
-        //go back to realtime
-        prequest = ProcessorManagementRequest.newBuilder().addClientId(cinfo.getId())
-                .setOperation(ProcessorManagementRequest.Operation.CONNECT_TO_PROCESSOR).setInstance("IntegrationTest").setName("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/IntegrationTest/api/processor", toJson(prequest, SchemaYamcsManagement.ProcessorManagementRequest.WRITE), currentUser);
-
-        cinfo = getClientInfo();
-        assertEquals("realtime", cinfo.getProcessorName());
-    }
-
-    @Test
-    public void testRetrieveDataFromArchive() throws Exception {
-        generateData("2015-01-02T10:00:00", 3600);
-        NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
-        NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
-
-        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
-        RestDumpArchiveRequest dumpRequest = RestDumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2015-01-02T10:10:00").setUtcStop("2015-01-02T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/IntegrationTest/api/archive", toJson(dumpRequest, SchemaRest.RestDumpArchiveRequest.WRITE), currentUser);
-        RestDumpArchiveResponse rdar = (fromJson(response, SchemaRest.RestDumpArchiveResponse.MERGE)).build();
-        List<ParameterData> plist = rdar.getParameterDataList();
-        assertNotNull(plist);
-        assertEquals(4, plist.size());
-        ParameterValue pv0 = plist.get(0).getParameter(0);
-        assertEquals("2015-01-02T10:10:00.000", pv0.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
-        ParameterValue pv3 = plist.get(3).getParameter(0);
-        assertEquals("2015-01-02T10:10:01.000", pv3.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
-    }
+    
 
     @Test
     public void testRetrieveIndex() throws Exception {
@@ -414,30 +353,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
 
 
-    private ClientInfo getClientInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);
-        wsClient.sendRequest(wsr);
-        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(cinfo);
-        return cinfo;
-    }
-
-
     private ProcessorInfo getProcessorInfo() throws InterruptedException {
         WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getProcessorInfo);
         wsClient.sendRequest(wsr);
         ProcessorInfo pinfo = wsListener.processorInfoList.poll(5, TimeUnit.SECONDS);
         assertNotNull(pinfo);
         return pinfo;
-    }
-
-    private void generateData(String utcStart, int numPackets) {
-        long t0 = TimeEncoding.parse(utcStart);
-        for (int i=0;i <numPackets; i++) {
-        	packetGenerator.setGenerationTime(t0+1000*i);
-            packetGenerator.generate_PKT1_1();
-            packetGenerator.generate_PKT1_3();
-        }
     }
 
 
@@ -477,11 +398,5 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(packetProvider.pIntegerPara1_1_7 , p2eng.getUint32Value());
     }
   
-    private NamedObjectList getSubscription(String... pfqname) {
-        NamedObjectList.Builder b = NamedObjectList.newBuilder();
-        for(String p: pfqname) {
-            b.addList(NamedObjectId.newBuilder().setName(p).build());
-        }
-        return b.build();
-    }
+   
 }

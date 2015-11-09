@@ -768,6 +768,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 container.setLongDescription(description);
             }
 
+            if(hasColumn(cells, IDX_CONT_FLAGS)) {
+                String flags = cells[IDX_CONT_FLAGS].getContents();
+                if(flags.contains("a")) {
+                    container.useAsArchivePartition(true);
+                }
+             }
+            
             //System.out.println("for "+name+" got absoluteOffset="+)
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
             int start = i++;
@@ -817,7 +824,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 int repeated = -1; 
                 if (param != null) {
                     SequenceEntry se;
-                    if(flags.contains("L")) {
+                    if(flags.contains("L") || flags.contains("l")) {
                         if(param.parameterType instanceof IntegerParameterType) {
                             ((IntegerParameterType)param.parameterType).encoding.byteOrder=ByteOrder.LITTLE_ENDIAN;
                         } else if(param.parameterType instanceof FloatParameterType) {
@@ -1414,7 +1421,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         container.entryList.add(ae);
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
-        if((flags!=null) && flags.contains("L")) {
+        if((flags!=null) && (flags.contains("L") || flags.contains("l"))) {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
         }
 

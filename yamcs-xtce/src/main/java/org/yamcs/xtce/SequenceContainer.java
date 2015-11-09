@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * The idle pattern is part of any unallocated space in the Container.
  */
 public class SequenceContainer extends Container {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
     public SequenceContainer(String name) {
 	super(name);
     }
@@ -88,7 +88,7 @@ public class SequenceContainer extends Container {
     }
 
 
-    public void setUseAsArchivePartition(boolean useAsArchivePartition) {
+    public void useAsArchivePartition(boolean useAsArchivePartition) {
         this.useAsArchivePartition = useAsArchivePartition;
     }
 }

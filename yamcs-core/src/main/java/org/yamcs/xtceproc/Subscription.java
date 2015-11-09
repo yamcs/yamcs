@@ -159,6 +159,7 @@ public class Subscription {
      */
     public Collection<SequenceContainer> getContainers() {
         Set<SequenceContainer> r = new HashSet<SequenceContainer>();
+        r.addAll(container2InheritingContainerMap.keySet());
         for(HashSet<SequenceContainer> hs:container2InheritingContainerMap.values()) {
             r.addAll(hs);
         }

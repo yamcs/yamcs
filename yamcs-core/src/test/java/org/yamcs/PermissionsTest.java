@@ -161,8 +161,6 @@ public class PermissionsTest extends AbstractIntegrationTest {
     }
 
 
-
-
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i=0;i <numPackets; i++) {
@@ -170,15 +168,5 @@ public class PermissionsTest extends AbstractIntegrationTest {
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
         }
-    }
-
-
-    
-    private NamedObjectList getSubscription(String... pfqname) {
-        NamedObjectList.Builder b = NamedObjectList.newBuilder();
-        for(String p: pfqname) {
-            b.addList(NamedObjectId.newBuilder().setName(p).build());
-        }
-        return b.build();
     }
 }
