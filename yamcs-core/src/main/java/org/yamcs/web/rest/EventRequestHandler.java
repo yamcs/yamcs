@@ -22,12 +22,17 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 /**
  * Short-lived operations wrt Events 
  * <p>
- * /(instance)/api/events
+ * Events are not currently linked to a processor
  */
-public class EventsRequestHandler  implements RestRequestHandler {
+public class EventRequestHandler extends RestRequestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(EventsRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(EventRequestHandler.class);
     private static AtomicInteger streamCounter = new AtomicInteger();
+    
+    @Override
+    public String getPath() {
+        return "events";
+    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -79,7 +84,8 @@ public class EventsRequestHandler  implements RestRequestHandler {
      * Sends chunks of max 500 records
      */
     private void streamResponse(RestRequest req, String sql, String contentType) throws RestException {
-        YarchDatabase ydb = YarchDatabase.getInstance(req.getYamcsInstance());
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
         String streamName = "rest_get_events" + streamCounter.incrementAndGet();
         try {
             String streamsql = "create stream " + streamName + " as " + sql;
@@ -118,7 +124,7 @@ public class EventsRequestHandler  implements RestRequestHandler {
                     }
                 }
                 RestUtils.stopChunkedTransfer(req);
-            }            
+            }
         });
         
         // All set. Start tuple production

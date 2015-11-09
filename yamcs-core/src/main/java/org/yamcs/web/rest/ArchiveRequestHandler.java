@@ -1,15 +1,15 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -18,22 +18,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
+import org.yamcs.protobuf.Archive.DumpArchiveRequest;
+import org.yamcs.protobuf.Archive.DumpArchiveResponse;
+import org.yamcs.protobuf.Archive.GetTagsRequest;
+import org.yamcs.protobuf.Archive.GetTagsResponse;
+import org.yamcs.protobuf.Archive.InsertTagRequest;
+import org.yamcs.protobuf.Archive.InsertTagResponse;
+import org.yamcs.protobuf.Archive.StreamInfo;
+import org.yamcs.protobuf.Archive.TableData;
+import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.Archive.TableInfo;
+import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.GetTagsRequest;
-import org.yamcs.protobuf.Rest.GetTagsResponse;
-import org.yamcs.protobuf.Rest.InsertTagRequest;
-import org.yamcs.protobuf.Rest.InsertTagResponse;
-import org.yamcs.protobuf.Rest.RestDumpArchiveRequest;
-import org.yamcs.protobuf.Rest.RestDumpArchiveResponse;
-import org.yamcs.protobuf.Rest.UpdateTagRequest;
+import org.yamcs.protobuf.Rest.ListStreamsResponse;
+import org.yamcs.protobuf.Rest.ListTablesResponse;
+import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
@@ -45,14 +53,20 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
@@ -73,12 +87,12 @@ import io.protostuff.Schema;
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server. At the
  * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
- * <p>
- * /(instance)/api/archive
  */
-public class ArchiveRequestHandler implements RestRequestHandler {
+public class ArchiveRequestHandler extends RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    
+    private static AtomicInteger streamCounter = new AtomicInteger();
 
     // This is a guideline, not a hard limit because because calculations don't include wrapping message
     private static final int MAX_BYTE_SIZE = 1048576;
@@ -86,19 +100,42 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     private CsvGenerator csvGenerator = null;
     
     @Override
+    public String getPath() {
+        return "archive";
+    }
+    
+    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
-            return handleDumpRequest(req); // GET /(instance)/api/archive
-        }
-        
-        switch (req.getPathSegment(pathOffset)) {
-        case "tags":
-            return handleTagsRequest(req, pathOffset + 1);
-            
-        default:
             throw new NotFoundException(req);
         }
+        
+        String instance = req.getPathSegment(pathOffset);
+        if (!YamcsServer.hasInstance(instance)) {
+            throw new NotFoundException(req, "No instance '" + instance + "'");
+        }
+        req.addToContext(RestRequest.CTX_INSTANCE, instance);
+        
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        
+        pathOffset++;
+        if (!req.hasPathSegment(pathOffset)) {
+            return handleDumpRequest(req);
+        } else {
+            switch (req.getPathSegment(pathOffset)) {
+            case "tags":
+                return handleTagsRequest(req, pathOffset + 1);
+            case "tables":
+                return handleTablesRequest(req, pathOffset + 1, ydb);
+            case "streams":
+                return handleStreamsRequest(req, pathOffset + 1, ydb);
+            default:
+                throw new NotFoundException(req);
+            }
+        }
     }
+    
+    
     
     /**
      *  csv generator should be created only once per request since its insert a header in first row
@@ -120,7 +157,8 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         {
             try {
                 String profile = req.getQueryParameters().get("profile").get(0);
-                String filename = YarchDatabase.getHome() + "/" + req.yamcsInstance + "/profiles/" + profile + ".profile";
+                String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+                String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
                 requestedProfile = Yamcs.NamedObjectList.newBuilder().addAllList(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(filename)))).build();
             }
             catch (Exception e)
@@ -139,8 +177,8 @@ public class ArchiveRequestHandler implements RestRequestHandler {
      * is true).
      */
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
-       // req.assertGET();
-        RestDumpArchiveRequest request = req.bodyAsMessage(SchemaRest.RestDumpArchiveRequest.MERGE).build();
+        // req.assertGET();
+        DumpArchiveRequest request = req.bodyAsMessage(SchemaArchive.DumpArchiveRequest.MERGE).build();
 
         // Check if a profile has been specified in the request
         // Currently, profiles apply only for Parameter requests
@@ -195,22 +233,23 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         {
             initCsvGenerator(replayRequest);
         }
+        
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
 
         // Start a short-lived replay
         YamcsSession ys = null;
         YamcsClient msgClient = null;
         try {
             String yamcsConnectionData = "yamcs://";
-            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class)
-            {
+            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class) {
                 yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
                         + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
             }
-            yamcsConnectionData += "localhost/"+req.yamcsInstance;
+            yamcsConnectionData += "localhost/"+instance;
 
             ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
             msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(req.yamcsInstance);
+            SimpleString replayServer = Protocol.getYarchReplayControlAddress(instance);
             StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
 
             // Server is good to go, start the replay
@@ -256,7 +295,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
                 break;
             }
 
-            RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+            DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
             ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
             if (dataType == null) {
                 log.trace("Ignoring hornetq message of type null");
@@ -307,13 +346,13 @@ public class ArchiveRequestHandler implements RestRequestHandler {
     private RestResponse writeAggregatedResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
     throws RestException, HornetQException, YamcsApiException {
         int sizeEstimate = 0;
-        RestDumpArchiveResponse.Builder builder = RestDumpArchiveResponse.newBuilder();
+        DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
         while(true) {
             ClientMessage msg = msgClient.dataConsumer.receive();
 
             if (Protocol.endOfStream(msg)) {
                 log.trace("All done. Send to client");
-                return new RestResponse(req, builder.build(), SchemaRest.RestDumpArchiveResponse.WRITE);
+                return new RestResponse(req, builder.build(), SchemaArchive.DumpArchiveResponse.WRITE);
             }
 
             ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
@@ -346,7 +385,7 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         }
     }
 
-    private static void mergeMessage(ProtoDataType dataType, MessageLite message, RestDumpArchiveResponse.Builder builder) throws YamcsApiException {
+    private static void mergeMessage(ProtoDataType dataType, MessageLite message, DumpArchiveResponse.Builder builder) throws YamcsApiException {
         switch (dataType) {
             case PARAMETER:
                 builder.addParameterData((ParameterData) message);
@@ -412,20 +451,196 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         }
     }
     
+    private RestResponse handleTablesRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listTables(req, ydb);            
+        } else {
+            String tableName = req.getPathSegment(pathOffset);
+            TableDefinition table = ydb.getTable(tableName);
+            if (table == null) {
+                throw new NotFoundException(req, "No table named '" + tableName + "'");
+            } else {
+                return handleTableRequest(req, pathOffset + 1, ydb, table);
+            }
+        }
+    }
+    
+    private RestResponse handleTableRequest(RestRequest req, int pathOffset, YarchDatabase ydb, TableDefinition table) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return getTable(req, table);
+        } else {
+            String resource = req.getPathSegment(pathOffset);
+            switch (resource) {
+            case "data":
+                return getTableData(req, ydb, table);
+            default:
+                throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
+            }
+        }
+    }
+    
+    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws RestException {
+        ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
+        for (TableDefinition def : ydb.getTableDefinitions()) {
+            responseb.addTable(ArchiveAssembler.toTableInfo(def));
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
+    }
+    
+    private RestResponse getTable(RestRequest req, TableDefinition table) throws RestException {
+        TableInfo response = ArchiveAssembler.toTableInfo(table);
+        return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
+    }
+    
+    private RestResponse getTableData(RestRequest req, YarchDatabase ydb, TableDefinition table) throws RestException {
+        // Sensible defaults
+        List<String> cols = null;
+        long start = 0;
+        int limit = 100;
+        List<String> sortCols = null;
+        
+        // Read query params
+        if (req.hasQueryParameter("cols")) {
+            cols = new ArrayList<>(); // Order, and non-unique
+            for (String para : req.getQueryParameterList("cols")) {
+                for (String col : para.split(",")) {
+                    cols.add(col);
+                }
+            }
+        }
+        if (req.hasQueryParameter("start")) start = req.getQueryParameterAsLong("start");
+        if (req.hasQueryParameter("limit")) limit = req.getQueryParameterAsInt("limit");
+        if (req.hasQueryParameter("sort")) {
+            sortCols = new ArrayList<>(); // Order, and non-unique
+            for (String para : req.getQueryParameterList("sort")) {
+                for (String col : para.split(",")) {
+                    switch(col.charAt(0)) {
+                    case '+':
+                        sortCols.add(col.substring(1) + " asc");
+                        break;
+                    case '-':
+                        sortCols.add(col.substring(1) + " desc");
+                        break;
+                    default:
+                        sortCols.add(col);
+                    }
+                }
+            }
+        }
+        
+        // Makes a SQL query. Pagination is currently done programmatically on the result
+        // which is something we would better add support for in Stream SQL.
+        String streamName = "rest_archive" + streamCounter.incrementAndGet();
+        StringBuilder buf = new StringBuilder("create stream ").append(streamName).append(" as select ");
+        if (cols == null) {
+            buf.append("*");
+        } else if (cols.isEmpty()) {
+            throw new BadRequestException("No columns are specified.");
+        } else {
+            for (int i = 0; i < cols.size(); i++) {
+                if (i != 0) buf.append(", ");
+                buf.append(cols.get(i));
+            }
+        }
+        buf.append(" from ").append(table.getName());
+        
+        if (sortCols != null) {
+            buf.append(" order by ");
+            for (int i = 0; i < sortCols.size(); i++) {
+                if (i != 0) buf.append(", ");
+                buf.append(sortCols.get(i));
+            }
+        }
+        
+        String sql = buf.toString();
+        log.info("Executing SQL: " + sql);
+        try {
+            ydb.execute(sql);
+        } catch (StreamSqlException | ParseException e) {
+            throw new InternalServerErrorException(e);
+        }
+        
+        // Ugh, fix me to be async. Current framework not really good for that.
+        Semaphore semaphore = new Semaphore(0);
+        
+        TableData.Builder responseb = TableData.newBuilder();
+        Stream stream = ydb.getStream(streamName);
+        log.info("will limit to " + limit);
+        stream.addSubscriber(new LimitedStreamSubscriber(start, limit) {
+            @Override
+            public void onTuple(Tuple tuple) {
+                TableRecord.Builder rec = TableRecord.newBuilder();
+                rec.addAllColumn(ArchiveAssembler.toColumnDataList(tuple));
+                responseb.addRecord(rec); // TODO estimate byte size
+            }
+            
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+        });
+        stream.start();
+        try {
+            semaphore.acquire();
+            return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
+        } catch (InterruptedException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+    
+    private RestResponse handleStreamsRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listStreams(req, ydb);
+        } else {
+            String streamName = req.getPathSegment(pathOffset);
+            Stream stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new NotFoundException(req, "No stream named '" + streamName + "'");
+            } else {
+                return handleStreamRequest(req, pathOffset + 1, stream);
+            }
+        }
+    }
+    
+    private RestResponse handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return getStream(req, stream);
+        } else {
+            String resource = req.getPathSegment(pathOffset + 1);
+            throw new NotFoundException(req, "No resource '" + resource + "' for stream '" + stream.getName() +  "'");
+        }
+    } 
+    
+    private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws RestException {
+        ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
+        for (AbstractStream stream : ydb.getStreams()) {
+            responseb.addStream(ArchiveAssembler.toStreamInfo(stream));
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
+    }
+    
+    private RestResponse getStream(RestRequest req, Stream stream) throws RestException {
+        StreamInfo response = ArchiveAssembler.toStreamInfo(stream);
+        return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
+    }
+    
     /**
      * Lists all tags (optionally filtered by request-body)
-     * <p>
-     * GET /(instance)/api/archive/tags
      */
     private RestResponse getTags(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         
         // Start with default open-ended
         TimeInterval interval = new TimeInterval();
         
         // Check any additional options
         if (req.hasBody()) {
-            GetTagsRequest request = req.bodyAsMessage(SchemaRest.GetTagsRequest.MERGE).build();
+            GetTagsRequest request = req.bodyAsMessage(SchemaArchive.GetTagsRequest.MERGE).build();
             if (request.hasStart()) interval.setStart(request.getStart());
             if (request.hasStop()) interval.setStop(request.getStop());
         }
@@ -445,18 +660,19 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.GetTagsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaArchive.GetTagsResponse.WRITE);
     }
     
     /**
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      * <p>
-     * POST /(instance)/api/archive/tags
+     * POST /(instance)/archive/tags
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
-        InsertTagRequest request = req.bodyAsMessage(SchemaRest.InsertTagRequest.MERGE).build();
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
+        InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
         
@@ -478,17 +694,18 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         // Echo back the tag, with its new ID
         InsertTagResponse.Builder responseb = InsertTagResponse.newBuilder();
         responseb.setTag(newTag);
-        return new RestResponse(req, responseb.build(), SchemaRest.InsertTagResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaArchive.InsertTagResponse.WRITE);
     }
     
     /**
      * Updates an existing tag. Returns nothing
      * <p>
-     * PUT /(instance)/api/archive/tags/(tag-time)/(tag-id)
+     * PUT /(instance)/archive/tags/(tag-time)/(tag-id)
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
-        TagDb tagDb = getTagDb(req.yamcsInstance);
-        UpdateTagRequest request = req.bodyAsMessage(SchemaRest.UpdateTagRequest.MERGE).build();
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
+        UpdateTagRequest request = req.bodyAsMessage(SchemaArchive.UpdateTagRequest.MERGE).build();
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
         if (!request.hasName())
@@ -521,7 +738,8 @@ public class ArchiveRequestHandler implements RestRequestHandler {
         if (tagId < 1)
             throw new BadRequestException("Invalid tag ID");
         
-        TagDb tagDb = getTagDb(req.yamcsInstance);
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+        TagDb tagDb = getTagDb(instance);
         try {
             tagDb.deleteTag(tagTime, tagId);
         } catch (YamcsException e) { // Delete-tag returns an exception when it's not found

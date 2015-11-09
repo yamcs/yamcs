@@ -2,49 +2,51 @@ package commanding;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
+import "mdb.proto";
 
 
 message CommandId {
-   required int64 generationTime=1;
-   required string origin=2;
-   required int32 sequenceNumber=3; //this has to be unique in relation to the generation time and origin
-   optional string commandName=4;
+  required int64 generationTime = 1;
+  required string origin = 2;
+  required int32 sequenceNumber = 3; //this has to be unique in relation to the generation time and origin
+  optional string commandName = 4;
 }
 
 /************* Command Queue Control ********************/
 enum QueueState {
-   BLOCKED = 1;
-   DISABLED = 2;
-   ENABLED = 3;
+  BLOCKED = 1;
+  DISABLED = 2;
+  ENABLED = 3;
 }
 
 message CommandQueueInfo {
-    required string instance = 1;
-    required string processorName = 2;
-    required string name = 3;
-    optional QueueState state = 4;
-    required int32 nbSentCommands = 5;
-    required int32 nbRejectedCommands = 6;
-    optional int32 stateExpirationTimeS = 7;
+  required string instance = 1;
+  required string processorName = 2;
+  required string name = 3;
+  optional QueueState state = 4;
+  required int32 nbSentCommands = 5;
+  required int32 nbRejectedCommands = 6;
+  optional int32 stateExpirationTimeS = 7;
+  optional string url = 8;
 }
 
 /*One entry (command) in the command queue*/
 message CommandQueueEntry {
-   required string instance = 1;
-   required string processorName = 2;
-   required string queueName = 3;
-   required CommandId cmdId = 4;
-   optional string source = 5;
-   optional bytes binary = 6;
-   optional string username = 7;
-   optional int64 generationTime = 8;
+  required string instance = 1;
+  required string processorName = 2;
+  required string queueName = 3;
+  required CommandId cmdId = 4;
+  optional string source = 5;
+  optional bytes binary = 6;
+  optional string username = 7;
+  optional int64 generationTime = 8;
 }
 
 
 message CommandQueueRequest {
-   optional CommandQueueInfo queueInfo=1; // for SetQueueState
-   optional CommandQueueEntry queueEntry=2; //for SendCommand and RejectCommand
-   optional bool rebuild=3[default=false]; //if rebuild is true, the binary packet will be recreated to include new time and sequence count
+  optional CommandQueueInfo queueInfo = 1; // for SetQueueState
+  optional CommandQueueEntry queueEntry = 2; //for SendCommand and RejectCommand
+  optional bool rebuild = 3[default=false]; //if rebuild is true, the binary packet will be recreated to include new time and sequence count
 }
 service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
   rpc SetQueueState(CommandQueueInfo) returns (yamcs.Void);
@@ -54,32 +56,21 @@ service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
 
 /* this message is sent as response to validate, in case the significance is defined for a commands*/
 message CommandSignificance {
-    enum Level {
-        none = 1;
-        watch = 2;
-        warning = 3;
-        distress = 4;
-        critical = 5;
-        severe = 6;
-    };
-   required int32 sequenceNumber = 1; //the sequence number of the command sent
-   required Level consequenceLevel = 2;
-   optional string reasonForWarning = 3;
+  optional int32 sequenceNumber = 1; //the sequence number of the command sent
+  optional mdb.SignificanceInfo significance = 2;
 }
 
 
 /********************* Command History ***********************/
 
 message CommandHistoryAttribute {
-    optional string name = 1;
-    optional yamcs.Value value = 2;
-    optional int64 time = 3;
+  optional string name = 1;
+  optional yamcs.Value value = 2;
+  optional int64 time = 3;
 }
 
 message CommandHistoryEntry {
-    required CommandId commandId = 1;
-    //required string cmdName = 2; //removed because it's part of the CommandId
-    repeated CommandHistoryAttribute attr = 3 ;
+  required CommandId commandId = 1;
+  //required string cmdName = 2; //removed because it's part of the CommandId
+  repeated CommandHistoryAttribute attr = 3;
 }
-
-

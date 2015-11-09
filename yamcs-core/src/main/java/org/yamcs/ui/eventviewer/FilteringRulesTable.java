@@ -5,11 +5,11 @@ import java.util.Observer;
 import java.util.Vector;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
 import javax.swing.table.AbstractTableModel;
 
-import org.yamcs.ui.eventviewer.FilteringRule.FilteringRuleFactory;
-
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.ui.eventviewer.FilteringRule.FilteringRuleFactory;
 
 /**
  * Table with filtering rules. The rules are matched from top to bottom, there

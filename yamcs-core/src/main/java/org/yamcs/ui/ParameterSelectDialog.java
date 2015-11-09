@@ -1,24 +1,8 @@
 package org.yamcs.ui;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.utils.HornetQBufferInputStream;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-import org.yamcs.api.*;
-import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.XtceDb;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -27,6 +11,37 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.ToolTipManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.utils.HornetQBufferInputStream;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.api.Protocol;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsClient;
+import org.yamcs.api.YamcsConnectData;
+import org.yamcs.api.YamcsConnectDialog;
+import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.XtceDb;
 
 /**
  * Displays packets with their parameters in a hierarchical view, allowing the

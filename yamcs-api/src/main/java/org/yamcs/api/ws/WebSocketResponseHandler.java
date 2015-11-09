@@ -1,6 +1,6 @@
 package org.yamcs.api.ws;
 
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 
 /**
  * Handlers the response for one specific message that was sent. Currently

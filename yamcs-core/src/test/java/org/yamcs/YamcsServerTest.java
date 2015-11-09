@@ -1,7 +1,8 @@
 package org.yamcs;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ObjectInputStream;
 
@@ -14,8 +15,8 @@ import org.junit.Test;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Yamcs.MissionDatabaseRequest;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.XtceDb;
 
 public class YamcsServerTest {

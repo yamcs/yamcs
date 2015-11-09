@@ -22,6 +22,8 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsClient.ClientBuilder;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.hornetq.EventTupleTranslator;
+import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -29,14 +31,12 @@ import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.hornetq.EventTupleTranslator;
-import org.yamcs.hornetq.StreamAdapter;
 
 /**
  * Generates and saves some some events and then it performs a replay via HornetQ

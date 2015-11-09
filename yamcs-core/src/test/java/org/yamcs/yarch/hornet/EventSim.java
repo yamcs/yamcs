@@ -9,15 +9,14 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * 

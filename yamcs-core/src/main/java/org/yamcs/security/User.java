@@ -2,8 +2,6 @@ package org.yamcs.security;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by msc on 05/05/15.

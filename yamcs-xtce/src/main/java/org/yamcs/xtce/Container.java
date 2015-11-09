@@ -21,20 +21,22 @@ public abstract class Container extends NameDescription {
     RateInStream rate=null;
 
     Container(String name) {
-	super(name);
+        super(name);
     }
+    
     public void setSizeInBits(int sizeInBits) {
-	this.sizeInBits = sizeInBits;
+        this.sizeInBits = sizeInBits;
     }
+    
     public int getSizeInBits() {
-	return sizeInBits;
+        return sizeInBits;
     }
 
     public void setRateInStream(RateInStream r) {
-	this.rate=r;
+        this.rate=r;
     }
+    
     public RateInStream getRateInStream() {
-	return rate;
+        return rate;
     }
-
 }

@@ -1,9 +1,10 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-
 
 import org.junit.Test;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -241,6 +242,5 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         cd=td1.getColumnDefinition("bbb1");
         assertEquals(cd.getType().val, DataType._type.PROTOBUF);
         assertEquals(id.getClass().getName(), cd.getType().getClassName());
-
     }
 }

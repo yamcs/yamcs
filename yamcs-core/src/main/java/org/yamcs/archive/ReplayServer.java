@@ -7,16 +7,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.HqClientMessageToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YamcsException;
 import org.yamcs.hornetq.HornetQReplayServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -48,7 +46,7 @@ public class ReplayServer extends AbstractService {
         if(replayCount.get()>=MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
-        log.debug("Creating a replay for time: [{}, {})", TimeEncoding.toString(replayRequest.getStart()), TimeEncoding.toString(replayRequest.getStop()));
+
         if( Privilege.usePrivileges ) {
             Privilege priv = Privilege.getInstance();
 
@@ -68,7 +66,6 @@ public class ReplayServer extends AbstractService {
             }
 
             // Check privileges for requested packets
-            // TODO delete right half of if-statement once no longer deprecated
             if (replayRequest.hasPacketRequest()) {
                 Collection<String> allowedPackets = priv.getTmPacketNames(instance, authToken, MdbMappings.MDB_OPSNAME);
 

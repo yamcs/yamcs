@@ -1,18 +1,15 @@
 package org.yamcs.commanding;
 
-import java.util.Date;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 
 import org.yamcs.YProcessor;
-import org.yamcs.security.Privilege;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Pvalue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.Privilege;
 
 public class CommandQueue {
     String name;

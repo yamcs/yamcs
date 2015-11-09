@@ -1,14 +1,10 @@
 package org.yamcs.web;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,11 +19,15 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
 
 /** 
  * provides information about available displays
@@ -48,9 +48,8 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 
     void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "display-app.html");
-            return;
-        } else if (remainingUri.contains("/")){
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
+        } else if (remainingUri.contains("/")) {
             sendError(ctx, BAD_REQUEST);
         } else if("listDisplays".equals(remainingUri)) {
             handleListDisplays(ctx, req, yamcsInstance);
@@ -60,13 +59,24 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
     }
 
     private void handleListDisplays(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) throws IOException {
-        System.out.println("request for list displays");
-        ByteBuf cb=Unpooled.buffer(1024);
-	ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
+        log.info("request for list displays");
+        ByteBuf cb=ctx.alloc().buffer(1024);
+        ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
         JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8);
         json.writeStartArray();
-        writeFilesFromDir(json, new Path(), new File(StaticFileRequestHandler.WEB_Root + "/" + yamcsInstance + "/displays"));
+        
+        File displayDir = null;
+        for (String webRoot : StaticFileRequestHandler.WEB_Roots) {
+            File dir = new File(webRoot + File.separator + yamcsInstance + File.separator + "displays");
+            if (dir.exists()) {
+                displayDir = dir;
+                break;
+            }
+        }
+        if (displayDir != null) {
+            writeFilesFromDir(json, new Path(), displayDir);
+        }
         json.close();
         
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, cb);
@@ -113,7 +123,7 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
     
     private static class Path {
         int index=0;
-        ArrayList<String> list=new ArrayList<String>();
+        ArrayList<String> list=new ArrayList<>();
         public void push(String name) {
             list.add(name);
         }

@@ -1,12 +1,11 @@
 package org.yamcs.hornetq;
 
 import org.hornetq.api.core.client.ClientMessage;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
-
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 
 public class EventTupleTranslator implements TupleTranslator {
     

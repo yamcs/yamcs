@@ -1,12 +1,12 @@
 package org.yamcs.archive;
 
+import org.yamcs.YamcsException;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.MessageLite;
-import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 
 public class EventReplayHandler implements ReplayHandler {
     ReplayRequest request;

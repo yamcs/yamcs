@@ -6,7 +6,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;

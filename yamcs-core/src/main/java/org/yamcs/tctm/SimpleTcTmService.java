@@ -7,7 +7,7 @@ import org.yamcs.TmPacketProvider;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 
 import com.google.common.util.concurrent.AbstractService;
 

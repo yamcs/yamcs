@@ -33,7 +33,7 @@ public class YamcsConnectionProperties {
             relativePath = "/" + relativePath;
         }
         try {
-            return new URI("http://" + host + ":" + port + "/" + instance + relativePath);
+            return new URI("http://" + host + ":" + port + "/api/" + instance + relativePath);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }

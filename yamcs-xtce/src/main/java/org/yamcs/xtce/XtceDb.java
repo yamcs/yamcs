@@ -16,6 +16,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
  *XtceDB database
@@ -25,7 +26,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 50L;
+    private static final long  serialVersionUID   = 51L;
     SpaceSystem rootSystem;
     
     SystemParameterDb sysParamDb;
@@ -52,6 +53,8 @@ public class XtceDb implements Serializable {
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases =new NamedDescriptionIndex<SequenceContainer>();
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<Algorithm>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<MetaCommand>();
+    
+    private Set<String> namespaces = new HashSet<>();
     
     
     //this is the sequence container where the xtce processors start processing
@@ -137,6 +140,14 @@ public class XtceDb implements Serializable {
     
     public Collection<Parameter> getParameters() {
         return parameters.values();
+    }
+    
+    public boolean containsNamespace(String namespace) {
+        return namespaces.contains(namespace);
+    }
+    
+    public Set<String> getNamespaces() {
+        return namespaces;
     }
 
     public NamedDescriptionIndex<Parameter> getParameterAliases() {
@@ -290,22 +301,42 @@ public class XtceDb implements Serializable {
         //build aliases maps
         for (SpaceSystem ss : spaceSystems.values()) {
             spaceSystemAliases.add(ss);
+            XtceAliasSet aliases=ss.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
         }
         
         for (SequenceContainer sc : sequenceContainers.values()) {
             sequenceContainerAliases.add(sc);
+            XtceAliasSet aliases=sc.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
         }
 
         for(Parameter p:parameters.values()) {
             parameterAliases.add(p);
+            XtceAliasSet aliases=p.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
         }
 
         for(Algorithm a:algorithms.values()) {
             algorithmAliases.add(a);
+            XtceAliasSet aliases=a.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
         }
         
         for(MetaCommand mc:commands.values()) {
             commandAliases.add(mc);
+            XtceAliasSet aliases=mc.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
         }
     }
     

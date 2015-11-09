@@ -6,9 +6,11 @@ import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
@@ -26,6 +28,7 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.ssl.SslHandler;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -34,25 +37,26 @@ import io.protostuff.Schema;
  */
 public class RestRequest {
     
+    public static final String CTX_INSTANCE = "instance";
+    public static final String CTX_PROCESSOR = "processor";
+    
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
-    String yamcsInstance;
     private QueryStringDecoder qsDecoder;
     AuthenticationToken authToken;
     private JsonFactory jsonFactory;
     
+    // For storing resolved URI resource segments
+    private Map<String, Object> ctx = new HashMap<String, Object>();
+    
     private String[] pathSegments;
     
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, String yamcsInstance, AuthenticationToken authToken, JsonFactory jsonFactory) {
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken, JsonFactory jsonFactory) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
-        this.yamcsInstance = yamcsInstance;
         this.authToken = authToken;
         this.jsonFactory = jsonFactory;
-        
-        // This is used for some operations that require the Query-String, and also
-        // to scan for the 'pretty'-argument, which prettifies any outputted JSON.
-        qsDecoder = new QueryStringDecoder(httpRequest.getUri());
+        this.qsDecoder = qsDecoder;
         
         // Get splitted path, taking care that URL-encoded slashes are ignored for the split
         pathSegments = qsDecoder.path().split("/");
@@ -66,9 +70,9 @@ public class RestRequest {
      * but in broad lines amounts to this:
      * <ul>
      *  <li>0. The empty string (because uri's start with a "/")
-     *  <li>1. The yamcs instance.
-     *  <li>2. The string 'api', to identify anything REST.
-     *  <li>3. The general resource, e.g. 'mdb', or 'archive'
+     *  <li>1. 'api', this distinguishes api calls from other web requests
+     *  <li>2. The yamcs instance
+     *  <li>3. The general resource, e.g. 'parameters', or 'commands'
      *  <li>4. Optionally, any number of other segments depending on the operation.
      * </ul>
      */
@@ -87,14 +91,26 @@ public class RestRequest {
         return pathSegments.length > index;
     }
     
-    public String getRemainingUri() {
-        return qsDecoder.path();
+    public int getPathSegmentCount() {
+        return pathSegments.length;
+    }
+    
+    public String slicePath(int startSegment) {
+        return slicePath(startSegment, pathSegments.length);
+    }
+    
+    public String slicePath(int startSegment, int stopSegment) {
+        if (startSegment < 0) startSegment = pathSegments.length + startSegment;
+        if (stopSegment < 0) stopSegment = pathSegments.length + stopSegment;
+        StringBuilder buf = new StringBuilder(pathSegments[startSegment]);
+        for (int i = startSegment + 1; i < stopSegment; i++) {
+            buf.append('/').append(pathSegments[i]);
+        }
+        return buf.toString();
     }
     
     public String getFullPathWithoutQueryString() {
-        String uri = httpRequest.getUri();
-        int qIndex = uri.lastIndexOf('?');
-        return qIndex == -1 ? uri : uri.substring(0, uri.lastIndexOf('?'));
+        return qsDecoder.path();
     }
     
     /**
@@ -104,13 +120,21 @@ public class RestRequest {
         return Privilege.getInstance().getUser(authToken);
     }
     
+    public boolean hasHeader(String name) {
+        return httpRequest.headers().contains(name);
+    }
+    
+    public String getHeader(String name) {
+        return httpRequest.headers().get(name);
+    }
+    
     /**
-     * Returns the username of the authenticated user. Or <tt>"unknown"</tt> if the user
+     * Returns the username of the authenticated user. Or {@link ManagementService.ANONYMOUS} if the user
      * is not authenticated.
      */
     public String getUsername() {
         User user = getUser();
-        return (user != null) ? user.getPrincipalName() : "unknown";
+        return (user != null) ? user.getPrincipalName() : ManagementService.ANONYMOUS;
     }
     
     public boolean isPOST() {
@@ -119,6 +143,14 @@ public class RestRequest {
     
     public void assertPOST() throws MethodNotAllowedException {
         if (!isPOST()) throw new MethodNotAllowedException(this); 
+    }
+    
+    public boolean isPATCH() {
+        return httpRequest.getMethod() == HttpMethod.PATCH;
+    }
+    
+    public void assertPATCH() throws MethodNotAllowedException {
+        if (!isPATCH()) throw new MethodNotAllowedException(this); 
     }
     
     public boolean isGET() {
@@ -188,7 +220,11 @@ public class RestRequest {
                 || "yes".equalsIgnoreCase(param));
     }
     
-    ChannelHandlerContext getChannelHandlerContext() {
+    public boolean isSSL() {
+        return channelHandlerContext.pipeline().get(SslHandler.class) != null;
+    }
+    
+    public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
     }
     
@@ -284,7 +320,34 @@ public class RestRequest {
         return deriveSourceContentType();
     }
     
-    public String getYamcsInstance() {
-        return yamcsInstance;
+    public void addToContext(String key, Object obj) {
+        ctx.put(key, obj);
+    }
+    
+    public boolean contextContains(String key) {
+        return ctx.containsKey(key);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T> T getFromContext(String key) {
+        return (T) ctx.get(key);
+    }
+
+    public String getBaseURL() {
+        String scheme = isSSL() ? "https://" : "http://";
+        String host = getHeader(HttpHeaders.Names.HOST);
+        return (host != null) ? scheme + host : "";
+    }
+    
+    public String getApiURL() {
+        return getBaseURL() + "/api";
+    }
+    
+    public String getBaseURL(int endSegment) {
+        StringBuilder buf = new StringBuilder(getBaseURL());
+        for (int i = 1; i < endSegment; i++) {
+            buf.append('/').append(getPathSegment(i));
+        }
+        return buf.toString();
     }
 }

@@ -6,13 +6,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsClient;
+import org.yamcs.api.YamcsSession;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.usoctools.PayloadModel;
 import org.yamcs.usoctools.XtceUtil;
+import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
@@ -20,17 +30,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-
 import com.google.common.util.concurrent.AbstractService;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.YObjectLoader;
 
 /**
  * This class decodes Flight Segment Events.

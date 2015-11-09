@@ -157,13 +157,15 @@ public final class SchemaCommanding
                 if(message.hasName())
                     output.writeString(3, message.getName(), false);
                 if(message.hasState())
-                    output.writeEnum(4, message.getState().getNumber(), false);
+                    output.writeString(4, message.getState().name(), false);
                 if(message.hasNbSentCommands())
                     output.writeInt32(5, message.getNbSentCommands(), false);
                 if(message.hasNbRejectedCommands())
                     output.writeInt32(6, message.getNbRejectedCommands(), false);
                 if(message.hasStateExpirationTimeS())
                     output.writeInt32(7, message.getStateExpirationTimeS(), false);
+                if(message.hasUrl())
+                    output.writeString(8, message.getUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandQueueInfo message)
             {
@@ -213,7 +215,7 @@ public final class SchemaCommanding
                             builder.setName(input.readString());
                             break;
                         case 4:
-                            builder.setState(org.yamcs.protobuf.Commanding.QueueState.valueOf(input.readEnum()));
+                            builder.setState(org.yamcs.protobuf.Commanding.QueueState.valueOf(input.readString()));
                             break;
                         case 5:
                             builder.setNbSentCommands(input.readInt32());
@@ -223,6 +225,9 @@ public final class SchemaCommanding
                             break;
                         case 7:
                             builder.setStateExpirationTimeS(input.readInt32());
+                            break;
+                        case 8:
+                            builder.setUrl(input.readString());
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -271,6 +276,7 @@ public final class SchemaCommanding
                 case 5: return "nbSentCommands";
                 case 6: return "nbRejectedCommands";
                 case 7: return "stateExpirationTimeS";
+                case 8: return "url";
                 default: return null;
             }
         }
@@ -289,6 +295,7 @@ public final class SchemaCommanding
             fieldMap.put("nbSentCommands", 5);
             fieldMap.put("nbRejectedCommands", 6);
             fieldMap.put("stateExpirationTimeS", 7);
+            fieldMap.put("url", 8);
         }
     }
 
@@ -597,10 +604,9 @@ public final class SchemaCommanding
             {
                 if(message.hasSequenceNumber())
                     output.writeInt32(1, message.getSequenceNumber(), false);
-                if(message.hasConsequenceLevel())
-                    output.writeEnum(2, message.getConsequenceLevel().getNumber(), false);
-                if(message.hasReasonForWarning())
-                    output.writeString(3, message.getReasonForWarning(), false);
+                if(message.hasSignificance())
+                    output.writeObject(2, message.getSignificance(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Commanding.CommandSignificance message)
             {
@@ -644,10 +650,8 @@ public final class SchemaCommanding
                             builder.setSequenceNumber(input.readInt32());
                             break;
                         case 2:
-                            builder.setConsequenceLevel(org.yamcs.protobuf.Commanding.CommandSignificance.Level.valueOf(input.readEnum()));
-                            break;
-                        case 3:
-                            builder.setReasonForWarning(input.readString());
+                            builder.setSignificance(input.mergeObject(org.yamcs.protobuf.Mdb.SignificanceInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.SignificanceInfo.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -690,8 +694,7 @@ public final class SchemaCommanding
             switch(number)
             {
                 case 1: return "sequenceNumber";
-                case 2: return "consequenceLevel";
-                case 3: return "reasonForWarning";
+                case 2: return "significance";
                 default: return null;
             }
         }
@@ -704,8 +707,7 @@ public final class SchemaCommanding
         static
         {
             fieldMap.put("sequenceNumber", 1);
-            fieldMap.put("consequenceLevel", 2);
-            fieldMap.put("reasonForWarning", 3);
+            fieldMap.put("significance", 2);
         }
     }
 

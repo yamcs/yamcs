@@ -1,18 +1,12 @@
 package org.yamcs.api;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
 
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YamcsServer;
-
-import org.yamcs.api.HornetQEventProducer;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 

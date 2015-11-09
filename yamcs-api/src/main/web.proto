@@ -1,0 +1,66 @@
+package web;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs.proto";
+import "archive.proto";
+import "commanding.proto";
+import "pvalue.proto";
+import "alarms.proto";
+import "yamcsManagement.proto";
+
+message WebSocketClientMessage {
+  optional uint32 protocolVersion = 1;
+  optional uint32 sequenceNumber = 2;
+  optional string resource = 3;
+  optional string operation = 4;
+  optional bytes data = 5;
+}
+
+message WebSocketServerMessage {
+  enum MessageType {
+    REPLY = 2; // one-time rpc-style ACK reply
+    EXCEPTION = 3; // one-time rpc-style exception reply
+    DATA = 4; // various subscribed data
+  }
+
+  message WebSocketReplyData {
+    optional uint32 protocolVersion = 1;
+    optional int32 sequenceNumber = 2; // allow for -1
+  }
+
+  message WebSocketExceptionData {
+    optional uint32 protocolVersion = 1;
+    optional int32 sequenceNumber = 2; // allow for -1
+    optional string type = 3;
+    optional string message = 4;
+    optional bytes data = 5; // Structured exception data
+  }
+
+  // Currently hard-coding the set of available data types for easier client processing, but
+  // could in the future just make it bytes just like with the requests.
+  // oh, and protobuf3 plans to support an Any-type.
+  message WebSocketSubscriptionData {
+    optional uint32 sequenceNumber = 1;
+    optional yamcs.ProtoDataType type = 2;
+    optional pvalue.ParameterData parameterData = 3;
+    optional commanding.CommandHistoryEntry command = 4;
+    optional yamcsManagement.ProcessorInfo processorInfo = 5;
+    optional yamcsManagement.ClientInfo clientInfo = 6;
+    optional yamcsManagement.Statistics statistics = 7;
+    optional yamcs.Event event = 8;
+    optional archive.StreamData streamData = 9;
+    optional alarms.AlarmInfo alarmInfo = 10;
+    optional yamcs.TimeInfo timeInfo = 11;
+  }
+
+  optional MessageType type = 1;
+  optional WebSocketReplyData reply = 2;
+  optional WebSocketExceptionData exception = 3;
+  optional WebSocketSubscriptionData data = 4;
+}
+
+// Generic holder for an exception
+message RestExceptionMessage {
+  optional string type = 1;
+  optional string msg = 2;
+}

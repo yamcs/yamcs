@@ -23,16 +23,14 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Alarms.Alarm;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
+import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Rest.RestArgumentType;
-import org.yamcs.protobuf.Rest.RestCommandType;
-import org.yamcs.protobuf.Rest.RestSendCommandRequest;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.StreamData;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -58,7 +56,7 @@ public abstract class AbstractIntegrationTest {
     MyWsListener wsListener;
     WebSocketClient wsClient;
     HttpClient httpClient;
-    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");;
+    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     UsernamePasswordToken currentUser = null;
     RefMdbPacketGenerator packetGenerator;
 
@@ -111,20 +109,18 @@ public abstract class AbstractIntegrationTest {
         org.yamcs.yarch.management.ManagementService.setup(false);
         YamcsServer.setupHornet();
         YamcsServer.setupYamcsServer();
-
     }
 
 
-    RestSendCommandRequest getCommand(String cmdName, int seq, String... args) {
-        NamedObjectId cmdId = NamedObjectId.newBuilder().setName(cmdName).build();
-
-        RestCommandType.Builder cmdb = RestCommandType.newBuilder().setOrigin("IntegrationTest").setId(cmdId).setSequenceNumber(seq);
-        for(int i =0 ;i<args.length; i+=2) {
-            cmdb.addArguments(RestArgumentType.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+    IssueCommandRequest getCommand(int seq, String... args) {
+        IssueCommandRequest.Builder b = IssueCommandRequest.newBuilder();
+        b.setOrigin("IntegrationTest");
+        b.setSequenceNumber(seq);
+        for(int i = 0; i<args.length; i+=2) {
+            b.addAssignment(IssueCommandRequest.Assignment.newBuilder().setName(args[i]).setValue(args[i+1]).build());
         }
 
-        return RestSendCommandRequest.newBuilder().addCommands(cmdb.build()).build();
-
+        return b.build();
     }
 
     @After
@@ -163,7 +159,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<Alarm> alarmList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<AlarmInfo> alarmInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
@@ -209,8 +205,8 @@ public abstract class AbstractIntegrationTest {
             case PROCESSING_STATISTICS:
                 statisticsList.add(data.getStatistics());
                 break;
-            case ALARM:
-                alarmList.add(data.getAlarm());
+            case ALARM_INFO:
+                alarmInfoList.add(data.getAlarmInfo());
                 break;
             case EVENT:
                 eventList.add(data.getEvent());

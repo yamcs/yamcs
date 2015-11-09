@@ -8,90 +8,165 @@ import "yamcs.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
-   NEW = 0;
-   STARTING = 1;
-   RUNNING = 2;
-   STOPPING = 3;
-   TERMINATED = 4;
-   FAILED = 5;
+  NEW = 0;
+  STARTING = 1;
+  RUNNING = 2;
+  STOPPING = 3;
+  TERMINATED = 4;
+  FAILED = 5;
+}
+
+/*contains a list of instances*/
+message YamcsInstances {
+  repeated YamcsInstance instance = 1;
+}
+
+message YamcsInstance {
+  required string name = 1;
+  //repeated MessagingAddress address=2; //removed 5-Mar-2012
+  optional MissionDatabase missionDatabase = 3;
+  repeated ProcessorInfo processor = 4;
+  optional string url = 5;
+  optional string clientsUrl = 6;
+  optional string eventsUrl = 7;
+}
+
+message HistoryInfo {
+  optional string version = 1;
+  optional string date = 2;
+  optional string message = 3;
+}
+
+message SpaceSystemInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  optional string version = 5;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  repeated HistoryInfo history = 9;
+  repeated SpaceSystemInfo sub = 10;
+}
+
+message MissionDatabase {
+  required string configName = 1; //this is the config section in mdb.yaml
+  required string name = 2; //XTCE root SpaceSystem name
+  optional string version = 3; //XTCE root SpaceSystem header version
+  repeated SpaceSystemInfo spaceSystem = 4;
+  optional string url = 5;
+  optional string parametersUrl = 6;
+  optional string containersUrl = 7;
+  optional string commandsUrl = 8;
+}
+
+//used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
+message MissionDatabaseRequest {
+  optional string dbConfigName = 1;
+  optional string instance = 2;
+}
+
+//this is just for documentation purposes, the protobuf generated stuff is not used yet
+service YamcsControl {
+  rpc GetYamcsInstances(yamcs.Void) returns (YamcsInstances);
+  //this one sends a binary stream containing the serialized MDB
+  rpc GetMissionDatabase(MissionDatabaseRequest) returns (yamcs.Void);
 }
 
 /************** Yamcs Processor Control service *********************/
-/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address. 
+/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address.
  * There is also a queue with the same name containing the last values
  * The name of the events are yProcessorUpdated (means added or updated),
  * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
 message ProcessorInfo {
-    required string instance=1;//yamcs instance 
-    required string name=2;
-    optional string type=3;
-    optional string spec=4;
-    optional string creator=5;
-    optional bool hasCommanding=6;
-    optional ServiceState state=7;
-    optional yamcs.ReplayRequest replayRequest=8; //in case of replay 
-    optional yamcs.ReplayStatus.ReplayState replayState=9; //in case of replay 
+  optional string instance = 1; //yamcs instance
+  optional string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional string creator = 5;
+  optional bool hasCommanding = 6;
+  optional ServiceState state = 7;
+  optional yamcs.ReplayRequest replayRequest = 8; //in case of replay
+  optional yamcs.ReplayStatus.ReplayState replayState = 9; //in case of replay
+  optional string url = 10;
+  optional string clientsUrl = 11;
+  optional string parametersUrl = 12;
+  optional string commandsUrl = 13;
+  optional string commandQueuesUrl = 14;
+  optional string alarmsUrl = 15;
 }
 
 message ClientInfo {
-    enum ClientState {
-        CONNECTED = 0;
-        DISCONNECTED = 1;
-    }
-    required string instance=1;
-    required int32 id=2;
-    optional string username=3;
-    optional string applicationName=4;
-    optional string processorName=5;
-    optional ClientState state=6;
-    optional bool currentClient=7; //Only used for clients that register themselves (websocket)
+  enum ClientState {
+    CONNECTED = 0;
+    DISCONNECTED = 1;
+  }
+  required string instance = 1;
+  required int32 id = 2;
+  optional string username = 3;
+  optional string applicationName = 4;
+  optional string processorName = 5;
+  optional ClientState state = 6;
+  optional bool currentClient = 7; //Only used for clients that register themselves (websocket)
+}
+
+message UserInfo {
+  optional string login = 1;
+  repeated ClientInfo clientInfo = 2;
+  repeated string roles = 3;
+  repeated string tmParaPrivileges = 4;
+  repeated string tmParaSetPrivileges = 5;
+  repeated string tmPacketPrivileges = 6;
+  repeated string tcPrivileges = 7;
+  repeated string systemPrivileges = 8;
 }
 
 message TmStatistics {
-    required string packetName=1;
-    optional int64 receivedPackets=2;
-    optional int64 lastReceived=3;
-    optional string lastReceivedUTC=8;
-    optional int64 lastPacketTime=4;
-    optional string lastPacketTimeUTC=7;
-    optional int32 subscribedParameterCount=6;
+  required string packetName = 1;
+  optional int64 receivedPackets = 2;
+  optional int64 lastReceived = 3;
+  optional string lastReceivedUTC = 8;
+  optional int64 lastPacketTime = 4;
+  optional string lastPacketTimeUTC = 7;
+  optional int32 subscribedParameterCount = 6;
 }
 
 message Statistics {
-    required string instance=1;
-    required string yProcessorName=2;
-    repeated TmStatistics tmstats=3;
-    optional int64 lastUpdated=4; //java local time of the last update
-    optional string lastUpdatedUTC=5; // String representation in ISO8601 format
+  required string instance = 1;
+  required string yProcessorName = 2;
+  repeated TmStatistics tmstats = 3;
+  optional int64 lastUpdated = 4; //java local time of the last update
+  optional string lastUpdatedUTC = 5; // String representation in ISO8601 format
 }
 
 message ProcessorManagementRequest {
-    enum Operation {
-         CREATE_PROCESSOR = 0;
-         CONNECT_TO_PROCESSOR = 1;
-    }
-    optional Operation operation = 1;
-    optional string instance=2; //yamcs instance
-    optional string name=3; //processor name
-    optional string type=4; //only for CREATE
-    optional string spec=5; //only for CREATE
-    repeated int32 clientId=6; //for CREATE and CONNECT
-    optional bool persistent=7[default=false]; //only for CREATE
-    optional yamcs.ReplayRequest replaySpec = 8; //for CREATE as alternative to string spec
+  enum Operation {
+    CREATE_PROCESSOR = 0;
+    CONNECT_TO_PROCESSOR = 1;
+  }
+  optional Operation operation = 1;
+  optional string instance = 2; //yamcs instance
+  optional string name = 3; //processor name
+  optional string type = 4; //only for CREATE
+  optional string spec = 5; //only for CREATE
+  repeated int32 clientId = 6; //for CREATE and CONNECT
+  optional bool persistent = 7[default=false]; //only for CREATE
+  optional yamcs.ReplayRequest replaySpec = 8; //for CREATE as alternative to string spec
 }
 
 message ProcessorRequest { //this is used for ProcessorControl service
-    enum Operation {
-         PAUSE = 2;
-         RESUME = 3;
-         SEEK = 4;
-         CHANGE_SPEED = 5;
-    }
-    optional Operation operation = 1;
-    optional string instance = 2; //yamcs instance
-    optional string name = 3; //processor name
-    optional int64 seekTime = 4; //for SEEK
-    optional yamcs.ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
+  enum Operation {
+    PAUSE = 2;
+    RESUME = 3;
+    SEEK = 4;
+    CHANGE_SPEED = 5;
+  }
+  optional Operation operation = 1;
+  optional string instance = 2; //yamcs instance
+  optional string name = 3; //processor name
+  optional int64 seekTime = 4; //for SEEK
+  optional yamcs.ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
 }
 
 //this is obsolete (but still implemented in HornetQ)
@@ -109,14 +184,13 @@ service ProcessorControl {
   there is also a linkInfo queue that contains the last values
 */
 message LinkInfo {
-    required string instance=1;
-    required string name=2;
-    optional string type=3;
-    optional string spec=4;
-    optional string stream=5;
-    optional bool disabled=6;
-    optional string status=7;
-    optional int64 dataCount=8;
-    optional string detailedStatus=9;
+  required string instance = 1;
+  required string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional string stream = 5;
+  optional bool disabled = 6;
+  optional string status = 7;
+  optional int64 dataCount = 8;
+  optional string detailedStatus = 9;
 }
-

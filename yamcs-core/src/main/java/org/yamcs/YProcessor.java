@@ -399,6 +399,16 @@ public class YProcessor extends AbstractService {
     public static Collection<YProcessor> getChannels() {
         return instances.values();
     }
+    
+    public static Collection<YProcessor> getChannels(String instance) {
+        List<YProcessor> processors = new ArrayList<>();
+        for (YProcessor processor : instances.values()) {
+            if (instance.equals(processor.getInstance())) {
+                processors.add(processor);
+            }
+        }
+        return instances.values();
+    }
 
 
     /**
@@ -408,6 +418,7 @@ public class YProcessor extends AbstractService {
      * confusing :(
      *
      */
+    @Override
     public void doStop() {
         if(quitting)return;
         log.info("Channel "+name+" quitting");

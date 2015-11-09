@@ -19,6 +19,7 @@ public class RateInStream implements Serializable {
     private static final long serialVersionUID = 1L;
     
     long maxInterval;
+    
     public RateInStream(long maxInterval) {
         this.maxInterval=maxInterval;
     }

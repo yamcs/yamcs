@@ -1,11 +1,12 @@
 package org.yamcs.web.websocket;
 
-import io.protostuff.Schema;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import org.yamcs.protobuf.Websocket.WebSocketServerMessage.WebSocketReplyData;
+import java.io.IOException;
+
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
-import java.io.IOException;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.protostuff.Schema;
 
 public interface WebSocketEncoder {
 

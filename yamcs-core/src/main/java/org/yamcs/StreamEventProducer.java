@@ -2,6 +2,7 @@ package org.yamcs;
 
 import org.hornetq.api.core.HornetQException;
 import org.yamcs.api.AbstractEventProducer;
+import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
@@ -9,7 +10,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.archive.EventRecorder;
 
 /**
  * Event producer used from inside Yamcs to report events.

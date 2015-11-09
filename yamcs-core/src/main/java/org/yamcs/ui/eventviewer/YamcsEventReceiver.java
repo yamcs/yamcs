@@ -35,7 +35,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.TimeEncoding;
 
@@ -166,6 +166,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
             pack();
         }
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             if ( e.getActionCommand().equals("ok") ) {
                 try {

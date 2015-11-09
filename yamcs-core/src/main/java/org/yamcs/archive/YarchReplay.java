@@ -16,7 +16,7 @@ import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.security.AuthenticationToken;
@@ -100,6 +100,10 @@ public class YarchReplay implements StreamSubscriber {
             b.setStop(TimeEncoding.parse(newRequest.getUtcStop()));
         }
         newRequest  = b.build();
+
+        log.debug("Replay request for time: [{}, {}]",
+                (newRequest.hasStart() ? TimeEncoding.toString(newRequest.getStart()) : null),
+                (newRequest.hasStop() ? TimeEncoding.toString(newRequest.getStop()) : null));
         
         if (newRequest.getStart()>newRequest.getStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
@@ -367,12 +371,9 @@ public class YarchReplay implements StreamSubscriber {
             listener.stateChanged(rs);
             
         } catch (Exception e) {
-            log.warn("got exception while signaling the sate change: ", e);
+            log.warn("got exception while signaling the state change: ", e);
         }
     }
-
-
-
 
     public ReplayRequest getCurrentReplayRequest() {
         return currentRequest;

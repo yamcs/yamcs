@@ -3,7 +3,7 @@ package org.yamcs.time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.protobuf.Rest.RestSetSimulationTimeRequest;
+import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.NotFoundException;
@@ -60,8 +60,13 @@ public class SimulationTimeService implements TimeService {
     /**
      * Handles incoming requests related to SimTime
      */
-    public static class SimTimeRequestHandler implements RestRequestHandler {
+    public static class SimTimeRequestHandler extends RestRequestHandler {
         static final String SET_REQ = "set";
+        
+        @Override
+        public String getPath() {
+            return "simTime";
+        }
         
         @Override
         public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -69,7 +74,7 @@ public class SimulationTimeService implements TimeService {
                 throw new NotFoundException(req);
             }
             
-            String yamcsInstance = req.getYamcsInstance();
+            String yamcsInstance = req.getFromContext(RestRequest.CTX_INSTANCE);
             TimeService ts = YamcsServer.getInstance(yamcsInstance).getTimeService();
             if(!(ts instanceof SimulationTimeService)) {
                 log.warn("simulation time service requested for a non simulation TimeService "+ts);
@@ -88,7 +93,7 @@ public class SimulationTimeService implements TimeService {
 
         
         private void setSimTime(RestRequest req, SimulationTimeService sts) throws RestException {
-            RestSetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.RestSetSimulationTimeRequest.MERGE).build();
+            SetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.SetSimulationTimeRequest.MERGE).build();
             
             if(request.hasTime0()) {
                 sts.setTime0(request.getTime0());
@@ -103,12 +108,6 @@ public class SimulationTimeService implements TimeService {
             if(request.hasSimElapsedTime()) {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
-            
-            
         }
     }
-
-
-
-
 }

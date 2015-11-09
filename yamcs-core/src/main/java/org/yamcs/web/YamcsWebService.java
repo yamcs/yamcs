@@ -13,13 +13,14 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class YamcsWebService extends AbstractService {
-    String yamcsInstance;
-    HttpSocketServer server;
+    
+    private String yamcsInstance;
+    private HttpSocketServer server;
     
     public YamcsWebService(String yamcsInstance) throws ConfigurationException {
-        this.yamcsInstance=yamcsInstance;
+        this.yamcsInstance = yamcsInstance;
         StaticFileRequestHandler.init();
-        this.server = HttpSocketServer.getInstance();
+        this.server = HttpSocketServer.getInstance();        
     }
 
     @Override
@@ -30,6 +31,6 @@ public class YamcsWebService extends AbstractService {
 
     @Override
     protected void doStop() {
-	notifyStopped();
+        notifyStopped();
     }
 }
