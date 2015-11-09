@@ -2,6 +2,8 @@ package org.yamcs.xtce;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A list of raw parameters, parameter segments, stream segments, containers, or container segments.  
@@ -62,6 +64,7 @@ public class SequenceContainer extends Container {
     public void print(PrintStream out) {
         out.print("SequenceContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
         if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+        out.print(", useAsArchivePartition:" +useAsArchivePartition);
         out.println();
         if(baseContainer!=null) {
             out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());
