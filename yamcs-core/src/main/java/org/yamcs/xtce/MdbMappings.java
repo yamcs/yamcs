@@ -13,6 +13,7 @@ public class MdbMappings {
     public final static String MDB_OPSNAME="MDB:OPS Name";
     public final static String MDB_PATHNAME="MDB:Pathname";
     public final static String MDB_HKID="MDB:HKID";
+    public final static String MDB_UMI="MDB:UMI";
     public final static String CCU_Version="MDB:CCU Internal Version";
     public final static String Config_SID="Operational Configuration Enditem SID";
     public final static String CCU_Path="MDB:CCU Version Path";

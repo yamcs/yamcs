@@ -40,7 +40,7 @@ public class SequenceEntryProcessor {
             return;
         }
         pcontext.bb.position(pcontext.bitPosition/8);
-        ProcessingContext pcontext1=new ProcessingContext(pcontext.bb.slice(), pcontext.bitPosition/8, pcontext.bitPosition, 
+        ProcessingContext pcontext1=new ProcessingContext(pcontext.bb.slice(), pcontext.bitPosition/8, 0,
                 pcontext.subscription, pcontext.paramResult, pcontext.containerResult,
                 pcontext.acquisitionTime, pcontext.generationTime, pcontext.stats);
         pcontext1.sequenceContainerProcessor.extract(ce.getRefContainer());

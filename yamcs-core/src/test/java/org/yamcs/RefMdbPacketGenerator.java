@@ -40,6 +40,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
     public final int pkt2Length=8;
+    public final int pkt1_ListLength=pkt1Length;
+    public final int pkt1_AndLength=pkt1Length;
+    public final int pkt1_OrLength=pkt1Length;
+    public final int pkt1_And_OrLength=pkt1Length;
 
 
     public final int contVerifCmdAck_Length = headerLength+7;
@@ -220,6 +224,52 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb;
     }
 
+    // Packets to test the boolean inheritance condition
+    public ByteBuffer generate_PKT1_List(){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, 1, 13, (short)2);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+    public ByteBuffer generate_PKT1_AND(){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, 2, 13, (short)3);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+
+    public ByteBuffer generate_PKT1_OR_1(){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, 1, 14, (short)2);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+    public ByteBuffer generate_PKT1_AND_OR_1(){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, 1, 15, (short)1);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+    public ByteBuffer generate_PKT1_AND_OR_2(){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, 14, 0, (short)15);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+    public ByteBuffer generate_PKT1(int integerPara1_1, int packetType, short integerPara1_2 ){
+        ByteBuffer bb = ByteBuffer.allocate(pkt1_ListLength);
+        fill_PKT1(bb, integerPara1_1, packetType, integerPara1_2);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+
+
     public ByteBuffer generateContVerifCmdAck(short cmdId, byte stage, int result) {
         ByteBuffer bb=ByteBuffer.allocate(contVerifCmdAck_Length);
         fill_CcsdsHeader(bb, 101, 1000);
@@ -243,6 +293,34 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb;
     }
+
+    /*
+    Dynamic sized packet.
+    Test packet contains:
+    ccsds_header        (headerLength bits)
+    IntegerPara1_1 = 2  (4 bits)
+    IntegerPara1_2 = 3  (16 bits)
+    IntegerPara1_2 = 4  (16 bits)
+    block_para1 = 5     (8 bits)
+    block_para2 = 6     (8 bits)
+    block_para1 = 7     (8 bits)
+    block_para2 = 8     (8 bits)
+    block_para1 = 9     (8 bits)
+    block_para2 = 10    (8 bits)
+    block_para3 = 11    (8 bits)
+    block_para4 = 12    (8 bits)
+    block_para3 = 13    (8 bits)
+    block_para4 = 14    (8 bits)
+     */
+    public ByteBuffer generate_PKT3() {
+        int pktLength = headerLength + 1 + 2*2 + 11;
+        ByteBuffer bb=ByteBuffer.allocate(pktLength);
+        fill_PKT3(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+
 
     /**
      * set the generation time used to send the packets. 
@@ -288,6 +366,12 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     private void fill_PKT1(ByteBuffer bb, int packetType) {
         fill_CcsdsHeader(bb, 995, 318813007);
         bb.put(headerLength, (byte)((pIntegerPara1_1<<4)+packetType));
+    }
+
+    private void fill_PKT1(ByteBuffer bb, int integerPara1_1, int packetType, short integerPara1_2) {
+        fill_CcsdsHeader(bb, 995, 318813007);
+        bb.put(headerLength, (byte)((integerPara1_1<<4)+packetType));
+        bb.putShort(headerLength + 1, integerPara1_2);
     }
 
     private void fill_PKT1_1(ByteBuffer bb) {
@@ -435,6 +519,28 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(offset);
 
         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte)';');
+    }
+
+
+    private void fill_PKT3(ByteBuffer bb) {
+        fill_CcsdsHeader(bb, 995, 318813009);
+        bb.position(headerLength);
+        bb.put((byte) (2 << 4));  // IntegerPara1_1 = 2  (4 bits)
+        bb.put((byte)0);  // IntegerPara1_2 = 3
+        bb.put((byte)3);  //
+        bb.put((byte)0);  // IntegerPara1_2 = 4
+        bb.put((byte)4);  //
+        bb.put((byte)5);  // block_para1 = 5
+        bb.put((byte)6);  // block_para2 = 6
+        bb.put((byte)61); // block_para2_1 = 61
+        bb.put((byte)7);  // block_para1 = 7
+        bb.put((byte)8);  // block_para2 = 8
+        bb.put((byte)9);  // block_para1 = 9
+        bb.put((byte)10); // block_para2 = 10
+        bb.put((byte)11); // block_para3 = 11
+        bb.put((byte)12); // block_para4 = 12
+        bb.put((byte)13); // block_para3 = 13
+        bb.put((byte)14); // block_para4 = 14
     }
 
 
