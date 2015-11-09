@@ -270,23 +270,12 @@ message ReplayStatus {
   optional string errorMessage = 3; //in case state is ERROR
 }
 
-
 message TmPacketData {
   required int64 receptionTime = 1;
   required bytes packet = 2;
   optional int64 generationTime = 3;
   optional int32 sequenceNumber = 4;
   optional NamedObjectId id = 5;
-}
-
-message ColumnValue {
-  optional string columnName = 1;
-  optional Value value = 2;
-}
-
-message StreamData {
-  optional string stream = 1;
-  repeated ColumnValue columnValue = 2;
 }
 
 message TimeInfo {

@@ -2,6 +2,7 @@ package web;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
+import "archive.proto";
 import "commanding.proto";
 import "pvalue.proto";
 import "alarms.proto";
@@ -47,7 +48,7 @@ message WebSocketServerMessage {
     optional yamcsManagement.ClientInfo clientInfo = 6;
     optional yamcsManagement.Statistics statistics = 7;
     optional yamcs.Event event = 8;
-    optional yamcs.StreamData streamData = 9;
+    optional archive.StreamData streamData = 9;
     optional alarms.AlarmInfo alarmInfo = 10;
     optional yamcs.TimeInfo timeInfo = 11;
   }

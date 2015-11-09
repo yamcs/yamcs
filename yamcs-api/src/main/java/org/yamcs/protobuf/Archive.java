@@ -4317,7 +4317,7 @@ public final class Archive {
    * Protobuf type {@code archive.GetTagsRequest}
    *
    * <pre>
-   * GET /api/:instance/archive/tags
+   * GET /api/archive/:instance/tags
    * </pre>
    */
   public static final class GetTagsRequest extends
@@ -4703,7 +4703,7 @@ public final class Archive {
      * Protobuf type {@code archive.GetTagsRequest}
      *
      * <pre>
-     * GET /api/:instance/archive/tags
+     * GET /api/archive/:instance/tags
      * </pre>
      */
     public static final class Builder extends
@@ -5875,7 +5875,7 @@ public final class Archive {
    * Protobuf type {@code archive.InsertTagRequest}
    *
    * <pre>
-   * POST /api/:instance/archive/tags
+   * POST /api/archive/:instance/tags
    * </pre>
    */
   public static final class InsertTagRequest extends
@@ -6297,7 +6297,7 @@ public final class Archive {
      * Protobuf type {@code archive.InsertTagRequest}
      *
      * <pre>
-     * POST /api/:instance/archive/tags
+     * POST /api/archive/:instance/tags
      * </pre>
      */
     public static final class Builder extends
@@ -7347,7 +7347,7 @@ public final class Archive {
    * Protobuf type {@code archive.UpdateTagRequest}
    *
    * <pre>
-   * PUT /api/:instance/archive/tags/:old_start/:id
+   * PUT /api/archive/:instance/tags/:old_start/:id
    * </pre>
    */
   public static final class UpdateTagRequest extends
@@ -7769,7 +7769,7 @@ public final class Archive {
      * Protobuf type {@code archive.UpdateTagRequest}
      *
      * <pre>
-     * PUT /api/:instance/archive/tags/:old_start/:id
+     * PUT /api/archive/:instance/tags/:old_start/:id
      * </pre>
      */
     public static final class Builder extends
@@ -8228,6 +8228,5553 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.UpdateTagRequest)
   }
 
+  public interface ColumnDataOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional .yamcs.Value value = 2;
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    boolean hasValue();
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    org.yamcs.protobuf.Yamcs.Value getValue();
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder();
+  }
+  /**
+   * Protobuf type {@code archive.ColumnData}
+   */
+  public static final class ColumnData extends
+      com.google.protobuf.GeneratedMessage
+      implements ColumnDataOrBuilder {
+    // Use ColumnData.newBuilder() to construct.
+    private ColumnData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ColumnData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ColumnData defaultInstance;
+    public static ColumnData getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ColumnData getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ColumnData(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = value_.toBuilder();
+              }
+              value_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(value_);
+                value_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.ColumnData.class, org.yamcs.protobuf.Archive.ColumnData.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ColumnData> PARSER =
+        new com.google.protobuf.AbstractParser<ColumnData>() {
+      public ColumnData parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ColumnData(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ColumnData> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional .yamcs.Value value = 2;
+    public static final int VALUE_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Yamcs.Value value_;
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    public boolean hasValue() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.Value getValue() {
+      return value_;
+    }
+    /**
+     * <code>optional .yamcs.Value value = 2;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder() {
+      return value_;
+    }
+
+    private void initFields() {
+      name_ = "";
+      value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (hasValue()) {
+        if (!getValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, value_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, value_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnData parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.ColumnData prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.ColumnData}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.ColumnDataOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.ColumnData.class, org.yamcs.protobuf.Archive.ColumnData.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.ColumnData.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getValueFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (valueBuilder_ == null) {
+          value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
+        } else {
+          valueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnData getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnData build() {
+        org.yamcs.protobuf.Archive.ColumnData result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnData buildPartial() {
+        org.yamcs.protobuf.Archive.ColumnData result = new org.yamcs.protobuf.Archive.ColumnData(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (valueBuilder_ == null) {
+          result.value_ = value_;
+        } else {
+          result.value_ = valueBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.ColumnData) {
+          return mergeFrom((org.yamcs.protobuf.Archive.ColumnData)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.ColumnData other) {
+        if (other == org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasValue()) {
+          mergeValue(other.getValue());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasValue()) {
+          if (!getValue().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.ColumnData parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.ColumnData) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional .yamcs.Value value = 2;
+      private org.yamcs.protobuf.Yamcs.Value value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value getValue() {
+        if (valueBuilder_ == null) {
+          return value_;
+        } else {
+          return valueBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public Builder setValue(org.yamcs.protobuf.Yamcs.Value value) {
+        if (valueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          value_ = value;
+          onChanged();
+        } else {
+          valueBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public Builder setValue(
+          org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (valueBuilder_ == null) {
+          value_ = builderForValue.build();
+          onChanged();
+        } else {
+          valueBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public Builder mergeValue(org.yamcs.protobuf.Yamcs.Value value) {
+        if (valueBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              value_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
+            value_ =
+              org.yamcs.protobuf.Yamcs.Value.newBuilder(value_).mergeFrom(value).buildPartial();
+          } else {
+            value_ = value;
+          }
+          onChanged();
+        } else {
+          valueBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public Builder clearValue() {
+        if (valueBuilder_ == null) {
+          value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
+          onChanged();
+        } else {
+          valueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder getValueBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder() {
+        if (valueBuilder_ != null) {
+          return valueBuilder_.getMessageOrBuilder();
+        } else {
+          return value_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.Value value = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+          getValueFieldBuilder() {
+        if (valueBuilder_ == null) {
+          valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder>(
+                  value_,
+                  getParentForChildren(),
+                  isClean());
+          value_ = null;
+        }
+        return valueBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.ColumnData)
+    }
+
+    static {
+      defaultInstance = new ColumnData(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.ColumnData)
+  }
+
+  public interface StreamDataOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string stream = 1;
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    boolean hasStream();
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    java.lang.String getStream();
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getStreamBytes();
+
+    // repeated .archive.ColumnData column = 2;
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.ColumnData> 
+        getColumnList();
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnData getColumn(int index);
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    int getColumnCount();
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+        getColumnOrBuilderList();
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code archive.StreamData}
+   */
+  public static final class StreamData extends
+      com.google.protobuf.GeneratedMessage
+      implements StreamDataOrBuilder {
+    // Use StreamData.newBuilder() to construct.
+    private StreamData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private StreamData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final StreamData defaultInstance;
+    public static StreamData getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public StreamData getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private StreamData(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              stream_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              column_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnData.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          column_ = java.util.Collections.unmodifiableList(column_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.StreamData.class, org.yamcs.protobuf.Archive.StreamData.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<StreamData> PARSER =
+        new com.google.protobuf.AbstractParser<StreamData>() {
+      public StreamData parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new StreamData(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<StreamData> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string stream = 1;
+    public static final int STREAM_FIELD_NUMBER = 1;
+    private java.lang.Object stream_;
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    public boolean hasStream() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    public java.lang.String getStream() {
+      java.lang.Object ref = stream_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          stream_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string stream = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStreamBytes() {
+      java.lang.Object ref = stream_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stream_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .archive.ColumnData column = 2;
+    public static final int COLUMN_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_;
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.ColumnData> getColumnList() {
+      return column_;
+    }
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+        getColumnOrBuilderList() {
+      return column_;
+    }
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    public int getColumnCount() {
+      return column_.size();
+    }
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnData getColumn(int index) {
+      return column_.get(index);
+    }
+    /**
+     * <code>repeated .archive.ColumnData column = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+        int index) {
+      return column_.get(index);
+    }
+
+    private void initFields() {
+      stream_ = "";
+      column_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getColumnCount(); i++) {
+        if (!getColumn(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getStreamBytes());
+      }
+      for (int i = 0; i < column_.size(); i++) {
+        output.writeMessage(2, column_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getStreamBytes());
+      }
+      for (int i = 0; i < column_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, column_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamData parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.StreamData prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.StreamData}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.StreamDataOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.StreamData.class, org.yamcs.protobuf.Archive.StreamData.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.StreamData.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getColumnFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        stream_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          columnBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.StreamData getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.StreamData build() {
+        org.yamcs.protobuf.Archive.StreamData result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.StreamData buildPartial() {
+        org.yamcs.protobuf.Archive.StreamData result = new org.yamcs.protobuf.Archive.StreamData(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.stream_ = stream_;
+        if (columnBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            column_ = java.util.Collections.unmodifiableList(column_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.column_ = column_;
+        } else {
+          result.column_ = columnBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.StreamData) {
+          return mergeFrom((org.yamcs.protobuf.Archive.StreamData)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.StreamData other) {
+        if (other == org.yamcs.protobuf.Archive.StreamData.getDefaultInstance()) return this;
+        if (other.hasStream()) {
+          bitField0_ |= 0x00000001;
+          stream_ = other.stream_;
+          onChanged();
+        }
+        if (columnBuilder_ == null) {
+          if (!other.column_.isEmpty()) {
+            if (column_.isEmpty()) {
+              column_ = other.column_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureColumnIsMutable();
+              column_.addAll(other.column_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.column_.isEmpty()) {
+            if (columnBuilder_.isEmpty()) {
+              columnBuilder_.dispose();
+              columnBuilder_ = null;
+              column_ = other.column_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              columnBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getColumnFieldBuilder() : null;
+            } else {
+              columnBuilder_.addAllMessages(other.column_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getColumnCount(); i++) {
+          if (!getColumn(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.StreamData parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.StreamData) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string stream = 1;
+      private java.lang.Object stream_ = "";
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public boolean hasStream() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public java.lang.String getStream() {
+        java.lang.Object ref = stream_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          stream_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStreamBytes() {
+        java.lang.Object ref = stream_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stream_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public Builder setStream(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        stream_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public Builder clearStream() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        stream_ = getDefaultInstance().getStream();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stream = 1;</code>
+       */
+      public Builder setStreamBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        stream_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .archive.ColumnData column = 2;
+      private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
+        java.util.Collections.emptyList();
+      private void ensureColumnIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>(column_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder> columnBuilder_;
+
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnData> getColumnList() {
+        if (columnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(column_);
+        } else {
+          return columnBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public int getColumnCount() {
+        if (columnBuilder_ == null) {
+          return column_.size();
+        } else {
+          return columnBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnData getColumn(int index) {
+        if (columnBuilder_ == null) {
+          return column_.get(index);
+        } else {
+          return columnBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder setColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnData value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.set(index, value);
+          onChanged();
+        } else {
+          columnBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder setColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder addColumn(org.yamcs.protobuf.Archive.ColumnData value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.add(value);
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder addColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnData value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.add(index, value);
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder addColumn(
+          org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder addColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder addAllColumn(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnData> values) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          super.addAll(values, column_);
+          onChanged();
+        } else {
+          columnBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder clearColumn() {
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          columnBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public Builder removeColumn(int index) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.remove(index);
+          onChanged();
+        } else {
+          columnBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnData.Builder getColumnBuilder(
+          int index) {
+        return getColumnFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+          int index) {
+        if (columnBuilder_ == null) {
+          return column_.get(index);  } else {
+          return columnBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+           getColumnOrBuilderList() {
+        if (columnBuilder_ != null) {
+          return columnBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(column_);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnData.Builder addColumnBuilder() {
+        return getColumnFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnData.Builder addColumnBuilder(
+          int index) {
+        return getColumnFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnData.Builder> 
+           getColumnBuilderList() {
+        return getColumnFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+          getColumnFieldBuilder() {
+        if (columnBuilder_ == null) {
+          columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder>(
+                  column_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          column_ = null;
+        }
+        return columnBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.StreamData)
+    }
+
+    static {
+      defaultInstance = new StreamData(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.StreamData)
+  }
+
+  public interface TableDataOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .archive.TableData.TableRecord record = 1;
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> 
+        getRecordList();
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    org.yamcs.protobuf.Archive.TableData.TableRecord getRecord(int index);
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    int getRecordCount();
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder> 
+        getRecordOrBuilderList();
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder getRecordOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code archive.TableData}
+   */
+  public static final class TableData extends
+      com.google.protobuf.GeneratedMessage
+      implements TableDataOrBuilder {
+    // Use TableData.newBuilder() to construct.
+    private TableData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private TableData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final TableData defaultInstance;
+    public static TableData getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public TableData getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TableData(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                record_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableData.TableRecord>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              record_.add(input.readMessage(org.yamcs.protobuf.Archive.TableData.TableRecord.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          record_ = java.util.Collections.unmodifiableList(record_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_TableData_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_TableData_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.TableData.class, org.yamcs.protobuf.Archive.TableData.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<TableData> PARSER =
+        new com.google.protobuf.AbstractParser<TableData>() {
+      public TableData parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TableData(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TableData> getParserForType() {
+      return PARSER;
+    }
+
+    public interface TableRecordOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // repeated .archive.ColumnData column = 1;
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      java.util.List<org.yamcs.protobuf.Archive.ColumnData> 
+          getColumnList();
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      org.yamcs.protobuf.Archive.ColumnData getColumn(int index);
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      int getColumnCount();
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+          getColumnOrBuilderList();
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+          int index);
+    }
+    /**
+     * Protobuf type {@code archive.TableData.TableRecord}
+     */
+    public static final class TableRecord extends
+        com.google.protobuf.GeneratedMessage
+        implements TableRecordOrBuilder {
+      // Use TableRecord.newBuilder() to construct.
+      private TableRecord(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private TableRecord(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final TableRecord defaultInstance;
+      public static TableRecord getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public TableRecord getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private TableRecord(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                  column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>();
+                  mutable_bitField0_ |= 0x00000001;
+                }
+                column_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnData.PARSER, extensionRegistry));
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+            column_ = java.util.Collections.unmodifiableList(column_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.TableData.TableRecord.class, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<TableRecord> PARSER =
+          new com.google.protobuf.AbstractParser<TableRecord>() {
+        public TableRecord parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new TableRecord(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<TableRecord> getParserForType() {
+        return PARSER;
+      }
+
+      // repeated .archive.ColumnData column = 1;
+      public static final int COLUMN_FIELD_NUMBER = 1;
+      private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_;
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnData> getColumnList() {
+        return column_;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+          getColumnOrBuilderList() {
+        return column_;
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      public int getColumnCount() {
+        return column_.size();
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnData getColumn(int index) {
+        return column_.get(index);
+      }
+      /**
+       * <code>repeated .archive.ColumnData column = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+          int index) {
+        return column_.get(index);
+      }
+
+      private void initFields() {
+        column_ = java.util.Collections.emptyList();
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        for (int i = 0; i < getColumnCount(); i++) {
+          if (!getColumn(i).isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        for (int i = 0; i < column_.size(); i++) {
+          output.writeMessage(1, column_.get(i));
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        for (int i = 0; i < column_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(1, column_.get(i));
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.yamcs.protobuf.Archive.TableData.TableRecord parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.yamcs.protobuf.Archive.TableData.TableRecord prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code archive.TableData.TableRecord}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.yamcs.protobuf.Archive.TableData.TableRecord.class, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder.class);
+        }
+
+        // Construct using org.yamcs.protobuf.Archive.TableData.TableRecord.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            getColumnFieldBuilder();
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          if (columnBuilder_ == null) {
+            column_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            columnBuilder_.clear();
+          }
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_descriptor;
+        }
+
+        public org.yamcs.protobuf.Archive.TableData.TableRecord getDefaultInstanceForType() {
+          return org.yamcs.protobuf.Archive.TableData.TableRecord.getDefaultInstance();
+        }
+
+        public org.yamcs.protobuf.Archive.TableData.TableRecord build() {
+          org.yamcs.protobuf.Archive.TableData.TableRecord result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.yamcs.protobuf.Archive.TableData.TableRecord buildPartial() {
+          org.yamcs.protobuf.Archive.TableData.TableRecord result = new org.yamcs.protobuf.Archive.TableData.TableRecord(this);
+          int from_bitField0_ = bitField0_;
+          if (columnBuilder_ == null) {
+            if (((bitField0_ & 0x00000001) == 0x00000001)) {
+              column_ = java.util.Collections.unmodifiableList(column_);
+              bitField0_ = (bitField0_ & ~0x00000001);
+            }
+            result.column_ = column_;
+          } else {
+            result.column_ = columnBuilder_.build();
+          }
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.yamcs.protobuf.Archive.TableData.TableRecord) {
+            return mergeFrom((org.yamcs.protobuf.Archive.TableData.TableRecord)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.yamcs.protobuf.Archive.TableData.TableRecord other) {
+          if (other == org.yamcs.protobuf.Archive.TableData.TableRecord.getDefaultInstance()) return this;
+          if (columnBuilder_ == null) {
+            if (!other.column_.isEmpty()) {
+              if (column_.isEmpty()) {
+                column_ = other.column_;
+                bitField0_ = (bitField0_ & ~0x00000001);
+              } else {
+                ensureColumnIsMutable();
+                column_.addAll(other.column_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.column_.isEmpty()) {
+              if (columnBuilder_.isEmpty()) {
+                columnBuilder_.dispose();
+                columnBuilder_ = null;
+                column_ = other.column_;
+                bitField0_ = (bitField0_ & ~0x00000001);
+                columnBuilder_ = 
+                  com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                     getColumnFieldBuilder() : null;
+              } else {
+                columnBuilder_.addAllMessages(other.column_);
+              }
+            }
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          for (int i = 0; i < getColumnCount(); i++) {
+            if (!getColumn(i).isInitialized()) {
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.yamcs.protobuf.Archive.TableData.TableRecord parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.yamcs.protobuf.Archive.TableData.TableRecord) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // repeated .archive.ColumnData column = 1;
+        private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
+          java.util.Collections.emptyList();
+        private void ensureColumnIsMutable() {
+          if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+            column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>(column_);
+            bitField0_ |= 0x00000001;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder> columnBuilder_;
+
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public java.util.List<org.yamcs.protobuf.Archive.ColumnData> getColumnList() {
+          if (columnBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(column_);
+          } else {
+            return columnBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public int getColumnCount() {
+          if (columnBuilder_ == null) {
+            return column_.size();
+          } else {
+            return columnBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public org.yamcs.protobuf.Archive.ColumnData getColumn(int index) {
+          if (columnBuilder_ == null) {
+            return column_.get(index);
+          } else {
+            return columnBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder setColumn(
+            int index, org.yamcs.protobuf.Archive.ColumnData value) {
+          if (columnBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColumnIsMutable();
+            column_.set(index, value);
+            onChanged();
+          } else {
+            columnBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder setColumn(
+            int index, org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+          if (columnBuilder_ == null) {
+            ensureColumnIsMutable();
+            column_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            columnBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder addColumn(org.yamcs.protobuf.Archive.ColumnData value) {
+          if (columnBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColumnIsMutable();
+            column_.add(value);
+            onChanged();
+          } else {
+            columnBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder addColumn(
+            int index, org.yamcs.protobuf.Archive.ColumnData value) {
+          if (columnBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColumnIsMutable();
+            column_.add(index, value);
+            onChanged();
+          } else {
+            columnBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder addColumn(
+            org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+          if (columnBuilder_ == null) {
+            ensureColumnIsMutable();
+            column_.add(builderForValue.build());
+            onChanged();
+          } else {
+            columnBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder addColumn(
+            int index, org.yamcs.protobuf.Archive.ColumnData.Builder builderForValue) {
+          if (columnBuilder_ == null) {
+            ensureColumnIsMutable();
+            column_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            columnBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder addAllColumn(
+            java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnData> values) {
+          if (columnBuilder_ == null) {
+            ensureColumnIsMutable();
+            super.addAll(values, column_);
+            onChanged();
+          } else {
+            columnBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder clearColumn() {
+          if (columnBuilder_ == null) {
+            column_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000001);
+            onChanged();
+          } else {
+            columnBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public Builder removeColumn(int index) {
+          if (columnBuilder_ == null) {
+            ensureColumnIsMutable();
+            column_.remove(index);
+            onChanged();
+          } else {
+            columnBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public org.yamcs.protobuf.Archive.ColumnData.Builder getColumnBuilder(
+            int index) {
+          return getColumnFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public org.yamcs.protobuf.Archive.ColumnDataOrBuilder getColumnOrBuilder(
+            int index) {
+          if (columnBuilder_ == null) {
+            return column_.get(index);  } else {
+            return columnBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+             getColumnOrBuilderList() {
+          if (columnBuilder_ != null) {
+            return columnBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(column_);
+          }
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public org.yamcs.protobuf.Archive.ColumnData.Builder addColumnBuilder() {
+          return getColumnFieldBuilder().addBuilder(
+              org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public org.yamcs.protobuf.Archive.ColumnData.Builder addColumnBuilder(
+            int index) {
+          return getColumnFieldBuilder().addBuilder(
+              index, org.yamcs.protobuf.Archive.ColumnData.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .archive.ColumnData column = 1;</code>
+         */
+        public java.util.List<org.yamcs.protobuf.Archive.ColumnData.Builder> 
+             getColumnBuilderList() {
+          return getColumnFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder> 
+            getColumnFieldBuilder() {
+          if (columnBuilder_ == null) {
+            columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+                org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder>(
+                    column_,
+                    ((bitField0_ & 0x00000001) == 0x00000001),
+                    getParentForChildren(),
+                    isClean());
+            column_ = null;
+          }
+          return columnBuilder_;
+        }
+
+        // @@protoc_insertion_point(builder_scope:archive.TableData.TableRecord)
+      }
+
+      static {
+        defaultInstance = new TableRecord(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:archive.TableData.TableRecord)
+    }
+
+    // repeated .archive.TableData.TableRecord record = 1;
+    public static final int RECORD_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> record_;
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> getRecordList() {
+      return record_;
+    }
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder> 
+        getRecordOrBuilderList() {
+      return record_;
+    }
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    public int getRecordCount() {
+      return record_.size();
+    }
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    public org.yamcs.protobuf.Archive.TableData.TableRecord getRecord(int index) {
+      return record_.get(index);
+    }
+    /**
+     * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+     */
+    public org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder getRecordOrBuilder(
+        int index) {
+      return record_.get(index);
+    }
+
+    private void initFields() {
+      record_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getRecordCount(); i++) {
+        if (!getRecord(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < record_.size(); i++) {
+        output.writeMessage(1, record_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < record_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, record_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableData parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.TableData prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.TableData}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.TableDataOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableData_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableData_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.TableData.class, org.yamcs.protobuf.Archive.TableData.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.TableData.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getRecordFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (recordBuilder_ == null) {
+          record_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          recordBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableData_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.TableData getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.TableData.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.TableData build() {
+        org.yamcs.protobuf.Archive.TableData result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.TableData buildPartial() {
+        org.yamcs.protobuf.Archive.TableData result = new org.yamcs.protobuf.Archive.TableData(this);
+        int from_bitField0_ = bitField0_;
+        if (recordBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            record_ = java.util.Collections.unmodifiableList(record_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.record_ = record_;
+        } else {
+          result.record_ = recordBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.TableData) {
+          return mergeFrom((org.yamcs.protobuf.Archive.TableData)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.TableData other) {
+        if (other == org.yamcs.protobuf.Archive.TableData.getDefaultInstance()) return this;
+        if (recordBuilder_ == null) {
+          if (!other.record_.isEmpty()) {
+            if (record_.isEmpty()) {
+              record_ = other.record_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureRecordIsMutable();
+              record_.addAll(other.record_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.record_.isEmpty()) {
+            if (recordBuilder_.isEmpty()) {
+              recordBuilder_.dispose();
+              recordBuilder_ = null;
+              record_ = other.record_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              recordBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getRecordFieldBuilder() : null;
+            } else {
+              recordBuilder_.addAllMessages(other.record_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getRecordCount(); i++) {
+          if (!getRecord(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.TableData parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.TableData) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .archive.TableData.TableRecord record = 1;
+      private java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> record_ =
+        java.util.Collections.emptyList();
+      private void ensureRecordIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          record_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableData.TableRecord>(record_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.TableData.TableRecord, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder, org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder> recordBuilder_;
+
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> getRecordList() {
+        if (recordBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(record_);
+        } else {
+          return recordBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public int getRecordCount() {
+        if (recordBuilder_ == null) {
+          return record_.size();
+        } else {
+          return recordBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.TableData.TableRecord getRecord(int index) {
+        if (recordBuilder_ == null) {
+          return record_.get(index);
+        } else {
+          return recordBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder setRecord(
+          int index, org.yamcs.protobuf.Archive.TableData.TableRecord value) {
+        if (recordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRecordIsMutable();
+          record_.set(index, value);
+          onChanged();
+        } else {
+          recordBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder setRecord(
+          int index, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder builderForValue) {
+        if (recordBuilder_ == null) {
+          ensureRecordIsMutable();
+          record_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          recordBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder addRecord(org.yamcs.protobuf.Archive.TableData.TableRecord value) {
+        if (recordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRecordIsMutable();
+          record_.add(value);
+          onChanged();
+        } else {
+          recordBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder addRecord(
+          int index, org.yamcs.protobuf.Archive.TableData.TableRecord value) {
+        if (recordBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRecordIsMutable();
+          record_.add(index, value);
+          onChanged();
+        } else {
+          recordBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder addRecord(
+          org.yamcs.protobuf.Archive.TableData.TableRecord.Builder builderForValue) {
+        if (recordBuilder_ == null) {
+          ensureRecordIsMutable();
+          record_.add(builderForValue.build());
+          onChanged();
+        } else {
+          recordBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder addRecord(
+          int index, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder builderForValue) {
+        if (recordBuilder_ == null) {
+          ensureRecordIsMutable();
+          record_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          recordBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder addAllRecord(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.TableData.TableRecord> values) {
+        if (recordBuilder_ == null) {
+          ensureRecordIsMutable();
+          super.addAll(values, record_);
+          onChanged();
+        } else {
+          recordBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder clearRecord() {
+        if (recordBuilder_ == null) {
+          record_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          recordBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public Builder removeRecord(int index) {
+        if (recordBuilder_ == null) {
+          ensureRecordIsMutable();
+          record_.remove(index);
+          onChanged();
+        } else {
+          recordBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.TableData.TableRecord.Builder getRecordBuilder(
+          int index) {
+        return getRecordFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder getRecordOrBuilder(
+          int index) {
+        if (recordBuilder_ == null) {
+          return record_.get(index);  } else {
+          return recordBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder> 
+           getRecordOrBuilderList() {
+        if (recordBuilder_ != null) {
+          return recordBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(record_);
+        }
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.TableData.TableRecord.Builder addRecordBuilder() {
+        return getRecordFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.TableData.TableRecord.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.TableData.TableRecord.Builder addRecordBuilder(
+          int index) {
+        return getRecordFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.TableData.TableRecord.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.TableData.TableRecord record = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord.Builder> 
+           getRecordBuilderList() {
+        return getRecordFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.TableData.TableRecord, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder, org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder> 
+          getRecordFieldBuilder() {
+        if (recordBuilder_ == null) {
+          recordBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.TableData.TableRecord, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder, org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder>(
+                  record_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          record_ = null;
+        }
+        return recordBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.TableData)
+    }
+
+    static {
+      defaultInstance = new TableData(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.TableData)
+  }
+
+  public interface ColumnInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // optional string type = 2;
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    java.lang.String getType();
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTypeBytes();
+  }
+  /**
+   * Protobuf type {@code archive.ColumnInfo}
+   */
+  public static final class ColumnInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements ColumnInfoOrBuilder {
+    // Use ColumnInfo.newBuilder() to construct.
+    private ColumnInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ColumnInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ColumnInfo defaultInstance;
+    public static ColumnInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ColumnInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ColumnInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              type_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.ColumnInfo.class, org.yamcs.protobuf.Archive.ColumnInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ColumnInfo> PARSER =
+        new com.google.protobuf.AbstractParser<ColumnInfo>() {
+      public ColumnInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ColumnInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ColumnInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string type = 2;
+    public static final int TYPE_FIELD_NUMBER = 2;
+    private java.lang.Object type_;
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    public java.lang.String getType() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          type_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string type = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTypeBytes() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        type_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      name_ = "";
+      type_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getTypeBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getTypeBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.ColumnInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.ColumnInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.ColumnInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.ColumnInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.ColumnInfo.class, org.yamcs.protobuf.Archive.ColumnInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.ColumnInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnInfo build() {
+        org.yamcs.protobuf.Archive.ColumnInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.ColumnInfo buildPartial() {
+        org.yamcs.protobuf.Archive.ColumnInfo result = new org.yamcs.protobuf.Archive.ColumnInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.type_ = type_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.ColumnInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.ColumnInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.ColumnInfo other) {
+        if (other == org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasType()) {
+          bitField0_ |= 0x00000002;
+          type_ = other.type_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.ColumnInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.ColumnInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string type = 2;
+      private java.lang.Object type_ = "";
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public java.lang.String getType() {
+        java.lang.Object ref = type_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          type_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes() {
+        java.lang.Object ref = type_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          type_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public Builder setType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        type_ = getDefaultInstance().getType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 2;</code>
+       */
+      public Builder setTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.ColumnInfo)
+    }
+
+    static {
+      defaultInstance = new ColumnInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.ColumnInfo)
+  }
+
+  public interface TableInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // repeated .archive.ColumnInfo keyColumn = 2;
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> 
+        getKeyColumnList();
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfo getKeyColumn(int index);
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    int getKeyColumnCount();
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getKeyColumnOrBuilderList();
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getKeyColumnOrBuilder(
+        int index);
+
+    // repeated .archive.ColumnInfo valueColumn = 3;
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> 
+        getValueColumnList();
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfo getValueColumn(int index);
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    int getValueColumnCount();
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getValueColumnOrBuilderList();
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getValueColumnOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code archive.TableInfo}
+   */
+  public static final class TableInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements TableInfoOrBuilder {
+    // Use TableInfo.newBuilder() to construct.
+    private TableInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private TableInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final TableInfo defaultInstance;
+    public static TableInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public TableInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TableInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                keyColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              keyColumn_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                valueColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              valueColumn_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnInfo.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          keyColumn_ = java.util.Collections.unmodifiableList(keyColumn_);
+        }
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          valueColumn_ = java.util.Collections.unmodifiableList(valueColumn_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.TableInfo.class, org.yamcs.protobuf.Archive.TableInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<TableInfo> PARSER =
+        new com.google.protobuf.AbstractParser<TableInfo>() {
+      public TableInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TableInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TableInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .archive.ColumnInfo keyColumn = 2;
+    public static final int KEYCOLUMN_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> keyColumn_;
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getKeyColumnList() {
+      return keyColumn_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getKeyColumnOrBuilderList() {
+      return keyColumn_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    public int getKeyColumnCount() {
+      return keyColumn_.size();
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfo getKeyColumn(int index) {
+      return keyColumn_.get(index);
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getKeyColumnOrBuilder(
+        int index) {
+      return keyColumn_.get(index);
+    }
+
+    // repeated .archive.ColumnInfo valueColumn = 3;
+    public static final int VALUECOLUMN_FIELD_NUMBER = 3;
+    private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> valueColumn_;
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getValueColumnList() {
+      return valueColumn_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getValueColumnOrBuilderList() {
+      return valueColumn_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    public int getValueColumnCount() {
+      return valueColumn_.size();
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfo getValueColumn(int index) {
+      return valueColumn_.get(index);
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getValueColumnOrBuilder(
+        int index) {
+      return valueColumn_.get(index);
+    }
+
+    private void initFields() {
+      name_ = "";
+      keyColumn_ = java.util.Collections.emptyList();
+      valueColumn_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      for (int i = 0; i < keyColumn_.size(); i++) {
+        output.writeMessage(2, keyColumn_.get(i));
+      }
+      for (int i = 0; i < valueColumn_.size(); i++) {
+        output.writeMessage(3, valueColumn_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      for (int i = 0; i < keyColumn_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, keyColumn_.get(i));
+      }
+      for (int i = 0; i < valueColumn_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, valueColumn_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.TableInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.TableInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.TableInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.TableInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.TableInfo.class, org.yamcs.protobuf.Archive.TableInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.TableInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getKeyColumnFieldBuilder();
+          getValueColumnFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (keyColumnBuilder_ == null) {
+          keyColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          keyColumnBuilder_.clear();
+        }
+        if (valueColumnBuilder_ == null) {
+          valueColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          valueColumnBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.TableInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.TableInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.TableInfo build() {
+        org.yamcs.protobuf.Archive.TableInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.TableInfo buildPartial() {
+        org.yamcs.protobuf.Archive.TableInfo result = new org.yamcs.protobuf.Archive.TableInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (keyColumnBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            keyColumn_ = java.util.Collections.unmodifiableList(keyColumn_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.keyColumn_ = keyColumn_;
+        } else {
+          result.keyColumn_ = keyColumnBuilder_.build();
+        }
+        if (valueColumnBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            valueColumn_ = java.util.Collections.unmodifiableList(valueColumn_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.valueColumn_ = valueColumn_;
+        } else {
+          result.valueColumn_ = valueColumnBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.TableInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.TableInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.TableInfo other) {
+        if (other == org.yamcs.protobuf.Archive.TableInfo.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (keyColumnBuilder_ == null) {
+          if (!other.keyColumn_.isEmpty()) {
+            if (keyColumn_.isEmpty()) {
+              keyColumn_ = other.keyColumn_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureKeyColumnIsMutable();
+              keyColumn_.addAll(other.keyColumn_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.keyColumn_.isEmpty()) {
+            if (keyColumnBuilder_.isEmpty()) {
+              keyColumnBuilder_.dispose();
+              keyColumnBuilder_ = null;
+              keyColumn_ = other.keyColumn_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              keyColumnBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getKeyColumnFieldBuilder() : null;
+            } else {
+              keyColumnBuilder_.addAllMessages(other.keyColumn_);
+            }
+          }
+        }
+        if (valueColumnBuilder_ == null) {
+          if (!other.valueColumn_.isEmpty()) {
+            if (valueColumn_.isEmpty()) {
+              valueColumn_ = other.valueColumn_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureValueColumnIsMutable();
+              valueColumn_.addAll(other.valueColumn_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.valueColumn_.isEmpty()) {
+            if (valueColumnBuilder_.isEmpty()) {
+              valueColumnBuilder_.dispose();
+              valueColumnBuilder_ = null;
+              valueColumn_ = other.valueColumn_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              valueColumnBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getValueColumnFieldBuilder() : null;
+            } else {
+              valueColumnBuilder_.addAllMessages(other.valueColumn_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.TableInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.TableInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .archive.ColumnInfo keyColumn = 2;
+      private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> keyColumn_ =
+        java.util.Collections.emptyList();
+      private void ensureKeyColumnIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          keyColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(keyColumn_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> keyColumnBuilder_;
+
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getKeyColumnList() {
+        if (keyColumnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(keyColumn_);
+        } else {
+          return keyColumnBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public int getKeyColumnCount() {
+        if (keyColumnBuilder_ == null) {
+          return keyColumn_.size();
+        } else {
+          return keyColumnBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo getKeyColumn(int index) {
+        if (keyColumnBuilder_ == null) {
+          return keyColumn_.get(index);
+        } else {
+          return keyColumnBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder setKeyColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (keyColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureKeyColumnIsMutable();
+          keyColumn_.set(index, value);
+          onChanged();
+        } else {
+          keyColumnBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder setKeyColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (keyColumnBuilder_ == null) {
+          ensureKeyColumnIsMutable();
+          keyColumn_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          keyColumnBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder addKeyColumn(org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (keyColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureKeyColumnIsMutable();
+          keyColumn_.add(value);
+          onChanged();
+        } else {
+          keyColumnBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder addKeyColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (keyColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureKeyColumnIsMutable();
+          keyColumn_.add(index, value);
+          onChanged();
+        } else {
+          keyColumnBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder addKeyColumn(
+          org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (keyColumnBuilder_ == null) {
+          ensureKeyColumnIsMutable();
+          keyColumn_.add(builderForValue.build());
+          onChanged();
+        } else {
+          keyColumnBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder addKeyColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (keyColumnBuilder_ == null) {
+          ensureKeyColumnIsMutable();
+          keyColumn_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          keyColumnBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder addAllKeyColumn(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
+        if (keyColumnBuilder_ == null) {
+          ensureKeyColumnIsMutable();
+          super.addAll(values, keyColumn_);
+          onChanged();
+        } else {
+          keyColumnBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder clearKeyColumn() {
+        if (keyColumnBuilder_ == null) {
+          keyColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          keyColumnBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public Builder removeKeyColumn(int index) {
+        if (keyColumnBuilder_ == null) {
+          ensureKeyColumnIsMutable();
+          keyColumn_.remove(index);
+          onChanged();
+        } else {
+          keyColumnBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder getKeyColumnBuilder(
+          int index) {
+        return getKeyColumnFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getKeyColumnOrBuilder(
+          int index) {
+        if (keyColumnBuilder_ == null) {
+          return keyColumn_.get(index);  } else {
+          return keyColumnBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+           getKeyColumnOrBuilderList() {
+        if (keyColumnBuilder_ != null) {
+          return keyColumnBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(keyColumn_);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addKeyColumnBuilder() {
+        return getKeyColumnFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addKeyColumnBuilder(
+          int index) {
+        return getKeyColumnFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo.Builder> 
+           getKeyColumnBuilderList() {
+        return getKeyColumnFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+          getKeyColumnFieldBuilder() {
+        if (keyColumnBuilder_ == null) {
+          keyColumnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
+                  keyColumn_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          keyColumn_ = null;
+        }
+        return keyColumnBuilder_;
+      }
+
+      // repeated .archive.ColumnInfo valueColumn = 3;
+      private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> valueColumn_ =
+        java.util.Collections.emptyList();
+      private void ensureValueColumnIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          valueColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(valueColumn_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> valueColumnBuilder_;
+
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getValueColumnList() {
+        if (valueColumnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(valueColumn_);
+        } else {
+          return valueColumnBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public int getValueColumnCount() {
+        if (valueColumnBuilder_ == null) {
+          return valueColumn_.size();
+        } else {
+          return valueColumnBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo getValueColumn(int index) {
+        if (valueColumnBuilder_ == null) {
+          return valueColumn_.get(index);
+        } else {
+          return valueColumnBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder setValueColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (valueColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueColumnIsMutable();
+          valueColumn_.set(index, value);
+          onChanged();
+        } else {
+          valueColumnBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder setValueColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (valueColumnBuilder_ == null) {
+          ensureValueColumnIsMutable();
+          valueColumn_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          valueColumnBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder addValueColumn(org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (valueColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueColumnIsMutable();
+          valueColumn_.add(value);
+          onChanged();
+        } else {
+          valueColumnBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder addValueColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (valueColumnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueColumnIsMutable();
+          valueColumn_.add(index, value);
+          onChanged();
+        } else {
+          valueColumnBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder addValueColumn(
+          org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (valueColumnBuilder_ == null) {
+          ensureValueColumnIsMutable();
+          valueColumn_.add(builderForValue.build());
+          onChanged();
+        } else {
+          valueColumnBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder addValueColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (valueColumnBuilder_ == null) {
+          ensureValueColumnIsMutable();
+          valueColumn_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          valueColumnBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder addAllValueColumn(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
+        if (valueColumnBuilder_ == null) {
+          ensureValueColumnIsMutable();
+          super.addAll(values, valueColumn_);
+          onChanged();
+        } else {
+          valueColumnBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder clearValueColumn() {
+        if (valueColumnBuilder_ == null) {
+          valueColumn_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          valueColumnBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public Builder removeValueColumn(int index) {
+        if (valueColumnBuilder_ == null) {
+          ensureValueColumnIsMutable();
+          valueColumn_.remove(index);
+          onChanged();
+        } else {
+          valueColumnBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder getValueColumnBuilder(
+          int index) {
+        return getValueColumnFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getValueColumnOrBuilder(
+          int index) {
+        if (valueColumnBuilder_ == null) {
+          return valueColumn_.get(index);  } else {
+          return valueColumnBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+           getValueColumnOrBuilderList() {
+        if (valueColumnBuilder_ != null) {
+          return valueColumnBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(valueColumn_);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addValueColumnBuilder() {
+        return getValueColumnFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addValueColumnBuilder(
+          int index) {
+        return getValueColumnFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo.Builder> 
+           getValueColumnBuilderList() {
+        return getValueColumnFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+          getValueColumnFieldBuilder() {
+        if (valueColumnBuilder_ == null) {
+          valueColumnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
+                  valueColumn_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          valueColumn_ = null;
+        }
+        return valueColumnBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.TableInfo)
+    }
+
+    static {
+      defaultInstance = new TableInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.TableInfo)
+  }
+
+  public interface StreamInfoOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string name = 1;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    // repeated .archive.ColumnInfo column = 2;
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> 
+        getColumnList();
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfo getColumn(int index);
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    int getColumnCount();
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getColumnOrBuilderList();
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getColumnOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code archive.StreamInfo}
+   */
+  public static final class StreamInfo extends
+      com.google.protobuf.GeneratedMessage
+      implements StreamInfoOrBuilder {
+    // Use StreamInfo.newBuilder() to construct.
+    private StreamInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private StreamInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final StreamInfo defaultInstance;
+    public static StreamInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public StreamInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private StreamInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              column_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnInfo.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          column_ = java.util.Collections.unmodifiableList(column_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.StreamInfo.class, org.yamcs.protobuf.Archive.StreamInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<StreamInfo> PARSER =
+        new com.google.protobuf.AbstractParser<StreamInfo>() {
+      public StreamInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new StreamInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<StreamInfo> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .archive.ColumnInfo column = 2;
+    public static final int COLUMN_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> column_;
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getColumnList() {
+      return column_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+        getColumnOrBuilderList() {
+      return column_;
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    public int getColumnCount() {
+      return column_.size();
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfo getColumn(int index) {
+      return column_.get(index);
+    }
+    /**
+     * <code>repeated .archive.ColumnInfo column = 2;</code>
+     */
+    public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getColumnOrBuilder(
+        int index) {
+      return column_.get(index);
+    }
+
+    private void initFields() {
+      name_ = "";
+      column_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getNameBytes());
+      }
+      for (int i = 0; i < column_.size(); i++) {
+        output.writeMessage(2, column_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getNameBytes());
+      }
+      for (int i = 0; i < column_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, column_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.StreamInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.StreamInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.StreamInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Archive.StreamInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.StreamInfo.class, org.yamcs.protobuf.Archive.StreamInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.StreamInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getColumnFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          columnBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.StreamInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.StreamInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.StreamInfo build() {
+        org.yamcs.protobuf.Archive.StreamInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.StreamInfo buildPartial() {
+        org.yamcs.protobuf.Archive.StreamInfo result = new org.yamcs.protobuf.Archive.StreamInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (columnBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            column_ = java.util.Collections.unmodifiableList(column_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.column_ = column_;
+        } else {
+          result.column_ = columnBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.StreamInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.StreamInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.StreamInfo other) {
+        if (other == org.yamcs.protobuf.Archive.StreamInfo.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (columnBuilder_ == null) {
+          if (!other.column_.isEmpty()) {
+            if (column_.isEmpty()) {
+              column_ = other.column_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureColumnIsMutable();
+              column_.addAll(other.column_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.column_.isEmpty()) {
+            if (columnBuilder_.isEmpty()) {
+              columnBuilder_.dispose();
+              columnBuilder_ = null;
+              column_ = other.column_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              columnBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getColumnFieldBuilder() : null;
+            } else {
+              columnBuilder_.addAllMessages(other.column_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.StreamInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.StreamInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string name = 1;
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          name_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .archive.ColumnInfo column = 2;
+      private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> column_ =
+        java.util.Collections.emptyList();
+      private void ensureColumnIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(column_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> columnBuilder_;
+
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> getColumnList() {
+        if (columnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(column_);
+        } else {
+          return columnBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public int getColumnCount() {
+        if (columnBuilder_ == null) {
+          return column_.size();
+        } else {
+          return columnBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo getColumn(int index) {
+        if (columnBuilder_ == null) {
+          return column_.get(index);
+        } else {
+          return columnBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder setColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.set(index, value);
+          onChanged();
+        } else {
+          columnBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder setColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder addColumn(org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.add(value);
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder addColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo value) {
+        if (columnBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColumnIsMutable();
+          column_.add(index, value);
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder addColumn(
+          org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder addColumn(
+          int index, org.yamcs.protobuf.Archive.ColumnInfo.Builder builderForValue) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          columnBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder addAllColumn(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          super.addAll(values, column_);
+          onChanged();
+        } else {
+          columnBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder clearColumn() {
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          columnBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public Builder removeColumn(int index) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.remove(index);
+          onChanged();
+        } else {
+          columnBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder getColumnBuilder(
+          int index) {
+        return getColumnFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getColumnOrBuilder(
+          int index) {
+        if (columnBuilder_ == null) {
+          return column_.get(index);  } else {
+          return columnBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+           getColumnOrBuilderList() {
+        if (columnBuilder_ != null) {
+          return columnBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(column_);
+        }
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addColumnBuilder() {
+        return getColumnFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public org.yamcs.protobuf.Archive.ColumnInfo.Builder addColumnBuilder(
+          int index) {
+        return getColumnFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.ColumnInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.ColumnInfo column = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.ColumnInfo.Builder> 
+           getColumnBuilderList() {
+        return getColumnFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder> 
+          getColumnFieldBuilder() {
+        if (columnBuilder_ == null) {
+          columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
+                  column_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          column_ = null;
+        }
+        return columnBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.StreamInfo)
+    }
+
+    static {
+      defaultInstance = new StreamInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.StreamInfo)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_DumpArchiveRequest_descriptor;
   private static
@@ -8263,6 +13810,41 @@ public final class Archive {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_UpdateTagRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_ColumnData_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_ColumnData_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_StreamData_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_StreamData_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_TableData_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_TableData_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_TableData_TableRecord_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_TableData_TableRecord_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_ColumnInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_ColumnInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_TableInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_TableInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_StreamInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_StreamInfo_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8298,7 +13880,19 @@ public final class Archive {
       "se\022\036\n\003tag\030\001 \001(\0132\021.yamcs.ArchiveTag\"a\n\020Up" +
       "dateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 " +
       "\001(\003\022\014\n\004stop\030\003 \001(\003\022\023\n\013description\030\004 \001(\t\022\r" +
-      "\n\005color\030\005 \001(\tB\024\n\022org.yamcs.protobuf"
+      "\n\005color\030\005 \001(\t\"7\n\nColumnData\022\014\n\004name\030\001 \001(" +
+      "\t\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\"A\n\nStream" +
+      "Data\022\016\n\006stream\030\001 \001(\t\022#\n\006column\030\002 \003(\0132\023.a" +
+      "rchive.ColumnData\"o\n\tTableData\022.\n\006record",
+      "\030\001 \003(\0132\036.archive.TableData.TableRecord\0322" +
+      "\n\013TableRecord\022#\n\006column\030\001 \003(\0132\023.archive." +
+      "ColumnData\"(\n\nColumnInfo\022\014\n\004name\030\001 \001(\t\022\014" +
+      "\n\004type\030\002 \001(\t\"k\n\tTableInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "&\n\tkeyColumn\030\002 \003(\0132\023.archive.ColumnInfo\022" +
+      "(\n\013valueColumn\030\003 \003(\0132\023.archive.ColumnInf" +
+      "o\"?\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006column\030" +
+      "\002 \003(\0132\023.archive.ColumnInfoB\024\n\022org.yamcs." +
+      "protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8347,6 +13941,48 @@ public final class Archive {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_UpdateTagRequest_descriptor,
               new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
+          internal_static_archive_ColumnData_descriptor =
+            getDescriptor().getMessageTypes().get(7);
+          internal_static_archive_ColumnData_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_ColumnData_descriptor,
+              new java.lang.String[] { "Name", "Value", });
+          internal_static_archive_StreamData_descriptor =
+            getDescriptor().getMessageTypes().get(8);
+          internal_static_archive_StreamData_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_StreamData_descriptor,
+              new java.lang.String[] { "Stream", "Column", });
+          internal_static_archive_TableData_descriptor =
+            getDescriptor().getMessageTypes().get(9);
+          internal_static_archive_TableData_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_TableData_descriptor,
+              new java.lang.String[] { "Record", });
+          internal_static_archive_TableData_TableRecord_descriptor =
+            internal_static_archive_TableData_descriptor.getNestedTypes().get(0);
+          internal_static_archive_TableData_TableRecord_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_TableData_TableRecord_descriptor,
+              new java.lang.String[] { "Column", });
+          internal_static_archive_ColumnInfo_descriptor =
+            getDescriptor().getMessageTypes().get(10);
+          internal_static_archive_ColumnInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_ColumnInfo_descriptor,
+              new java.lang.String[] { "Name", "Type", });
+          internal_static_archive_TableInfo_descriptor =
+            getDescriptor().getMessageTypes().get(11);
+          internal_static_archive_TableInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_TableInfo_descriptor,
+              new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", });
+          internal_static_archive_StreamInfo_descriptor =
+            getDescriptor().getMessageTypes().get(12);
+          internal_static_archive_StreamInfo_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_archive_StreamInfo_descriptor,
+              new java.lang.String[] { "Name", "Column", });
           return null;
         }
       };

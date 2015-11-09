@@ -5,8 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -28,13 +31,20 @@ import org.yamcs.protobuf.Archive.GetTagsRequest;
 import org.yamcs.protobuf.Archive.GetTagsResponse;
 import org.yamcs.protobuf.Archive.InsertTagRequest;
 import org.yamcs.protobuf.Archive.InsertTagResponse;
+import org.yamcs.protobuf.Archive.StreamInfo;
+import org.yamcs.protobuf.Archive.TableData;
+import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.ListStreamsResponse;
+import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
@@ -49,8 +59,14 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
@@ -75,6 +91,8 @@ import io.protostuff.Schema;
 public class ArchiveRequestHandler extends RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    
+    private static AtomicInteger streamCounter = new AtomicInteger();
 
     // This is a guideline, not a hard limit because because calculations don't include wrapping message
     private static final int MAX_BYTE_SIZE = 1048576;
@@ -98,6 +116,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
         req.addToContext(RestRequest.CTX_INSTANCE, instance);
         
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        
         pathOffset++;
         if (!req.hasPathSegment(pathOffset)) {
             return handleDumpRequest(req);
@@ -105,12 +125,17 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "tags":
                 return handleTagsRequest(req, pathOffset + 1);
-                
+            case "tables":
+                return handleTablesRequest(req, pathOffset + 1, ydb);
+            case "streams":
+                return handleStreamsRequest(req, pathOffset + 1, ydb);
             default:
                 throw new NotFoundException(req);
             }
         }
     }
+    
+    
     
     /**
      *  csv generator should be created only once per request since its insert a header in first row
@@ -426,10 +451,185 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
     }
     
+    private RestResponse handleTablesRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listTables(req, ydb);            
+        } else {
+            String tableName = req.getPathSegment(pathOffset);
+            TableDefinition table = ydb.getTable(tableName);
+            if (table == null) {
+                throw new NotFoundException(req, "No table named '" + tableName + "'");
+            } else {
+                return handleTableRequest(req, pathOffset + 1, ydb, table);
+            }
+        }
+    }
+    
+    private RestResponse handleTableRequest(RestRequest req, int pathOffset, YarchDatabase ydb, TableDefinition table) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return getTable(req, table);
+        } else {
+            String resource = req.getPathSegment(pathOffset);
+            switch (resource) {
+            case "data":
+                return getTableData(req, ydb, table);
+            default:
+                throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
+            }
+        }
+    }
+    
+    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws RestException {
+        ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
+        for (TableDefinition def : ydb.getTableDefinitions()) {
+            responseb.addTable(ArchiveAssembler.toTableInfo(def));
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
+    }
+    
+    private RestResponse getTable(RestRequest req, TableDefinition table) throws RestException {
+        TableInfo response = ArchiveAssembler.toTableInfo(table);
+        return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
+    }
+    
+    private RestResponse getTableData(RestRequest req, YarchDatabase ydb, TableDefinition table) throws RestException {
+        // Sensible defaults
+        List<String> cols = null;
+        long start = 0;
+        int limit = 100;
+        List<String> sortCols = null;
+        
+        // Read query params
+        if (req.hasQueryParameter("cols")) {
+            cols = new ArrayList<>(); // Order, and non-unique
+            for (String para : req.getQueryParameterList("cols")) {
+                for (String col : para.split(",")) {
+                    cols.add(col);
+                }
+            }
+        }
+        if (req.hasQueryParameter("start")) start = req.getQueryParameterAsLong("start");
+        if (req.hasQueryParameter("limit")) limit = req.getQueryParameterAsInt("limit");
+        if (req.hasQueryParameter("sort")) {
+            sortCols = new ArrayList<>(); // Order, and non-unique
+            for (String para : req.getQueryParameterList("sort")) {
+                for (String col : para.split(",")) {
+                    switch(col.charAt(0)) {
+                    case '+':
+                        sortCols.add(col.substring(1) + " asc");
+                        break;
+                    case '-':
+                        sortCols.add(col.substring(1) + " desc");
+                        break;
+                    default:
+                        sortCols.add(col);
+                    }
+                }
+            }
+        }
+        
+        // Makes a SQL query. Pagination is currently done programmatically on the result
+        // which is something we would better add support for in Stream SQL.
+        String streamName = "rest_archive" + streamCounter.incrementAndGet();
+        StringBuilder buf = new StringBuilder("create stream ").append(streamName).append(" as select ");
+        if (cols == null) {
+            buf.append("*");
+        } else if (cols.isEmpty()) {
+            throw new BadRequestException("No columns are specified.");
+        } else {
+            for (int i = 0; i < cols.size(); i++) {
+                if (i != 0) buf.append(", ");
+                buf.append(cols.get(i));
+            }
+        }
+        buf.append(" from ").append(table.getName());
+        
+        if (sortCols != null) {
+            buf.append(" order by ");
+            for (int i = 0; i < sortCols.size(); i++) {
+                if (i != 0) buf.append(", ");
+                buf.append(sortCols.get(i));
+            }
+        }
+        
+        String sql = buf.toString();
+        log.info("Executing SQL: " + sql);
+        try {
+            ydb.execute(sql);
+        } catch (StreamSqlException | ParseException e) {
+            throw new InternalServerErrorException(e);
+        }
+        
+        // Ugh, fix me to be async. Current framework not really good for that.
+        Semaphore semaphore = new Semaphore(0);
+        
+        TableData.Builder responseb = TableData.newBuilder();
+        Stream stream = ydb.getStream(streamName);
+        log.info("will limit to " + limit);
+        stream.addSubscriber(new LimitedStreamSubscriber(start, limit) {
+            @Override
+            public void onTuple(Tuple tuple) {
+                TableRecord.Builder rec = TableRecord.newBuilder();
+                rec.addAllColumn(ArchiveAssembler.toColumnDataList(tuple));
+                responseb.addRecord(rec); // TODO estimate byte size
+            }
+            
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+        });
+        stream.start();
+        try {
+            semaphore.acquire();
+            return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
+        } catch (InterruptedException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+    
+    private RestResponse handleStreamsRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listStreams(req, ydb);
+        } else {
+            String streamName = req.getPathSegment(pathOffset);
+            Stream stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new NotFoundException(req, "No stream named '" + streamName + "'");
+            } else {
+                return handleStreamRequest(req, pathOffset + 1, stream);
+            }
+        }
+    }
+    
+    private RestResponse handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return getStream(req, stream);
+        } else {
+            String resource = req.getPathSegment(pathOffset + 1);
+            throw new NotFoundException(req, "No resource '" + resource + "' for stream '" + stream.getName() +  "'");
+        }
+    } 
+    
+    private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws RestException {
+        ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
+        for (AbstractStream stream : ydb.getStreams()) {
+            responseb.addStream(ArchiveAssembler.toStreamInfo(stream));
+        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
+    }
+    
+    private RestResponse getStream(RestRequest req, Stream stream) throws RestException {
+        StreamInfo response = ArchiveAssembler.toStreamInfo(stream);
+        return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
+    }
+    
     /**
      * Lists all tags (optionally filtered by request-body)
-     * <p>
-     * GET /(instance)/api/archive/tags
      */
     private RestResponse getTags(RestRequest req) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);

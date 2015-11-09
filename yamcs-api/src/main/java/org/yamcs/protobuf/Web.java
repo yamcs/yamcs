@@ -2744,19 +2744,19 @@ public final class Web {
        */
       org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder();
 
-      // optional .yamcs.StreamData streamData = 9;
+      // optional .archive.StreamData streamData = 9;
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
       boolean hasStreamData();
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
-      org.yamcs.protobuf.Yamcs.StreamData getStreamData();
+      org.yamcs.protobuf.Archive.StreamData getStreamData();
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
-      org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder();
+      org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder();
 
       // optional .alarms.AlarmInfo alarmInfo = 10;
       /**
@@ -2938,11 +2938,11 @@ public final class Web {
                 break;
               }
               case 74: {
-                org.yamcs.protobuf.Yamcs.StreamData.Builder subBuilder = null;
+                org.yamcs.protobuf.Archive.StreamData.Builder subBuilder = null;
                 if (((bitField0_ & 0x00000100) == 0x00000100)) {
                   subBuilder = streamData_.toBuilder();
                 }
-                streamData_ = input.readMessage(org.yamcs.protobuf.Yamcs.StreamData.PARSER, extensionRegistry);
+                streamData_ = input.readMessage(org.yamcs.protobuf.Archive.StreamData.PARSER, extensionRegistry);
                 if (subBuilder != null) {
                   subBuilder.mergeFrom(streamData_);
                   streamData_ = subBuilder.buildPartial();
@@ -3180,25 +3180,25 @@ public final class Web {
         return event_;
       }
 
-      // optional .yamcs.StreamData streamData = 9;
+      // optional .archive.StreamData streamData = 9;
       public static final int STREAMDATA_FIELD_NUMBER = 9;
-      private org.yamcs.protobuf.Yamcs.StreamData streamData_;
+      private org.yamcs.protobuf.Archive.StreamData streamData_;
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
       public boolean hasStreamData() {
         return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
-      public org.yamcs.protobuf.Yamcs.StreamData getStreamData() {
+      public org.yamcs.protobuf.Archive.StreamData getStreamData() {
         return streamData_;
       }
       /**
-       * <code>optional .yamcs.StreamData streamData = 9;</code>
+       * <code>optional .archive.StreamData streamData = 9;</code>
        */
-      public org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder() {
+      public org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder() {
         return streamData_;
       }
 
@@ -3255,7 +3255,7 @@ public final class Web {
         clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
         statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
         event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
-        streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+        streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
         alarmInfo_ = org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance();
         timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
       }
@@ -3577,7 +3577,7 @@ public final class Web {
           }
           bitField0_ = (bitField0_ & ~0x00000080);
           if (streamDataBuilder_ == null) {
-            streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+            streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
           } else {
             streamDataBuilder_.clear();
           }
@@ -4597,20 +4597,20 @@ public final class Web {
           return eventBuilder_;
         }
 
-        // optional .yamcs.StreamData streamData = 9;
-        private org.yamcs.protobuf.Yamcs.StreamData streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+        // optional .archive.StreamData streamData = 9;
+        private org.yamcs.protobuf.Archive.StreamData streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
-            org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder> streamDataBuilder_;
+            org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder> streamDataBuilder_;
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
         public boolean hasStreamData() {
           return ((bitField0_ & 0x00000100) == 0x00000100);
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        public org.yamcs.protobuf.Yamcs.StreamData getStreamData() {
+        public org.yamcs.protobuf.Archive.StreamData getStreamData() {
           if (streamDataBuilder_ == null) {
             return streamData_;
           } else {
@@ -4618,9 +4618,9 @@ public final class Web {
           }
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        public Builder setStreamData(org.yamcs.protobuf.Yamcs.StreamData value) {
+        public Builder setStreamData(org.yamcs.protobuf.Archive.StreamData value) {
           if (streamDataBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -4634,10 +4634,10 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
         public Builder setStreamData(
-            org.yamcs.protobuf.Yamcs.StreamData.Builder builderForValue) {
+            org.yamcs.protobuf.Archive.StreamData.Builder builderForValue) {
           if (streamDataBuilder_ == null) {
             streamData_ = builderForValue.build();
             onChanged();
@@ -4648,14 +4648,14 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        public Builder mergeStreamData(org.yamcs.protobuf.Yamcs.StreamData value) {
+        public Builder mergeStreamData(org.yamcs.protobuf.Archive.StreamData value) {
           if (streamDataBuilder_ == null) {
             if (((bitField0_ & 0x00000100) == 0x00000100) &&
-                streamData_ != org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance()) {
+                streamData_ != org.yamcs.protobuf.Archive.StreamData.getDefaultInstance()) {
               streamData_ =
-                org.yamcs.protobuf.Yamcs.StreamData.newBuilder(streamData_).mergeFrom(value).buildPartial();
+                org.yamcs.protobuf.Archive.StreamData.newBuilder(streamData_).mergeFrom(value).buildPartial();
             } else {
               streamData_ = value;
             }
@@ -4667,11 +4667,11 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
         public Builder clearStreamData() {
           if (streamDataBuilder_ == null) {
-            streamData_ = org.yamcs.protobuf.Yamcs.StreamData.getDefaultInstance();
+            streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
             onChanged();
           } else {
             streamDataBuilder_.clear();
@@ -4680,17 +4680,17 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        public org.yamcs.protobuf.Yamcs.StreamData.Builder getStreamDataBuilder() {
+        public org.yamcs.protobuf.Archive.StreamData.Builder getStreamDataBuilder() {
           bitField0_ |= 0x00000100;
           onChanged();
           return getStreamDataFieldBuilder().getBuilder();
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        public org.yamcs.protobuf.Yamcs.StreamDataOrBuilder getStreamDataOrBuilder() {
+        public org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder() {
           if (streamDataBuilder_ != null) {
             return streamDataBuilder_.getMessageOrBuilder();
           } else {
@@ -4698,14 +4698,14 @@ public final class Web {
           }
         }
         /**
-         * <code>optional .yamcs.StreamData streamData = 9;</code>
+         * <code>optional .archive.StreamData streamData = 9;</code>
          */
         private com.google.protobuf.SingleFieldBuilder<
-            org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder> 
+            org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder> 
             getStreamDataFieldBuilder() {
           if (streamDataBuilder_ == null) {
             streamDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-                org.yamcs.protobuf.Yamcs.StreamData, org.yamcs.protobuf.Yamcs.StreamData.Builder, org.yamcs.protobuf.Yamcs.StreamDataOrBuilder>(
+                org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder>(
                     streamData_,
                     getParentForChildren(),
                     isClean());
@@ -6431,39 +6431,40 @@ public final class Web {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\tweb.proto\022\003web\032\013yamcs.proto\032\020commandin" +
-      "g.proto\032\014pvalue.proto\032\014alarms.proto\032\025yam" +
-      "csManagement.proto\"|\n\026WebSocketClientMes" +
-      "sage\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016sequenc" +
-      "eNumber\030\002 \001(\r\022\020\n\010resource\030\003 \001(\t\022\021\n\topera" +
-      "tion\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"\354\007\n\026WebSocketSe" +
-      "rverMessage\0225\n\004type\030\001 \001(\0162\'.web.WebSocke" +
-      "tServerMessage.MessageType\022=\n\005reply\030\002 \001(" +
-      "\0132..web.WebSocketServerMessage.WebSocket" +
-      "ReplyData\022E\n\texception\030\003 \001(\01322.web.WebSo",
-      "cketServerMessage.WebSocketExceptionData" +
-      "\022C\n\004data\030\004 \001(\01325.web.WebSocketServerMess" +
-      "age.WebSocketSubscriptionData\032E\n\022WebSock" +
-      "etReplyData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016" +
-      "sequenceNumber\030\002 \001(\005\032v\n\026WebSocketExcepti" +
-      "onData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016seque" +
-      "nceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001(\t\022\017\n\007message" +
-      "\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\335\003\n\031WebSocketSubscr" +
-      "iptionData\022\026\n\016sequenceNumber\030\001 \001(\r\022\"\n\004ty" +
-      "pe\030\002 \001(\0162\024.yamcs.ProtoDataType\022,\n\rparame",
-      "terData\030\003 \001(\0132\025.pvalue.ParameterData\0220\n\007" +
-      "command\030\004 \001(\0132\037.commanding.CommandHistor" +
-      "yEntry\0225\n\rprocessorInfo\030\005 \001(\0132\036.yamcsMan" +
-      "agement.ProcessorInfo\022/\n\nclientInfo\030\006 \001(" +
-      "\0132\033.yamcsManagement.ClientInfo\022/\n\nstatis" +
-      "tics\030\007 \001(\0132\033.yamcsManagement.Statistics\022" +
-      "\033\n\005event\030\010 \001(\0132\014.yamcs.Event\022%\n\nstreamDa" +
-      "ta\030\t \001(\0132\021.yamcs.StreamData\022$\n\talarmInfo" +
-      "\030\n \001(\0132\021.alarms.AlarmInfo\022!\n\010timeInfo\030\013 " +
-      "\001(\0132\017.yamcs.TimeInfo\"1\n\013MessageType\022\t\n\005R",
-      "EPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\004\"1\n\024RestE" +
-      "xceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030\002 \001" +
-      "(\tB\024\n\022org.yamcs.protobuf"
+      "\n\tweb.proto\022\003web\032\013yamcs.proto\032\rarchive.p" +
+      "roto\032\020commanding.proto\032\014pvalue.proto\032\014al" +
+      "arms.proto\032\025yamcsManagement.proto\"|\n\026Web" +
+      "SocketClientMessage\022\027\n\017protocolVersion\030\001" +
+      " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource" +
+      "\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"" +
+      "\356\007\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
+      "2\'.web.WebSocketServerMessage.MessageTyp" +
+      "e\022=\n\005reply\030\002 \001(\0132..web.WebSocketServerMe" +
+      "ssage.WebSocketReplyData\022E\n\texception\030\003 ",
+      "\001(\01322.web.WebSocketServerMessage.WebSock" +
+      "etExceptionData\022C\n\004data\030\004 \001(\01325.web.WebS" +
+      "ocketServerMessage.WebSocketSubscription" +
+      "Data\032E\n\022WebSocketReplyData\022\027\n\017protocolVe" +
+      "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\032v\n\026W" +
+      "ebSocketExceptionData\022\027\n\017protocolVersion" +
+      "\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003" +
+      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\337\003\n\031" +
+      "WebSocketSubscriptionData\022\026\n\016sequenceNum" +
+      "ber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.ProtoDat",
+      "aType\022,\n\rparameterData\030\003 \001(\0132\025.pvalue.Pa" +
+      "rameterData\0220\n\007command\030\004 \001(\0132\037.commandin" +
+      "g.CommandHistoryEntry\0225\n\rprocessorInfo\030\005" +
+      " \001(\0132\036.yamcsManagement.ProcessorInfo\022/\n\n" +
+      "clientInfo\030\006 \001(\0132\033.yamcsManagement.Clien" +
+      "tInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcsManagem" +
+      "ent.Statistics\022\033\n\005event\030\010 \001(\0132\014.yamcs.Ev" +
+      "ent\022\'\n\nstreamData\030\t \001(\0132\023.archive.Stream" +
+      "Data\022$\n\talarmInfo\030\n \001(\0132\021.alarms.AlarmIn" +
+      "fo\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\"1\n",
+      "\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010" +
+      "\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004type" +
+      "\030\001 \001(\t\022\013\n\003msg\030\002 \001(\tB\024\n\022org.yamcs.protobu" +
+      "f"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6513,6 +6514,7 @@ public final class Web {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
+          org.yamcs.protobuf.Archive.getDescriptor(),
           org.yamcs.protobuf.Commanding.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
           org.yamcs.protobuf.Alarms.getDescriptor(),

@@ -2,6 +2,7 @@ package parameters;
 option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
+import "archive.proto";
 import "pvalue.proto";
 import "mdb.proto";
 import "alarms.proto";
@@ -128,4 +129,12 @@ message ListAlarmsResponse {
 message PatchAlarmRequest {
   optional string state = 1;
   optional string comment = 2;
+}
+
+message ListTablesResponse {
+  repeated archive.TableInfo table = 1;
+}
+
+message ListStreamsResponse {
+  repeated archive.StreamInfo stream = 1;
 }

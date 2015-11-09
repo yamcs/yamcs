@@ -442,7 +442,7 @@ public final class SchemaWeb
                         output.writeObject(8, message.getEvent(), org.yamcs.protobuf.SchemaYamcs.Event.WRITE, false);
 
                     if(message.hasStreamData())
-                        output.writeObject(9, message.getStreamData(), org.yamcs.protobuf.SchemaYamcs.StreamData.WRITE, false);
+                        output.writeObject(9, message.getStreamData(), org.yamcs.protobuf.SchemaArchive.StreamData.WRITE, false);
 
                     if(message.hasAlarmInfo())
                         output.writeObject(10, message.getAlarmInfo(), org.yamcs.protobuf.SchemaAlarms.AlarmInfo.WRITE, false);
@@ -520,7 +520,7 @@ public final class SchemaWeb
 
                                 break;
                             case 9:
-                                builder.setStreamData(input.mergeObject(org.yamcs.protobuf.Yamcs.StreamData.newBuilder(), org.yamcs.protobuf.SchemaYamcs.StreamData.MERGE));
+                                builder.setStreamData(input.mergeObject(org.yamcs.protobuf.Archive.StreamData.newBuilder(), org.yamcs.protobuf.SchemaArchive.StreamData.MERGE));
 
                                 break;
                             case 10:
