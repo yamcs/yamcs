@@ -171,16 +171,17 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_LOG_MESSAGE = 2;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="5.1";
+    final static String FORMAT_VERSION="5.2";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION};
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.1"};
 
 
     protected Workbook workbook;
     protected String opsnamePrefix;
     protected SpaceSystem spaceSystem;
     static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
-
+    
+    String fileFormatVersion;
 
     /*
      * configSection is the name under which this config appears in the database
@@ -279,7 +280,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if( !supported ) {
             throw new SpreadsheetLoadException(ctx, String.format( "Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION ) );
         }
-
+        fileFormatVersion = version;
+        
         String name=requireString(cells, 1);
         spaceSystem=new SpaceSystem(name);
 
@@ -709,7 +711,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if(sheet==null)return;
 
         HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
+        HashMap<String, String> parents = new HashMap<String, String>();
 
+        
         for (int i = 1; i < sheet.getRows(); i++) {
             // search for a new packet definition, starting from row i 
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
@@ -737,6 +741,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 //if( "".equals( condition ) ) {
                 //	error( String.format( "Container %s (from spreadsheet '%s' line %d) has a parent container specified but no inheritance condition", name, configName, i));
                 //}
+                parents.put(name,  parent);
             }
 
             if("".equals(parent)) parent=null;
@@ -888,6 +893,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
             if(parent!=null) {
+                parents.put(name, parent);
                 // the condition is parsed and used to create the container.restrictionCriteria
                 //1) get the parent, from the same sheet
                 SequenceContainer sc = containers.get(parent);
@@ -897,13 +903,25 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
                 if (sc != null) {
                     container.setBaseContainer(sc);
+                    if(("5.2".compareTo(fileFormatVersion) > 0) && (!parents.containsKey(parent))) {
+                        //prior to version 5.2 of the format, the second level of containers were used as archive partitions
+                      //TODO: remove when switching to 6.x format
+                        container.useAsArchivePartition(true);
+                    }
                 } else {
                     final SequenceContainer c=container;
                     NameReference nr=new NameReference(parent, Type.SEQUENCE_CONTAINTER,
                             new ResolvedAction() { 
                         @Override
                         public boolean resolved(NameDescription nd) {
-                            c.setBaseContainer((SequenceContainer) nd);
+                            SequenceContainer sc =(SequenceContainer) nd; 
+                            c.setBaseContainer(sc);
+                            if("5.2".compareTo(fileFormatVersion) > 0) {
+                                if(sc.getBaseContainer()==null) {
+                                    c.useAsArchivePartition(true);
+                                }
+                            }
+                            
                             return true;
                         }
                     });
