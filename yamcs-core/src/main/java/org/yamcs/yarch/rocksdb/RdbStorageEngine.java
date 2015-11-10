@@ -17,9 +17,8 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.rocksdb.RdbPartitionManager;
+import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
 /**
@@ -89,11 +88,11 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public AbstractStream newTableReaderStream(TableDefinition tbl) {
+    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         if(!partitionManagers.containsKey(tbl)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
-        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl));
+        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
     }
 
     @Override

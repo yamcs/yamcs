@@ -11,12 +11,12 @@ import org.yamcs.archive.TagDb;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.HistogramDb;
 import org.yamcs.yarch.PartitionManager;
-import org.yamcs.yarch.TableWriter;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchException;
 /**
  * Storage engine based on TokyoCabinets
  * Each table partition is mapped to a tcb file. 
@@ -74,12 +74,18 @@ public class TcStorageEngine implements StorageEngine {
 
 
     @Override
-    public AbstractStream newTableReaderStream(TableDefinition tbl) {
+    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         TcPartitionManager pm = partitionManagers.get(tbl);
         if(pm==null) {
             throw new RuntimeException("Do not have a PartitionManager for table '"+tbl.getName()+"'");
         }
-        return new TcTableReaderStream(ydb, tbl, pm);
+        if(!ascending) {
+            throw new UnsupportedOperationException("Descending sort not support for TokyoCabinets tables. Consider migrating to RocksDB");
+        }
+        if(!follow) {
+            throw new UnsupportedOperationException("NOFOLLOW not support for TokyoCabinets tables. Consider migrating to RocksDB");
+        }
+        return new TcTableReaderStream(ydb, tbl, pm, ascending, follow);
     }
 
 

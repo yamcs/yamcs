@@ -1,6 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.AbstractStream;
@@ -9,11 +10,6 @@ import org.yamcs.yarch.SpeedSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.SpeedLimitStreamExpression;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 
 public class SpeedLimitStreamExpression implements StreamExpression {

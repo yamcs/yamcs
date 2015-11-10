@@ -104,7 +104,7 @@ public class YProcessor extends AbstractService {
 
     public YProcessor(String yamcsInstance, String name, String type, String creator) throws YProcessorException {
         if((name==null) || "".equals(name)) {
-            throw new YProcessorException("The channel name can not be empty");
+            throw new YProcessorException("The processor name can not be empty");
         }
         log.info("creating a new channel name="+name+" type="+type);
         this.yamcsInstance=yamcsInstance;
@@ -120,7 +120,7 @@ public class YProcessor extends AbstractService {
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
         timeService = YamcsServer.getTimeService(yamcsInstance);
         synchronized(instances) {
-            if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A channel named '"+name+"' already exists in instance "+yamcsInstance);
+            if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
                 for(String c: config.keySet()) {
                     if("alarm".equals(c)) {
@@ -199,7 +199,7 @@ public class YProcessor extends AbstractService {
         Object v = alarmConfig.get("check");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> check. Boolean expected.");
+                throw new ConfigurationException("Unknown value '"+v+"' for alarmConfig -> check. Boolean expected.");
             }
             checkAlarms = (Boolean)v;
         }
@@ -207,7 +207,7 @@ public class YProcessor extends AbstractService {
         v = alarmConfig.get("server");
         if(v!=null) {
             if(!(v instanceof String)) {
-                throw new ConfigurationException("Unknwon value '"+v+"' for alarmConfig -> server. String expected.");
+                throw new ConfigurationException("Unknown value '"+v+"' for alarmConfig -> server. String expected.");
 
             }
             alarmServerEnabled = "enabled".equalsIgnoreCase((String)v);
@@ -219,7 +219,7 @@ public class YProcessor extends AbstractService {
         Object v = cacheConfig.get("enabled");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknwon value '"+v+"' for parameterCache -> enabled. Boolean expected.");
+                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> enabled. Boolean expected.");
             }
             parameterCacheEnabled = (Boolean)v;
         }
@@ -227,7 +227,7 @@ public class YProcessor extends AbstractService {
         v = cacheConfig.get("cacheAll");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknwon value '"+v+"' for parameterCache -> cacheAll. Boolean expected.");
+                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> cacheAll. Boolean expected.");
             }
             parameterCacheAll = (Boolean)v;
             if(parameterCacheAll) parameterCacheEnabled=true;

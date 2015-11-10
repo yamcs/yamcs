@@ -499,34 +499,27 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         List<String> cols = null;
         long start = 0;
         int limit = 100;
-        List<String> sortCols = null;
+        boolean ascending = false; // descend by default (to get a quick 'preview' of the latest data)
         
         // Read query params
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
             for (String para : req.getQueryParameterList("cols")) {
                 for (String col : para.split(",")) {
-                    cols.add(col);
+                    cols.add(col.trim());
                 }
             }
         }
         if (req.hasQueryParameter("start")) start = req.getQueryParameterAsLong("start");
         if (req.hasQueryParameter("limit")) limit = req.getQueryParameterAsInt("limit");
-        if (req.hasQueryParameter("sort")) {
-            sortCols = new ArrayList<>(); // Order, and non-unique
-            for (String para : req.getQueryParameterList("sort")) {
-                for (String col : para.split(",")) {
-                    switch(col.charAt(0)) {
-                    case '+':
-                        sortCols.add(col.substring(1) + " asc");
-                        break;
-                    case '-':
-                        sortCols.add(col.substring(1) + " desc");
-                        break;
-                    default:
-                        sortCols.add(col);
-                    }
-                }
+        if (req.hasQueryParameter("order")) {
+            String lcOrder = req.getQueryParameter("order");
+            if ("asc".equals(lcOrder) || "ascending".equals(lcOrder)) {
+                ascending = true;
+            } else if ("desc".equals(lcOrder) || "descending".equals(lcOrder)) {
+                ascending = false;
+            } else {
+                throw new BadRequestException("Unknown order specified. Should be one of 'asc' or 'desc'");
             }
         }
         
@@ -546,12 +539,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
         buf.append(" from ").append(table.getName());
         
-        if (sortCols != null) {
-            buf.append(" order by ");
-            for (int i = 0; i < sortCols.size(); i++) {
-                if (i != 0) buf.append(", ");
-                buf.append(sortCols.get(i));
-            }
+        if (!ascending) {
+            buf.append(" order desc");
         }
         
         String sql = buf.toString();
@@ -567,7 +556,6 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         
         TableData.Builder responseb = TableData.newBuilder();
         Stream stream = ydb.getStream(streamName);
-        log.info("will limit to " + limit);
         stream.addSubscriber(new LimitedStreamSubscriber(start, limit) {
             @Override
             public void onTuple(Tuple tuple) {

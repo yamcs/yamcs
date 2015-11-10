@@ -41,7 +41,7 @@ public interface StorageEngine {
      * @param tbl
      * @return
      */
-    public AbstractStream newTableReaderStream(TableDefinition tbl);
+    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow);
 
     /**
      * gets the histogram database

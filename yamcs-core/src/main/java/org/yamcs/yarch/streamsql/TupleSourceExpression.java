@@ -13,13 +13,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.NoneSpecifiedException;
-import org.yamcs.yarch.streamsql.ResourceNotFoundException;
-import org.yamcs.yarch.streamsql.StreamExpression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-import org.yamcs.yarch.streamsql.TupleSourceExpression;
 /**
  * A source of tuples. Can be:
  *  - a reference to an existing stream objectName
@@ -35,6 +29,9 @@ class TupleSourceExpression {
 
     //when histoColumn is set, the objectName must be a table having histograms on that column
     String histoColumn;
+    
+    boolean ascending=true;
+    boolean follow=true;
 
     //after binding
     TupleDefinition definition;
@@ -83,14 +80,22 @@ class TupleSourceExpression {
             }
         }
     }
+    
     public void setHistogramMergeTime(BigDecimal mergeTime) {
         histogramMergeTime=mergeTime;
-
+    }
+    
+    public void setAscending(boolean ascending) {
+        this.ascending = ascending;
+    }
+    
+    public void setFollow(boolean follow) {
+        this.follow = follow;
     }
 
     AbstractStream execute(ExecutionContext c) throws StreamSqlException {
         AbstractStream stream;
-        if(streamExpression!=null) {        	
+        if(streamExpression!=null) {
             stream=streamExpression.execute(c);
         } else if (objectName!=null) {
             YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
@@ -98,7 +103,7 @@ class TupleSourceExpression {
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {
-                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl);
+                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl, ascending, follow);
                 } else {
                     HistogramReaderStream histoStream;
                     try {

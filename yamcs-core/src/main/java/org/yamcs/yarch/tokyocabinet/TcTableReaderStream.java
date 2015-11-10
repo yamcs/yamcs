@@ -1,7 +1,7 @@
 package org.yamcs.yarch.tokyocabinet;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,8 +28,8 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
     final PartitioningSpec partitioningSpec;
     final TcPartitionManager partitionManager;
     
-    public TcTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, TcPartitionManager partitionManager) {
-        super(ydb, tblDef, partitionManager);        
+    public TcTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, TcPartitionManager partitionManager, boolean ascending, boolean follow) {
+        super(ydb, tblDef, partitionManager, ascending, follow);
         partitioningSpec=tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
     }
@@ -43,7 +43,8 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
      * reads a file, sending data only that conform with the start and end filters. 
      * returns true if the stop condition is met
      */
-    protected boolean runPartitions(Collection<Partition> partitions, IndexFilter range) throws IOException {
+    @Override
+    protected boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException {
         byte[] rangeStart=null;
         boolean strictStart=false;
         byte[] rangeEnd=null;

@@ -1,6 +1,5 @@
 package org.yamcs.web.rest;
 
-import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -26,7 +25,6 @@ public abstract class LimitedStreamSubscriber implements StreamSubscriber {
     public void onTuple(Stream stream, Tuple tuple) {
         if (rowNr >= start) {
             if (emitted < limit) {
-                LoggerFactory.getLogger(getClass()).info("emitting because " + emitted + " < " + limit);
                 emitted++;
                 onTuple(tuple);
             } else {

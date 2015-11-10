@@ -42,7 +42,7 @@ public class WindowSpecification {
 			if(cd==null) throw new StreamSqlException(ErrCode.COLUMN_NOT_FOUND,"Field '"+field+"' not part of the input");
 			fieldType=cd.getType();
 			if((fieldType!=DataType.INT) && (fieldType!=DataType.TIMESTAMP)) {
-				throw new StreamSqlException(ErrCode.INCOMPATIBLE,"Cannot create windows on fileds of type "+cd.getType());
+				throw new StreamSqlException(ErrCode.INCOMPATIBLE,"Cannot create windows on fields of type "+cd.getType());
 			}
 			break;
 		case TIME: //TODO

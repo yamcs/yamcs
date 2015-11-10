@@ -107,6 +107,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_MERGE:"MERGE">
 |   <K_MOD:"MOD">
 |   <K_NOT:"NOT">
+|   <K_NOFOLLOW:"NOFOLLOW">
 |   <K_NULL:"NULL">
 |   <K_NULLS:"NULLS">
 |   <K_ON:"ON">
@@ -336,9 +337,13 @@ CreateStreamStatement CreateStreamStatement(): {
 SpeedLimitStreamExpression SpeedLimitStreamExpression(): {
     StreamExpression expression;
     SpeedSpec speedSpec=null;
+    boolean follow=true; 
 } {
-    expression=StreamExpression() [<K_SPEED> speedSpec=SpeedSpec()]
+    expression=StreamExpression() [<K_SPEED> {speedSpec=SpeedSpec();}] [<K_NOFOLLOW> {follow=false;}]
     {
+    if(expression instanceof SelectExpression) {
+        ((SelectExpression) expression).setFollow(follow);
+    }
 	return new SpeedLimitStreamExpression(expression,speedSpec);
     }
 	
@@ -725,9 +730,10 @@ void Argument(): {
 
 SelectExpression SelectStatement(): {
     SelectExpression expression;
+    boolean ascending;
 } {
     expression=Select()
-    [ OrderByClause() ]
+    [ ascending=OrderClause() {expression.setAscending(ascending);} ]
     {
 	return expression;
     }
@@ -826,16 +832,14 @@ TupleDefinition TupleDefinition(): {
 }
 
 
-void OrderByClause(): {
+boolean OrderClause(): {
+   boolean ascending=true;
 } {
-    "ORDER" "BY" OrderByExpression() ("," OrderByExpression())*
-}
-
-void OrderByExpression(): {
-} {
-    SimpleExpression()
-    ["ASC" | "DESC"]
-    ["NULLS" ID("LAST")]
+    "ORDER"
+    ["ASC" | "DESC" {ascending=false;} ]
+    {
+    return ascending;
+    }
 }
 
 
