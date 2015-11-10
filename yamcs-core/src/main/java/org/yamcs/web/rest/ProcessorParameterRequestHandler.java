@@ -1,33 +1,20 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.decode;
-
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
-import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.archive.ReplayListener;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -53,10 +40,9 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestParameterSampler.Sample;
 import org.yamcs.xtce.FloatParameterType;
@@ -64,6 +50,8 @@ import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
+
+import com.google.protobuf.MessageLite;
 
 /**
  * Handles incoming requests related to parameters
@@ -148,8 +136,6 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
      * If no query parameters are defined, the series covers *all* data.
      */
     private RestResponse handleSingleParameterSeries(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-
         ParameterType ptype = p.getParameterType();
         if (ptype == null) {
             throw new BadRequestException("Requested parameter has no type");
@@ -170,81 +156,52 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         }
         
         RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
-
-        YamcsSession ys = null;
-        YamcsClient msgClient = null;
-        try {
-            String yamcsConnectionData = "yamcs://";
-            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class) {
-                yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
-                        + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
-            }
-            yamcsConnectionData += "localhost/"+instance;
-            
-            ys=YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
-            
-            msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString packetReplayAddress=null;
-            
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(instance);
-            StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer,
-                        "createReplay", rr.build(), StringMessage.newBuilder());
-            packetReplayAddress=new SimpleString(answer.getMessage());
-            
-            final Semaphore semaphore=new Semaphore(0);
-            msgClient.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage pmsg) {
-                    try {
-                        int t=pmsg.getIntProperty(DATA_TYPE_HEADER_NAME);
-                        ProtoDataType pdt=ProtoDataType.valueOf(t);
-                        if(pdt==ProtoDataType.STATE_CHANGE) {
-                            semaphore.release();
-                        } else {
-                            ParameterData pdata=(ParameterData)decode(pmsg, ParameterData.newBuilder());
-                            for (ParameterValue pval : pdata.getParameterList()) {
-                                switch (pval.getEngValue().getType()) {
-                                case DOUBLE:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
-                                    break;
-                                case FLOAT:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
-                                    break;
-                                case SINT32:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
-                                    break;
-                                case SINT64:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
-                                    break;
-                                case UINT32:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
-                                    break;
-                                case UINT64:
-                                    sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
-                                    break;
-                                default:
-                                    log.warn("Unexpected value type " + pval.getEngValue().getType());
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("cannot decode parameter message"+e);
-                    }
-                }
-            });
-            msgClient.executeRpc(packetReplayAddress, "start", null, null);
-            semaphore.acquire();
-        } catch (InterruptedException | YamcsException | URISyntaxException | YamcsApiException | HornetQException e) {
-            throw new InternalServerErrorException(e);
-        } finally {
-            if (msgClient != null) {
-                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
-            }
-            if (ys != null) {
-                try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }
-            }
-        }
         
+        RestReplays.replaySynchronously(req, rr.build(), new ReplayListener() {
+
+            @Override
+            public void newData(ProtoDataType type, MessageLite data) {
+                switch(type) {
+                case PARAMETER:
+                    ParameterData pdata = (ParameterData) data;
+                    for (ParameterValue pval : pdata.getParameterList()) {
+                        switch (pval.getEngValue().getType()) {
+                        case DOUBLE:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
+                            break;
+                        case FLOAT:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
+                            break;
+                        case SINT32:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
+                            break;
+                        case SINT64:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
+                            break;
+                        case UINT32:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
+                            break;
+                        case UINT64:
+                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
+                            break;
+                        default:
+                            log.warn("Unexpected value type " + pval.getEngValue().getType());
+                        }
+                    }
+                    break;
+                case PP:
+                    log.info("Got a pp");
+                    // TODO ? or does ReplayService put this in ParameterData for us?
+                    break;
+                default:
+                    log.error("Unexpected data type {} received");            
+                }
+            }
+
+            @Override
+            public void stateChanged(ReplayStatus rs) {
+            }
+        });
         
         SampleSeries.Builder series = SampleSeries.newBuilder();
         for (Sample s : sampler.collect()) {
