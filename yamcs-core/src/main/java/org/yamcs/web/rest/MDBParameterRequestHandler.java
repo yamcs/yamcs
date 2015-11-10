@@ -14,6 +14,7 @@ import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 
 /**
@@ -103,6 +104,13 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                     responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
                 }
             }
+            for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
+                // TODO privileges
+                String alias = p.getAlias(namespace);
+                if (alias != null) {
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
+                }
+            }
         }
         
         return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
@@ -115,7 +123,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         BulkGetParameterRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterRequest.MERGE).build();
         BulkGetParameterResponse.Builder responseb = BulkGetParameterResponse.newBuilder();
         for(NamedObjectId id:request.getIdList()) {
-            Parameter p = mdb.getParameter(id);
+            Parameter p = RestUtils.findParameter(mdb, id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }

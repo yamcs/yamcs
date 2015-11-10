@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -69,6 +70,10 @@ public class SystemParameterDb implements Serializable {
         }   
         
         return getSystemParameter(fqname);
+    }
+    
+    public Collection<SystemParameter> getSystemParameters() {
+        return parameters.values();
     }
 
     

@@ -142,7 +142,7 @@ public class RestUtils {
             if (req.hasPathSegment(nsMatch.getPathOffset())) {
                 String name = req.getPathSegment(nsMatch.getPathOffset());
                 id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
-                Parameter p = mdb.getParameter(id);
+                Parameter p = findParameter(mdb, id);
                 if (p != null) {
                     return new MatchResult<>(p, nsMatch.getPathOffset() + 1, id);
                 }
@@ -150,6 +150,14 @@ public class RestUtils {
         }
 
         return new MatchResult<>(null, -1);
+    }
+    
+    public static Parameter findParameter(XtceDb mdb, NamedObjectId id) {
+        Parameter p = mdb.getParameter(id);
+        if(p==null) {
+            p = mdb.getSystemParameterDb().getSystemParameter(id);
+        }
+        return p;
     }
     
     /**
@@ -218,7 +226,7 @@ public class RestUtils {
             matchedNamespace = segment;
         } else if (mdb.containsNamespace("/" + segment)) {
             matchedNamespace = "/" + segment; 
-        } else if ("yamcs".equals(segment)) {
+        } else if (mdb.getSystemParameterDb().getYamcsSpaceSystem().getName().equals(segment)) {
             matchedNamespace = segment;
         }
         
