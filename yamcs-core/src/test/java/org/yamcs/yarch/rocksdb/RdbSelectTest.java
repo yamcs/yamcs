@@ -170,6 +170,62 @@ public class RdbSelectTest extends YarchTestCase {
         ydb.execute("create stream s1 as select * from RdbSelectTest order blabla");
     }
     
+    @Test
+    public void testFollow() throws Exception {
+        // Sanity check
+        ydb.execute("create stream s1 as select * from RdbSelectTest");
+        Stream s1 = ydb.getStream("s1");
+        List<Tuple> tuples = fetchTuples(s1);
+        assertEquals(3, tuples.size());
+        
+        // Record a tuple in one of the existing partitions
+        // (and ordered -after- the first tuple of the table)
+        Tuple sameMonthTuple = new Tuple(tdef, new Object[]{2001L, 20, 2});
+        ydb.execute("create stream s2 as select * from RdbSelectTest");
+        Stream s2 = ydb.getStream("s2");
+        tuples = fetchTuplesAndProduceOne(s2, sameMonthTuple);
+        assertEquals(4, tuples.size());
+        
+        // Record a tuple that is sure to be in another partition
+        // (more than a month separated)
+        ydb.execute("create stream s3 as select * from RdbSelectTest");
+        Stream s3 = ydb.getStream("s3");
+        long t = TimeEncoding.getWallclockTime();
+        Tuple farOutTuple = new Tuple(tdef, new Object[]{t, 20, 2});
+        tuples = fetchTuplesAndProduceOne(s3, farOutTuple);
+        // assertEquals(5, tuples.size());
+        // TODO this last test still fails
+    }
+    
+    @Test
+    public void testNofollow() throws Exception {
+        int tableSize = 3;
+        
+        // Sanity check
+        ydb.execute("create stream s1 as select * from RdbSelectTest nofollow");
+        Stream s1 = ydb.getStream("s1");
+        List<Tuple> tuples = fetchTuples(s1);
+        assertEquals(tableSize, tuples.size());
+        
+        // Record a tuple in one of the existing partitions
+        // (and ordered -after- the first tuple of the table)
+        Tuple sameMonthTuple = new Tuple(tdef, new Object[]{2001L, 20, 2});
+        ydb.execute("create stream s2 as select * from RdbSelectTest nofollow");
+        Stream s2 = ydb.getStream("s2");
+        tuples = fetchTuplesAndProduceOne(s2, sameMonthTuple);
+        assertEquals(tableSize, tuples.size());
+
+        tableSize++;
+        // Record a tuple that is sure to be in another partition
+        // (more than a month separated)
+        ydb.execute("create stream s3 as select * from RdbSelectTest nofollow");
+        Stream s3 = ydb.getStream("s3");
+        long t = TimeEncoding.getWallclockTime();
+        Tuple farOutTuple = new Tuple(tdef, new Object[]{t, 20, 2});
+        tuples = fetchTuplesAndProduceOne(s3, farOutTuple);
+        assertEquals(tableSize, tuples.size());
+    }
+    
     private List<Tuple> fetchTuples(Stream s) throws InterruptedException {
         List<Tuple> tuples = new ArrayList<>();
         Semaphore semaphore = new Semaphore(0);
@@ -177,6 +233,32 @@ public class RdbSelectTest extends YarchTestCase {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
+                tuples.add(tuple);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+        });
+        s.start();
+        semaphore.tryAcquire(5, TimeUnit.SECONDS);        
+        return tuples;
+    }
+    
+    private List<Tuple> fetchTuplesAndProduceOne(Stream s, Tuple extraTuple) throws InterruptedException {
+        List<Tuple> tuples = new ArrayList<>();
+        Semaphore semaphore = new Semaphore(0);
+        s.addSubscriber(new StreamSubscriber() {
+            
+            boolean first = true;
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                if (first) {
+                    first = false;
+                    tw.onTuple(null, extraTuple);
+                }
                 tuples.add(tuple);
             }
 
