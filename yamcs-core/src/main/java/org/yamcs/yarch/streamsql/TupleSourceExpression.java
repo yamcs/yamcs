@@ -31,6 +31,7 @@ class TupleSourceExpression {
     String histoColumn;
     
     boolean ascending=true;
+    boolean follow=true;
 
     //after binding
     TupleDefinition definition;
@@ -87,6 +88,10 @@ class TupleSourceExpression {
     public void setAscending(boolean ascending) {
         this.ascending = ascending;
     }
+    
+    public void setFollow(boolean follow) {
+        this.follow = follow;
+    }
 
     AbstractStream execute(ExecutionContext c) throws StreamSqlException {
         AbstractStream stream;
@@ -98,7 +103,7 @@ class TupleSourceExpression {
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {
-                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl, ascending);
+                    stream = ydb.getStorageEngine(tbl).newTableReaderStream(tbl, ascending, follow);
                 } else {
                     HistogramReaderStream histoStream;
                     try {

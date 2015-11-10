@@ -88,9 +88,9 @@ public class YRDB {
         db.flush(flushOptions);		
     }
 
-    public List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList) throws RocksDBException {
+    public List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList, boolean tailing) throws RocksDBException {
         ReadOptions ro = new ReadOptions();
-        ro.setTailing(true);
+        ro.setTailing(tailing);
         return db.newIterators(cfhList, ro);
     }
 

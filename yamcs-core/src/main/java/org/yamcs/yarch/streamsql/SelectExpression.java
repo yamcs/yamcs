@@ -51,6 +51,7 @@ class SelectExpression implements StreamExpression {
 	List<AggregateExpression> aggList=null;
 	List<Expression> aggInputList=null;
 	boolean ascending=true; //only for table-selects
+	boolean follow=true; //only for table-selects
 	private boolean selectStar; //in case of select *
 	
 	public void setSelectList(List<SelectItem> selectList) {
@@ -71,8 +72,13 @@ class SelectExpression implements StreamExpression {
 	}
 	
 	public void setAscending(boolean ascending) {
-	    this.ascending = ascending;
+	    this.ascending=ascending;
 	    tupleSourceExpression.setAscending(ascending);
+	}
+	
+	public void setFollow(boolean follow) {
+	    this.follow=follow;
+	    tupleSourceExpression.setFollow(follow);
 	}
 
 	@Override

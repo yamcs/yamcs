@@ -25,8 +25,8 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
 
-    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending) {
-        super(ydb, tblDef, partitionManager, ascending);
+    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
+        super(ydb, tblDef, partitionManager, ascending, follow);
         this.tableDefinition=tblDef;
         partitioningSpec=tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
@@ -90,7 +90,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             }
 
             //create a cursor for all partitions
-            List<RocksIterator> iteratorList = rdb.newIterators(cfhList);
+            List<RocksIterator> iteratorList = rdb.newIterators(cfhList, follow);
 
             int i=0;
             for(RocksIterator it:iteratorList) {
@@ -169,7 +169,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             }
 
             //create a cursor for all partitions
-            List<RocksIterator> iteratorList = rdb.newIterators(cfhList);
+            List<RocksIterator> iteratorList = rdb.newIterators(cfhList, false);
             
             int i=0;
             for(RocksIterator it:iteratorList) {

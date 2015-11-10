@@ -88,11 +88,11 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending) {
+    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         if(!partitionManagers.containsKey(tbl)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
-        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending);
+        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
     }
 
     @Override

@@ -74,12 +74,18 @@ public class TcStorageEngine implements StorageEngine {
 
 
     @Override
-    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending) {
+    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         TcPartitionManager pm = partitionManagers.get(tbl);
         if(pm==null) {
             throw new RuntimeException("Do not have a PartitionManager for table '"+tbl.getName()+"'");
         }
-        return new TcTableReaderStream(ydb, tbl, pm, true);
+        if(!ascending) {
+            throw new UnsupportedOperationException("Descending sort not support for TokyoCabinets tables. Consider migrating to RocksDB");
+        }
+        if(!follow) {
+            throw new UnsupportedOperationException("NOFOLLOW not support for TokyoCabinets tables. Consider migrating to RocksDB");
+        }
+        return new TcTableReaderStream(ydb, tbl, pm, ascending, follow);
     }
 
 

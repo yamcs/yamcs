@@ -28,8 +28,8 @@ public class TcTableReaderStream extends AbstractTableReaderStream implements Ru
     final PartitioningSpec partitioningSpec;
     final TcPartitionManager partitionManager;
     
-    public TcTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, TcPartitionManager partitionManager, boolean ascending) {
-        super(ydb, tblDef, partitionManager, ascending);      
+    public TcTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, TcPartitionManager partitionManager, boolean ascending, boolean follow) {
+        super(ydb, tblDef, partitionManager, ascending, follow);
         partitioningSpec=tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
     }

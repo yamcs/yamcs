@@ -40,7 +40,7 @@ public class RdbEngineTest extends YarchTestCase {
         tblDef.setPartitioningSpec(pspec);
         IllegalArgumentException iae=null;
         try {
-            rse.newTableReaderStream(tblDef, true);
+            rse.newTableReaderStream(tblDef, true, true);
         } catch (IllegalArgumentException e) {
             iae=e;
         }
@@ -54,7 +54,7 @@ public class RdbEngineTest extends YarchTestCase {
 
         iae=null;
         try {
-            rse.newTableReaderStream(tblDef, true);
+            rse.newTableReaderStream(tblDef, true, true);
         } catch (IllegalArgumentException e) {
             iae=e;
         }
