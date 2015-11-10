@@ -9,6 +9,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
+import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -28,40 +29,24 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
-            return listCommands(req, null, mdb);
+            return listCommands(req, null, mdb); // root namespace
         } else {
-            // Find out if it's a command or not. Support any namespace here. Not just XTCE
-            if (req.getPathSegmentCount() - pathOffset < 2) {
-                String lastSegment = req.slicePath(-1);
-                NamedObjectId id = NamedObjectId.newBuilder().setName(lastSegment).build();
-                MetaCommand cmd = mdb.getMetaCommand(id);
-                if (cmd != null) { // Possibly a URL-encoded qualified name
-                    req.assertGET();
-                    return getSingleCommand(req, id, cmd);
-                } else { // Assume it's a namespace
-                    return listCommands(req, lastSegment, mdb);
-                }
-            } else {
-                String namespace = req.slicePath(pathOffset, -1);
-                String rootedNamespace = "/" + namespace;
-                String lastSegment = req.slicePath(-1);
-                NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(lastSegment).build();
-                MetaCommand cmd = mdb.getMetaCommand(id);
-                if (cmd != null) {
-                    req.assertGET();
-                    return getSingleCommand(req, id, cmd);
-                }
-                
-                id = NamedObjectId.newBuilder().setNamespace(rootedNamespace).setName(lastSegment).build();
-                cmd = mdb.getMetaCommand(id);
-                if (cmd != null) {
-                    req.assertGET();
-                    return getSingleCommand(req, id, cmd);
-                }
-                
-                // Assume it's a namespace
-                return listCommands(req, namespace + "/" + lastSegment, mdb);
+            MatchResult<MetaCommand> c = RestUtils.matchCommandName(req, pathOffset);
+            if (c.matches()) { // command
+                return getSingleCommand(req, c.getRequestedId(), c.getMatch());
+            } else { // namespace
+                return listCommandsOrError(req, pathOffset);
             }
+        }
+    }
+    
+    private RestResponse listCommandsOrError(RestRequest req, int pathOffset) throws RestException {
+        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        if (nsm.matches()) {
+            return listCommands(req, nsm.getMatch(), mdb);
+        } else {
+            throw new NotFoundException(req);
         }
     }
     
@@ -94,7 +79,6 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
                 responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
             }
         } else {
-            String rootedNamespace = "/" + namespace;
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (!privilege.hasPrivilege(req.authToken, Type.TC, cmd.getQualifiedName()))
@@ -105,26 +89,10 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
                 String alias = cmd.getAlias(namespace);
                 if (alias != null) {
                     responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
-                } else {
-                    // Slash is not added to the URL so it makes it a bit more difficult
-                    // to test for both XTCE names and other names. So just test with slash too
-                    alias = cmd.getAlias(rootedNamespace);
-                    if (alias != null) {
-                        responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
-                    }
                 }
             }
         }
         
-        // There's no such thing as a list of 'namespaces' within the MDB, therefore it
-        // could happen that we arrive here but that the user intended to search for a single
-        // parameter rather than a list. So... return a 404 if we didn't find any match.
-        if (namespace != null  && namespace.equals("yamcs")) {
-            return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
-        } else if (matcher == null && (responseb.getCommandList() == null || responseb.getCommandList().isEmpty())) {
-            throw new NotFoundException(req);
-        } else {
-            return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
-        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
     }
 }
