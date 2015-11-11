@@ -23,6 +23,7 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
@@ -50,15 +51,20 @@ import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -115,6 +121,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req, "No instance '" + instance + "'");
         }
         req.addToContext(RestRequest.CTX_INSTANCE, instance);
+        req.addToContext(MDBRequestHandler.CTX_MDB, XtceDbFactory.getInstance(instance));
         
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
@@ -129,6 +136,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 return handleTablesRequest(req, pathOffset + 1, ydb);
             case "streams":
                 return handleStreamsRequest(req, pathOffset + 1, ydb);
+            case "parameters":
+                return handleParametersRequest(req, pathOffset + 1);
             default:
                 throw new NotFoundException(req);
             }
@@ -416,12 +425,12 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private RestResponse handleTagsRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
-                return getTags(req);
+                return listTags(req);
             } else if (req.isPOST()) {
                 return insertTag(req);
             } else {
                 throw new MethodNotAllowedException(req);
-            }            
+            }
         } else {
             if (!req.hasPathSegment(pathOffset + 1)) {
                 throw new NotFoundException(req);
@@ -616,10 +625,40 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
     }
     
+    private RestResponse handleParametersRequest(RestRequest req, int pathOffset) throws RestException {
+        MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+        if (mr.matches()) {
+            ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
+            rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+            rrb.setStart(TimeEncoding.getWallclockTime() - 100000);
+            rrb.setStop(TimeEncoding.getWallclockTime());
+            rrb.setEndAction(EndAction.QUIT);
+            rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(mr.getRequestedId()));
+            
+            ParameterData.Builder resultb = ParameterData.newBuilder();
+            RestReplays.replayAndWait(req, rrb.build(), new ReplayListener() {
+                
+                @Override
+                public void newData(ProtoDataType type, MessageLite data) {
+                    ParameterData pdata = (ParameterData) data;
+                    resultb.addAllParameter(pdata.getParameterList());
+                }
+
+                @Override
+                public void stateChanged(ReplayStatus rs) {
+                }
+            });
+            
+            return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+        } else {
+            throw new NotFoundException(req);
+        }
+    }
+    
     /**
      * Lists all tags (optionally filtered by request-body)
      */
-    private RestResponse getTags(RestRequest req) throws RestException {
+    private RestResponse listTags(RestRequest req) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         TagDb tagDb = getTagDb(instance);
         

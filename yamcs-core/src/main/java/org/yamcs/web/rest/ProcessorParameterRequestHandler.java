@@ -157,7 +157,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         
         RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
         
-        RestReplays.replaySynchronously(req, rr.build(), new ReplayListener() {
+        RestReplays.replayAndWait(req, rr.build(), new ReplayListener() {
 
             @Override
             public void newData(ProtoDataType type, MessageLite data) {

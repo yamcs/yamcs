@@ -22,7 +22,6 @@ import com.google.protobuf.MessageLite;
  * Abstracts some common logic for creating replays 
  */
 public class RestReplays {
-    
     private static final Logger log = LoggerFactory.getLogger(RestReplays.class);
     
     /**
@@ -32,7 +31,7 @@ public class RestReplays {
      * TODO we should be more helpful here with catching errored state and
      * throwing it up as RestException
      */
-    public static void replaySynchronously(RestRequest req, ReplayRequest replayRequest, ReplayListener l) throws RestException {
+    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, ReplayListener l) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         ReplayServer replayServer = getReplayServer(instance);
         
