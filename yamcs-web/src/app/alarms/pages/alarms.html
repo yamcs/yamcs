@@ -1,0 +1,89 @@
+<div class="main" style="padding: 40px;">
+  <h1 class="page-header">Alarms</h1>
+
+  <h2>Active</h2>
+  <table class="table">
+
+    <tr>
+      <th>Lvl</th>
+      <th>Message</th>
+      <th>Subsystem</th>
+      <th>Violations</th>
+      <th>Status</th>
+      <th>Activation Time</th>
+      <th>Activation Value</th>
+      <th>Latest Time</th>
+      <th>Latest Value</th>
+      <th width="1"></th>
+    </tr>
+
+    <tr ng-repeat="alarm in vm.alarms">
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        <img ng-src="/_static/app/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        <span ng-bind-html="alarm.msg"></span>
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        {{ alarm.triggerValue.id.name | spaceSystem }}
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        {{ alarm.violations }}
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        <span ng-if="alarm.acknowledgeInfo">ACK</span>
+        <span ng-if="!alarm.acknowledgeInfo">UNACK</span>
+        <span ng-if="alarm.acknowledgeInfo.acknowledgeMessage" class="glyphicon glyphicon-comment"
+            uib-tooltip="{{ alarm.acknowledgeInfo.acknowledgeMessage }}"></span>
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        {{ alarm.triggerValue.generationTimeUTC }}
+      </td>
+
+      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+        <img ng-src="/_static/app/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
+        {{ alarm.triggerValue | stringValue }}
+      </td>
+
+      <td ng-class="alarm.currentValue.monitoringResult | monitoringClass">
+        {{ alarm.currentValue.generationTimeUTC }}
+      </td>
+
+      <td ng-class="alarm.currentValue.monitoringResult | monitoringClass">
+        <img ng-src="/_static/app/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
+        {{ alarm.currentValue | stringValue }}
+      </td>
+
+      <td style="border: none">
+        <button ng-if="!alarm.acknowledgeInfo" class="btn btn-xs"
+            ng-class="'btn-' + (alarm.triggerValue.monitoringResult | monitoringClass)"
+            ng-click="vm.openAcknowledge(alarm)">
+          Acknowledge
+        </button>
+      </td>
+    </tr>
+  </table>
+
+  <!--h2>Alarm History</h2-->
+</div>
+
+
+<script type="text/ng-template" id="acknowledgeAlarmModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Acknowledge {{ alarm.msg | stripHTML }}</h3>
+    </div>
+    <div class="modal-body">
+      <form>
+        <textarea ng-model="form.comment" class="form-control" placeholder="Comment"></textarea>
+      </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="ok()">Acknowledge</button>
+        <button class="btn btn-link" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</script>

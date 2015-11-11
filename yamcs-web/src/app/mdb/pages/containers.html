@@ -1,0 +1,45 @@
+<mdb-pane active-pane="{{ vm.qname }}" title="{{ vm.qname }}">
+
+  <ng-include src="'/_static/app/mdb/tabs.template.html'"></ng-include>
+
+  <p>&nbsp;</p>
+
+  <table class="table">
+    <tr>
+      <th width="200">Name</th>
+      <th width="200">Base&nbsp;Container</th>
+      <th width="300">Restriction&nbsp;Criteria</th>
+      <th>Description</th>
+    </tr>
+    <tr ng-repeat="sq in vm.containers | orderBy:'qualifiedName'">
+      <td>{{ sq.name }}</td>
+      <td ng-if="sq.baseContainer">
+        <a
+            href="#/mdb{{ sq.baseContainer.qualifiedName | spaceSystem }}/containers"
+            ng-if="!(sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName)">
+          {{ sq.baseContainer.qualifiedName }}
+        </a>
+        <span ng-if="sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName">
+          {{ sq.baseContainer.name }}
+        </span>
+      </td>
+      <td ng-if="!sq.baseContainer">-</td>
+      <td ng-if="sq.restrictionCriteria">
+        <div ng-repeat="crit in sq.restrictionCriteria">
+          <span ng-if="crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName">
+            {{ crit.parameter.name }}
+          </span>
+          <a
+              href="#/mdb{{ crit.parameter.qualifiedName | spaceSystem }}/parameters"
+              ng-if="!(crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName)">
+            {{ crit.parameter.qualifiedName }}
+          </a>
+          {{ crit.operator | asOperator }}
+          {{ crit.value}}
+        </div>
+      </td>
+      <td ng-if="!sq.restrictionCriteria">-</td>
+      <td>{{ para.shortDescription | nvl:'-' }}</td>
+    </tr>
+  </table>
+</mdb-pane>

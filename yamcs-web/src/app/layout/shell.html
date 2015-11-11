@@ -1,0 +1,85 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header" style="width: 230px; text-align: center;">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="#/" ng-if="shell.brandImage" style="padding-right: 15px;">
+        <img ng-src="{{ shell.brandImage }}">
+      </a>
+      <a class="navbar-brand" href="#/" ng-if="!shell.brandImage">
+        {{ shell.title }}
+      </a>
+    </div>
+
+    <div class="navbar-header pull-right">
+      <ul class="nav navbar-nav navbar-right">
+        <li ng-class="{ active: headerVM.isActive('/alarms')}">
+          <a href="#/alarms" role="button" class="btn btn-link">
+            <span class="glyphicon glyphicon-bell"></span>
+            Alarms
+            <span class="badge" ng-if="shell.alarmCount > 0" ng-style="{'background-color': shell.alarmBadgeColor}">
+              {{ shell.alarmCount }}
+            </span>
+          </a>
+        </li>
+
+        <li>
+            <p class="navbar-text">
+              <span ng-if="shell.socketOpen" class="glyphicon glyphicon-signal text-success" title="Yamcs Connected"></span>
+              <span ng-if="!shell.socketOpen" class="glyphicon glyphicon-signal text-danger" title="Yamcs Not Connected"></span>
+            </p>
+        </li>
+
+        <!--li style="width: 200px;">
+          <uib-progressbar
+              ng-class="{ active: shell.socketOpen, 'progress-striped': true }"
+              style="margin-top: 15px; margin-bottom: -15px; margin-right: 15px;"
+              value="100" type="{{ shell.socketInfoType }}">
+            <span ng-if="!shell.socketOpen">
+              Not Connected
+            </span>
+            <span ng-if="shell.socketOpen">
+              realtime
+            </span>
+          </uib-progressbar>
+        </li-->
+      </ul>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+      <ul class="nav navbar-nav" id="nav-items" ng-controller="HeaderController as headerVM">
+
+
+        <!-- should link to 'top' displays -->
+
+        <!--li class="dropdown" ng-repeat="display in displaysVM.displays" dropdown>
+          <a href="" class="dropdown-toggle" role="button" dropdown-toggle>
+            {{ display.group }}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" dropdown-menu>
+            <li class="open-display" ng-repeat="d1 in display.displays">
+              <a href="#/displays/{{ d1.display }}">{{ d1.name }}</a>
+            </li>
+          </ul>
+        </li-->
+
+
+        <li ng-class="{ active: headerVM.isActive('/displays')}"><a href="#/displays">Displays</a></li>
+        <li ng-class="{ active: headerVM.isActive('/mdb')}"><a href="#/mdb">MDB</a></li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+<uib-alert type="danger" ng-if="!shell.socketOpen">
+  <strong>Oops!</strong>
+  You are no longer connected to Yamcs. Verify your connection, and then refresh your browser.
+</uib-alert>

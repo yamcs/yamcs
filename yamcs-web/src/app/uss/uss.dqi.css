@@ -1,0 +1,55 @@
+.dead-foreground {
+  fill: black;
+}
+
+.dead-background {
+  fill: #912CEE;
+}
+
+.disabled-foreground {
+  fill: white;
+}
+
+.disabled-background {
+  fill: black;
+}
+
+.undefined-foreground {
+  fill: white;
+}
+
+.undefined-background {
+  fill: black;
+}
+
+.in_limits-foreground {
+  fill: black;
+}
+
+.in_limits-background {
+  fill: #00FF00;
+}
+
+.nominal_limit_violation-foreground {
+  fill: black;
+}
+
+.nominal_limit_violation-background {
+  fill: yellow;
+}
+
+.danger_limit_violation-foreground {
+  fill: black;
+}
+
+.danger_limit_violation-background {
+  fill: red;
+}
+
+.static-foreground {
+  fill: black;
+}
+
+.static-background {
+  fill: cyan;
+}

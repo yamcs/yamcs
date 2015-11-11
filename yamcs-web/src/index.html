@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" ng-app="app" ng-strict-di ng-controller="Shell as shell">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title ng-bind="title"></title>
+
+  <!-- bower:css -->
+  <!-- endinject -->
+
+  <!-- inject:css -->
+  <!-- endinject -->
+</head>
+
+<body ng-cloak>
+
+  <div ng-include="'/_static/app/layout/shell.html'"></div>
+  <div ng-view></div>
+
+  <!-- bower:js -->
+  <!-- endinject -->
+
+  <!-- inject:js -->
+  <!-- endinject -->
+</body>
+</html>
