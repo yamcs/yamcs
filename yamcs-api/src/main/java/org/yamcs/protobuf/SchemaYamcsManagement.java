@@ -422,11 +422,21 @@ public final class SchemaYamcsManagement
                     output.writeInt32(7, message.getContainerCount(), false);
                 if(message.hasCommandCount())
                     output.writeInt32(8, message.getCommandCount(), false);
+                if(message.hasAlgorithmCount())
+                    output.writeInt32(9, message.getAlgorithmCount(), false);
+                if(message.hasParametersUrl())
+                    output.writeString(10, message.getParametersUrl(), false);
+                if(message.hasContainersUrl())
+                    output.writeString(11, message.getContainersUrl(), false);
+                if(message.hasCommandsUrl())
+                    output.writeString(12, message.getCommandsUrl(), false);
+                if(message.hasAlgorithmsUrl())
+                    output.writeString(13, message.getAlgorithmsUrl(), false);
                 for(org.yamcs.protobuf.YamcsManagement.HistoryInfo history : message.getHistoryList())
-                    output.writeObject(9, history, org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.WRITE, true);
+                    output.writeObject(14, history, org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.WRITE, true);
 
                 for(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo sub : message.getSubList())
-                    output.writeObject(10, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
+                    output.writeObject(15, sub, org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo message)
@@ -492,10 +502,25 @@ public final class SchemaYamcsManagement
                             builder.setCommandCount(input.readInt32());
                             break;
                         case 9:
+                            builder.setAlgorithmCount(input.readInt32());
+                            break;
+                        case 10:
+                            builder.setParametersUrl(input.readString());
+                            break;
+                        case 11:
+                            builder.setContainersUrl(input.readString());
+                            break;
+                        case 12:
+                            builder.setCommandsUrl(input.readString());
+                            break;
+                        case 13:
+                            builder.setAlgorithmsUrl(input.readString());
+                            break;
+                        case 14:
                             builder.addHistory(input.mergeObject(org.yamcs.protobuf.YamcsManagement.HistoryInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.HistoryInfo.MERGE));
 
                             break;
-                        case 10:
+                        case 15:
                             builder.addSub(input.mergeObject(org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.SpaceSystemInfo.MERGE));
 
                             break;
@@ -547,8 +572,13 @@ public final class SchemaYamcsManagement
                 case 6: return "parameterCount";
                 case 7: return "containerCount";
                 case 8: return "commandCount";
-                case 9: return "history";
-                case 10: return "sub";
+                case 9: return "algorithmCount";
+                case 10: return "parametersUrl";
+                case 11: return "containersUrl";
+                case 12: return "commandsUrl";
+                case 13: return "algorithmsUrl";
+                case 14: return "history";
+                case 15: return "sub";
                 default: return null;
             }
         }
@@ -568,8 +598,13 @@ public final class SchemaYamcsManagement
             fieldMap.put("parameterCount", 6);
             fieldMap.put("containerCount", 7);
             fieldMap.put("commandCount", 8);
-            fieldMap.put("history", 9);
-            fieldMap.put("sub", 10);
+            fieldMap.put("algorithmCount", 9);
+            fieldMap.put("parametersUrl", 10);
+            fieldMap.put("containersUrl", 11);
+            fieldMap.put("commandsUrl", 12);
+            fieldMap.put("algorithmsUrl", 13);
+            fieldMap.put("history", 14);
+            fieldMap.put("sub", 15);
         }
     }
 
@@ -601,6 +636,8 @@ public final class SchemaYamcsManagement
                     output.writeString(7, message.getContainersUrl(), false);
                 if(message.hasCommandsUrl())
                     output.writeString(8, message.getCommandsUrl(), false);
+                if(message.hasAlgorithmsUrl())
+                    output.writeString(9, message.getAlgorithmsUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.MissionDatabase message)
             {
@@ -665,6 +702,9 @@ public final class SchemaYamcsManagement
                         case 8:
                             builder.setCommandsUrl(input.readString());
                             break;
+                        case 9:
+                            builder.setAlgorithmsUrl(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -713,6 +753,7 @@ public final class SchemaYamcsManagement
                 case 6: return "parametersUrl";
                 case 7: return "containersUrl";
                 case 8: return "commandsUrl";
+                case 9: return "algorithmsUrl";
                 default: return null;
             }
         }
@@ -732,6 +773,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("parametersUrl", 6);
             fieldMap.put("containersUrl", 7);
             fieldMap.put("commandsUrl", 8);
+            fieldMap.put("algorithmsUrl", 9);
         }
     }
 

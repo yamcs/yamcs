@@ -46,8 +46,13 @@ message SpaceSystemInfo {
   optional int32 parameterCount = 6;
   optional int32 containerCount = 7;
   optional int32 commandCount = 8;
-  repeated HistoryInfo history = 9;
-  repeated SpaceSystemInfo sub = 10;
+  optional int32 algorithmCount = 9;
+  optional string parametersUrl = 10;
+  optional string containersUrl = 11;
+  optional string commandsUrl = 12;
+  optional string algorithmsUrl = 13;
+  repeated HistoryInfo history = 14;
+  repeated SpaceSystemInfo sub = 15;
 }
 
 message MissionDatabase {
@@ -59,6 +64,7 @@ message MissionDatabase {
   optional string parametersUrl = 6;
   optional string containersUrl = 7;
   optional string commandsUrl = 8;
+  optional string algorithmsUrl = 9;
 }
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both

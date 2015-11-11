@@ -28,6 +28,7 @@ public class MDBRequestHandler extends RestRequestHandler {
     private static MDBParameterRequestHandler parameterHandler = new MDBParameterRequestHandler();    
     private static MDBContainerRequestHandler containerHandler = new MDBContainerRequestHandler();
     private static MDBCommandRequestHandler commandHandler = new MDBCommandRequestHandler();
+    private static MDBAlgorithmRequestHandler algorithmHandler = new MDBAlgorithmRequestHandler();
     
     @Override
     public String getPath() {
@@ -60,6 +61,8 @@ public class MDBRequestHandler extends RestRequestHandler {
                     return containerHandler.handleRequest(req, pathOffset + 1);
                 case "commands":
                     return commandHandler.handleRequest(req, pathOffset + 1);
+                case "algorithms":
+                    return algorithmHandler.handleRequest(req, pathOffset + 1);
                 default:
                     throw new NotFoundException(req);
                 }
@@ -80,15 +83,16 @@ public class MDBRequestHandler extends RestRequestHandler {
         b.setParametersUrl(b.getUrl() + "/parameters{/namespace}{/name}");
         b.setContainersUrl(b.getUrl() + "/containers{/namespace}{/name}");
         b.setCommandsUrl(b.getUrl() + "/commands{/namespace}{/name}");
+        b.setAlgorithmsUrl(b.getUrl() + "/algorithms{/namespace}{/name}");
         
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSpaceSystem(toSpaceSystemInfo(sub));
+            b.addSpaceSystem(toSpaceSystemInfo(req, instance, sub));
         }        
         return b.build();
     }
     
-    private static SpaceSystemInfo toSpaceSystemInfo(SpaceSystem ss) {
+    private static SpaceSystemInfo toSpaceSystemInfo(RestRequest req, String instance, SpaceSystem ss) {
         SpaceSystemInfo.Builder b = SpaceSystemInfo.newBuilder();
         b.setName(ss.getName());
         b.setQualifiedName(ss.getQualifiedName());
@@ -116,9 +120,15 @@ public class MDBRequestHandler extends RestRequestHandler {
         b.setParameterCount(ss.getParameters().size());
         b.setContainerCount(ss.getSequenceContainers().size());
         b.setCommandCount(ss.getMetaCommands().size());
+        b.setAlgorithmCount(ss.getAlgorithms().size());
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSub(toSpaceSystemInfo(sub));
+            b.addSub(toSpaceSystemInfo(req, instance, sub));
         }
+        String url = req.getApiURL() + "/mdb/" + instance;
+        b.setParametersUrl(url + "/parameters" + ss.getQualifiedName());
+        b.setContainersUrl(url + "/containers" + ss.getQualifiedName());
+        b.setCommandsUrl(url + "/commands" + ss.getQualifiedName());
+        b.setAlgorithmsUrl(url + "/algorithms" + ss.getQualifiedName());
         return b.build();
     }
 }

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -180,6 +181,33 @@ public class RestUtils {
                 SequenceContainer c = mdb.getSequenceContainer(id);
                 if (c != null) {
                     return new MatchResult<>(c, nsMatch.getPathOffset() + 1, id);
+                }
+            }
+        }
+
+        return new MatchResult<>(null, -1);
+    }
+    
+    /**
+     * Searches for a valid algorithm name in the URI of the request. It is
+     * assumed that the MDB for the instance was already added to the request's
+     * context.
+     * 
+     * @pathOffset the offset at which to start the search
+     */
+    public static MatchResult<Algorithm> matchAlgorithmName(RestRequest req, int pathOffset) {
+        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        
+        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset);
+        NamedObjectId id = null;
+        if (nsMatch.matches()) {
+            String namespace = nsMatch.getMatch();
+            if (req.hasPathSegment(nsMatch.getPathOffset())) {
+                String name = req.getPathSegment(nsMatch.getPathOffset());
+                id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+                Algorithm a = mdb.getAlgorithm(id);
+                if (a != null) {
+                    return new MatchResult<>(a, nsMatch.getPathOffset() + 1, id);
                 }
             }
         }

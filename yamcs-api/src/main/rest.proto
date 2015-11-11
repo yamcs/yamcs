@@ -51,6 +51,10 @@ message ListCommandsResponse {
   repeated mdb.CommandInfo command = 1;
 }
 
+message ListAlgorithmsResponse {
+  repeated mdb.AlgorithmInfo algorithm = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }

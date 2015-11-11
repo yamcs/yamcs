@@ -8,6 +8,8 @@ import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
+import org.yamcs.protobuf.Mdb.AlgorithmInfo;
+import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
@@ -16,6 +18,8 @@ import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
+import org.yamcs.protobuf.Mdb.InputParameterInfo;
+import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.RepeatInfo;
@@ -26,6 +30,7 @@ import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.AlarmRanges;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
@@ -44,11 +49,15 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
+import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
@@ -58,6 +67,7 @@ import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TransmissionConstraint;
+import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 
@@ -571,6 +581,83 @@ public class XtceToGpbAssembler {
             break;
         default:
             throw new IllegalStateException("Unexpected alarm level " + xtceAlarmItem.getAlarmLevel());
+        }
+        return resultb.build();
+    }
+    
+    public static AlgorithmInfo toAlgorithmInfo(Algorithm a, String mdbURL, DetailLevel detail) {
+        AlgorithmInfo.Builder b = AlgorithmInfo.newBuilder();
+        
+        b.setName(a.getName());
+        b.setQualifiedName(a.getQualifiedName());
+        b.setUrl(mdbURL + "/algorithms" + a.getQualifiedName());
+        
+        if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
+            if (a.getShortDescription() != null) {
+                b.setShortDescription(a.getShortDescription());
+            }
+            if (a.getLongDescription() != null) {
+                b.setLongDescription(a.getLongDescription());
+            }
+            Map<String, String> aliases = a.getAliasSet().getAliases();
+            for(Entry<String, String> me : aliases.entrySet()) {
+                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+            switch (a.getScope()) {
+            case global:
+                b.setScope(Scope.GLOBAL);
+                break;
+            case commandVerification:
+                b.setScope(Scope.COMMAND_VERIFICATION);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected scope " + a.getScope());
+            }
+        }
+        
+        if (detail == DetailLevel.FULL) {
+            if (a.getLanguage() != null) {
+                b.setLanguage(a.getLanguage());
+            }
+            if (a.getAlgorithmText() != null) {
+                b.setText(a.getAlgorithmText());
+            }
+            for (InputParameter p : a.getInputSet()) {
+                b.addInputParameter(toInputParameterInfo(p, mdbURL));
+            }
+            for (OutputParameter p : a.getOutputSet()) {
+                b.addOutputParameter(toOutputParameterInfo(p, mdbURL));
+            }
+            TriggerSetType triggerSet = a.getTriggerSet();
+            if (triggerSet != null) {
+                for (OnParameterUpdateTrigger trig : triggerSet.getOnParameterUpdateTriggers()) {
+                    b.addOnParameterUpdate(toParameterInfo(trig.getParameter(), mdbURL, DetailLevel.SUMMARY));
+                }
+                for (OnPeriodicRateTrigger trig : triggerSet.getOnPeriodicRateTriggers()) {
+                    b.addOnPeriodicRate(trig.getFireRate());
+                }
+            }
+        }
+        
+        return b.build();
+    }
+    
+    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL) {
+        InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
+        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY));
+        if (xtceInput.getInputName() != null) {
+            resultb.setInputName(xtceInput.getInputName());
+        }
+        resultb.setParameterInstance(xtceInput.getParameterInstance().getInstance());
+        resultb.setMandatory(xtceInput.isMandatory());
+        return resultb.build();
+    }
+    
+    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl) {
+        OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
+        resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY));
+        if (xtceOutput.getOutputName() != null) {
+            resultb.setOutputName(xtceOutput.getOutputName());
         }
         return resultb.build();
     }
