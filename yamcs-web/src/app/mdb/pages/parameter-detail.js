@@ -3,10 +3,10 @@
 
     angular
         .module('app.tm')
-        .controller('ParameterDetailController', ParameterDetailController);
+        .controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
-    function ParameterDetailController($routeParams, tmService, mdbService, $scope, $uibModal) {
+    function MDBParameterDetailController($routeParams, tmService, mdbService, $scope, $uibModal) {
         var vm = this;
 
         $scope.plotmode = '1h';

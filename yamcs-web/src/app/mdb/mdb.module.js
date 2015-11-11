@@ -88,20 +88,60 @@
                 title: 'MDB Commands'
             }
         }, {
+            url: '/mdb/algorithms',
+            config: {
+                templateUrl: '/_static/app/mdb/pages/algorithms.html',
+                controller: 'MDBAlgorithmsController',
+                controllerAs: 'vm',
+                title: 'MDB Algorithms'
+            }
+        }, {
+            url: '/mdb/:ss1/algorithms',
+            config: {
+                templateUrl: '/_static/app/mdb/pages/algorithms.html',
+                controller: 'MDBAlgorithmsController',
+                controllerAs: 'vm',
+                title: 'MDB Algorithms'
+            }
+        }, {
+            url: '/mdb/:ss1/:ss2/algorithms',
+            config: {
+                templateUrl: '/_static/app/mdb/pages/algorithms.html',
+                controller: 'MDBAlgorithmsController',
+                controllerAs: 'vm',
+                title: 'MDB Algorithms'
+            }
+        }, {
+            url: '/mdb/:ss1/algorithms/:name',
+            config: {
+                templateUrl: '/_static/app/mdb/pages/algorithm-detail.html',
+                controller: 'MDBAlgorithmDetailController',
+                controllerAs: 'vm',
+                title: 'MDB Algorithm Detail'
+            }
+        }, {
+            url: '/mdb/:ss1/:ss2/algorithms/:name',
+            config: {
+                templateUrl: '/_static/app/mdb/pages/algorithm-detail.html',
+                controller: 'MDBAlgorithmDetailController',
+                controllerAs: 'vm',
+                title: 'MDB Algorithm Detail'
+            }
+        }, {
             url: '/mdb/:ss1/:name',
             config: {
                 templateUrl: '/_static/app/mdb/pages/parameter-detail.html',
-                controller: 'ParameterDetailController',
+                controller: 'MDBParameterDetailController',
                 controllerAs: 'vm',
-                title: 'Parameter Detail'
+                title: 'MDB Parameter Detail'
             }
         }, {
             url: '/mdb/:ss1/:ss2/:name',
             config: {
                 templateUrl: '/_static/app/mdb/pages/parameter-detail.html',
-                controller: 'ParameterDetailController',
+                controller: 'MDBParameterDetailController',
                 controllerAs: 'vm',
-                title: 'Parameter Detail'
+                title: 'MDB Parameter Detail'
             }
         }]);
     }

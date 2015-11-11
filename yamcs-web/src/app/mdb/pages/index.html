@@ -1,10 +1,36 @@
 <mdb-pane active-pane="overview" title="{{ vm.title }}">
   <div class="panel panel-default" ng-repeat="ss in vm.mdb.flatSpaceSystems">
     <div class="panel-heading">
+      <div class="pull-right">
+        <a href="#/mdb{{ ss.qualifiedName }}/parameters" ng-switch="ss.parameterCount">
+          <small ng-switch-when="1">1 Parameter</small>
+          <small ng-switch-default>{{ ss.parameterCount }} Parameters</small>
+        </a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="#/mdb{{ ss.qualifiedName }}/containers" ng-switch="ss.containerCount">
+          <small ng-switch-when="1">1 Container</small>
+          <small ng-switch-default>{{ ss.containerCount }} Containers</small>
+        </a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="#/mdb{{ ss.qualifiedName }}/commands" ng-switch="ss.commandCount">
+          <small ng-switch-when="1">1 Command</small>
+          <small ng-switch-default>{{ ss.commandCount }} Commands</small>
+        </a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="#/mdb{{ ss.qualifiedName }}/algorithms" ng-switch="ss.algorithmCount">
+          <small ng-switch-when="1">1 Algorithm</small>
+          <small ng-switch-default>{{ ss.algorithmCount }} Algorithms</small>
+        </a>
+      </div>
+
       <h3 class="panel-title">
-        {{ ss.qualifiedName }} <span ng-if="ss.version" class="label label-primary">v{{ ss.version }}</span>
+        <a href="#/mdb{{ ss.qualifiedName }}/parameters">
+          {{ ss.qualifiedName }}
+        </a>
+        <span ng-if="ss.version" class="label label-primary">v{{ ss.version }}</span>
       </h3>
     </div>
+
     <div class="panel-body">
       <p ng-if="ss.shortDescription">
         {{ ss.shortDescription }}
@@ -16,17 +42,6 @@
           <div class="col-md-10" ng-bind-html="h.message | nl2br"></div>
         </div>
       </div>
-    </div>
-    <div class="list-group" ng-if="ss.parameterCount || ss.containerCount || ss.commandCount">
-      <a class="list-group-item" ng-if="ss.parameterCount" href="#/mdb/{{ ss.qualifiedName | slice:1 }}/parameters">
-        Parameters <span class="badge">{{ ss.parameterCount }}</span>
-      </a>
-      <a class="list-group-item" ng-if="ss.containerCount" href="#/mdb/{{ ss.qualifiedName | slice:1 }}/containers">
-        Containers <span class="badge">{{ ss.containerCount }}</span>
-      </a>
-      <!--a class="list-group-item" ng-if="ss.commandCount" href="#/mdb/{{ ss.qualifiedName | slice:1 }}/commands">
-        Commands <span class="badge">{{ ss.commandCount }}</span>
-      </a-->
     </div>
   </div>
 </mdb-pane>

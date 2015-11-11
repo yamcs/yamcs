@@ -9,9 +9,9 @@
       <th width="200">Name</th>
       <th>Description</th>
     </tr>
-    <tr ng-repeat="sq in vm.commands | orderBy:'qualifiedName'">
-      <td>{{ sq.name }}</td>
-      <td>{{ para.shortDescription | nvl:'-' }}</td>
+    <tr ng-repeat="cmd in vm.commands | orderBy:'qualifiedName'">
+      <td>{{ cmd.name }}</td>
+      <td>{{ cmd.shortDescription | nvl:'-' }}</td>
     </tr>
   </table>
 </mdb-pane>
