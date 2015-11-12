@@ -94,13 +94,13 @@
             var guidelines = [];
             if (pinfo.hasOwnProperty('type') && pinfo['type'].hasOwnProperty('defaultAlarm')) {
                 var defaultAlarm = pinfo['type']['defaultAlarm'];
-                if (defaultAlarm.hasOwnProperty('staticAlarmRanges')) {
+                if (defaultAlarm.hasOwnProperty('staticAlarmRange')) {
 
                     // LOW LIMITS
                     var last_y = null;
                     var i, range, guideline;
-                    for (i = defaultAlarm['staticAlarmRanges'].length - 1; i >= 0; i--) {
-                        range = defaultAlarm['staticAlarmRanges'][i];
+                    for (i = defaultAlarm['staticAlarmRange'].length - 1; i >= 0; i--) {
+                        range = defaultAlarm['staticAlarmRange'][i];
                         if (range.hasOwnProperty('minInclusive')) {
                             guideline = {
                                 y1: range['minInclusive'],
@@ -114,8 +114,8 @@
 
                     // HIGH LIMITS
                     last_y = null;
-                    for (i = defaultAlarm['staticAlarmRanges'].length - 1; i >= 0; i--) {
-                        range = defaultAlarm['staticAlarmRanges'][i];
+                    for (i = defaultAlarm['staticAlarmRange'].length - 1; i >= 0; i--) {
+                        range = defaultAlarm['staticAlarmRange'][i];
                         if (range.hasOwnProperty('maxInclusive')) {
                             guideline = {
                                 y1: range['maxInclusive'],
@@ -144,8 +144,8 @@
             var max = null;
             if (pinfo.hasOwnProperty('type') && pinfo['type'].hasOwnProperty('defaultAlarm')) {
                 var defaultAlarm = pinfo['type']['defaultAlarm'];
-                if (defaultAlarm.hasOwnProperty('staticAlarmRanges')) {
-                    defaultAlarm['staticAlarmRanges'].forEach(function (range) {
+                if (defaultAlarm.hasOwnProperty('staticAlarmRange')) {
+                    defaultAlarm['staticAlarmRange'].forEach(function (range) {
                         if (range.hasOwnProperty('minInclusive')) {
                             var newMin = range['minInclusive'];
                             min = (min === null) ? newMin : Math.min(newMin, min);
