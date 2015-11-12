@@ -381,12 +381,9 @@ public class XtceToGpbAssembler {
                 default:
                     throw new IllegalStateException("Unexpected data source " + xtceDs);
                 }
-            }/* else { // TODO why do we need this here. For what reason was this introduced?
-                log.warn("Datasource for parameter " + id.getName() + " is null, setting TELEMETERED by default");
-                rpib.setDataSource(DataSourceType.TELEMETERED);
-            }*/
-            
-            b.setType(toParameterTypeInfo(p.getParameterType()));
+            }
+            if(p.getParameterType() != null)
+                b.setType(toParameterTypeInfo(p.getParameterType()));
         }
         
         return b.build();
@@ -548,12 +545,15 @@ public class XtceToGpbAssembler {
             resultb.setMaxInclusive(alarmRange.getMaxInclusive());
         return resultb.build();
     }
-    
+
     public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
         resultb.setValue(xtceAlarmItem.getEnumerationValue().getValue());
         resultb.setLabel(xtceAlarmItem.getEnumerationValue().getLabel());
         switch (xtceAlarmItem.getAlarmLevel()) {
+        case normal:
+            resultb.setLevel(AlarmLevelType.NORMAL);
+            break;
         case watch:
             resultb.setLevel(AlarmLevelType.WATCH);
             break;

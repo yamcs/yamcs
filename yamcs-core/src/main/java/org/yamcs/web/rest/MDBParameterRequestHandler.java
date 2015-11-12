@@ -108,7 +108,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         // There's no such thing as a list of 'namespaces' within the MDB, therefore it
         // could happen that we arrive here but that the user intended to search for a single
         // parameter rather than a list. So... return a 404 if we didn't find any match.
-        if (namespace.equals("yamcs")) {
+        if (namespace != null && namespace.equals("yamcs")) {
             return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
         } else if (matcher == null && (responseb.getParameterList() == null || responseb.getParameterList().isEmpty())) {
             throw new NotFoundException(req);
