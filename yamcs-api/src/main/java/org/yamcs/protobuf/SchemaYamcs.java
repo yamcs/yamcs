@@ -2132,6 +2132,8 @@ public final class SchemaYamcs
                     output.writeString(13, message.getUtcStart(), false);
                 if(message.hasUtcStop())
                     output.writeString(14, message.getUtcStop(), false);
+                if(message.hasReverse())
+                    output.writeBool(15, message.getReverse(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.ReplayRequest message)
             {
@@ -2210,6 +2212,9 @@ public final class SchemaYamcs
                         case 14:
                             builder.setUtcStop(input.readString());
                             break;
+                        case 15:
+                            builder.setReverse(input.readBool());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2261,6 +2266,7 @@ public final class SchemaYamcs
                 case 12: return "ppRequest";
                 case 13: return "utcStart";
                 case 14: return "utcStop";
+                case 15: return "reverse";
                 default: return null;
             }
         }
@@ -2283,6 +2289,7 @@ public final class SchemaYamcs
             fieldMap.put("ppRequest", 12);
             fieldMap.put("utcStart", 13);
             fieldMap.put("utcStop", 14);
+            fieldMap.put("reverse", 15);
         }
     }
 

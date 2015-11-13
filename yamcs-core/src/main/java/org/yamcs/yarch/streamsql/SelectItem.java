@@ -1,9 +1,5 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.SelectItem;
-
-
 public class SelectItem {
 	public static final SelectItem STAR = new SelectItem(null);
 	Expression expr;
@@ -26,6 +22,6 @@ public class SelectItem {
 	@Override
     public String toString() {
 	    if(alias==null)return expr.toString();
-	    else return expr.toString() +"(aliased: )"+alias+")";
+	    else return expr.toString() +"(aliased: "+alias+")";
 	}
 }

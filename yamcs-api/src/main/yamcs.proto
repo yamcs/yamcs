@@ -227,6 +227,9 @@ message ReplayRequest {
   //how fast the replay should go
   optional ReplaySpeed speed = 4;
 
+  // Reverse the direction of the replay
+  optional bool reverse = 15;
+
   // At least one of the following request types should be added
   optional ParameterReplayRequest parameterRequest = 8;
   optional PacketReplayRequest packetRequest = 9;

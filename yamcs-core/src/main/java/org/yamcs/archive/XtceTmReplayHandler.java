@@ -89,6 +89,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
                 appendTimeClause(sb, request, true);
             }
         }
+        if(request.hasReverse() && request.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
         return sb.toString();
     }
 

@@ -9,17 +9,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.TmPacketProvider;
-import org.yamcs.YProcessor;
-import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.TmPacketProvider;
+import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -55,7 +55,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
 
     YProcessor yproc;
     String instance;
-    boolean hasTm, hasPp;
+    boolean hasTm, hasPp, isReverse;
     AuthenticationToken authToken;
 
     /**
@@ -126,6 +126,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
         ppSet=mpp.subscribedParams;
         hasTm=!tmPartitions.isEmpty();
         hasPp=!ppGroups.isEmpty();
+        isReverse=newRequest.hasReverse() ? newRequest.getReverse() : false;
 
         yproc.start();
     }
@@ -149,6 +150,7 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             }
             sb.append(")");
             XtceTmReplayHandler.appendTimeClause(sb, request, false);
+            if (isReverse) sb.append(" ORDER DESC");
         }
         if(hasTm && hasPp) sb.append("), (");
 
@@ -163,8 +165,12 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             }
             sb.append(")");
             XtceTmReplayHandler.appendTimeClause(sb, request, false);
+            if (isReverse) sb.append(" ORDER DESC");
         }
-        if(hasTm && hasPp) sb.append(") USING gentime");
+        if(hasTm && hasPp) {
+            sb.append(") USING gentime");
+            if (isReverse) sb.append(" ORDER DESC");
+        }
         return sb.toString();
     }
 

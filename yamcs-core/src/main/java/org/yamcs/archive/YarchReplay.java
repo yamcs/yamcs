@@ -209,6 +209,9 @@ public class YarchReplay implements StreamSubscriber {
         case REALTIME:
             sb.append(" SPEED ORIGINAL gentime,"+(long)rs.getParam());
         }
+        if(handlers.size()>1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
 
         String query=sb.toString();
         log.debug("running query "+query);
@@ -268,7 +271,7 @@ public class YarchReplay implements StreamSubscriber {
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
-        SpeedSpec ss;;
+        SpeedSpec ss;
         switch(speed.getType()) {
         case  AFAP: 
             ss=new SpeedSpec(SpeedSpec.Type.AFAP);
@@ -299,7 +302,6 @@ public class YarchReplay implements StreamSubscriber {
             YarchDatabase db=YarchDatabase.getInstance(instance);
             if(db.getStream(streamName)!=null) db.execute("close stream "+streamName);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error( "Exception whilst quitting", e );
         };
         replayServer.replayFinished();

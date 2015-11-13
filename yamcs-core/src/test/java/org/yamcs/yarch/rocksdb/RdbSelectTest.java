@@ -165,6 +165,22 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(3000L, tuples.get(1).getColumn("gentime"));
     }
     
+    @Test
+    public void testOrderedMerge() throws Exception {
+        ydb.execute("create stream s1 as merge " + 
+            "(select * from RdbSelectTest where gentime <3000 order desc), " +
+            "(select * from RdbSelectTest where gentime >= 3000 order desc) " +
+            "using gentime order desc");
+        Stream s1 = ydb.getStream("s1");
+        List<Tuple> tuples = fetchTuples(s1);
+        assertEquals(3, tuples.size());
+        
+        // Ordered descending by gentime
+        assertEquals(3000L, tuples.get(0).getColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
+        assertEquals(1000L, tuples.get(2).getColumn("gentime"));
+    }
+    
     @Test(expected=ParseException.class)
     public void testInvalidOrder() throws Exception {
         ydb.execute("create stream s1 as select * from RdbSelectTest order blabla");
