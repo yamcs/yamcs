@@ -138,8 +138,11 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
             if (username == null) {
                 username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : ManagementService.ANONYMOUS;
             }
+            
             acknowledgeb.setAcknowledgedBy(username);
-            acknowledgeb.setAcknowledgeMessage(activeAlarm.message);
+            if(activeAlarm.message!=null) {
+                acknowledgeb.setAcknowledgeMessage(activeAlarm.message);
+            }
             acknowledgeb.setAcknowledgeTime(activeAlarm.acknowledgeTime);
             acknowledgeb.setAcknowledgeTimeUTC(TimeEncoding.toString(activeAlarm.acknowledgeTime));
             alarmb.setAcknowledgeInfo(acknowledgeb.build());

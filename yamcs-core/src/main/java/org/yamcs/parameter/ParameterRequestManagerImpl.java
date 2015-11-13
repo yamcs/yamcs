@@ -473,8 +473,11 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	    if(pvlist!=null) {
 		alarmChecker.updateParameters(pvlist);
 	    }
-
-	    alarmChecker.performAlarmChecking(params);
+	    try {
+	        alarmChecker.performAlarmChecking(params);
+	    } catch (Exception e) {
+	        log.error("Error when performing alarm checking ",e);
+	    }
 	}
 	
 	if(parameterCache!=null) {
