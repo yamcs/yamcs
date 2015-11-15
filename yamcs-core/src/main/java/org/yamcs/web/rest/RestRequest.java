@@ -14,6 +14,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
+import org.yamcs.utils.TimeEncoding;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -128,6 +129,11 @@ public class RestRequest {
         return httpRequest.headers().get(name);
     }
     
+    public boolean asksFor(String mediaType) {
+        return getHttpRequest().headers().contains(Names.ACCEPT)
+                && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType);
+    }
+    
     /**
      * Returns the username of the authenticated user. Or {@link ManagementService.ANONYMOUS} if the user
      * is not authenticated.
@@ -195,12 +201,28 @@ public class RestRequest {
         return param.get(0);
     }
     
+    public String getQueryParameter(String name, String defaultValue) throws BadRequestException {
+        if (hasQueryParameter(name)) {
+            return getQueryParameter(name);
+        } else {
+            return defaultValue;
+        }
+    }
+    
     public int getQueryParameterAsInt(String name) throws BadRequestException {
         String param = getQueryParameter(name);
         try {
             return Integer.parseInt(param);
         } catch (NumberFormatException e) {
             throw new BadRequestException("Query parameter '" + name + "' does not have a valid integer value");
+        }
+    }
+    
+    public int getQueryParameterAsInt(String name, int defaultValue) throws BadRequestException {
+        if (hasQueryParameter(name)) {
+            return getQueryParameterAsInt(name);
+        } else {
+            return defaultValue;
         }
     }
     
@@ -213,11 +235,44 @@ public class RestRequest {
         }
     }
     
+    public long getQueryParameterAsLong(String name, long defaultValue) throws BadRequestException {
+        if (hasQueryParameter(name)) {
+            return getQueryParameterAsLong(name);
+        } else {
+            return defaultValue;
+        }
+    }
+    
+    public long getQueryParameterAsDate(String name) throws BadRequestException {
+        String param = getQueryParameter(name);
+        try {
+            return Long.parseLong(param);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(param);
+        }
+    }
+    
+    public long getQueryParameterAsDate(String name, long defaultValue) throws BadRequestException {
+        if (hasQueryParameter(name)) {
+            return getQueryParameterAsDate(name);
+        } else {
+            return defaultValue;
+        }
+    }
+    
     public boolean getQueryParameterAsBoolean(String name) {
         List<String> paramList = getQueryParameterList(name);
         String param = paramList.get(0);
         return (param == null || "".equals(param) || "true".equalsIgnoreCase(param)
                 || "yes".equalsIgnoreCase(param));
+    }
+    
+    public boolean getQueryParameterAsBoolean(String name, boolean defaultValue) {
+        if (hasQueryParameter(name)) {
+            return getQueryParameterAsBoolean(name);
+        } else {
+            return defaultValue;
+        }
     }
     
     public boolean isSSL() {
@@ -241,6 +296,9 @@ public class RestRequest {
             if (hasQueryParameter("pretty") && getQueryParameterAsBoolean("pretty")) {
                 generator.useDefaultPrettyPrinter();
             }
+        } else {
+            // Pretty by default
+            generator.useDefaultPrettyPrinter();
         }
         return generator;
     }

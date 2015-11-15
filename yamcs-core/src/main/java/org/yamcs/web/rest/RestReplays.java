@@ -22,6 +22,7 @@ import com.google.protobuf.MessageLite;
  * Abstracts some common logic for creating replays 
  */
 public class RestReplays {
+    
     private static final Logger log = LoggerFactory.getLogger(RestReplays.class);
     
     /**
@@ -31,26 +32,25 @@ public class RestReplays {
      * TODO we should be more helpful here with catching errored state and
      * throwing it up as RestException
      */
-    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, ReplayListener l) throws RestException {
+    public static ReplayWrapper replay(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         ReplayServer replayServer = getReplayServer(instance);
         
-        Semaphore semaphore = new Semaphore(0);
-        ReplayWrapper wrapper = new ReplayWrapper(semaphore, l);
+        ReplayWrapper wrapper = new ReplayWrapper(l);
         try {
              YarchReplay yarchReplay = replayServer.createReplay(replayRequest, wrapper, req.authToken);
+             wrapper.setYarchReplay(yarchReplay);
              yarchReplay.start();
+             return wrapper;
         } catch (YamcsException e) {
             throw new InternalServerErrorException("Exception creating the replay", e);
         }
-        
-        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            throw new InternalServerErrorException(e);
-        }
     }
-
+    
+    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
+        replay(req, replayRequest, l).await();
+    }
+    
     private static ReplayServer getReplayServer(String instance) throws BadRequestException {
         ReplayServer replayServer = YamcsServer.getService(instance, ReplayServer.class);
         if (replayServer == null) {
@@ -61,25 +61,41 @@ public class RestReplays {
     
     private static class ReplayWrapper implements ReplayListener {
         Semaphore semaphore;
-        ReplayListener wrappedListener;
+        RestReplayListener wrappedListener;
+        YarchReplay yarchReplay;
         
-        ReplayWrapper(Semaphore semaphore, ReplayListener l) {
-            this.semaphore = semaphore;
+        ReplayWrapper(RestReplayListener l) {
             this.wrappedListener = l;
+            semaphore = new Semaphore(0);
+        }
+        
+        void setYarchReplay(YarchReplay yarchReplay) {
+            this.yarchReplay = yarchReplay;
+        }
+        
+        public void await() throws InternalServerErrorException {
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                throw new InternalServerErrorException(e);
+            }
         }
         
         @Override
         public void newData(ProtoDataType type, MessageLite data) {
-            wrappedListener.newData(type, data);
+            if (!wrappedListener.isReplayAbortRequested()) {
+                wrappedListener.newData(type, data);
+            } else {
+                yarchReplay.quit();
+                // Call explicitely, because doesn't happen after above quit()
+                stateChanged(ReplayStatus.newBuilder().setState(ReplayState.CLOSED).build());
+            }
         }
 
         @Override
         public void stateChanged(ReplayStatus rs) {
-            if(rs.getState()==ReplayState.CLOSED) {
-                semaphore.release();
-            } else if (rs.getState() == ReplayState.ERROR) {
+            if (rs.getState() == ReplayState.ERROR) {
                 log.error("Replay errored");
-                semaphore.release();
             }
             semaphore.release();
             wrappedListener.stateChanged(rs);

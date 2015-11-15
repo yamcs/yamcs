@@ -22569,6 +22569,36 @@ public final class Yamcs {
      * <code>optional .yamcs.Event.EventSeverity severity = 7 [default = INFO];</code>
      */
     org.yamcs.protobuf.Yamcs.Event.EventSeverity getSeverity();
+
+    // optional string generationTimeUTC = 8;
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    boolean hasGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    java.lang.String getGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes();
+
+    // optional string receptionTimeUTC = 9;
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    boolean hasReceptionTimeUTC();
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    java.lang.String getReceptionTimeUTC();
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    com.google.protobuf.ByteString
+        getReceptionTimeUTCBytes();
   }
   /**
    * Protobuf type {@code yamcs.Event}
@@ -22660,6 +22690,16 @@ public final class Yamcs {
                 bitField0_ |= 0x00000040;
                 severity_ = value;
               }
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              generationTimeUTC_ = input.readBytes();
+              break;
+            }
+            case 74: {
+              bitField0_ |= 0x00000100;
+              receptionTimeUTC_ = input.readBytes();
               break;
             }
           }
@@ -22986,6 +23026,92 @@ public final class Yamcs {
       return severity_;
     }
 
+    // optional string generationTimeUTC = 8;
+    public static final int GENERATIONTIMEUTC_FIELD_NUMBER = 8;
+    private java.lang.Object generationTimeUTC_;
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    public boolean hasGenerationTimeUTC() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    public java.lang.String getGenerationTimeUTC() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          generationTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string generationTimeUTC = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        generationTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string receptionTimeUTC = 9;
+    public static final int RECEPTIONTIMEUTC_FIELD_NUMBER = 9;
+    private java.lang.Object receptionTimeUTC_;
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    public boolean hasReceptionTimeUTC() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    public java.lang.String getReceptionTimeUTC() {
+      java.lang.Object ref = receptionTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          receptionTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string receptionTimeUTC = 9;</code>
+     */
+    public com.google.protobuf.ByteString
+        getReceptionTimeUTCBytes() {
+      java.lang.Object ref = receptionTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        receptionTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       source_ = "";
       generationTime_ = 0L;
@@ -22994,6 +23120,8 @@ public final class Yamcs {
       type_ = "";
       message_ = "";
       severity_ = org.yamcs.protobuf.Yamcs.Event.EventSeverity.INFO;
+      generationTimeUTC_ = "";
+      receptionTimeUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -23055,6 +23183,12 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeEnum(7, severity_.getNumber());
       }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, getGenerationTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeBytes(9, getReceptionTimeUTCBytes());
+      }
       extensionWriter.writeUntil(10001, output);
       getUnknownFields().writeTo(output);
     }
@@ -23092,6 +23226,14 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(7, severity_.getNumber());
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getGenerationTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(9, getReceptionTimeUTCBytes());
       }
       size += extensionsSerializedSize();
       size += getUnknownFields().getSerializedSize();
@@ -23224,6 +23366,10 @@ public final class Yamcs {
         bitField0_ = (bitField0_ & ~0x00000020);
         severity_ = org.yamcs.protobuf.Yamcs.Event.EventSeverity.INFO;
         bitField0_ = (bitField0_ & ~0x00000040);
+        generationTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
+        receptionTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -23280,6 +23426,14 @@ public final class Yamcs {
           to_bitField0_ |= 0x00000040;
         }
         result.severity_ = severity_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.generationTimeUTC_ = generationTimeUTC_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.receptionTimeUTC_ = receptionTimeUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -23322,6 +23476,16 @@ public final class Yamcs {
         }
         if (other.hasSeverity()) {
           setSeverity(other.getSeverity());
+        }
+        if (other.hasGenerationTimeUTC()) {
+          bitField0_ |= 0x00000080;
+          generationTimeUTC_ = other.generationTimeUTC_;
+          onChanged();
+        }
+        if (other.hasReceptionTimeUTC()) {
+          bitField0_ |= 0x00000100;
+          receptionTimeUTC_ = other.receptionTimeUTC_;
+          onChanged();
         }
         this.mergeExtensionFields(other);
         this.mergeUnknownFields(other.getUnknownFields());
@@ -23732,6 +23896,154 @@ public final class Yamcs {
         return this;
       }
 
+      // optional string generationTimeUTC = 8;
+      private java.lang.Object generationTimeUTC_ = "";
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public boolean hasGenerationTimeUTC() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public java.lang.String getGenerationTimeUTC() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          generationTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGenerationTimeUTCBytes() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          generationTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public Builder setGenerationTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public Builder clearGenerationTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        generationTimeUTC_ = getDefaultInstance().getGenerationTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 8;</code>
+       */
+      public Builder setGenerationTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string receptionTimeUTC = 9;
+      private java.lang.Object receptionTimeUTC_ = "";
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public boolean hasReceptionTimeUTC() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public java.lang.String getReceptionTimeUTC() {
+        java.lang.Object ref = receptionTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          receptionTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public com.google.protobuf.ByteString
+          getReceptionTimeUTCBytes() {
+        java.lang.Object ref = receptionTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          receptionTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public Builder setReceptionTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        receptionTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public Builder clearReceptionTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        receptionTimeUTC_ = getDefaultInstance().getReceptionTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string receptionTimeUTC = 9;</code>
+       */
+      public Builder setReceptionTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        receptionTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:yamcs.Event)
     }
 
@@ -23955,32 +24267,33 @@ public final class Yamcs {
       "Time\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id" +
       "\030\005 \001(\0132\024.yamcs.NamedObjectId\"7\n\010TimeInfo" +
       "\022\023\n\013currentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030" +
-      "\002 \001(\t\"\346\001\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016gener" +
+      "\002 \001(\t\"\233\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016gener" +
       "ationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021" +
       "\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messa" +
       "ge\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event" +
-      ".EventSeverity:\004INFO\"1\n\rEventSeverity\022\010\n" +
-      "\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005\010d\020\221N*)" +
-      "\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020",
-      "\003*\205\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STA" +
-      "TE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EV" +
-      "ENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020" +
-      "\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PRO" +
-      "CESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCES" +
-      "SING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nAL" +
-      "ARM_INFO\020\016\022\r\n\tTIME_INFO\020\0172\337\001\n\030RealtimePa" +
-      "rameterService\0220\n\tSubscribe\022\026.yamcs.Name" +
-      "dObjectList\032\013.yamcs.Void\0221\n\014SubscribeAll" +
-      "\022\024.yamcs.StringMessage\032\013.yamcs.Void\0222\n\013U",
-      "nsubscribe\022\026.yamcs.NamedObjectList\032\013.yam" +
-      "cs.Void\022*\n\016UnsubscribeAll\022\013.yamcs.Void\032\013" +
-      ".yamcs.Void2\340\001\n\014ArchiveIndex\0223\n\010GetIndex" +
-      "\022\023.yamcs.IndexRequest\032\022.yamcs.IndexResul" +
-      "t\022/\n\006GetTag\022\023.yamcs.IndexRequest\032\020.yamcs" +
-      ".TagResult\0227\n\tUpsertTag\022\027.yamcs.UpsertTa" +
-      "gRequest\032\021.yamcs.ArchiveTag\0221\n\tDeleteTag" +
-      "\022\027.yamcs.DeleteTagRequest\032\013.yamcs.VoidB\024" +
-      "\n\022org.yamcs.protobuf"
+      ".EventSeverity:\004INFO\022\031\n\021generationTimeUT" +
+      "C\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEve" +
+      "ntSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERR",
+      "OR\020\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QU" +
+      "IT\020\002\022\010\n\004STOP\020\003*\205\002\n\rProtoDataType\022\014\n\010DT_E" +
+      "RROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022" +
+      "\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n" +
+      "\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HIS" +
+      "TORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INF" +
+      "O\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM" +
+      "_DATA\020\r\022\016\n\nALARM_INFO\020\016\022\r\n\tTIME_INFO\020\0172\337" +
+      "\001\n\030RealtimeParameterService\0220\n\tSubscribe" +
+      "\022\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221\n",
+      "\014SubscribeAll\022\024.yamcs.StringMessage\032\013.ya" +
+      "mcs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedObj" +
+      "ectList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013" +
+      ".yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveInde" +
+      "x\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.yam" +
+      "cs.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexRe" +
+      "quest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027.y" +
+      "amcs.UpsertTagRequest\032\021.yamcs.ArchiveTag" +
+      "\0221\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032\013" +
+      ".yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -24142,7 +24455,7 @@ public final class Yamcs {
           internal_static_yamcs_Event_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_Event_descriptor,
-              new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", });
+              new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", "GenerationTimeUTC", "ReceptionTimeUTC", });
           return null;
         }
       };

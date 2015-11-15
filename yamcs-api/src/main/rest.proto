@@ -142,3 +142,11 @@ message ListTablesResponse {
 message ListStreamsResponse {
   repeated archive.StreamInfo stream = 1;
 }
+
+message ListEventsResponse {
+  repeated yamcs.Event event = 1;
+}
+
+message ListPacketsResponse {
+  repeated yamcs.TmPacketData packet = 1;
+}
