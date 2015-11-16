@@ -50,6 +50,8 @@ mkdir -p $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
 
+ln -fs $YAMCS_HOME/yamcs-web/build $TARGET/web
+
 cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
 YAMCS_DATA=/storage/yamcs-data/

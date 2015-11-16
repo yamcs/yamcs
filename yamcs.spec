@@ -21,6 +21,7 @@ Yet another Mission Control System
 %setup 
 
 %build
+cd yamcs-web && npm install && gulp && cd ..
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
 
 %install
@@ -37,10 +38,9 @@ cp -a yamcs-core/etc %{buildroot}/%{prefix}/
 cp -a yamcs-core/bin %{buildroot}/%{prefix}/
 cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
-cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
-cp -a yamcs-web/src/main/*  %{buildroot}/%{prefix}/web/
+cp -a yamcs-web/build/*  %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
@@ -81,6 +81,8 @@ fi
 %post
 
 %changelog
+* Mon Nov 16 2014 fdi
+- add build step for yamcs-web
 * Wed Sep 24 2014 nm
 - added css and html files for yamcs-web
 * Fri Dec 14 2012 nm
