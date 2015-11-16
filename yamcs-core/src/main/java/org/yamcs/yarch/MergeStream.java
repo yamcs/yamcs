@@ -2,6 +2,7 @@ package org.yamcs.yarch;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -13,18 +14,24 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class MergeStream extends AbstractStream implements StreamSubscriber, Runnable{
 	private Map<AbstractStream, LinkedBlockingQueue<Tuple>> tupleQueues;
-	private PriorityQueue<TupleQueuePair> orderedQueue=new PriorityQueue<TupleQueuePair>();
+	private PriorityQueue<TupleQueuePair> orderedQueue;
 	Stream[] streams;
 	private Tuple queueEndMark=new Tuple(new TupleDefinition(), new ArrayList<Object>());
 	static AtomicInteger counter=new AtomicInteger();
 	private volatile boolean quitting=false;
 	private final String mergeColumn;
 	
-	public MergeStream(YarchDatabase ydb, AbstractStream[] streams, String mergeColumn) throws StreamSqlException {
+	public MergeStream(YarchDatabase ydb, AbstractStream[] streams, String mergeColumn, boolean ascending) throws StreamSqlException {
 		//TODO check that the streams columns have compatible names and types
 		super(ydb, getStreamName(streams), streams[0].getDefinition());
 		this.streams=streams;
 		this.mergeColumn=mergeColumn;
+		
+		if(ascending) {
+		    orderedQueue=new PriorityQueue<>();
+		} else {
+		    orderedQueue=new PriorityQueue<>(REVERSE_COMPARATOR);
+		}
 		
 		Map<AbstractStream, LinkedBlockingQueue<Tuple>> t=new HashMap<AbstractStream, LinkedBlockingQueue<Tuple>>();
 
@@ -123,7 +130,15 @@ public class MergeStream extends AbstractStream implements StreamSubscriber, Run
 		}
 	}
 	
+    private static final Comparator<TupleQueuePair> REVERSE_COMPARATOR=new Comparator<TupleQueuePair>() {
+        @Override
+        public int compare(TupleQueuePair o1, TupleQueuePair o2) {
+            return -o1.compareTo(o2);
+        }
+    };
+	
 	class TupleQueuePair implements Comparable<TupleQueuePair> {
+	    
 		LinkedBlockingQueue<Tuple> q;
 		Tuple t;
 		

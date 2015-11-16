@@ -11,8 +11,10 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
+import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 
 /**
@@ -30,27 +32,34 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
-            return listAvailableParameters(req, null, mdb);
+            return listParameters(req, null, mdb);
         } else {
-            // Find out if it's a parameter or not. Support any namespace here. Not just XTCE
+            // Find out if it's a parameter or not
             String lastSegment = req.slicePath(-1);
             if (!req.hasPathSegment(pathOffset + 1)) {
                 if ("bulk".equals(lastSegment)) {
                     return getBulkParameterInfo(req, mdb);
-                } else { // Assume namespace
-                    return listAvailableParameters(req, lastSegment, mdb);
+                } else { // namespace?
+                    return listParametersOrError(req, pathOffset);
                 }
             } else {
-                String namespace = req.slicePath(pathOffset, -1);
-                NamedObjectId id = verifyParameterId(mdb, namespace, lastSegment);
-                if (id != null) {
-                    Parameter p = mdb.getParameter(id);
-                    return getSingleParameter(req, id, p);
+                MatchResult<Parameter> pm = RestUtils.matchParameterName(req, pathOffset);
+                if (pm.matches()) { // parameter?
+                    return getSingleParameter(req, pm.getRequestedId(), pm.getMatch());
+                } else { // namespace?
+                    return listParametersOrError(req, pathOffset);
                 }
-
-                // Assume namespace
-                return listAvailableParameters(req, namespace + "/" + lastSegment, mdb);                
             }
+        }
+    }
+    
+    private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws RestException {
+        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        if (nsm.matches()) {
+            return listParameters(req, nsm.getMatch(), mdb);
+        } else {
+            throw new NotFoundException(req);
         }
     }
     
@@ -68,7 +77,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
      * Sends the parameters for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listAvailableParameters(RestRequest req, String namespace, XtceDb mdb) throws RestException {
+    private RestResponse listParameters(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         
         NameDescriptionSearchMatcher matcher = null;
@@ -83,7 +92,6 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
             }
         } else {
-            String rootedNamespace = "/" + namespace;
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
                 if (!privilege.hasPrivilege(req.authToken, Type.TM_PARAMETER, p.getQualifiedName()))
@@ -94,27 +102,18 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 String alias = p.getAlias(namespace);
                 if (alias != null) {
                     responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
-                } else {
-                    // Slash is not added to the URL so it makes it a bit more difficult
-                    // to test for both XTCE names and other names. So just test with slash too
-                    alias = p.getAlias(rootedNamespace);
-                    if (alias != null) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
-                    }
+                }
+            }
+            for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
+                // TODO privileges
+                String alias = p.getAlias(namespace);
+                if (alias != null) {
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
                 }
             }
         }
         
-        // There's no such thing as a list of 'namespaces' within the MDB, therefore it
-        // could happen that we arrive here but that the user intended to search for a single
-        // parameter rather than a list. So... return a 404 if we didn't find any match.
-        if (namespace != null && namespace.equals("yamcs")) {
-            return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
-        } else if (matcher == null && (responseb.getParameterList() == null || responseb.getParameterList().isEmpty())) {
-            throw new NotFoundException(req);
-        } else {
-            return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
-        }
+        return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
     }
     
     private RestResponse getBulkParameterInfo(RestRequest req, XtceDb mdb) throws RestException {
@@ -124,7 +123,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         BulkGetParameterRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterRequest.MERGE).build();
         BulkGetParameterResponse.Builder responseb = BulkGetParameterResponse.newBuilder();
         for(NamedObjectId id:request.getIdList()) {
-            Parameter p = mdb.getParameter(id);
+            Parameter p = RestUtils.findParameter(mdb, id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
@@ -141,18 +140,5 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         }
         
         return new RestResponse(req, responseb.build(), SchemaRest.BulkGetParameterResponse.WRITE);
-    }
-    
-    private NamedObjectId verifyParameterId(XtceDb mdb, String namespace, String name) {
-        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
-        if (mdb.getParameter(id) != null)
-            return id;
-        
-        String rootedNamespace = "/" + namespace;
-        id = NamedObjectId.newBuilder().setNamespace(rootedNamespace).setName(name).build();
-        if (mdb.getParameter(id) != null)
-            return id;
-        
-        return null;
     }
 }

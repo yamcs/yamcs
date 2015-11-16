@@ -10,20 +10,20 @@ import org.yamcs.yarch.Tuple;
  */
 public abstract class LimitedStreamSubscriber implements StreamSubscriber {
     
-    private final long start;
+    private final long pos;
     private final int limit;
     
     private int rowNr = 0; // zero-based
     private int emitted = 0;
     
-    public LimitedStreamSubscriber(long start, int limit) {
-        this.start = Math.max(start, 0);
+    public LimitedStreamSubscriber(long pos, int limit) {
+        this.pos = Math.max(pos, 0);
         this.limit = Math.max(limit, 0);
     }
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        if (rowNr >= start) {
+        if (rowNr >= pos) {
             if (emitted < limit) {
                 emitted++;
                 onTuple(tuple);
@@ -32,6 +32,11 @@ public abstract class LimitedStreamSubscriber implements StreamSubscriber {
             }
         }
         rowNr++;
+    }
+    
+    @Override
+    public void streamClosed(Stream stream) {
+        // NOP
     }
     
     public abstract void onTuple(Tuple tuple);

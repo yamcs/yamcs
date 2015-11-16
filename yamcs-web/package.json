@@ -1,0 +1,24 @@
+{
+  "name": "yamcs-web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "init": "npm install",
+    "install": "bower install",
+    "test": "gulp test"
+  },
+  "devDependencies": {
+    "del": "^2.0.2",
+    "gulp": "^3.8.10",
+    "gulp-angular-filesort": "^1.1.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-filter": "^3.0.1",
+    "gulp-inject": "^3.0.0",
+    "gulp-merge": "^0.1.1",
+    "gulp-ng-annotate": "^1.1.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.4.2",
+    "gulp-watch": "^4.3.5",
+    "main-bower-files": "^2.9.0"
+  }
+}

@@ -1,0 +1,73 @@
+/*body {
+  margin:0;
+  font-size: 12px;
+}*/
+
+.uss-label {
+  display: table;
+}
+
+
+.uss-field-unit {
+  margin-left: 2px;
+}
+
+.uss-missing-symbol {
+  border-width: medium;
+  border-color: red;
+  border-style: solid;
+  background-color: white;
+  font-size: 6px;
+  text-align: center;
+}
+
+.uss-transparency img {
+  background: transparent;
+}
+
+.dropdown-menu {
+  z-index: 1000000 ;
+}
+
+.yamcs-task {
+  border: 0 !important;
+  cursor:pointer;
+  padding: .4em 1em;
+  line-height: 1.4 ;
+  display: inline-block;
+  font-weight: normal;
+}
+
+.yamcs-task-icon {
+  margin: 0 5px;
+}
+
+.yamcs-task-list {
+  min-height: 2em;
+  font-size: 1em;
+  border: 1px;
+  border-spacing: 0 1px
+}
+
+.context-menu-field {
+  cursor: pointer;
+}
+
+.context-menu-field:hover {
+  opacity: 0.7;
+}
+
+text {
+  pointer-events: none;
+}
+
+a.plotrange, a.plotrange:visited {
+  color: #15c;
+}
+
+a.plotrange.nolink, a.plotrange:visited.nolink {
+  color: #333;
+  cursor: default;
+  pointer-events: none;
+  text-decoration: none;
+}

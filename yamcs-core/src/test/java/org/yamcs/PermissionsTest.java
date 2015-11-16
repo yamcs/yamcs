@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaArchive;
+import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -75,30 +76,28 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         // Check that integer parameter replay is ok
         generateData("2015-03-02T10:00:00", 3600);
-        NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
-        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).build();
-        DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
-        DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
-        List<ParameterData> plist = rdar.getParameterDataList();
-        assertNotNull(plist);
-        assertEquals(2, plist.size());
-        ParameterValue pv0 = plist.get(0).getParameter(0);
+        String integerId = "/REFMDB/SUBSYS1/IntegerPara1_1_6";
+        String url = "http://localhost:9190/api/archive/IntegrationTest/parameters";
+        url += integerId;
+        url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
+        
+        String response = httpClient.doGetRequest(url, null, currentUser);
+        ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
+        assertNotNull(pdata);
+        assertEquals(2, pdata.getParameterCount());
+        ParameterValue pv0 = pdata.getParameter(0);
         assertEquals("2015-03-02T10:10:00.000", pv0.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
 
         // Check that string parameter replay is denied
         boolean gotException = false;
         try {
-            NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
-            prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_3_1id).build();
-            dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                    .setUtcStart("2015-03-02T10:10:00").setUtcStop("2015-03-02T10:10:02").build();
-            response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
-            rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
-            plist = rdar.getParameterDataList();
-            if(plist.size() == 0) {
+            String stringId = "/REFMDB/SUBSYS1/FixedStringPara1_3_1";
+            url = "http://localhost:9190/api/archive/IntegrationTest";
+            url += stringId;
+            url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
+            response = httpClient.doGetRequest(url, null, currentUser);
+            pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
+            if(pdata.getParameterCount() == 0) {
                 throw new Exception("should get parameters");
             }
         }

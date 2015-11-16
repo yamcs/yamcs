@@ -14,16 +14,13 @@ import org.yamcs.YProcessor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
-import org.yamcs.archive.ReplayListener;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.protobuf.Alarms.AlarmInfo;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Pvalue.SampleSeries;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
@@ -33,25 +30,11 @@ import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.Privilege;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestParameterSampler.Sample;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
-
-import com.google.protobuf.MessageLite;
 
 /**
  * Handles incoming requests related to parameters
@@ -89,7 +72,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
                     id = verifyParameterId(mdb, namespace, name);
                     if (id != null) break;
                 }
-                if (id == null) throw new NotFoundException(req, "not a valid parameter id");
+                if (id == null) throw new NotFoundException(req, "Not a valid parameter id");
                 Parameter p = mdb.getParameter(id);
                 if (p == null) throw new NotFoundException(req, "No parameter for id " + id);
                 
@@ -98,8 +81,6 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
                     return handleSingleParameter(req, id, p);
                 } else {
                     switch (req.getPathSegment(pathOffset)) {
-                    case "series":
-                        return handleSingleParameterSeries(req, id, p);
                     case "alarms":
                         if (req.hasPathSegment(pathOffset + 1)) {
                             if (req.isPOST() || req.isPATCH() || req.isPUT()) {
@@ -127,99 +108,6 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         } else {
             throw new MethodNotAllowedException(req);
         }
-    }
-    
-    /**
-     * A series is a list of samples that are determined in one-pass while processing a stream result.
-     * Final API unstable.
-     * <p>
-     * If no query parameters are defined, the series covers *all* data.
-     */
-    private RestResponse handleSingleParameterSeries(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        ParameterType ptype = p.getParameterType();
-        if (ptype == null) {
-            throw new BadRequestException("Requested parameter has no type");
-        } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
-            throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getClass());
-        }
-        
-        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
-        rr.setStop(TimeEncoding.getWallclockTime());
-        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        
-        if (req.hasQueryParameter("start")) {
-            rr.setStart(TimeEncoding.parse(req.getQueryParameter("start")));
-        }
-        if (req.hasQueryParameter("stop")) {
-            rr.setStop(TimeEncoding.parse(req.getQueryParameter("stop")));
-        }
-        
-        RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
-        
-        RestReplays.replaySynchronously(req, rr.build(), new ReplayListener() {
-
-            @Override
-            public void newData(ProtoDataType type, MessageLite data) {
-                switch(type) {
-                case PARAMETER:
-                    ParameterData pdata = (ParameterData) data;
-                    for (ParameterValue pval : pdata.getParameterList()) {
-                        switch (pval.getEngValue().getType()) {
-                        case DOUBLE:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
-                            break;
-                        case FLOAT:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
-                            break;
-                        case SINT32:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
-                            break;
-                        case SINT64:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
-                            break;
-                        case UINT32:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
-                            break;
-                        case UINT64:
-                            sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
-                            break;
-                        default:
-                            log.warn("Unexpected value type " + pval.getEngValue().getType());
-                        }
-                    }
-                    break;
-                case PP:
-                    log.info("Got a pp");
-                    // TODO ? or does ReplayService put this in ParameterData for us?
-                    break;
-                default:
-                    log.error("Unexpected data type {} received");            
-                }
-            }
-
-            @Override
-            public void stateChanged(ReplayStatus rs) {
-            }
-        });
-        
-        SampleSeries.Builder series = SampleSeries.newBuilder();
-        for (Sample s : sampler.collect()) {
-            series.addSample(toGPBSample(s));
-        }
-        
-        return new RestResponse(req, series.build(), SchemaPvalue.SampleSeries.WRITE);
-    }
-    
-    private static SampleSeries.Sample toGPBSample(Sample sample) {
-        SampleSeries.Sample.Builder b = SampleSeries.Sample.newBuilder();
-        b.setAverageGenerationTime(sample.avgt);
-        b.setAverageGenerationTimeUTC(TimeEncoding.toString(sample.avgt));
-        b.setAverageValue(sample.avg);
-        b.setLowValue(sample.low);
-        b.setHighValue(sample.high);
-        b.setN(sample.n);
-        return b.build();
     }
     
     private RestResponse patchParameterAlarm(RestRequest req, NamedObjectId id, Parameter p, int alarmId) throws RestException {
@@ -335,7 +223,6 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getParameterValues(RestRequest req) throws RestException {
-        System.out.println("GETTING PARS");
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");

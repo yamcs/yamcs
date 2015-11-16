@@ -461,6 +461,7 @@ MergeExpression MergeExpression(): {
     MergeExpression mergeExpr=new MergeExpression();
     TupleSourceExpression tsrc;
     String name;
+    boolean ascending=true;
 } {
     "MERGE" 
        tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
@@ -468,6 +469,7 @@ MergeExpression MergeExpression(): {
         tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
        )*
     "USING" name=ObjectName() {mergeExpr.setMergeColumn(name);}
+    [ ascending=OrderClause() {mergeExpr.setAscending(ascending);} ] 
     {
 	return mergeExpr;
     }
@@ -835,7 +837,7 @@ TupleDefinition TupleDefinition(): {
 boolean OrderClause(): {
    boolean ascending=true;
 } {
-    "ORDER"
+    <K_ORDER>
     ["ASC" | "DESC" {ascending=false;} ]
     {
     return ascending;

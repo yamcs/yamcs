@@ -1,10 +1,10 @@
 package org.yamcs.archive;
 
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.ValueUtility;
@@ -35,6 +35,9 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber()).
            append(",* from "+CommandHistoryRecorder.TABLE_NAME);
         appendTimeClause(sb, request);
+        if(request.hasReverse() && request.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
         return sb.toString();
     }
 

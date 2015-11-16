@@ -173,3 +173,35 @@ message ContainerInfo {
   repeated SequenceEntryInfo entry = 10;
   optional string url = 11;
 }
+
+message InputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string inputName = 2;
+  optional int32 parameterInstance = 3;
+  optional bool mandatory = 4;
+}
+
+message OutputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string outputName = 2;
+}
+
+message AlgorithmInfo {
+  enum Scope {
+    GLOBAL = 0;
+    COMMAND_VERIFICATION = 1;
+  }
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional Scope scope = 6;
+  optional string language = 7;
+  optional string text = 8;
+  repeated InputParameterInfo inputParameter = 9;
+  repeated OutputParameterInfo outputParameter = 10;
+  repeated ParameterInfo onParameterUpdate = 11;
+  repeated int64 onPeriodicRate = 12;
+  optional string url = 13;
+}

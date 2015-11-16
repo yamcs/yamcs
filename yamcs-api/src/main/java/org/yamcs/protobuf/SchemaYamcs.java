@@ -2132,6 +2132,8 @@ public final class SchemaYamcs
                     output.writeString(13, message.getUtcStart(), false);
                 if(message.hasUtcStop())
                     output.writeString(14, message.getUtcStop(), false);
+                if(message.hasReverse())
+                    output.writeBool(15, message.getReverse(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.ReplayRequest message)
             {
@@ -2210,6 +2212,9 @@ public final class SchemaYamcs
                         case 14:
                             builder.setUtcStop(input.readString());
                             break;
+                        case 15:
+                            builder.setReverse(input.readBool());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2261,6 +2266,7 @@ public final class SchemaYamcs
                 case 12: return "ppRequest";
                 case 13: return "utcStart";
                 case 14: return "utcStop";
+                case 15: return "reverse";
                 default: return null;
             }
         }
@@ -2283,6 +2289,7 @@ public final class SchemaYamcs
             fieldMap.put("ppRequest", 12);
             fieldMap.put("utcStart", 13);
             fieldMap.put("utcStop", 14);
+            fieldMap.put("reverse", 15);
         }
     }
 
@@ -3257,6 +3264,10 @@ public final class SchemaYamcs
                     output.writeString(6, message.getMessage(), false);
                 if(message.hasSeverity())
                     output.writeString(7, message.getSeverity().name(), false);
+                if(message.hasGenerationTimeUTC())
+                    output.writeString(8, message.getGenerationTimeUTC(), false);
+                if(message.hasReceptionTimeUTC())
+                    output.writeString(9, message.getReceptionTimeUTC(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.Event message)
             {
@@ -3317,6 +3328,12 @@ public final class SchemaYamcs
                         case 7:
                             builder.setSeverity(org.yamcs.protobuf.Yamcs.Event.EventSeverity.valueOf(input.readString()));
                             break;
+                        case 8:
+                            builder.setGenerationTimeUTC(input.readString());
+                            break;
+                        case 9:
+                            builder.setReceptionTimeUTC(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -3364,6 +3381,8 @@ public final class SchemaYamcs
                 case 5: return "type";
                 case 6: return "message";
                 case 7: return "severity";
+                case 8: return "generationTimeUTC";
+                case 9: return "receptionTimeUTC";
                 default: return null;
             }
         }
@@ -3382,6 +3401,8 @@ public final class SchemaYamcs
             fieldMap.put("type", 5);
             fieldMap.put("message", 6);
             fieldMap.put("severity", 7);
+            fieldMap.put("generationTimeUTC", 8);
+            fieldMap.put("receptionTimeUTC", 9);
         }
     }
 

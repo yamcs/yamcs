@@ -21,6 +21,9 @@ public class EventReplayHandler implements ReplayHandler {
         StringBuilder sb=new StringBuilder();
         sb.append("SELECT ").append(ProtoDataType.EVENT.getNumber()).append(",* from events");
         appendWhereClause(sb, request);
+        if(request.hasReverse() && request.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
         return sb.toString();
     }
 

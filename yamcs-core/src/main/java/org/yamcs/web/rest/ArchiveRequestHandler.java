@@ -1,30 +1,23 @@
 package org.yamcs.web.rest;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
+import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Archive.GetTagsRequest;
@@ -39,6 +32,9 @@ import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Pvalue.SampleSeries;
+import org.yamcs.protobuf.Rest.ListEventsResponse;
+import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.SchemaArchive;
@@ -50,34 +46,39 @@ import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.ui.ParameterRetrievalGui;
+import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.RestParameterSampler.Sample;
+import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
+import com.csvreader.CsvWriter;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -92,10 +93,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
     
-    private static AtomicInteger streamCounter = new AtomicInteger();
-
-    // This is a guideline, not a hard limit because because calculations don't include wrapping message
-    private static final int MAX_BYTE_SIZE = 1048576;
+    private static ArchiveDownloadHandler downloadHandler = new ArchiveDownloadHandler();
     
     private CsvGenerator csvGenerator = null;
     
@@ -115,6 +113,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req, "No instance '" + instance + "'");
         }
         req.addToContext(RestRequest.CTX_INSTANCE, instance);
+        req.addToContext(MDBRequestHandler.CTX_MDB, XtceDbFactory.getInstance(instance));
         
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
@@ -129,12 +128,24 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 return handleTablesRequest(req, pathOffset + 1, ydb);
             case "streams":
                 return handleStreamsRequest(req, pathOffset + 1, ydb);
+            case "parameters":
+                return handleParametersRequest(req, pathOffset + 1);
+            case "events":
+            case "events.csv":
+            case "events.json":
+            case "events.proto":
+                req.assertGET();
+                return listEvents(req);
+            case "packets":
+                req.assertGET();
+                return listPackets(req);
+            case "downloads":
+                return downloadHandler.handleRequest(req, pathOffset + 1);
             default:
                 throw new NotFoundException(req);
             }
         }
     }
-    
     
     
     /**
@@ -175,7 +186,10 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * HttpResponse (when the 'stream'-option is false), or a Chunked-Encoding HttpResponse followed
      * by multiple HttpChunks where messages are delimited by their byte size (when the 'stream'-option
      * is true).
+     * 
+     * @deprecated
      */
+    @Deprecated
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
         // req.assertGET();
         DumpArchiveRequest request = req.bodyAsMessage(SchemaArchive.DumpArchiveRequest.MERGE).build();
@@ -186,8 +200,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         
         // This method also supports CSV as a response
         String targetContentType;
-        if (req.getHttpRequest().headers().contains(Names.ACCEPT)
-                && req.getHttpRequest().headers().get(Names.ACCEPT).equals(CSV_MIME_TYPE)) {
+        if (req.asksFor(CSV_MIME_TYPE)) {
             targetContentType = CSV_MIME_TYPE;
         } else {
             targetContentType = req.deriveTargetContentType();
@@ -233,159 +246,51 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         {
             initCsvGenerator(replayRequest);
         }
-        
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-
-        // Start a short-lived replay
-        YamcsSession ys = null;
-        YamcsClient msgClient = null;
-        try {
-            String yamcsConnectionData = "yamcs://";
-            if(req.authToken!=null && req.authToken.getClass() == UsernamePasswordToken.class) {
-                yamcsConnectionData += ((UsernamePasswordToken)req.authToken).getUsername()
-                        + ":" + ((UsernamePasswordToken)req.authToken).getPasswordS() +"@" ;
-            }
-            yamcsConnectionData += "localhost/"+instance;
-
-            ys = YamcsSession.newBuilder().setConnectionParams(yamcsConnectionData).build();
-            msgClient = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            SimpleString replayServer = Protocol.getYarchReplayControlAddress(instance);
-            StringMessage answer = (StringMessage) msgClient.executeRpc(replayServer, "createReplay", replayRequest, StringMessage.newBuilder());
-
-            // Server is good to go, start the replay
-            SimpleString replayAddress=new SimpleString(answer.getMessage());
-            msgClient.executeRpc(replayAddress, "start", null, null);
-
-            if (request.hasStream() && request.getStream()) {
-                try {
-                    streamResponse(msgClient, req, targetContentType);
-                    return null; // !
-                } catch (Exception e) {
-                    // Not throwing RestException up, since we are likely a few chunks in already.
-                    log.error("Skipping chunk", e);
-                    return null; // !
-                }
-            } else {
-                return writeAggregatedResponse(msgClient, req, targetContentType);
-            }
-        } catch (YamcsException | URISyntaxException | YamcsApiException | HornetQException e) {
-            throw new InternalServerErrorException(e);
-        } finally {
-            if (msgClient != null) {
-                try { msgClient.close(); } catch (HornetQException e) { e.printStackTrace(); }
-            }
-            if (ys != null) {
-                try { ys.close(); } catch (HornetQException e) { e.printStackTrace(); }
-            }
-        }
-    }
-
-    private void streamResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
-    throws HornetQException, YamcsApiException, IOException {
 
         RestUtils.startChunkedTransfer(req, targetContentType);
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
-
-        while(true) {
-            ClientMessage msg = msgClient.dataConsumer.receive();
-
-            if (Protocol.endOfStream(msg)) {
+        
+        RestReplays.replay(req, replayRequest, new RestReplayListener() {
+            
+            @Override
+            public void newData(ProtoDataType type, MessageLite data) {
+                try {
+                    DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
+                    MessageAndSchema restMessage = fromReplayMessage(type, data);
+                    mergeMessage(type, restMessage.message, builder);
+    
+                    // Write a chunk containing a delimited message
+                    ByteBuf buf = ctx.alloc().buffer();
+                    try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
+                        if (BINARY_MIME_TYPE.equals(targetContentType)) {
+                            builder.build().writeDelimitedTo(channelOut);
+                        } else if (CSV_MIME_TYPE.equals(targetContentType)) {
+                            if(csvGenerator != null) {
+                                csvGenerator.insertRows(builder.build(), channelOut);
+                            }
+                        } else {
+                            JsonGenerator generator = req.createJsonGenerator(channelOut);
+                            JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
+                            generator.close();
+                        }
+                    }
+    
+                    RestUtils.writeChunk(req, buf);
+                } catch (IOException e) {
+                    log.info("skipping chunk");
+                }
+            }
+            
+            @Override
+            public void stateChanged(ReplayStatus rs) {
                 RestUtils.stopChunkedTransfer(req);
                 log.trace("All chunks were written out");
-                break;
             }
-
-            DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
-            ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-            if (dataType == null) {
-                log.trace("Ignoring hornetq message of type null");
-                continue;
-            }
-
-            MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
-            mergeMessage(dataType, restMessage.message, builder);
-
-            // Write a chunk containing a delimited message
-            ByteBuf buf = ctx.alloc().buffer();
-            ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
-
-            if (BINARY_MIME_TYPE.equals(targetContentType)) {
-                builder.build().writeDelimitedTo(channelOut);
-            } else if (CSV_MIME_TYPE.equals(targetContentType)) {
-                if(csvGenerator != null) {
-                    csvGenerator.insertRows(builder.build(), channelOut);
-                }
-            } else {
-                JsonGenerator generator = req.createJsonGenerator(channelOut);
-                JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
-                generator.close();
-            }
-
-            Channel ch = ctx.channel();
-            ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
-            try {
-                while (!ch.isWritable() && ch.isOpen()) {
-                    writeFuture.await(5, TimeUnit.SECONDS);
-                }
-            } catch (InterruptedException e) {
-                log.warn("Interrupted while waiting for channel to become writable", e);
-                // TODO return? throw up?
-            }
-        }
+        });
+        return null;
     }
 
-    /**
-     * Current implementation seems sub-optimal, because every message is
-     * encoded twice. Once for getting a decent byte size estimate, and a second
-     * time for writing the aggregate result. However, since we hard-limit to
-     * about 1MB and since we expect most clients that fetch from the archive to
-     * stream the response instead, I don't consider this a problem at this
-     * stage. This method is mostly here for small interactive requests through
-     * tools like curl.
-     */
-    private RestResponse writeAggregatedResponse(YamcsClient msgClient, RestRequest req, String targetContentType)
-    throws RestException, HornetQException, YamcsApiException {
-        int sizeEstimate = 0;
-        DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
-        while(true) {
-            ClientMessage msg = msgClient.dataConsumer.receive();
-
-            if (Protocol.endOfStream(msg)) {
-                log.trace("All done. Send to client");
-                return new RestResponse(req, builder.build(), SchemaArchive.DumpArchiveResponse.WRITE);
-            }
-
-            ProtoDataType dataType = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-            if (dataType == null) {
-                log.trace("Ignoring hornetq message of type null");
-                continue;
-            }
-
-            MessageAndSchema restMessage = fromReplayMessage(dataType, msg);
-            try {
-                if (BINARY_MIME_TYPE.equals(targetContentType)) {
-                    sizeEstimate += restMessage.message.getSerializedSize();
-                } else {
-                    ByteArrayOutputStream tempOut= new ByteArrayOutputStream();
-                    JsonGenerator generator = req.createJsonGenerator(tempOut);
-                    JsonIOUtil.writeTo(generator, restMessage.message, restMessage.schema, false);
-                    generator.close();
-                    sizeEstimate += tempOut.toByteArray().length;
-                }
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e);
-            }
-
-            // Verify whether we still abide by the max byte size (aproximation)
-            if (sizeEstimate > MAX_BYTE_SIZE)
-                throw new ForbiddenException("Response too large. Add more precise filters or use 'stream'-option.");
-
-            // If we got this far, append this replay message to our aggregated rest response
-            mergeMessage(dataType, restMessage.message, builder);
-        }
-    }
-
-    private static void mergeMessage(ProtoDataType dataType, MessageLite message, DumpArchiveResponse.Builder builder) throws YamcsApiException {
+    private static void mergeMessage(ProtoDataType dataType, MessageLite message, DumpArchiveResponse.Builder builder) {
         switch (dataType) {
             case PARAMETER:
                 builder.addParameterData((ParameterData) message);
@@ -408,20 +313,20 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     }
     
     /**
-     * GET /(instance)/api/archive/tags
-     * POST /(instance)/api/archive/tags
-     * PUT /(instance)/api/archive/tags/(old_start)/(id)
-     * DELETE /(instance)/api/archive/tags/(old_start)/(id)
+     * GET /api/archive/:instance/tags
+     * POST /api/archive/:instance/tags
+     * PUT /api/archive/:instance/tags/(old_start)/(id)
+     * DELETE /api/archive/:instance/tags/(old_start)/(id)
      */
     private RestResponse handleTagsRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
-                return getTags(req);
+                return listTags(req);
             } else if (req.isPOST()) {
                 return insertTag(req);
             } else {
                 throw new MethodNotAllowedException(req);
-            }            
+            }
         } else {
             if (!req.hasPathSegment(pathOffset + 1)) {
                 throw new NotFoundException(req);
@@ -461,12 +366,12 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             if (table == null) {
                 throw new NotFoundException(req, "No table named '" + tableName + "'");
             } else {
-                return handleTableRequest(req, pathOffset + 1, ydb, table);
+                return handleTableRequest(req, pathOffset + 1, table);
             }
         }
     }
     
-    private RestResponse handleTableRequest(RestRequest req, int pathOffset, YarchDatabase ydb, TableDefinition table) throws RestException {
+    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getTable(req, table);
@@ -474,7 +379,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             String resource = req.getPathSegment(pathOffset);
             switch (resource) {
             case "data":
-                return getTableData(req, ydb, table);
+                return getTableData(req, table);
             default:
                 throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
             }
@@ -484,24 +389,18 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws RestException {
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         for (TableDefinition def : ydb.getTableDefinitions()) {
-            responseb.addTable(ArchiveAssembler.toTableInfo(def));
+            responseb.addTable(ArchiveHelper.toTableInfo(def));
         }
         return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
     private RestResponse getTable(RestRequest req, TableDefinition table) throws RestException {
-        TableInfo response = ArchiveAssembler.toTableInfo(table);
+        TableInfo response = ArchiveHelper.toTableInfo(table);
         return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
-    private RestResponse getTableData(RestRequest req, YarchDatabase ydb, TableDefinition table) throws RestException {
-        // Sensible defaults
-        List<String> cols = null;
-        long start = 0;
-        int limit = 100;
-        boolean ascending = false; // descend by default (to get a quick 'preview' of the latest data)
-        
-        // Read query params
+    private RestResponse getTableData(RestRequest req, TableDefinition table) throws RestException {
+        List<String> cols = null;        
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
             for (String para : req.getQueryParameterList("cols")) {
@@ -510,23 +409,10 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 }
             }
         }
-        if (req.hasQueryParameter("start")) start = req.getQueryParameterAsLong("start");
-        if (req.hasQueryParameter("limit")) limit = req.getQueryParameterAsInt("limit");
-        if (req.hasQueryParameter("order")) {
-            String lcOrder = req.getQueryParameter("order");
-            if ("asc".equals(lcOrder) || "ascending".equals(lcOrder)) {
-                ascending = true;
-            } else if ("desc".equals(lcOrder) || "descending".equals(lcOrder)) {
-                ascending = false;
-            } else {
-                throw new BadRequestException("Unknown order specified. Should be one of 'asc' or 'desc'");
-            }
-        }
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
         
-        // Makes a SQL query. Pagination is currently done programmatically on the result
-        // which is something we would better add support for in Stream SQL.
-        String streamName = "rest_archive" + streamCounter.incrementAndGet();
-        StringBuilder buf = new StringBuilder("create stream ").append(streamName).append(" as select ");
+        StringBuilder buf = new StringBuilder("select ");
         if (cols == null) {
             buf.append("*");
         } else if (cols.isEmpty()) {
@@ -538,44 +424,24 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             }
         }
         buf.append(" from ").append(table.getName());
-        
-        if (!ascending) {
+        if (RestUtils.asksDescending(req, true)) {
             buf.append(" order desc");
         }
         
         String sql = buf.toString();
-        log.info("Executing SQL: " + sql);
-        try {
-            ydb.execute(sql);
-        } catch (StreamSqlException | ParseException e) {
-            throw new InternalServerErrorException(e);
-        }
-        
-        // Ugh, fix me to be async. Current framework not really good for that.
-        Semaphore semaphore = new Semaphore(0);
         
         TableData.Builder responseb = TableData.newBuilder();
-        Stream stream = ydb.getStream(streamName);
-        stream.addSubscriber(new LimitedStreamSubscriber(start, limit) {
+        RestStreams.streamAndWait(req, sql, new LimitedStreamSubscriber(pos, limit) {
+            
             @Override
             public void onTuple(Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
-                rec.addAllColumn(ArchiveAssembler.toColumnDataList(tuple));
+                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
                 responseb.addRecord(rec); // TODO estimate byte size
             }
-            
-            @Override
-            public void streamClosed(Stream stream) {
-                semaphore.release();
-            }
         });
-        stream.start();
-        try {
-            semaphore.acquire();
-            return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
-        } catch (InterruptedException e) {
-            throw new InternalServerErrorException(e);
-        }
+        
+        return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
     }
     
     private RestResponse handleStreamsRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
@@ -606,20 +472,225 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws RestException {
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         for (AbstractStream stream : ydb.getStreams()) {
-            responseb.addStream(ArchiveAssembler.toStreamInfo(stream));
+            responseb.addStream(ArchiveHelper.toStreamInfo(stream));
         }
         return new RestResponse(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
     }
     
     private RestResponse getStream(RestRequest req, Stream stream) throws RestException {
-        StreamInfo response = ArchiveAssembler.toStreamInfo(stream);
+        StreamInfo response = ArchiveHelper.toStreamInfo(stream);
         return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
+    }
+    
+    private RestResponse handleParametersRequest(RestRequest req, int pathOffset) throws RestException {
+        MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+        if (!mr.matches()) {
+            throw new NotFoundException(req);
+        }
+        
+        pathOffset = mr.getPathOffset();
+        if (req.hasPathSegment(pathOffset)) {
+            switch (req.getPathSegment(pathOffset)) {
+            case "samples":
+                return getParameterSamples(req, mr.getRequestedId(), mr.getMatch());
+            default:
+                throw new NotFoundException(req, "No resource '" + req.getPathSegment(pathOffset) + "' for parameter " + mr.getRequestedId());
+            }
+        } else {
+            return listParameterHistory(req, mr.getRequestedId());
+        }
+    }
+    
+    /**
+     * A series is a list of samples that are determined in one-pass while processing a stream result.
+     * Final API unstable.
+     * <p>
+     * If no query parameters are defined, the series covers *all* data.
+     */
+    private RestResponse getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+        ParameterType ptype = p.getParameterType();
+        if (ptype == null) {
+            throw new BadRequestException("Requested parameter has no type");
+        } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
+            throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getClass());
+        }
+        
+        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
+        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
+        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+        
+        if (req.hasQueryParameter("start")) {
+            rr.setStart(req.getQueryParameterAsDate("start"));
+        }
+        rr.setStop(req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime()));
+        
+        RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
+        
+        RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
+
+            @Override
+            public void newData(ProtoDataType type, MessageLite data) {
+                ParameterData pdata = (ParameterData) data;
+                for (ParameterValue pval : pdata.getParameterList()) {
+                    switch (pval.getEngValue().getType()) {
+                    case DOUBLE:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
+                        break;
+                    case FLOAT:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
+                        break;
+                    case SINT32:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
+                        break;
+                    case SINT64:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
+                        break;
+                    case UINT32:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
+                        break;
+                    case UINT64:
+                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
+                        break;
+                    default:
+                        log.warn("Unexpected value type " + pval.getEngValue().getType());
+                    }
+                }
+            }
+        });
+        
+        SampleSeries.Builder series = SampleSeries.newBuilder();
+        for (Sample s : sampler.collect()) {
+            series.addSample(ArchiveHelper.toGPBSample(s));
+        }
+        
+        return new RestResponse(req, series.build(), SchemaPvalue.SampleSeries.WRITE);
+    }
+    
+    private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
+
+        if (req.asksFor(CSV_MIME_TYPE)) {
+            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
+                List<NamedObjectId> idList = Arrays.asList(id);
+                ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
+                limit++; // Allow one extra line for the CSV header
+                RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+
+                    @Override
+                    public void onNewData(ProtoDataType type, MessageLite data) {
+                        ParameterData pdata = (ParameterData) data;
+                        try {
+                            csvFormatter.writeParameters(pdata.getParameterList());
+                        } catch (IOException e) {
+                            log.error("Error while writing parameter line", e);
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
+            }
+            return new RestResponse(req, CSV_MIME_TYPE, buf);
+        } else {
+            ParameterData.Builder resultb = ParameterData.newBuilder();
+            RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+                
+                @Override
+                public void onNewData(ProtoDataType type, MessageLite data) {
+                    ParameterData pdata = (ParameterData) data;
+                    resultb.addAllParameter(pdata.getParameterList());
+                }
+            });
+            return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+        }
+    }
+    
+    private RestResponse listEvents(RestRequest req) throws RestException {
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        
+        StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasInterval()) {
+            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        }
+        if (RestUtils.asksDescending(req, true)) {
+            sqlb.append(" order desc");
+        }
+        
+        if (req.asksFor(CSV_MIME_TYPE)) {
+            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
+            CsvWriter w = new CsvWriter(bw, '\t');
+            try {
+                w.writeRecord(ArchiveHelper.EVENT_CSV_HEADER);
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
+            }
+                
+            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+
+                @Override
+                public void onTuple(Tuple tuple) {
+                    try {
+                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple));
+                    } catch (IOException e) {
+                        // TODO maybe support passing up as rest exception using custom listeners
+                        log.error("Could not write csv record ", e);
+                    }
+                }
+            });
+            w.close();
+            return new RestResponse(req, CSV_MIME_TYPE, buf);
+        } else {
+            ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
+            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+
+                @Override
+                public void onTuple(Tuple tuple) {
+                    Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
+                    event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
+                    event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
+                    responseb.addEvent(event);    
+                }
+            });
+            
+            return new RestResponse(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
+        }
+    }
+    
+    private RestResponse listPackets(RestRequest req) throws RestException {
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        
+        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasInterval()) {
+            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        }
+        if (RestUtils.asksDescending(req, true)) {
+            sqlb.append(" order desc");
+        }
+        
+        ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
+        RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+
+            @Override
+            public void onTuple(Tuple tuple) {
+                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                responseb.addPacket(pdata);
+            }
+        });
+        
+        return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
     }
     
     /**
      * Lists all tags (optionally filtered by request-body)
      */
-    private RestResponse getTags(RestRequest req) throws RestException {
+    private RestResponse listTags(RestRequest req) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         TagDb tagDb = getTagDb(instance);
         
@@ -655,7 +726,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      * <p>
-     * POST /(instance)/archive/tags
+     * POST /archive/:instance/tags
      */
     private RestResponse insertTag(RestRequest req) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
@@ -688,7 +759,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     /**
      * Updates an existing tag. Returns nothing
      * <p>
-     * PUT /(instance)/archive/tags/(tag-time)/(tag-id)
+     * PUT /archive/:instance/tags/(tag-time)/(tag-id)
      */
     private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
@@ -747,11 +818,11 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
     }
 
-    private static MessageAndSchema<?> fromReplayMessage(ProtoDataType dataType, ClientMessage msg) throws YamcsApiException {
+    private static MessageAndSchema<?> fromReplayMessage(ProtoDataType dataType, MessageLite msg) {
         switch (dataType) {
             case PARAMETER:
             case PP:
-                ParameterData.Builder parameterData = (ParameterData.Builder) Protocol.decodeBuilder(msg, ParameterData.newBuilder());
+                ParameterData.Builder parameterData = ParameterData.newBuilder((ParameterData) msg);
                 List<ParameterValue> pvals = parameterData.getParameterList();
                 parameterData.clearParameter();
                 for (ParameterValue pval : pvals) {
@@ -762,13 +833,13 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 }
                 return new MessageAndSchema<>(parameterData.build(), SchemaPvalue.ParameterData.WRITE);
             case TM_PACKET:
-                return new MessageAndSchema<>((TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder()), SchemaYamcs.TmPacketData.WRITE);
+                return new MessageAndSchema<>((TmPacketData) msg, SchemaYamcs.TmPacketData.WRITE);
             case CMD_HISTORY:
-                return new MessageAndSchema<>((CommandHistoryEntry) Protocol.decode(msg, CommandHistoryEntry.newBuilder()), SchemaCommanding.CommandHistoryEntry.WRITE);
+                return new MessageAndSchema<>((CommandHistoryEntry) msg, SchemaCommanding.CommandHistoryEntry.WRITE);
             case EVENT:
-                return new MessageAndSchema<>((Event) Protocol.decode(msg, Event.newBuilder()), SchemaYamcs.Event.WRITE);
+                return new MessageAndSchema<>((Event) msg, SchemaYamcs.Event.WRITE);
             default:
-                throw new IllegalStateException("Unsupported hornetq message of type " + dataType);
+                throw new IllegalStateException("Unsupported message of type " + dataType);
         }
     }
 

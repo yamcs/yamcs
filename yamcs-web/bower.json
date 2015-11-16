@@ -1,0 +1,26 @@
+{
+  "name": "yamcs-web",
+  "version": "0.0.1",
+  "private": true,
+  "ignore": [
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "angular": "~1.4.7",
+    "angular-animate": "~1.4.7",
+    "angular-bootstrap": "~0.14.3",
+    "angular-route": "~1.4.7",
+    "angular-sanitize": "~1.4.7",
+    "bootstrap": "3.3.1",
+    "dygraphs": "~1.1.1",
+    "jquery": "~2.1.0"
+  },
+  "overrides": {
+    "angular": {
+      "dependencies": {
+        "jquery": "*"
+      }
+    }
+  }
+}

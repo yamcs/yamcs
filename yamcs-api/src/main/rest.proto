@@ -51,6 +51,10 @@ message ListCommandsResponse {
   repeated mdb.CommandInfo command = 1;
 }
 
+message ListAlgorithmsResponse {
+  repeated mdb.AlgorithmInfo algorithm = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }
@@ -137,4 +141,12 @@ message ListTablesResponse {
 
 message ListStreamsResponse {
   repeated archive.StreamInfo stream = 1;
+}
+
+message ListEventsResponse {
+  repeated yamcs.Event event = 1;
+}
+
+message ListPacketsResponse {
+  repeated yamcs.TmPacketData packet = 1;
 }

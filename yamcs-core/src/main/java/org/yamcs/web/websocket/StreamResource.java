@@ -17,7 +17,7 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.web.rest.ArchiveAssembler;
+import org.yamcs.web.rest.ArchiveHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -75,7 +75,7 @@ public class StreamResource extends AbstractWebSocketResource {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                StreamData data = ArchiveAssembler.toStreamData(stream, tuple);
+                StreamData data = ArchiveHelper.toStreamData(stream, tuple);
                 try {
                     wsHandler.sendData(ProtoDataType.STREAM_DATA, data, SchemaArchive.StreamData.WRITE);
                 } catch (IOException e) {

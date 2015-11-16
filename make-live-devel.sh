@@ -10,7 +10,7 @@
 TARGET="live"
 #Allow overriding default from the command line
 if [ -n "$1" ] ; then
-        TARGET="$1"
+    TARGET="$1"
 fi
 
 
@@ -45,11 +45,6 @@ ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 
 ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
-
-ln -fs $YAMCS_HOME/yamcs-web/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-web/target/dependency/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-web/src/main/resources/mime.types $TARGET/etc
-
 
 mkdir -p $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb

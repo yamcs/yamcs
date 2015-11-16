@@ -30,6 +30,7 @@ public class ParameterFormatter {
     protected boolean printMonitoring=false;
     protected boolean printUnique=false;
     protected boolean keepValues=false; //if set to true print the latest known value of a parameter even for parameters not retrieved in a packet
+    protected boolean writeHeader=true;
     protected boolean allParametersPresent = false; // true = print only those lines that contain all parameters' values
     protected int timewindow = -1; // [ms], -1 = no window at all
     
@@ -83,6 +84,10 @@ public class ParameterFormatter {
         this.printUnique = printUnique;
     }
     
+    public void setWriteHeader(boolean writeHeader) {
+        this.writeHeader = writeHeader;
+    }
+    
     public void setAllParametersPresent(boolean allParametersPresent) {
         this.allParametersPresent = allParametersPresent;
     }
@@ -112,6 +117,7 @@ public class ParameterFormatter {
         }
         csvWriter.writeRecord(h.toArray(new String[0]));
     }
+    
     /**
      * adds new parameters - if they are written to the output buffer or not depends on the settings
      * @param parameterList
@@ -140,7 +146,9 @@ public class ParameterFormatter {
 
     protected void writeParameters() throws IOException {
         if(first) {
-            writeHeader();
+            if(writeHeader) {
+                writeHeader();
+            }
             first=false;
         }
         if (unsavedLineCount == 0) {
@@ -207,7 +215,10 @@ public class ParameterFormatter {
         }
         unsavedLineCount = 0;
     }
-
+    
+    public void flush() {
+        csvWriter.flush();
+    }
 
     public void close() throws IOException {
        writeParameters();//write the remaining parameters

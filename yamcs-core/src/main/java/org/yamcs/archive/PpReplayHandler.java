@@ -5,12 +5,12 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
@@ -52,6 +52,9 @@ public class PpReplayHandler implements ReplayHandler {
         }
         sb.append(")");
         XtceTmReplayHandler.appendTimeClause(sb, request, false);
+        if(request.hasReverse() && request.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
         return sb.toString();
     }
 
