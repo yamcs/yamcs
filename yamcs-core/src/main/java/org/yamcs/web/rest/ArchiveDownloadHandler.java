@@ -1,11 +1,14 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -14,7 +17,9 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
 
 import com.csvreader.CsvWriter;
 
@@ -34,6 +39,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {
@@ -56,6 +62,16 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
                 req.assertGET();
                 downloadEvents(req);
                 return null;
+            case "tables":
+                req.assertGET();
+                String tableName = req.getPathSegment(pathOffset + 1);
+                TableDefinition table = YarchDatabase.getInstance(instance).getTable(tableName);
+                if (table == null) {
+                    throw new NotFoundException(req, "No table named '" + tableName + "'");
+                } else {
+                    downloadTableData(req, table);
+                    return null;
+                }
             default:
                 throw new NotFoundException(req);
             }
@@ -89,6 +105,45 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             @Override
             public TmPacketData mapTuple(Tuple tuple) {
                 return ArchiveHelper.tupleToPacketData(tuple);
+            }
+        });
+    }
+    
+    private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {
+        List<String> cols = null;
+        if (req.hasQueryParameter("cols")) {
+            cols = new ArrayList<>(); // Order, and non-unique
+            for (String para : req.getQueryParameterList("cols")) {
+                for (String col : para.split(",")) {
+                    cols.add(col.trim());
+                }
+            }
+        }
+        
+        StringBuilder sqlb = new StringBuilder("select ");
+        if (cols == null) {
+            sqlb.append("*");
+        } else if (cols.isEmpty()) {
+            throw new BadRequestException("No columns are specified.");
+        } else {
+            for (int i = 0; i < cols.size(); i++) {
+                if (i != 0) sqlb.append(", ");
+                sqlb.append(cols.get(i));
+            }
+        }
+        sqlb.append(" from ").append(table.getName());
+        if (RestUtils.asksDescending(req, false)) {
+            sqlb.append(" order desc");
+        }
+        String sql = sqlb.toString();
+        
+        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
+            
+            @Override
+            public TableRecord mapTuple(Tuple tuple) {
+                TableRecord.Builder rec = TableRecord.newBuilder();
+                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
+                return rec.build();
             }
         });
     }

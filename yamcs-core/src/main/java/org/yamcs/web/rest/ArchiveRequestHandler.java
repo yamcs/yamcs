@@ -363,12 +363,12 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             if (table == null) {
                 throw new NotFoundException(req, "No table named '" + tableName + "'");
             } else {
-                return handleTableRequest(req, pathOffset + 1, ydb, table);
+                return handleTableRequest(req, pathOffset + 1, table);
             }
         }
     }
     
-    private RestResponse handleTableRequest(RestRequest req, int pathOffset, YarchDatabase ydb, TableDefinition table) throws RestException {
+    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getTable(req, table);
@@ -376,7 +376,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             String resource = req.getPathSegment(pathOffset);
             switch (resource) {
             case "data":
-                return getTableData(req, ydb, table);
+                return getTableData(req, table);
             default:
                 throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
             }
@@ -396,9 +396,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
-    private RestResponse getTableData(RestRequest req, YarchDatabase ydb, TableDefinition table) throws RestException {
+    private RestResponse getTableData(RestRequest req, TableDefinition table) throws RestException {
         List<String> cols = null;
-        boolean reverse = RestUtils.asksDescending(req, true);
         
         // Read query params
         if (req.hasQueryParameter("cols")) {
@@ -424,7 +423,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             }
         }
         buf.append(" from ").append(table.getName());
-        if (reverse) {
+        if (RestUtils.asksDescending(req, true)) {
             buf.append(" order desc");
         }
         
