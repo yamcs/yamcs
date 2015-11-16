@@ -238,7 +238,7 @@
 
             ctx['archiveFetched'] = false;
             var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
-            var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + qname + '/series';
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
             targetUrl += '?start=' + beforeIso.slice(0, -1);
             targetUrl += '&stop=' + nowIso.slice(0, -1);
             $http.get(targetUrl).then(function (response) {
