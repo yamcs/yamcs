@@ -1,5 +1,14 @@
 package org.yamcs.utils;
 
+import java.net.URI;
+import java.util.Base64;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.yamcs.security.UsernamePasswordToken;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -25,15 +34,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
-
-import java.net.URI;
-import java.util.Base64;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class HttpClient {
 	URI uri;
@@ -82,7 +82,11 @@ public class HttpClient {
 			content = Unpooled.EMPTY_BUFFER;
 		}
 
-		HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, uri.getRawPath(), content);
+		String fullUri = uri.getRawPath();
+		if (uri.getRawQuery() != null) {
+		    fullUri += "?" + uri.getRawQuery();
+		}
+		HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, fullUri, content);
 		request.headers().set(HttpHeaders.Names.HOST, host);
 		request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
 		request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
@@ -114,7 +118,7 @@ public class HttpClient {
 		return doGetRequest(url, body, null);
 	}*/
 	public String doGetRequest(String url, String body, UsernamePasswordToken authToken) throws Exception {
-		return doRequest(url, HttpMethod.GET, body, authToken);
+	    return doRequest(url, HttpMethod.GET, body, authToken);
 	}
 /*	public String doPostRequest(String url, String body) throws Exception {
 		return doPostRequest(url, body, null);
