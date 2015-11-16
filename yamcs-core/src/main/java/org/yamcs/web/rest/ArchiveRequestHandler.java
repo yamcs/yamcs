@@ -131,6 +131,9 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             case "parameters":
                 return handleParametersRequest(req, pathOffset + 1);
             case "events":
+            case "events.csv":
+            case "events.json":
+            case "events.proto":
                 req.assertGET();
                 return listEvents(req);
             case "packets":
@@ -397,9 +400,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getTableData(RestRequest req, TableDefinition table) throws RestException {
-        List<String> cols = null;
-        
-        // Read query params
+        List<String> cols = null;        
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
             for (String para : req.getQueryParameterList("cols")) {

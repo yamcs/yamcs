@@ -1,6 +1,7 @@
 package org.yamcs.web.rest;
 
 import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 
 import java.io.IOException;
@@ -129,9 +130,26 @@ public class RestRequest {
         return httpRequest.headers().get(name);
     }
     
+    /**
+     * Matches the content type on either the Accept header or the extension of the resource
+     */
     public boolean asksFor(String mediaType) {
-        return getHttpRequest().headers().contains(Names.ACCEPT)
-                && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType);
+        if (getHttpRequest().headers().contains(Names.ACCEPT)
+                && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType)) {
+            return true;
+        } else {
+            String lastSegment = getPathSegment(getPathSegmentCount() - 1).toLowerCase();
+            switch (mediaType) {
+            case JSON_MIME_TYPE:
+                return lastSegment.endsWith(".json");
+            case CSV_MIME_TYPE:
+                return lastSegment.endsWith(".csv");
+            case BINARY_MIME_TYPE:
+                return lastSegment.endsWith(".proto");
+            default:
+                return false;
+            }
+        }
     }
     
     /**

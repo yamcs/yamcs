@@ -59,6 +59,9 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
                 downloadPackets(req);
                 return null;
             case "events":
+            case "events.json":
+            case "events.proto":
+            case "events.csv":
                 req.assertGET();
                 downloadEvents(req);
                 return null;
