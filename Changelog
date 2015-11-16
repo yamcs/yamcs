@@ -1,6 +1,7 @@
 Version 0.29.0 Released 10-Nov-2015
 - added the posibility to configure TM archiving on fine grained level
 - many changes in the WEB API (consistency, new features)
+- completely changed the yamcs-web to a new framework based on AngularJS and Bootstrap + added several features like MDB parameter browser, access to alarms.
 
 Version 0.28.0 Released 20-Sep-2015
 - switched commanding to XTCE
