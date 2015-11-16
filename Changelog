@@ -1,6 +1,6 @@
-Version 0.28.1 Released 
-
-
+Version 0.29.0 Released 10-Nov-2015
+- added the posibility to configure TM archiving on fine grained level
+- many changes in the WEB API (consistency, new features)
 
 Version 0.28.0 Released 20-Sep-2015
 - switched commanding to XTCE
