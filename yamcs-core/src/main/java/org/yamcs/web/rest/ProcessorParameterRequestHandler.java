@@ -223,7 +223,6 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getParameterValues(RestRequest req) throws RestException {
-        System.out.println("GETTING PARS");
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");
