@@ -3,7 +3,7 @@
     <ul class="nav nav-sidebar">
       <li ng-class="{active: activePane == 'overview'}"><a href="#/mdb">Overview</a></li>
       <li ng-class="{active: activePane == ss.qualifiedName}" ng-repeat="ss in templateVm.mdb.flatSpaceSystems">
-        <a href="#/mdb/{{ ss.qualifiedName | slice:1 }}/parameters">{{ ss.qualifiedName }}</a>
+        <a href="#/mdb{{ ss.qualifiedName }}/parameters">{{ ss.qualifiedName }}</a>{{ blaa }}
       </li>
     </ul>
   </div>

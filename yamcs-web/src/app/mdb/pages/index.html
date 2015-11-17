@@ -1,5 +1,5 @@
 <mdb-pane active-pane="overview" header-title="{{ vm.title }}">
-  <div class="panel panel-default" ng-repeat="ss in templateVm.mdb.flatSpaceSystems">
+  <div class="panel panel-default" ng-repeat="ss in vm.mdb.flatSpaceSystems">
     <div class="panel-heading">
       <div class="pull-right">
         <a href="#/mdb{{ ss.qualifiedName }}/parameters" ng-switch="ss.parameterCount">

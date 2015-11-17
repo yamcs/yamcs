@@ -26,7 +26,17 @@
             var targetUrl = '/api/mdb/' + yamcsInstance;
 
             return $http.get(targetUrl).then(function (response) {
-                return response.data;
+                var mdb = response.data;
+                mdb['flatSpaceSystems'] = []; // Flatten the nested structure, for better UI
+                if (mdb.hasOwnProperty('spaceSystem')) {
+                    for (var i = 0; i < mdb.spaceSystem.length; i++) {
+                        var flattened = flattenSpaceSystem(mdb.spaceSystem[i]);
+                        for (var j = 0; j < flattened.length; j++) {
+                            mdb['flatSpaceSystems'].push(flattened[j]);
+                        }
+                    }
+                }
+                return mdb;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
             });
@@ -100,6 +110,19 @@
             }).catch(function (message) {
                 $log.error('XHR failed', message);
             });
+        }
+
+        function flattenSpaceSystem(ss) {
+            var flattened = [ ss ];
+            if (ss.hasOwnProperty('sub')) {
+                for (var i = 0; i < ss.sub.length; i++) {
+                    var flatsub = flattenSpaceSystem(ss.sub[i]);
+                    for (var j = 0; j < flatsub.length; j++) {
+                        flattened.push(flatsub[j]);
+                    }
+                }
+            }
+            return flattened;
         }
     }
 })();
