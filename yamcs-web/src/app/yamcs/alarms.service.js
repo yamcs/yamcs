@@ -108,7 +108,7 @@
             }
 
             // TODO should not be done in service, and really only in template
-            alarm.msg = prefix + '<a href="#/fdb' + alarm.triggerValue.id.name + '">' + alarm.msg + '</a>';
+            alarm.msg = prefix + '<a href="#/mdb' + alarm.triggerValue.id.name + '">' + alarm.msg + '</a>';
 
             alarm.mostSevereLevel = toNumericLevel(alarm.mostSevereValue.monitoringResult);
             alarm.currentLevel = toNumericLevel(alarm.currentValue.monitoringResult);

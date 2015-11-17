@@ -2,6 +2,6 @@
     'use strict';
 
     angular
-        .module('app.tm', []);
+        .module('app.tm', ['app.core']);
 
 })();

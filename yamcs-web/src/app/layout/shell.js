@@ -10,7 +10,6 @@
         var vm = this;
 
         vm.title = config.appTitle;
-        vm.busyMessage = 'Please wait ...';
         vm.isBusy = true;
         vm.socketOpen = false;
         vm.socketInfoType = 'danger';

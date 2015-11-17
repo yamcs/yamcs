@@ -5,7 +5,7 @@
         .module('app.displays', ['app.tm'])
         .directive('displaysPane', displaysPane)
         .directive('embeddedDisplay', embeddedDisplay)
-        .run(appRun);
+        .config(configure);
 
     /* @ngInject */
     function displaysPane() {
@@ -41,31 +41,19 @@
     }
 
     /* @ngInject */
-    function appRun(routehelper) {
-        routehelper.configureRoutes([{
-            url: '/displays',
-            config: {
-                templateUrl: '/_static/app/displays/pages/displays.html',
-                controller: 'DisplaysController',
-                controllerAs: 'vm',
-                title: 'Displays'
-            }
-        }, {
-            url: '/displays/:display',
-            config: {
-                templateUrl: '/_static/app/displays/pages/display.html',
-                controller: 'DisplayController',
-                controllerAs: 'vm',
-                title: 'Display'
-            }
-        }, {
-            url: '/displays/:group/:display',
-            config: {
-                templateUrl: '/_static/app/displays/pages/display.html',
-                controller: 'DisplayController',
-                controllerAs: 'vm',
-                title: 'Display'
-            }
-        }]);
+    function configure($routeProvider) {
+        $routeProvider.when('/displays', {
+            templateUrl: '/_static/app/displays/pages/displays.html',
+            controller: 'DisplaysController',
+            controllerAs: 'vm'
+        }).when('/displays/:display', {
+            templateUrl: '/_static/app/displays/pages/display.html',
+            controller: 'DisplayController',
+            controllerAs: 'vm'
+        }).when('/displays/:group/:display', {
+            templateUrl: '/_static/app/displays/pages/display.html',
+            controller: 'DisplayController',
+            controllerAs: 'vm'
+        });
     }
 })();
