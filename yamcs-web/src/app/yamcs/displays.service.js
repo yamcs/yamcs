@@ -4,7 +4,7 @@
         .factory('displaysService', displaysService);
 
     /* @ngInject */
-    function displaysService($http, socket, tmService, $log) {
+    function displaysService($http, socket, tmService, $log, yamcsInstance) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata.parameter;
@@ -28,7 +28,6 @@
         };
 
         function listDisplays() {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/' + yamcsInstance + '/displays/listDisplays';
             return $http.get(targetUrl, {cache: true}).then(function (response) {
                 var data = response.data;
@@ -44,7 +43,6 @@
         }
 
         function getDisplay(filename) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/_static/' + yamcsInstance + '/displays/' + filename;
             return $http.get(targetUrl, {
                 cache: true,

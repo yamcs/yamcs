@@ -6,7 +6,7 @@
         .controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
-    function MDBParameterDetailController($routeParams, tmService, mdbService, $scope, $uibModal) {
+    function MDBParameterDetailController($routeParams, tmService, mdbService, $scope, $uibModal, configService) {
         var vm = this;
 
         $scope.plotmode = '1h';

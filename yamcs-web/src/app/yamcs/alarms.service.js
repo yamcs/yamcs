@@ -12,7 +12,7 @@
     var subscriptionId = 0;
 
     /* @ngInject */
-    function alarmService($http, $log, socket, $filter) {
+    function alarmService($http, $log, socket, $filter, yamcsInstance) {
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -29,7 +29,6 @@
         };
 
         function listAlarms() {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/alarms';
             //$log.info('Fetching alarm defs');
             return $http.get(targetUrl).then(function (response) {
@@ -78,7 +77,6 @@
         }
 
         function patchParameterAlarm(parameterId, alarmId, options) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + parameterId.name + '/' + 'alarms/' + alarmId;
             return $http.patch(targetUrl, options).then(function (response) {
                 return response.data;

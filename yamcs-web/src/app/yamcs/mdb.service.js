@@ -6,7 +6,7 @@
         .factory('mdbService', mdbService);
 
     /* @ngInject */
-    function mdbService($http, $log) {
+    function mdbService($http, $log, yamcsInstance) {
 
         return {
             getSummary: getSummary,
@@ -23,7 +23,6 @@
         };
 
         function getSummary() {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance;
 
             return $http.get(targetUrl).then(function (response) {
@@ -34,7 +33,6 @@
         }
 
         function listParameters(qname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters';
             if (qname) {
                 targetUrl += qname;
@@ -48,7 +46,6 @@
         }
 
         function listContainers(qname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/containers';
             if (qname) {
                 targetUrl += qname;
@@ -62,7 +59,6 @@
         }
 
         function listCommands(qname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/commands';
             if (qname) {
                 targetUrl += qname;
@@ -76,7 +72,6 @@
         }
 
         function listAlgorithms(qname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/algorithms';
             if (qname) {
                 targetUrl += qname;
@@ -90,7 +85,6 @@
         }
 
         function getParameterInfo(urlname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters' + urlname;
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
@@ -100,7 +94,6 @@
         }
 
         function getAlgorithmInfo(urlname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/mdb/' + yamcsInstance + '/algorithms' + urlname;
             return $http.get(targetUrl).then(function (response) {
                 return response.data;

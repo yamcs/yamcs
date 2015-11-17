@@ -11,7 +11,6 @@
         .module('app.yamcs')
         .factory('socket', WebSocketClient);
 
-    var instance = location.pathname.match(/\/([^\/]*)\//)[1];
     var PROTOCOL_VERSION = 1;
     var MESSAGE_TYPE_REQUEST = 1;
     var MESSAGE_TYPE_REPLY = 2;
@@ -31,10 +30,10 @@
     var conn;
 
     /* @ngInject */
-    function WebSocketClient($rootScope, $log) {
+    function WebSocketClient($rootScope, $log, yamcsInstance) {
         $log.info('connecting websocket');
 
-        conn = new WebSocket(wsproto+'://'+location.host+'/'+instance+'/_websocket');
+        conn = new WebSocket(wsproto+'://'+location.host+'/'+yamcsInstance+'/_websocket');
         conn.onmessage = function(msg) {
             var json = JSON.parse(msg.data);
 

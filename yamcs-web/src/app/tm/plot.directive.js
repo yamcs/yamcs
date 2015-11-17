@@ -6,7 +6,7 @@
         .directive('plot', plot);
 
     /* @ngInject */
-    function plot($log, $filter, $http) {
+    function plot($log, $filter, $http, yamcsInstance) {
 
         return {
             restrict: 'A',
@@ -271,7 +271,6 @@
             updateGraph(g, 'x\n');
             spinner.spin(containingDiv);
 
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
             targetUrl += '?start=' + beforeIso.slice(0, -1);
             targetUrl += '&stop=' + nowIso.slice(0, -1);

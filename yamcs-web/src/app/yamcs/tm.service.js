@@ -31,7 +31,7 @@
     }
 
     /* @ngInject */
-    function tmService($http, $log, socket) {
+    function tmService($http, $log, socket, yamcsInstance) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
@@ -62,7 +62,6 @@
         };
 
         function getParameter(qname) {
-            var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + qname;
 
             return $http.get(targetUrl).then(function (response) {

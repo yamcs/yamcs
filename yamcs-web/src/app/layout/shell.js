@@ -6,10 +6,10 @@
         .controller('Shell', Shell);
 
     /* @ngInject */
-    function Shell($scope, config, $location, $http, socket, alarmService) {
+    function Shell($scope, $location, socket, alarmService, configService) {
         var vm = this;
 
-        vm.title = config.appTitle;
+        vm.title = configService.get('title');
         vm.isBusy = true;
         vm.socketOpen = false;
         vm.socketInfoType = 'danger';
@@ -18,16 +18,7 @@
             return $location.path().indexOf(viewLocation) === 0;
         };
 
-        var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
-        var targetUrl = '/_static/' + yamcsInstance + '/config.json';
-
-        $http.get(targetUrl).success(function (data) {
-            vm.title = data.title || 'Untitled';
-            vm.yamcsInstance = yamcsInstance;
-            if (data.hasOwnProperty('brandImage')) {
-                vm.brandImage = '/_static/' + yamcsInstance + '/' + data['brandImage'];
-            }
-        });
+        vm.brandImage = configService.get('brandImage');
 
         socket.on('open', function () {
             vm.socketOpen = true;
