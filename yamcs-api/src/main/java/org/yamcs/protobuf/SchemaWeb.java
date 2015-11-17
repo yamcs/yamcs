@@ -459,6 +459,9 @@ public final class SchemaWeb
                     if(message.hasCommandQueueEvent())
                         output.writeObject(14, message.getCommandQueueEvent(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.WRITE, false);
 
+                    if(message.hasContainerData())
+                        output.writeObject(15, message.getContainerData(), org.yamcs.protobuf.SchemaCvalue.ContainerData.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -552,6 +555,10 @@ public final class SchemaWeb
                                 builder.setCommandQueueEvent(input.mergeObject(org.yamcs.protobuf.Commanding.CommandQueueEvent.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.MERGE));
 
                                 break;
+                            case 15:
+                                builder.setContainerData(input.mergeObject(org.yamcs.protobuf.Cvalue.ContainerData.newBuilder(), org.yamcs.protobuf.SchemaCvalue.ContainerData.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -606,6 +613,7 @@ public final class SchemaWeb
                     case 12: return "linkEvent";
                     case 13: return "commandQueueInfo";
                     case 14: return "commandQueueEvent";
+                    case 15: return "containerData";
                     default: return null;
                 }
             }
@@ -631,6 +639,7 @@ public final class SchemaWeb
                 fieldMap.put("linkEvent", 12);
                 fieldMap.put("commandQueueInfo", 13);
                 fieldMap.put("commandQueueEvent", 14);
+                fieldMap.put("containerData", 15);
             }
         }
 

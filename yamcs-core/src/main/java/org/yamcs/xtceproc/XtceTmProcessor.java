@@ -13,7 +13,8 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.container.ContainerProvider;
+import org.yamcs.container.ContainerWithIdRequestHelper;
+import org.yamcs.container.RawContainerProvider;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
@@ -37,11 +38,12 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  */
 
-public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
+public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, RawContainerProvider {
 
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private ParameterRequestManager parameterRequestManager;
-    private ContainerListener containerRequestManager;
+    private RawContainerListener rawContainerRequestManager;
+    private ContainerWithIdRequestHelper containerRequestManager;
 
     public final YProcessor processor;
     public final XtceDb xtcedb;
@@ -102,8 +104,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public void setContainerListener(ContainerListener c) {
-        this.containerRequestManager=c;
+    public void setContainerListener(RawContainerListener c) {
+    	this.rawContainerRequestManager=c;
     }
 
     /**
@@ -163,27 +165,27 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      */
     @Override
     public void processPacket(PacketWithTime pwrt){
-        try {
-            ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
-        
-            ParameterValueList paramResult=tmExtractor.getParameterResult();
-            ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
-            
-            if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
-                //careful out of the synchronized block in order to avoid dead locks 
-                //  with the parameterRequestManager trying to add/remove parameters 
-                //  while we are sending updates
-                parameterRequestManager.update(paramResult);
-            }
-        
-            if((containerRequestManager!=null) && (containerResult.size()>0)) {
-                containerRequestManager.update(containerResult);
-            }
-        
-        } catch (Exception e) {
-            log.error("got exception in tmprocessor ", e);
-        }
+    	try {
+    		ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
+    		tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
+
+    		ParameterValueList paramResult=tmExtractor.getParameterResult();
+    		ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
+
+    		if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
+    			//careful out of the synchronized block in order to avoid dead locks 
+    			//  with the parameterRequestManager trying to add/remove parameters 
+    			//  while we are sending updates
+    			parameterRequestManager.update(containerResult, paramResult);		
+    		}
+
+    		if((rawContainerRequestManager!=null) && (containerResult.size()>0)) {
+    			rawContainerRequestManager.update(containerResult);
+    		}
+
+    	} catch (Exception e) {
+    		log.error("got exception in tmprocessor ", e);
+    	}
     }
     
     @Override
@@ -199,11 +201,11 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
                 //careful out of the synchronized block in order to avoid dead locks 
                 //  with the parameterRequestManager trying to add/remove parameters 
                 //  while we are sending updates
-                parameterRequestManager.update(paramResult);
+                parameterRequestManager.update(containerResult, paramResult);
             }
 
-            if((containerRequestManager!=null) && (containerResult.size()>0)) {
-                containerRequestManager.update(containerResult);
+            if((rawContainerRequestManager!=null) && (containerResult.size()>0)) {
+                rawContainerRequestManager.update(containerResult);
             }
 
         } catch (Exception e) {

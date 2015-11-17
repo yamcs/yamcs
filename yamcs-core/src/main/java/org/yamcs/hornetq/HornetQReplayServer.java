@@ -26,6 +26,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.container.ContainerWithId;
 import org.yamcs.container.ContainerWithIdConsumer;
 import org.yamcs.container.ContainerWithIdRequestHelper;
+import org.yamcs.container.RawContainerWithIdConsumer;
+import org.yamcs.container.RawContainerWithIdRequestHelper;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -191,7 +193,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
        
         PacketReplayRequest packetReq = replayRequest.getPacketRequest();
         if(packetReq!=null && packetReq.getNameFilterCount()>0) {
-            ContainerWithIdRequestHelper cirh = new ContainerWithIdRequestHelper(yproc.getContainerRequestManager(), listener);
+            RawContainerWithIdRequestHelper cirh = new RawContainerWithIdRequestHelper(yproc.getRawContainerRequestManager(), listener);
             for(NamedObjectId id: packetReq.getNameFilterList()) {
                 cirh.subscribe(id);
             }
@@ -216,7 +218,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     }
     
     
-    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer {        
+    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer, RawContainerWithIdConsumer, CommandHistoryConsumer {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;

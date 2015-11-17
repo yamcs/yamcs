@@ -29,6 +29,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Cvalue.ContainerData;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -275,6 +276,7 @@ public abstract class AbstractIntegrationTest {
             }
         }
     }
+    
     public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
         static volatile PacketProvider instance;
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();

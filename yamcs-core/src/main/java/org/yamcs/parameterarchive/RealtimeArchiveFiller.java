@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YConfiguration;
@@ -37,10 +38,10 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     
     //move the updateItems (and all processing thereafter) in the executor thread
     @Override
-    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
         executor.execute(()-> {
             try {
-                super.updateItems(subscriptionId, items);
+                super.updateItems(subscriptionId, containers, items);
             } catch(Exception e) {
                 log.error("Error when adding data to realtime segments", e);
             }

@@ -15,6 +15,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducerFactory;
@@ -72,7 +73,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
+	    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});
@@ -114,7 +115,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
+	    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});
@@ -152,7 +153,7 @@ public class DerivedValuesTest {
 
 	prm.addRequest(paraList, new ParameterConsumer() {
 	    @Override
-	    public void updateItems(int subscriptionId,   List<ParameterValue> items) {
+	    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers,   List<ParameterValue> items) {
 		params.addAll(items);
 	    }
 	});

@@ -820,6 +820,246 @@ public final class SchemaRest
         }
     }
 
+    public static final class BulkGetContainerValueRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetContainerValueRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetContainerValueRequest message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
+                    output.writeObject(1, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+                if(message.hasFromCache())
+                    output.writeBool(2, message.getFromCache(), false);
+                if(message.hasTimeout())
+                    output.writeUInt64(3, message.getTimeout(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetContainerValueRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetContainerValueRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetContainerValueRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.BulkGetContainerValueRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        case 2:
+                            builder.setFromCache(input.readBool());
+                            break;
+                        case 3:
+                            builder.setTimeout(input.readUInt64());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetContainerValueRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "id";
+                case 2: return "fromCache";
+                case 3: return "timeout";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("id", 1);
+            fieldMap.put("fromCache", 2);
+            fieldMap.put("timeout", 3);
+        }
+    }
+
+    public static final class BulkGetContainerValueResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetContainerValueResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetContainerValueResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Cvalue.ContainerValue value : message.getValueList())
+                    output.writeObject(1, value, org.yamcs.protobuf.SchemaCvalue.ContainerValue.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetContainerValueResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetContainerValueResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetContainerValueResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.BulkGetContainerValueResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addValue(input.mergeObject(org.yamcs.protobuf.Cvalue.ContainerValue.newBuilder(), org.yamcs.protobuf.SchemaCvalue.ContainerValue.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.BulkGetContainerValueResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.BulkGetContainerValueResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "value";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("value", 1);
+        }
+    }
+
     public static final class BulkSetParameterValueRequest
     {
 

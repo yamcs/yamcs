@@ -72,7 +72,7 @@ public class AlarmTest {
         prm.addRequest(p,
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });
@@ -157,7 +157,7 @@ public class AlarmTest {
         prm.addRequest(p, 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });
@@ -226,7 +226,7 @@ public class AlarmTest {
         prm.addRequest(p, 
                 new ParameterConsumer() {
                     @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+                    public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers, List<ParameterValue> items) {
                         params.addAll(items);
                     }
                 });

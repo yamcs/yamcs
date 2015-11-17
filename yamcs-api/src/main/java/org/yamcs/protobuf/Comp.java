@@ -8,10 +8,10 @@ public final class Comp {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface ComputationDefOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ComputationDefOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:comp.ComputationDef)
+      com.google.protobuf.MessageOrBuilder {
 
-    // required string name = 1;
     /**
      * <code>required string name = 1;</code>
      */
@@ -26,7 +26,6 @@ public final class Comp {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // required string expression = 2;
     /**
      * <code>required string expression = 2;</code>
      */
@@ -41,7 +40,6 @@ public final class Comp {
     com.google.protobuf.ByteString
         getExpressionBytes();
 
-    // repeated .yamcs.NamedObjectId argument = 3;
     /**
      * <code>repeated .yamcs.NamedObjectId argument = 3;</code>
      */
@@ -66,7 +64,6 @@ public final class Comp {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getArgumentOrBuilder(
         int index);
 
-    // optional string language = 4;
     /**
      * <code>optional string language = 4;</code>
      *
@@ -101,8 +98,9 @@ public final class Comp {
    * </pre>
    */
   public static final class ComputationDef extends
-      com.google.protobuf.GeneratedMessage
-      implements ComputationDefOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:comp.ComputationDef)
+      ComputationDefOrBuilder {
     // Use ComputationDef.newBuilder() to construct.
     private ComputationDef(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -149,13 +147,15 @@ public final class Comp {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              expression_ = input.readBytes();
+              expression_ = bs;
               break;
             }
             case 26: {
@@ -167,8 +167,9 @@ public final class Comp {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              language_ = input.readBytes();
+              language_ = bs;
               break;
             }
           }
@@ -214,7 +215,6 @@ public final class Comp {
     }
 
     private int bitField0_;
-    // required string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -257,7 +257,6 @@ public final class Comp {
       }
     }
 
-    // required string expression = 2;
     public static final int EXPRESSION_FIELD_NUMBER = 2;
     private java.lang.Object expression_;
     /**
@@ -300,7 +299,6 @@ public final class Comp {
       }
     }
 
-    // repeated .yamcs.NamedObjectId argument = 3;
     public static final int ARGUMENT_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> argument_;
     /**
@@ -336,7 +334,6 @@ public final class Comp {
       return argument_.get(index);
     }
 
-    // optional string language = 4;
     public static final int LANGUAGE_FIELD_NUMBER = 4;
     private java.lang.Object language_;
     /**
@@ -400,7 +397,8 @@ public final class Comp {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!hasName()) {
         memoizedIsInitialized = 0;
@@ -546,8 +544,9 @@ public final class Comp {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Comp.ComputationDefOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:comp.ComputationDef)
+        org.yamcs.protobuf.Comp.ComputationDefOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDef_descriptor;
@@ -740,7 +739,6 @@ public final class Comp {
       }
       private int bitField0_;
 
-      // required string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>required string name = 1;</code>
@@ -754,9 +752,12 @@ public final class Comp {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -814,7 +815,6 @@ public final class Comp {
         return this;
       }
 
-      // required string expression = 2;
       private java.lang.Object expression_ = "";
       /**
        * <code>required string expression = 2;</code>
@@ -828,9 +828,12 @@ public final class Comp {
       public java.lang.String getExpression() {
         java.lang.Object ref = expression_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          expression_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            expression_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -888,7 +891,6 @@ public final class Comp {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId argument = 3;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> argument_ =
         java.util.Collections.emptyList();
       private void ensureArgumentIsMutable() {
@@ -1030,7 +1032,8 @@ public final class Comp {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (argumentBuilder_ == null) {
           ensureArgumentIsMutable();
-          super.addAll(values, argument_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, argument_);
           onChanged();
         } else {
           argumentBuilder_.addAllMessages(values);
@@ -1128,7 +1131,6 @@ public final class Comp {
         return argumentBuilder_;
       }
 
-      // optional string language = 4;
       private java.lang.Object language_ = "";
       /**
        * <code>optional string language = 4;</code>
@@ -1150,9 +1152,12 @@ public final class Comp {
       public java.lang.String getLanguage() {
         java.lang.Object ref = language_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          language_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            language_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -1237,10 +1242,10 @@ public final class Comp {
     // @@protoc_insertion_point(class_scope:comp.ComputationDef)
   }
 
-  public interface ComputationDefListOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ComputationDefListOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:comp.ComputationDefList)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .comp.ComputationDef compDef = 1;
     /**
      * <code>repeated .comp.ComputationDef compDef = 1;</code>
      */
@@ -1265,7 +1270,6 @@ public final class Comp {
     org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
         int index);
 
-    // optional bool abortOnInvalid = 2;
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
      */
@@ -1279,8 +1283,9 @@ public final class Comp {
    * Protobuf type {@code comp.ComputationDefList}
    */
   public static final class ComputationDefList extends
-      com.google.protobuf.GeneratedMessage
-      implements ComputationDefListOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:comp.ComputationDefList)
+      ComputationDefListOrBuilder {
     // Use ComputationDefList.newBuilder() to construct.
     private ComputationDefList(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1382,7 +1387,6 @@ public final class Comp {
     }
 
     private int bitField0_;
-    // repeated .comp.ComputationDef compDef = 1;
     public static final int COMPDEF_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_;
     /**
@@ -1418,7 +1422,6 @@ public final class Comp {
       return compDef_.get(index);
     }
 
-    // optional bool abortOnInvalid = 2;
     public static final int ABORTONINVALID_FIELD_NUMBER = 2;
     private boolean abortOnInvalid_;
     /**
@@ -1441,7 +1444,8 @@ public final class Comp {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getCompDefCount(); i++) {
         if (!getCompDef(i).isInitialized()) {
@@ -1561,8 +1565,9 @@ public final class Comp {
      * Protobuf type {@code comp.ComputationDefList}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Comp.ComputationDefListOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:comp.ComputationDefList)
+        org.yamcs.protobuf.Comp.ComputationDefListOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Comp.internal_static_comp_ComputationDefList_descriptor;
@@ -1723,7 +1728,6 @@ public final class Comp {
       }
       private int bitField0_;
 
-      // repeated .comp.ComputationDef compDef = 1;
       private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_ =
         java.util.Collections.emptyList();
       private void ensureCompDefIsMutable() {
@@ -1865,7 +1869,8 @@ public final class Comp {
           java.lang.Iterable<? extends org.yamcs.protobuf.Comp.ComputationDef> values) {
         if (compDefBuilder_ == null) {
           ensureCompDefIsMutable();
-          super.addAll(values, compDef_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, compDef_);
           onChanged();
         } else {
           compDefBuilder_.addAllMessages(values);
@@ -1963,7 +1968,6 @@ public final class Comp {
         return compDefBuilder_;
       }
 
-      // optional bool abortOnInvalid = 2;
       private boolean abortOnInvalid_ ;
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
@@ -2007,12 +2011,12 @@ public final class Comp {
     // @@protoc_insertion_point(class_scope:comp.ComputationDefList)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_comp_ComputationDef_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_comp_ComputationDef_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_comp_ComputationDefList_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -2035,30 +2039,31 @@ public final class Comp {
       "protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_comp_ComputationDef_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_comp_ComputationDef_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_comp_ComputationDef_descriptor,
-              new java.lang.String[] { "Name", "Expression", "Argument", "Language", });
-          internal_static_comp_ComputationDefList_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_comp_ComputationDefList_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_comp_ComputationDefList_descriptor,
-              new java.lang.String[] { "CompDef", "AbortOnInvalid", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
         }, assigner);
+    internal_static_comp_ComputationDef_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_comp_ComputationDef_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_comp_ComputationDef_descriptor,
+        new java.lang.String[] { "Name", "Expression", "Argument", "Language", });
+    internal_static_comp_ComputationDefList_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_comp_ComputationDefList_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_comp_ComputationDefList_descriptor,
+        new java.lang.String[] { "CompDef", "AbortOnInvalid", });
+    org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

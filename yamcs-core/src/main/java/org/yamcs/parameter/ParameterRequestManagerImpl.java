@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
@@ -21,6 +22,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
@@ -45,16 +47,16 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     //these are the consumers that may update the list of parameters
     // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also computed
     private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
-
+    
     //contains subscribe all
     private SubscriptionArray subscribeAll = new SubscriptionArray();
-
 
     private AlarmChecker alarmChecker;
     private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
 
     private static AtomicInteger lastSubscriptionId= new AtomicInteger();
-    public final YProcessor yproc;
+    private final XtceTmProcessor tmProcessor;
+    public final YProcessor yproc;    
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
@@ -71,10 +73,10 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      */
     public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
+        this.tmProcessor = tmProcessor;
         log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
-	
 	
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
@@ -150,7 +152,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         return subscribeAll.remove(subscriptionId);
     }
     
-
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) throws InvalidIdentification {
         List<ParameterProvider> providers = getProviders(paraList);
         final int id=lastSubscriptionId.incrementAndGet();
@@ -221,6 +222,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         request2ParameterConsumerMap.put(id, tpc);
     }
 
+	
     /**
      * Add items to an request id. 
      * @param subscriptionID
@@ -404,37 +406,44 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     @Override
     public void update(Collection<ParameterValue> params) {
-        log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
-    //maps subscription id to a list of (value,id) to be delivered for that subscription
-    HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
-    
-    //so first we add to the delivery the parameters just received
-    updateDelivery(delivery, params);
-    
-    
-    //then if the delivery updates some of the parameters required by the derived values
-    //  compute the derived values
-    for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
-        Integer subscriptionId = entry.getKey();
-        if(delivery.containsKey(subscriptionId)) {
-            updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
-        }
+    	update(null, params);
     }
-    
-    //and finally deliver the delivery :)
-    for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
-        Integer subscriptionId=entry.getKey();
-        if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
-            if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
-    
-            ArrayList<ParameterValue> al=entry.getValue();
-            ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
-            if(consumer==null) {
-                log.warn("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
-            } else {
-                consumer.updateItems(subscriptionId, al);
-            }
-        }
+
+    /* 
+     */
+    @Override
+    public void update(List<ContainerExtractionResult> containers, Collection<ParameterValue> params) {
+    	log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
+    	//maps subscription id to a list of (value,id) to be delivered for that subscription
+    	HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
+
+    	//so first we add to the delivery the parameters just received
+    	updateDelivery(delivery, params);
+
+
+    	//then if the delivery updates some of the parameters required by the derived values
+    	//  compute the derived values
+    	for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
+    		Integer subscriptionId = entry.getKey();
+    		if(delivery.containsKey(subscriptionId)) {
+    			updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
+    		}
+    	}
+
+    	//and finally deliver the delivery :)
+    	for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
+    		Integer subscriptionId=entry.getKey();
+    		if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
+    		if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
+
+    		ArrayList<ParameterValue> al=entry.getValue();
+    		ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
+    		if(consumer==null) {
+    			log.warn("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
+    		} else {
+    			consumer.updateItems(subscriptionId, containers, al);
+    		}
+    	}
     }
 
     /** 
@@ -566,4 +575,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public ParameterCache getParameterCache() {
         return parameterCache;
     }
+
+    public XtceDb getXtceDb() {
+        return tmProcessor.getXtceDb();
+    }    
 }

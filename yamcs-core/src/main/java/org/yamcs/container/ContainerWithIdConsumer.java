@@ -1,11 +1,7 @@
 package org.yamcs.container;
 
-import java.nio.ByteBuffer;
-
-import org.yamcs.ContainerExtractionResult;
-
+import java.util.List;
 
 public interface ContainerWithIdConsumer {
-	void processContainer(ContainerWithId cwi, ContainerExtractionResult cer);
+	void update(int subscriptionId, List<ContainerValueWithId> containers);
 }
-

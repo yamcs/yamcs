@@ -1,7 +1,9 @@
 package org.yamcs.parameter;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValue;
 
 /**
@@ -17,5 +19,6 @@ public interface ParameterRequestManager {
 	 * @param paramDefs
 	 * @param paramValues
 	 */
-	public abstract void update(Collection<ParameterValue> params);
+	void update(List<ContainerExtractionResult> containers, Collection<ParameterValue> params);
+	void update(Collection<ParameterValue> params);
 }

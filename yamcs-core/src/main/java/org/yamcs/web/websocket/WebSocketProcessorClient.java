@@ -34,8 +34,10 @@ public class WebSocketProcessorClient implements YProcessorClient {
         log = YamcsServer.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         YProcessor processor = YProcessor.getInstance(yamcsInstance, "realtime");
         
+
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, processor.getName(), this);
         resources.add(new ParameterResource(processor, wsHandler));
+    	resources.add(new ContainerResource(processor, wsHandler));
         resources.add(new CommandHistoryResource(processor, wsHandler));
         resources.add(new ManagementResource(processor, wsHandler, clientId));
         resources.add(new AlarmResource(processor, wsHandler));

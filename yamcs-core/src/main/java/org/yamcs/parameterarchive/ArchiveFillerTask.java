@@ -11,6 +11,7 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.SortedIntArray;
@@ -127,9 +128,9 @@ class ArchiveFillerTask implements ParameterConsumer {
         }
     }
    
-
-    @Override
-    public void updateItems(int subscriptionId, List<ParameterValue> items) {
+	@Override
+	public void updateItems(int subscriptionId, List<ContainerExtractionResult> containers,
+			List<ParameterValue> items) {
         long t = processParameters(items);
         if(t<0)return;
         
@@ -144,7 +145,7 @@ class ArchiveFillerTask implements ParameterConsumer {
             collectionSegmentStart = nextSegmentStart;
             nextSegmentStart = SortedTimeSegment.getNextSegmentStart(collectionSegmentStart);
         }
-    }
+	}
     
     public long getNumProcessedParameters() {
         return numParams;
@@ -169,4 +170,5 @@ class ArchiveFillerTask implements ParameterConsumer {
             return parameterIdArray.size();
         }
     }
+
 }

@@ -5,6 +5,7 @@ import "yamcs.proto";
 import "archive.proto";
 import "commanding.proto";
 import "pvalue.proto";
+import "cvalue.proto";
 import "alarms.proto";
 import "yamcsManagement.proto";
 
@@ -54,6 +55,7 @@ message WebSocketServerMessage {
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
+    optional cvalue.ContainerData containerData = 15;
   }
 
   optional MessageType type = 1;

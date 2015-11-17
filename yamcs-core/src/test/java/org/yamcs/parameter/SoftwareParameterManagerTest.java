@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -91,17 +92,22 @@ public class SoftwareParameterManagerTest {
 	assertNull(pvs);
     }
 
-    class MyParamConsumer implements ParameterRequestManager {
-	BlockingQueue<Collection<ParameterValue>> received = new LinkedBlockingQueue<Collection<ParameterValue>>();
+	class MyParamConsumer implements ParameterRequestManager {
+		BlockingQueue<Collection<ParameterValue>> received = new LinkedBlockingQueue<Collection<ParameterValue>>();
 
-	@Override
-	public void update(Collection<ParameterValue> params) {
-	    try {
-		received.put(params);
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
-	    }
+		@Override
+		public void update(List<ContainerExtractionResult> containers, Collection<ParameterValue> params) {
+			try {
+				received.put(params);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
+		}
+
+		@Override
+		public void update(Collection<ParameterValue> params) {
+			update(null, params);
+		}
 	}
-    }    
 }

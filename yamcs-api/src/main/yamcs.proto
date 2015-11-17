@@ -173,6 +173,7 @@ enum ProtoDataType {
   LINK_EVENT = 16;
   COMMAND_QUEUE_INFO = 17;
   COMMAND_QUEUE_EVENT = 18;
+  CONTAINER = 19;	
 }
 
 //used to replay (concurrently) TM packets, parameters and events
