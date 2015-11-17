@@ -37,8 +37,6 @@
                 digitsAfterDecimal: 6,
                 labels: ['Time', 'Value'],
                 valueRange: valueRange,
-                drawYAxis: true,
-                drawXAxis: true,
                 yRangePad: 10,
                 rightGap: 0,
                 //labelsUTC: true,
@@ -99,13 +97,21 @@
             scope.$watch('plotmode', function(plotmode) {
                 var qname = scope.pinfo.qualifiedName;
 
-                // Reset first
-                g.resetZoom();
+                if (data.length > 0) {
+                    g.resetZoom();
+                }
+
                 valueRange = calculateInitialPlotRange(scope.pinfo);
                 data.length = 0;
 
                 // Add new set of data
                 loadHistoricData(containingDiv, g, qname, plotmode, data, valueRange, ctx, spinner);
+
+                // Reset again to cover edge case where we start from empty but zoomed graph
+                // (buggy dygraphs)
+                if (data.length > 0) {
+                    g.resetZoom();
+                }
             });
 
             return g;
