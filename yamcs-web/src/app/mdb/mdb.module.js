@@ -16,14 +16,6 @@
                 title: 'MDB'
             }
         }, {
-            url: '/mdb/parameters',
-            config: {
-                templateUrl: '/_static/app/mdb/pages/parameters.html',
-                controller: 'MDBParametersController',
-                controllerAs: 'vm',
-                title: 'MDB Parameters'
-            }
-        }, {
             url: '/mdb/:ss1/parameters',
             config: {
                 templateUrl: '/_static/app/mdb/pages/parameters.html',
@@ -38,14 +30,6 @@
                 controller: 'MDBParametersController',
                 controllerAs: 'vm',
                 title: 'MDB Parameters'
-            }
-        }, {
-            url: '/mdb/containers',
-            config: {
-                templateUrl: '/_static/app/mdb/pages/containers.html',
-                controller: 'MDBContainersController',
-                controllerAs: 'vm',
-                title: 'MDB Containers'
             }
         }, {
             url: '/mdb/:ss1/containers',
@@ -64,14 +48,6 @@
                 title: 'MDB Containers'
             }
         }, {
-            url: '/mdb/commands',
-            config: {
-                templateUrl: '/_static/app/mdb/pages/commands.html',
-                controller: 'MDBCommandsController',
-                controllerAs: 'vm',
-                title: 'MDB Commands'
-            }
-        }, {
             url: '/mdb/:ss1/commands',
             config: {
                 templateUrl: '/_static/app/mdb/pages/commands.html',
@@ -86,14 +62,6 @@
                 controller: 'MDBCommandsController',
                 controllerAs: 'vm',
                 title: 'MDB Commands'
-            }
-        }, {
-            url: '/mdb/algorithms',
-            config: {
-                templateUrl: '/_static/app/mdb/pages/algorithms.html',
-                controller: 'MDBAlgorithmsController',
-                controllerAs: 'vm',
-                title: 'MDB Algorithms'
             }
         }, {
             url: '/mdb/:ss1/algorithms',
