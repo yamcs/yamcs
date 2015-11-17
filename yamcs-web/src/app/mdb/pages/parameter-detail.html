@@ -76,6 +76,27 @@
         <hr>
 
         <dl class="dl-horizontal" ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'">
+
+          <dt>High Limits</dt>
+          <dd>
+            <span ng-if="vm.info.severe | has:'maxInclusive'">
+              Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+            </span>
+            <span ng-if="vm.info.critical | has:'maxInclusive'">
+              Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+            </span>
+            <span ng-if="vm.info.distress | has:'maxInclusive'">
+              Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+            </span>
+            <span ng-if="vm.info.warning | has:'maxInclusive'">
+              Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+            </span>
+            <span ng-if="vm.info.watch | has:'maxInclusive'">
+              Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+            </span>
+            <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
+          </dd>
+
           <dt>Low Limits</dt>
           <dd>
             <span ng-if="vm.info.watch | has:'minInclusive'">
@@ -94,26 +115,6 @@
               Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
             </span>
             <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
-          </dd>
-
-          <dt>High Limits</dt>
-          <dd>
-            <span ng-if="vm.info.watch | has:'maxInclusive'">
-              Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-            </span>
-            <span ng-if="vm.info.warning | has:'maxInclusive'">
-              Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-            </span>
-            <span ng-if="vm.info.distress | has:'maxInclusive'">
-              Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-            </span>
-            <span ng-if="vm.info.critical | has:'maxInclusive'">
-              Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-            </span>
-            <span ng-if="vm.info.severe | has:'maxInclusive'">
-              Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-            </span>
-            <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
           </dd>
         </dl>
 
