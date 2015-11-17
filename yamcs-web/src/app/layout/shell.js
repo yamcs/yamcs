@@ -6,7 +6,7 @@
         .controller('Shell', Shell);
 
     /* @ngInject */
-    function Shell($scope, $location, socket, alarmService, configService) {
+    function Shell($scope, $location, socket, alarmService, configService, timeService) {
         var vm = this;
 
         vm.socketOpen = false;
@@ -35,6 +35,7 @@
         vm.alarmBadgeColor = '#9d9d9d';
 
         var alarmSubscriptionId = alarmService.watch(handleAggregatedAlarmState);
+        var timeSubscriptionId = timeService.watchTime(handleTimeUpdate);
 
         /*
             Terminate subscription when the controller is destroyed
@@ -42,6 +43,7 @@
         $scope.$on('$destroy', function() {
             console.log('alarm/unsubscribe of shell controller');
             alarmService.unwatch(alarmSubscriptionId);
+            timeService.unwatch(timeSubscriptionId);
         });
 
         function handleAggregatedAlarmState(data) {
@@ -56,6 +58,10 @@
                 }
             }
             vm.alarmBadgeColor = needsAck ? '#c9302c' : '#9d9d9d';
+        }
+
+        function handleTimeUpdate(data) {
+            vm.missionTime = data['currentTimeUTC'];
         }
     }
 })();
