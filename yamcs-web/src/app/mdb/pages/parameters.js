@@ -6,7 +6,7 @@
         .controller('MDBParametersController',  MDBParametersController);
 
     /* @ngInject */
-    function MDBParametersController(mdbService, $routeParams) {
+    function MDBParametersController($rootScope, mdbService, $routeParams) {
         var vm = this;
 
         var qname = '/' + $routeParams['ss1'];
@@ -20,6 +20,8 @@
         vm.qname = qname;
         vm.title = qname;
         vm.mdbType = 'parameters';
+
+        $rootScope.pageTitle = 'Parameters | Yamcs';
 
         mdbService.listParameters(qname).then(function (data) {
             vm.parameters = data;

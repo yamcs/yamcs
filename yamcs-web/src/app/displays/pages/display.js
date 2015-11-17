@@ -4,13 +4,15 @@
         .controller('DisplayController', DisplayController);
 
     /* @ngInject */
-    function DisplayController($routeParams, $uibModal, $scope) {
+    function DisplayController($rootScope, $routeParams, $uibModal, $scope) {
         var vm = this;
 
         var displayName = $routeParams.display;
         if ($routeParams.hasOwnProperty('group')) {
             displayName = $routeParams.group + '/' + displayName;
         }
+
+        $rootScope.pageTitle = displayName + ' | Yamcs';
         vm.displayName = displayName;
 
         vm.items = ['item1', 'item2', 'item3'];

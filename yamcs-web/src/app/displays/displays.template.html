@@ -1,7 +1,7 @@
-<div class="container-fluid" ng-controller="DisplaysController as displaysVm">
+<div class="container-fluid" ng-controller="DisplaysTemplateController as templateVm">
     <div class="sidebar" style="width: 230px;">
 
-      <div ng-repeat="display in displaysVm.displays" style="padding-top: 20px;">
+      <div ng-repeat="display in templateVm.displays" style="padding-top: 20px;">
         <span class="nav-title">{{ display.group }}</span>
         <ul class="nav nav-sidebar med">
           <li ng-class="{active: activePane == d1.display}" ng-repeat="d1 in display.displays">
@@ -13,8 +13,8 @@
     </div>
 
     <div class="main" style="padding-left: 230px;">
-      <h1 class="page-header" ng-if="title">
-        {{ title }}
+      <h1 class="page-header" ng-if="headerTitle">
+        {{ headerTitle }}
         <!--button type="button" class="btn btn-default btn-lg">
           <span class="glyphicon glyphicon-new-window"></span>
         </button-->

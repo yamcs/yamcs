@@ -1,14 +1,11 @@
 (function () {
     angular
         .module('app.displays')
-        .controller('DisplaysController',  DisplaysController);
+        .controller('DisplaysTemplateController',  DisplaysTemplateController);
 
     /* @ngInject */
-    function DisplaysController($rootScope, displaysService) {
+    function DisplaysTemplateController(displaysService) {
         var vm = this;
-
-        $rootScope.pageTitle = 'Displays | Yamcs';
-
         vm.displays = [];
         displaysService.listDisplays().then(function (data) {
             vm.displays = data;

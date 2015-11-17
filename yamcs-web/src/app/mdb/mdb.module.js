@@ -9,7 +9,7 @@
     function configure($routeProvider) {
         $routeProvider.when('/mdb', {
             templateUrl: '/_static/app/mdb/pages/index.html',
-            controller: 'MDBController',
+            controller: 'MDBIndexController',
             controllerAs: 'vm'
         }).when('/mdb/:ss1/parameters', {
             templateUrl: '/_static/app/mdb/pages/parameters.html',

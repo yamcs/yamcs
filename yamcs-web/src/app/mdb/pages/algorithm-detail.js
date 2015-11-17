@@ -8,6 +8,7 @@
     /* @ngInject */
     function MDBAlgorithmDetailController($routeParams, mdbService) {
         var vm = this;
+        $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         var urlname = '/' + $routeParams.name;
         if ($routeParams.hasOwnProperty('ss2')) {

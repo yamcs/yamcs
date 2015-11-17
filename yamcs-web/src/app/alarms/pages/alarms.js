@@ -7,8 +7,11 @@
         .controller('AcknowledgeAlarmModalController',  AcknowledgeAlarmModalController);
 
     /* @ngInject */
-    function AlarmController(alarmService, $uibModal, $scope, $log) {
+    function AlarmController($rootScope, alarmService, $uibModal, $scope, $log) {
         var vm = this;
+
+        $rootScope.pageTitle = 'Alarms | Yamcs';
+
         vm.openAcknowledge = openAcknowledge;
         vm.alarms = [];
 

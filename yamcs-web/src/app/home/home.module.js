@@ -8,7 +8,9 @@
     /* @ngInject */
     function configure($routeProvider) {
         $routeProvider.when('/', {
-            templateUrl: '/_static/app/home/home.html'
+            templateUrl: '/_static/app/home/home.html',
+            controller: 'HomeController',
+            controllerAs: 'vm'
         });
     }
 })();

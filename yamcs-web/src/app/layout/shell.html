@@ -9,10 +9,10 @@
         <span class="icon-bar"></span>
       </button>
       <a href="#/" ng-if="shell.brandImage" style="padding-right: 15px;">
-        <img ng-src="{{ shell.brandImage }}">
+        <img ng-src="{{ shell.brandImage }}" alt="{{ shell.appTitle }}">
       </a>
       <a class="navbar-brand" href="#/" ng-if="!shell.brandImage">
-        {{ shell.title }}
+        {{ shell.appTitle }}
       </a>
     </div>
 

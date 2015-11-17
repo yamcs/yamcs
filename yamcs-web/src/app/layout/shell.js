@@ -9,8 +9,6 @@
     function Shell($scope, $location, socket, alarmService, configService) {
         var vm = this;
 
-        vm.title = configService.get('title');
-        vm.isBusy = true;
         vm.socketOpen = false;
         vm.socketInfoType = 'danger';
 
@@ -18,6 +16,7 @@
             return $location.path().indexOf(viewLocation) === 0;
         };
 
+        vm.appTitle = configService.get('title');
         vm.brandImage = configService.get('brandImage');
 
         socket.on('open', function () {
