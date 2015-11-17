@@ -12,10 +12,8 @@
             restrict: 'A',
             scope: { pinfo: '=', para: '=', 'plotmode': '=' },
             link: function(scope, element, attrs) {
-
                 var data = [];
                 var valueRange = [null, null];
-
                 var plotEl = angular.element('<div style="width: 100%"></div>');
                 element.prepend(plotEl);
                 makePlot(plotEl[0], scope, data, valueRange);
@@ -26,22 +24,42 @@
             valueRange = calculateInitialPlotRange(scope.pinfo);
             var guidelines = calculateGuidelines(scope.pinfo);
             var ctx = {archiveFetched: false};
+            var spinner = new Spinner();
 
             var g = new Dygraph(containingDiv, 'X\n', {
                 drawPoints: true,
                 showRoller: false,
                 customBars: true,
+                animatedZooms: true,
                 gridLineColor: 'lightgray',
                 axisLabelColor: '#666',
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
                 labels: ['Time', 'Value'],
                 valueRange: valueRange,
+                drawYAxis: true,
+                drawXAxis: true,
                 yRangePad: 10,
+                rightGap: 0,
+                //labelsUTC: true,
                 underlayCallback: function(canvasCtx, area, g) {
-                    // First draw rects
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.2;
+                    canvasCtx.fillStyle = 'gray';
+                    if (data.length === 0) {
+                        canvasCtx.fillRect(area.x, area.y, area.w, area.h);
+                        canvasCtx.fillStyle = 'black';
+                    }
+
+                    if (data.length === 0 && ctx.archiveFetched) {
+                        canvasCtx.font = '20px Verdana';
+                        canvasCtx.textAlign = 'center';
+                        canvasCtx.textBaseline = 'middle';
+                        var textX = (area.x + area.w) / 2;
+                        var textY = (area.y + area.h) / 2;
+                        canvasCtx.fillText('no data for this range', textX, textY);
+                    }
+
                     guidelines.forEach(function(guideline) {
                         if (guideline['y2'] === null)
                             return;
@@ -66,17 +84,11 @@
                         );
                     });
                     canvasCtx.globalAlpha = prevAlpha;
-
-                    // Then lines on top (todo: verify this works)
-                    /*guidelines.forEach(function(guideline) {
-                        if (guidelines['y2'] !== null)
-                            return;
-
-                        var y1 = g.toDomCoords(0, guideline['y1'])[1];
-                        canvasCtx.fillStyle = guideline['color'];
-                        canvasCtx.fillRect(area.x, y1, area.w, 1);
-                    });*/
                 }
+            });
+
+            g.ready(function () {
+                spinner.spin(containingDiv);
             });
 
             var tempData = [];
@@ -93,7 +105,7 @@
                 data.length = 0;
 
                 // Add new set of data
-                loadHistoricData(g, qname, plotmode, data, valueRange, ctx);
+                loadHistoricData(containingDiv, g, qname, plotmode, data, valueRange, ctx, spinner);
             });
 
             return g;
@@ -218,7 +230,7 @@
         }
 
 
-        function loadHistoricData(g, qname, plotMode, data, valueRange, ctx) {
+        function loadHistoricData(containingDiv, g, qname, plotMode, data, valueRange, ctx, spinner) {
             var now = new Date();
             var nowIso = now.toISOString();
             var before = new Date(now.getTime());
@@ -250,6 +262,9 @@
             }
 
             ctx['archiveFetched'] = false;
+            updateGraph(g, 'x\n');
+            spinner.spin(containingDiv);
+
             var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
             var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
             targetUrl += '?start=' + beforeIso.slice(0, -1);
@@ -278,13 +293,17 @@
                 updateValueRange(g, valueRange, min, max);
 
 
+                // before updating graph, so 'no data' text is not rendered
+                ctx['archiveFetched'] = true;
+
                 if (data.length > 0) {
                     updateGraph(g, data);
                 } else {
+                    // Ensures that the 'no data' message is shown
                     updateGraph(g, 'x\n');
                 }
 
-                ctx['archiveFetched'] = true;
+                spinner.stop();
             }).catch (function (message) {
                 exception.catcher('XHR failed')(message);
             });
