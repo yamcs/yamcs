@@ -42,13 +42,10 @@
         /*
             ALARM STATS
          */
-
         vm.alarmCount = 0;
         vm.alarmBadgeColor = '#9d9d9d';
 
-
         var alarmSubscriptionId = alarmService.watch(handleAggregatedAlarmState);
-
 
         /*
             Terminate subscription when the controller is destroyed
@@ -59,6 +56,7 @@
         });
 
         function handleAggregatedAlarmState(data) {
+            console.log('asked to update alarm state ', data);
             vm.alarmCount = data.length;
 
             var needsAck = false;

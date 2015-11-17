@@ -47,7 +47,7 @@
                 } else {
                     activeAlarmsById[data['id']] = enrichAlarm(data);
                 }
-                //console.log('data is now ', activeAlarmsById);
+                console.log('data is now ', activeAlarmsById);
 
                 var alarmList = [];
                 for (var aid in activeAlarmsById) {
