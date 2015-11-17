@@ -37,6 +37,7 @@
                 digitsAfterDecimal: 6,
                 labels: ['Time', 'Value'],
                 valueRange: valueRange,
+                yRangePad: 10,
                 underlayCallback: function(canvasCtx, area, g) {
                     // First draw rects
                     var prevAlpha = canvasCtx.globalAlpha;
@@ -45,9 +46,20 @@
                         if (guideline['y2'] === null)
                             return;
 
-                        var y1 = g.toDomCoords(0, guideline['y1'])[1];
+                        var y1, y2;
+                        if (guideline['y1'] === -Infinity) {
+                            y1 = area.y + area.h;
+                        } else {
+                            y1 = g.toDomCoords(0, guideline['y1'])[1];
+                        }
+
+                        if (guideline['y2'] === Infinity) {
+                            y2 = 0;
+                        } else {
+                            y2 = g.toDomCoords(0, guideline['y2'])[1];
+                        }
+
                         canvasCtx.fillStyle = guideline['color'];
-                        var y2 = g.toDomCoords(0, guideline['y2'])[1];
                         canvasCtx.fillRect(
                             area.x, Math.min(y1, y2),
                             area.w, Math.abs(y2 - y1)
@@ -56,14 +68,14 @@
                     canvasCtx.globalAlpha = prevAlpha;
 
                     // Then lines on top (todo: verify this works)
-                    guidelines.forEach(function(guideline) {
+                    /*guidelines.forEach(function(guideline) {
                         if (guidelines['y2'] !== null)
                             return;
 
                         var y1 = g.toDomCoords(0, guideline['y1'])[1];
                         canvasCtx.fillStyle = guideline['color'];
                         canvasCtx.fillRect(area.x, y1, area.w, 1);
-                    });
+                    });*/
                 }
             });
 
@@ -96,24 +108,25 @@
                 var defaultAlarm = pinfo['type']['defaultAlarm'];
                 if (defaultAlarm.hasOwnProperty('staticAlarmRange')) {
 
-                    // LOW LIMITS
-                    var last_y = null;
+                    var last_y = -Infinity;
                     var i, range, guideline;
+
+                    // LOW LIMITS
                     for (i = defaultAlarm['staticAlarmRange'].length - 1; i >= 0; i--) {
                         range = defaultAlarm['staticAlarmRange'][i];
                         if (range.hasOwnProperty('minInclusive')) {
                             guideline = {
-                                y1: range['minInclusive'],
-                                y2: last_y,
+                                y1: last_y,
+                                y2: range['minInclusive'],
                                 color: colorForLevel(range['level'])
                             };
                             guidelines.push(guideline);
-                            last_y = guideline['y1'];
+                            last_y = guideline['y2'];
                         }
                     }
 
                     // HIGH LIMITS
-                    last_y = null;
+                    last_y = Infinity;
                     for (i = defaultAlarm['staticAlarmRange'].length - 1; i >= 0; i--) {
                         range = defaultAlarm['staticAlarmRange'][i];
                         if (range.hasOwnProperty('maxInclusive')) {
