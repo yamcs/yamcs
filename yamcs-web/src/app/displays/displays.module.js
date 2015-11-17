@@ -12,7 +12,7 @@
         return {
             restrict: 'E',
             transclude: true,
-            scope: { activePane: '@', title: '@' },
+            scope: { activePane: '@', headerTitle: '@' },
             templateUrl: '/_static/app/displays/displays.template.html'
         };
     }
@@ -23,6 +23,8 @@
             restrict: 'A',
             scope: { ref: '@' },
             link: function(scope, elem, attrs) {
+                var spinner = new Spinner();
+                spinner.spin(elem[0]);
                 displaysService.getDisplay(attrs['ref']).then(function(rawDisplay) {
                     USS.drawAndConnectDisplay(rawDisplay, elem, tmService, function(display) {
 
@@ -31,6 +33,7 @@
                         // intricacities when it comes to scopes, directives and DOM manipulations.
                         //elem.parents('.main').css('background-color', display.bgcolor);
                         $('body').css('background-color', display.bgcolor);
+                        spinner.stop();
                         scope.$on('$destroy', function () {
                             $('body').css('background-color', '');
                         });
