@@ -4,7 +4,7 @@
         .factory('displaysService', displaysService);
 
     /* @ngInject */
-    function displaysService($http, exception, socket, tmService, $log) {
+    function displaysService($http, socket, tmService, $log) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata.parameter;
@@ -39,8 +39,7 @@
                 }
                 return displays;
             }).catch(function (message) {
-                exception.catcher('XHR Failed for listDisplays')(message);
-                //$location.url('/');
+                $log.error('XHR failed', message);
             });
         }
 
@@ -55,8 +54,7 @@
             }).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed for getDisplay')(message);
-                //$location.url('/');
+                $log.error('XHR failed', message);
             });
         }
 

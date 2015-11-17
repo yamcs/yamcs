@@ -6,7 +6,7 @@
         .factory('mdbService', mdbService);
 
     /* @ngInject */
-    function mdbService($http, exception) {
+    function mdbService($http, $log) {
 
         return {
             getSummary: getSummary,
@@ -29,7 +29,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -43,7 +43,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['parameter'];
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -57,7 +57,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['container'];
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -71,7 +71,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['command'];
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -85,7 +85,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['algorithm'];
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -95,7 +95,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -105,7 +105,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
     }

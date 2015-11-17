@@ -31,7 +31,7 @@
     }
 
     /* @ngInject */
-    function tmService($http, exception, socket) {
+    function tmService($http, $log, socket) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
@@ -68,7 +68,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 

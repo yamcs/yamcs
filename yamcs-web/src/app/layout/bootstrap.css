@@ -59,9 +59,9 @@ body {
   background-color: #31363f;
 }
 
-.nav-sidebar > .active > a,
-.nav-sidebar > .active > a:hover,
-.nav-sidebar > .active > a:focus {
+.nav.nav-sidebar > li.active > a,
+.nav.nav-sidebar > li.active > a:hover,
+.nav.nav-sidebar > li.active > a:focus {
   color: #fff;
   background-color: #428bca;
 }

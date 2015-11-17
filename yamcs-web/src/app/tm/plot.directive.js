@@ -6,7 +6,7 @@
         .directive('plot', plot);
 
     /* @ngInject */
-    function plot($log, $filter, $http, exception) {
+    function plot($log, $filter, $http) {
 
         return {
             restrict: 'A',
@@ -311,7 +311,7 @@
 
                 spinner.stop();
             }).catch (function (message) {
-                exception.catcher('XHR failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 

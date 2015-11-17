@@ -12,7 +12,7 @@
     var subscriptionId = 0;
 
     /* @ngInject */
-    function alarmService($http, exception, socket, $filter) {
+    function alarmService($http, $log, socket, $filter) {
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -35,8 +35,7 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data.alarm;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
-                //$location.url('/');
+                $log.error('XHR failed', message);
             });
         }
 
@@ -84,7 +83,7 @@
             return $http.patch(targetUrl, options).then(function (response) {
                 return response.data;
             }).catch(function (message) {
-                exception.catcher('XHR Failed')(message);
+                $log.error('XHR failed', message);
             });
         }
 
@@ -109,7 +108,7 @@
             }
 
             // TODO should not be done in service, and really only in template
-            alarm.msg = prefix + '<a href="#/mdb' + alarm.triggerValue.id.name + '">' + alarm.msg + '</a>';
+            alarm.msg = prefix + '<a href="#/fdb' + alarm.triggerValue.id.name + '">' + alarm.msg + '</a>';
 
             alarm.mostSevereLevel = toNumericLevel(alarm.mostSevereValue.monitoringResult);
             alarm.currentLevel = toNumericLevel(alarm.currentValue.monitoringResult);
