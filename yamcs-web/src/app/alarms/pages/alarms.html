@@ -18,34 +18,34 @@
     </tr>
 
     <tr ng-repeat="alarm in vm.alarms">
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td>
         <img ng-src="/_static/app/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td>
         <span ng-bind-html="alarm.msg"></span>
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td>
         {{ alarm.triggerValue.id.name | spaceSystem }}
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td>
         {{ alarm.violations }}
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td>
         <span ng-if="alarm.acknowledgeInfo">ACK</span>
         <span ng-if="!alarm.acknowledgeInfo">UNACK</span>
         <span ng-if="alarm.acknowledgeInfo.acknowledgeMessage" class="glyphicon glyphicon-comment"
             uib-tooltip="{{ alarm.acknowledgeInfo.acknowledgeMessage }}"></span>
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td ng-class="alarm.triggerValue.monitoringResult | monitoringClass">
         {{ alarm.triggerValue.generationTimeUTC }}
       </td>
 
-      <td ng-class="alarm.mostSevereValue.monitoringResult | monitoringClass">
+      <td ng-class="alarm.triggerValue.monitoringResult | monitoringClass">
         <img ng-src="/_static/app/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
         {{ alarm.triggerValue | stringValue }}
       </td>

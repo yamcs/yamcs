@@ -1,8 +1,9 @@
 <mdb-pane active-pane="{{ vm.info.qualifiedName|spaceSystem }}" title="{{ vm.info.name }}">
 
   <div class="container-fluid">
+
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-12">
         <dl class="dl-horizontal">
           <dt>Qualified&nbsp;Name</dt>
           <dd>{{ vm.info.qualifiedName }}</dd>
@@ -11,15 +12,39 @@
           <dd>
             <table class="table table-condensed small" style="margin-bottom: 0;">
               <tr ng-repeat="id in vm.info.alias">
-                <td style="border: none;"><span class="label label-default">{{ id.namespace }}</span></td>
+                <td style="border: none; white-space: nowrap" width="1"><span class="label label-default">{{ id.namespace }}</span></td>
                 <td style="border: none;">{{ id.name }}</td>
               </tr>
             </table>
           </dd>
         </dl>
+      </div>
+    </div>
 
-        <hr>
+    <div class="row">
+      <div class="col-md-8">
+        <div class="btn-toolbar" role="toolbar" style="padding-bottom: 0.5em;">
+          <div class="btn-group btn-group-xs pull-right" role="group">
+            <!--button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'15m'">15m</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'30m'" >30m</button-->
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1h'">1h</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'5h'">5h</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1d'">1d</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1w'">1w</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1m'">1m</button>
+            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'3m'">3m</button>
+          </div>
+        </div>
 
+        <div plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
+          pinfo="vm.info"
+          para="vm.para"
+          plotmode="plotmode"
+          style="width: 100%">
+        </div>
+      </div>
+
+      <div class="col-md-4">
         <dl class="dl-horizontal">
           <dt>Datasource</dt>
           <dd>{{ vm.info.dataSource|capitalize }}</dd>
@@ -120,11 +145,9 @@
 
       </div>
 
-      <div class="col-md-8">
+      <!--div class="col-md-8">
         <div class="btn-toolbar" role="toolbar" style="padding-bottom: 0.5em;">
           <div class="btn-group btn-group-xs pull-right" role="group">
-            <!--button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'15m'">15m</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'30m'" >30m</button-->
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1h'">1h</button>
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'5h'">5h</button>
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1d'">1d</button>
@@ -140,7 +163,7 @@
           plotmode="plotmode"
           style="width: 100%">
         </div>
-      </div>
+      </div-->
 
     </div>
 
