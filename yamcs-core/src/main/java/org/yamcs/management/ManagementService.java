@@ -74,7 +74,10 @@ public class ManagementService implements YProcessorListener {
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     
     CopyOnWriteArraySet<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
-    
+
+    // keep track of registered services
+    Map<String, Integer> servicesCount = new HashMap<>();
+
     Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
@@ -126,7 +129,20 @@ public class ManagementService implements YProcessorListener {
             ServiceControlImpl sci;
             try {
                 sci = new ServiceControlImpl(service);
+
+                // if a service with the same name has already been registered, suffix the service name with an index
+                int serviceCount = 0;
+                if(servicesCount.containsKey(serviceName)) {
+                    serviceCount = servicesCount.get(serviceName);
+                    servicesCount.remove(serviceName);
+                }
+                servicesCount.put(serviceName, ++serviceCount);
+                if(serviceCount > 1)
+                    serviceName=serviceName + "_" + serviceCount;
+
+                // register service
                 mbeanServer.registerMBean(sci, ObjectName.getInstance(tld+"."+instance+":type=services,name="+serviceName));
+
             } catch (Exception e) {
                 log.warn("Got exception when registering a service", e);
             }
@@ -136,7 +152,20 @@ public class ManagementService implements YProcessorListener {
     public void unregisterService(String instance, String serviceName) {
         if(jmxEnabled) {
             try {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=services,name="+serviceName));
+
+                // check if this serviceName has been registered several time
+                int serviceCount = 0;
+                String serviceName_  = serviceName;
+                if(servicesCount.containsKey(serviceName) && (serviceCount = servicesCount.get(serviceName)) > 0)
+                {
+                    if(serviceCount > 1)
+                        serviceName_ = serviceName + "_" + serviceCount;
+                    serviceCount--;
+                    servicesCount.replace(serviceName, serviceCount);
+                }
+
+                // unregister service
+                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=services,name="+serviceName_));
             } catch (Exception e) {
                 log.warn("Got exception when unregistering a service", e);
             }
