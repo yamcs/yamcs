@@ -29,7 +29,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
     final private SimpleString hornetAddress;
     final private TupleTranslator translator;
     YamcsSession yamcsSession;
-    final private YamcsClient msgClient;
+    final private YamcsClient yClient;
     final private Stream stream;
     static final public String UNIQUEID_HDR_NAME="_y_uniqueid";
     static final public int UNIQUEID = new Random().nextInt();
@@ -45,11 +45,11 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         SimpleString queue=new SimpleString(hornetAddress.toString()+"-StreamAdapter");
         
         yamcsSession=YamcsSession.newBuilder().build();
-        msgClient=yamcsSession.newClientBuilder().setDataProducer(true).setDataConsumer(hornetAddress, queue).
+        yClient=yamcsSession.newClientBuilder().setDataProducer(true).setDataConsumer(hornetAddress, queue).
             setFilter(new SimpleString(UNIQUEID_HDR_NAME+"<>"+UNIQUEID)).
             build();
         
-        msgClient.dataConsumer.setMessageHandler(this);
+        yClient.dataConsumer.setMessageHandler(this);
         stream.addSubscriber(this);
     }
 
@@ -60,7 +60,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
         try {
             ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
             msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);
-            msgClient.dataProducer.send(hornetAddress, msg);
+            yClient.sendData(hornetAddress, msg);
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
         } catch (HornetQException e) {

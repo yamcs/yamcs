@@ -353,4 +353,15 @@ public class YamcsClient {
 
      
     }
+    
+    /**
+     * Send message to the address using the data producer.
+     *      
+     * @param hornetAddress
+     * @param msg
+     * @throws HornetQException
+     */
+    public synchronized void sendData(SimpleString hornetAddress, ClientMessage msg) throws HornetQException {
+        dataProducer.send(hornetAddress, msg);        
+    }
 }
