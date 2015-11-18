@@ -131,9 +131,6 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             case "parameters":
                 return handleParametersRequest(req, pathOffset + 1);
             case "events":
-            case "events.csv":
-            case "events.json":
-            case "events.proto":
                 req.assertGET();
                 return listEvents(req);
             case "packets":

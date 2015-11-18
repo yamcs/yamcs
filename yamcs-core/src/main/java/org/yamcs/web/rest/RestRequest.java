@@ -131,24 +131,24 @@ public class RestRequest {
     }
     
     /**
-     * Matches the content type on either the Accept header or the extension of the resource
+     * Matches the content type on either the Accept header or a 'format' query param.
+     * Should probably better be integrated with the deriveTargetContentType setting.
      */
     public boolean asksFor(String mediaType) {
-        if (getHttpRequest().headers().contains(Names.ACCEPT)
-                && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType)) {
-            return true;
-        } else {
-            String lastSegment = getPathSegment(getPathSegmentCount() - 1).toLowerCase();
-            switch (mediaType) {
-            case JSON_MIME_TYPE:
-                return lastSegment.endsWith(".json");
-            case CSV_MIME_TYPE:
-                return lastSegment.endsWith(".csv");
-            case BINARY_MIME_TYPE:
-                return lastSegment.endsWith(".proto");
+        if (hasQueryParameter("format")) {
+            switch (getQueryParameter("format").toLowerCase()) {
+            case "json":
+                return JSON_MIME_TYPE.equals(mediaType);
+            case "csv":
+                return CSV_MIME_TYPE.equals(mediaType);
+            case "proto":
+                return BINARY_MIME_TYPE.equals(mediaType);
             default:
-                return false;
+                return mediaType.equals(getQueryParameter("format"));
             }
+        } else {
+            return getHttpRequest().headers().contains(Names.ACCEPT)
+                    && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType);
         }
     }
     
