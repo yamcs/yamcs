@@ -246,13 +246,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         loadChangelogSheet(false);
     }
 
-    @Override
-    public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-        File f=new File(path);
-        consistencyDateFile.write(ctx.file+" "+(new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified())+"\n");
-    }
-
-
     protected void loadGeneralSheet(boolean required) {
         Sheet sheet=switchToSheet(SHEET_GENERAL, required);
         if(sheet==null)return;
