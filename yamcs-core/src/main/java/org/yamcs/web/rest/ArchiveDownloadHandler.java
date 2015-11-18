@@ -46,7 +46,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+                MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset + 1);
                 if (!mr.matches()) {
                     throw new NotFoundException(req);
                 } else {
