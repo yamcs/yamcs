@@ -40,6 +40,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.PacketListener;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -143,25 +144,12 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     }
     
     // It seems like this needs to be re-done after every model restructuring
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void configureRowSorting() {
         rowSorter.setComparator(2, (ListPacket o1, ListPacket o2) -> {
             return o1.getName().compareTo(o2.getName());   
         });
-        
-        // Yamcs effective parameter types can theoretically change from one value to another
-        // So, unfortunately we can't statically determine it. Below code is a non-perfect workaround
         for (int i=3; i<getColumnCount(); i++) {
-            rowSorter.setComparator(i, (Object o1, Object o2) -> {
-                if (o1 == null ^ o2 == null)
-                    return (o1 == null) ? -1 : 1;
-                if (o1 == null && o2 == null)
-                    return 0;
-                if (o1.getClass() == o2.getClass() && o1 instanceof Comparable<?>)
-                    return ((Comparable) o1).compareTo(o2);
-                else
-                    return String.valueOf(o1).compareTo(String.valueOf(o2));
-            });
+            rowSorter.setComparator(i, new ValueComparator());
         }
     }
 
