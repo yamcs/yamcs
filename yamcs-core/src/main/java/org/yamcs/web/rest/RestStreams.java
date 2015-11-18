@@ -14,11 +14,11 @@ public class RestStreams {
     
     private static AtomicInteger streamCounter = new AtomicInteger();
     
-    public static void streamAndWait(RestRequest req, String selectSql, StreamSubscriber s) throws RestException {
+    public static void streamAndWait(RestRequest req, String selectSql, RestStreamSubscriber s) throws RestException {
         stream(req, selectSql, s).await();
     }
     
-    public static StreamSubscriberWrapper stream(RestRequest req, String selectSql, StreamSubscriber s) throws RestException {
+    public static StreamSubscriberWrapper stream(RestRequest req, String selectSql, RestStreamSubscriber s) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         

@@ -37,6 +37,7 @@ public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListene
     private ByteBufOutputStream bufOut;
     
     public ReplayToChunkedParameterProtobuf(RestRequest req) throws RestException {
+        super();
         this.req = req;
         contentType = req.deriveTargetContentType();
         resetBuffer();

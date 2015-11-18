@@ -134,8 +134,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 req.assertGET();
                 return listEvents(req);
             case "packets":
-                req.assertGET();
-                return listPackets(req);
+                return handlePacketsRequest(req, pathOffset + 1);
             case "downloads":
                 return downloadHandler.handleRequest(req, pathOffset + 1);
             default:
@@ -428,7 +427,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         String sql = buf.toString();
         
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.streamAndWait(req, sql, new LimitedStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
             
             @Override
             public void onTuple(Tuple tuple) {
@@ -495,6 +494,23 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             }
         } else {
             return listParameterHistory(req, mr.getRequestedId());
+        }
+    }
+    
+    private RestResponse handlePacketsRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listPackets(req, TimeEncoding.INVALID_INSTANT);
+        } else {
+            long gentime = req.getPathSegmentAsDate(pathOffset);
+            
+            pathOffset++;
+            if (!req.hasPathSegment(pathOffset)) {
+                return listPackets(req, gentime);
+            } else {
+                int seqnum = req.getPathSegmentAsInt(pathOffset);
+                return getPacket(req, gentime, seqnum);
+            }
         }
     }
     
@@ -631,7 +647,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 throw new InternalServerErrorException(e);
             }
                 
-            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void onTuple(Tuple tuple) {
@@ -647,7 +663,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             return new RestResponse(req, CSV_MIME_TYPE, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void onTuple(Tuple tuple) {
@@ -662,21 +678,27 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listPackets(RestRequest req) throws RestException {
+    private RestResponse listPackets(RestRequest req, long gentime) throws RestException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
         StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT) {
+            sqlb.append(" where ");
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));    
+            }
+            if (gentime != TimeEncoding.INVALID_INSTANT) {
+                sqlb.append("gentime = ").append(gentime);
+            }
         }
         if (RestUtils.asksDescending(req, true)) {
             sqlb.append(" order desc");
         }
         
         ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void onTuple(Tuple tuple) {
@@ -686,6 +708,28 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         });
         
         return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+    }
+    
+    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws RestException {
+        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        sqlb.append(" where gentime = ").append(gentime).append(" and seqNum = ").append(seqnum);
+        List<TmPacketData> packets = new ArrayList<>();
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+
+            @Override
+            public void onTuple(Tuple tuple) {
+                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                packets.add(pdata);
+            }
+        });
+        
+        if (packets.isEmpty()) {
+            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqnum + ")");
+        } else if (packets.size() > 1) {
+            throw new InternalServerErrorException("Too many results");
+        } else {
+            return new RestResponse(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
+        }
     }
     
     /**

@@ -89,6 +89,24 @@ public class RestRequest {
         return pathSegments[index];
     }
     
+    public long getPathSegmentAsDate(int index) {
+        String segment = pathSegments[index];
+        try {
+            return Long.parseLong(segment);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(segment);
+        }
+    }
+    
+    public int getPathSegmentAsInt(int index) throws BadRequestException {
+        String segment = pathSegments[index];
+        try {
+            return Integer.parseInt(segment);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Path segment '" + segment + "' is not a valid integer value");
+        }
+    }
+    
     public boolean hasPathSegment(int index) {
         return pathSegments.length > index;
     }

@@ -35,6 +35,7 @@ public class ReplayToChunkedParameterCSV extends RestParameterReplayListener {
     private ParameterFormatter formatter;
     
     public ReplayToChunkedParameterCSV(RestRequest req, List<NamedObjectId> idList) throws RestException {
+        super();
         this.req = req;
         this.idList = idList;
         RestUtils.startChunkedTransfer(req, AbstractRequestHandler.CSV_MIME_TYPE);
