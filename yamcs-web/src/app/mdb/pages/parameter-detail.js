@@ -32,6 +32,10 @@
                 tmService.unsubscribeParameter(subscriptionId);
             });
 
+            tmService.getParameterHistory(qname).then(function (historyData) {
+                vm.values = historyData['parameter'];
+            });
+
             vm.openEnumValuesModal = function () {
                 $uibModal.open({
                     animation: true,
@@ -60,11 +64,11 @@
                     for (var i = 0; i < ranges.length; i++) {
                         var range = ranges[i];
                         switch (range['level']) {
-                        case 'WATCH': info.watch = range; break;
-                        case 'WARNING': info.warning = range; break;
-                        case 'DISTRESS': info.distress = range; break;
-                        case 'CRITICAL': info.critical = range; break;
-                        case 'SEVERE': info.severe = range;
+                            case 'WATCH': info.watch = range; break;
+                            case 'WARNING': info.warning = range; break;
+                            case 'DISTRESS': info.distress = range; break;
+                            case 'CRITICAL': info.critical = range; break;
+                            case 'SEVERE': info.severe = range;
                         }
                     }
                 }

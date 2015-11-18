@@ -49,6 +49,7 @@
 
         return {
             getParameter: getParameter,
+            getParameterHistory: getParameterHistory,
             subscribeParameter: subscribeParameter,
             unsubscribeParameter: unsubscribeParameter,
 
@@ -63,7 +64,15 @@
 
         function getParameter(qname) {
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + qname;
+            return $http.get(targetUrl).then(function (response) {
+                return response.data;
+            }).catch(function (message) {
+                $log.error('XHR failed', message);
+            });
+        }
 
+        function getParameterHistory(qname) {
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '?norepeat';
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {

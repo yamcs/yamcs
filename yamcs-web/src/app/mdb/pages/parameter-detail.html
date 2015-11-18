@@ -33,10 +33,8 @@
     <div class="row">
       <div class="col-md-8">
         <hr>
-        <div class="btn-toolbar" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
+        <div ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'" class="btn-toolbar" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
           <div class="btn-group btn-group-xs pull-right" role="group">
-            <!--button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'15m'">15m</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'30m'" >30m</button-->
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1h'">1h</button>
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'5h'">5h</button>
             <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1d'">1d</button>
@@ -52,6 +50,35 @@
           para="vm.para"
           plotmode="plotmode"
           style="width: 100%">
+        </div>
+
+        <div>
+          <!--h3>Latest Value Updates</h3-->
+          <table class="table table-condensed">
+            <tr>
+              <th width="1">Generated</th>
+              <th>Value</th>
+              <th width="1">Monitoring</th>
+            </tr>
+            <tr ng-repeat="val in vm.values">
+              <td style="white-space: nowrap">
+                {{ val.generationTimeUTC }}
+
+              </td>
+              <td>{{ val | stringValue }}</td>
+              <td ng-if="val.monitoringResult">
+                <img ng-src="/_static/app/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
+              </td>
+              <td ng-if="!val.monitoringResult">
+                -
+              </td>
+            </tr>
+            <tr ng-if="!vm.values">
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+            </tr>
+          </table>
         </div>
       </div>
 
@@ -135,46 +162,8 @@
           <dt>Calibrator</dt>
           <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
         </dl>
-
       </div>
-
-      <!--div class="col-md-8">
-        <div class="btn-toolbar" role="toolbar" style="padding-bottom: 0.5em;">
-          <div class="btn-group btn-group-xs pull-right" role="group">
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1h'">1h</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'5h'">5h</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1d'">1d</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1w'">1w</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1m'">1m</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'3m'">3m</button>
-          </div>
-        </div>
-
-        <div plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
-          pinfo="vm.info"
-          para="vm.para"
-          plotmode="plotmode"
-          style="width: 100%">
-        </div>
-      </div-->
-
     </div>
-
-    <!--div class="latest-values">
-      <div class="inline-header">Latest Value Updates</div>
-      <table>
-        <tr>
-          <th>abc</th>
-          <th>def</th>
-        </tr>
-        {% for val in latest_values %}
-          <tr>
-            <td>{{ val }}a</td>
-            <td>{{ val }}b</td>
-          </tr>
-        {% endfor %}
-      </table>
-    </div-->
   </div>
 </mdb-pane>
 

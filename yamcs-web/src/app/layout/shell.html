@@ -41,7 +41,7 @@
               style="margin-top: 15px; margin-bottom: -15px; margin-right: 15px;"
               value="100" type="{{ shell.socketInfoType }}">
             <span ng-if="!shell.socketOpen">
-              Not Connected
+              no live connection
             </span>
             <span ng-if="shell.socketOpen && shell.missionTime">
               {{ shell.missionTime }}
@@ -81,8 +81,3 @@
 
   </div>
 </nav>
-
-<uib-alert type="danger" ng-if="!shell.socketOpen">
-  <strong>Oops!</strong>
-  You are no longer connected to Yamcs. Verify your connection, and then refresh your browser.
-</uib-alert>

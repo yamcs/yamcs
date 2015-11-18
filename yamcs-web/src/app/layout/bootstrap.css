@@ -78,3 +78,8 @@ body {
   margin: 0;
   font-size: 16px;
 }
+
+.main h3 {
+  font-size: 16px;
+  font-weight: normal;
+}
