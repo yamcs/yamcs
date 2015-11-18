@@ -36,6 +36,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
@@ -456,7 +457,8 @@ public class XtceToGpbAssembler {
                 infob.setEncoding(fde.getEncoding().toString());
             }
             if (fde.getDefaultCalibrator() != null) {
-                infob.setDefaultCalibrator(fde.toString());
+                Calibrator calibrator = fde.getDefaultCalibrator();
+                infob.setDefaultCalibrator(calibrator.toString());
             }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
@@ -468,7 +470,8 @@ public class XtceToGpbAssembler {
                 infob.setEncoding(ide.getEncoding().toString());
             }
             if (ide.getDefaultCalibrator() != null) {
-                infob.setDefaultCalibrator(ide.toString());
+                Calibrator calibrator = ide.getDefaultCalibrator();
+                infob.setDefaultCalibrator(calibrator.toString());
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {
             infob.setType(Type.STRING);
