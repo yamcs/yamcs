@@ -250,7 +250,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         RestReplays.replay(req, replayRequest, new RestReplayListener() {
             
             @Override
-            public void newData(ProtoDataType type, MessageLite data) {
+            public void onNewData(ProtoDataType type, MessageLite data) {
                 try {
                     DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
                     MessageAndSchema restMessage = fromReplayMessage(type, data);
@@ -526,7 +526,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
 
             @Override
-            public void newData(ProtoDataType type, MessageLite data) {
+            public void onNewData(ProtoDataType type, MessageLite data) {
                 ParameterData pdata = (ParameterData) data;
                 for (ParameterValue pval : pdata.getParameterList()) {
                     switch (pval.getEngValue().getType()) {
@@ -566,6 +566,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+        boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
+        
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
 
         if (req.asksFor(CSV_MIME_TYPE)) {
@@ -574,32 +576,34 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 List<NamedObjectId> idList = Arrays.asList(id);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
 
                     @Override
-                    public void onNewData(ProtoDataType type, MessageLite data) {
-                        ParameterData pdata = (ParameterData) data;
+                    public void onParameterData(ParameterData pdata) {
                         try {
                             csvFormatter.writeParameters(pdata.getParameterList());
                         } catch (IOException e) {
                             log.error("Error while writing parameter line", e);
                         }
                     }
-                });
+                };
+                replayListener.setNoRepeat(noRepeat);
+                RestReplays.replayAndWait(req, rr, replayListener);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
             return new RestResponse(req, CSV_MIME_TYPE, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
-            RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
                 
                 @Override
-                public void onNewData(ProtoDataType type, MessageLite data) {
-                    ParameterData pdata = (ParameterData) data;
+                public void onParameterData(ParameterData pdata) {
                     resultb.addAllParameter(pdata.getParameterList());
                 }
-            });
+            };
+            replayListener.setNoRepeat(noRepeat);
+            RestReplays.replayAndWait(req, rr, replayListener);
             return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }

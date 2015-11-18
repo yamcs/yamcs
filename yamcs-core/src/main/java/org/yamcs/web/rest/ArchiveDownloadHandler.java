@@ -80,12 +80,17 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     
     private void downloadParameter(RestRequest req, NamedObjectId id) throws RestException {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, false);
+        boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         if (req.asksFor(CSV_MIME_TYPE)) {
             List<NamedObjectId> idList = Arrays.asList(id);
-            RestReplays.replay(req, rr, new ReplayToChunkedParameterCSV(req, idList));
+            RestParameterReplayListener l = new ReplayToChunkedParameterCSV(req, idList);
+            l.setNoRepeat(noRepeat);
+            RestReplays.replay(req, rr, l);
         } else {
-            RestReplays.replay(req, rr, new ReplayToChunkedParameterProtobuf(req));
+            RestParameterReplayListener l = new ReplayToChunkedParameterProtobuf(req);
+            l.setNoRepeat(noRepeat);
+            RestReplays.replay(req, rr, l);
         }
     }
     

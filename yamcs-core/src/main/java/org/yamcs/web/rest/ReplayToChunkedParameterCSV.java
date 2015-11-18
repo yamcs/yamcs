@@ -9,12 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.web.AbstractRequestHandler;
-
-import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -26,7 +23,7 @@ import io.netty.channel.ChannelFutureListener;
  * than the treshold size for one chunk, this will cause a chunk to be written out.
  * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
  */
-public class ReplayToChunkedParameterCSV extends RestReplayListener {
+public class ReplayToChunkedParameterCSV extends RestParameterReplayListener {
     
     private static final Logger log = LoggerFactory.getLogger(ReplayToChunkedParameterCSV.class);
     private static final int CHUNK_TRESHOLD = 8096;
@@ -52,9 +49,8 @@ public class ReplayToChunkedParameterCSV extends RestReplayListener {
     }
     
     @Override
-    public void newData(ProtoDataType type, MessageLite data) {
+    public void onParameterData(ParameterData pdata) {
         try {
-            ParameterData pdata = (ParameterData) data;
             formatter.writeParameters(pdata.getParameterList());
             //formatter.flush(); // Hmm would prefer not to flush everytime
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
