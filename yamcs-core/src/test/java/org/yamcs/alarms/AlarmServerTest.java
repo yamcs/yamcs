@@ -1,6 +1,7 @@
 package org.yamcs.alarms;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
@@ -160,6 +161,14 @@ public class AlarmServerTest {
         
         long ackTime = 123L;
         as.acknowledge(p2 /* not p1 */, aa.id, "a-user", ackTime, "bla");
+    }
+    
+    @Test
+    public void testMoreSevere() {
+        assertTrue(AlarmServer.moreSevere(MonitoringResult.CRITICAL_HIGH, MonitoringResult.WARNING_LOW));
+        assertFalse(AlarmServer.moreSevere(MonitoringResult.WARNING_LOW, MonitoringResult.CRITICAL_HIGH));
+        assertFalse(AlarmServer.moreSevere(MonitoringResult.CRITICAL_HIGH, MonitoringResult.CRITICAL));
+        assertFalse(AlarmServer.moreSevere(MonitoringResult.CRITICAL, MonitoringResult.CRITICAL));
     }
     
     class MyListener implements AlarmListener {
