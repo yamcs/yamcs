@@ -6,7 +6,7 @@
             return {
                 restrict: 'E',
                 transclude: true,
-                scope: { activePane:'@', headerTitle: '@' },
+                scope: { activePane:'@', headerTitle: '@', headerSub: '@' },
                 templateUrl: '/_static/app/mdb/mdb.template.html'
             };
     });

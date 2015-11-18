@@ -36,8 +36,12 @@
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
                 labels: ['Time', 'Value'],
+                labelsDiv: 'parameter-detail-legend',
                 valueRange: valueRange,
                 yRangePad: 10,
+                axes: {
+                    y: { axisLabelWidth: 50 }
+                },
                 rightGap: 0,
                 //labelsUTC: true,
                 underlayCallback: function(canvasCtx, area, g) {

@@ -10,10 +10,10 @@
       <th>Subsystem</th>
       <th>Violations</th>
       <th>Status</th>
-      <th>Activation Time</th>
       <th>Activation Value</th>
-      <th>Latest Time</th>
+      <th>Activation Time</th>
       <th>Latest Value</th>
+      <th>Latest Time</th>
       <th width="1"></th>
     </tr>
 
@@ -41,27 +41,27 @@
             uib-tooltip="{{ alarm.acknowledgeInfo.acknowledgeMessage }}"></span>
       </td>
 
-      <td ng-class="alarm.triggerValue.monitoringResult | monitoringClass">
-        {{ alarm.triggerValue.generationTimeUTC }}
-      </td>
-
-      <td ng-class="alarm.triggerValue.monitoringResult | monitoringClass">
+      <td>
         <img ng-src="/_static/app/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
         {{ alarm.triggerValue | stringValue }}
       </td>
 
-      <td ng-class="alarm.currentValue.monitoringResult | monitoringClass">
-        {{ alarm.currentValue.generationTimeUTC }}
+      <td>
+        {{ alarm.triggerValue.generationTimeUTC }}
       </td>
 
-      <td ng-class="alarm.currentValue.monitoringResult | monitoringClass">
+      <td>
         <img ng-src="/_static/app/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
         {{ alarm.currentValue | stringValue }}
       </td>
 
-      <td style="border: none">
+      <td>
+        {{ alarm.currentValue.generationTimeUTC }}
+      </td>
+
+      <td>
         <button ng-if="!alarm.acknowledgeInfo" class="btn btn-xs"
-            ng-class="'btn-' + (alarm.triggerValue.monitoringResult | monitoringClass)"
+            ng-class="'btn-' + (alarm.currentValue.monitoringResult | monitoringClass)"
             ng-click="vm.openAcknowledge(alarm)">
           Acknowledge
         </button>

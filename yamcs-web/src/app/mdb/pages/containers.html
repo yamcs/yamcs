@@ -14,26 +14,15 @@
     <tr ng-repeat="sq in vm.containers | orderBy:'qualifiedName'">
       <td>{{ sq.name }}</td>
       <td ng-if="sq.baseContainer">
-        <a
-            href="#/mdb{{ sq.baseContainer.qualifiedName | spaceSystem }}/containers"
-            ng-if="!(sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName)">
-          {{ sq.baseContainer.qualifiedName }}
-        </a>
-        <span ng-if="sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName">
-          {{ sq.baseContainer.name }}
-        </span>
+        <a ng-if="!(sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName)"
+            href="#/mdb{{ sq.baseContainer.qualifiedName | spaceSystem }}/containers">{{ sq.baseContainer.qualifiedName }}</a>
+        <span ng-if="sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName">{{ sq.baseContainer.name }}</span>
       </td>
       <td ng-if="!sq.baseContainer">-</td>
       <td ng-if="sq.restrictionCriteria">
         <div ng-repeat="crit in sq.restrictionCriteria">
-          <span ng-if="crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName">
-            {{ crit.parameter.name }}
-          </span>
-          <a
-              href="#/mdb{{ crit.parameter.qualifiedName | spaceSystem }}/parameters"
-              ng-if="!(crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName)">
-            {{ crit.parameter.qualifiedName }}
-          </a>
+          <a href="#/mdb{{ crit.parameter.qualifiedName }}" ng-if="crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName">{{ crit.parameter.name }}</a>
+          <a href="#/mdb{{ crit.parameter.qualifiedName }}" ng-if="!(crit.parameter.qualifiedName | sameSpaceSystem:sq.qualifiedName)">{{ crit.parameter.qualifiedName }}</a>
           {{ crit.operator | asOperator }}
           {{ crit.value}}
         </div>

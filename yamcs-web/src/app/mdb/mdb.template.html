@@ -13,7 +13,7 @@
       <li><a href="#">MWL_GT</a></li>
       <li class="active">{{ title | spaceSystem }}</li>
     </ol-->
-    <h1 class="page-header">{{ headerTitle }}</h1>
+    <h1 class="page-header">{{ headerTitle }} <small ng-if="headerSub">{{ headerSub }}</small></h1>
     <p>&nbsp;</p>
     <ng-transclude></ng-transclude>
   </div>

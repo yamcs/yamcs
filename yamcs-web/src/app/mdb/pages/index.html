@@ -24,9 +24,7 @@
       </div>
 
       <h3 class="panel-title">
-        <a href="#/mdb{{ ss.qualifiedName }}/parameters">
-          {{ ss.qualifiedName }}
-        </a>
+        <a href="#/mdb{{ ss.qualifiedName }}/parameters">{{ ss.qualifiedName }}</a>
         <span ng-if="ss.version" class="label label-primary">v{{ ss.version }}</span>
       </h3>
     </div>
@@ -36,7 +34,7 @@
         {{ ss.shortDescription }}
       </p>
       <div class="container-fluid" ng-if="ss.history">
-        <div class="row" ng-repeat="h in ss.history">
+        <div class="row" ng-repeat="h in ss.history | orderBy:'-'">
           <div class="col-md-1">v{{ h.version }}</div>
           <div class="col-md-1" style="white-space: nowrap">{{ h.date}}</div>
           <div class="col-md-10" ng-bind-html="h.message | nl2br"></div>
