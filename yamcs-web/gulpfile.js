@@ -4,6 +4,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     del = require('del'),
     gulp = require('gulp'),
     gulpFilter = require('gulp-filter'),
+    less = require('gulp-less'),
     inject = require('gulp-inject'),
     merge = require('gulp-merge'),
     ngAnnotate = require('gulp-ng-annotate'),
@@ -41,13 +42,21 @@ gulp.task('bower-map', ['clean'], function () {
 });
 
 gulp.task('bower-fonts', ['clean'], function () {
-    return gulp.src(bowerFiles()).pipe(gulpFilter('**glyphicons**')).pipe(gulp.dest('./build/fonts'));
+    return gulp.src([
+        './bower_components/bootstrap/dist/fonts/**'
+    ]).pipe(gulp.dest('./build/app/fonts'));
 });
 
 gulp.task('bower', ['bower-main', 'bower-map', 'bower-fonts']);
 
 gulp.task('css', ['clean'], function () {
     return gulp.src('./src/app/**/*.css')
+        .pipe(gulp.dest('./build/app'));
+});
+
+gulp.task('less', ['clean'], function () {
+    return gulp.src('./src/app/**/*.less')
+        .pipe(less())
         .pipe(gulp.dest('./build/app'));
 });
 
@@ -83,7 +92,7 @@ gulp.task('img', ['clean'], function () {
 });
 
 // Updates the CSS and JS references defined in the root index.html
-gulp.task('index', ['clean', 'bower', 'css', 'js', 'html', 'img'], function () {
+gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], function () {
     return gulp.src('./src/index.html')
         .pipe(inject(gulp.src('./build/vendor/**/*', {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
