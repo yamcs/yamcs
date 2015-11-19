@@ -52,11 +52,7 @@
             templateUrl: '/_static/_site/displays/pages/displays.html',
             controller: 'DisplaysController',
             controllerAs: 'vm'
-        }).when('/displays/:display', {
-            templateUrl: '/_static/_site/displays/pages/display.html',
-            controller: 'DisplayController',
-            controllerAs: 'vm'
-        }).when('/displays/:group/:display', {
+        }).when('/displays/:display*', {
             templateUrl: '/_static/_site/displays/pages/display.html',
             controller: 'DisplayController',
             controllerAs: 'vm'

@@ -98,7 +98,7 @@ gulp.task('img', ['clean'], function () {
 // Updates the CSS and JS references defined in the root index.html
 gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], function () {
     return gulp.src('./src/index.html')
-        .pipe(inject(gulp.src('./build/_site/vendor.js', {read: false}),
+        .pipe(inject(gulp.src(['./build/_site/vendor.js', './build/_site/uss/uss.js'], {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
         .pipe(inject(gulp.src('./build/_site/yamcs-web.js', {}),
             {ignorePath: '/build', addPrefix: '/_static'}))
