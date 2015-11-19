@@ -9,6 +9,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     merge = require('gulp-merge'),
     ngAnnotate = require('gulp-ng-annotate'),
     path = require('path'),
+    uglify = require('gulp-uglify'),
     watch = require('gulp-watch');
 
 gulp.task('clean', function () {
@@ -24,12 +25,13 @@ gulp.task('bower-main', ['clean'], function () {
     return gulp.src(bowerFiles())
         .pipe(jsFilter)
         .pipe(concat('vendor.js'))
+        //.pipe(uglify()) // TODO make conditional because slow
         .pipe(jsFilter.restore)
         .pipe(cssFilter)
         .pipe(concat('vendor.css'))
         .pipe(cssFilter.restore)
         .pipe(gulpFilter(['*', '!bootstrap.js', '!bootstrap.less', '!**glyphicons**']))
-        .pipe(gulp.dest('./build/vendor'));
+        .pipe(gulp.dest('./build/_site'));
 });
 
 // Copies the referred map files to prevent 404s with an open
@@ -38,7 +40,7 @@ gulp.task('bower-map', ['clean'], function () {
     return gulp.src([
         './bower_components/bootstrap/dist/css/bootstrap.css.map',
         './bower_components/dygraphs/dygraph-combined.js.map'
-    ]).pipe(gulp.dest('./build/vendor'));
+    ]).pipe(gulp.dest('./build/_site'));
 });
 
 gulp.task('bower-fonts', ['clean'], function () {
@@ -78,6 +80,8 @@ gulp.task('js-uss', ['clean'], function () {
 gulp.task('js', ['clean', 'js-uss'], function () {
     return gulp.src(['./src/**/*.js', '!./src/**/uss/*'])
         .pipe(ngAnnotate())
+        .pipe(angularFilesort())
+        .pipe(concat('yamcs-web.js'))
         .pipe(gulp.dest('./build/_site'));
 });
 
@@ -94,9 +98,9 @@ gulp.task('img', ['clean'], function () {
 // Updates the CSS and JS references defined in the root index.html
 gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], function () {
     return gulp.src('./src/index.html')
-        .pipe(inject(gulp.src('./build/vendor/**/*', {read: false}),
+        .pipe(inject(gulp.src('./build/_site/vendor.js', {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
-        .pipe(inject(gulp.src('./build/_site/**/*.js', {}).pipe(angularFilesort()),
+        .pipe(inject(gulp.src('./build/_site/yamcs-web.js', {}),
             {ignorePath: '/build', addPrefix: '/_static'}))
         .pipe(inject(gulp.src('./build/_site/**/*.css',{read: false}),
             {ignorePath: '/build', addPrefix: '/_static'}))
