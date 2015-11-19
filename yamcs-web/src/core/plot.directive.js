@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamcs.tm')
+        .module('yamcs.core')
         .directive('plot', plot);
 
     /* @ngInject */

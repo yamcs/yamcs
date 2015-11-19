@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamcs.mdb', ['yamcs.tm'])
+        .module('yamcs.mdb', ['yamcs.core'])
         .config(configure);
 
     /* @ngInject */

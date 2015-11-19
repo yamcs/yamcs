@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamcs.displays', ['yamcs.tm'])
+        .module('yamcs.displays', ['yamcs.core'])
         .directive('displaysPane', displaysPane)
         .directive('embeddedDisplay', embeddedDisplay)
         .config(configure);

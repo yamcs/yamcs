@@ -8,7 +8,6 @@
             'yamcs.displays',
             'yamcs.home',
             'yamcs.intf',
-            'yamcs.mdb',
-            'yamcs.tm'
+            'yamcs.mdb'
         ]);
 })();
