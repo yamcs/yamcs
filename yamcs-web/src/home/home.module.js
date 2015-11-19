@@ -8,7 +8,7 @@
     /* @ngInject */
     function configure($routeProvider) {
         $routeProvider.when('/', {
-            templateUrl: '/_static/yamcs/home/home.html',
+            templateUrl: '/_static/_site/home/home.html',
             controller: 'HomeController',
             controllerAs: 'vm'
         });

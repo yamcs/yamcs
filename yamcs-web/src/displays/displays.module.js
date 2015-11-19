@@ -13,7 +13,7 @@
             restrict: 'E',
             transclude: true,
             scope: { activePane: '@', headerTitle: '@' },
-            templateUrl: '/_static/yamcs/displays/displays.template.html'
+            templateUrl: '/_static/_site/displays/displays.template.html'
         };
     }
 
@@ -49,15 +49,15 @@
     /* @ngInject */
     function configure($routeProvider) {
         $routeProvider.when('/displays', {
-            templateUrl: '/_static/yamcs/displays/pages/displays.html',
+            templateUrl: '/_static/_site/displays/pages/displays.html',
             controller: 'DisplaysController',
             controllerAs: 'vm'
         }).when('/displays/:display', {
-            templateUrl: '/_static/yamcs/displays/pages/display.html',
+            templateUrl: '/_static/_site/displays/pages/display.html',
             controller: 'DisplayController',
             controllerAs: 'vm'
         }).when('/displays/:group/:display', {
-            templateUrl: '/_static/yamcs/displays/pages/display.html',
+            templateUrl: '/_static/_site/displays/pages/display.html',
             controller: 'DisplayController',
             controllerAs: 'vm'
         });

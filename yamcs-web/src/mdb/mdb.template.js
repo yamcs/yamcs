@@ -7,7 +7,7 @@
                 restrict: 'E',
                 transclude: true,
                 scope: { activePane:'@' },
-                templateUrl: '/_static/yamcs/mdb/mdb.template.html'
+                templateUrl: '/_static/_site/mdb/mdb.template.html'
             };
     });
 })();

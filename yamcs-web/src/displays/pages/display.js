@@ -20,7 +20,7 @@
         $scope.openParameterModal = function () {
             var modalInstance = $uibModal.open({
                animation: true,
-               templateUrl: '/_static/yamcs/displays/parameter-modal.html',
+               templateUrl: '/_static/_site/displays/parameter-modal.html',
                controller: 'ParameterModalInstanceController',
                size: 'lg',
                resolve: {
