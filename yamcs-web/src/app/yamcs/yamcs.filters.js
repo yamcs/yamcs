@@ -41,10 +41,14 @@
         return function (param, usingRaw) {
             if (!param) return '';
             if(usingRaw) {
-                var rv=param.rawValue;
+                var rv = param.rawValue;
+                var res = '';
+                if (rv['type'] === 'STRING') res += '\'';
                 for(var idx in rv) {
-                    if(idx!='type') return rv[idx];
+                    if(idx!='type') res += rv[idx];
                 }
+                if (rv['type'] === 'STRING') res += '\'';
+                return res;
             } else {
                 var ev=param.engValue;
                 if(ev === undefined) {

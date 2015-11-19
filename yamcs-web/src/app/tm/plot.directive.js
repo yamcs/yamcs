@@ -9,8 +9,8 @@
     function plot($log, $filter, $http, yamcsInstance) {
 
         return {
-            restrict: 'A',
-            scope: { pinfo: '=', para: '=', 'plotmode': '=' },
+            restrict: 'E',
+            scope: { pinfo: '=', para: '=', 'range': '=' },
             link: function(scope, element, attrs) {
                 var data = [];
                 var valueRange = [null, null];
@@ -47,11 +47,12 @@
                 underlayCallback: function(canvasCtx, area, g) {
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.2;
-                    canvasCtx.fillStyle = 'gray';
-                    if (data.length === 0) {
-                        canvasCtx.fillRect(area.x, area.y, area.w, area.h);
-                        canvasCtx.fillStyle = 'black';
-                    }
+
+                    //if (data.length === 0) {
+                    //    canvasCtx.fillStyle = 'gray';
+                    //    canvasCtx.fillRect(area.x, area.y, area.w, area.h);
+                    //}
+                    //canvasCtx.fillStyle = 'black';
 
                     if (data.length === 0 && ctx.archiveFetched) {
                         canvasCtx.font = '20px Verdana';
@@ -98,7 +99,7 @@
                 addPval(g, pval, data, valueRange, ctx, tempData);
             });
 
-            scope.$watch('plotmode', function(plotmode) {
+            scope.$watch('range', function(range) {
                 var qname = scope.pinfo.qualifiedName;
 
                 if (data.length > 0) {
@@ -109,7 +110,7 @@
                 data.length = 0;
 
                 // Add new set of data
-                loadHistoricData(containingDiv, g, qname, plotmode, data, valueRange, ctx, spinner);
+                loadHistoricData(containingDiv, g, qname, range, data, valueRange, ctx, spinner);
 
                 // Reset again to cover edge case where we start from empty but zoomed graph
                 // (buggy dygraphs)
@@ -240,33 +241,33 @@
         }
 
 
-        function loadHistoricData(containingDiv, g, qname, plotMode, data, valueRange, ctx, spinner) {
+        function loadHistoricData(containingDiv, g, qname, range, data, valueRange, ctx, spinner) {
             var now = new Date();
             var nowIso = now.toISOString();
             var before = new Date(now.getTime());
             var beforeIso = nowIso;
-            if (plotMode === '15m') {
+            if (range === '15m') {
                 before.setMinutes(now.getMinutes() - 15);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '30m') {
+            } else if (range === '30m') {
                 before.setMinutes(now.getMinutes() - 30);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '1h') {
+            } else if (range === '1h') {
                 before.setHours(now.getHours() - 1);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '5h') {
+            } else if (range === '5h') {
                 before.setHours(now.getHours() - 5);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '1d') {
+            } else if (range === '1d') {
                 before.setDate(now.getDate() - 1);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '1w') {
+            } else if (range === '1w') {
                 before.setDate(now.getDate() - 7);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '1m') {
+            } else if (range === '1m') {
                 before.setDate(now.getDate() - 31);
                 beforeIso = before.toISOString();
-            } else if (plotMode === '3m') {
+            } else if (range === '3m') {
                 before.setDate(now.getDate() - (3*31));
                 beforeIso = before.toISOString();
             }

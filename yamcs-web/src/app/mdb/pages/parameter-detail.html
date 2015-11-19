@@ -1,7 +1,15 @@
-<mdb-pane active-pane="{{ vm.info.qualifiedName|spaceSystem }}" header-title="{{ vm.info.name }}" header-sub="{{ vm.info.qualifiedName | spaceSystem }}">
+<mdb-pane active-pane="{{ vm.info.qualifiedName|spaceSystem }}">
+  <div>
+    <div class="btn-toolbar pull-right">
+      <div class="btn-group">
+        <button type="button" class="btn btn-default btn-xs">Export CSV</button>
+      </div>
+    </div>
+    <h1 class="page-header">{{ vm.info.name }} <small>{{ vm.info.qualifiedName | spaceSystem }}</small></h1>
+  </div>
+  <p>&nbsp;</p>
 
   <div class="container-fluid">
-
     <div class="row">
       <div class="col-md-2">
         <span style="font-size: 20px; font-weight: bolder; white-space: nowrap">
@@ -10,83 +18,30 @@
           {{ vm.info.type.unitSet | joinBy:'unit':' ' }}
         </span>
         <img ng-if="vm.para.monitoringResult" ng-src="/_static/app/alarms/images/level{{ vm.para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ vm.para.monitoringResult | monitoringValue }}"><br>
-        <small ng-if="vm.para">{{ vm.para.generationTimeUTC }}</small>
+        <small style="color: #6f6f6f" ng-if="vm.para">{{ vm.para.generationTimeUTC }}</small><br>
+        <small style="color: #6f6f6f">Source: {{ vm.info.dataSource|capitalize }}</small>
       </div>
-      <div class="col-md-10">
+
+      <div class="col-md-6">
         <dl class="dl-horizontal">
           <dt>Qualified&nbsp;Name</dt>
-          <dd>{{ vm.info.qualifiedName }}</dd>
-
-          <dt>Aliases</dt>
           <dd>
-            <table class="table table-condensed small" style="margin-bottom: 0;">
+            {{ vm.info.qualifiedName }}
+            <a ng-if="vm.info.alias"
+              style="cursor: pointer; padding-left: 1em;"
+              ng-click="vm.collapseAliasInfo = !vm.collapseAliasInfo">
+                <small>{{ vm.info.alias.length }} aliases »</small>
+            </a><br>
+            <table uib-collapse="vm.collapseAliasInfo" class="table table-condensed small" style="margin-bottom: 0;">
               <tr ng-repeat="id in vm.info.alias">
                 <td style="border: none; white-space: nowrap" width="1"><span class="label label-default">{{ id.namespace }}</span></td>
                 <td style="border: none;">{{ id.name }}</td>
               </tr>
             </table>
           </dd>
-        </dl>
-      </div>
-    </div>
 
-    <div class="row">
-      <div class="col-md-8">
-        <hr>
-        <div ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'" class="btn-toolbar" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-          <div class="btn-group btn-group-xs pull-right" role="group">
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1h'">1h</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'5h'">5h</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1d'">1d</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1w'">1w</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'1m'">1m</button>
-            <button type="button" class="btn btn-default" ng-model="plotmode" uib-btn-radio="'3m'">3m</button>
-          </div>
-          <div id="parameter-detail-legend" style="padding-left: 50px;"></div>
-        </div>
-
-        <div plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
-          pinfo="vm.info"
-          para="vm.para"
-          plotmode="plotmode"
-          style="width: 100%">
-        </div>
-
-        <div>
-          <!--h3>Latest Value Updates</h3-->
-          <table class="table table-condensed">
-            <tr>
-              <th width="1">Generated</th>
-              <th>Value</th>
-              <th width="1">Monitoring</th>
-            </tr>
-            <tr ng-repeat="val in vm.values">
-              <td style="white-space: nowrap">
-                {{ val.generationTimeUTC }}
-
-              </td>
-              <td>{{ val | stringValue }}</td>
-              <td ng-if="val.monitoringResult">
-                <img ng-src="/_static/app/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
-              </td>
-              <td ng-if="!val.monitoringResult">
-                -
-              </td>
-            </tr>
-            <tr ng-if="!vm.values">
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <hr>
-        <dl class="dl-horizontal">
-          <dt>Datasource</dt>
-          <dd>{{ vm.info.dataSource|capitalize }}</dd>
+          <dt>Description</dt>
+          <dd>{{ vm.info.shortDescription | nvl:'-' }}</dd>
 
           <dt>Eng. Type</dt>
           <dd>
@@ -94,12 +49,33 @@
             <span ng-if="vm.info.type.engType == 'enumeration'" class="glyphicon glyphicon-list" style="cursor: pointer;" ng-click="vm.openEnumValuesModal()"></span>
           </dd>
 
-          <dt>Description</dt>
-          <dd>{{ vm.info.shortDescription | nvl:'-' }}</dd>
+          <dt>Raw Type</dt>
+          <dd>
+            {{ vm.info.type.dataEncoding.type | capitalize }}
+            <a style="cursor: pointer; padding-left: 1em;"
+              ng-click="vm.collapseRawInfo = !vm.collapseRawInfo">
+              <small>more »</small>
+            </a>
+          </dd>
         </dl>
 
-        <hr ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'">
+        <dl class="dl-horizontal" uib-collapse="vm.collapseRawInfo">
+          <dt>Size In Bits</dt>
+          <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
 
+          <dt>Byte Order</dt>
+          <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
+          <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
+
+          <dt>Encoding</dt>
+          <dd>{{ vm.info.type.dataEncoding.encoding }}</dd>
+
+          <dt>Calibrator</dt>
+          <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
+        </dl>
+      </div>
+
+      <div class="col-md-4">
         <dl class="dl-horizontal" ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'">
 
           <dt>High Limits</dt>
@@ -142,26 +118,61 @@
             <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
           </dd>
         </dl>
+      </div>
+    </div>
 
+    <div class="row">
+      <div class="col-md-12">
         <hr>
+        <div ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'" class="btn-toolbar" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
+          <div class="btn-group btn-group-xs pull-right" role="group">
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1h'">1h</label>
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'5h'">5h</label>
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1d'">1d</label>
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1w'">1w</label>
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1m'">1m</label>
+            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'3m'">3m</label>
+          </div>
+          <div id="parameter-detail-legend" style="padding-left: 50px;"></div>
+        </div>
 
-        <dl class="dl-horizontal">
-          <dt>Raw Type</dt>
-          <dd>{{ vm.info.type.dataEncoding.type | capitalize }}</dd>
+        <plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
+          pinfo="vm.info"
+          para="vm.para"
+          range="plotctx.range"
+          style="width: 100%">
+        </plot>
 
-          <dt>Size In Bits</dt>
-          <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
-
-          <dt>Byte Order</dt>
-          <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
-          <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
-
-          <dt>Encoding</dt>
-          <dd>{{ vm.info.type.dataEncoding.encoding }}</dd>
-
-          <dt>Calibrator</dt>
-          <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
-        </dl>
+        <div>
+          <h2>Value History</h2>
+          <table class="table table-condensed">
+            <tr>
+              <th width="1">Generated</th>
+              <th title="Engineering Value">Eng. Value</th>
+              <th>Raw Value</th>
+              <th width="1">Monitoring</th>
+            </tr>
+            <tr ng-repeat="val in vm.values">
+              <td style="white-space: nowrap">
+                {{ val.generationTimeUTC }}
+              </td>
+              <td>{{ val | stringValue }}</td>
+              <td>{{ val | stringValue:true }}</td>
+              <td ng-if="val.monitoringResult">
+                <img ng-src="/_static/app/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
+              </td>
+              <td ng-if="!val.monitoringResult">
+                -
+              </td>
+            </tr>
+            <tr ng-if="!vm.values">
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>

@@ -9,7 +9,12 @@
     function MDBParameterDetailController($rootScope, $routeParams, tmService, mdbService, $scope, $uibModal, configService) {
         var vm = this;
 
-        $scope.plotmode = configService.get('initialPlotRange', '1h');
+        vm.collapseRawInfo = true;
+        vm.collapseAliasInfo = true;
+
+        $scope.plotctx = {
+            range: configService.get('initialPlotRange', '1h')
+        };
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         var urlname = '/' + $routeParams.name;
