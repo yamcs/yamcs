@@ -111,8 +111,7 @@
     .filter('formatDate', /* @ngInject */ function(configService) {
         return function(value) {
             if (!value) return value;
-            var utcOnly = configService.get('utcOnly');
-            if (utcOnly) {
+            if (configService.get('utcOnly')) {
                 return value.format();
             } else {
                 return value.clone().local().format();
