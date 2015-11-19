@@ -49,6 +49,13 @@
         }
      })
 
+    .filter('startsWith', function() {
+        return function(haystack, needle) {
+            if (!haystack || !needle) return false;
+            return haystack.slice(0, needle.length) === needle;
+        }
+     })
+
     .filter('join', function () {
         return function (arr, sep) {
             sep = sep || ' ';

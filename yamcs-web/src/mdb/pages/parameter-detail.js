@@ -9,9 +9,6 @@
     function MDBParameterDetailController($rootScope, $routeParams, tmService, mdbService, $scope, $uibModal, configService) {
         var vm = this;
 
-        vm.collapseRawInfo = true;
-        vm.collapseAliasInfo = true;
-
         $scope.plotctx = {
             range: configService.get('initialPlotRange', '1h')
         };
@@ -38,7 +35,7 @@
                 vm.values = historyData['parameter'];
             });
 
-            vm.openEnumValuesModal = function () {
+            vm.openEnumValuesModal = function() {
                 $uibModal.open({
                     animation: true,
                     templateUrl: 'enumValuesModal.html',
