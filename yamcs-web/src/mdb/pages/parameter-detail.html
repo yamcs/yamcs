@@ -136,12 +136,12 @@
           <div id="parameter-detail-legend" style="padding-left: 50px;"></div>
         </div>
 
-        <plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
+        <div plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
           pinfo="vm.info"
           para="vm.para"
           range="plotctx.range"
-          style="width: 100%">
-        </plot>
+          style="width: 100%; position: relative">
+        </div>
 
         <div>
           <h2>Value History</h2>

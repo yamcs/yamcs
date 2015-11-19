@@ -9,18 +9,25 @@
     function plot($log, $filter, tmService) {
 
         return {
-            restrict: 'E',
+            restrict: 'EA',
             scope: { pinfo: '=', para: '=', 'range': '=' },
             link: function(scope, element, attrs) {
                 var data = [];
                 var valueRange = [null, null];
-                var plotEl = angular.element('<div style="width: 100%"></div>');
-                element.prepend(plotEl);
-                makePlot(plotEl[0], scope, data, valueRange);
+                var plotWrapper = angular.element('<div>');
+
+                var spinContainer = angular.element('<div style="position: absolute; top: 50%; left: 50%;"></div>');
+                plotWrapper.prepend(spinContainer);
+
+                var plotEl = angular.element('<div style="width: 100%;"></div>');
+                plotWrapper.prepend(plotEl);
+
+                element.prepend(plotWrapper);
+                makePlot(plotEl[0], spinContainer, scope, data, valueRange);
             }
         };
 
-        function makePlot(containingDiv, scope, data, valueRange) {
+        function makePlot(containingDiv, spinContainer, scope, data, valueRange) {
             valueRange = calculateInitialPlotRange(scope.pinfo);
             var guidelines = calculateGuidelines(scope.pinfo);
             var ctx = {archiveFetched: false};
@@ -48,18 +55,12 @@
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.2;
 
-                    //if (data.length === 0) {
-                    //    canvasCtx.fillStyle = 'gray';
-                    //    canvasCtx.fillRect(area.x, area.y, area.w, area.h);
-                    //}
-                    //canvasCtx.fillStyle = 'black';
-
                     if (data.length === 0 && ctx.archiveFetched) {
                         canvasCtx.font = '20px Verdana';
                         canvasCtx.textAlign = 'center';
                         canvasCtx.textBaseline = 'middle';
-                        var textX = (area.x + area.w) / 2;
-                        var textY = (area.y + area.h) / 2;
+                        var textX = area.x + (area.w / 2);
+                        var textY = area.y + (area.h / 2);
                         canvasCtx.fillText('no data for this range', textX, textY);
                     }
 
@@ -91,7 +92,7 @@
             });
 
             g.ready(function () {
-                spinner.spin(containingDiv);
+                spinner.spin(spinContainer[0]);
             });
 
             var tempData = [];
@@ -110,7 +111,7 @@
                 data.length = 0;
 
                 // Add new set of data
-                loadHistoricData(containingDiv, g, qname, range, data, valueRange, ctx, spinner);
+                loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner);
 
                 // Reset again to cover edge case where we start from empty but zoomed graph
                 // (buggy dygraphs)
@@ -241,7 +242,7 @@
         }
 
 
-        function loadHistoricData(containingDiv, g, qname, range, data, valueRange, ctx, spinner) {
+        function loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner) {
             var now = new Date();
             var nowIso = now.toISOString();
             var before = new Date(now.getTime());
@@ -274,7 +275,7 @@
 
             ctx['archiveFetched'] = false;
             updateGraph(g, 'x\n');
-            spinner.spin(containingDiv);
+            spinner.spin(spinContainer[0]);
 
             tmService.getParameterSamples(qname, {
                 start: beforeIso.slice(0, -1),
