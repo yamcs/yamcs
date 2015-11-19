@@ -86,7 +86,7 @@ gulp.task('js', ['clean', 'js-uss'], function () {
 });
 
 gulp.task('html', ['clean'], function () {
-    return gulp.src('./src/**/*.html')
+    return gulp.src(['./src/**/*.html', '!./src/index.html'])
         .pipe(gulp.dest('./build/_site'));
 });
 
