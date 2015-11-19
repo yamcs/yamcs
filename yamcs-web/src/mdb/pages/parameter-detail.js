@@ -17,13 +17,7 @@
         };
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
-        var urlname = '/' + $routeParams.name;
-        if ($routeParams.hasOwnProperty('ss2')) {
-            urlname = '/' + $routeParams['ss2'] + urlname;
-        }
-        if ($routeParams.hasOwnProperty('ss1')) {
-            urlname = '/' + $routeParams['ss1'] + urlname;
-        }
+        var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
         vm.urlname = urlname;
 
         mdbService.getParameterInfo(urlname).then(function (data) {
