@@ -15,7 +15,7 @@
 
 <body ng-cloak>
 
-  <div ng-include="'/_static/app/layout/shell.html'"></div>
+  <div ng-include="'/_static/yamcs/core/shell.html'"></div>
   <div ng-view></div>
 
   <!-- bower:js -->
@@ -34,11 +34,11 @@
 
       $http.get(targetUrl).then(function (response) {
           angular
-              .module('app.core')
+              .module('yamcs.core')
               .constant('remoteConfig', response.data)
               .constant('yamcsInstance', yamcsInstance);
           angular.element(document).ready(function() {
-              angular.bootstrap(document, ['app']);
+              angular.bootstrap(document, ['yamcs']);
           });
       });
   })();

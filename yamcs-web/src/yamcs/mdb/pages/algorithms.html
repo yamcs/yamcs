@@ -1,0 +1,21 @@
+<mdb-pane active-pane="{{ vm.qname }}">
+  <h1 class="page-header">{{ vm.qname }}</h1>
+  <p>&nbsp;</p>
+
+  <ng-include src="'/_static/yamcs/mdb/tabs.template.html'"></ng-include>
+
+  <p>&nbsp;</p>
+
+  <table class="table">
+    <tr>
+      <th width="200">Name</th>
+      <th width="200">Scope</th>
+      <th>Description</th>
+    </tr>
+    <tr ng-repeat="algo in vm.algorithms | orderBy:'qualifiedName'">
+      <td><a href="#/mdb{{ algo.qualifiedName | spaceSystem }}/algorithms/{{ algo.name }}">{{ algo.name }}</a></td>
+      <td>{{ algo.scope | capitalize }}</td>
+      <td>{{ algo.shortDescription | nvl:'-' }}</td>
+    </tr>
+  </table>
+</mdb-pane>

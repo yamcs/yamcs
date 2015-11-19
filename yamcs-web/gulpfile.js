@@ -44,20 +44,20 @@ gulp.task('bower-map', ['clean'], function () {
 gulp.task('bower-fonts', ['clean'], function () {
     return gulp.src([
         './bower_components/bootstrap/dist/fonts/**'
-    ]).pipe(gulp.dest('./build/app/fonts'));
+    ]).pipe(gulp.dest('./build/yamcs/fonts'));
 });
 
 gulp.task('bower', ['bower-main', 'bower-map', 'bower-fonts']);
 
 gulp.task('css', ['clean'], function () {
-    return gulp.src('./src/app/**/*.css')
-        .pipe(gulp.dest('./build/app'));
+    return gulp.src('./src/yamcs/**/*.css')
+        .pipe(gulp.dest('./build/yamcs'));
 });
 
 gulp.task('less', ['clean'], function () {
-    return gulp.src('./src/app/**/*.less')
+    return gulp.src('./src/yamcs/**/*.less')
         .pipe(less())
-        .pipe(gulp.dest('./build/app'));
+        .pipe(gulp.dest('./build/yamcs'));
 });
 
 gulp.task('js-uss', ['clean'], function () {
@@ -72,23 +72,23 @@ gulp.task('js-uss', ['clean'], function () {
             //'**/highcharts.src.js'
         ])
         .pipe(concat('uss.js'))
-        .pipe(gulp.dest('./build/app/uss'));
+        .pipe(gulp.dest('./build/yamcs/uss'));
 });
 
 gulp.task('js', ['clean', 'js-uss'], function () {
-    return gulp.src(['./src/app/**/*.js', '!./src/app/**/uss/*'])
+    return gulp.src(['./src/yamcs/**/*.js', '!./src/yamcs/**/uss/*'])
         .pipe(ngAnnotate())
-        .pipe(gulp.dest('./build/app'));
+        .pipe(gulp.dest('./build/yamcs'));
 });
 
 gulp.task('html', ['clean'], function () {
-    return gulp.src('./src/app/**/*.html')
-        .pipe(gulp.dest('./build/app'));
+    return gulp.src('./src/yamcs/**/*.html')
+        .pipe(gulp.dest('./build/yamcs'));
 });
 
 gulp.task('img', ['clean'], function () {
-    return gulp.src('./src/app/**/*.png')
-        .pipe(gulp.dest('./build/app'));
+    return gulp.src('./src/yamcs/**/*.png')
+        .pipe(gulp.dest('./build/yamcs'));
 });
 
 // Updates the CSS and JS references defined in the root index.html
@@ -96,9 +96,9 @@ gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], funct
     return gulp.src('./src/index.html')
         .pipe(inject(gulp.src('./build/vendor/**/*', {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
-        .pipe(inject(gulp.src('./build/app/**/*.js', {}).pipe(angularFilesort()),
+        .pipe(inject(gulp.src('./build/yamcs/**/*.js', {}).pipe(angularFilesort()),
             {ignorePath: '/build', addPrefix: '/_static'}))
-        .pipe(inject(gulp.src('./build/app/**/*.css',{read: false}),
+        .pipe(inject(gulp.src('./build/yamcs/**/*.css',{read: false}),
             {ignorePath: '/build', addPrefix: '/_static'}))
         .pipe(gulp.dest('./build'));
 });

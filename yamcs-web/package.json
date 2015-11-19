@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "init": "npm install",
-    "install": "bower install --config.interactive=false",
-    "test": "gulp test"
+    "install": "bower install --config.interactive=false"
   },
   "devDependencies": {
     "del": "^2.0.2",

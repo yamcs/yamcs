@@ -1,0 +1,19 @@
+<mdb-pane active-pane="{{ vm.qname }}">
+  <h1 class="page-header">{{ vm.qname }}</h1>
+  <p>&nbsp;</p>
+
+  <ng-include src="'/_static/yamcs/mdb/tabs.template.html'"></ng-include>
+
+  <p>&nbsp;</p>
+
+  <table class="table">
+    <tr>
+      <th width="200">Name</th>
+      <th>Description</th>
+    </tr>
+    <tr ng-repeat="cmd in vm.commands | orderBy:'qualifiedName'">
+      <td>{{ cmd.name }}</td>
+      <td>{{ cmd.shortDescription | nvl:'-' }}</td>
+    </tr>
+  </table>
+</mdb-pane>
