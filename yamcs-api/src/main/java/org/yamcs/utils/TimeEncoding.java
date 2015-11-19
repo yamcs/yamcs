@@ -15,9 +15,9 @@ import java.util.regex.Pattern;
 public class TimeEncoding {
     public static final long INVALID_INSTANT       = Long.MIN_VALUE;
     //these two are used for open intervals
-    public static final long MIN_INSTANT       = Long.MIN_VALUE; 
-    public static final long MAX_INSTANT       = Long.MAX_VALUE;
-    
+    public static final long MIN_INSTANT       = Long.MIN_VALUE;
+    public static long MAX_INSTANT = 185539080470435999L;
+
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long GPS_TAI_DELTA = 19000;
  
@@ -28,6 +28,7 @@ public class TimeEncoding {
     public static void setUp() throws RuntimeException {
         try {
             taiUtcConverter = new TaiUtcConverter();
+            MAX_INSTANT = 185539080470399999L + taiUtcConverter.diffTaiUtc * 1000;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -315,5 +316,6 @@ public class TimeEncoding {
     public static long fromGpsMillisec(long gpstime) {
         return gpstime + GPS_EPOCH_YAMCS_EPOCH_DELTA;
     }
+
 
 }
