@@ -49,6 +49,7 @@
 
         return {
             getParameter: getParameter,
+            getParameterSamples: getParameterSamples,
             getParameterHistory: getParameterHistory,
             subscribeParameter: subscribeParameter,
             unsubscribeParameter: unsubscribeParameter,
@@ -66,6 +67,16 @@
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + qname;
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
+            }).catch(function (message) {
+                $log.error('XHR failed', message);
+            });
+        }
+
+        function getParameterSamples(qname, options) {
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
+            targetUrl += toQueryString(options);
+            return $http.get(targetUrl).then(function (response) {
+                    return response.data;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
             });
@@ -221,6 +232,20 @@
                         console.log('got exception from subscription: ', exceptionType, exceptionMsg);
                     }
                 });
+        }
+
+        function toQueryString(options) {
+            if (!options) return '';
+            var result = '?';
+            var first = true;
+            for (var opt in options) {
+                if (options.hasOwnProperty(opt)) {
+                    if (!first) result += '&';
+                    first = false;
+                    result += opt + '=' + options[opt];
+                }
+            }
+            return result;
         }
     }
 })();

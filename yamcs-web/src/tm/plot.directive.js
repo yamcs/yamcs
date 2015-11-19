@@ -6,7 +6,7 @@
         .directive('plot', plot);
 
     /* @ngInject */
-    function plot($log, $filter, $http, yamcsInstance) {
+    function plot($log, $filter, tmService) {
 
         return {
             restrict: 'E',
@@ -276,14 +276,15 @@
             updateGraph(g, 'x\n');
             spinner.spin(containingDiv);
 
-            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
-            targetUrl += '?start=' + beforeIso.slice(0, -1);
-            targetUrl += '&stop=' + nowIso.slice(0, -1);
-            $http.get(targetUrl).then(function (response) {
+            tmService.getParameterSamples(qname, {
+                start: beforeIso.slice(0, -1),
+                stop: nowIso.slice(0, -1),
+                limit: 10
+            }).then(function (incomingData) {
                 var min, max;
-                if (response.data['sample']) {
-                    for (var i = 0; i < response.data['sample'].length; i++) {
-                        var sample = response.data['sample'][i];
+                if (incomingData['sample']) {
+                    for (var i = 0; i < incomingData['sample'].length; i++) {
+                        var sample = incomingData['sample'][i];
                         var t = new Date();
                         t.setTime(Date.parse(sample['averageGenerationTimeUTC']));
                         var v = sample['averageValue'];
@@ -314,17 +315,15 @@
                 }
 
                 spinner.stop();
-            }).catch (function (message) {
-                $log.error('XHR failed', message);
             });
         }
 
         function colorForLevel(level) {
-            if (level == 'WATCH') return '#ffff99';
-            else if (level == 'WARNING') return '#ffff04';
-            else if (level == 'DISTRESS') return '#ff6601';
-            else if (level == 'CRITICAL') return '#ff0201';
-            else if (level == 'SEVERE') return '#800000';
+            if (level == 'WATCH') return '#f1eee9';
+            else if (level == 'WARNING') return '#cddaea';
+            else if (level == 'DISTRESS') return '#abc3dd';
+            else if (level == 'CRITICAL') return '#769dc4';
+            else if (level == 'SEVERE') return '#4280b1';
             else $log.error('Unknown level ' + level);
         }
     }
