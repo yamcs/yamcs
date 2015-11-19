@@ -136,28 +136,31 @@
           <div id="parameter-detail-legend" style="padding-left: 50px;"></div>
         </div>
 
-        <div plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
+        <plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
           pinfo="vm.info"
           para="vm.para"
           range="plotctx.range"
           style="width: 100%; position: relative">
-        </div>
+        </plot>
+        <!-- the position: relative is needed for spin.js :-/ Not sure. -->
 
         <div>
           <h2>Value History</h2>
           <table class="table table-condensed">
             <tr>
-              <th width="1">Generated</th>
-              <th title="Engineering Value">Eng. Value</th>
-              <th>Raw Value</th>
+              <th width="200">Generated</th>
+              <th width="200" title="Engineering Value">Eng. Value</th>
+              <th width="200">Raw Value</th>
+              <th></th>
               <th width="1">Monitoring</th>
             </tr>
             <tr ng-repeat="val in vm.values">
               <td style="white-space: nowrap">
-                {{ val.generationTimeUTC }}
+                {{ val.generationTimeUTC | parseUTC | formatDate }}
               </td>
               <td>{{ val | stringValue }}</td>
               <td>{{ val | stringValue:true }}</td>
+              <td></td>
               <td ng-if="val.monitoringResult">
                 <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
               </td>
@@ -169,6 +172,7 @@
               <td>-</td>
               <td>-</td>
               <td>-</td>
+              <td></td>
               <td>-</td>
             </tr>
           </table>

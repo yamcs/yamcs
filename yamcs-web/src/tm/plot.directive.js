@@ -279,8 +279,7 @@
 
             tmService.getParameterSamples(qname, {
                 start: beforeIso.slice(0, -1),
-                stop: nowIso.slice(0, -1),
-                limit: 10
+                stop: nowIso.slice(0, -1)
             }).then(function (incomingData) {
                 var min, max;
                 if (incomingData['sample']) {

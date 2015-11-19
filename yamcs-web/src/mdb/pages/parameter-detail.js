@@ -37,7 +37,10 @@
                 tmService.unsubscribeParameter(subscriptionId);
             });
 
-            tmService.getParameterHistory(qname).then(function (historyData) {
+            tmService.getParameterHistory(qname, {
+                noRepeat: true,
+                limit: 10
+            }).then(function (historyData) {
                 vm.values = historyData['parameter'];
             });
 

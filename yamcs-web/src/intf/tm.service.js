@@ -63,8 +63,9 @@
             subscribedParameters: subscribedParameters
         };
 
-        function getParameter(qname) {
+        function getParameter(qname, options) {
             var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/parameters' + qname;
+            targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
@@ -82,8 +83,9 @@
             });
         }
 
-        function getParameterHistory(qname) {
-            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '?norepeat';
+        function getParameterHistory(qname, options) {
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
+            targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
