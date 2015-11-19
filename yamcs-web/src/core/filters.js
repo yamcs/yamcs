@@ -91,5 +91,32 @@
         return function (obj, prop) {
             return obj && obj.hasOwnProperty(prop);
         };
-    });
+    })
+
+    /*
+        Parses a string value to a UTC Moment
+     */
+    .filter('parseUTC', function() {
+        return function(value) {
+            if (!value) return value;
+            return moment.utc(value);
+        };
+    })
+
+    /*
+        Formats a Moment as UTC or as Local time.
+        Currently not using moment-timezone, because of limitations of
+        dygraphs. (only local or utc time are supported)
+     */
+    .filter('formatDate', /* @ngInject */ function(configService) {
+        return function(value) {
+            if (!value) return value;
+            var utcOnly = configService.get('utcOnly');
+            if (utcOnly) {
+                return value.format();
+            } else {
+                return value.clone().local().format();
+            }
+        };
+    })
 })();

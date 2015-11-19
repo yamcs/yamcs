@@ -44,7 +44,7 @@
               no live connection
             </span>
             <span ng-if="shell.socketOpen && shell.missionTime">
-              {{ shell.missionTime }}
+              {{ shell.missionTime | formatDate }}
             </span>
             <span ng-if="shell.socketOpen && !(shell.missionTime)">
               ---

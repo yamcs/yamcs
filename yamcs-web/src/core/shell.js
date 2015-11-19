@@ -61,7 +61,8 @@
         }
 
         function handleTimeUpdate(data) {
-            vm.missionTime = data['currentTimeUTC'];
+            var time = data['currentTimeUTC'];
+            vm.missionTime = moment.utc(time);
         }
     }
 })();

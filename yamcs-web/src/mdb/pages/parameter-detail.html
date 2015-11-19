@@ -18,7 +18,7 @@
           {{ vm.info.type.unitSet | joinBy:'unit':' ' }}
         </span>
         <img ng-if="vm.para.monitoringResult" ng-src="/_static/_site/alarms/images/level{{ vm.para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ vm.para.monitoringResult | monitoringValue }}"><br>
-        <small style="color: #6f6f6f" ng-if="vm.para">{{ vm.para.generationTimeUTC }}</small><br>
+        <small style="color: #6f6f6f" ng-if="vm.para">{{ vm.para.generationTimeUTC | parseUTC | formatDate }}</small><br>
         <small style="color: #6f6f6f">Source: {{ vm.info.dataSource|capitalize }}</small>
       </div>
 

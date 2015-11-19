@@ -6,7 +6,7 @@
         .directive('plot', plot);
 
     /* @ngInject */
-    function plot($log, $filter, tmService) {
+    function plot($log, $filter, tmService, configService) {
 
         return {
             restrict: 'EA',
@@ -50,7 +50,7 @@
                     y: { axisLabelWidth: 50 }
                 },
                 rightGap: 0,
-                //labelsUTC: true,
+                labelsUTC: configService.get('utcOnly', false),
                 underlayCallback: function(canvasCtx, area, g) {
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.2;

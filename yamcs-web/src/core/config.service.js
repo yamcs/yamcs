@@ -12,9 +12,8 @@
         config['title'] = remoteConfig['title'] || 'Untitled';
         config['yamcsInstance'] = yamcsInstance;
 
-
-        if (remoteConfig.hasOwnProperty('brandImage')) {
-            config['brandImage'] = '/_static/' + yamcsInstance + '/' + remoteConfig['brandImage'];
+        if (config.hasOwnProperty('brandImage')) {
+            config['brandImage'] = '/_static/' + yamcsInstance + '/' + config['brandImage'];
         }
 
         return {
