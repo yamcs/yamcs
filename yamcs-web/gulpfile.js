@@ -9,6 +9,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     merge = require('gulp-merge'),
     ngAnnotate = require('gulp-ng-annotate'),
     path = require('path'),
+    rename = require('gulp-rename'),
     uglify = require('gulp-uglify'),
     watch = require('gulp-watch');
 
@@ -95,8 +96,14 @@ gulp.task('img', ['clean'], function () {
         .pipe(gulp.dest('./build/_site'));
 });
 
+gulp.task('config', ['clean'], function () {
+    return gulp.src('./src/config.json')
+        .pipe(rename('config.json.sample'))
+        .pipe(gulp.dest('./build/_site'));
+});
+
 // Updates the CSS and JS references defined in the root index.html
-gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], function () {
+gulp.task('index', ['clean', 'bower', 'css', 'less', 'js'], function () {
     return gulp.src('./src/index.html')
         .pipe(inject(gulp.src(['./build/_site/vendor.js', './build/_site/uss/uss.js'], {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
@@ -112,5 +119,4 @@ gulp.task('index', ['clean', 'bower', 'css', 'less', 'js', 'html', 'img'], funct
  * Default 'gulp' behaviour
  *
  */
-gulp.task('default', ['css', 'js', 'index']);
-
+gulp.task('default', ['css', 'js', 'html', 'img', 'config', 'index']);
