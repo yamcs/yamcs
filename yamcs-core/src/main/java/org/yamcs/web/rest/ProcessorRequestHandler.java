@@ -11,6 +11,7 @@ import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
@@ -39,17 +40,17 @@ import org.yamcs.xtceproc.XtceDbFactory;
  * Handles requests related to processors
  */
 public class ProcessorRequestHandler extends RestRequestHandler {
-    
+
     private static ProcessorParameterRequestHandler parameterHandler = new ProcessorParameterRequestHandler();
     private static ProcessorCommandRequestHandler commandHandler = new ProcessorCommandRequestHandler();
     private static ProcessorAlarmRequestHandler alarmHandler = new ProcessorAlarmRequestHandler();
     private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
-    
+
     @Override
     public String getPath() {
         return "processors";
     }
-    
+
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
@@ -63,7 +64,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             req.addToContext(RestRequest.CTX_INSTANCE, instance);
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             req.addToContext(MDBRequestHandler.CTX_MDB, mdb);
-            
+
             if (!req.hasPathSegment(pathOffset + 1)) {
                 if (req.isGET()) {
                     return listProcessorsForInstance(req, instance);
@@ -83,29 +84,29 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             }
         }
     }
-    
+
     private RestResponse handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
-            return patchProcessor(req, processor);
+            return updateProcessor(req, processor);
         } else {
             switch (req.getPathSegment(pathOffset)) {
-            case "parameters":
-                return parameterHandler.handleRequest(req, pathOffset + 1);
-            case "commands":
-                return commandHandler.handleRequest(req, pathOffset + 1);
-            case "alarms":
-                return alarmHandler.handleRequest(req, pathOffset + 1);
-            case "cqueues":
-                return cqueueHandler.handleRequest(req, pathOffset + 1);
-            case "clients":
-                req.assertGET();
-                return listClientsForProcessor(req, processor);
-            default:
-                throw new NotFoundException(req);
+                case "parameters":
+                    return parameterHandler.handleRequest(req, pathOffset + 1);
+                case "commands":
+                    return commandHandler.handleRequest(req, pathOffset + 1);
+                case "alarms":
+                    return alarmHandler.handleRequest(req, pathOffset + 1);
+                case "cqueues":
+                    return cqueueHandler.handleRequest(req, pathOffset + 1);
+                case "clients":
+                    req.assertGET();
+                    return listClientsForProcessor(req, processor);
+                default:
+                    throw new NotFoundException(req);
             }
         }
     }
-    
+
     private RestResponse listClientsForProcessor(RestRequest req, YProcessor processor) throws RestException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
@@ -117,7 +118,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
         return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
-    
+
     private RestResponse listProcessors(RestRequest req) throws RestException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
@@ -125,7 +126,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
-    
+
     private RestResponse listProcessorsForInstance(RestRequest req, String yamcsInstance) throws RestException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels(yamcsInstance)) {
@@ -133,50 +134,119 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
-        
+
+    private RestResponse updateProcessor(RestRequest req, YProcessor yproc) throws RestException {
+        if(req.isPOST())
+            return postProcessor(req, yproc);
+        else if(req.isPATCH())
+            return patchProcessor(req, yproc);
+        else {
+            throw new MethodNotAllowedException(req);
+        }
+    }
+
     private RestResponse patchProcessor(RestRequest req, YProcessor yproc) throws RestException {
+        req.assertPATCH();
+        Rest.PatchProcessorRequest yprocPatch = req.bodyAsMessage(SchemaRest.PatchProcessorRequest.MERGE).build();
+
+        if(!yproc.isReplay()) {
+            throw new BadRequestException("Cannot patch a non replay processor ");
+        }
+
+        // patch processor state
+        if(yprocPatch.hasState()) {
+            if ("RUNNING".equals(yprocPatch.getState())) {
+                yproc.resume();
+            }
+            if ("PAUSED".equals(yprocPatch.getState())) {
+                yproc.pause();
+            }
+        }
+
+        // patch processor seek time
+        if(yprocPatch.hasSeekTime())
+        {
+            yproc.seek(yprocPatch.getSeekTime());
+        }
+
+        // patch processor speed
+        if(yprocPatch.hasSpeed())
+        {
+
+            ReplaySpeed replaySpeed = null;
+            if("afap".equals(yprocPatch.getSpeed()))
+            {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).setParam(1).build();
+                yproc.changeSpeed(replaySpeed);
+            }
+            else if("realtime".equals(yprocPatch.getSpeed()))
+            {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
+                yproc.changeSpeed(replaySpeed);
+                yproc.seek(yproc.getCurrentTime());
+            }
+            else
+            {
+                float speedValue = 1;
+                try{
+                    speedValue = Float.parseFloat(yprocPatch.getSpeed().replace("x", ""));
+                }
+                catch (Exception e)
+                {
+                    throw  new BadRequestException("Unable to parse replay speed");
+                }
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.FIXED_DELAY).setParam(speedValue).build();
+                yproc.changeSpeed(replaySpeed);
+            }
+        }
+
+        return new RestResponse(req);
+    }
+
+    private RestResponse postProcessor(RestRequest req, YProcessor yproc) throws RestException {
+
         req.assertPOST();
         ProcessorRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
         switch(yprocReq.getOperation()) {
-        case RESUME:
-            if(!yproc.isReplay()) {
-                throw new BadRequestException("Cannot resume a non replay processor ");
-            } 
-            yproc.resume();
-            break;
-        case PAUSE:
-            if(!yproc.isReplay()) {
-                throw new BadRequestException("Cannot pause a non replay processor ");
-            }
-            yproc.pause();
-            break;
-        case SEEK:
-            if(!yproc.isReplay()) {
-                throw new BadRequestException("Cannot seek a non replay processor ");
-            }
-            if(!yprocReq.hasSeekTime()) {
-                throw new BadRequestException("No seek time specified");                
-            }
-            yproc.seek(yprocReq.getSeekTime());
-            break;
-        case CHANGE_SPEED:
-            if(!yproc.isReplay()) {
-                throw new BadRequestException("Cannot seek a non replay processor ");
-            }
-            if(!yprocReq.hasReplaySpeed()) {
-                throw new BadRequestException("No replay speed specified");                
-            }
-            yproc.changeSpeed(yprocReq.getReplaySpeed());
-            break;
-        default:
-            throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
+            case RESUME:
+                if(!yproc.isReplay()) {
+                    throw new BadRequestException("Cannot resume a non replay processor ");
+                }
+                yproc.resume();
+                break;
+            case PAUSE:
+                if(!yproc.isReplay()) {
+                    throw new BadRequestException("Cannot pause a non replay processor ");
+                }
+                yproc.pause();
+                break;
+            case SEEK:
+                if(!yproc.isReplay()) {
+                    throw new BadRequestException("Cannot seek a non replay processor ");
+                }
+                if(!yprocReq.hasSeekTime()) {
+                    throw new BadRequestException("No seek time specified");
+                }
+                yproc.seek(yprocReq.getSeekTime());
+                break;
+            case CHANGE_SPEED:
+                if(!yproc.isReplay()) {
+                    throw new BadRequestException("Cannot seek a non replay processor ");
+                }
+                if(!yprocReq.hasReplaySpeed()) {
+                    throw new BadRequestException("No replay speed specified");
+                }
+                yproc.changeSpeed(yprocReq.getReplaySpeed());
+                break;
+            default:
+                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
         }
         return new RestResponse(req);
     }
-    
+
     private RestResponse createProcessorForInstance(RestRequest req, String yamcsInstance, XtceDb mdb) throws RestException {
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
-        
+
         String name = null;
         String start = null;
         String stop = null;
@@ -189,7 +259,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         List<String> ppGroups = new ArrayList<>();
         List<String> packetNames = new ArrayList<>();
         boolean cmdhist = false;
-        
+
         if (request.hasName()) name = request.getName();
         if (request.hasStart()) start = request.getStart();
         if (request.hasStop()) stop = request.getStop();
@@ -201,7 +271,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         paraPatterns.addAll(request.getParanameList());
         ppGroups.addAll(request.getPpgroupList());
         packetNames.addAll(request.getPacketnameList());
-        
+
         // Query params get priority
         if (req.hasQueryParameter("name")) name = req.getQueryParameter("name");
         if (req.hasQueryParameter("start")) start = req.getQueryParameter("start");
@@ -214,11 +284,11 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         if (req.hasQueryParameter("cmdhist")) cmdhist = req.getQueryParameterAsBoolean("cmdhist");
         if (req.hasQueryParameter("persistent")) persistent = req.getQueryParameterAsBoolean("persistent");
         if (req.hasQueryParameter("clientId")) clientIds.addAll(request.getClientIdList());
-        
+
         // Only these must be user-provided
         if (name == null) throw new BadRequestException("No processor name was specified");
         if (start == null) throw new BadRequestException("No start time was specified");
-        
+
         // Make internal processor request
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
         reqb.setInstance(yamcsInstance);
@@ -226,14 +296,14 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         reqb.setType(type);
         reqb.setPersistent(persistent);
         reqb.addAllClientId(clientIds);
-        
+
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setEndAction(loop ? EndAction.LOOP : EndAction.STOP);
         rrb.setStart(TimeEncoding.parse(start));
         if (stop != null) {
             rrb.setStop(TimeEncoding.parse(stop));
         }
-        
+
         // Replay Speed
         if ("afap".equals(speed)) {
             rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -248,34 +318,34 @@ public class ProcessorRequestHandler extends RestRequestHandler {
                     .setType(ReplaySpeedType.FIXED_DELAY)
                     .setParam(fixedDelay));
         }
-        
+
         // Resolve parameter inclusion patterns
         // IMO this should actually all be done by the replay server itself. Not just in REST.
         Set<NamedObjectId> includedParameters = new LinkedHashSet<>(); // Preserve order (in case it matters)
         for (String pattern : paraPatterns) {
             if (!pattern.startsWith("/")) pattern = "/" + pattern; // only xtce
             boolean resolved = false;
-            
+
             // Is it a namespace? Include parameters directly at that level.
             for (String namespace : mdb.getNamespaces()) {
                 if (pattern.equals(namespace)) {
                     mdb.getSpaceSystem(namespace).getParameters().forEach(p -> {
                         includedParameters.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
                     });
-                    
+
                     resolved = true;
                     break;
                 }
             }
             if (resolved) continue;
-            
+
             // Is it a parameter name? Do index lookup
             Parameter p = mdb.getParameter(pattern);
             if (p != null) {
                 includedParameters.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
                 continue;
             }
-            
+
             // Now, the slow approach. Match on qualified names, with support for star-wildcards
             Pattern regex = Pattern.compile(pattern.replace("*", ".*"));
             for (Parameter para : mdb.getParameters()) {
@@ -283,20 +353,20 @@ public class ProcessorRequestHandler extends RestRequestHandler {
                     includedParameters.add(NamedObjectId.newBuilder().setName(para.getQualifiedName()).build());
                 }
             }
-            
+
             // Currently does not error when an invalid pattern is specified. Seems like the right thing now.
         }
         if (!includedParameters.isEmpty()) {
             rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(includedParameters));
         }
-        
+
         // PP groups are just passed. Not sure if we should keep support for this. Parameters are not filterable
         // on containers either, so I don't see why these get special treatment. Would prefer they are handled
         // in the above paraPatterns loop instead.
         if (!ppGroups.isEmpty()) {
             rrb.setPpRequest(PpReplayRequest.newBuilder().addAllGroupNameFilter(ppGroups));
         }
-        
+
         // Packet names are also just passed. We may want to try something fancier here with wildcard support.
         if (!packetNames.isEmpty()) {
             if (packetNames.size() == 1 && packetNames.get(0).equals("*")) {
@@ -309,11 +379,11 @@ public class ProcessorRequestHandler extends RestRequestHandler {
                 rrb.setPacketRequest(PacketReplayRequest.newBuilder().addAllNameFilter(packetIds));
             }
         }
-        
+
         if (cmdhist) {
             rrb.setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder());
         }
-        
+
         reqb.setReplaySpec(rrb);
         ManagementService mservice = ManagementService.getInstance();
         try {
@@ -322,9 +392,9 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }
-        
+
     }
-    
+
     public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {
