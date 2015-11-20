@@ -277,7 +277,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             }
             
             // Now, the slow approach. Match on qualified names, with support for star-wildcards
-            Pattern regex = Pattern.compile(pattern.replaceAll("*", ".*"));
+            Pattern regex = Pattern.compile(pattern.replace("*", ".*"));
             for (Parameter para : mdb.getParameters()) {
                 if (regex.matcher(para.getQualifiedName()).matches()) {
                     includedParameters.add(NamedObjectId.newBuilder().setName(para.getQualifiedName()).build());
