@@ -45,132 +45,130 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-12">
-        <hr>
-        <div ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'" class="btn-toolbar" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-          <div class="btn-group btn-group-xs pull-right" role="group">
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1h'">1h</label>
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'5h'">5h</label>
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1d'">1d</label>
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1w'">1w</label>
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1m'">1m</label>
-            <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'3m'">3m</label>
-          </div>
-          <div id="parameter-detail-legend" style="padding-left: 50px;"></div>
-        </div>
-
-        <plot ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'"
-          pinfo="vm.info"
-          para="vm.para"
-          range="plotctx.range"
-          style="width: 100%; position: relative">
-        </plot>
-        <!-- the position: relative is needed for spin.js :-/ Not sure. -->
-
-        <div>
-          <h2>Value History</h2>
-          <table class="table table-condensed">
-            <tr>
-              <th width="200">Generated</th>
-              <th width="200" title="Engineering Value">Eng. Value</th>
-              <th width="200">Raw Value</th>
-              <th></th>
-              <th width="1">Monitoring</th>
-            </tr>
-            <tr ng-repeat="val in vm.values">
-              <td style="white-space: nowrap">
-                {{ val.generationTimeUTC | parseUTC | formatDate }}
-              </td>
-              <td>{{ val | stringValue }}</td>
-              <td>{{ val | stringValue:true }}</td>
-              <td></td>
-              <td ng-if="val.monitoringResult">
-                <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
-              </td>
-              <td ng-if="!val.monitoringResult">
-                -
-              </td>
-            </tr>
-            <tr ng-if="!vm.values">
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-              <td></td>
-              <td>-</td>
-            </tr>
-          </table>
-        </div>
-
-        <div>
-          <h2>Monitoring Definition</h2>
-          <dl class="dl-horizontal" ng-if="vm.info.type.engType == 'float' || vm.info.type.engType == 'integer'">
-
-            <dt>High Limits</dt>
-            <dd>
-              <span ng-if="vm.info.severe | has:'maxInclusive'">
-                Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.critical | has:'maxInclusive'">
-                Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.distress | has:'maxInclusive'">
-                Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.warning | has:'maxInclusive'">
-                Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.watch | has:'maxInclusive'">
-                Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
-            </dd>
-
-            <dt>Low Limits</dt>
-            <dd>
-              <span ng-if="vm.info.watch | has:'minInclusive'">
-                Watch: {{ vm.info.watch.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.warning | has:'minInclusive'">
-                Warning: {{ vm.info.warning.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.distress | has:'minInclusive'">
-                Distress: {{ vm.info.distress.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.critical | has:'minInclusive'">
-                Critical: {{ vm.info.critical.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="vm.info.severe | has:'minInclusive'">
-                Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-              </span>
-              <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
-            </dd>
-          </dl>
-        </div>
-
-        <div>
-          <h2>Packet Definition</h2>
-          <dl class="dl-horizontal">
-            <dt>Raw Type</dt>
-            <dd>
-              {{ vm.info.type.dataEncoding.type | capitalize }}
-            </dd>
-
-            <dt>Size In Bits</dt>
-            <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
-
-            <dt>Byte Order</dt>
-            <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
-            <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
-
-            <dt>Encoding</dt>
-            <dd>{{ vm.info.type.dataEncoding.encoding }}</dd>
-
-            <dt>Calibrator</dt>
-            <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
-          </dl>
+    <div class="section" ng-if="vm.isNumeric()">
+      <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
+        <div id="parameter-detail-legend" style="float: left;"></div>
+        <div class="btn-group btn-group-xs" role="group" style="float: left;">
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1h'">1h</label>
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'5h'">5h</label>
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1d'">1d</label>
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1w'">1w</label>
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1m'">1m</label>
+          <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'3m'">3m</label>
         </div>
       </div>
+      <h2>Plot</h2>
+    </div>
+
+    <plot ng-if="vm.isNumeric()"
+      pinfo="vm.info"
+      para="vm.para"
+      range="plotctx.range"
+      style="width: 100%; position: relative">
+    </plot>
+    <!-- the position: relative is needed for spin.js :-/ Not sure. -->
+
+    <div>
+      <h2 class="section">Value History</h2>
+      <table class="table table-condensed">
+        <tr>
+          <th width="200">Generated</th>
+          <th width="200" title="Engineering Value">Eng. Value</th>
+          <th width="200">Raw Value</th>
+          <th></th>
+          <th width="1">Monitoring</th>
+        </tr>
+        <tr ng-repeat="val in vm.values">
+          <td style="white-space: nowrap">
+            {{ val.generationTimeUTC | parseUTC | formatDate }}
+          </td>
+          <td>{{ val | stringValue }}</td>
+          <td>{{ val | stringValue:true }}</td>
+          <td></td>
+          <td ng-if="val.monitoringResult">
+            <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
+          </td>
+          <td ng-if="!val.monitoringResult">
+            -
+          </td>
+        </tr>
+        <tr ng-if="!vm.values">
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+          <td></td>
+          <td>-</td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h2 class="section">Monitoring Definition</h2>
+      <span ng-if="!(vm.isNumeric())">-</span>
+      <dl class="dl-horizontal" ng-if="vm.isNumeric()">
+        <dt>High Limits</dt>
+        <dd>
+          <span ng-if="vm.info.severe | has:'maxInclusive'">
+            Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.critical | has:'maxInclusive'">
+            Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.distress | has:'maxInclusive'">
+            Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.warning | has:'maxInclusive'">
+            Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.watch | has:'maxInclusive'">
+            Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
+        </dd>
+
+        <dt>Low Limits</dt>
+        <dd>
+          <span ng-if="vm.info.watch | has:'minInclusive'">
+            Watch: {{ vm.info.watch.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.warning | has:'minInclusive'">
+            Warning: {{ vm.info.warning.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.distress | has:'minInclusive'">
+            Distress: {{ vm.info.distress.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.critical | has:'minInclusive'">
+            Critical: {{ vm.info.critical.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="vm.info.severe | has:'minInclusive'">
+            Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+          </span>
+          <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
+        </dd>
+      </dl>
+    </div>
+
+    <div>
+      <h2 class="section">Packet Definition</h2>
+      <dl class="dl-horizontal">
+        <dt>Raw Type</dt>
+        <dd>
+          {{ vm.info.type.dataEncoding.type | capitalize }}
+        </dd>
+
+        <dt>Size In Bits</dt>
+        <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
+
+        <dt>Byte Order</dt>
+        <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
+        <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
+
+        <dt>Encoding</dt>
+        <dd>{{ vm.info.type.dataEncoding.encoding }}</dd>
+
+        <dt>Calibrator</dt>
+        <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
+      </dl>
     </div>
   </div>
 </mdb-pane>

@@ -2,18 +2,15 @@
   <h1 class="page-header">Alarms</h1>
 
   <h2>Active</h2>
-  <table class="table">
-
+  <table class="table table-striped table-condensed">
     <tr>
       <th>Lvl</th>
       <th>Message</th>
       <th>Subsystem</th>
       <th>Violations</th>
       <th>Status</th>
-      <th>Activation Value</th>
-      <th>Activation Time</th>
-      <th>Latest Value</th>
-      <th>Latest Time</th>
+      <th>Activation&nbsp;Value</th>
+      <th>Latest&nbsp;Value</th>
       <th width="1"></th>
     </tr>
 
@@ -43,33 +40,25 @@
 
       <td>
         <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
-        {{ alarm.triggerValue | stringValue }}
-      </td>
-
-      <td>
-        {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate }}
+        {{ alarm.triggerValue | stringValue }}<br>
+        <small>{{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate }}</small>
       </td>
 
       <td>
         <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
-        {{ alarm.currentValue | stringValue }}
+        {{ alarm.currentValue | stringValue }}<br>
+        <small>{{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate }}</small>
       </td>
 
       <td>
-        {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate }}
-      </td>
-
-      <td>
-        <button ng-if="!alarm.acknowledgeInfo" class="btn btn-xs"
-            ng-class="'btn-' + (alarm.currentValue.monitoringResult | monitoringClass)"
-            ng-click="vm.openAcknowledge(alarm)">
+        <button ng-if="!alarm.acknowledgeInfo" class="btn btn-xs btn-default" ng-click="vm.openAcknowledge(alarm)">
           Acknowledge
         </button>
       </td>
     </tr>
   </table>
 
-  <!--h2>Alarm History</h2-->
+  <h2>Alarm History</h2>
 </div>
 
 

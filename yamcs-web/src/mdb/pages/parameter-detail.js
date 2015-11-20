@@ -8,6 +8,7 @@
     /* @ngInject */
     function MDBParameterDetailController($rootScope, $routeParams, tmService, mdbService, $scope, $uibModal, configService) {
         var vm = this;
+        vm.isNumeric = isNumeric;
 
         $scope.plotctx = {
             range: configService.get('initialPlotRange', '1h')
@@ -51,6 +52,14 @@
 
             return vm.info;
         });
+
+        function isNumeric() {
+            if (vm.hasOwnProperty('info') && vm.info.hasOwnProperty('type') && vm.info.type.hasOwnProperty('engType')) {
+                return vm.info.type.engType === 'float' || vm.info.type.engType === 'integer';
+            } else {
+                return false;
+            }
+        }
     }
 
     function mapAlarmRanges(info) {
