@@ -99,7 +99,7 @@ gulp.task('img', ['clean'], function () {
 gulp.task('config', ['clean'], function () {
     return gulp.src('./src/config.json')
         .pipe(rename('config.json.sample'))
-        .pipe(gulp.dest('./build/_site'));
+        .pipe(gulp.dest('./build'));
 });
 
 // Updates the CSS and JS references defined in the root index.html

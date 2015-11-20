@@ -18,12 +18,12 @@ YAMCS_HOME=`pwd`
 
 mkdir -p $TARGET/etc
 mkdir -p $TARGET/bin
+mkdir -p $TARGET/mdb
+mkdir -p $TARGET/web
 
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
 
-
-cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
 for f in $YAMCS_HOME/yamcs-core/etc/* ; do
     case "$f" in
         *.sample)
@@ -35,33 +35,30 @@ for f in $YAMCS_HOME/yamcs-core/etc/* ; do
             ;;
     esac
 done
-for f in $YAMCS_HOME/yamcs-core/bin/* ; do
-    cp -an "$f" $TARGET/bin/
-done
-for f in $YAMCS_HOME/yamcs-simulation/bin/* ; do
-    cp -an "$f" $TARGET/bin/
-done
+
+cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
+
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
-
-ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
-
-mkdir -p $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
-ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
-
-mkdir -p $TARGET/web
 ln -fs $YAMCS_HOME/yamcs-web/build $TARGET/web/base
-ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
-
-cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
-ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
-YAMCS_DATA=/storage/yamcs-data/
-# create the yamcs_data directory and add the simulator profiles
-mkdir -p $YAMCS_DATA/simulator/profiles
-cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
-
 
 if [ -f make-live-devel-local.sh ] ; then
- sh make-live-devel-local.sh $TARGET
+    sh make-live-devel-local.sh $TARGET
+else
+    # Assume YSS simulator deployment
+    # no -an because then doesn't override renamed sample files
+    cp $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
+    cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
+
+    ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
+    ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
+    ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
+
+    cp -an $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
+    ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
+    YAMCS_DATA=/storage/yamcs-data/
+    # create the yamcs_data directory and add the simulator profiles
+    mkdir -p $YAMCS_DATA/simulator/profiles
+    cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
 fi
