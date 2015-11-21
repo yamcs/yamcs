@@ -2,8 +2,10 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -35,9 +37,12 @@ public class SystemParameterDb implements Serializable {
     public static String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
     public static String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
     
+    private Set<String> namespaces = new HashSet<>();
+    
     public SystemParameterDb() {
         yamcsSs = new SpaceSystem(YAMCS_SPACESYSTEM_NAME.substring(1));
         yamcsSs.setShortDescription("Collects Yamcs system parameters");
+        namespaces.add(YAMCS_SPACESYSTEM_NAME);
     }
     
     
@@ -52,15 +57,15 @@ public class SystemParameterDb implements Serializable {
     }
     
     
-    public synchronized  SystemParameter getSystemParameter(String fqname) {
+    public synchronized  SystemParameter getSystemParameter(String fqname, boolean createIfMissing) {
         SystemParameter p = parameters.get(fqname);
-        if(p==null) {
+        if(p==null && createIfMissing) {
             p = createSystemParameter(fqname);
         }
         return p;
     }
     
-    public synchronized Parameter getSystemParameter(NamedObjectId id) {
+    public synchronized Parameter getSystemParameter(NamedObjectId id, boolean createIfMissing) {
         if(!isSystemParameter(id)) throw new IllegalArgumentException("Not a system parameter "+id);
         String fqname;
         if (id.hasNamespace()) {
@@ -69,18 +74,31 @@ public class SystemParameterDb implements Serializable {
             fqname = id.getName();
         }   
         
-        return getSystemParameter(fqname);
+        return getSystemParameter(fqname, createIfMissing);
     }
     
     public Collection<SystemParameter> getSystemParameters() {
         return parameters.values();
     }
-
+    
+    public boolean containsNamespace(String namespace) {
+        return namespaces.contains(namespace);
+    }
+    
+    public Set<String> getNamespaces() {
+        return namespaces;
+    }
+    
+    public synchronized void registerSystemParameter(SystemParameter sp) {
+        String fqname = sp.getQualifiedName();
+        String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
+        SpaceSystem ss = getOrCreateSpaceSystemForSplitName(a);
+        registerSystemParameter(sp, ss);
+    }
     
     /**
      * Create if not already existing the system parameter and the enclosing space systems
      * 
-     * @param rootSs
      * @param fqname
      * @return
      */
@@ -88,30 +106,38 @@ public class SystemParameterDb implements Serializable {
         DataSource ds = getSystemParameterDataSource(fqname);
         
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
-
-        SpaceSystem ss = yamcsSs;
-        for(int i=2; i<a.length-1; i++) {
-            SpaceSystem sss = ss.getSubsystem(a[i]);
-            if(sss==null) {
-                sss=new SpaceSystem(a[i]);
-                ss.addSpaceSystem(sss);
-            }
-            ss=sss;
-        }
-        SystemParameter sp = (SystemParameter)ss.getParameter(a[a.length-1]);
-        
+        SpaceSystem ss = getOrCreateSpaceSystemForSplitName(a);
+        SystemParameter sp = (SystemParameter)ss.getParameter(a[a.length-1]);   
         if(sp==null) {
             sp = SystemParameter.getForFullyQualifiedName(fqname, ds);
-            log.debug("adding new system parameter for "+fqname+" in system "+ss);
-            ss.addParameter(sp);
-            parameters = new LinkedHashMap<String, SystemParameter>();
-            buildParameterMap(yamcsSs);
+            registerSystemParameter(sp, ss);
         }
         
         return sp;
     }
     
+    private void registerSystemParameter(SystemParameter sp, SpaceSystem ss) {
+        log.debug("adding new system parameter for "+sp.getQualifiedName()+" in system "+ss);
+        ss.addParameter(sp);
+        parameters = new LinkedHashMap<String, SystemParameter>();
+        buildParameterMap(yamcsSs);
+    }
     
+    private SpaceSystem getOrCreateSpaceSystemForSplitName(String[] nameSegments) {
+        SpaceSystem ss = yamcsSs;
+        for(int i=2; i<nameSegments.length-1; i++) {
+            SpaceSystem sss = ss.getSubsystem(nameSegments[i]);
+            if(sss==null) {
+                sss=new SpaceSystem(nameSegments[i]);
+                sss.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+sss.getName());
+                sss.addAlias(ss.getQualifiedName(), sss.getName());
+                ss.addSpaceSystem(sss);
+                namespaces.add(sss.getQualifiedName());
+            }
+            ss=sss;
+        }
+        return ss;
+    }
     
     private void buildParameterMap(SpaceSystem ss) {
         for(Parameter p:ss.getParameters()) {

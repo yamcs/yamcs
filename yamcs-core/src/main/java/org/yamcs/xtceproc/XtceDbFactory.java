@@ -179,7 +179,7 @@ public class XtceDbFactory {
             //Special case for system parameters: they are created on the fly
             NameDescription nd;
             if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME)) {
-                nd = sysDb.getSystemParameter(nr.getReference());
+                nd = sysDb.getSystemParameter(nr.getReference(), true);
             } else {
                 nd = findReference(rootSs, nr, ss);
             }

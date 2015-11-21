@@ -6,12 +6,12 @@ import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
+import org.yamcs.YProcessor;
+import org.yamcs.YProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
@@ -232,7 +232,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         Parameter p = xtceDb.getParameter(id);
         if(p==null) {
             if(SystemParameterDb.isSystemParameter(id)) {
-                p = xtceDb.getSystemParameterDb().getSystemParameter(id);
+                p = xtceDb.getSystemParameterDb().getSystemParameter(id, true);
             }
             
         }

@@ -40,7 +40,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
     
     private RestResponse listAlgorithmsOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listAlgorithms(req, nsm.getMatch(), mdb);
         } else {

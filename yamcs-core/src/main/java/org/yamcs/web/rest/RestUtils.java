@@ -133,7 +133,7 @@ public class RestUtils {
     public static MatchResult<Parameter> matchParameterName(RestRequest req, int pathOffset) {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         
-        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
         if (nsMatch.matches()) {
             String namespace = nsMatch.getMatch();
@@ -153,7 +153,7 @@ public class RestUtils {
     public static Parameter findParameter(XtceDb mdb, NamedObjectId id) {
         Parameter p = mdb.getParameter(id);
         if(p==null) {
-            p = mdb.getSystemParameterDb().getSystemParameter(id);
+            p = mdb.getSystemParameterDb().getSystemParameter(id, false);
         }
         return p;
     }
@@ -168,7 +168,7 @@ public class RestUtils {
     public static MatchResult<SequenceContainer> matchContainerName(RestRequest req, int pathOffset) {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         
-        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
         if (nsMatch.matches()) {
             String namespace = nsMatch.getMatch();
@@ -195,7 +195,7 @@ public class RestUtils {
     public static MatchResult<Algorithm> matchAlgorithmName(RestRequest req, int pathOffset) {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         
-        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
         if (nsMatch.matches()) {
             String namespace = nsMatch.getMatch();
@@ -222,7 +222,7 @@ public class RestUtils {
     public static MatchResult<MetaCommand> matchCommandName(RestRequest req, int pathOffset) {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         
-        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
         if (nsMatch.matches()) {
             String namespace = nsMatch.getMatch();
@@ -242,7 +242,7 @@ public class RestUtils {
     /**
      * Greedily matches a namespace
      */
-    public static MatchResult<String> matchXtceDbNamespace(RestRequest req, int pathOffset) {
+    public static MatchResult<String> matchXtceDbNamespace(RestRequest req, int pathOffset, boolean strict) {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         String matchedNamespace = null;
         
@@ -251,8 +251,8 @@ public class RestUtils {
             matchedNamespace = segment;
         } else if (mdb.containsNamespace("/" + segment)) {
             matchedNamespace = "/" + segment; 
-        } else if (mdb.getSystemParameterDb().getYamcsSpaceSystem().getName().equals(segment)) {
-            matchedNamespace = segment;
+        } else if (mdb.getSystemParameterDb().containsNamespace("/" + segment)) {
+            matchedNamespace = "/" + segment;
         }
         
         int beyond = pathOffset;
@@ -261,7 +261,7 @@ public class RestUtils {
             if (matchedNamespace.startsWith("/")) {
                 for (int i = pathOffset+1; i < req.getPathSegmentCount(); i++) {
                     String potential = matchedNamespace + "/" + req.getPathSegment(i);
-                    if (mdb.containsNamespace(potential)) {
+                    if (mdb.containsNamespace(potential) || mdb.getSystemParameterDb().containsNamespace(potential)) {
                         matchedNamespace = potential;
                         beyond++;
                     }
@@ -269,7 +269,7 @@ public class RestUtils {
             }
         }
         
-        if (matchedNamespace != null) {
+        if (matchedNamespace != null && (!strict || beyond >= req.getPathSegmentCount())) {
             return new MatchResult<>(matchedNamespace, beyond);
         } else {
             return new MatchResult<>(null, -1);

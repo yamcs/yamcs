@@ -53,10 +53,10 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
             if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
               //if it was required in the algorithm, it would be already in the system parameter db  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterdb");
+                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
                 continue;
             }
-            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn);
+            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
 
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(cha.getValue());
@@ -67,10 +67,10 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
             if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
                 //if it was required in the algorithm, it would be already in the SystemParameterdb  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterdb");
+                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
                 continue;
             }
-            Parameter p =  xtcedb.getSystemParameterDb().getSystemParameter(fqn);
+            Parameter p =  xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
 
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(e.getValue());
@@ -88,7 +88,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         try {
             yproc.getCommandHistoryManager().subscribeCommand(pc.getCommandId(), this);
         } catch (InvalidCommandId e) {
-            log.error("Got invalidCommand id while subscribign for command history", e);
+            log.error("Got invalidCommand id while subscribing for command history", e);
         }
     }
 
@@ -119,10 +119,10 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
         String fqn = SystemParameterDb.YAMCS_CMDHIST_SPACESYSTEM_NAME+"/"+key;
         if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
-            //if it was required in the algorithm, it would be in the SystemParameteDb  
-            log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameteDb");
+            //if it was required in the algorithm, it would be in the SystemParameterDb  
+            log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
         } else {            
-            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn);
+            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(value);
             AlgorithmManager algMgr = cvh.getAlgorithmManager();

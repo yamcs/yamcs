@@ -13,6 +13,7 @@ public class SystemParameter extends Parameter {
     public SystemParameter(String spaceSystemName, String name, DataSource ds) {
         super(name);
         setQualifiedName(spaceSystemName+"/"+name);
+        addAlias(spaceSystemName, name);
         setDataSource(ds);
     }
 

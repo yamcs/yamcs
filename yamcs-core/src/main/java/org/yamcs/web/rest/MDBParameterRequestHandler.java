@@ -55,7 +55,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     
     private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listParameters(req, nsm.getMatch(), mdb);
         } else {
