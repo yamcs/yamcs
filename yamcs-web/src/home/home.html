@@ -1,4 +1,5 @@
 <div class="main" style="padding: 40px;">
+  <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
   <h1 class="page-header">{{ vm.appTitle }}</h1>
 
   <p>&nbsp;</p>

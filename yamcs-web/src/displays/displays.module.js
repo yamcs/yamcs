@@ -12,7 +12,12 @@
         return {
             restrict: 'E',
             transclude: true,
-            scope: { activePane: '@', headerTitle: '@' },
+            scope: {
+                activePane: '@',
+                headerTitle: '@',
+                yamcsInstance: '=',
+                shell: '='
+            },
             templateUrl: '/_static/_site/displays/displays.template.html'
         };
     }

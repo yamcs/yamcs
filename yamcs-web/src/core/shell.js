@@ -6,7 +6,7 @@
         .controller('Shell', Shell);
 
     /* @ngInject */
-    function Shell($scope, $location, socket, alarmService, configService, timeService) {
+    function Shell($rootScope, $scope, $location, socket, alarmService, configService, timeService) {
         var vm = this;
 
         vm.socketOpen = false;
@@ -18,6 +18,15 @@
 
         vm.appTitle = configService.get('title');
         vm.brandImage = configService.get('brandImage');
+
+        vm.messages = [];
+        vm.closeMessage = function (idx) {
+            vm.messages.splice(idx, 1);
+        };
+
+        $rootScope.$on('exception', function(evt, message) {
+            vm.messages.push(message);
+        });
 
         socket.on('open', function () {
             vm.socketOpen = true;

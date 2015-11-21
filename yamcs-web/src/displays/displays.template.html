@@ -1,18 +1,16 @@
 <div class="container-fluid" ng-controller="DisplaysTemplateController as templateVm">
-    <div class="sidebar" style="width: 230px;">
-
-      <div ng-repeat="display in templateVm.displays" style="padding-top: 20px;">
-        <span class="nav-title">{{ display.group }}</span>
-        <ul class="nav nav-sidebar med">
-          <li ng-class="{active: activePane == d1.display}" ng-repeat="d1 in display.displays">
-            <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
-          </li>
-        </ul>
-      </div>
-
+  <div class="sidebar" style="width: 230px;">
+    <div ng-repeat="display in templateVm.displays" style="padding-top: 20px;">
+      <span class="nav-title">{{ display.group }}</span>
+      <ul class="nav nav-sidebar med">
+        <li ng-class="{active: activePane == d1.display}" ng-repeat="d1 in display.displays">
+          <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
+        </li>
+      </ul>
     </div>
 
     <div class="main" style="padding-left: 230px;">
+      <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
       <h1 class="page-header" ng-if="headerTitle">
         {{ headerTitle }}
         <!--button type="button" class="btn btn-default btn-lg">

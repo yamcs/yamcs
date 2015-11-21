@@ -6,7 +6,11 @@
             return {
                 restrict: 'E',
                 transclude: true,
-                scope: { activePane:'@' },
+                scope: {
+                    activePane: '@',
+                    yamcsInstance: '=',
+                    shell: '='
+                },
                 templateUrl: '/_static/_site/mdb/mdb.template.html'
             };
     });
