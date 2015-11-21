@@ -79,6 +79,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
      */
     private RestResponse listParameters(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -100,14 +101,18 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = p.getAlias(namespace);
-                if (alias != null) {
+                if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
                 }
             }
             for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
-                // TODO privileges
+                if (!privilege.hasPrivilege(req.authToken, Type.TM_PARAMETER, p.getQualifiedName()))
+                    continue;
+                if (matcher != null && !matcher.matches(p))
+                    continue;
+                
                 String alias = p.getAlias(namespace);
-                if (alias != null) {
+                if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
                 }
             }

@@ -17,7 +17,9 @@
 
         $rootScope.pageTitle = 'Commands | Yamcs';
 
-        mdbService.listCommands(qname).then(function (data) {
+        mdbService.listCommands(qname, {
+            recurse: (qname === '/yamcs')
+        }).then(function (data) {
             vm.commands = data;
             return vm.commands;
         });

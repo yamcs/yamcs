@@ -66,6 +66,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
      */
     private RestResponse listCommands(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -87,7 +88,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = cmd.getAlias(namespace);
-                if (alias != null) {
+                if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
                     responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
                 }
             }

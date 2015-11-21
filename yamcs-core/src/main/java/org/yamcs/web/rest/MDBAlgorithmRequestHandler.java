@@ -61,6 +61,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
      */
     private RestResponse listAlgorithms(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -80,7 +81,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = a.getAlias(namespace);
-                if (alias != null) {
+                if (alias != null || (recurse && a.getQualifiedName().startsWith(namespace))) {
                     responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY));
                 }
             }

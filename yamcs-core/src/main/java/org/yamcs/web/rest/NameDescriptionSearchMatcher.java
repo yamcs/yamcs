@@ -20,10 +20,12 @@ class NameDescriptionSearchMatcher {
             boolean match = false;
             if (nameDescription.getQualifiedName().toLowerCase().contains(term))
                 continue;
-            for (Entry<String, String> entry : nameDescription.getAliasSet().getAliases().entrySet()) {
-                if (entry.getKey().toLowerCase().contains(term) || entry.getValue().toLowerCase().contains(term)) {
-                    match = true;
-                    break;
+            if (nameDescription.getAliasSet() != null) {
+                for (Entry<String, String> entry : nameDescription.getAliasSet().getAliases().entrySet()) {
+                    if (entry.getKey().toLowerCase().contains(term) || entry.getValue().toLowerCase().contains(term)) {
+                        match = true;
+                        break;
+                    }
                 }
             }
             if (!match)

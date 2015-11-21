@@ -4,6 +4,13 @@
 @font-size-h2:            16px;
 @font-size-h3:            12px;
 
+@font-size-h1:            ceil((@font-size-base * 1.14)); // ~16px
+@font-size-h2:            floor((@font-size-base * 1.14)); // ~16px
+@font-size-h3:            ceil((@font-size-base * 0.85)); // ~12px
+@font-size-h4:            ceil((@font-size-base * 1.25)); // ~18px
+@font-size-h5:            @font-size-base;
+@font-size-h6:            ceil((@font-size-base * 0.85)); // ~12px
+
 div.section {
   border-bottom: 1px solid #eee;
   margin-bottom: 0.5em;

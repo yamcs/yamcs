@@ -8,7 +8,8 @@
 
   <table class="table">
     <tr>
-      <th width="200">Name</th>
+      <th width="200" ng-if="vm.includesNested()">Qualified Name</th>
+      <th width="200" ng-if="!vm.includesNested()">Name</th>
       <th width="100">Type</th>
       <th width="100">Units</th>
       <th width="100">Data Source</th>
@@ -16,9 +17,8 @@
     </tr>
     <tr ng-repeat="para in vm.parameters | orderBy:'qualifiedName'">
       <td>
-        <a href="/{{ yamcsInstance }}/mdb{{ para.qualifiedName }}">
-          {{ para.name }}
-        </a>
+        <a href="/{{ yamcsInstance }}/mdb{{ para.qualifiedName }}" ng-if="vm.includesNested()">{{ para.qualifiedName }}</a>
+        <a href="/{{ yamcsInstance }}/mdb{{ para.qualifiedName }}" ng-if="!vm.includesNested()">{{ para.name }}</a>
       </td>
       <td>{{ para.type.engType | capitalize | nvl:'-' }}</td>
       <td>{{ para.type.unitSet | joinBy:'unit':' ' | nvl:'-' }}</td>

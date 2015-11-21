@@ -61,6 +61,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
      */
     private RestResponse listContainers(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -80,7 +81,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = c.getAlias(namespace);
-                if (alias != null) {
+                if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
                     responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
                 }
             }

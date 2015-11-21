@@ -29,10 +29,16 @@
                 var mdb = response.data;
                 mdb['flatSpaceSystems'] = []; // Flatten the nested structure, for better UI
                 if (mdb.hasOwnProperty('spaceSystem')) {
-                    for (var i = 0; i < mdb.spaceSystem.length; i++) {
-                        var flattened = flattenSpaceSystem(mdb.spaceSystem[i]);
-                        for (var j = 0; j < flattened.length; j++) {
-                            mdb['flatSpaceSystems'].push(flattened[j]);
+                    for (var i = 0; i < mdb['spaceSystem'].length; i++) {
+                        var ss = mdb['spaceSystem'][i];
+                        if (ss['qualifiedName'] === '/yamcs') {
+                            var compacted = compactSpaceSystem(ss);
+                            mdb['flatSpaceSystems'].push(compacted);
+                        } else {
+                            var flattened = flattenSpaceSystem(ss);
+                            for (var j = 0; j < flattened.length; j++) {
+                                mdb['flatSpaceSystems'].push(flattened[j]);
+                            }
                         }
                     }
                 }
@@ -43,11 +49,12 @@
             });
         }
 
-        function listParameters(qname) {
+        function listParameters(qname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters';
             if (qname) {
                 targetUrl += qname;
             }
+            targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
                 return response.data['parameter'];
@@ -57,11 +64,12 @@
             });
         }
 
-        function listContainers(qname) {
+        function listContainers(qname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/containers';
             if (qname) {
                 targetUrl += qname;
             }
+            targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
                 return response.data['container'];
@@ -71,11 +79,12 @@
             });
         }
 
-        function listCommands(qname) {
+        function listCommands(qname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/commands';
             if (qname) {
                 targetUrl += qname;
             }
+            targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
                 return response.data['command'];
@@ -85,11 +94,12 @@
             });
         }
 
-        function listAlgorithms(qname) {
+        function listAlgorithms(qname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/algorithms';
             if (qname) {
                 targetUrl += qname;
             }
+            targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
                 return response.data['algorithm'];
@@ -99,8 +109,9 @@
             });
         }
 
-        function getParameterInfo(urlname) {
+        function getParameterInfo(urlname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters' + urlname;
+            targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
@@ -109,8 +120,9 @@
             });
         }
 
-        function getAlgorithmInfo(urlname) {
+        function getAlgorithmInfo(urlname, options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/algorithms' + urlname;
+            targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
             }).catch(function (message) {
@@ -119,6 +131,9 @@
             });
         }
 
+        /*
+            Returns an array of a space system and all of its nested children
+         */
         function flattenSpaceSystem(ss) {
             var flattened = [ ss ];
             if (ss.hasOwnProperty('sub')) {
@@ -130,6 +145,38 @@
                 }
             }
             return flattened;
+        }
+
+        /*
+            Returns a single space system, with all nested elements attached directly to it
+         */
+        function compactSpaceSystem(ss) {
+            if (ss.hasOwnProperty('sub')) {
+                for (var i = 0; i < ss.sub.length; i++) {
+                    var flatsub = flattenSpaceSystem(ss.sub[i]);
+                    for (var j = 0; j < flatsub.length; j++) {
+                        ss['parameterCount'] += flatsub[j]['parameterCount'];
+                        ss['containerCount'] += flatsub[j]['containerCount'];
+                        ss['commandCount'] += flatsub[j]['commandCount'];
+                        ss['algorithmCount'] += flatsub[j]['algorithmCount'];
+                    }
+                }
+            }
+            return ss;
+        }
+
+        function toQueryString(options) {
+            if (!options) return '';
+            var result = '?';
+            var first = true;
+            for (var opt in options) {
+                if (options.hasOwnProperty(opt)) {
+                    if (!first) result += '&';
+                    first = false;
+                    result += opt + '=' + options[opt];
+                }
+            }
+            return result;
         }
 
         function messageToException(message) {

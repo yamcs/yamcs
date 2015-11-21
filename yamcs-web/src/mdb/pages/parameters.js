@@ -13,13 +13,19 @@
         vm.qname = qname;
         vm.title = qname;
         vm.mdbType = 'parameters';
+        vm.includesNested = includesNested;
 
         $rootScope.pageTitle = 'Parameters | Yamcs';
 
-        console.log('listing for ' + qname);
-        mdbService.listParameters(qname).then(function (data) {
+        mdbService.listParameters(qname, {
+            recurse: includesNested()
+        }).then(function (data) {
             vm.parameters = data;
             return vm.parameters;
         });
+
+        function includesNested() {
+            return qname === '/yamcs';
+        }
     }
 })();
