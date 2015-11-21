@@ -19,15 +19,24 @@
         vm.appTitle = configService.get('title');
         vm.brandImage = configService.get('brandImage');
 
+        /*
+            MESSAGE CENTER
+            (currently used only for page-scoped errors)
+         */
         vm.messages = [];
         vm.closeMessage = function (idx) {
             vm.messages.splice(idx, 1);
         };
-
         $rootScope.$on('exception', function(evt, message) {
             vm.messages.push(message);
         });
+        $rootScope.$on('$routeChangeStart', function(next, current) {
+            vm.messages = [];
+        });
 
+        /*
+            LIVE CONNECTION
+         */
         socket.on('open', function () {
             vm.socketOpen = true;
             vm.socketInfoType = 'success';

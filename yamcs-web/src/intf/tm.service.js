@@ -89,7 +89,6 @@
             var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
-                console.log('a success? ', response);
                 return response.data;
             }).catch(function (message) {
                 $log.error('XHR failed', message);

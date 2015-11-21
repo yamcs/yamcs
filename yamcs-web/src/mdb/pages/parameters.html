@@ -20,9 +20,9 @@
           {{ para.name }}
         </a>
       </td>
-      <td>{{ para.type.engType | capitalize }}</td>
+      <td>{{ para.type.engType | capitalize | nvl:'-' }}</td>
       <td>{{ para.type.unitSet | joinBy:'unit':' ' | nvl:'-' }}</td>
-      <td>{{ para.dataSource | capitalize }}</td>
+      <td>{{ para.dataSource | capitalize | nvl:'-' }}</td>
       <td>{{ para.shortDescription | nvl:'-' }}</td>
     </tr>
   </table>
