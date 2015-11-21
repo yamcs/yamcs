@@ -94,9 +94,11 @@ public class XtceToGpbAssembler {
             if (c.getLongDescription() != null) {
                 cb.setLongDescription(c.getLongDescription());
             }
-            Map<String, String> aliases = c.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (c.getAliasSet() != null) {
+                Map<String, String> aliases = c.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             if (c.getRateInStream() != null) {
                 cb.setMaxInterval(c.getRateInStream().getMaxInterval());
@@ -206,9 +208,11 @@ public class XtceToGpbAssembler {
             if (cmd.getLongDescription() != null) {
                 cb.setLongDescription(cmd.getLongDescription());
             }
-            Map<String, String> aliases = cmd.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (cmd.getAliasSet() != null) {
+                Map<String, String> aliases = cmd.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             
             if (cmd.getDefaultSignificance() != null) {
@@ -361,9 +365,11 @@ public class XtceToGpbAssembler {
             if (p.getLongDescription() != null) {
                 b.setLongDescription(p.getLongDescription());
             }
-            Map<String, String> aliases = p.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (p.getAliasSet() != null) {
+                Map<String, String> aliases = p.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             DataSource xtceDs = p.getDataSource();
             if (xtceDs != null) {
@@ -602,9 +608,11 @@ public class XtceToGpbAssembler {
             if (a.getLongDescription() != null) {
                 b.setLongDescription(a.getLongDescription());
             }
-            Map<String, String> aliases = a.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (a.getAliasSet() != null) {
+                Map<String, String> aliases = a.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             switch (a.getScope()) {
             case global:
