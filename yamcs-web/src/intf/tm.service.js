@@ -68,8 +68,9 @@
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
-            }).catch(function (message) {
-                $log.error('XHR failed', message);
+            }).catch(function (e) {
+                $log.error('XHR failed', e);
+                throw messageToException(message);
             });
         }
 
@@ -80,6 +81,7 @@
                     return response.data;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
+                throw messageToException(message);
             });
         }
 
@@ -87,9 +89,11 @@
             var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
+                console.log('a success? ', response);
                 return response.data;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
+                throw messageToException(message);
             });
         }
 
@@ -248,6 +252,13 @@
                 }
             }
             return result;
+        }
+
+        function messageToException(message) {
+            return {
+                name: message['data']['type'],
+                message: message['data']['msg']
+            };
         }
     }
 })();

@@ -35,6 +35,7 @@
                 return response.data.alarm;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
+                throw messageToException(message);
             });
         }
 
@@ -82,6 +83,7 @@
                 return response.data;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
+                throw messageToException(message);
             });
         }
 
@@ -139,6 +141,13 @@
             default:
                 return 0;
             }
+        }
+
+        function messageToException(message) {
+            return {
+                name: message['data']['type'],
+                message: message['data']['msg']
+            };
         }
     }
 })();
