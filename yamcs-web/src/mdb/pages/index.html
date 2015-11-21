@@ -5,29 +5,29 @@
   <div class="panel panel-default" ng-repeat="ss in vm.mdb.flatSpaceSystems">
     <div class="panel-heading">
       <div class="pull-right">
-        <a href="#/mdb{{ ss.qualifiedName }}/parameters" ng-switch="ss.parameterCount">
+        <a href="/{{ yamcsInstance}}/mdb{{ ss.qualifiedName }}/parameters" ng-switch="ss.parameterCount">
           <small ng-switch-when="1">1 Parameter</small>
           <small ng-switch-default>{{ ss.parameterCount }} Parameters</small>
         </a>
         &nbsp;&nbsp;&nbsp;
-        <a href="#/mdb{{ ss.qualifiedName }}/containers" ng-switch="ss.containerCount">
+        <a href="/{{ yamcsInstance }}/mdb{{ ss.qualifiedName }}/containers" ng-switch="ss.containerCount">
           <small ng-switch-when="1">1 Container</small>
           <small ng-switch-default>{{ ss.containerCount }} Containers</small>
         </a>
         &nbsp;&nbsp;&nbsp;
-        <a href="#/mdb{{ ss.qualifiedName }}/commands" ng-switch="ss.commandCount">
+        <a href="/{{ yamcsInstance }}/mdb{{ ss.qualifiedName }}/commands" ng-switch="ss.commandCount">
           <small ng-switch-when="1">1 Command</small>
           <small ng-switch-default>{{ ss.commandCount }} Commands</small>
         </a>
         &nbsp;&nbsp;&nbsp;
-        <a href="#/mdb{{ ss.qualifiedName }}/algorithms" ng-switch="ss.algorithmCount">
+        <a href="/{{ yamcsInstance }}/mdb{{ ss.qualifiedName }}/algorithms" ng-switch="ss.algorithmCount">
           <small ng-switch-when="1">1 Algorithm</small>
           <small ng-switch-default>{{ ss.algorithmCount }} Algorithms</small>
         </a>
       </div>
 
       <h3 class="panel-title">
-        <a href="#/mdb{{ ss.qualifiedName }}/parameters">{{ ss.qualifiedName }}</a>
+        <a href="/{{ yamcsInstance }}/mdb{{ ss.qualifiedName }}/parameters">{{ ss.qualifiedName }}</a>
         <span ng-if="ss.version" class="label label-primary">v{{ ss.version }}</span>
       </h3>
     </div>

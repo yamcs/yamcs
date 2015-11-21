@@ -16,7 +16,7 @@
     </tr>
     <tr ng-repeat="para in vm.parameters | orderBy:'qualifiedName'">
       <td>
-        <a href="#/mdb{{ para.qualifiedName }}">
+        <a href="/{{ yamcsInstance }}/mdb{{ para.qualifiedName }}">
           {{ para.name }}
         </a>
       </td>

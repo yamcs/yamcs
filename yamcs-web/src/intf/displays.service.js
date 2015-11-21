@@ -28,7 +28,7 @@
         };
 
         function listDisplays() {
-            var targetUrl = '/' + yamcsInstance + '/displays/listDisplays';
+            var targetUrl = '/' + yamcsInstance + '/displays/displays.json';
             return $http.get(targetUrl, {cache: true}).then(function (response) {
                 var data = response.data;
                 // Array of arrays, but translate it for easier processing

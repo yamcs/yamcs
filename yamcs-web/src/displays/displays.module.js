@@ -48,11 +48,11 @@
 
     /* @ngInject */
     function configure($routeProvider) {
-        $routeProvider.when('/displays', {
+        $routeProvider.when('/:instance/displays', {
             templateUrl: '/_static/_site/displays/pages/displays.html',
             controller: 'DisplaysController',
             controllerAs: 'vm'
-        }).when('/displays/:display*', {
+        }).when('/:instance/displays/:display*', {
             templateUrl: '/_static/_site/displays/pages/display.html',
             controller: 'DisplayController',
             controllerAs: 'vm'

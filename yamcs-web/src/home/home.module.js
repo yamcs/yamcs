@@ -7,7 +7,7 @@
 
     /* @ngInject */
     function configure($routeProvider) {
-        $routeProvider.when('/', {
+        $routeProvider.when('/:instance', {
             templateUrl: '/_static/_site/home/home.html',
             controller: 'HomeController',
             controllerAs: 'vm'

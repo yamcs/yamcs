@@ -163,18 +163,19 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             return;
         }
         
-        if ((path.length==2) || path[2].isEmpty() || path[2].equals("index.html")) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
-            return;
-        }
-        String[] rpath = path[2].split("/", 2);
-        String handler = rpath[0];
-        if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
-            webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
-        } else if(DISPLAYS_PATH.equals(handler)) {
-            displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
+        if (path.length > 2) {
+            String[] rpath = path[2].split("/", 2);
+            String handler = rpath[0];
+            if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
+                webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
+            } else if(DISPLAYS_PATH.equals(handler)) {
+                displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
+            } else {
+                // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");                
+            }
         } else {
-            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
         }
     }
     

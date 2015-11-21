@@ -3,6 +3,7 @@ package org.yamcs.web;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -48,10 +49,10 @@ public class DisplayRequestHandler extends AbstractRequestHandler {
 
     void handleRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, String remainingUri, AuthenticationToken authToken) throws Exception {
         if((remainingUri==null) || remainingUri.isEmpty()) {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
+            sendError(ctx, NOT_FOUND);
         } else if (remainingUri.contains("/")) {
             sendError(ctx, BAD_REQUEST);
-        } else if("listDisplays".equals(remainingUri)) {
+        } else if("displays.json".equals(remainingUri)) {
             handleListDisplays(ctx, req, yamcsInstance);
         } else {
             fileRequestHandler.handleStaticFileRequest(ctx, req, "single-display.html");

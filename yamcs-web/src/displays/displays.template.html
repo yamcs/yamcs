@@ -5,7 +5,7 @@
         <span class="nav-title">{{ display.group }}</span>
         <ul class="nav nav-sidebar med">
           <li ng-class="{active: activePane == d1.display}" ng-repeat="d1 in display.displays">
-            <a href="#/displays/{{ d1.display }}">{{ d1.name }}</a>
+            <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
           </li>
         </ul>
       </div>

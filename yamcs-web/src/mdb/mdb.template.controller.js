@@ -6,9 +6,10 @@
         .controller('MDBTemplateController',  MDBTemplateController);
 
     /* @ngInject */
-    function MDBTemplateController(mdbService) {
+    function MDBTemplateController(mdbService, yamcsInstance) {
         var vm = this;
         vm.parameters = [];
+        vm.yamcsInstance = yamcsInstance;
 
         mdbService.getSummary().then(function (mdb) {
             vm.mdb = mdb;

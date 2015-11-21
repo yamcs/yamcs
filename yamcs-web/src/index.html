@@ -29,14 +29,17 @@
       var initInjector = angular.injector(['ng']);
       var $http = initInjector.get('$http');
 
-      var yamcsInstance = location.pathname.match(/\/([^\/]*)\//)[1];
+      var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
       var targetUrl = '/_static/' + yamcsInstance + '/config.json';
 
       $http.get(targetUrl).then(function (response) {
           angular
               .module('yamcs.core')
               .constant('remoteConfig', response.data)
-              .constant('yamcsInstance', yamcsInstance);
+              .constant('yamcsInstance', yamcsInstance)
+              .run(['$rootScope', function ($rootScope) {
+                $rootScope.yamcsInstance = yamcsInstance;
+              }]);
           angular.element(document).ready(function() {
               angular.bootstrap(document, ['yamcs']);
           });

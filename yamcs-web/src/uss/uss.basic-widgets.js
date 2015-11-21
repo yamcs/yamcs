@@ -235,7 +235,8 @@ $.extend(USS.Field.prototype, {
         }
 
         var id = USS.getParameterFromWidget(this);
-        var rectLink = svg.link(parent, '#/mdb/' + id.namespace + '/' + id.name, {});
+        var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];;
+        var rectLink = svg.link(parent, '/' + yamcsInstance + '/mdb/' + id.namespace + '/' + id.name, {});
         svg.rect(rectLink, 0, 0, this.width, this.height, settings);
 
         USS.writeText(svg, parent, {id: this.id, x: 0, y: 0, width: this.width, height: this.height}, $e.children('TextStyle'), " ");

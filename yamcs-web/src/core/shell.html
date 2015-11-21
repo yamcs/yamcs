@@ -8,10 +8,10 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a href="#/" ng-if="shell.brandImage" style="padding-right: 15px;">
+      <a href="/{{ yamcsInstance }}" ng-if="shell.brandImage" style="padding-right: 15px;">
         <img ng-src="{{ shell.brandImage }}" alt="{{ shell.appTitle }}">
       </a>
-      <a class="navbar-brand" href="#/" ng-if="!shell.brandImage">
+      <a class="navbar-brand" href="/{{ yamcsInstance }}" ng-if="!shell.brandImage">
         {{ shell.appTitle }}
       </a>
     </div>
@@ -19,7 +19,7 @@
     <div class="navbar-header pull-right">
       <ul class="nav navbar-nav navbar-right">
         <li ng-class="{ active: headerVM.isActive('/alarms')}">
-          <a href="#/alarms" role="button" class="btn btn-link">
+          <a href="/{{ yamcsInstance }}/alarms" role="button" class="btn btn-link">
             <span class="glyphicon glyphicon-bell"></span>
             Alarms
             <span class="badge" ng-if="shell.alarmCount > 0" ng-style="{'background-color': shell.alarmBadgeColor}">
@@ -68,16 +68,15 @@
           </a>
           <ul class="dropdown-menu" dropdown-menu>
             <li class="open-display" ng-repeat="d1 in display.displays">
-              <a href="#/displays/{{ d1.display }}">{{ d1.name }}</a>
+              <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
             </li>
           </ul>
         </li-->
 
 
-        <li ng-class="{ active: headerVM.isActive('/displays')}"><a href="#/displays">Displays</a></li>
-        <li ng-class="{ active: headerVM.isActive('/mdb')}"><a href="#/mdb">MDB</a></li>
+        <li ng-class="{ active: headerVM.isActive('/displays')}"><a href="/{{ yamcsInstance }}/displays">Displays</a></li>
+        <li ng-class="{ active: headerVM.isActive('/mdb')}"><a href="/{{ yamcsInstance }}/mdb">MDB</a></li>
       </ul>
     </div>
-
   </div>
 </nav>
