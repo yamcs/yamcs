@@ -17,7 +17,7 @@
           <span ng-if="!vm.para">---</span>
           {{ vm.info.type.unitSet | joinBy:'unit':' ' }}
         </span>
-        <img ng-if="vm.para.monitoringResult" ng-src="/_static/_site/alarms/images/level{{ vm.para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ vm.para.monitoringResult | monitoringValue }}"><br>
+        <img ng-if="vm.para.monitoringResult && (vm.para.monitoringResult != 'DISABLED')" ng-src="/_static/_site/alarms/images/level{{ vm.para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ vm.para.monitoringResult | monitoringValue }}"><br>
         <small style="color: #6f6f6f" ng-if="vm.para">{{ vm.para.generationTimeUTC | parseUTC | formatDate }}</small><br>
         <small style="color: #6f6f6f">Source: {{ vm.info.dataSource|capitalize }}</small>
       </div>
@@ -35,7 +35,7 @@
 
           <dt>Type</dt>
           <dd>
-            {{ vm.info.type.engType|capitalize }}
+            {{ vm.info.type.engType | capitalize | nvl:'-' }}
             <span ng-if="vm.info.type.engType == 'enumeration'" class="glyphicon glyphicon-list" style="cursor: pointer;" ng-click="vm.openEnumValuesModal()"></span>
           </dd>
         </dl>
@@ -102,7 +102,7 @@
       </table>
     </div>
 
-    <div>
+    <div ng-if="vm.para.monitoringResult != 'DISABLED'">
       <h2 class="section">Monitoring Definition</h2>
       <span ng-if="!(vm.isNumeric())">-</span>
       <dl class="dl-horizontal" ng-if="vm.isNumeric()">
@@ -148,12 +148,12 @@
       </dl>
     </div>
 
-    <div>
+    <div ng-if=vm.info.type.dataEncoding>
       <h2 class="section">Packet Definition</h2>
       <dl class="dl-horizontal">
         <dt>Raw Type</dt>
         <dd>
-          {{ vm.info.type.dataEncoding.type | capitalize }}
+          {{ vm.info.type.dataEncoding.type | capitalize | nvl:'-' }}
         </dd>
 
         <dt>Size In Bits</dt>
