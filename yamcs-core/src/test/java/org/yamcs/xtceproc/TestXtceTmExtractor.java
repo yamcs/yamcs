@@ -39,19 +39,21 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 public class TestXtceTmExtractor {
+    
+    private static XtceDb xtcedb;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
         ManagementService.setup(false,false);
         XtceDbFactory.reset();
+        xtcedb=XtceDbFactory.createInstance("refmdb");
+        //xtcedb.print(System.out);
     }
 
     @Test
     public void testPKT1_1() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -84,8 +86,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_2() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -124,11 +124,8 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_3StringStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-    	XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
-        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);        
         tmExtractor.startProvidingAll();
         
         ByteBuffer bb=tmGenerator.generate_PKT1_3();
@@ -170,8 +167,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_4StringFloatStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -208,8 +203,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_4InvalidStringFloatStructure() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -232,8 +225,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_5StringIntStructure() throws ConfigurationException {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -266,8 +257,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_5InvalidStringIntStructure() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -290,8 +279,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_9BooleanValues() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -324,10 +311,10 @@ public class TestXtceTmExtractor {
     @Test
     public void testContainerSubscriptionPKT1_1() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProviding(xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
+
         ByteBuffer bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
@@ -358,8 +345,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_7FloatStructure() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
-        //xtcedb.print(System.out);
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -391,7 +376,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_11_longuint32() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
         
@@ -406,7 +390,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_12_stringenum() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
         
@@ -423,7 +406,6 @@ public class TestXtceTmExtractor {
     public void testPKT1_12_invalidstringenum() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         tmGenerator.pStringEnumPara1_12_1="invalidlong";
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
         
@@ -440,7 +422,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT3_dynamicSize() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -468,7 +449,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testProcessPacket_startContainer() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
-        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
@@ -490,7 +470,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_List() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -508,7 +487,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_AND() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -526,7 +504,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_PKT1_OR() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -544,7 +521,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_PKT1_AND_OR() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -571,7 +547,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_PKT1_OR_AND() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
@@ -606,7 +581,6 @@ public class TestXtceTmExtractor {
     @Test
     public void testPKT1_PKT1_RANGE() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
