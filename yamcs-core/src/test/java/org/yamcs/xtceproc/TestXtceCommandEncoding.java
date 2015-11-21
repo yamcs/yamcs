@@ -1,7 +1,11 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.*;
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.ErrorInCommand;
@@ -10,10 +14,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.LinkedList;
-import java.util.List;
+import junit.framework.Assert;
 
 /**
  * Created by msc on 27/05/15.
@@ -22,7 +23,7 @@ public class TestXtceCommandEncoding {
     @Test
     public void floatCommand() throws ErrorInCommand {
         // encode command
-        XtceDb xtcedb=XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("float_arg", "-30");
@@ -36,7 +37,7 @@ public class TestXtceCommandEncoding {
 
     @Test
     public void stringCommand() throws ErrorInCommand {
-        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/STRING_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg", "aaaa");
@@ -48,7 +49,7 @@ public class TestXtceCommandEncoding {
     
     @Test
     public void littleEndianUint() throws ErrorInCommand {
-        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/LE_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("p2", "0x12");
@@ -63,7 +64,7 @@ public class TestXtceCommandEncoding {
     
     @Test
     public void booleanCommandTrue() throws ErrorInCommand {
-        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "true");
@@ -77,7 +78,7 @@ public class TestXtceCommandEncoding {
     
     @Test
     public void booleanCommandFalse() throws ErrorInCommand {
-        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("bool_arg1", "false");

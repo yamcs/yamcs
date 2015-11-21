@@ -156,7 +156,7 @@ public class YConfiguration {
             }
         }
         if((is=YConfiguration.class.getResourceAsStream(name))==null) {
-            throw(new ConfigurationException("Can not find resource "+name));
+            throw(new ConfigurationException("Cannot find resource "+name));
         }
         log.info( "Reading configuration from "+new File( YConfiguration.class.getResource(name).getFile() ).getAbsolutePath() );
         return is;

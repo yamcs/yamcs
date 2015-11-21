@@ -45,8 +45,8 @@ public class XtceDbFactory {
     /**
      * map instance names and config names to databases
      */
-    static transient Map<String,XtceDb> instance2Db = new HashMap<String,XtceDb>();
-    static transient Map<String,XtceDb> config2Db = new HashMap<String,XtceDb>();
+    static transient Map<String, XtceDb> instance2Db = new HashMap<>();
+    static transient Map<String, Map<String, XtceDb>> instance2DbConfigs = new HashMap<>();
     static LoaderTree loaderTree;
 
 
@@ -56,7 +56,7 @@ public class XtceDbFactory {
      * @throws ConfigurationException 
      */
     @SuppressWarnings("unchecked")
-    private static synchronized XtceDb createInstance(String configSection) throws ConfigurationException {
+    public static synchronized XtceDb createInstance(String configSection) throws ConfigurationException {
         YConfiguration c = null;
         c = YConfiguration.getConfiguration("mdb");
 
@@ -417,29 +417,37 @@ public class XtceDbFactory {
      * @throws ConfigurationException
      * @throws DatabaseLoadException 
      */
-    static public synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
+    public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db=instance2Db.get(yamcsInstance);
         if(db==null) {
             YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
-            db=getInstanceByConfig(c.getString("mdb"));
+            db=getInstanceByConfig(yamcsInstance, c.getString("mdb"));
             instance2Db.put(yamcsInstance, db);
         }
         return db;
     }
-    static public synchronized XtceDb getInstanceByConfig(String config) throws ConfigurationException {
-        XtceDb db=config2Db.get(config);
+    
+    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) throws ConfigurationException {
+        Map<String, XtceDb> dbConfigs = instance2DbConfigs.get(yamcsInstance);
+        if (dbConfigs == null) {
+            dbConfigs = new HashMap<>();
+            instance2DbConfigs.put(yamcsInstance, dbConfigs);
+        }
+        
+        XtceDb db=dbConfigs.get(config);
         if(db==null) {
             db=createInstance(config);
-            config2Db.put(config, db);
+            dbConfigs.put(config, db);
         }
         return db;
     }
+    
     /**
      * forgets any singleton
      */
     public synchronized static void reset() {
         instance2Db.clear();
-        config2Db.clear();
+        instance2DbConfigs.clear();
     }
 
     public static void main(String argv[]) throws Exception {
@@ -448,7 +456,7 @@ public class XtceDbFactory {
             System.exit(1);
         }
         YConfiguration.setup();
-        XtceDb xtcedb = XtceDbFactory.getInstanceByConfig(argv[0]);
+        XtceDb xtcedb = createInstance(argv[0]);
         xtcedb.print(System.out);
     }
 

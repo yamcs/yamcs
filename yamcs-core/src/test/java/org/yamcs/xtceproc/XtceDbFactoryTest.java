@@ -2,7 +2,9 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
@@ -16,7 +18,7 @@ import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
 
 
-public class TestXtceDbFactory {
+public class XtceDbFactoryTest {
 
     /* This test constructs the following tree:
      * a [p1]
@@ -131,5 +133,18 @@ public class TestXtceDbFactory {
         nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
         assertNotNull(nd);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
+    }
+    
+    @Test
+    public void testInstantiation() throws Exception {
+        YConfiguration.setup("XtceDbFactoryTest");
+        XtceDbFactory.reset();
+        XtceDb db1 = XtceDbFactory.getInstance("refmdb-a");
+        XtceDb db2 = XtceDbFactory.getInstance("refmdb-a");
+        assertSame(db1, db2);
+        
+        db1 = XtceDbFactory.getInstance("refmdb-a");
+        db2 = XtceDbFactory.getInstance("refmdb-b");
+        assertNotSame("Even if it's the same DB, require different instantiations per instance", db1, db2);
     }
 }
