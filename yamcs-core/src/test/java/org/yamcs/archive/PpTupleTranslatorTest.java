@@ -42,7 +42,7 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.hornetq.StreamAdapter;
 
-public class TestPpTupleTranslator extends YarchTestCase {
+public class PpTupleTranslatorTest extends YarchTestCase {
     static EmbeddedHornetQ hornetServer;
     public static int sequenceCount = 0;
     public static final String COL_BYTE = "/pp/byte";
@@ -92,7 +92,7 @@ public class TestPpTupleTranslator extends YarchTestCase {
 	long curTime = TimeEncoding.getWallclockTime();
 	msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, curTime - 10 );
 	msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP, "no-group" );
-	msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, TestPpTupleTranslator.sequenceCount ++ );
+	msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, PpTupleTranslatorTest.sequenceCount ++ );
 	msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_RECTIME, curTime );
 
 	return msg;
@@ -107,7 +107,7 @@ public class TestPpTupleTranslator extends YarchTestCase {
 	List<Object> cols=new ArrayList<Object>(4);
 	cols.add( TimeEncoding.getWallclockTime() - 10 );
 	cols.add( "no-group" );
-	cols.add( TestPpTupleTranslator.sequenceCount ++ );
+	cols.add( PpTupleTranslatorTest.sequenceCount ++ );
 	cols.add( TimeEncoding.getWallclockTime() );
 
 	cols.add( 1 ); // byte

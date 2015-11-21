@@ -41,7 +41,7 @@ import org.yamcs.yarch.YarchTestCase;
  * @author nm
  *
  */
-public class TestCmdHistoryRecording extends YarchTestCase {
+public class CmdHistoryRecordingTest extends YarchTestCase {
     static EmbeddedHornetQ hornetServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

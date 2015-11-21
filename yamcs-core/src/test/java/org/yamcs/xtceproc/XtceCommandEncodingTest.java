@@ -19,7 +19,8 @@ import junit.framework.Assert;
 /**
  * Created by msc on 27/05/15.
  */
-public class TestXtceCommandEncoding {
+public class XtceCommandEncodingTest {
+    
     @Test
     public void floatCommand() throws ErrorInCommand {
         // encode command

@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.Test;
 import org.yamcs.ui.CcsdsCompletenessGui.Gap;
 
-public class TestCcsdsCompletenessGui {
+public class CcsdsCompletenessGuiTest {
     
     private void testEquals(String name, long start, long end, Gap g) {
         assertEquals(name, g.name);

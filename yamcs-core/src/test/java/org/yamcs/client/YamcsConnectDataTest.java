@@ -10,7 +10,7 @@ import org.yamcs.api.YamcsConnectData;
 
 
 
-public class TestYamcsConnectData {
+public class YamcsConnectDataTest {
 	@Test
 	public void testParsing() throws URISyntaxException {
 		YamcsConnectData ycd=YamcsConnectData.parse("yamcs://localhost");

@@ -18,7 +18,7 @@ import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 
 
-public class TestProducerKiller {
+public class ProducerKillerTest {
     static EmbeddedHornetQ hornetServer;
     
     @BeforeClass

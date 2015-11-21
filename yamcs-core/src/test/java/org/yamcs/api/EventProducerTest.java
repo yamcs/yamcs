@@ -10,7 +10,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 
-public class TestEventProducer extends YarchTestCase {
+public class EventProducerTest extends YarchTestCase {
     static EmbeddedHornetQ hornetServer;
     
     @BeforeClass

@@ -1,9 +1,10 @@
-package org.yamcs.yarch.tokyocabinet;
+package org.yamcs.yarch.rocksdb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,21 +14,21 @@ import org.junit.Test;
 import org.yamcs.TimeInterval;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.yarch.tokyocabinet.TcTagDb;
 
-public class TestTags extends YarchTestCase {
+public class TagsTest extends YarchTestCase {
 
     private ArrayList<ArchiveTag> tags;
-    private String instance;
-    private TcTagDb tagDb;
+    private RdbTagDb tagDb;
     
     @Test
     public void testTags() throws Exception {
         final int n=1000;
         tags=new ArrayList<ArchiveTag>(n+4);
-        instance=context.getDbName();
-        tagDb = TcTagDb.getInstance(instance, false);
+        String path = "/tmp/test_rdbtags";
+        FileUtils.deleteRecursively(new File(path).toPath());
+        tagDb = new RdbTagDb(path);
         
         //insert two tags without stop
         insertTag(ArchiveTag.newBuilder().setName("plusinfinity1").setStart(1000).build());

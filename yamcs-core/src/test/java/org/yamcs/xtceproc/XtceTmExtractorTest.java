@@ -38,7 +38,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
-public class TestXtceTmExtractor {
+public class XtceTmExtractorTest {
     
     private static XtceDb xtcedb;
 
