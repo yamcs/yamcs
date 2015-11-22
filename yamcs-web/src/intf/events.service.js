@@ -6,9 +6,10 @@
         .factory('eventsService', eventsService);
 
     /* @ngInject */
-    function eventsService($http, $log, socket, $filter, yamcsInstance, $rootScope) {
+    function eventsService(socket, $rootScope) {
 
         var unreadCount = 0; // well, sort of
+        var urgent = false;
         var events = [];
 
         socket.on('open', function () {
@@ -29,6 +30,7 @@
 
         function resetUnreadCount() {
             unreadCount = 0;
+            urgent = false;
             broadcastEventStats();
         }
 
@@ -36,6 +38,9 @@
             socket.on('EVENT', function (data) {
                 unreadCount++;
                 events.push(data);
+                if (data['severity'] === 'ERROR') {
+                    urgent = true;
+                }
                 broadcastEventStats();
                 $rootScope.$broadcast('yamcs.event', data);
             });
@@ -47,7 +52,8 @@
         function broadcastEventStats() {
             $rootScope.$broadcast('yamcs.eventStats', {
                 unreadCount: unreadCount,
-                count: events.length
+                count: events.length,
+                urgent: urgent
             });
         }
 

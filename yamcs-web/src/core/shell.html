@@ -22,8 +22,9 @@
           <a href="/{{ yamcsInstance }}/events" role="button" class="btn btn-link">
             <span class="glyphicon glyphicon-bullhorn"></span>
             Events
-            <span class="badge" ng-if="shell.eventCount > 0" ng-style="{'background-color': shell.eventBadgeColor}">
-              {{ shell.eventCount }}
+            <span class="badge" ng-if="shell.eventStats.unreadCount > 0"
+                ng-class="{'urgent': shell.eventStats.urgent}">
+              {{ shell.eventStats.unreadCount }}
             </span>
           </a>
         </li>

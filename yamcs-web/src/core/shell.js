@@ -49,10 +49,9 @@
         /*
             EVENT STATS
          */
-        vm.eventCount = 0;
         vm.alarmBadgeColor = '#9d9d9d';
         $rootScope.$on('yamcs.eventStats', function (evt, stats) {
-            vm.eventCount = stats['unreadCount'];
+            vm.eventStats = stats;
         });
 
         /*
