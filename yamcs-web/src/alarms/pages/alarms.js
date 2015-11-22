@@ -3,11 +3,11 @@
 
     angular
         .module('yamcs.alarms')
-        .controller('AlarmController',  AlarmController)
+        .controller('AlarmsController',  AlarmsController)
         .controller('AcknowledgeAlarmModalController',  AcknowledgeAlarmModalController);
 
     /* @ngInject */
-    function AlarmController($rootScope, alarmService, $uibModal, $scope, $log) {
+    function AlarmsController($rootScope, alarmsService, $uibModal, $scope, $log) {
         var vm = this;
 
         $rootScope.pageTitle = 'Alarms | Yamcs';
@@ -15,7 +15,7 @@
         vm.openAcknowledge = openAcknowledge;
         vm.alarms = [];
 
-        /*alarmService.listAlarms().then(function (data) {
+        /*alarmsService.listAlarms().then(function (data) {
             vm.alarms = data;
             return vm.alarms;
         });*/
@@ -23,13 +23,13 @@
         /*
             vm.alarms is a live collection
          */
-        var alarmSubscriptionId = alarmService.watch(function (alarms) {
+        var alarmSubscriptionId = alarmsService.watch(function (alarms) {
             vm.alarms = alarms;
         });
 
         $scope.$on('$destroy', function () {
             console.log('alarm/unsubscribe of alarms page controller');
-            alarmService.unwatch(alarmSubscriptionId)
+            alarmsService.unwatch(alarmSubscriptionId)
         });
 
 
@@ -62,12 +62,12 @@
     }
 
     /* @ngInject */
-    function AcknowledgeAlarmModalController($scope, $uibModalInstance, alarm, form, alarmService) {
+    function AcknowledgeAlarmModalController($scope, $uibModalInstance, alarm, form, alarmsService) {
         $scope.alarm = alarm;
         $scope.form = form;
 
         $scope.ok = function () {
-            alarmService.patchParameterAlarm(alarm.triggerValue.id, alarm.id, {
+            alarmsService.patchParameterAlarm(alarm.triggerValue.id, alarm.id, {
                 state: 'acknowledged',
                 comment: form.comment
             });

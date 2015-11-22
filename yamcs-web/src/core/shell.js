@@ -6,7 +6,7 @@
         .controller('Shell', Shell);
 
     /* @ngInject */
-    function Shell($rootScope, $scope, $location, socket, alarmService, configService, timeService) {
+    function Shell($rootScope, $scope, $location, socket, alarmsService, configService, timeService) {
         var vm = this;
 
         vm.socketOpen = false;
@@ -47,12 +47,21 @@
         });
 
         /*
+            EVENT STATS
+         */
+        vm.eventCount = 0;
+        vm.alarmBadgeColor = '#9d9d9d';
+        $rootScope.$on('yamcs.eventStats', function (evt, stats) {
+            vm.eventCount = stats['unreadCount'];
+        });
+
+        /*
             ALARM STATS
          */
         vm.alarmCount = 0;
         vm.alarmBadgeColor = '#9d9d9d';
 
-        var alarmSubscriptionId = alarmService.watch(handleAggregatedAlarmState);
+        var alarmSubscriptionId = alarmsService.watch(handleAggregatedAlarmState);
         var timeSubscriptionId = timeService.watchTime(handleTimeUpdate);
 
         /*
@@ -60,7 +69,7 @@
          */
         $scope.$on('$destroy', function() {
             console.log('alarm/unsubscribe of shell controller');
-            alarmService.unwatch(alarmSubscriptionId);
+            alarmsService.unwatch(alarmSubscriptionId);
             timeService.unwatch(timeSubscriptionId);
         });
 

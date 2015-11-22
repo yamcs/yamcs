@@ -1,7 +1,7 @@
 <mdb-pane active-pane="overview" yamcs-instance="yamcsInstance" shell="shell">
   <h1 class="page-header">{{ vm.title }}</h1>
   <p>&nbsp;</p>
-  <div class="panel panel-default" ng-repeat="ss in vm.mdb.flatSpaceSystems">
+  <div class="panel panel-default" ng-repeat="ss in vm.mdb.flatSpaceSystems | orderBy:'qualifiedName'">
     <div class="panel-heading">
       <div class="pull-right">
         <a href="/{{ yamcsInstance}}/mdb{{ ss.qualifiedName }}/parameters" ng-switch="ss.parameterCount">
@@ -38,8 +38,8 @@
       <div class="container-fluid" ng-if="ss.history">
         <div class="row" ng-repeat="h in ss.history | orderBy:'-'">
           <div class="col-md-1">v{{ h.version }}</div>
-          <div class="col-md-1" style="white-space: nowrap">{{ h.date}}</div>
-          <div class="col-md-10" ng-bind-html="h.message | nl2br"></div>
+          <div class="col-md-2" style="white-space: nowrap">{{ h.date}}</div>
+          <div class="col-md-9" ng-bind-html="h.message | nl2br"></div>
         </div>
       </div>
     </div>

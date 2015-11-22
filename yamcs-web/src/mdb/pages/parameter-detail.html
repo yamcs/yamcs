@@ -164,7 +164,7 @@
         <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
 
         <dt>Encoding</dt>
-        <dd>{{ vm.info.type.dataEncoding.encoding }}</dd>
+        <dd>{{ vm.info.type.dataEncoding.encoding | nvl:'-' }}</dd>
 
         <dt>Calibrator</dt>
         <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>

@@ -18,6 +18,16 @@
 
     <div class="navbar-header pull-right">
       <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="/{{ yamcsInstance }}/events" role="button" class="btn btn-link">
+            <span class="glyphicon glyphicon-bullhorn"></span>
+            Events
+            <span class="badge" ng-if="shell.eventCount > 0" ng-style="{'background-color': shell.eventBadgeColor}">
+              {{ shell.eventCount }}
+            </span>
+          </a>
+        </li>
+
         <li ng-class="{ active: headerVM.isActive('/alarms')}">
           <a href="/{{ yamcsInstance }}/alarms" role="button" class="btn btn-link">
             <span class="glyphicon glyphicon-bell"></span>
@@ -27,13 +37,6 @@
             </span>
           </a>
         </li>
-
-        <!--li>
-            <p class="navbar-text">
-              <span ng-if="shell.socketOpen" class="glyphicon glyphicon-signal text-success" title="Yamcs Connected"></span>
-              <span ng-if="!shell.socketOpen" class="glyphicon glyphicon-signal text-danger" title="Yamcs Not Connected"></span>
-            </p>
-        </li-->
 
         <li style="width: 200px;" title="Mission Time">
           <uib-progressbar

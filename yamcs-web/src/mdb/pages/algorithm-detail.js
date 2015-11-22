@@ -6,7 +6,7 @@
         .controller('MDBAlgorithmDetailController', MDBAlgorithmDetailController);
 
     /* @ngInject */
-    function MDBAlgorithmDetailController($routeParams, mdbService) {
+    function MDBAlgorithmDetailController($rootScope, $routeParams, mdbService) {
         var vm = this;
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 

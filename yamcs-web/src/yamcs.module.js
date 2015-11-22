@@ -6,6 +6,7 @@
             'yamcs.core',
             'yamcs.alarms',
             'yamcs.displays',
+            'yamcs.events',
             'yamcs.home',
             'yamcs.intf',
             'yamcs.mdb'

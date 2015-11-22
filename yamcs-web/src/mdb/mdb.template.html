@@ -2,7 +2,7 @@
   <div class="sidebar" style="width: 230px;">
     <ul class="nav nav-sidebar">
       <li ng-class="{active: activePane == 'overview'}"><a href="/{{ yamcsInstance }}/mdb">Overview</a></li>
-      <li ng-class="{active: activePane == ss.qualifiedName}" ng-repeat="ss in templateVm.mdb.flatSpaceSystems">
+      <li ng-class="{active: activePane == ss.qualifiedName}" ng-repeat="ss in templateVm.mdb.flatSpaceSystems | orderBy:'qualifiedName'">
         <a href="/{{ yamcsInstance }}/mdb{{ ss.qualifiedName }}/parameters">{{ ss.qualifiedName }}</a>
       </li>
     </ul>

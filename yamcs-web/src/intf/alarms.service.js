@@ -3,7 +3,7 @@
 
     angular
         .module('yamcs.intf')
-        .factory('alarmService', alarmService);
+        .factory('alarmsService', alarmsService);
 
     // Aggregated alarm data
     var activeAlarmsById = {};
@@ -12,7 +12,7 @@
     var subscriptionId = 0;
 
     /* @ngInject */
-    function alarmService($http, $log, socket, $filter, yamcsInstance) {
+    function alarmsService($http, $log, socket, $filter, yamcsInstance) {
 
         socket.on('open', function () {
             subscribeUpstream();

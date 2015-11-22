@@ -9,7 +9,7 @@
     function configure($routeProvider) {
         $routeProvider.when('/:instance/alarms', {
             templateUrl: '/_static/_site/alarms/pages/alarms.html',
-            controller: 'AlarmController',
+            controller: 'AlarmsController',
             controllerAs: 'vm'
         });
     }

@@ -1,0 +1,34 @@
+<div class="main" style="padding: 40px;">
+  <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
+  <h1 class="page-header">Events</h1>
+
+  <table class="table table-striped table-condensed">
+    <tr>
+      <th>Message</th>
+      <th>Source</th>
+      <th>Type</th>
+      <th>Generated</th>
+    </tr>
+
+    <tr ng-repeat="event in vm.events | orderBy:'-generationTime'">
+      <td>
+        <!--span ng-if="event.severity == 'INFO'" class="label label-info">Info</span-->
+        <span ng-if="event.severity == 'WARNING'" class="label label-warning">Warning</span>
+        <span ng-if="event.severity == 'ERROR'" class="label label-danger">Error</span>
+        {{ event.message }}
+      </td>
+
+      <td>
+        {{ event.source }}
+      </td>
+
+      <td>
+        {{ event.type }}
+      </td>
+
+      <td>
+        {{ event.generationTimeUTC | parseUTC | formatDate }}
+      </td>
+    </tr>
+  </table>
+</div>
