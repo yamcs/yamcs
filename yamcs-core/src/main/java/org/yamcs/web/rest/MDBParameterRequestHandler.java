@@ -69,7 +69,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
             throw new BadRequestException("Invalid parameter name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, req.getOptions());
         return new RestResponse(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
     }
 
@@ -90,7 +90,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
-                responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
+                responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             }
         } else {
             Privilege privilege = Privilege.getInstance();
@@ -102,7 +102,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
             for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
@@ -113,7 +113,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }
@@ -140,7 +140,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
             BulkGetParameterResponse.GetParameterResponse.Builder response = BulkGetParameterResponse.GetParameterResponse.newBuilder();
             response.setId(id);
             String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY));
+            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             responseb.addResponse(response);
         }
         

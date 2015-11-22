@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
@@ -41,6 +43,10 @@ public class RestRequest {
     
     public static final String CTX_INSTANCE = "instance";
     public static final String CTX_PROCESSOR = "processor";
+    
+    public enum Option {
+        NO_LINK;
+    }
     
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
@@ -146,6 +152,17 @@ public class RestRequest {
     
     public String getHeader(String name) {
         return httpRequest.headers().get(name);
+    }
+    
+    /**
+     * Experimental feature to gather common parameters. Should also be made to include the pretty-flag
+     */
+    public Set<Option> getOptions() {
+        Set<Option> options = new HashSet<>(2);
+        if (getQueryParameterAsBoolean("nolink", false)) {
+            options.add(Option.NO_LINK);
+        }
+        return options;
     }
     
     /**

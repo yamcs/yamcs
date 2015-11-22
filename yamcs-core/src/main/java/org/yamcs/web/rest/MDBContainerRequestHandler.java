@@ -51,7 +51,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     private RestResponse getSingleContainer(RestRequest req, NamedObjectId id, SequenceContainer c) throws RestException {
         // TODO privileges
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL);
+        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
         return new RestResponse(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
 
@@ -72,7 +72,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (SequenceContainer c : mdb.getSequenceContainers()) {
                 if (matcher != null && !matcher.matches(c)) continue;
-                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
+                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             }
         } else {
             // TODO privileges
@@ -82,7 +82,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
                 
                 String alias = c.getAlias(namespace);
                 if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
-                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
+                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }

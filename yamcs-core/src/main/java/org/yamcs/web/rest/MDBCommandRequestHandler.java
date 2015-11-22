@@ -56,7 +56,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
             throw new BadRequestException("Invalid command name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL);
+        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
         return new RestResponse(req, cinfo, SchemaMdb.CommandInfo.WRITE);
     }
 
@@ -77,7 +77,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (matcher != null && !matcher.matches(cmd)) continue;
-                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
+                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             }
         } else {
             Privilege privilege = Privilege.getInstance();
@@ -89,7 +89,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
                 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY));
+                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }

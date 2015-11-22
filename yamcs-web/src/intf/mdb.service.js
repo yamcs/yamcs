@@ -166,14 +166,11 @@
         }
 
         function toQueryString(options) {
-            if (!options) return '';
-            var result = '?';
-            var first = true;
+            if (!options) return '?nolink';
+            var result = '?nolink';
             for (var opt in options) {
                 if (options.hasOwnProperty(opt)) {
-                    if (!first) result += '&';
-                    first = false;
-                    result += opt + '=' + options[opt];
+                    result += '&' + opt + '=' + options[opt];
                 }
             }
             return result;

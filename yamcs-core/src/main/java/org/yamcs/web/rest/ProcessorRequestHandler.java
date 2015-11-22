@@ -32,6 +32,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -406,13 +407,14 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
         String instance = processor.getInstance();
         String name = processor.getName();
-        String apiURL = req.getApiURL();
-        b.setUrl(apiURL + "/processors/" + instance + "/" + name);
-        b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");
-        b.setParametersUrl(apiURL + "/processors/" + instance + "/" + name + "/parameters{/namespace}{/name}");
-        b.setCommandsUrl(apiURL + "/processors/" + instance + "/" + name + "/commands{/namespace}{/name}");
-        b.setCommandQueuesUrl(apiURL + "/processors/" + instance + "/" + name + "/cqueues{/name}");
-        b.setAlarmsUrl(apiURL + "/processors/" + instance + "/" + name + "/alarms{/id}");
+        if (!req.getOptions().contains(Option.NO_LINK)) {
+            String apiURL = req.getApiURL();
+            b.setUrl(apiURL + "/processors/" + instance + "/" + name);
+            b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");
+            b.setParametersUrl(apiURL + "/processors/" + instance + "/" + name + "/parameters{/namespace}{/name}");
+            b.setCommandsUrl(apiURL + "/processors/" + instance + "/" + name + "/commands{/namespace}{/name}");
+            b.setCommandQueuesUrl(apiURL + "/processors/" + instance + "/" + name + "/cqueues{/name}");
+        }
         return b.build();
     }
 }

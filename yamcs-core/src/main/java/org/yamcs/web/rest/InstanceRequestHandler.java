@@ -13,6 +13,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
+import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.xtce.XtceDb;
@@ -80,11 +81,13 @@ public class InstanceRequestHandler extends RestRequestHandler {
             instanceb.setMissionDatabase(MDBRequestHandler.toMissionDatabase(req, yamcsInstance.getName(), mdb)); 
         }
         
-        String apiUrl = req.getApiURL();            
-        String instanceUrl = apiUrl + "/instances/" + instanceb.getName();
-        instanceb.setUrl(instanceUrl);
-        instanceb.setEventsUrl(instanceUrl + "{/processor}/events");
-        instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
+        if (!req.getOptions().contains(Option.NO_LINK)) {
+            String apiUrl = req.getApiURL();
+            String instanceUrl = apiUrl + "/instances/" + instanceb.getName();
+            instanceb.setUrl(instanceUrl);
+            instanceb.setEventsUrl(instanceUrl + "{/processor}/events");
+            instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
+        }
         
         for (YProcessor processor : YProcessor.getChannels(instanceb.getName())) {
             instanceb.addProcessor(ProcessorRequestHandler.toProcessorInfo(processor, req, false));
