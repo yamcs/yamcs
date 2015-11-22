@@ -15,9 +15,6 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-import org.yamcs.yarch.streamsql.AggregateExpression;
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public abstract class Expression {
     protected DataType type=null;
@@ -96,7 +93,9 @@ public abstract class Expression {
     }
     protected void fillCode_AllInputDefVars(StringBuilder code){
         for(ColumnDefinition cd:inputDef.getColumnDefinitions()) {
-            code.append("\t\t"+cd.getType().javaType()+" col"+cd.getName()+"=("+cd.getType().javaType()+")tuple.getColumn(\""+cd.getName()+"\");\n");
+            if (cd.getType().val != DataType._type.PROTOBUF) {
+                code.append("\t\t"+cd.getType().javaType()+" col"+cd.getName()+"=("+cd.getType().javaType()+")tuple.getColumn(\""+cd.getName()+"\");\n");
+            }
         }
     }
     protected void fillCode_getValueBody(StringBuilder code)  throws StreamSqlException{};
