@@ -150,8 +150,8 @@ public final class SchemaAlarms
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmInfo message) throws java.io.IOException
             {
-                if(message.hasId())
-                    output.writeUInt32(1, message.getId(), false);
+                if(message.hasSeqNum())
+                    output.writeUInt32(1, message.getSeqNum(), false);
                 if(message.hasType())
                     output.writeString(2, message.getType().name(), false);
                 if(message.hasTriggerValue())
@@ -208,7 +208,7 @@ public final class SchemaAlarms
                         case 0:
                             return;
                         case 1:
-                            builder.setId(input.readUInt32());
+                            builder.setSeqNum(input.readUInt32());
                             break;
                         case 2:
                             builder.setType(org.yamcs.protobuf.Alarms.AlarmInfo.Type.valueOf(input.readString()));
@@ -272,7 +272,7 @@ public final class SchemaAlarms
         {
             switch(number)
             {
-                case 1: return "id";
+                case 1: return "seqNum";
                 case 2: return "type";
                 case 3: return "triggerValue";
                 case 4: return "mostSevereValue";
@@ -290,7 +290,7 @@ public final class SchemaAlarms
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("id", 1);
+            fieldMap.put("seqNum", 1);
             fieldMap.put("type", 2);
             fieldMap.put("triggerValue", 3);
             fieldMap.put("mostSevereValue", 4);

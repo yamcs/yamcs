@@ -875,15 +875,15 @@ public final class Alarms {
   public interface AlarmInfoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 id = 1;
+    // optional uint32 seqNum = 1;
     /**
-     * <code>optional uint32 id = 1;</code>
+     * <code>optional uint32 seqNum = 1;</code>
      */
-    boolean hasId();
+    boolean hasSeqNum();
     /**
-     * <code>optional uint32 id = 1;</code>
+     * <code>optional uint32 seqNum = 1;</code>
      */
-    int getId();
+    int getSeqNum();
 
     // optional .alarms.AlarmInfo.Type type = 2;
     /**
@@ -1014,7 +1014,7 @@ public final class Alarms {
             }
             case 8: {
               bitField0_ |= 0x00000001;
-              id_ = input.readUInt32();
+              seqNum_ = input.readUInt32();
               break;
             }
             case 16: {
@@ -1291,20 +1291,20 @@ public final class Alarms {
     }
 
     private int bitField0_;
-    // optional uint32 id = 1;
-    public static final int ID_FIELD_NUMBER = 1;
-    private int id_;
+    // optional uint32 seqNum = 1;
+    public static final int SEQNUM_FIELD_NUMBER = 1;
+    private int seqNum_;
     /**
-     * <code>optional uint32 id = 1;</code>
+     * <code>optional uint32 seqNum = 1;</code>
      */
-    public boolean hasId() {
+    public boolean hasSeqNum() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional uint32 id = 1;</code>
+     * <code>optional uint32 seqNum = 1;</code>
      */
-    public int getId() {
-      return id_;
+    public int getSeqNum() {
+      return seqNum_;
     }
 
     // optional .alarms.AlarmInfo.Type type = 2;
@@ -1428,7 +1428,7 @@ public final class Alarms {
     }
 
     private void initFields() {
-      id_ = 0;
+      seqNum_ = 0;
       type_ = org.yamcs.protobuf.Alarms.AlarmInfo.Type.ACTIVE;
       triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
@@ -1467,7 +1467,7 @@ public final class Alarms {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeUInt32(1, id_);
+        output.writeUInt32(1, seqNum_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeEnum(2, type_.getNumber());
@@ -1498,7 +1498,7 @@ public final class Alarms {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(1, id_);
+          .computeUInt32Size(1, seqNum_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1644,7 +1644,7 @@ public final class Alarms {
 
       public Builder clear() {
         super.clear();
-        id_ = 0;
+        seqNum_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
         type_ = org.yamcs.protobuf.Alarms.AlarmInfo.Type.ACTIVE;
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -1705,7 +1705,7 @@ public final class Alarms {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.id_ = id_;
+        result.seqNum_ = seqNum_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
@@ -1762,8 +1762,8 @@ public final class Alarms {
 
       public Builder mergeFrom(org.yamcs.protobuf.Alarms.AlarmInfo other) {
         if (other == org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance()) return this;
-        if (other.hasId()) {
-          setId(other.getId());
+        if (other.hasSeqNum()) {
+          setSeqNum(other.getSeqNum());
         }
         if (other.hasType()) {
           setType(other.getType());
@@ -1828,35 +1828,35 @@ public final class Alarms {
       }
       private int bitField0_;
 
-      // optional uint32 id = 1;
-      private int id_ ;
+      // optional uint32 seqNum = 1;
+      private int seqNum_ ;
       /**
-       * <code>optional uint32 id = 1;</code>
+       * <code>optional uint32 seqNum = 1;</code>
        */
-      public boolean hasId() {
+      public boolean hasSeqNum() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional uint32 id = 1;</code>
+       * <code>optional uint32 seqNum = 1;</code>
        */
-      public int getId() {
-        return id_;
+      public int getSeqNum() {
+        return seqNum_;
       }
       /**
-       * <code>optional uint32 id = 1;</code>
+       * <code>optional uint32 seqNum = 1;</code>
        */
-      public Builder setId(int value) {
+      public Builder setSeqNum(int value) {
         bitField0_ |= 0x00000001;
-        id_ = value;
+        seqNum_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional uint32 id = 1;</code>
+       * <code>optional uint32 seqNum = 1;</code>
        */
-      public Builder clearId() {
+      public Builder clearSeqNum() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        id_ = 0;
+        seqNum_ = 0;
         onChanged();
         return this;
       }
@@ -2432,17 +2432,17 @@ public final class Alarms {
       "AcknowledgeInfo\022\026\n\016acknowledgedBy\030\001 \001(\t\022" +
       "\032\n\022acknowledgeMessage\030\002 \001(\t\022\027\n\017acknowled" +
       "geTime\030\003 \001(\003\022\032\n\022acknowledgeTimeUTC\030\004 \001(\t" +
-      "\"\374\002\n\tAlarmInfo\022\n\n\002id\030\001 \001(\r\022$\n\004type\030\002 \001(\016" +
-      "2\026.alarms.AlarmInfo.Type\022,\n\014triggerValue" +
-      "\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017mostSe" +
-      "vereValue\030\004 \001(\0132\026.pvalue.ParameterValue\022" +
-      ",\n\014currentValue\030\005 \001(\0132\026.pvalue.Parameter" +
-      "Value\022\022\n\nviolations\030\006 \001(\r\0220\n\017acknowledge",
-      "Info\030\007 \001(\0132\027.alarms.AcknowledgeInfo\"j\n\004T" +
-      "ype\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SEVERI" +
-      "TY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014ACKN" +
-      "OWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs.pro" +
-      "tobuf"
+      "\"\200\003\n\tAlarmInfo\022\016\n\006seqNum\030\001 \001(\r\022$\n\004type\030\002" +
+      " \001(\0162\026.alarms.AlarmInfo.Type\022,\n\014triggerV" +
+      "alue\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017mo" +
+      "stSevereValue\030\004 \001(\0132\026.pvalue.ParameterVa" +
+      "lue\022,\n\014currentValue\030\005 \001(\0132\026.pvalue.Param" +
+      "eterValue\022\022\n\nviolations\030\006 \001(\r\0220\n\017acknowl",
+      "edgeInfo\030\007 \001(\0132\027.alarms.AcknowledgeInfo\"" +
+      "j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SE" +
+      "VERITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014" +
+      "ACKNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs" +
+      ".protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2460,7 +2460,7 @@ public final class Alarms {
           internal_static_alarms_AlarmInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_alarms_AlarmInfo_descriptor,
-              new java.lang.String[] { "Id", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
+              new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
           return null;
         }
       };

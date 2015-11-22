@@ -3,11 +3,14 @@ package org.yamcs.web.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
+import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.ColumnInfo;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.SampleSeries;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -181,5 +184,35 @@ public final class ArchiveHelper {
         byte[] tmbody = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
         pdatab.setPacket(ByteString.copyFrom(tmbody));
         return pdatab.build();
+    }
+    
+    final static AlarmInfo tupleToAlarmInfo(Tuple tuple) {
+        AlarmInfo.Builder alarmb = AlarmInfo.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        
+        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+        alarmb.setTriggerValue(pval);
+        
+        if (tuple.hasColumn("severityIncreasedPV")) {
+            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+            alarmb.setMostSevereValue(pval);
+        }
+        if (tuple.hasColumn("updatedPV")) {
+            pval = (ParameterValue) tuple.getColumn("updatedPV");
+            alarmb.setCurrentValue(pval);
+        }
+        if (tuple.hasColumn("acknowledgedBy")) {
+            AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
+            ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
+            if (tuple.hasColumn("acknowledgeMessage")) {
+                ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
+            }
+            long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
+            ackb.setAcknowledgeTime(acknowledgeTime);
+            ackb.setAcknowledgeTimeUTC(TimeEncoding.toString(acknowledgeTime));
+            alarmb.setAcknowledgeInfo(ackb);
+        }
+        
+        return alarmb.build();
     }
 }

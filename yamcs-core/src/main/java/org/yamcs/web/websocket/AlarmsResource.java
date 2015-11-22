@@ -126,7 +126,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
                 .build();
         AlarmInfo.Builder alarmb = AlarmInfo.newBuilder();        
         alarmb.setType(type);
-        alarmb.setId(activeAlarm.id);
+        alarmb.setSeqNum(activeAlarm.id);
         alarmb.setTriggerValue(activeAlarm.triggerValue.toGpb(parameterId));
         alarmb.setMostSevereValue(activeAlarm.mostSevereValue.toGpb(parameterId));
         alarmb.setCurrentValue(activeAlarm.currentValue.toGpb(parameterId));

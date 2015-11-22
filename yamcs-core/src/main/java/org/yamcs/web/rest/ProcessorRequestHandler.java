@@ -44,7 +44,6 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
     private static ProcessorParameterRequestHandler parameterHandler = new ProcessorParameterRequestHandler();
     private static ProcessorCommandRequestHandler commandHandler = new ProcessorCommandRequestHandler();
-    private static ProcessorAlarmRequestHandler alarmHandler = new ProcessorAlarmRequestHandler();
     private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
 
     @Override
@@ -91,19 +90,17 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             return updateProcessor(req, processor);
         } else {
             switch (req.getPathSegment(pathOffset)) {
-                case "parameters":
-                    return parameterHandler.handleRequest(req, pathOffset + 1);
-                case "commands":
-                    return commandHandler.handleRequest(req, pathOffset + 1);
-                case "alarms":
-                    return alarmHandler.handleRequest(req, pathOffset + 1);
-                case "cqueues":
-                    return cqueueHandler.handleRequest(req, pathOffset + 1);
-                case "clients":
-                    req.assertGET();
-                    return listClientsForProcessor(req, processor);
-                default:
-                    throw new NotFoundException(req);
+            case "parameters":
+                return parameterHandler.handleRequest(req, pathOffset + 1);
+            case "commands":
+                return commandHandler.handleRequest(req, pathOffset + 1);
+            case "cqueues":
+                return cqueueHandler.handleRequest(req, pathOffset + 1);
+            case "clients":
+                req.assertGET();
+                return listClientsForProcessor(req, processor);
+            default:
+                throw new NotFoundException(req);
             }
         }
     }
