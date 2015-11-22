@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -42,7 +43,8 @@ public class AlarmStreamer implements AlarmListener {
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
         
         tdef.addColumn("triggerPV", PpProviderAdapter.PP_DATA_TYPE);
-        al.add(activeAlarm.triggerValue);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.triggerValue.getParameter().getQualifiedName()).build();
+        al.add(activeAlarm.triggerValue.toGpb(id));
         
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
@@ -54,7 +56,8 @@ public class AlarmStreamer implements AlarmListener {
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
         
         tdef.addColumn("severityIncreasedPV", PpProviderAdapter.PP_DATA_TYPE);
-        al.add(activeAlarm.mostSevereValue);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.mostSevereValue.getParameter().getQualifiedName()).build();
+        al.add(activeAlarm.mostSevereValue.toGpb(id));
     
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
@@ -66,7 +69,8 @@ public class AlarmStreamer implements AlarmListener {
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
         
         tdef.addColumn("updatedPV", PpProviderAdapter.PP_DATA_TYPE);
-        al.add(activeAlarm.currentValue);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
+        al.add(activeAlarm.currentValue.toGpb(id));
     
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
@@ -76,6 +80,22 @@ public class AlarmStreamer implements AlarmListener {
     public void notifyAcknowledged(ActiveAlarm activeAlarm) {   
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.ACKNOWLEDGED);
+        
+        tdef.addColumn("acknowledgedBy", DataType.STRING);
+        String username = activeAlarm.usernameThatAcknowledged;
+        if (username == null) {
+            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : ManagementService.ANONYMOUS;
+        }
+        al.add(username);
+        
+        if (activeAlarm.message != null) {
+            tdef.addColumn("acknowledgeMessage", DataType.STRING);
+            al.add(activeAlarm.message);
+        }
+        
+        tdef.addColumn("acknowledgeTime", DataType.TIMESTAMP);
+        al.add(activeAlarm.acknowledgeTime);
+        
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
     }
@@ -86,7 +106,8 @@ public class AlarmStreamer implements AlarmListener {
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
         
         tdef.addColumn("clearedPV", PpProviderAdapter.PP_DATA_TYPE);
-        al.add(activeAlarm.currentValue);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
+        al.add(activeAlarm.currentValue.toGpb(id));
         
         String username = activeAlarm.usernameThatAcknowledged;
         

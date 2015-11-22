@@ -29,6 +29,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
 
 /**
  * Collects all archive-related conversions performed in the web api
@@ -103,6 +104,14 @@ public final class ArchiveHelper {
             case STRING:
                 v.setType(Type.STRING);
                 v.setStringValue((String) column);
+                break;
+            case PROTOBUF:
+                // Perhaps we could be a bit smarter here. Proto3 will have an any-type
+                //String messageClassname = protoType.substring(9, protoType.length() - 1);
+                //String schemaClassname = messageClassname.replace("org.yamcs.protobuf.", "org.yamcs.protobuf.Schema") + "$BuilderSchema";
+                MessageLite message = (MessageLite) column;
+                v.setType(Type.BINARY);
+                v.setBinaryValue(message.toByteString());
                 break;
             default:
                 throw new IllegalArgumentException("Tuple column type " + cdef.getType().val + " is currently not supported");
