@@ -33,7 +33,6 @@ public class PartitionManagerTest {
     }
 
     TableDefinition getTableDef() throws Exception {
-
 	TupleDefinition tdef=new TupleDefinition();
 	tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
 	tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
@@ -138,4 +137,36 @@ public class PartitionManagerTest {
 	FileUtils.deleteRecursively(new File(tmpdir).toPath());
     }  
 
+    
+    @Test
+    public void testNoPartition() throws Exception {
+        TupleDefinition tdef=new TupleDefinition();
+        tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
+        tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
+        PartitioningSpec spec=PartitioningSpec.noneSpec();
+
+        TableDefinition tblDef = new TableDefinition("tblnp", tdef, Arrays.asList("gentime"));
+        tblDef.setPartitioningSpec(spec);
+        
+        String tmpdir=Files.createTempDir().getAbsolutePath();
+        tblDef.setDataDir(tmpdir);
+
+
+        YarchDatabase ydb = YarchDatabase.getInstance("test");
+        RDBFactory rdbFactory = RDBFactory.getInstance("test");
+        YRDB rdb = rdbFactory.getRdb(tmpdir+"/tblnp", new ColumnValueSerializer(tblDef), false);
+        rdb.createColumnFamily(null);
+        rdbFactory.dispose(rdb);        
+    
+        rdbFactory.shutdown();
+
+        RdbPartitionManager pm=new RdbPartitionManager(ydb, tblDef);
+        pm.readPartitionsFromDisk();
+        Collection<Partition> partitions = pm.getPartitions();
+        assertEquals(1, partitions.size());
+        Partition p = partitions.iterator().next();
+        assertNull(p.getValue());
+
+        FileUtils.deleteRecursively(new File(tmpdir).toPath());
+    } 
 }

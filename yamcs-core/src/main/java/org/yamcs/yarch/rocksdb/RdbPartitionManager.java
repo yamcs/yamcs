@@ -43,7 +43,7 @@ public class RdbPartitionManager extends PartitionManager {
     private void readDir(String dir) {
         String tblName = tableDefinition.getName();
         String dataDir = tableDefinition.getDataDir();
-        String[] files=new File(dataDir+"/"+dir).list();		
+        String[] files=new File(dataDir+"/"+dir).list();
         for(String s:files) {
             File f = new File(dataDir +"/"+dir+"/"+s);
             if(!f.isDirectory()) continue;
@@ -51,8 +51,8 @@ public class RdbPartitionManager extends PartitionManager {
             if(s.equals(tblName)) {
                 File currentf = new File(dataDir+"/"+dir+"/"+s+"/CURRENT");
                 if(currentf.exists()) {
+                    
                     PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.parseDir(dir);
-                    if(pinfo==null) continue;
                     try {
                         readDb(pinfo, dir);
                     } catch (Exception e) {
@@ -79,7 +79,11 @@ public class RdbPartitionManager extends PartitionManager {
         YRDB rdb = rdbFactory.getRdb(dataDir+"/"+dir+"/"+tblName, new ColumnValueSerializer(tableDefinition), false);
 
         for(Object o: rdb.getColumnFamilies()) {
-            addPartition(pinfo, o);			
+            if(pinfo!=null) {
+                addPartition(pinfo, o);
+            } else {
+                addPartition(o);
+            }
         }
     }
 
@@ -87,7 +91,7 @@ public class RdbPartitionManager extends PartitionManager {
      * Called at startup when reading existing partitions from disk
      */
     private void addPartition(PartitionInfo pinfo, Object v) {	   	   
-        Interval intv=intervals.get(pinfo.partitionStart);	  
+        Interval intv = intervals.get(pinfo.partitionStart);	  
 
         if(intv==null) {	    
             intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
@@ -96,6 +100,15 @@ public class RdbPartitionManager extends PartitionManager {
         Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, v, pinfo.dir+"/"+tableDefinition.getName());
         intv.add(v, p);
     }	
+    
+    /** 
+     * Called at startup when reading existing partitions from disk
+     */
+    private void addPartition(Object v) {             
+        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, v, tableDefinition.getName());             
+        pcache.add(v, p);
+    }   
+    
 
     @Override
     protected Partition createPartition(PartitionInfo pinfo, Object value) throws IOException {

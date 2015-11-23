@@ -32,14 +32,14 @@ public abstract class PartitionManager {
     protected NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
     //pcache is a cache of the last interval where data has been inserted
     // in case of value based partition, it is basically the list of all partitions
-    Interval pcache;
+    protected Interval pcache;
 
 
     public PartitionManager(TableDefinition tableDefinition) {
         this.tableDefinition=tableDefinition;
         this.partitioningSpec=tableDefinition.getPartitioningSpec();
         if(partitioningSpec.type==_type.NONE || partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
-            pcache=new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
+            pcache = new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
             intervals.put(TimeEncoding.MIN_INSTANT, pcache);
         }
     }
@@ -171,7 +171,10 @@ public abstract class PartitionManager {
         }
         return plist;
     }
-
+    /**
+     * Keeps a value -> partition map for a specific time interval    
+     *
+     */
     public static class Interval {
         static final Object NON_NULL=new Object(); //we use this as a key in the ConcurrentHashMap in case value is null (i.e. time only partitioning)
         
