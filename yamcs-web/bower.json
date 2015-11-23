@@ -16,7 +16,8 @@
     "dygraphs": "~1.1.1",
     "jquery": "~2.1.4",
     "moment": "~2.10.6",
-    "spin.js": "~2.3.2"
+    "spin.js": "~2.3.2",
+    "toastr": "~2.1.2"
   },
   "overrides": {
     "angular": {

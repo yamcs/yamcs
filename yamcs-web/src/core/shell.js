@@ -3,7 +3,16 @@
 
     angular
         .module('yamcs.core')
+        .config(configureModule)
         .controller('Shell', Shell);
+
+    function configureModule() {
+        toastr.options = {
+            tapToDismiss: true,
+            debug: false,
+            positionClass: 'toast-position'
+        }
+    }
 
     /* @ngInject */
     function Shell($rootScope, $scope, $location, socket, alarmsService, configService, timeService) {
@@ -52,6 +61,15 @@
         vm.alarmBadgeColor = '#9d9d9d';
         $rootScope.$on('yamcs.eventStats', function (evt, stats) {
             vm.eventStats = stats;
+        });
+        $rootScope.$on('yamcs.event', function (evt, event) {
+            if (event['severity'] === 'ERROR') {
+                toastr.error(event['message']);
+            } else if (event['severity'] === 'WARNING') {
+                toastr.warning(event['message']);
+            } else {
+                toastr.info(event['message']);
+            }
         });
 
         /*
