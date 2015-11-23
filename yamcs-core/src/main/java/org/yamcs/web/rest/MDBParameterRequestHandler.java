@@ -1,5 +1,8 @@
 package org.yamcs.web.rest;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
@@ -81,6 +84,18 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
+        // Support both type[]=float&type[]=integer and type=float,integer
+        Set<String> types = new HashSet<>();
+        if (req.hasQueryParameter("type")) {
+            for (String type : req.getQueryParameterList("type")) {
+                for (String t : type.split(",")) {
+                    if (!"all".equalsIgnoreCase(t)) {
+                        types.add(t.toLowerCase());
+                    }
+                }
+            }
+        }
+        
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
@@ -90,7 +105,9 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
-                responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                if (parameterTypeMatches(p, types)) {
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                }
             }
         } else {
             Privilege privilege = Privilege.getInstance();
@@ -102,7 +119,9 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    if (parameterTypeMatches(p, types)) {
+                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    }
                 }
             }
             for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
@@ -113,12 +132,20 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    if (parameterTypeMatches(p, types)) {
+                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    }
                 }
             }
         }
         
         return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
+    }
+    
+    private boolean parameterTypeMatches(Parameter p, Set<String> types) {
+        if (types.isEmpty()) return true;
+        return p.getParameterType() != null
+                && types.contains(p.getParameterType().getTypeAsString());
     }
     
     private RestResponse getBulkParameterInfo(RestRequest req, XtceDb mdb) throws RestException {
