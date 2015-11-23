@@ -62,15 +62,17 @@
         $rootScope.$on('yamcs.eventStats', function (evt, stats) {
             vm.eventStats = stats;
         });
-        $rootScope.$on('yamcs.event', function (evt, event) {
-            if (event['severity'] === 'ERROR') {
-                toastr.error(event['message']);
-            } else if (event['severity'] === 'WARNING') {
-                toastr.warning(event['message']);
-            } else {
-                toastr.info(event['message']);
-            }
-        });
+        if (configService.get('enableNotifications', true)) {
+            $rootScope.$on('yamcs.event', function (evt, event) {
+                if (event['severity'] === 'ERROR') {
+                    toastr.error(event['message']);
+                } else if (event['severity'] === 'WARNING') {
+                    toastr.warning(event['message']);
+                } else {
+                    toastr.info(event['message']);
+                }
+            });
+        }
 
         /*
             ALARM STATS

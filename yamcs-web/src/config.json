@@ -1,5 +1,6 @@
 {
   "title": "Yamcs Dashboard",
   "initialPlotRange": "1h",
-  "utcOnly": false
+  "utcOnly": false,
+  "enableNotifications": true
 }
