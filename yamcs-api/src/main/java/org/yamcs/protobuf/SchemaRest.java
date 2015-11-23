@@ -2793,8 +2793,8 @@ public final class SchemaRest
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListAlarmsResponse message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Alarms.AlarmInfo alarm : message.getAlarmList())
-                    output.writeObject(1, alarm, org.yamcs.protobuf.SchemaAlarms.AlarmInfo.WRITE, true);
+                for(org.yamcs.protobuf.Alarms.AlarmData alarm : message.getAlarmList())
+                    output.writeObject(1, alarm, org.yamcs.protobuf.SchemaAlarms.AlarmData.WRITE, true);
 
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.ListAlarmsResponse message)
@@ -2836,7 +2836,7 @@ public final class SchemaRest
                         case 0:
                             return;
                         case 1:
-                            builder.addAlarm(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmInfo.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmInfo.MERGE));
+                            builder.addAlarm(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmData.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmData.MERGE));
 
                             break;
                         default:

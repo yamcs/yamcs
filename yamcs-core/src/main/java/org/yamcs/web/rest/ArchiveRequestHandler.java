@@ -19,7 +19,7 @@ import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.archive.XtceTmRecorder;
-import org.yamcs.protobuf.Alarms.AlarmInfo;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Archive.GetTagsRequest;
@@ -798,8 +798,8 @@ public class ArchiveRequestHandler extends RestRequestHandler {
 
             @Override
             public void onTuple(Tuple tuple) {
-                AlarmInfo info = ArchiveHelper.tupleToAlarmInfo(tuple);
-                responseb.addAlarm(info);
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
+                responseb.addAlarm(alarm);
             }
         });
         
@@ -811,12 +811,12 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         sqlb.append(" where triggerTime = ").append(triggerTime)
             .append(" and seqNum = ").append(seqnum)
             .append(" and parameter = '").append(p.getQualifiedName()).append("'");
-        List<AlarmInfo> alarms = new ArrayList<>();
+        List<AlarmData> alarms = new ArrayList<>();
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
 
             @Override
             public void onTuple(Tuple tuple) {
-                AlarmInfo alarm = ArchiveHelper.tupleToAlarmInfo(tuple);
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
                 alarms.add(alarm);
             }
         });
@@ -826,7 +826,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         } else if (alarms.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {
-            return new RestResponse(req, alarms.get(0), SchemaAlarms.AlarmInfo.WRITE);
+            return new RestResponse(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
         }
     }
     

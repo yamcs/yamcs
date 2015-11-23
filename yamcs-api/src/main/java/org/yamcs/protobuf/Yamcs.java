@@ -186,9 +186,9 @@ public final class Yamcs {
      */
     STREAM_DATA(12, 13),
     /**
-     * <code>ALARM_INFO = 14;</code>
+     * <code>ALARM_DATA = 14;</code>
      */
-    ALARM_INFO(13, 14),
+    ALARM_DATA(13, 14),
     /**
      * <code>TIME_INFO = 15;</code>
      */
@@ -256,9 +256,9 @@ public final class Yamcs {
      */
     public static final int STREAM_DATA_VALUE = 13;
     /**
-     * <code>ALARM_INFO = 14;</code>
+     * <code>ALARM_DATA = 14;</code>
      */
-    public static final int ALARM_INFO_VALUE = 14;
+    public static final int ALARM_DATA_VALUE = 14;
     /**
      * <code>TIME_INFO = 15;</code>
      */
@@ -282,7 +282,7 @@ public final class Yamcs {
         case 11: return CLIENT_INFO;
         case 12: return PROCESSING_STATISTICS;
         case 13: return STREAM_DATA;
-        case 14: return ALARM_INFO;
+        case 14: return ALARM_DATA;
         case 15: return TIME_INFO;
         default: return null;
       }
@@ -24281,7 +24281,7 @@ public final class Yamcs {
       "\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HIS" +
       "TORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INF" +
       "O\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM" +
-      "_DATA\020\r\022\016\n\nALARM_INFO\020\016\022\r\n\tTIME_INFO\020\0172\337" +
+      "_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\0172\337" +
       "\001\n\030RealtimeParameterService\0220\n\tSubscribe" +
       "\022\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221\n",
       "\014SubscribeAll\022\024.yamcs.StringMessage\032\013.ya" +

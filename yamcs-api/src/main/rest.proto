@@ -127,7 +127,7 @@ message ListInstancesResponse {
 }
 
 message ListAlarmsResponse {
-  repeated alarms.AlarmInfo alarm = 1;
+  repeated alarms.AlarmData alarm = 1;
 }
 
 message PatchAlarmRequest {

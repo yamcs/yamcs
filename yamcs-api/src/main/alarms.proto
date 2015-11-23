@@ -10,7 +10,7 @@ message AcknowledgeInfo {
   optional string acknowledgeTimeUTC = 4;
 }
 
-message AlarmInfo {
+message AlarmData {
   enum Type {
     ACTIVE = 1;  // Initial active alarms at the moment of request
     TRIGGERED = 2;  // Whenever a new alarm triggers

@@ -11,7 +11,7 @@ import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
-import org.yamcs.protobuf.Alarms.AlarmInfo;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -54,7 +54,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
             
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
-                sendAlarm(AlarmInfo.Type.ACTIVE, activeAlarm);
+                sendAlarm(AlarmData.Type.ACTIVE, activeAlarm);
             }
             doSubscribe();
             return null;
@@ -97,34 +97,34 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
     
     @Override
     public void notifyTriggered(ActiveAlarm activeAlarm) {
-        sendAlarm(AlarmInfo.Type.TRIGGERED, activeAlarm);
+        sendAlarm(AlarmData.Type.TRIGGERED, activeAlarm);
     }
     
     @Override
     public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-        sendAlarm(AlarmInfo.Type.SEVERITY_INCREASED, activeAlarm);
+        sendAlarm(AlarmData.Type.SEVERITY_INCREASED, activeAlarm);
     }
     
     @Override
     public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
-        sendAlarm(AlarmInfo.Type.PVAL_UPDATED, activeAlarm);
+        sendAlarm(AlarmData.Type.PVAL_UPDATED, activeAlarm);
     }
     
     @Override
     public void notifyAcknowledged(ActiveAlarm activeAlarm) {
-        sendAlarm(AlarmInfo.Type.ACKNOWLEDGED, activeAlarm);
+        sendAlarm(AlarmData.Type.ACKNOWLEDGED, activeAlarm);
     }
     
     @Override
     public void notifyCleared(ActiveAlarm activeAlarm) {
-        sendAlarm(AlarmInfo.Type.CLEARED, activeAlarm);
+        sendAlarm(AlarmData.Type.CLEARED, activeAlarm);
     }
     
-    private void sendAlarm(AlarmInfo.Type type, ActiveAlarm activeAlarm) {
+    private void sendAlarm(AlarmData.Type type, ActiveAlarm activeAlarm) {
         NamedObjectId parameterId = NamedObjectId.newBuilder()
                 .setName(activeAlarm.triggerValue.getParameter().getQualifiedName())
                 .build();
-        AlarmInfo.Builder alarmb = AlarmInfo.newBuilder();        
+        AlarmData.Builder alarmb = AlarmData.newBuilder();        
         alarmb.setType(type);
         alarmb.setSeqNum(activeAlarm.id);
         alarmb.setTriggerValue(activeAlarm.triggerValue.toGpb(parameterId));
@@ -149,7 +149,7 @@ public class AlarmsResource extends AbstractWebSocketResource implements AlarmLi
         }
         
         try {
-            wsHandler.sendData(ProtoDataType.ALARM_INFO, alarmb.build(), SchemaAlarms.AlarmInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmb.build(), SchemaAlarms.AlarmData.WRITE);
         } catch (Exception e) {
             log.warn("got error when sending alarm, quitting", e);
             quit();

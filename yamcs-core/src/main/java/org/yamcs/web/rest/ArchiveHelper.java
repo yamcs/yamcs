@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
-import org.yamcs.protobuf.Alarms.AlarmInfo;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.ColumnInfo;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -186,8 +186,8 @@ public final class ArchiveHelper {
         return pdatab.build();
     }
     
-    final static AlarmInfo tupleToAlarmInfo(Tuple tuple) {
-        AlarmInfo.Builder alarmb = AlarmInfo.newBuilder();
+    final static AlarmData tupleToAlarmData(Tuple tuple) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         
         ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");

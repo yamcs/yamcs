@@ -139,16 +139,16 @@ public final class SchemaAlarms
         }
     }
 
-    public static final class AlarmInfo
+    public static final class AlarmData
     {
-        public static final org.yamcs.protobuf.SchemaAlarms.AlarmInfo.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaAlarms.AlarmInfo.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaAlarms.AlarmInfo.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaAlarms.AlarmInfo.BuilderSchema();
+        public static final org.yamcs.protobuf.SchemaAlarms.AlarmData.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaAlarms.AlarmData.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaAlarms.AlarmData.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaAlarms.AlarmData.BuilderSchema();
         
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmInfo>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmData>
         {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmInfo message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmData message) throws java.io.IOException
             {
                 if(message.hasSeqNum())
                     output.writeUInt32(1, message.getSeqNum(), false);
@@ -169,37 +169,37 @@ public final class SchemaAlarms
                     output.writeObject(7, message.getAcknowledgeInfo(), org.yamcs.protobuf.SchemaAlarms.AcknowledgeInfo.WRITE, false);
 
             }
-            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmInfo message)
+            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmData message)
             {
                 return message.isInitialized();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmInfo.getFieldName(number);
+                return org.yamcs.protobuf.SchemaAlarms.AlarmData.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmInfo.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaAlarms.AlarmData.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmInfo> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmData> typeClass()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.class;
+                return org.yamcs.protobuf.Alarms.AlarmData.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.class.getSimpleName();
+                return org.yamcs.protobuf.Alarms.AlarmData.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.class.getName();
+                return org.yamcs.protobuf.Alarms.AlarmData.class.getName();
             }
             //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmInfo message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Alarms.AlarmInfo newMessage() { return null; }
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmData message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Alarms.AlarmData newMessage() { return null; }
         }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmInfo.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Alarms.AlarmData.Builder>
         {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmInfo.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Alarms.AlarmData.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -211,7 +211,7 @@ public final class SchemaAlarms
                             builder.setSeqNum(input.readUInt32());
                             break;
                         case 2:
-                            builder.setType(org.yamcs.protobuf.Alarms.AlarmInfo.Type.valueOf(input.readString()));
+                            builder.setType(org.yamcs.protobuf.Alarms.AlarmData.Type.valueOf(input.readString()));
                             break;
                         case 3:
                             builder.setTriggerValue(input.mergeObject(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(), org.yamcs.protobuf.SchemaPvalue.ParameterValue.MERGE));
@@ -237,36 +237,36 @@ public final class SchemaAlarms
                     }
                 }
             }
-            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmInfo.Builder builder)
+            public boolean isInitialized(org.yamcs.protobuf.Alarms.AlarmData.Builder builder)
             {
                 return builder.isInitialized();
             }
-            public org.yamcs.protobuf.Alarms.AlarmInfo.Builder newMessage()
+            public org.yamcs.protobuf.Alarms.AlarmData.Builder newMessage()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.newBuilder();
+                return org.yamcs.protobuf.Alarms.AlarmData.newBuilder();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmInfo.getFieldName(number);
+                return org.yamcs.protobuf.SchemaAlarms.AlarmData.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaAlarms.AlarmInfo.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaAlarms.AlarmData.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmInfo.Builder> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Alarms.AlarmData.Builder> typeClass()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.Builder.class;
+                return org.yamcs.protobuf.Alarms.AlarmData.Builder.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.class.getSimpleName();
+                return org.yamcs.protobuf.Alarms.AlarmData.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Alarms.AlarmInfo.class.getName();
+                return org.yamcs.protobuf.Alarms.AlarmData.class.getName();
             }
             //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmInfo.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Alarms.AlarmData.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
