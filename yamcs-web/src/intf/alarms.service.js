@@ -11,8 +11,10 @@
     /* @ngInject */
     function alarmsService($rootScope, $http, $log, socket, yamcsInstance) {
 
-        var unacknowledgedCount = 0;
-        var urgent = false;
+        var stats = {
+            activeCount: 0,
+            urgent: false
+        };
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -96,6 +98,7 @@
                     }
                 }
 
+                updateStats();
                 $rootScope.$broadcast('yamcs.alarm', data);
             });
 
@@ -112,6 +115,19 @@
                 $log.error('XHR failed', message);
                 throw messageToException(message);
             });
+        }
+
+        function updateStats() {
+            var urgent = false;
+            for (var i = 0; i < activeAlarms.length; i++) {
+                if (!activeAlarms[i].hasOwnProperty('acknowledgeInfo')) {
+                    urgent = true;
+                    break;
+                }
+            }
+            stats['activeCount'] = activeAlarms.length;
+            stats['urgent'] = urgent;
+            $rootScope.$broadcast('yamcs.alarmStats', stats);
         }
 
         function enrichAlarm(alarm) {

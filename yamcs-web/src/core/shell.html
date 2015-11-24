@@ -33,8 +33,8 @@
           <a href="/{{ yamcsInstance }}/alarms" role="button" class="btn btn-link">
             <span class="glyphicon glyphicon-bell"></span>
             Alarms
-            <span class="badge" ng-if="shell.alarmCount > 0" ng-style="{'background-color': shell.alarmBadgeColor}">
-              {{ shell.alarmCount }}
+            <span class="badge" ng-if="shell.alarmStats.activeCount > 0" ng-class="{'urgent': shell.alarmStats.urgent}">
+              {{ shell.alarmStats.activeCount }}
             </span>
           </a>
         </li>
