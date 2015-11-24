@@ -8,17 +8,16 @@
   <div class="container-fluid">
     <div class="row" ng-repeat-start="alarm in vm.alarms" style="border-top: 1px solid #ddd;">
       <div class="col-md-3">
-        <span ng-if="!alarm.acknowledgeInfo" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
-        <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong>
-        <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}"><br>
+        <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong><br>
         <small>{{ alarm.triggerValue.id.name | spaceSystem }}</small>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <small>Violations: {{ alarm.violations }}</small>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-5">
+        <span ng-if="!alarm.acknowledgeInfo"><small>Unacknowledged</small></span>
       </div>
 
       <div class="col-md-1 text-right">

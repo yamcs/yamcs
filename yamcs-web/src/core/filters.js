@@ -126,21 +126,21 @@
             var prefix;
             if (!format) {
                 prefix = (printPrefix) ? 'on ' : '';
-                return prefix + ts.format('YYYY-MM-DDThh:mm:ss');
+                return prefix + ts.format('YYYY-MM-DDTHH:mm:ss');
             } else if (format === 'with_offset') {
                 prefix = (printPrefix) ? 'on ' : '';
                 return prefix + ts.format();
             } else if (format === 'pretty') {
                 prefix = (printPrefix) ? 'on ' : '';
-                return prefix + ts.format('MMM Do hh:mm:ss');
+                return prefix + ts.format('MMM Do HH:mm:ss');
             } else if (format === 'pretty_short') {
                 var now = moment();
                 if (now.isSame(ts, 'd')) {
                     prefix = (printPrefix) ? 'at ' : '';
-                    return prefix + ts.format('hh:mm:ss');
+                    return prefix + ts.format('HH:mm:ss');
                 } else {
                     prefix = (printPrefix) ? ' at ' : ' ';
-                    return ts.format('MMM Do') + prefix + ts.format('hh:mm:ss');
+                    return ts.format('MMM Do') + prefix + ts.format('HH:mm:ss');
                 }
             } else {
                 prefix = (printPrefix) ? 'on ' : '';

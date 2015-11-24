@@ -48,12 +48,23 @@
         function listAlarms() {
             var targetUrl = '/api/archive/' + yamcsInstance + '/alarms';
             return $http.get(targetUrl).then(function (response) {
+                var alarms = [];
                 if (response.data.hasOwnProperty('alarm')) {
                     for (var i = 0; i < response.data['alarm'].length; i++) {
-                        enrichAlarm(response.data['alarm'][i]);
+                        var alarm = enrichAlarm(response.data['alarm'][i]);
+                        var stillOngoing = false;
+                        for (var j = 0; j < activeAlarms.length; j++) {
+                            if (activeAlarms[j]['key'] === alarm['key']) {
+                                stillOngoing = true;
+                                break;
+                            }
+                        }
+                        if (!stillOngoing) {
+                            alarms.push(alarm);
+                        }
                     }
                 }
-                return response.data.alarm;
+                return alarms;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
                 throw messageToException(message);
@@ -61,7 +72,7 @@
         }
 
         function subscribeUpstream() {
-            socket.on('ALARM_INFO', function (data) {
+            socket.on('ALARM_DATA', function (data) {
                 data = enrichAlarm(data);
                 if (data['type'] === 'CLEARED') {
                     for (var i = 0; i < activeAlarms.length; i++) {
