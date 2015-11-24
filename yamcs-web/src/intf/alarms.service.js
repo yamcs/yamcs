@@ -6,13 +6,13 @@
         .factory('alarmsService', alarmsService);
 
     // Aggregated alarm data
-    var activeAlarmsById = {};
-
-    var alarmWatchers = {};
-    var subscriptionId = 0;
+    var activeAlarms = [];
 
     /* @ngInject */
-    function alarmsService($http, $log, socket, $filter, yamcsInstance) {
+    function alarmsService($rootScope, $http, $log, socket, yamcsInstance) {
+
+        var unacknowledgedCount = 0;
+        var urgent = false;
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -22,16 +22,37 @@
         }
 
         return {
+            getKey: getKey,
+            getActiveAlarms: getActiveAlarms,
             listAlarms: listAlarms,
-            watch: watch,
-            unwatch: unwatch,
             patchParameterAlarm: patchParameterAlarm
         };
 
+        /**
+         * Returns a singular value combining the effective key of an alarm:
+         * (triggerTime, parameter, seqnum)
+         */
+        function getKey(alarm) {
+            var triggerTime = alarm['triggerValue']['generationTime'];
+            var qname = alarm['triggerValue']['id']['name'];
+            return triggerTime + qname + alarm['seqNum'];
+        }
+
+        /**
+         * Active alarms sorted by key
+         */
+        function getActiveAlarms() {
+            return activeAlarms;
+        }
+
         function listAlarms() {
-            var targetUrl = '/api/processors/' + yamcsInstance + '/realtime/alarms';
-            //$log.info('Fetching alarm defs');
+            var targetUrl = '/api/archive/' + yamcsInstance + '/alarms';
             return $http.get(targetUrl).then(function (response) {
+                if (response.data.hasOwnProperty('alarm')) {
+                    for (var i = 0; i < response.data['alarm'].length; i++) {
+                        enrichAlarm(response.data['alarm'][i]);
+                    }
+                }
                 return response.data.alarm;
             }).catch(function (message) {
                 $log.error('XHR failed', message);
@@ -41,40 +62,35 @@
 
         function subscribeUpstream() {
             socket.on('ALARM_INFO', function (data) {
-                if (data['type'] == 'CLEARED') {
-                    delete activeAlarmsById[data['id']];
+                data = enrichAlarm(data);
+                if (data['type'] === 'CLEARED') {
+                    for (var i = 0; i < activeAlarms.length; i++) {
+                        if (activeAlarms[i]['key'] === data['key']) {
+                            activeAlarms.slice(i, 1);
+                            break;
+                        }
+                    }
                 } else {
-                    activeAlarmsById[data['id']] = enrichAlarm(data);
-                }
-                console.log('data is now ', activeAlarmsById);
-
-                var alarmList = [];
-                for (var aid in activeAlarmsById) {
-                    if (activeAlarmsById.hasOwnProperty(aid)) {
-                        alarmList.push(activeAlarmsById[aid]);
+                    var match = false;
+                    for (var i = 0; i < activeAlarms.length; i++) {
+                        if (activeAlarms[i]['key'] === data['key']) {
+                            activeAlarms[i] = data;
+                            match = true;
+                            break;
+                        }
+                    }
+                    if (!match) {
+                        var insertIndex = _.sortedIndex(activeAlarms, data, 'key');
+                        activeAlarms.splice(insertIndex, 0, data);
                     }
                 }
 
-                for (var sid in alarmWatchers) {
-                    if (alarmWatchers.hasOwnProperty(sid)) {
-                        alarmWatchers[sid](alarmList);
-                    }
-                }
+                $rootScope.$broadcast('yamcs.alarm', data);
             });
+
             socket.emit('alarms', 'subscribe', {}, null, function (et, msg) {
                 console.log('failed subscribe', et, ' ', msg);
             });
-        }
-
-        function watch(callback) {
-            var id = ++subscriptionId;
-            alarmWatchers[id] = callback;
-            callback(activeAlarmsById);
-            return id;
-        }
-
-        function unwatch(subscriptionId) {
-            delete alarmWatchers[subscriptionId];
         }
 
         function patchParameterAlarm(parameterId, alarmId, options) {
@@ -88,31 +104,20 @@
         }
 
         function enrichAlarm(alarm) {
-            alarm.msg = $filter('name')(alarm.triggerValue.id.name);
-
-            var prefix = '';
-            switch (alarm.triggerValue.monitoringResult) {
-            case 'WATCH_LOW':
-            case 'WARNING_LOW':
-            case 'DISTRESS_LOW':
-            case 'CRITICAL_LOW':
-            case 'SEVERE_LOW':
-                prefix = 'OOL ';
-                break;
-            case 'WATCH_HIGH':
-            case 'WARNING_HIGH':
-            case 'DISTRESS_HIGH':
-            case 'CRITICAL_HIGH':
-            case 'SEVERE_HIGH':
-                prefix = 'OOL ';
+            alarm['key'] = getKey(alarm);
+            alarm['triggerLevel'] = toNumericLevel(alarm['triggerValue']['monitoringResult']);
+            if (alarm.hasOwnProperty('mostSevereValue')) {
+                alarm['mostSevereLevel'] = toNumericLevel(alarm['mostSevereValue']['monitoringResult']);
+            } else {
+                alarm['mostSevereValue'] = alarm['triggerValue'];
+                alarm['mostSevereLevel'] = alarm['triggerLevel'];
             }
-
-            // TODO should not be done in service, and really only in template
-            alarm.msg = prefix + '<a href="/' + yamcsInstance + '/mdb' + alarm.triggerValue.id.name + '">' + alarm.msg + '</a>';
-
-            alarm.mostSevereLevel = toNumericLevel(alarm.mostSevereValue.monitoringResult);
-            alarm.currentLevel = toNumericLevel(alarm.currentValue.monitoringResult);
-            alarm.triggerLevel = toNumericLevel(alarm.triggerValue.monitoringResult);
+            if (alarm.hasOwnProperty('currentValue')) {
+                alarm['currentLevel'] = toNumericLevel(alarm['currentValue']['monitoringResult']);
+            } else {
+                alarm['currentValue'] = alarm['triggerValue'];
+                alarm['currentLevel'] = alarm['triggerLevel'];
+            }
             return alarm;
         }
 

@@ -1,0 +1,11 @@
+<div class="main" style="padding: 40px;">
+  <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
+  <h1 class="page-header">Alarms</h1>
+  <p>&nbsp;</p>
+  <ng-include src="'/_static/_site/alarms/tabs.template.html'"></ng-include>
+
+  <br>
+  <div class="container-fluid">
+    <alarm-block alarm="alarm" ng-repeat="alarm in vm.alarms" toggleable>
+  </div>
+</div>

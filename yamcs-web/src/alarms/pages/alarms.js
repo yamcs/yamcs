@@ -7,32 +7,15 @@
         .controller('AcknowledgeAlarmModalController',  AcknowledgeAlarmModalController);
 
     /* @ngInject */
-    function AlarmsController($rootScope, alarmsService, $uibModal, $scope, $log) {
-        var vm = this;
-
+    function AlarmsController($rootScope, alarmsService, $uibModal, $log) {
         $rootScope.pageTitle = 'Alarms | Yamcs';
 
-        vm.openAcknowledge = openAcknowledge;
-        vm.alarms = [];
-
-        /*alarmsService.listAlarms().then(function (data) {
-            vm.alarms = data;
-            return vm.alarms;
-        });*/
-
-        /*
-            vm.alarms is a live collection
-         */
-        var alarmSubscriptionId = alarmsService.watch(function (alarms) {
-            vm.alarms = alarms;
-        });
-
-        $scope.$on('$destroy', function () {
-            console.log('alarm/unsubscribe of alarms page controller');
-            alarmsService.unwatch(alarmSubscriptionId)
-        });
+        var vm = this;
 
 
+        vm.openAcknowledge = openAcknowledge; // Opens the acknowledge dialog
+        vm.alarmTab = 'activeAlarms';
+        vm.alarms = alarmsService.getActiveAlarms(); // Live collection
 
         function openAcknowledge(alarm) {
             var form = {
@@ -67,7 +50,7 @@
         $scope.form = form;
 
         $scope.ok = function () {
-            alarmsService.patchParameterAlarm(alarm.triggerValue.id, alarm.id, {
+            alarmsService.patchParameterAlarm(alarm['triggerValue']['id'], alarm['seqNum'], {
                 state: 'acknowledged',
                 comment: form.comment
             });

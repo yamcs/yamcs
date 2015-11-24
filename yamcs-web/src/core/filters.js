@@ -116,12 +116,27 @@
         dygraphs. (only local or utc time are supported)
      */
     .filter('formatDate', /* @ngInject */ function(configService) {
-        return function(value) {
+        return function(value, format) {
             if (!value) return value;
-            if (configService.get('utcOnly')) {
-                return value.format();
+            var ts = value;
+            if (!configService.get('utcOnly')) {
+                return value.clone().local();
+            }
+
+            if (!format)
+                return ts.format('YYYY-MM-DDThh:mm:ss');
+            else if (format === 'with_offset') {
+                return ts.format();
+            }
+            else if (format === 'pretty') {
+                var now = moment();
+                if (now.isSame(ts, 'd')) {
+                    return ts.format('hh:mm:ss');
+                } else {
+                    return ts.format('MMM Do hh:mm:ss');
+                }
             } else {
-                return value.clone().local().format();
+                return ts.format(format);
             }
         };
     })

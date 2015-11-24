@@ -12,5 +12,10 @@
             controller: 'AlarmsController',
             controllerAs: 'vm'
         });
+        $routeProvider.when('/:instance/alarms/archive', {
+            templateUrl: '/_static/_site/alarms/pages/archived-alarms.html',
+            controller: 'ArchivedAlarmsController',
+            controllerAs: 'vm'
+        });
     }
 })();

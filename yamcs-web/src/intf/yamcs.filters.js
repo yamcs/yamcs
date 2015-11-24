@@ -71,6 +71,31 @@
     })
 
     /*
+        Outputs an up- or down-pointing arrow if the monitoring result of the monitoring result is LOW or HIGH
+     */
+    .filter('lohi', function() {
+        return function (monitoringResult) {
+            if (!monitoringResult) return '';
+            switch (monitoringResult) {
+                case 'WATCH_LOW':
+                case 'WARNING_LOW':
+                case 'DISTRESS_LOW':
+                case 'CRITICAL_LOW':
+                case 'SEVERE_LOW':
+                    return '<small><span class="glyphicon glyphicon-arrow-down"></span></small>';
+                case 'WATCH_HIGH':
+                case 'WARNING_HIGH':
+                case 'DISTRESS_HIGH':
+                case 'CRITICAL_HIGH':
+                case 'SEVERE_HIGH':
+                    return '<small><span class="glyphicon glyphicon-arrow-up"></span></small>';
+                default:
+                    return '';
+            }
+        }
+    })
+
+    /*
         Converts monitoringResult to a twitter bootstrap class
      */
     .filter('monitoringClass', function () {

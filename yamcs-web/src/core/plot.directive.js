@@ -33,7 +33,10 @@
             var ctx = {archiveFetched: false};
             var spinner = new Spinner();
 
+            var label = scope.pinfo.name;
+
             var g = new Dygraph(containingDiv, 'X\n', {
+                legend: 'always',
                 drawPoints: true,
                 showRoller: false,
                 customBars: true,
@@ -42,7 +45,7 @@
                 axisLabelColor: '#666',
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
-                labels: ['Time', 'Value'],
+                labels: ['Generation Time', label],
                 labelsDiv: 'parameter-detail-legend',
                 valueRange: valueRange,
                 yRangePad: 10,

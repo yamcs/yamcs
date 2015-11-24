@@ -80,16 +80,12 @@
         vm.alarmCount = 0;
         vm.alarmBadgeColor = '#9d9d9d';
 
-        var alarmSubscriptionId = alarmsService.watch(handleAggregatedAlarmState);
-        var timeSubscriptionId = timeService.watchTime(handleTimeUpdate);
+        $rootScope.$on('yamcs.alarmStats', function (evt, stats) {
+            vm.alarmStats = stats;
+        });
 
-        /*
-            Terminate subscription when the controller is destroyed
-         */
-        $scope.$on('$destroy', function() {
-            console.log('alarm/unsubscribe of shell controller');
-            alarmsService.unwatch(alarmSubscriptionId);
-            timeService.unwatch(timeSubscriptionId);
+        $rootScope.$on('yamcs.time', function (evt, data) {
+            vm.timeData = data;
         });
 
         function handleAggregatedAlarmState(data) {
@@ -104,11 +100,6 @@
                 }
             }
             vm.alarmBadgeColor = needsAck ? '#c9302c' : '#9d9d9d';
-        }
-
-        function handleTimeUpdate(data) {
-            var time = data['currentTimeUTC'];
-            vm.missionTime = moment.utc(time);
         }
     }
 })();

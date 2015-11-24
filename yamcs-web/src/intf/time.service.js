@@ -5,12 +5,10 @@
         .module('yamcs.intf')
         .factory('timeService', timeService);
 
-    var latestTime;
-    var timeWatchers = {};
-    var subscriptionId = 0;
-
     /* @ngInject */
-    function timeService(socket) {
+    function timeService(socket, $rootScope) {
+
+        var latestTime;
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -20,35 +18,16 @@
         }
 
         return {
-            watchTime: watchTime,
-            unwatchTime: unwatchTime
         };
 
         function subscribeUpstream() {
             socket.on('TIME_INFO', function (data) {
                 latestTime = data;
-                for (var sid in timeWatchers) {
-                    if (timeWatchers.hasOwnProperty(sid)) {
-                        timeWatchers[sid](data);
-                    }
-                }
+                $rootScope.$broadcast('yamcs.time', latestTime);
             });
             socket.emit('time', 'subscribe', {}, null, function (et, msg) {
                 console.log('failed subscribe', et, ' ', msg);
             });
-        }
-
-        function watchTime(callback) {
-            var id = ++subscriptionId;
-            timeWatchers[id] = callback;
-            if (typeof latestTime !== 'undefined') {
-                callback(latestTime);
-            }
-            return id;
-        }
-
-        function unwatchTime(subscriptionId) {
-            delete timeWatchers[subscriptionId];
         }
     }
 })();

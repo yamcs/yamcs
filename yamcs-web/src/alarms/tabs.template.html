@@ -1,0 +1,13 @@
+<ul class="nav nav-tabs">
+  <li ng-class="{active: vm.alarmTab == 'activeAlarms'}">
+    <a href="/{{ yamcsInstance }}/alarms">
+      <span class="glyphicon glyphicon-folder-open"></span> Active
+    </a>
+  </li>
+
+  <li ng-class="{active: vm.alarmTab == 'archivedAlarms'}">
+    <a href="/{{ yamcsInstance }}/alarms/archive">
+      <span class="glyphicon glyphicon-folder-close"></span> Archived
+    </a>
+  </li>
+</ul>

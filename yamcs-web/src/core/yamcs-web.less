@@ -75,6 +75,15 @@ body {
   }
 }
 
+a.subtle {
+  text-decoration: underline !important;
+  color: inherit !important;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
 .nav-sidebar > li > a {
   padding-right: 20px;
   padding-left: 20px;
@@ -114,3 +123,9 @@ body {
   font-size: 16px;
   font-weight: normal;
 }
+
+.no-animate {
+   -webkit-transition: none !important;
+   transition: none !important;
+}
+

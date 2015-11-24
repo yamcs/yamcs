@@ -47,10 +47,10 @@
             <span ng-if="!shell.socketOpen">
               no live connection
             </span>
-            <span ng-if="shell.socketOpen && shell.missionTime">
-              {{ shell.missionTime | formatDate }}
+            <span ng-if="shell.socketOpen && shell.timeData.currentTimeUTC">
+              {{ shell.timeData.currentTimeUTC | parseUTC | formatDate:'with_offset' }}
             </span>
-            <span ng-if="shell.socketOpen && !(shell.missionTime)">
+            <span ng-if="shell.socketOpen && !(shell.timeData.currentTimeUTC)">
               ---
             </span>
           </uib-progressbar>
