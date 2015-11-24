@@ -59,8 +59,8 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
-    static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
     
+    static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
     static InstanceRequestHandler instanceRequestHandler = new InstanceRequestHandler();
     static UserRequestHandler userRequestHandler = new UserRequestHandler();
     static MDBRequestHandler mdbRequestHandler = new MDBRequestHandler();
@@ -136,6 +136,9 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             if (instanceRequestHandler.getPath().equals(resource)) { 
                 instanceRequestHandler.handleRequestOrError(restReq, 3);
                 return;
+            } else if (displayRequestHandler.getPath().equals(resource)) {
+                displayRequestHandler.handleRequestOrError(restReq, 3);
+                return;
             } else if (processorRequestHandler.getPath().equals(resource)) {
                 processorRequestHandler.handleRequestOrError(restReq, 3);
                 return;
@@ -168,8 +171,6 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             String handler = rpath[0];
             if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
                 webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
-            } else if(DISPLAYS_PATH.equals(handler)) {
-                displayRequestHandler.handleRequest(ctx, req, yamcsInstance, rpath.length>1? rpath[1] : null, authToken);
             } else {
                 // Everything else is handled by angular's router (enables deep linking in html5 mode)
                 fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");                
