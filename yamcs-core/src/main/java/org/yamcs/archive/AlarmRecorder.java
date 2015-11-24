@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Records alarms.
- * Uses a 'simple' upsert solution for now.
+ * Uses a 'simple' upsert_append solution for now.
  */
 public class AlarmRecorder extends AbstractService {
 
@@ -39,7 +39,7 @@ public class AlarmRecorder extends AbstractService {
             if (inputStream == null) {
                 throw new ConfigurationException("Cannot find stream '" + sce.getName() + "'");
             }
-            ydb.execute("insert_append into " + TABLE_NAME + " select * from " + sce.getName());
+            ydb.execute("upsert_append into " + TABLE_NAME + " select * from " + sce.getName());
         }
     }
     
