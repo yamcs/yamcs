@@ -1,22 +1,15 @@
 package org.yamcs.yarch;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 
 /**
- * test for table insert and insert_append in a table with a dynamic schema
+ * test for insert modes in a table with a dynamic schema
  * @author nm
  *
  */
@@ -112,6 +105,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v1", 1);
         emit(s, 1, "v2", 2);
         emit(s, 1, "v3", 3);
+        emit(s, 1, "v3", 4);
         emit(s, 2, "v3", 30);
         
         
@@ -151,4 +145,130 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         ydb.execute("drop table test_inserta");
     }
 
+    @Test
+    public void testUpsert() throws Exception {
+        
+        ydb.execute("create table test_upsert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+       
+        
+        ydb.execute("create stream test_upsert_in (t timestamp)");
+        ydb.execute("upsert into test_upsert select * from test_upsert_in");
+        
+        TableDefinition tblDef=ydb.getTable("test_upsert");
+        
+        TupleDefinition keyDef=tblDef.getKeyDefinition();
+        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        assertEquals(1, keyCols.size());
+        
+        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(2, valueCols.size());
+        
+        Stream s=ydb.getStream("test_upsert_in");
+        emit(s, 1, "v1", 1);
+        emit(s, 1, "v2", 2);
+        emit(s, 1, "v3", 3);
+        emit(s, 2, "v3", 3);
+        
+       // System.out.println("tableDef: "+tblDef);
+        
+        
+        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(3, valueCols.size());
+        assertEquals("v3", valueCols.get(2).getName());
+        
+        ydb.execute("create stream test_upsert_out as select * from test_upsert");
+        Stream sout=ydb.getStream("test_upsert_out");
+        final Semaphore semaphore=new Semaphore(0);
+        final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
+        sout.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+            
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                tuples.add(tuple);
+            }
+        });
+        sout.start();
+        semaphore.acquire();
+        assertEquals(2, tuples.size());
+        Tuple t=tuples.get(0);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(1L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        t=tuples.get(1);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(2L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        ydb.execute("drop table test_upsert");
+    }
+    
+    @Test
+    public void testUpsertAppend() throws Exception {
+        
+        ydb.execute("create table test_upserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+       
+        
+        ydb.execute("create stream test_upserta_in (t timestamp)");
+        ydb.execute("upsert_append into test_upserta select * from test_upserta_in");
+        
+        TableDefinition tblDef=ydb.getTable("test_upserta");
+        
+        TupleDefinition keyDef=tblDef.getKeyDefinition();
+        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        assertEquals(1, keyCols.size());
+        
+        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(2, valueCols.size());
+        
+        Stream s=ydb.getStream("test_upserta_in");
+        emit(s, 1, "v1", 1);
+        emit(s, 1, "v2", 2);
+        emit(s, 1, "v3", 3);
+        emit(s, 1, "v3", 4);
+        emit(s, 2, "v3", 3);
+        
+       // System.out.println("tableDef: "+tblDef);
+        
+        
+        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(3, valueCols.size());
+        assertEquals("v3", valueCols.get(2).getName());
+        
+        ydb.execute("create stream test_upserta_out as select * from test_upserta");
+        Stream sout=ydb.getStream("test_upserta_out");
+        final Semaphore semaphore=new Semaphore(0);
+        final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
+        sout.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {
+                semaphore.release();
+            }
+            
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                tuples.add(tuple);
+            }
+        });
+        sout.start();
+        semaphore.acquire();
+        assertEquals(2, tuples.size());
+        Tuple t=tuples.get(0);
+        assertEquals(4, t.getColumns().size());
+        assertEquals(1L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(1, ((Integer)t.getColumn("v1")).intValue());
+        assertEquals(2, ((Integer)t.getColumn("v2")).intValue());
+        assertEquals(4, ((Integer)t.getColumn("v3")).intValue());
+        
+        t=tuples.get(1);
+        assertEquals(2, t.getColumns().size());
+        assertEquals(2L, ((Long)t.getColumn("t")).longValue());
+        assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        ydb.execute("drop table test_upserta");
+    }
 }
