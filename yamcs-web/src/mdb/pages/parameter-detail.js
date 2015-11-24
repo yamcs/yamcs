@@ -49,6 +49,14 @@
                     }
                 });
             };
+            vm.addParameterModal = function() {
+                $uibModal.open({
+                    animation: true,
+                    templateUrl: 'addParameterModal.html',
+                    controller: 'AddParameterModalInstanceController',
+                    size: 'md'
+                });
+            };
 
             return vm.info;
         });

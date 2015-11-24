@@ -56,7 +56,16 @@
           <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1m'">1m</label>
           <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'3m'">3m</label>
         </div>
-        <label class="btn btn-xs btn-default"><span class="glyphicon glyphicon-menu-down"></span></label>
+        <div class="btn-group" uib-dropdown style="float: left;">
+          <button class="btn btn-default btn-xs dropdown-toggle" type="button" uib-dropdown-toggle>
+            <span class="glyphicon glyphicon-menu-down"></span>
+          </button>
+          <ul class="uib-dropdown-menu dropdown-menu-right">
+            <li><a href="#">&#x2713; {{ vm.info.name }}</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#" ng-click="vm.addParameterModal()">Add Parameter...</a></li>
+          </ul>
+        </div>
       </div>
       <h2>Plot</h2>
     </div>
@@ -187,5 +196,42 @@
         <td>{{ v.label}} </td>
       </tr>
     </table>
+  </div>
+</script>
+
+<script type="text/ng-template" id="addParameterModal.html">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="close()">&times;</button>
+    <h3 class="modal-title">Add Parameter</h3>
+  </div>
+
+  <div class="modal-body">
+    <div class="input-group input-group-sm">
+      <input type="text" class="form-control" ng-model="searchText" placeholder="Search..." autofocus>
+      <span class="input-group-btn">
+        <button class="btn btn-default btn-sm" type="button"><span class="glyphicon glyphicon-search"></span></button>
+      </span>
+    </div>
+
+    <select multiple style="width: 100%; margin-top: 0.5em;" size="15" ng-model="data.chosenParameters">
+      <option value="{{ parameter.qualifiedName }}"
+        ng-repeat="parameter in parameters | filter:{'qualifiedName': searchText} | orderBy:'qualifiedName'">
+        {{ parameter.qualifiedName }}
+      </option>
+    </select>
+      <!--table class="table table-condensed table-hover borderless">
+        <tr ng-repeat="parameter in parameters | filter:{'qualifiedName': searchText} | orderBy:'qualifiedName'">
+          <td style="padding: 0 5px 0 0">
+            <small>{{ parameter.name }}</small>
+          </td>
+          <td style="padding: 0 5px 0 0"><small>{{ parameter.qualifiedName | spaceSystem }}</small></td>
+          <td></td>
+        </tr>
+      </table-->
+  </div>
+
+  <div class="modal-footer">
+      <button class="btn btn-default" type="button" ng-click="ok()" ng-class="{ 'disabled': !(data.chosenParameters.length) }">Add</button>
+      <button class="btn btn-link" type="button" ng-click="cancel()">Cancel</button>
   </div>
 </script>
