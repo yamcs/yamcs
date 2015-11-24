@@ -2,7 +2,19 @@
   <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
   <h1 class="page-header">Alarms</h1>
   <p>&nbsp;</p>
-  <ng-include src="'/_static/_site/alarms/tabs.template.html'"></ng-include>
+  <ul class="nav nav-tabs">
+    <li class="active">
+      <a href="/{{ yamcsInstance }}/alarms">
+        <span class="glyphicon glyphicon-folder-open"></span> Active
+      </a>
+    </li>
+
+    <li>
+      <a href="/{{ yamcsInstance }}/alarms/archive">
+        <span class="glyphicon glyphicon-folder-close"></span> Archived
+      </a>
+    </li>
+  </ul>
 
   <br>
   <div class="container-fluid">

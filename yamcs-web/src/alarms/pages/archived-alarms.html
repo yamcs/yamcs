@@ -2,11 +2,33 @@
   <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
   <h1 class="page-header">Alarms</h1>
   <p>&nbsp;</p>
-  <ng-include src="'/_static/_site/alarms/tabs.template.html'"></ng-include>
+  <ul class="nav nav-tabs">
+    <li>
+      <a href="/{{ yamcsInstance }}/alarms">
+        <span class="glyphicon glyphicon-folder-open"></span> Active
+      </a>
+    </li>
+
+    <li class="active">
+      <a href="/{{ yamcsInstance }}/alarms/archive">
+        <span class="glyphicon glyphicon-folder-close"></span> Archived
+      </a>
+    </li>
+
+    <li class="pull-right">
+      <div class="form-group form-group-sm" style="margin-bottom: 0; margin-top: 5px;">
+        <div class="input-group input-group-sm" style="width: 200px">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+          <input type="text" class="form-control" style="width: 200px;" ng-model="vm.searchText" placeholder="Search...">
+          <span ng-if="vm.searchText" class="search-clear glyphicon glyphicon-remove-circle" ng-click="vm.searchText = ''"></span>
+        </div>
+      </div>
+    </li>
+  </ul>
 
   <br>
   <div class="container-fluid">
-    <div class="row" ng-repeat-start="alarm in vm.alarms" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+    <div class="row" ng-repeat-start="alarm in vm.alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
       <div class="col-md-3">
         <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
         <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong>
