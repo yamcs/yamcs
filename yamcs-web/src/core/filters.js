@@ -116,27 +116,35 @@
         dygraphs. (only local or utc time are supported)
      */
     .filter('formatDate', /* @ngInject */ function(configService) {
-        return function(value, format) {
+        return function(value, format, printPrefix) {
             if (!value) return value;
             var ts = value;
             if (!configService.get('utcOnly')) {
                 return value.clone().local();
             }
 
-            if (!format)
-                return ts.format('YYYY-MM-DDThh:mm:ss');
-            else if (format === 'with_offset') {
-                return ts.format();
-            }
-            else if (format === 'pretty') {
+            var prefix;
+            if (!format) {
+                prefix = (printPrefix) ? 'on ' : '';
+                return prefix + ts.format('YYYY-MM-DDThh:mm:ss');
+            } else if (format === 'with_offset') {
+                prefix = (printPrefix) ? 'on ' : '';
+                return prefix + ts.format();
+            } else if (format === 'pretty') {
+                prefix = (printPrefix) ? 'on ' : '';
+                return prefix + ts.format('MMM Do hh:mm:ss');
+            } else if (format === 'pretty_short') {
                 var now = moment();
                 if (now.isSame(ts, 'd')) {
-                    return ts.format('hh:mm:ss');
+                    prefix = (printPrefix) ? 'at ' : '';
+                    return prefix + ts.format('hh:mm:ss');
                 } else {
-                    return ts.format('MMM Do hh:mm:ss');
+                    prefix = (printPrefix) ? ' at ' : ' ';
+                    return ts.format('MMM Do') + prefix + ts.format('hh:mm:ss');
                 }
             } else {
-                return ts.format(format);
+                prefix = (printPrefix) ? 'on ' : '';
+                return prefix + ts.format(format);
             }
         };
     })

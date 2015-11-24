@@ -6,6 +6,70 @@
 
   <br>
   <div class="container-fluid">
-    <alarm-block alarm="alarm" ng-repeat="alarm in vm.alarms" toggleable>
+    <div class="row" ng-repeat-start="alarm in vm.alarms" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+      <div class="col-md-3">
+        <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
+        <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong>
+        <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}"><br>
+        <small>{{ alarm.triggerValue.id.name | spaceSystem }}</small>
+      </div>
+
+      <div class="col-md-4">
+        <small>{{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty' }} &ndash;
+        {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty' }}</small>
+      </div>
+
+      <div class="col-md-4">
+        <div ng-if="alarm.acknowledgeInfo">
+          Acknowledged {{ alarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+        </div>
+        <span ng-if="!alarm.acknowledgeInfo"><i>Unacknowledged</i></span>
+      </div>
+
+      <div class="col-md-1 text-right">
+        <small>{{ (alarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</small>
+      </div>
+    </div>
+
+    <div class="row" ng-repeat-end uib-collapse="!alarm.expanded">
+      <div class="col-md-1"></div>
+      <div class="col-md-5">
+        <dl class="dl-horizontal">
+          <dt>Activation Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Highest Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Last Record</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
+            <small>
+              {{ alarm.currentValue | stringValue }}<span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+              {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+            </small>
+          </dd>
+        </dl>
+      </div>
+      <div class="col-md-6">
+        <blockquote ng-if="alarm.acknowledgeInfo" style="font-size: small">
+          <span class="glyphicon glyphicon-comment" style="color: #ccc;"></span>
+          {{ alarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
+          <footer>Acknowledged <span ng-if="alarm.acknowledgeInfo.acknowledgedBy != 'anonymous'">by {{ alarm.acknowledgeInfo.acknowledgedBy }}</span> {{ alarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</footer>
+        </blockquote>
+      </div>
+    </div>
   </div>
 </div>
