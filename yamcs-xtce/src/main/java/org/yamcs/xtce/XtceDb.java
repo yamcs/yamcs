@@ -442,7 +442,7 @@ public class XtceDb implements Serializable {
             }
         }
         if(!systemVariables.isEmpty()) {
-            out.println("System Parrmeters: ");
+            out.println("System Parameters: ");
             SystemParameter[] sva=systemVariables.toArray(new SystemParameter[0]);
             Arrays.sort(sva, comparator);
             for (SystemParameter sv : sva) {
@@ -469,7 +469,9 @@ public class XtceDb implements Serializable {
         if(!orphanedParameters.isEmpty()) {
             out.println("================ Orphaned parameters (not referenced in any container or algorithm):");            
             for(Parameter p:orphanedParameters) {
-                out.println(p.getQualifiedName()+", datasource: "+p.getDataSource());
+                String namespaces = "";
+                if(p.getAliasSet()!=null) namespaces = ", aliases: "+ p.getAliasSet();
+                out.println(p.getQualifiedName()+", datasource: "+p.getDataSource()+ namespaces);
             }
         }
     }
