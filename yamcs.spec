@@ -7,7 +7,7 @@ Summary: 	Mission Control System
 
 Vendor:		Space Applications Services
 Packager:	Space Applications Services
-License: 	Proprietary
+License: 	AGPL (server) + LGPL (API)
 URL: 		http://www.spaceapplications.com/
 Source: 	%{name}-%{version}.tar.gz
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-buildroot
