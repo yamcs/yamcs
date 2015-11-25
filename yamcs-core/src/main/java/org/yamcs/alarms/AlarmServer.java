@@ -163,10 +163,9 @@ public class AlarmServer extends AbstractService {
                     for (AlarmListener l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);                        
                     }
-                } else {
-                    for (AlarmListener l : alarmListeners) {
-                        l.notifyParameterValueUpdate(activeAlarm);                        
-                    }
+                }
+                for (AlarmListener l : alarmListeners) {
+                    l.notifyParameterValueUpdate(activeAlarm);                        
                 }
             }
         
