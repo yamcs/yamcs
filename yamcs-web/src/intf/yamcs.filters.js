@@ -82,13 +82,15 @@
                 case 'DISTRESS_LOW':
                 case 'CRITICAL_LOW':
                 case 'SEVERE_LOW':
-                    return '<small><span class="glyphicon glyphicon-arrow-down"></span></small>';
+                    return ' (low)';
+                    //return '<small><span class="glyphicon glyphicon-arrow-down"></span></small>';
                 case 'WATCH_HIGH':
                 case 'WARNING_HIGH':
                 case 'DISTRESS_HIGH':
                 case 'CRITICAL_HIGH':
                 case 'SEVERE_HIGH':
-                    return '<small><span class="glyphicon glyphicon-arrow-up"></span></small>';
+                    return ' (high)';
+                    //return '<small><span class="glyphicon glyphicon-arrow-up"></span></small>';
                 default:
                     return '';
             }

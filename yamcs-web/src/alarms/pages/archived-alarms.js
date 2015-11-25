@@ -25,5 +25,17 @@
             var regex = new RegExp(vm.searchText.trim().replace('*', '.*'), 'i');
             return regex.test(qname);
         };
+
+        vm.expandAlarms = function() {
+            for (var i = 0; i < vm.alarms.length; i++) {
+                vm.alarms[i].expanded = true;
+            }
+        };
+
+        vm.collapseAlarms = function() {
+            for (var i = 0; i < vm.alarms.length; i++) {
+                vm.alarms[i].expanded = false;
+            }
+        };
     }
 })();

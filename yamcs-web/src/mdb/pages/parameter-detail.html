@@ -78,7 +78,90 @@
     </plot>
     <!-- the position: relative is needed for spin.js :-/ Not sure. -->
 
-    <div>
+    <div class="section" style="margin-top: 1.5em;">
+      <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
+        <button ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
+        <button ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
+      </div>
+      <h2>Alarm History</h2>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row" ng-if="!vm.alarms.length">
+        <div class="col-md-1">-</div>
+      </div>
+      <div class="row" ng-repeat-start="alarm in vm.alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+        <div class="col-md-3">
+          <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
+          <strong>Out of limits</strong>
+          <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}"><br>
+          <small>{{ (alarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</small>
+        </div>
+
+        <div class="col-md-4">
+          <small>{{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty' }} &ndash;
+          {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty' }}</small>
+        </div>
+
+        <div class="col-md-4">
+          <div ng-if="alarm.acknowledgeInfo">
+            <small>Acknowledged {{ alarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</small>
+          </div>
+          <span ng-if="!alarm.acknowledgeInfo"><small>Unacknowledged</small></span>
+        </div>
+
+        <div class="col-md-1 text-right">
+          <small>
+            <span ng-if="!alarm.expanded">▶</span>
+            <span ng-if="alarm.expanded">▼</span>
+          </small>
+        </div>
+      </div>
+
+      <div class="row" ng-repeat-end uib-collapse="!alarm.expanded">
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+          <dl class="dl-horizontal">
+            <dt>Activation Level</dt>
+            <dd>
+              <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
+              <small>
+                Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+                with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+              </small>
+            </dd>
+
+            <dt>Highest Level</dt>
+            <dd>
+              <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
+              <small>
+                Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+                with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+              </small>
+            </dd>
+
+            <dt>Last Record</dt>
+            <dd>
+              <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
+              <small>
+                <strong>{{ alarm.currentValue | stringValue }}</strong>
+                <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+                {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+              </small>
+            </dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <blockquote ng-if="alarm.acknowledgeInfo" style="font-size: small">
+            <span class="glyphicon glyphicon-comment" style="color: #ccc;"></span>
+            {{ alarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
+            <footer>{{ alarm.acknowledgeInfo.acknowledgedBy }}</footer>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 1em;">
       <h2 class="section">Value History</h2>
       <table class="table table-condensed">
         <tr>
@@ -90,9 +173,9 @@
         </tr>
         <tr ng-repeat="val in vm.values">
           <td style="white-space: nowrap">
-            {{ val.generationTimeUTC | parseUTC | formatDate }}
+            {{ val.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
           </td>
-          <td>{{ val | stringValue }}</td>
+          <td>{{ val | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</td>
           <td>{{ val | stringValue:true }}</td>
           <td></td>
           <td ng-if="val.monitoringResult">
@@ -112,7 +195,7 @@
       </table>
     </div>
 
-    <div ng-if="vm.para.monitoringResult != 'DISABLED'">
+    <div style="margin-top: 1em;" ng-if="vm.para.monitoringResult != 'DISABLED'">
       <h2 class="section">Monitoring Definition</h2>
       <span ng-if="!(vm.isNumeric())">-</span>
       <dl class="dl-horizontal" ng-if="vm.isNumeric()">
@@ -158,7 +241,7 @@
       </dl>
     </div>
 
-    <div ng-if=vm.info.type.dataEncoding>
+    <div style="margin-top: 1em;" ng-if=vm.info.type.dataEncoding>
       <h2 class="section">Packet Definition</h2>
       <dl class="dl-horizontal">
         <dt>Raw Type</dt>

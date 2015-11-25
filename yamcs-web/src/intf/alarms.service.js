@@ -27,6 +27,7 @@
             getKey: getKey,
             getActiveAlarms: getActiveAlarms,
             listAlarms: listAlarms,
+            listAlarmsForParameter: listAlarmsForParameter,
             patchParameterAlarm: patchParameterAlarm
         };
 
@@ -67,6 +68,21 @@
                     }
                 }
                 return alarms;
+            }).catch(function (message) {
+                $log.error('XHR failed', message);
+                throw messageToException(message);
+            });
+        }
+
+        function listAlarmsForParameter(qname) {
+            var targetUrl = '/api/archive/' + yamcsInstance + '/alarms' + qname;
+            return $http.get(targetUrl).then(function (response) {
+                if (response.data.hasOwnProperty('alarm')) {
+                    for (var i = 0; i < response.data['alarm'].length; i++) {
+                        enrichAlarm(response.data['alarm'][i]);
+                    }
+                }
+                return response.data['alarm'];
             }).catch(function (message) {
                 $log.error('XHR failed', message);
                 throw messageToException(message);
