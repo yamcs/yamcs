@@ -340,6 +340,7 @@ public class ParameterValue {
             gpvb.setMonitoringResult(monitoringResult);
         }
 
+
         // TODO make this optional
         gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
         gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
@@ -380,9 +381,14 @@ public class ParameterValue {
         ParameterValue pv=new ParameterValue(pdef);
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
         pv.setAcquisitionTime(gpv.getAcquisitionTime());
+        if(gpv.hasExpirationTime())
+        {
+            pv.setExpirationTime(gpv.getExpirationTime());
+        }
         pv.setEngineeringValue(gpv.getEngValue());
         pv.setGenerationTime(gpv.getGenerationTime());
-        pv.setMonitoringResult(gpv.getMonitoringResult());
+        if(gpv.hasMonitoringResult())
+            pv.setMonitoringResult(gpv.getMonitoringResult());
         pv.setProcessingStatus(gpv.getProcessingStatus());
         if(gpv.hasRawValue()) {
             pv.setRawValue(gpv.getRawValue());
