@@ -107,19 +107,7 @@ public class AlarmStreamer implements AlarmListener {
         
         tdef.addColumn("clearedPV", PpProviderAdapter.PP_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.currentValue.toGpb(id));
-        
-        String username = activeAlarm.usernameThatAcknowledged;
-        
-        if(username==null) {
-            if(activeAlarm.autoAcknowledge) {
-                username = "autoAcknowledged";
-            } else {
-                username = ManagementService.ANONYMOUS;
-            }
-        }
-        tdef.addColumn("username", DataType.STRING);
-        al.add(username);
+        al.add(activeAlarm.currentValue.toGpb(id));        
         
         Tuple t = new Tuple(tdef, al);
         stream.emitTuple(t);
