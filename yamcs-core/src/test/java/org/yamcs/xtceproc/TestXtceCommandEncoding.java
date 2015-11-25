@@ -2,7 +2,6 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.*;
 
-import com.sun.deploy.util.ArrayUtil;
 import junit.framework.Assert;
 
 import org.junit.Test;
