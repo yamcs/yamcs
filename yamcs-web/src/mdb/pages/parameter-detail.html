@@ -120,7 +120,7 @@
 
       <div class="row" ng-repeat-end uib-collapse="!alarm.expanded">
         <div class="col-md-1"></div>
-        <div class="col-md-5">
+        <div class="col-md-6">
           <dl class="dl-horizontal">
             <dt>Activation Level</dt>
             <dd>
@@ -146,12 +146,12 @@
               <small>
                 <strong>{{ alarm.currentValue | stringValue }}</strong>
                 <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
-                {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+                &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
               </small>
             </dd>
           </dl>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-5">
           <blockquote ng-if="alarm.acknowledgeInfo" style="font-size: small">
             <span class="glyphicon glyphicon-comment" style="color: #ccc;"></span>
             {{ alarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}

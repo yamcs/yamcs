@@ -15,7 +15,7 @@
     }
 
     /* @ngInject */
-    function Shell($rootScope, $scope, $location, socket, alarmsService, configService, timeService) {
+    function Shell($rootScope, $scope, $location, socket, configService) {
         var vm = this;
 
         vm.socketOpen = false;
@@ -87,19 +87,5 @@
         $rootScope.$on('yamcs.time', function (evt, data) {
             vm.timeData = data;
         });
-
-        function handleAggregatedAlarmState(data) {
-            console.log('asked to update alarm state ', data);
-            vm.alarmCount = data.length;
-
-            var needsAck = false;
-            for (var i = 0; i < data.length; i++) {
-                if (!data[i]['acknowledgeInfo']) {
-                    needsAck = true;
-                    break;
-                }
-            }
-            vm.alarmBadgeColor = needsAck ? '#c9302c' : '#9d9d9d';
-        }
     }
 })();

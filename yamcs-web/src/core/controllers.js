@@ -6,10 +6,10 @@
         .controller('HeaderController', HeaderController);
 
     /* @ngInject */
-    function HeaderController($location) {
+    function HeaderController($location, yamcsInstance) {
         var vm = this;
         vm.isActive = function (viewLocation) {
-            return $location.path().indexOf(viewLocation) == 0;
+            return $location.path().indexOf('/' + yamcsInstance + viewLocation) === 0;
         };
     }
 })();

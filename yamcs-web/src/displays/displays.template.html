@@ -1,23 +1,27 @@
 <div class="container-fluid" ng-controller="DisplaysTemplateController as templateVm">
   <div class="sidebar" style="width: 230px;">
-    <div ng-repeat="display in templateVm.displays" style="padding-top: 20px;">
-      <span class="nav-title">{{ display.group }}</span>
-      <ul class="nav nav-sidebar med">
-        <li ng-class="{active: activePane == d1.display}" ng-repeat="d1 in display.displays">
-          <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
-        </li>
-      </ul>
-    </div>
+    <ul class="nav nav-sidebar">
+      <li ng-repeat="item in templateVm.displays">
+        <a ng-if="item.name" href="/{{ yamcsInstance }}/displays/{{ item.display }}">{{ item.name }}</a>
+        <a ng-if="item.group"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;{{ item.group }}</a>
+        <ul ng-if="item.displays.length" class="nav nav-sidebar-sub">
+          <li ng-repeat="subitem in item.displays">
+            <a ng-if="subitem.name" href="/{{ yamcsInstance }}/displays/{{ subitem.display }}">{{ subitem.name }}</a>
+            <a ng-if="subitem.group"><span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;{{ subitem.group }}</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 
-    <div class="main" style="padding-left: 230px;">
-      <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
-      <h1 class="page-header" ng-if="headerTitle">
-        {{ headerTitle }}
-        <!--button type="button" class="btn btn-default btn-lg">
-          <span class="glyphicon glyphicon-new-window"></span>
-        </button-->
-      </h1>
-      <ng-transclude></ng-transclude>
-    </div>
+  <div class="main" style="padding-left: 230px;">
+    <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
+    <h1 class="page-header" ng-if="headerTitle">
+      {{ headerTitle }}
+      <!--button type="button" class="btn btn-default btn-lg">
+        <span class="glyphicon glyphicon-new-window"></span>
+      </button-->
+    </h1>
+    <ng-transclude></ng-transclude>
   </div>
 </div>
