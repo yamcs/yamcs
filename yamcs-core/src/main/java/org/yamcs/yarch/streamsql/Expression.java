@@ -94,7 +94,10 @@ public abstract class Expression {
     protected void fillCode_AllInputDefVars(StringBuilder code){
         for(ColumnDefinition cd:inputDef.getColumnDefinitions()) {
             if (cd.getType().val != DataType._type.PROTOBUF) {
-                code.append("\t\t"+cd.getType().javaType()+" col"+cd.getName()+"=("+cd.getType().javaType()+")tuple.getColumn(\""+cd.getName()+"\");\n");
+                code.append("\t\t"+cd.getType().javaType()+" col"+cd.getName()+"=null;\n")
+                .append("\t\tif(tuple.hasColumn(\""+cd.getName()+"\")) {\n")
+                .append("\t\t\tcol"+cd.getName()+"=("+cd.getType().javaType()+")tuple.getColumn(\""+cd.getName()+"\");\n")
+                .append("\t\t}\n");
             }
         }
     }
@@ -131,7 +134,7 @@ public abstract class Expression {
         .append("\t\treturn cdef;\n")
         .append("\t}\n")
         .append("}\n");
-
+        
         try {
             SimpleCompiler compiler=new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));
